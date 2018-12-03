@@ -204,6 +204,11 @@ QStringList FileMeta::suffix() const
     return mData.type->suffix();
 }
 
+void FileMeta::setKind(FileKind fk)
+{
+    mData.type = &FileType::from(fk);
+}
+
 FileKind FileMeta::kind() const
 {
     return mData.type->kind();
@@ -367,9 +372,10 @@ void FileMeta::load(QList<int> codecMibs)
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
-            gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid);
-            if (gdxViewer)
-                gdxViewer->reload();
+            if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
+                mCodec = QTextCodec::codecForMib(codecMibs[0]);
+                gdxViewer->reload(mCodec);
+            }
         }
         return;
     }
@@ -441,11 +447,12 @@ void FileMeta::save()
     internalSave(location());
 }
 
-void FileMeta::saveAs(const QString &location, bool takeOverLocation)
+void FileMeta::saveAs(const QString &target)
 {
-    // functionality moved function to repo // here: just create a copy at location
-    internalSave(location);
-    if (takeOverLocation) setLocation(location);
+    if (QFile::exists(target))
+        QFile::remove(target);
+    QFile::copy(mLocation, target);
+    mFileRepo->findOrCreateFileMeta(target);
 }
 
 void FileMeta::renameToBackup()
@@ -642,8 +649,10 @@ bool FileMeta::isOpen() const
 QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, QList<int> codecMibs, bool forcedAsTextEdit)
 {
     QWidget* res = nullptr;
-    if (kind() == FileKind::Gdx && !forcedAsTextEdit) {
-        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget));
+    if (codecMibs.size() == 1 && codecMibs.first() == -1) codecMibs = QList<int>() << QTextCodec::codecForLocale()->mibEnum();
+    mCodec = QTextCodec::codecForMib(codecMibs[0]);
+    if (kind() == FileKind::Gdx) {
+        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
@@ -653,7 +662,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        if (codecMibs.size() == 1 && codecMibs.first() == -1) codecMibs = QList<int>();
         if (kind() == FileKind::Log) {
             edit = ViewHelper::initEditorType(new ProcessLogEdit(tabWidget));
         } else {

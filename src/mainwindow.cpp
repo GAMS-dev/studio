@@ -386,7 +386,7 @@ QList<AbstractEdit*> MainWindow::openLogs()
     return resList;
 }
 
-void MainWindow::receiveAction(QString action)
+void MainWindow::receiveAction(const QString &action)
 {
     if (action == "createNewFile")
         on_actionNew_triggered();
@@ -394,7 +394,7 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
+void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
 {
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
@@ -404,7 +404,36 @@ void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
 {
-    mFileMetaRepo.unwatch(mSettings->defaultWorkspace()+"/"+inputFile);
+    QString gmsFilePath = mSettings->defaultWorkspace() + "/" + inputFile;
+    QFile gmsFile(gmsFilePath);
+
+    mFileMetaRepo.unwatch(gmsFilePath);
+    if (gmsFile.exists()) {
+        FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(gmsFilePath);
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File already existing");
+
+        msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
+        msgBox.setInformativeText("What do you want to do with the existing file?");
+        msgBox.setStandardButtons(QMessageBox::Abort);
+        msgBox.addButton("Open", QMessageBox::ActionRole);
+        msgBox.addButton("Replace", QMessageBox::ActionRole);
+        int answer = msgBox.exec();
+
+        switch(answer) {
+        case 0: // open
+            openFileNode(addNode("", gmsFilePath));
+            return;
+        case 1: // replace
+            fm->renameToBackup();
+            // and continue;
+            break;
+        case QMessageBox::Abort:
+            return;
+        }
+    }
+
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
@@ -774,10 +803,6 @@ void MainWindow::on_actionSave_As_triggered()
         filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath, filters.join(";;"), selFilter
                                                 , QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
-        QFileInfo fiNew(filePath);
-        if(!fileMeta->suffix().contains(fiNew.suffix(), Qt::CaseInsensitive)) {
-            filePath = filePath + "." + fileMeta->suffix().first();
-        }
 
         // perform file copy when file is either a gdx file or a ref file
         bool exists = QFile::exists(filePath);
@@ -804,7 +829,6 @@ void MainWindow::on_actionSave_As_triggered()
 
             if (choice == 1) {
                 mProjectRepo.saveNodeAs(node, filePath);
-                fileMeta = node->file();
                 ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
                 mStatusWidgets->setFileName(filePath);
 
@@ -870,7 +894,6 @@ void MainWindow::codecReload(QAction *action)
     if (!focusWidget()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (fm && fm->kind() == FileKind::Log) return;
-
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fm->isModified()) {
@@ -886,6 +909,7 @@ void MainWindow::codecReload(QAction *action)
         }
         if (reload) {
             fm->load(action->data().toInt());
+
             updateMenuToCodec(action->data().toInt());
             mStatusWidgets->setEncoding(fm->codecMib());
         }
@@ -946,14 +970,17 @@ void MainWindow::activeTabChanged(int index)
         if (edit) {
             if (!edit->isReadOnly()) {
                 ui->menuEncoding->setEnabled(true);
+                ui->menuconvert_to->setEnabled(true);
             }
             updateMenuToCodec(node->file()->codecMib());
             mStatusWidgets->setLineCount(edit->blockCount());
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
-        } else if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(editWidget)) {
-            ui->menuEncoding->setEnabled(false);
+            ui->menuconvert_to->setEnabled(node && !edit->isReadOnly());
+        } else if (ViewHelper::toGdxViewer(editWidget)) {
+            ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
-            gdxViewer->reload();
+            node->file()->reload();
+            updateMenuToCodec(node->file()->codecMib());
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
@@ -1508,38 +1535,8 @@ void MainWindow::on_actionGAMS_Library_triggered()
     {
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
-        QFileInfo fileInfo(item->files().first());
-        QString gmsFileName = fileInfo.completeBaseName() + ".gms";
-        QString gmsFilePath = mSettings->defaultWorkspace() + "/" + gmsFileName;
-        QFile gmsFile(gmsFilePath);
 
-        if (gmsFile.exists()) {
-            FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(gmsFilePath);
-
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("File already existing");
-
-            msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
-            msgBox.setInformativeText("What do you want to do with the existing file?");
-            msgBox.setStandardButtons(QMessageBox::Abort);
-            msgBox.addButton("Open", QMessageBox::ActionRole);
-            msgBox.addButton("Replace", QMessageBox::ActionRole);
-            int answer = msgBox.exec();
-
-            switch(answer) {
-            case 0: // open
-                openFileNode(addNode("", gmsFilePath));
-                break;
-            case 1: // replace
-                fm->renameToBackup();
-                triggerGamsLibFileCreation(item);
-                break;
-            case QMessageBox::Abort:
-                break;
-            }
-        } else {
-            triggerGamsLibFileCreation(item);
-        }
+        triggerGamsLibFileCreation(item);
     }
 }
 
@@ -1891,6 +1888,8 @@ void MainWindow::openInitialFiles()
         openFiles(mInitialFiles);
         mInitialFiles.clear();
         watchProjectTree();
+        ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTab->currentWidget());
+        if (node) openFileNode(node, true);
     }
 }
 
@@ -2153,7 +2152,7 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
 void MainWindow::closeFileEditors(const FileId fileId)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
-    if (!fm) return; // TODO(AF) add logging but no execption
+    if (!fm) return;
 
     // add to recently closed tabs
     mClosedTabs << fm->location();

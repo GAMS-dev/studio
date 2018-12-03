@@ -120,7 +120,7 @@ public:
     void editorActivated(QWidget *edit);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
-    void saveNodeAs(ProjectFileNode* node, QString location);
+    void saveNodeAs(ProjectFileNode* node, const QString &target);
 
     void setDebugMode(bool debug);
     bool debugMode() const;

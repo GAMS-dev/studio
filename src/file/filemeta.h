@@ -55,6 +55,7 @@ public:
     FileId id() const;
     QString location() const;
     QStringList suffix() const;
+    void setKind(FileKind fk);
     FileKind kind() const;
     QString name(NameModifier mod = NameModifier::raw);
     QTextDocument* document() const;
@@ -80,7 +81,7 @@ public:
     void load(int codecMib);
     void load(QList<int> codecMibs = QList<int>());
     void save();
-    void saveAs(const QString &location, bool takeOverLocation = false);
+    void saveAs(const QString &location);
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
@@ -91,6 +92,9 @@ public:
     void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
+
+public slots:
+    void reload();
 
 public: // static convenience methods
 signals:
@@ -103,7 +107,6 @@ private slots:
     void modificationChanged(bool modiState);
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
-    void reload();
 
 private:
     struct Data {
