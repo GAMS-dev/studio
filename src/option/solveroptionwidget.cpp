@@ -36,12 +36,13 @@ namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QWidget *parent) :
+SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QTextCodec* codec, QWidget *parent) :
           QWidget(parent),
           ui(new Ui::SolverOptionWidget),
           mFileId(id),
           mLocation(optionFilePath),
-          mSolverName(solverName)
+          mSolverName(solverName),
+          mCodec(codec)
 {
     ui->setupUi(this);
 
@@ -54,7 +55,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
     mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
-    QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation);
+    QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mCodec);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( mOptionTableModel );
     updateTableColumnSpan();
@@ -428,15 +429,15 @@ void SolverOptionWidget::on_problemSavingOptionFile(const QString &location)
                                        , QString("File %1 has been saved.\nBut there is an errror and not all option and values may not have beeen saved correctly.").arg(location)
                                        , "Load the saved option file", "Continue editing the options");
     if (answer==0)
-        on_reloadSolverOptionFile();
+        on_reloadSolverOptionFile(mCodec);
     else
         setModified(true);
 }
 
-void SolverOptionWidget::on_reloadSolverOptionFile()
+void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
 {
     mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
-    mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation) );
+    mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
     setModified(false);
 }
 

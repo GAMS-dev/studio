@@ -43,7 +43,7 @@ class SolverOptionWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QWidget *parent = nullptr);
+    explicit SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
     ~SolverOptionWidget();
 
     bool isInFocused(QWidget* focusWidget);
@@ -75,7 +75,7 @@ public slots:
     bool saveOptionFile(const QString &location);
     void on_problemSavingOptionFile(const QString &location);
 
-    void on_reloadSolverOptionFile();
+    void on_reloadSolverOptionFile(QTextCodec* codec);
     void on_toggleRowHeader(int logicalIndex);
 
     void on_compactViewCheckBox_stateChanged(int checkState);
@@ -95,6 +95,7 @@ private:
     QString mSolverName;
     bool addCommentAbove = false;
 
+    QTextCodec* mCodec;
     SolverOptionTableModel* mOptionTableModel;
 
     bool mModified;

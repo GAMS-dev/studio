@@ -995,9 +995,13 @@ void MainWindow::activeTabChanged(int index)
             ProjectFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor);
             if (fc) {
                 mRecent.editFileId = fc->file()->id();
+                ui->menuEncoding->setEnabled(true);
+                ui->menuconvert_to->setEnabled(true);
                 mStatusWidgets->setFileName(fc->location());
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
                 mStatusWidgets->setLineCount(solverOptionEditor->getItemCount());
+                node->file()->reload();
+                updateMenuToCodec(node->file()->codecMib());
             }
         }
     } else {

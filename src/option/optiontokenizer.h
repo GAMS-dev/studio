@@ -67,7 +67,7 @@ public:
     bool getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str);
     bool updateOptionItem(QString &key, QString &value, SolverOptionItem* item);
 
-    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath);
+    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QTextCodec* codec);
     bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath);
 
     QList<OptionItem> readOptionParameterFile(const QString &absoluteFilePath);

@@ -959,7 +959,7 @@ QString OptionTokenizer::getValueFromStr(QString &line, int itype, QString &hint
     }
 }
 
-QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath)
+QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QTextCodec* codec)
 {
     QList<SolverOptionItem *> items;
 
@@ -967,7 +967,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     int i = 0;
     if (inputFile.open(QIODevice::ReadOnly)) {
        QTextStream in(&inputFile);
-       in.setCodec( QTextCodec::codecForLocale() );
+       in.setCodec(codec);
 
        while (!in.atEnd()) {
            i++;

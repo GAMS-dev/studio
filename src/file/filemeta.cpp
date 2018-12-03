@@ -395,7 +395,10 @@ void FileMeta::load(QList<int> codecMibs)
     if (kind() == FileKind::Opt) {
         for (QWidget *wid : mEditors) {
             option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
-            if (so) so->on_reloadSolverOptionFile();
+            if (so) {
+                mCodec = QTextCodec::codecForMib(codecMibs[0]);
+                so->on_reloadSolverOptionFile(mCodec);
+            }
         }
     }
     if (!mDocument) {
@@ -658,7 +661,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
-        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), tabWidget));
+        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;

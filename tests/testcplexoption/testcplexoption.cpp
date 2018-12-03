@@ -19,6 +19,7 @@
  */
 #include <QStandardPaths>
 #include <QtMath>
+#include <QTextCodec>
 
 #include "commonpaths.h"
 #include "testcplexoption.h"
@@ -657,7 +658,7 @@ void TestCPLEXOption::testReadOptionFile()
 
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2");
-    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
     QCOMPARE( items.size(), 31 );
