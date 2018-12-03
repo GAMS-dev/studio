@@ -490,7 +490,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
     qDebug() << "format1 :" << item->key << "," << item->value << "," << item->text;
 
     if (item->disabled) {
-        if (key.startsWith("*") and key.mid(1).simplified().isEmpty())
+        if (key.startsWith("*") && key.mid(1).simplified().isEmpty())
             return QString("");
         if (!item->key.isEmpty() && !item->key.startsWith("*"))
             return QString("* %1%2%3").arg(key).arg(separator).arg(value);
