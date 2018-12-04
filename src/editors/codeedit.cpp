@@ -266,6 +266,16 @@ void CodeEdit::updateBlockEditPos()
     }
 }
 
+QString CodeEdit::wordUnderCursor() const
+{
+    return mWordUnderCursor;
+}
+
+bool CodeEdit::hasSelection() const
+{
+    return textCursor().hasSelection();
+}
+
 void CodeEdit::clearSelection()
 {
     if (isReadOnly()) return;
@@ -1148,24 +1158,28 @@ inline int CodeEdit::assignmentKind(int p)
     return 0;
 }
 
+void CodeEdit::recalcWordUnderCursor()
+{
+    mWordUnderCursor = "";
+    QTextEdit::ExtraSelection selection;
+    selection.cursor = textCursor();
+    QString text = selection.cursor.block().text();
+    int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
+    int from = findAlphaNum(text, start, true);
+    int to = findAlphaNum(text, from, false);
+    if (from >= 0 && from <= to) {
+        if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
+            mWordUnderCursor = text.mid(from, to-from+1);
+    }
+}
+
 void CodeEdit::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
     mParenthesesMatch = ParenthesesMatch();
     if (!mBlockEdit) {
         extraSelCurrentLine(selections);
-
-        mWordUnderCursor = "";
-        QTextEdit::ExtraSelection selection;
-        selection.cursor = textCursor();
-        QString text = selection.cursor.block().text();
-        int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
-        int from = findAlphaNum(text, start, true);
-        int to = findAlphaNum(text, from, false);
-        if (from >= 0 && from <= to) {
-            if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
-                mWordUnderCursor = text.mid(from, to-from+1);
-        }
+        recalcWordUnderCursor();
         mParenthesesDelay.start(100);
         int wordDelay = 10;
         if (mSettings->wordUnderCursor()) wordDelay = 500;
@@ -1195,7 +1209,7 @@ void CodeEdit::updateExtraSelections()
         //   (  not caused by parenthiesis matching                               )
         if (((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay)
               // ( depending on settings: no selection necessary OR has selection )
-              && (mSettings->wordUnderCursor() || textCursor().hasSelection())
+              && (mSettings->wordUnderCursor() || hasSelection())
               // (      wait for timer            OR            user scrolled             )
               && ((sender() == &mParenthesesDelay || sender() == this->verticalScrollBar())
               //  OR (     always select          )

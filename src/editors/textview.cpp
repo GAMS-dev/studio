@@ -76,7 +76,6 @@ void TextView::loadFile(const QString &fileName, QList<int> codecMibs)
     mMapper.setCodec(codecMibs.size() ? QTextCodec::codecForMib(codecMibs.at(0)) : QTextCodec::codecForLocale());
     mMapper.openFile(fileName);
     updateVScrollZone();
-    mTransferedAmount = 0;
     int count = (mMapper.lineCount() < 0) ? mTopBufferLines*3 : mMapper.lineCount();
     mMapper.setMappingSizes(count);
     ChangeKeeper x(mDocChanging);
@@ -119,17 +118,10 @@ void TextView::peekMoreLines()
 {
     TextMapper::ProgressAmount amount = mMapper.peekChunksForLineNrs(4);
     if (amount.part < amount.all) mPeekTimer.start(100);
-    // in 5% steps
-    int percentAmount = (amount.part * 20 / amount.all) * 5;
-    if (mTransferedAmount != percentAmount) {
-        emit loadAmount(percentAmount);
-        emit blockCountChanged(lineCount());
-    }
-    mTransferedAmount = percentAmount;
+    emit loadAmount(qreal(amount.part) / amount.all);
+    emit blockCountChanged(lineCount());
     if (mLineToFind >= 0) {
-        percentAmount = qMin(100, (amount.part * 20 / mLineToFind) * 5);
-        if (mTransferedLineAmount != percentAmount) emit findLineAmount(percentAmount);
-        mTransferedLineAmount = percentAmount;
+        emit findLineAmount(qreal(mMapper.knownLineNrs()) / mLineToFind);
     }
 }
 
@@ -226,6 +218,12 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
     case Qt::Key_PageDown:
         mMapper.moveVisibleTopLine(mVisibleLines-1);
         break;
+    case Qt::Key_Home:
+        mMapper.setVisibleTopLine(0.0);
+        break;
+    case Qt::Key_End:
+        mMapper.setVisibleTopLine(1.0);
+        break;
     default:
         event->ignore();
         break;
@@ -286,12 +284,15 @@ void TextView::topLineMoved()
 {
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
+        mEdit->protectWordUnderCursor(true);
         mEdit->setPlainText(mMapper.lines(0, 3*mTopBufferLines));
         updatePosAndAnchor();
         mEdit->blockSignals(true);
         mEdit->verticalScrollBar()->setValue(mMapper.visibleOffset());
         mEdit->blockSignals(false);
         updateVScrollZone();
+        mEdit->updateExtraSelections();
+        mEdit->protectWordUnderCursor(false);
     }
 }
 

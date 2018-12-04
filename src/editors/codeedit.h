@@ -130,6 +130,8 @@ public:
     void convertToLower();
     void convertToUpper();
     EditorType type() override;
+    QString wordUnderCursor() const;
+    virtual bool hasSelection() const;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -145,6 +147,12 @@ protected:
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
     void setAllowBlockEdit(bool allow);
+    virtual void recalcWordUnderCursor();
+    void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
+    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
+    virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
+    bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
+    void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -176,11 +184,6 @@ private:
 
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
-    void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
-    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
-    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
-    bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
-    void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit(bool adjustCursor = true);

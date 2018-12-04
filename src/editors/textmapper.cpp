@@ -728,8 +728,6 @@ int TextMapper::findChunk(int lineNr)
 
 void TextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode)
 {
-//    TRACE();
-//    DEB() << "SELECT - line: " << localLineNr << " char: " << charNr << "  mode: " << mode;
     int lineInChunk;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
     if (!chunk) {
@@ -737,9 +735,7 @@ void TextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMo
         mAnchor = CursorPosition();
         return;
     }
-//    QString text = line(localLineNr, &lineInChunk).left(charNr);
-//    int len = mCodec ? mCodec->fromUnicode(text).length() : text.length();
-    // requesting the line moves the chunk to the top, so we can use the last chunk here
+    // requesting the line moved the chunk to the top, so we can use the last chunk here
     mPosition.chunkNr = mChunks.last()->nr;
     mPosition.localLine = lineInChunk;
     mPosition.localLinePos = mChunks.last()->lineBytes.at(lineInChunk);
@@ -747,8 +743,6 @@ void TextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMo
     mPosition.absLinePos = mChunks.last()->start + mPosition.localLinePos;
     mPosition.charNr = charNr;
     if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
-//    DEB() << "   ---> pos: " << QPoint(mPosition.localLineNr, mPosition.charNr)
-//          << "  anc: " << QPoint(mAnchor.localLineNr, mAnchor.charNr);
 }
 
 void TextMapper::selectAll()

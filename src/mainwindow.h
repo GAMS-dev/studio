@@ -143,6 +143,7 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
+    void updateLoadAmount(qreal amount);
     void runGmsFile(ProjectFileNode *node);
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);

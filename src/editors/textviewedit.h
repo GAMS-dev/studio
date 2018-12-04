@@ -34,6 +34,8 @@ class TextViewEdit : public CodeEdit
 public:
     TextViewEdit(TextMapper &mapper, QWidget *parent = nullptr);
     bool showLineNr() const override { return false; }
+    void protectWordUnderCursor(bool protect);
+    bool hasSelection() const override;
 
 signals:
     void keyPressed(QKeyEvent *event);
@@ -46,6 +48,9 @@ public slots:
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+    void recalcWordUnderCursor() override;
+//    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections) override;
+
 //    QString lineNrText(int blockNr) override {
 //        double byteNr = mTopByte + document()->findBlockByNumber(blockNr-1).position();
 //        double percent = byteNr * 100 / mOversizeMapper.size;
@@ -61,6 +66,7 @@ private:
     qint64 mTopByte = 0;
     int mSubOffset = 0;
     int mDigits = 3;
+    bool mKeepWordUnderCursor = false;
 };
 
 

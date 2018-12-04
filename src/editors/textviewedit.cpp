@@ -32,6 +32,16 @@ TextViewEdit::TextViewEdit(TextMapper &mapper, QWidget *parent)
     setAllowBlockEdit(false);
 }
 
+void TextViewEdit::protectWordUnderCursor(bool protect)
+{
+    mKeepWordUnderCursor = protect;
+}
+
+bool TextViewEdit::hasSelection() const
+{
+    return mMapper.hasSelection();
+}
+
 void TextViewEdit::copySelection()
 {
     int selSize = mMapper.selectionSize();
@@ -65,10 +75,15 @@ void TextViewEdit::selectAllText()
 void TextViewEdit::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown
-            || event->key() == Qt::Key_Up || event->key() == Qt::Key_Down) {
+            || event->key() == Qt::Key_Up || event->key() == Qt::Key_Down
+            || event->key() == Qt::Key_Home || event->key() == Qt::Key_End ) {
         emit keyPressed(event);
         if (!event->isAccepted())
             CodeEdit::keyPressEvent(event);
+    } else if (event->key() == Qt::Key_A && event->modifiers().testFlag(Qt::ControlModifier)) {
+        selectAllText();
+    } else if (event->key() == Qt::Key_C && event->modifiers().testFlag(Qt::ControlModifier)) {
+        copySelection();
     } else {
         CodeEdit::keyPressEvent(event);
     }
@@ -106,6 +121,13 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
     }
     menu->exec(e->globalPos());
     delete menu;
+}
+
+void TextViewEdit::recalcWordUnderCursor()
+{
+    if (!mKeepWordUnderCursor) {
+        CodeEdit::recalcWordUnderCursor();
+    }
 }
 
 } // namespace studio

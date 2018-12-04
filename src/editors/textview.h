@@ -44,8 +44,8 @@ public:
 
 signals:
     void blockCountChanged(int newBlockCount);
-    void loadAmount(int percent);
-    void findLineAmount(int percent);
+    void loadAmount(qreal percent);
+    void findLineAmount(qreal percent);
 //    void cursorPositionChanged();
     void selectionChanged();
 
@@ -80,8 +80,6 @@ private:
     TextViewEdit *mEdit;
     QTimer mPeekTimer;
     QTextCodec *mCodec = nullptr;
-    int mTransferedAmount = 0;
-    int mTransferedLineAmount = 0;
     int mLineToFind = -1;
     int mTopBufferLines = 100;
     QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;

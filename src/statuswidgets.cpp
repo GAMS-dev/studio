@@ -4,6 +4,10 @@
 #include <QLabel>
 #include <QTextCodec>
 #include <logger.h>
+#include <QPainter>
+#include <QStyle>
+#include <QLayout>
+#include <QStyleOption>
 
 namespace gams {
 namespace studio {
@@ -14,6 +18,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mStatusBar->addPermanentWidget(mEditLines);
     mEditLines->setMinimumWidth(mEditLines->height()*2);
     mEditLines->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    mEditLines->setAutoFillBackground(true);
 
     mEditPosAnsSel = new QLabel(" 0 / 0 ");
     mStatusBar->addPermanentWidget(mEditPosAnsSel);
@@ -22,7 +27,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
 
     mEditMode = new QLabel("INS");
     mStatusBar->addPermanentWidget(mEditMode);
-    mEditMode->setMinimumWidth(mEditMode->height()*0.8);
+    mEditMode->setMinimumWidth(int(mEditMode->height()*0.8));
     mEditMode->setAlignment(Qt::AlignCenter);
 
     mEditEncode = new QLabel("");
@@ -31,6 +36,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
 
     mFileName = new QLabel("Filename");
     mStatusBar->addWidget(mFileName, 1);
+    mFileName->setAutoFillBackground(true);
 }
 
 void StatusWidgets::setFileName(const QString &fileName)
@@ -55,6 +61,24 @@ void StatusWidgets::setLineCount(int lines)
     } else {
         mEditLines->setText(QString("%1 lines ").arg(lines));
     }
+}
+
+void StatusWidgets::setLoadAmount(qreal amount)
+{
+    QLabel *la = mFileName;
+    QPalette pal = la->palette();
+    QPixmap pix(la->size());
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setBrush(QColor(100,150,200, 100));
+    p.setPen(Qt::NoPen);
+    int x = qRound(la->width() * qBound(0.0 ,amount, 1.0));
+    if (amount < 1.0)
+        p.drawRect(QRect(0, 0, x, la->height()));
+//    p.drawRect(QRect(x, 0, la->width()-x, la->height()));
+    pal.setBrush(QPalette::Background, QBrush(pix));
+    la->setPalette(pal);
+    la->repaint();
 }
 
 void StatusWidgets::setEditMode(EditMode mode)
@@ -82,6 +106,27 @@ void StatusWidgets::setPosAndAnchor(QPoint pos, QPoint anchor)
     }
     mEditPosAnsSel->setText(posText);
 }
+
+//void AmountLabel::paintEvent(QPaintEvent *event)
+//{
+//    QLabel::paintEvent(event);
+//    QStyleOption opt;
+//    opt.initFrom(this);
+//    QBrush
+//    opt.
+
+//    QStyle *style = QWidget::style();
+//    QPainter painter(this);
+//    drawFrame(&painter);
+//    QRect cr = contentsRect();
+//    cr.adjust(margin(), margin(), -margin(), -margin());
+//    int align = QStyle::visualAlignment(layoutDirection(), alignment());
+//    QRectF lr = d->layoutRect().toAlignedRect();
+//}
+
+
+
+
 
 } // namespace Studio
 } // namespace gams
