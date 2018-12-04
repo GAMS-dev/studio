@@ -41,7 +41,7 @@ class ReferenceViewer : public QWidget
     Q_OBJECT
 
 public:
-    explicit ReferenceViewer(QString referenceFile, QWidget *parent = nullptr);
+    explicit ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent = nullptr);
     ~ReferenceViewer();
 
 signals:
@@ -50,14 +50,16 @@ signals:
 public slots:
     // TODO: on_referenceFileChagned to be removed when
     //       a ReferenceViewer does not create own Reference Object
-    void on_referenceFileChanged();
+    void on_referenceFileChanged(QTextCodec* codec);
     void updateView(bool status);
 
 private:
     Ui::ReferenceViewer *ui;
 
+    QTextCodec *mCodec;
+
     Reference* mReference;
-    QTabWidget* mTabWidget;
+    QTabWidget* mTabWidget;    
 };
 
 } // namespace reference

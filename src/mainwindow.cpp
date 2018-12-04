@@ -970,9 +970,12 @@ void MainWindow::activeTabChanged(int index)
             ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
             if (fc) {
                 mRecent.editFileId = fc->file()->id();
+                ui->menuconvert_to->setEnabled(false);
                 mStatusWidgets->setFileName(fc->location());
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
+                node->file()->reload();
+                updateMenuToCodec(node->file()->codecMib());
             }
         }
     } else {
