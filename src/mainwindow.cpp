@@ -615,6 +615,7 @@ void MainWindow::updateEditorPos()
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         pos = tv->position();
         anchor = tv->anchor();
+//        if (pos == anchor)
     }
     mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
@@ -631,12 +632,10 @@ void MainWindow::updateEditorMode()
 
 void MainWindow::updateEditorBlockCount()
 {
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor());
-    if (edit) mStatusWidgets->setLineCount(edit->blockCount());
-    else {
-        TextView *tv = ViewHelper::toTextView(mRecent.editor());
-        if (tv) mStatusWidgets->setLineCount(tv->lineCount());
-    }
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor()))
+        mStatusWidgets->setLineCount(edit->blockCount());
+    else if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
+        mStatusWidgets->setLineCount(tv->lineCount());
 }
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
@@ -2637,7 +2636,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     }
     if (tv) {
 //        MainWindow::disconnect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-//        MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
     }
     window->searchDialog()->setActiveEditWidget(nullptr);
@@ -2652,7 +2651,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     }
     if (tv) {
 //        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-//        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
 
         // TODO(JM) used for updateExtraSelections (can we pass the internal CodeEdit?)

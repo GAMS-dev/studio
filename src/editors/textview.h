@@ -46,6 +46,8 @@ signals:
     void blockCountChanged(int newBlockCount);
     void loadAmount(int percent);
     void findLineAmount(int percent);
+//    void cursorPositionChanged();
+    void selectionChanged();
 
 private slots:
     void editScrollChanged();
@@ -53,7 +55,7 @@ private slots:
     void outerScrollAction(int action);
     void adjustOuterScrollAction();
     void editKeyPressEvent(QKeyEvent *event);
-    void selectionChanged();
+    void handleSelectionChange();
     void updatePosAndAnchor();
 
 protected:

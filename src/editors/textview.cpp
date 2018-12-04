@@ -49,7 +49,7 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
     connect(mEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextView::editScrollChanged);
-    connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::selectionChanged);
+    connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     mPeekTimer.setSingleShot(true);
     connect(&mPeekTimer, &QTimer::timeout, this, &TextView::peekMoreLines);
@@ -121,7 +121,10 @@ void TextView::peekMoreLines()
     if (amount.part < amount.all) mPeekTimer.start(100);
     // in 5% steps
     int percentAmount = (amount.part * 20 / amount.all) * 5;
-    if (mTransferedAmount != percentAmount) emit loadAmount(percentAmount);
+    if (mTransferedAmount != percentAmount) {
+        emit loadAmount(percentAmount);
+        emit blockCountChanged(lineCount());
+    }
     mTransferedAmount = percentAmount;
     if (mLineToFind >= 0) {
         percentAmount = qMin(100, (amount.part * 20 / mLineToFind) * 5);
@@ -230,7 +233,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
     topLineMoved();
 }
 
-void TextView::selectionChanged()
+void TextView::handleSelectionChange()
 {
     if (mDocChanging) return;
     QTextCursor cur = mEdit->textCursor();
@@ -244,6 +247,7 @@ void TextView::selectionChanged()
     } else {
         mMapper.setPosRelative(cur.blockNumber(), cur.positionInBlock());
     }
+    emit selectionChanged();
 }
 
 void TextView::init()
