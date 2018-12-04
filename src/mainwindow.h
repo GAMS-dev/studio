@@ -117,9 +117,9 @@ public:
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
     void showResults(SearchResultList &results);
-    void closeResults();
+    void closeResultsPage();
     RecentData *recent();
-    void openModelFromLib(QString glbFile, LibraryItem *model);
+    void openModelFromLib(const QString &glbFile, LibraryItem *model);
     bool readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
 //    void delayedFileRestoration();
@@ -137,7 +137,7 @@ public:
 
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
-    void receiveAction(QString action);
+    void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
@@ -311,7 +311,6 @@ private:
     HelpWidget *mHelpWidget = nullptr;
 #endif
     OptionWidget *mGamsOptionWidget = nullptr;
-    ResultsView *mResultsView = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
 

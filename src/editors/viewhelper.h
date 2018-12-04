@@ -71,7 +71,7 @@ public:
         EditorType t = editorType(w);
         if (t == EditorType::lxiLst)
             return toLxiViewer(w)->codeEdit();
-        return (t == EditorType::source) ? static_cast<CodeEdit*>(w) : nullptr;
+        return (t == EditorType::source || t == EditorType::txt) ? static_cast<CodeEdit*>(w) : nullptr;
     }
     inline static ProcessLogEdit* toLogEdit(QWidget* w) {
         return (editorType(w) == EditorType::log) ? static_cast<ProcessLogEdit*>(w) : nullptr;

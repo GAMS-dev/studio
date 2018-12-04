@@ -153,6 +153,7 @@ protected:
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
+    QTimer &wordDelayTimer() { return mWordDelay; }
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -197,6 +198,7 @@ private:
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
+    bool allowClosing(int chIndex);
 
 protected:
     class BlockEdit
@@ -261,6 +263,8 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
+    const QString mOpening = "([{'\"";
+    const QString mClosing = ")]}'\"";
     bool mAllowBlockEdit = true;
 };
 

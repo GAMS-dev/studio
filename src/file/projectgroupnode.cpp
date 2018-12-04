@@ -31,6 +31,8 @@
 #include "syntax.h"
 #include "option/option.h"
 #include "locators/sysloglocator.h"
+#include "locators/settingslocator.h"
+#include "studiosettings.h"
 #include <QFileInfo>
 #include <QDir>
 
@@ -426,12 +428,14 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
 
 void ProjectRunGroupNode::jumpToFirstError(bool focus)
 {
-    if (!mLogNode) return;
-    QList<TextMark*> marks = textMarkRepo()->marks(mLogNode->file()->id(), -1, id(), TextMark::error, 1);
+    if (!runnableGms()) return;
+    QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
     if (textMark) {
-        textMark->jumpToMark(focus);
-        textMark->jumpToRefMark(focus);
+        if (SettingsLocator::settings()->openLst())
+            textMark->jumpToRefMark(focus);
+        else
+            textMark->jumpToMark(focus);
     }
 }
 
@@ -458,8 +462,13 @@ bool ProjectRunGroupNode::hasSpecialFile(const FileKind &kind) const
 
 void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
-    for (QString loc : mSpecialFiles.values())
-        findOrCreateFileNode(loc);
+    FileMeta* runNode = runnableGms();
+    for (QString loc : mSpecialFiles.values()) {
+        ProjectFileNode* node = findOrCreateFileNode(loc);
+        node->file()->setKind(mSpecialFiles.key(loc));
+        if (runNode)
+            node->file()->setCodec(runNode->codec());
+    }
 }
 
 void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &path)

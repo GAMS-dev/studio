@@ -68,6 +68,11 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, item.colNr());
 }
 
+SearchResultList* ResultsView::resultList()
+{
+    return &mResultList;
+}
+
 }
 }
 

@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QVector>
 #include <QItemSelection>
+#include <QTextCodec>
 
 #include "gdxcc.h"
 #include "common.h"
@@ -47,11 +48,11 @@ class GdxViewer : public QWidget
     Q_OBJECT
 
 public:
-    GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent = nullptr);
+    GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent = nullptr);
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
-    bool reload();
+    bool reload(QTextCodec* codec);
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
@@ -82,6 +83,8 @@ private:
     QMutex* mGdxMutex = nullptr;
 
     QVector<GdxSymbolView*> mSymbolViews;
+
+    QTextCodec *mCodec;
 };
 
 } // namespace gdxviewer

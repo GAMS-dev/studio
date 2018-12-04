@@ -23,6 +23,10 @@
         </array>
         <key>CFBundleExecutable</key>
         <string>studio</string>
+        <key>CFBundleName</key>
+        <string>Studio</string>
+        <key>CFBundleDisplayName</key>
+        <string>Studio</string>
         <key>CFBundleGetInfoString</key>
         <string>Created by GAMS</string>
         <key>CFBundleIconFile</key>

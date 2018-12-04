@@ -20,7 +20,9 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += testcommonpaths
-SUBDIRS += testoversizemapper
-SUBDIRS += testservicelocators
-SUBDIRS += testtextmapper
+SUBDIRS += testcommonpaths \
+           testeditors \
+           testservicelocators \
+           testoversizemapper \
+           testservicelocators \
+           testtextmapper

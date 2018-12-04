@@ -25,6 +25,7 @@
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
+#include "editorhelper.h"
 #include "locators/searchlocator.h"
 #include "locators/settingslocator.h"
 
@@ -32,49 +33,6 @@ namespace gams {
 namespace studio {
 
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
-
-inline int charCategory(const QChar &ch)
-{
-    if (ch.isSpace()) return 0;
-    if (ch.isLetterOrNumber() || ch=='.' || ch==',') return 1;
-    if (ch.isPunct()) return 2;
-    return 3;
-}
-
-inline void nextCharClass(int offset,int &size, const QString &text)
-{
-    bool hadSpace = false;
-    if (size+offset < text.length()) {
-        int startCat = charCategory(text.at(size+offset));
-        while (++size+offset < text.length()) {
-            int cat = charCategory(text.at(size+offset));
-            if (startCat == 0 || cat == 0) hadSpace = true;
-            if (startCat == 0) startCat = cat;
-            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) return;
-        }
-    } else {
-        ++size;
-    }
-}
-
-inline void prevCharClass(int offset, int &size, const QString &text)
-{
-    bool hadSpace = false;
-    if (size+offset > 0) {
-        --size;
-        int startCat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
-        if (size+offset == 0) return;
-        while (--size+offset > 0) {
-            int cat = (size+offset < text.length()) ? charCategory(text.at(size+offset)) : 0;
-            if (startCat == 0 || cat == 0) hadSpace = true;
-            if (startCat == 0) startCat = cat;
-            if (startCat > 0 && cat > 0 && (startCat != cat || hadSpace)) {
-                ++size;
-                return;
-            }
-        }
-    }
-}
 
 CodeEdit::CodeEdit(QWidget *parent)
     : AbstractEdit(parent)
@@ -117,10 +75,11 @@ int CodeEdit::lineNumberAreaWidth()
 
     int space = 0;
 
-    if(showLineNr())
+    if (showLineNr())
         space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
-    space += markCount() ? iconSize() : 0;
+    if (marks() && marks()->hasVisibleMarks())
+        space += iconSize();
 
     return space;
 }
@@ -367,7 +326,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
             QTextCursor cur = textCursor();
             int p = cur.positionInBlock();
-            nextCharClass(0, p, cur.block().text());
+            EditorHelper::nextWord(0, p, cur.block().text());
             if (p >= cur.block().length()) {
                 QTextBlock block = cur.block().next();
                 if (block.isValid()) cur.setPosition(block.position(), mm);
@@ -386,7 +345,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
                 QTextBlock block = cur.block().previous();
                 if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
             } else {
-                prevCharClass(0, p, cur.block().text());
+                EditorHelper::prevWord(0, p, cur.block().text());
                 cur.setPosition(cur.block().position() + p, mm);
             }
             setTextCursor(cur);
@@ -438,12 +397,11 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         QSet<int> moveKeys;
         moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                  << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
+        // deactivate when manual cursor movement was detected
         if (moveKeys.contains(e->key())) mSmartType = false;
 
-        QString opening = "([{'\"";
-        QString closing = ")]}'\"";
-        int index = opening.indexOf(e->text());
-        int indexClosing = closing.indexOf(e->text());
+        int index = mOpening.indexOf(e->text());
+        int indexClosing = mClosing.indexOf(e->text());
 
         // exclude modifier combinations
         if (e->text().isEmpty()) {
@@ -451,31 +409,30 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             indexClosing = -1;
         }
 
-        // surround text with characters
+        // surround selected text with characters
         if ((index != -1) && (textCursor().hasSelection())) {
             QTextCursor tc(textCursor());
             QString selection(tc.selectedText());
-            selection = opening.at(index) + selection + closing.at(index);
+            selection = mOpening.at(index) + selection + mClosing.at(index);
             tc.insertText(selection);
             setTextCursor(tc);
             return;
 
-            // jump over closing character thats already in place
-        } else if (indexClosing != -1 &&
-                   closing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
+        // jump only(!) over closing character thats already in place
+        } else if (mSmartType && indexClosing != -1 &&
+                   mClosing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
             QTextCursor tc = textCursor();
             tc.movePosition(QTextCursor::NextCharacter);
             setTextCursor(tc);
-            mSmartType = false; // we're done
             e->accept();
             return;
 
-            // insert closing characters
-        } else if (index != -1) {
+        // insert closing characters
+        } else if (index != -1 && allowClosing(index)) {
             mSmartType = true;
             QTextCursor tc = textCursor();
             tc.insertText(e->text());
-            tc.insertText(closing.at(index));
+            tc.insertText(mClosing.at(index));
             tc.movePosition(QTextCursor::PreviousCharacter);
             setTextCursor(tc);
             e->accept();
@@ -483,22 +440,45 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
 
         if (mSmartType && e->key() == Qt::Key_Backspace) {
-            int pos = textCursor().position();
 
-            QChar a = document()->characterAt(pos-1);
-            QChar b = document()->characterAt(pos);
+            QChar a = document()->characterAt(textCursor().position()-1);
+            QChar b = document()->characterAt(textCursor().position());
 
-            if (opening.indexOf(a) != -1 && (opening.indexOf(a) ==  closing.indexOf(b))) {
+            // ( is opening char )       && (char before and after cursor are identical)
+            if (mOpening.indexOf(a) != -1 && (mOpening.indexOf(a) ==  mClosing.indexOf(b))) {
                 textCursor().deleteChar();
                 textCursor().deletePreviousChar();
                 e->accept();
-                mSmartType = false;
+
+                // check cursor surrounding characters again
+                a = document()->characterAt(textCursor().position()-1);
+                b = document()->characterAt(textCursor().position());
+
+                // keep smarttype on conditionally; e.g. for ((|)); qt creator does this, too
+                mSmartType = (mOpening.indexOf(a) == mClosing.indexOf(b));
                 return;
             }
         }
     }
 
     AbstractEdit::keyPressEvent(e);
+}
+
+bool CodeEdit::allowClosing(int chIndex)
+{
+    QString allowingChars(",;){}] ");
+    bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1;
+    bool nextLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
+
+    // insert closing if next char permits or is end of line
+    bool allowAutoClose =  nextAllows || nextLinebreak;
+
+    // if char before and after the cursor are a matching pair: allow
+    QChar prior = document()->characterAt(textCursor().position() - 1);
+    bool matchingPairExisting = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
+
+    // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
+    return allowAutoClose && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
@@ -508,7 +488,7 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
         e->accept();
         return;
     }
-        AbstractEdit::keyReleaseEvent(e);
+    AbstractEdit::keyReleaseEvent(e);
 }
 
 void CodeEdit::adjustIndent(QTextCursor cursor)
@@ -567,10 +547,11 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
 
 void CodeEdit::mousePressEvent(QMouseEvent* e)
 {
+    mSmartType = false; // exit on mouse navigation
     setContextMenuPolicy(Qt::DefaultContextMenu);
     if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
         setContextMenuPolicy(Qt::PreventContextMenu);
-    if ((e->modifiers() & Qt::AltModifier) && mAllowBlockEdit) {
+    if (e->modifiers() & Qt::AltModifier && mAllowBlockEdit) {
         QTextCursor cursor = cursorForPosition(e->pos());
         QTextCursor anchor = textCursor();
         anchor.setPosition(anchor.anchor());
@@ -1205,18 +1186,20 @@ void CodeEdit::updateExtraSelections()
         regexp.setPattern("\\b" + regexp.pattern() + "\\b");           // only match whole selection
 
         QRegularExpressionMatch match = regexp.match(selectedText);
+        bool skipWordTimer = (sender() == &mParenthesesDelay
+                              || sender() == this->verticalScrollBar()
+                              || sender() == nullptr);
 
         //   (  not caused by parenthiesis matching                               )
-        if (((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay)
-              // ( depending on settings: no selection necessary OR has selection )
-              && (mSettings->wordUnderCursor() || hasSelection())
-              // (      wait for timer            OR            user scrolled             )
-              && ((sender() == &mParenthesesDelay || sender() == this->verticalScrollBar())
-              //  OR (     always select          )
-                  || mSettings->wordUnderCursor())))
-                // AND deactivate when navigation search results
-                && match.captured(0).isEmpty())
+        if ( ( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay)
+               // ( depending on settings: no selection necessary OR has selection )
+               && (mSettings->wordUnderCursor() || hasSelection())
+               // (  depending on settings: no selection necessary skip word-timer )
+               && (mSettings->wordUnderCursor() || skipWordTimer))
+             // AND deactivate when navigation search results
+             && match.captured(0).isEmpty()) {
             extraSelCurrentWord(selections);
+        }
     }
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
@@ -1380,9 +1363,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 
-            if (markCount() && marks().contains(blockNumber)) {
+            if (marks()->hasVisibleMarks() && marks()->contains(blockNumber)) {
                 int iTop = (2+top+bottom-iconSize())/2;
-                painter.drawPixmap(1, iTop, marks().value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
+                painter.drawPixmap(1, iTop, marks()->value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 
@@ -1502,10 +1485,10 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Right) {
-            nextCharClass(mColumn, mSize, block.text());
+            EditorHelper::nextWord(mColumn, mSize, block.text());
         } else if (e->key() == Qt::Key_Right) mSize++;
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            prevCharClass(mColumn, mSize, block.text());
+            EditorHelper::prevWord(mColumn, mSize, block.text());
         } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)

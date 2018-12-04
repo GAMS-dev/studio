@@ -147,6 +147,8 @@ void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 
 void FileMetaRepo::unwatch(const QString &filePath)
 {
+    if (filePath.isEmpty()) return;
+
     mWatcher.removePath(filePath);
     mMissList.removeAll(filePath);
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
@@ -177,7 +179,7 @@ void FileMetaRepo::setDebugMode(bool debug)
     for (int key: edits.keys()) {
         FileMeta* fm = fileMeta(FileId(key));
         QString nam = (fm ? fm->name() : "???");
-        DEB() << key << ": " << edits.value(key)->markCount() << "    " << nam;
+//        DEB() << key << ": " << edits.value(key)->size() << "    " << nam;
     }
 
 }

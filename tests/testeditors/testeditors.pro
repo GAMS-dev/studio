@@ -25,9 +25,9 @@ include(../tests.pri)
 INCLUDEPATH += $$SRCPATH
 
 HEADERS += \
-    testsysloglocator.h
+    testcodeedit.h \
+    $$SRCPATH\editors\editorhelper.h
 
 SOURCES += \
-    testsysloglocator.cpp \
-    $$SRCPATH/locators/sysloglocator.cpp \
-    $$SRCPATH/locators/defaultsystemlogger.cpp
+    testcodeedit.cpp \
+    $$SRCPATH\editors\editorhelper.cpp

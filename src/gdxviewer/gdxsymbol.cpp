@@ -286,7 +286,6 @@ void GdxSymbol::calcDefaultColumns()
         else if (mType == GMS_DT_EQU)
             defVal = gmsDefRecEqu[mSubType][valColIdx];
         for(int i=0; i<mRecordCount; i++) {
-            // TODO(AF) fix uninizalized defVal
             if(defVal != mValues[i*GMS_VAL_MAX + valColIdx]) {
                 mDefaultColumn[valColIdx] = false;
                 break;
@@ -330,9 +329,9 @@ void GdxSymbol::loadMetaData()
     char symName[GMS_UEL_IDENT_SIZE];
     char explText[GMS_SSSIZE];
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
-    mName = symName;
+    mName = mGdxSymbolTable->codec()->toUnicode(symName);
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
-    mExplText = explText;
+    mExplText =  mGdxSymbolTable->codec()->toUnicode(explText);
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
@@ -349,7 +348,7 @@ void GdxSymbol::loadDomains()
         GDXSTRINDEXPTRS_INIT(domXXX,domX);
         gdxSymbolGetDomainX(mGdx, mNr, domX);
         for(int i=0; i<mDim; i++)
-            mDomains.append(domX[i]);
+            mDomains.append(mGdxSymbolTable->codec()->toUnicode(domX[i]));
     }
 }
 

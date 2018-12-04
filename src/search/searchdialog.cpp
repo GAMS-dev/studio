@@ -62,8 +62,10 @@ void SearchDialog::on_btn_Replace_clicked()
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
-    if (edit->textCursor().hasSelection())
+    if (edit->textCursor().hasSelection()) {
         edit->textCursor().insertText(replaceTerm);
+        invalidateCache();
+    }
 
     findNext(SearchDialog::Forward);
 }
@@ -203,8 +205,9 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, Searc
 {
     QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
+    QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
     do {
-        item = fm->document()->find(searchRegex, lastItem);
+        item = fm->document()->find(searchRegex, lastItem, flags);
         if (item != lastItem) lastItem = item;
         else break;
 
@@ -221,6 +224,8 @@ void SearchDialog::simpleReplaceAll()
     if (!edit || edit->isReadOnly()) return;
 
     QString searchTerm = ui->combo_search->currentText();
+    if (searchTerm.isEmpty()) return;
+
     QRegularExpression searchRegex = createRegex();
     QString replaceTerm = ui->txt_replace->text();
 
@@ -228,8 +233,10 @@ void SearchDialog::simpleReplaceAll()
     QTextCursor item;
     QTextCursor lastItem;
 
+    QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
+
     do {
-        item = edit->document()->find(searchRegex, lastItem);
+        item = edit->document()->find(searchRegex, lastItem, flags);
         lastItem = item;
 
         if (!item.isNull())
@@ -258,22 +265,26 @@ void SearchDialog::simpleReplaceAll()
             tc.insertText(replaceTerm);
         }
         edit->textCursor().endEditBlock();
+        invalidateCache();
     }
+}
+
+void SearchDialog::updateSearchResults()
+{
+    setSearchStatus(SearchStatus::Searching);
+    QApplication::sendPostedEvents();
+    mCachedResults.clear();
+    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
+    mCachedResults.setSearchTerm(createRegex().pattern());
+    mCachedResults.useRegex(regex());
+    mHasChanged = false;
 }
 
 void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    if (mHasChanged) {
-        setSearchStatus(SearchStatus::Searching);
-        QApplication::sendPostedEvents();
-        mCachedResults.clear();
-        mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
-        mCachedResults.setSearchTerm(createRegex().pattern());
-        mCachedResults.useRegex(regex());
-        mHasChanged = false;
-    }
+    if (mHasChanged) updateSearchResults();
 
     selectNextMatch(direction);
 }
@@ -301,8 +312,8 @@ void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int cha
 {
     //TODO: make smarter
     Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
-    invalidateCache();
     searchParameterChanged();
+    clearResults();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -374,7 +385,7 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
     searchParameterChanged();
 }
 
-void SearchDialog::selectNextMatch(SearchDirection direction)
+void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 {
     QTextCursor matchSelection;
     QRegularExpression searchRegex = createRegex();
@@ -383,8 +394,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     if (!fc) return;
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    QFlags<QTextDocument::FindFlag> flags;
-    flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
+    QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
     matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
     if (mCachedResults.size() > 0) { // has any matches at all
@@ -395,7 +405,10 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
             if (direction == SearchDirection::Backward)
                 tc.movePosition(QTextCursor::End); // move to bottom
             edit->setTextCursor(tc);
-            selectNextMatch(direction);
+
+            // try once more to start over
+            if (!second) selectNextMatch(direction, true);
+            else setSearchStatus(SearchStatus::NoResults);
 
         } else { // found next match
             edit->jumpTo(matchSelection);
@@ -424,8 +437,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    mHasChanged = true;
-    setSearchStatus(SearchStatus::Clear);
     searchParameterChanged();
 }
 
@@ -442,7 +453,8 @@ void SearchDialog::on_cb_caseSens_stateChanged(int)
 void SearchDialog::updateReplaceActionAvailability()
 {
     AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    bool isSourceCode = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source;
+    bool isSourceCode = (ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
+                         || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt);
 
     bool activateSearch = isSourceCode || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst;
     bool activateReplace = (isSourceCode && !edit->isReadOnly());
@@ -473,7 +485,7 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
 
     clearResults();
-    mMain->closeResults();
+    mMain->closeResultsPage();
 }
 
 void SearchDialog::clearResults()
@@ -483,6 +495,8 @@ void SearchDialog::clearResults()
     setSearchStatus(SearchStatus::Clear);
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+    if (!edit) return;
+
     QTextCursor tc = edit->textCursor();
     tc.clearSelection();
     edit->setTextCursor(tc);
@@ -544,7 +558,7 @@ void SearchDialog::autofillSearchField()
         ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
         ui->combo_search->setCurrentIndex(0);
     } else {
-        ui->combo_search->setEditText("");
+        ui->combo_search->setEditText(ui->combo_search->itemText(0));
         mFirstReturn = false;
     }
 
@@ -612,7 +626,7 @@ void SearchDialog::setSelectedScope(int index)
     ui->combo_scope->setCurrentIndex(index);
 }
 
-SearchResultList* SearchDialog::getCachedResults()
+SearchResultList* SearchDialog::cachedResults()
 {
     return &mCachedResults;
 }
@@ -622,6 +636,25 @@ void SearchDialog::setActiveEditWidget(AbstractEdit *edit)
     mActiveEdit = edit;
 }
 
+ResultsView* SearchDialog::resultsView() const
+{
+    return mResultsView;
+}
+
+void SearchDialog::setResultsView(ResultsView* resultsView)
+{
+    delete mResultsView;
+    mResultsView = resultsView;
+}
+
+QFlags<QTextDocument::FindFlag> SearchDialog::setFlags(SearchDirection direction)
+{
+    QFlags<QTextDocument::FindFlag> flags;
+    flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
+    flags.setFlag(QTextDocument::FindCaseSensitively, caseSens());
+
+    return flags;
+}
 
 }
 }

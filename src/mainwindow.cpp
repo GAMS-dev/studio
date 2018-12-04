@@ -78,7 +78,6 @@ MainWindow::MainWindow(QWidget *parent)
     mFileTimer.setInterval(100);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mTimerID = startTimer(60000);
-    DEB() << "1 open tabs: " << ui->mainTab->count();
 
     setAcceptDrops(true);
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
@@ -241,8 +240,7 @@ bool MainWindow::event(QEvent *event)
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
 {
-    TRACE();
-    mProjectRepo.findOrCreateFileNode(filepath, group);
+    openFileNode(mProjectRepo.findOrCreateFileNode(filepath, group), true);
 }
 
 void MainWindow::sendSourcePath(QString &source)
@@ -381,7 +379,7 @@ QList<AbstractEdit*> MainWindow::openLogs()
     return resList;
 }
 
-void MainWindow::receiveAction(QString action)
+void MainWindow::receiveAction(const QString &action)
 {
     if (action == "createNewFile")
         on_actionNew_triggered();
@@ -389,7 +387,7 @@ void MainWindow::receiveAction(QString action)
         on_actionGAMS_Library_triggered();
 }
 
-void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
+void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
 {
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
@@ -399,7 +397,36 @@ void MainWindow::openModelFromLib(QString glbFile, LibraryItem* model)
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
 {
-    mFileMetaRepo.unwatch(mSettings->defaultWorkspace()+"/"+inputFile);
+    QString gmsFilePath = mSettings->defaultWorkspace() + "/" + inputFile;
+    QFile gmsFile(gmsFilePath);
+
+    mFileMetaRepo.unwatch(gmsFilePath);
+    if (gmsFile.exists()) {
+        FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(gmsFilePath);
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File already existing");
+
+        msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
+        msgBox.setInformativeText("What do you want to do with the existing file?");
+        msgBox.setStandardButtons(QMessageBox::Abort);
+        msgBox.addButton("Open", QMessageBox::ActionRole);
+        msgBox.addButton("Replace", QMessageBox::ActionRole);
+        int answer = msgBox.exec();
+
+        switch(answer) {
+        case 0: // open
+            openFileNode(addNode("", gmsFilePath));
+            return;
+        case 1: // replace
+            fm->renameToBackup();
+            // and continue;
+            break;
+        case QMessageBox::Abort:
+            return;
+        }
+    }
+
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GAMSLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
@@ -522,7 +549,9 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
         nodes << mProjectRepo.node(id);
     }
-    mProjectContextMenu.setNodes(mProjectRepo.node(index), nodes);
+    if (nodes.empty()) return;
+
+    mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 }
@@ -640,7 +669,6 @@ void MainWindow::updateEditorBlockCount()
 
 void MainWindow::updateLoadAmount(qreal amount)
 {
-    DEB() << "amount: " << amount;
     mStatusWidgets->setLoadAmount(amount);
 }
 
@@ -709,10 +737,6 @@ void MainWindow::on_actionNew_triggered()
             }
         }
     }
-
-
-
-
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -771,21 +795,19 @@ void MainWindow::on_actionSave_As_triggered()
         filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath, filters.join(";;"), selFilter
                                                 , QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
-        QFileInfo fiNew(filePath);
-        if(!fileMeta->suffix().contains(fiNew.suffix(), Qt::CaseInsensitive)) {
-            filePath = filePath + "." + fileMeta->suffix().first();
-        }
 
-        // perform copy when file is either a gdx file or a ref file
+        // perform file copy when file is either a gdx file or a ref file
         bool exists = QFile::exists(filePath);
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
             choice = 1;
             if (exists) {
                 choice = QMessageBox::question(this, "File exists", filePath+" already exists."
                                                , "Select other", "Overwrite", "Abort", 0, 2);
-                if (choice == 1) QFile::remove(filePath);
+                if (choice == 1 && fileMeta->location() != filePath)
+                    QFile::remove(filePath);
             }
-            if (choice == 1) QFile::copy(fileMeta->location(), filePath);
+            if (choice == 1)
+                QFile::copy(fileMeta->location(), filePath);
         } else {
             FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
             choice = (destFM && destFM->isModified()) ? -1 : exists ? 0 : 1;
@@ -799,14 +821,18 @@ void MainWindow::on_actionSave_As_triggered()
 
             if (choice == 1) {
                 mProjectRepo.saveNodeAs(node, filePath);
-                fileMeta = node->file();
-                openFileNode(node, true);
                 ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
                 mStatusWidgets->setFileName(filePath);
+
                 mSettings->saveSettings(this);
             }
         }
-        if (choice == 1) mRecent.path = QFileInfo(filePath).path();
+        if (choice == 1) {
+            mRecent.path = QFileInfo(filePath).path();
+            ProjectFileNode* newNode =
+                    mProjectRepo.findOrCreateFileNode(filePath, node->assignedRunGroup());
+            openFileNode(newNode, true);
+        }
     }
 }
 
@@ -860,7 +886,6 @@ void MainWindow::codecReload(QAction *action)
     if (!focusWidget()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (fm && fm->kind() == FileKind::Log) return;
-
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fm->isModified()) {
@@ -876,6 +901,7 @@ void MainWindow::codecReload(QAction *action)
         }
         if (reload) {
             fm->load(action->data().toInt());
+
             updateMenuToCodec(action->data().toInt());
             mStatusWidgets->setEncoding(fm->codecMib());
         }
@@ -917,7 +943,6 @@ void MainWindow::activeTabChanged(int index)
     ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
     mRecent.setEditor(nullptr, this);
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget);
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
 
     loadCommandLineOptions(oldTab, mProjectRepo.findFileNode(editWidget));
@@ -930,23 +955,21 @@ void MainWindow::activeTabChanged(int index)
         mRecent.setEditor(editWidget, this);
         mRecent.group = mProjectRepo.asGroup(ViewHelper::groupId(editWidget));
 
-        if (edit) {
-            if (!edit->isReadOnly()) {
-                ui->menuEncoding->setEnabled(true);
-            }
-            updateMenuToCodec(node->file()->codecMib());
+        if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
             mStatusWidgets->setLineCount(edit->blockCount());
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
+            ui->menuconvert_to->setEnabled(node && !edit->isReadOnly());
         } else if (TextView* tv = ViewHelper::toTextView(editWidget)) {
             ui->menuEncoding->setEnabled(true);
-            updateMenuToCodec(node->file()->codecMib());
+            ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(tv->lineCount());
         } else if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(editWidget)) {
-            ui->menuEncoding->setEnabled(false);
+            ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
-            gdxViewer->reload();
+            node->file()->reload();
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
+            ui->menuconvert_to->setEnabled(false);
             ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
             if (fc) {
                 mRecent.editFileId = fc->file()->id();
@@ -955,6 +978,7 @@ void MainWindow::activeTabChanged(int index)
                 mStatusWidgets->setLineCount(-1);
             }
         }
+        updateMenuToCodec(node->file()->codecMib());
     } else {
         ui->menuEncoding->setEnabled(false);
         mStatusWidgets->setFileName("");
@@ -1055,12 +1079,14 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return 0;
     if (file->exists(true)) return 0;
+    mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
             ProjectGroupNode *group = node->parentNode();
             mProjectRepo.closeNode(node);
-            mProjectRepo.purgeGroup(group);
+            if (group->childCount() == 0)
+                closeGroup(group);
         }
         history()->lastOpenedFiles.removeAll(file->location());
         mWp->historyChanged(history());
@@ -1125,7 +1151,8 @@ void MainWindow::processFileEvents()
         FileEventData fileEvent = mFileEvents.takeFirst();
         FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.fileId);
         int remainKind = 0;
-        if (!fm) continue;
+        if (!fm || fm->kind() == FileKind::Log)
+            continue;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
             remainKind = fileChangedExtern(fm->id(), false);
@@ -1209,7 +1236,6 @@ void MainWindow::postGamsRun(NodeId origin)
 
 void MainWindow::postGamsLibRun()
 {
-    // TODO(AF) Are there models without a GMS file? How to handle them?"
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
@@ -1218,7 +1244,7 @@ void MainWindow::postGamsLibRun()
         if (node->file()->kind() != FileKind::Log)
             node->file()->load(node->file()->codecMib());
     }
-    openFileNode(node); // this
+    openFileNode(node);
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -1458,38 +1484,8 @@ void MainWindow::on_actionGAMS_Library_triggered()
     {
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
-        QFileInfo fileInfo(item->files().first());
-        QString gmsFileName = fileInfo.completeBaseName() + ".gms";
-        QString gmsFilePath = mSettings->defaultWorkspace() + "/" + gmsFileName;
-        QFile gmsFile(gmsFilePath);
 
-        if (gmsFile.exists()) {
-            FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(gmsFilePath);
-
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("File already existing");
-
-            msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
-            msgBox.setInformativeText("What do you want to do with the existing file?");
-            msgBox.setStandardButtons(QMessageBox::Abort);
-            msgBox.addButton("Open", QMessageBox::ActionRole);
-            msgBox.addButton("Replace", QMessageBox::ActionRole);
-            int answer = msgBox.exec();
-
-            switch(answer) {
-            case 0: // open
-                openFileNode(addNode("", gmsFilePath));
-                break;
-            case 1: // replace
-                fm->renameToBackup();
-                triggerGamsLibFileCreation(item);
-                break;
-            case QMessageBox::Abort:
-                break;
-            }
-        } else {
-            triggerGamsLibFileCreation(item);
-        }
+        triggerGamsLibFileCreation(item);
     }
 }
 
@@ -1733,12 +1729,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // clear the TextMarks for this group
     QSet<TextMark::Type> markTypes;
-    markTypes << TextMark::error << TextMark::link;
+    markTypes << TextMark::error << TextMark::link << TextMark::target;
     for (ProjectFileNode *node: runGroup->listFiles(true))
         mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
 
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
@@ -1839,6 +1836,8 @@ void MainWindow::openInitialFiles()
         openFiles(mInitialFiles);
         mInitialFiles.clear();
         watchProjectTree();
+        ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTab->currentWidget());
+        if (node) openFileNode(node, true);
     }
 }
 
@@ -1889,6 +1888,8 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     bool moveToEnd = false;
     ProjectLogNode* logNode = mProjectRepo.logNode(node);
     if (!logNode) return;
+
+    setOutputViewVisibility(true);
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
@@ -1903,7 +1904,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
         ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
             if (ui->logTabs->currentWidget() != logEdit) {
-                if (ui->logTabs->currentWidget() != mResultsView)
+                if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
             }
             if (moveToEnd) {
@@ -1961,10 +1962,16 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
     } else {
-        if (!runGroup && mRecent.group) runGroup = mRecent.group->assignedRunGroup();
         if (!runGroup) {
             QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
-            if (nodes.size()) runGroup = nodes.first()->assignedRunGroup();
+            if (nodes.size()) {
+                if (nodes.first()->assignedRunGroup())
+                    runGroup = nodes.first()->assignedRunGroup();
+            } else {
+                QFileInfo file(fileMeta->location());
+                runGroup = mProjectRepo.createGroup(file.baseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
+                nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
+            }
         }
         edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
         if (!edit) {
@@ -2091,7 +2098,7 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
 void MainWindow::closeFileEditors(const FileId fileId)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
-    if (!fm) return; // TODO(AF) add logging but no execption
+    if (!fm) return;
 
     // add to recently closed tabs
     mClosedTabs << fm->location();
@@ -2228,23 +2235,24 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList &results)
 {
-    int index = ui->logTabs->indexOf(mResultsView); // did widget exist before?
+    ResultsView* resultsView = searchDialog()->resultsView();
+    int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
 
-    mResultsView = new ResultsView(results, this);
+    searchDialog()->setResultsView(new ResultsView(results, this));
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
 
     ui->dockLogView->show();
-    mResultsView->resizeColumnsToContent();
+    searchDialog()->resultsView()->resizeColumnsToContent();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
-    ui->logTabs->addTab(mResultsView, title); // add new result page
-    ui->logTabs->setCurrentWidget(mResultsView);
+    ui->logTabs->addTab(searchDialog()->resultsView(), title); // add new result page
+    ui->logTabs->setCurrentWidget(searchDialog()->resultsView());
 }
 
-void MainWindow::closeResults()
+void MainWindow::closeResultsPage()
 {
-    int index = ui->logTabs->indexOf(mResultsView);
+    int index = ui->logTabs->indexOf(searchDialog()->resultsView());
     if (index != -1) ui->logTabs->removeTab(index);
 }
 
@@ -2264,7 +2272,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 }
 
 void MainWindow::updateEditorLineWrapping()
-{// TODO(AF) split logs and editors
+{
     QPlainTextEdit::LineWrapMode wrapModeEditor = mSettings->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                               : QPlainTextEdit::NoWrap;
     QPlainTextEdit::LineWrapMode wrapModeProcess = mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
@@ -2739,7 +2747,7 @@ void MainWindow::setForegroundOSCheck()
     if (mSettings->foregroundOnDemand())
         setForeground();
 }
-  
+
 void MainWindow::on_actionNextTab_triggered()
 {
     QWidget *wid = focusWidget();

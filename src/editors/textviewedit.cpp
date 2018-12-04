@@ -22,6 +22,7 @@
 #include "logger.h"
 #include <QMenu>
 #include <QMessageBox>
+#include <QScrollBar>
 
 namespace gams {
 namespace studio {
@@ -30,6 +31,7 @@ TextViewEdit::TextViewEdit(TextMapper &mapper, QWidget *parent)
     : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings())
 {
     setAllowBlockEdit(false);
+    disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
 }
 
 void TextViewEdit::protectWordUnderCursor(bool protect)

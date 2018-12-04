@@ -34,11 +34,12 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QWidget *parent)
+GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent)
     : QWidget(parent),
       ui(new Ui::GdxViewer),
       mGdxFile(gdxFile),
-      mSystemDirectory(systemDirectory)
+      mSystemDirectory(systemDirectory),
+      mCodec(codec)
 {
     ui->setupUi(this);
 
@@ -76,7 +77,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
 
-        if (!reload())
+        if (!reload(mCodec))
             return;
 
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
@@ -114,9 +115,10 @@ GdxSymbol *GdxViewer::selectedSymbol()
     return selected;
 }
 
-bool GdxViewer::reload()
+bool GdxViewer::reload(QTextCodec* codec)
 {
-    if (mHasChanged) {
+    if (mHasChanged || codec != mCodec) {
+        mCodec = codec;
         if (ui->splitter->widget(1) != ui->widget)
             ui->splitter->replaceWidget(1, ui->widget);
         free();
@@ -207,7 +209,7 @@ bool GdxViewer::init()
         msgBox.setIcon(QMessageBox::Warning);
         if (QMessageBox::Retry == msgBox.exec()) {
             mHasChanged = true;
-            reload();
+            reload(mCodec);
         }
         return false;
     }
@@ -215,7 +217,7 @@ bool GdxViewer::init()
     ui->splitter->widget(0)->hide();
     ui->splitter->widget(1)->hide();
 
-    mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex);
+    mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex, mCodec);
     mSymbolViews.resize(mGdxSymbolTable->symbolCount() + 1); // +1 because of the hidden universe symbol
 
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);
