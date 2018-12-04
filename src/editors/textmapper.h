@@ -108,7 +108,7 @@ private:
         int chunkNr = -1;
         qint64 absLinePos = -1;
         int charNr = -1;
-        int localLineNr = -1;
+        int localLine = -1;
         int localLinePos = -1;
         int lineLen = -1;
     };
@@ -140,10 +140,10 @@ public:
 
     void copyToClipboard();
 
-    void setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+    void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
     void selectAll();
-    QPoint position() const;
-    QPoint anchor() const;
+    QPoint position(bool local = false) const;
+    QPoint anchor(bool local = false) const;
     bool hasSelection() const;
     int selectionSize() const;
 
@@ -175,6 +175,7 @@ private:
     void updateLineOffsets(Chunk *chunk) const;
     Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
     void updateBytesPerLine(const ChunkLines &chunkLines) const;
+    QPoint convertPosLocal(const CursorPosition &pos) const;
     QPoint convertPos(const CursorPosition &pos) const;
     Chunk *chunkForLine(int absLine, int *lineInChunk) const;
     QString line(Chunk *chunk, int chunkLineNr) const;

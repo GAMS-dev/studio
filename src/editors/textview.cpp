@@ -237,11 +237,11 @@ void TextView::selectionChanged()
         if (!mMapper.hasSelection()) {
             QTextCursor anc = mEdit->textCursor();
             anc.setPosition(cur.anchor());
-            mMapper.setRelPos(anc.blockNumber(), anc.positionInBlock());
+            mMapper.setPosRelative(anc.blockNumber(), anc.positionInBlock());
         }
-        mMapper.setRelPos(cur.blockNumber(), cur.positionInBlock(), QTextCursor::KeepAnchor);
+        mMapper.setPosRelative(cur.blockNumber(), cur.positionInBlock(), QTextCursor::KeepAnchor);
     } else {
-        mMapper.setRelPos(cur.blockNumber(), cur.positionInBlock());
+        mMapper.setPosRelative(cur.blockNumber(), cur.positionInBlock());
     }
 }
 
@@ -292,24 +292,24 @@ void TextView::topLineMoved()
 
 void TextView::updatePosAndAnchor()
 {
-    QPoint pos = mMapper.position();
-    QPoint anchor = mMapper.anchor();
-    if (pos.x() < 0) {
+    QPoint pos = mMapper.position(true);
+    QPoint anchor = mMapper.anchor(true);
+    DEB() << "current pos: " << pos << "   anchor: " << anchor;
+    if (pos.y() < 0) {
         return;
-//        mEdit->setTextCursor(QTextCursor());
     } else {
         int scrollPos = mEdit->verticalScrollBar()->value();
         ChangeKeeper x(mDocChanging);
         QTextCursor cursor = mEdit->textCursor();
-        if (anchor.x() < 0 && pos == anchor) {
-            QTextBlock block = mEdit->document()->findBlockByNumber(pos.y()-mTopLine);
+        if (anchor.y() < 0 && pos == anchor) {
+            QTextBlock block = mEdit->document()->findBlockByNumber(pos.y());
             int p = block.position() + qMin(block.length()-1, pos.x());
             cursor.setPosition(p);
         } else {
-            QTextBlock block = mEdit->document()->findBlockByNumber(anchor.y()-mTopLine);
+            QTextBlock block = mEdit->document()->findBlockByNumber(anchor.y());
             int p = block.position() + qMin(block.length()-1, anchor.x());
             cursor.setPosition(p);
-            block = mEdit->document()->findBlockByNumber(pos.y()-mTopLine);
+            block = mEdit->document()->findBlockByNumber(pos.y());
             p = block.position() + qMin(block.length()-1, pos.x());
             cursor.setPosition(p, QTextCursor::KeepAnchor);
         }

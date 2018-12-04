@@ -639,14 +639,14 @@ void TextMapper::copyToClipboard()
     while (chunk && chunk->nr <= pTo.chunkNr) {
         int from = chunk->lineBytes.at(0);
         if (chunk->nr == pFrom.chunkNr) {
-            QString text = line(chunk, pFrom.localLineNr).left(pFrom.charNr);
-            from = chunk->lineBytes.at(pFrom.localLineNr)
+            QString text = line(chunk, pFrom.localLine).left(pFrom.charNr);
+            from = chunk->lineBytes.at(pFrom.localLine)
                     + (mCodec ? mCodec->fromUnicode(text).length() : text.length());
         }
         int to = chunk->lineBytes.at(chunk->lineCount());
         if (chunk->nr == pTo.chunkNr) {
-            QString text = line(chunk, pTo.localLineNr).left(pTo.charNr);
-            to = chunk->lineBytes.at(pTo.localLineNr)
+            QString text = line(chunk, pTo.localLine).left(pTo.charNr);
+            to = chunk->lineBytes.at(pTo.localLine)
                     + (mCodec ? mCodec->fromUnicode(text).length() : text.length());
         }
         QByteArray raw;
@@ -659,24 +659,6 @@ void TextMapper::copyToClipboard()
 
     QClipboard *clip = QGuiApplication::clipboard();
     clip->setText(mCodec ? mCodec->toUnicode(all) : all);
-}
-
-QPoint TextMapper::convertPos(const CursorPosition &pos) const
-{
-    if (pos.chunkNr < 0) return QPoint(-1,0);
-    const ChunkLines &cl = mChunkLineNrs.at(pos.chunkNr);
-    int line = 0;
-    if (cl.lineOffset < 0) {
-        qint64 absPos = mChunkLineNrs.at(pos.chunkNr).linesStart + pos.localLinePos;
-        double estimateLine = absPos / mBytesPerLine;
-        line = -int(estimateLine);
-    } else {
-        line = cl.lineOffset + pos.localLineNr;
-    }
-    QPoint res;
-    res.setY(line);
-    res.setX(pos.charNr);
-    return res;
 }
 
 TextMapper::Chunk* TextMapper::chunkForLine(int absLine, int *lineInChunk) const
@@ -744,34 +726,36 @@ int TextMapper::findChunk(int lineNr)
     return clLast;
 }
 
-void TextMapper::setRelPos(int localLineNr, int charNr, QTextCursor::MoveMode mode)
+void TextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode)
 {
 //    TRACE();
 //    DEB() << "SELECT - line: " << localLineNr << " char: " << charNr << "  mode: " << mode;
     int lineInChunk;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
     if (!chunk) {
-        mPosition.chunkNr = -1;
-        mAnchor.chunkNr = -1;
+        mPosition = CursorPosition();
+        mAnchor = CursorPosition();
         return;
     }
 //    QString text = line(localLineNr, &lineInChunk).left(charNr);
 //    int len = mCodec ? mCodec->fromUnicode(text).length() : text.length();
     // requesting the line moves the chunk to the top, so we can use the last chunk here
     mPosition.chunkNr = mChunks.last()->nr;
-    mPosition.localLineNr = lineInChunk;
+    mPosition.localLine = lineInChunk;
     mPosition.localLinePos = mChunks.last()->lineBytes.at(lineInChunk);
     mPosition.lineLen = mChunks.last()->lineBytes.at(lineInChunk+1) - mPosition.localLinePos - mDelimiter.length();
     mPosition.absLinePos = mChunks.last()->start + mPosition.localLinePos;
     mPosition.charNr = charNr;
     if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
+//    DEB() << "   ---> pos: " << QPoint(mPosition.localLineNr, mPosition.charNr)
+//          << "  anc: " << QPoint(mAnchor.localLineNr, mAnchor.charNr);
 }
 
 void TextMapper::selectAll()
 {
     mAnchor.chunkNr = 0;
     mAnchor.localLinePos = 0;
-    mAnchor.localLineNr = 0;
+    mAnchor.localLine = 0;
     mAnchor.absLinePos = 0;
     mAnchor.charNr = 0;
     mAnchor.lineLen = 0; // wrong size but irrelevant in this special case
@@ -781,24 +765,68 @@ void TextMapper::selectAll()
         return;
     }
     mPosition.chunkNr = chunk->nr;
-    mPosition.localLineNr = chunk->lineBytes.size()-2;
-    mPosition.localLinePos = chunk->lineBytes.at(mPosition.localLineNr);
-    mPosition.lineLen = chunk->lineBytes.at(mPosition.localLineNr+1) - mPosition.localLinePos - mDelimiter.size();
+    mPosition.localLine = chunk->lineBytes.size()-2;
+    mPosition.localLinePos = chunk->lineBytes.at(mPosition.localLine);
+    mPosition.lineLen = chunk->lineBytes.at(mPosition.localLine+1) - mPosition.localLinePos - mDelimiter.size();
     mPosition.absLinePos = chunk->start + mPosition.localLinePos;
-    mPosition.charNr = line(chunk, mPosition.localLineNr).length();
+    mPosition.charNr = line(chunk, mPosition.localLine).length();
 }
 
-QPoint TextMapper::position() const
+QPoint TextMapper::convertPosLocal(const CursorPosition &pos) const
+{
+    // no position or it starts before the topLine
+    if (pos.chunkNr < 0 || pos.chunkNr < mTopLine.chunkNr ||
+            (pos.chunkNr == mTopLine.chunkNr && pos.localLine < mTopLine.localLine))
+        return QPoint(0, 0);
+
+    int lineNr = -mTopLine.localLine;
+    int chunkNr = mTopLine.chunkNr;
+    while (pos.chunkNr >= chunkNr) {
+        // count forward
+        lineNr += (pos.chunkNr > chunkNr) ? mChunkLineNrs.at(chunkNr).lineCount : pos.localLine;
+        if (lineNr >= mBufferedLineCount) {
+            // position is beyond the end of the buffer
+            return QPoint(lines(mBufferedLineCount-1, 1).length(), mBufferedLineCount-1);
+        }
+        if (pos.chunkNr == chunkNr) {
+            return QPoint(pos.charNr, lineNr);
+        }
+        ++chunkNr;
+    }
+    return QPoint(lines(mBufferedLineCount-1, 1).length(), mBufferedLineCount-1);
+}
+
+QPoint TextMapper::convertPos(const CursorPosition &pos) const
+{
+    if (pos.chunkNr < 0) return QPoint(-1,0);
+    const ChunkLines &cl = mChunkLineNrs.at(pos.chunkNr);
+    int line = 0;
+    if (cl.lineOffset < 0) {
+        qint64 absPos = mChunkLineNrs.at(pos.chunkNr).linesStart + pos.localLinePos;
+        double estimateLine = absPos / mBytesPerLine;
+        line = -int(estimateLine);
+    } else {
+        line = cl.lineOffset + pos.localLine;
+    }
+    QPoint res;
+    res.setY(line);
+    res.setX(pos.charNr);
+    return res;
+}
+
+QPoint TextMapper::position(bool local) const
 {
     if (mPosition.chunkNr < 0) return QPoint(-1,-1);
-    return convertPos(mPosition);
+    return local ? convertPosLocal(mPosition) : convertPos(mPosition);
 }
 
-QPoint TextMapper::anchor() const
+
+QPoint TextMapper::anchor(bool local) const
 {
     if (mPosition.chunkNr < 0 || mAnchor.chunkNr < 0) return QPoint(-1,-1);
-    return convertPos(mAnchor);
+    return local ? convertPosLocal(mAnchor) : convertPos(mAnchor);
 }
+
 
 bool TextMapper::hasSelection() const
 {

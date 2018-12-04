@@ -1605,7 +1605,6 @@ void MainWindow::dropEvent(QDropEvent* e)
 
 void MainWindow::openFiles(QStringList files, bool forceNew)
 {
-    TRACE();
     if (files.size() == 0) return;
 
     if (!forceNew && files.size() == 1) {
@@ -1935,7 +1934,6 @@ void MainWindow::raiseEdit(QWidget *widget)
 
 void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib)
 {
-    TRACE();
     if (!fileMeta) return;
     QWidget* edit = nullptr;
     QTabWidget* tabWidget = fileMeta->kind() == FileKind::Log ? ui->logTabs : ui->mainTab;
