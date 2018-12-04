@@ -593,7 +593,7 @@ void SolverOptionWidget::setModified(bool modified)
 bool SolverOptionWidget::saveAs(const QString &location)
 {
     setModified(false);
-    bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location);
+    bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location, mCodec);
     mOptionTokenizer->logger()->appendLog(QString("Saved options into %1").arg(location), LogMsgType::Info);
     return success;
 }

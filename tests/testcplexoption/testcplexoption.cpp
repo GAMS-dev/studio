@@ -1033,10 +1033,9 @@ void TestCPLEXOption::testWriteOptionFile()
     items.append(new SolverOptionItem(216, "tuning", "str 4, str 5", "tuning str 4, str 5", false, false));
 
     // when
-//    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.opt") ));
-    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4") ));
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"), QTextCodec::codecForLocale()) );
 
-//    // then
+    // then
     QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"));
     int i = 0;
     if (inputFile.open(QIODevice::ReadOnly)) {

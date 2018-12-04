@@ -881,7 +881,7 @@ void MainWindow::codecChanged(QAction *action)
 {
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (fm) {
-        if (fm->document() && !fm->isReadOnly()) {
+        if (!fm->isReadOnly()) {
             fm->setCodecMib(action->data().toInt());
         }
         updateMenuToCodec(action->data().toInt());

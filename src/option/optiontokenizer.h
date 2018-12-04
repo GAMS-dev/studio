@@ -68,7 +68,7 @@ public:
     bool updateOptionItem(QString &key, QString &value, SolverOptionItem* item);
 
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QTextCodec* codec);
-    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath);
+    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QTextCodec* codec);
 
     QList<OptionItem> readOptionParameterFile(const QString &absoluteFilePath);
     bool writeOptionParameterFile(const QList<OptionItem> &items, const QString &absoluteFilepath);

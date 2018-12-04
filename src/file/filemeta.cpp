@@ -386,12 +386,6 @@ void FileMeta::load(QList<int> codecMibs)
         }
         return;
     }
-    if (kind() == FileKind::Lst) {
-        for (QWidget *wid : mEditors) {
-            lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
-            if (lxi) lxi->loadLxi();
-        }
-    }
     if (kind() == FileKind::Opt) {
         for (QWidget *wid : mEditors) {
             option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
@@ -399,6 +393,13 @@ void FileMeta::load(QList<int> codecMibs)
                 mCodec = QTextCodec::codecForMib(codecMibs[0]);
                 so->on_reloadSolverOptionFile(mCodec);
             }
+        }
+        return;
+    }
+    if (kind() == FileKind::Lst) {
+        for (QWidget *wid : mEditors) {
+            lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
+            if (lxi) lxi->loadLxi();
         }
     }
     if (!mDocument) {
@@ -613,9 +614,13 @@ void FileMeta::setCodecMib(int mib)
         DEB() << "TextCodec not found for MIB " << mib;
         return;
     }
-    if (document() && !isReadOnly() && codec != mCodec) {
-        document()->setModified();
-        setCodec(codec);
+    if (isReadOnly())
+        return;
+
+    if (codec != mCodec) {
+        qDebug() << "setCodecMib " << mib;
+       setModified();
+       setCodec(codec);
     }
 }
 

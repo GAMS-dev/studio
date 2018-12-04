@@ -990,7 +990,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     return items;
 }
 
-bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath)
+bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QTextCodec* codec)
 {
     bool hasBeenLogged = false;
 
@@ -1000,10 +1000,10 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
         return false;
     }
 
-    qDebug() << "writeout :" << items.size();
+    qDebug() << "writeout :" << items.size() << " using codec :" << codec->name();
 
     QTextStream out(&outputFile);
-    out.setCodec( QTextCodec::codecForLocale() );
+    out.setCodec( codec );
 
     for(SolverOptionItem* item: items) {
             out << formatOption( item ) << endl;
