@@ -53,7 +53,7 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     mPeekTimer.setSingleShot(true);
     connect(&mPeekTimer, &QTimer::timeout, this, &TextView::peekMoreLines);
-//    mEdit->verticalScrollBar()->setVisible(false);
+    mEdit->verticalScrollBar()->setVisible(false);
 
 
 /* --- scrollbar controlling qt-methods
@@ -204,6 +204,7 @@ void TextView::showEvent(QShowEvent *event)
 
 void TextView::focusInEvent(QFocusEvent *event)
 {
+    Q_UNUSED(event);
     mEdit->setFocus();
 }
 
@@ -294,7 +295,6 @@ void TextView::updatePosAndAnchor()
 {
     QPoint pos = mMapper.position(true);
     QPoint anchor = mMapper.anchor(true);
-    DEB() << "current pos: " << pos << "   anchor: " << anchor;
     if (pos.y() < 0) {
         return;
     } else {
