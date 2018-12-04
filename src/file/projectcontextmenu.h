@@ -66,9 +66,14 @@ private:
     QVector<ProjectAbstractNode*> mNodes;
     QHash<int, QAction*> mActions;
     QWidget *mParent = nullptr;
+
+    // Strings
+    QString mTxtCloseGroup = "Close &group";
+    QString mTxtCloseFile = "Close &file";
 };
 
 } // namespace studio
 } // namespace gams
 
 #endif // PROJECTCONTEXTMENU_H
+
