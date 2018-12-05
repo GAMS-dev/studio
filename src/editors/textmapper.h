@@ -94,7 +94,7 @@ private:
         inline bool isKnown() const { return lineCount >= 0; }
         inline bool hasLineNrs() const { return lineCount >= 0 && lineOffset >= 0; }
         int chunkNr = 0;
-        qint64 linesStart = 0;
+        qint64 linesStartPos = 0;
         int linesByteSize = 0;
         int lineCount = -1;
         int lineOffset = -1;

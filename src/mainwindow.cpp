@@ -667,9 +667,12 @@ void MainWindow::updateEditorBlockCount()
         mStatusWidgets->setLineCount(tv->lineCount());
 }
 
-void MainWindow::updateLoadAmount(qreal amount)
+void MainWindow::updateLoadAmount()
 {
-    mStatusWidgets->setLoadAmount(amount);
+    if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
+        qreal amount = qAbs(qreal(tv->knownLines()) / tv->lineCount());
+        mStatusWidgets->setLoadAmount(amount);
+    }
 }
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
@@ -2395,15 +2398,12 @@ void MainWindow::on_actionCopy_triggered()
         gdx->copyAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->copy();
-    } else {
-        AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget());
-        if (!ae) return;
-        CodeEdit *ce = ViewHelper::toCodeEdit(ae);
-        if (ce) {
-            ce->copySelection();
-        } else {
-            ae->copy();
-        }
+    } else if (CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget())) {
+        ce->copySelection();
+    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget())) {
+        ae->copy();
+    } else if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+        tv->copySelection();
     }
 }
 
@@ -2417,10 +2417,10 @@ void MainWindow::on_actionSelect_All_triggered()
         gdx->selectAllAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->selectAll();
-    } else {
-        AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget());
-        if (!ae) return;
+    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget())) {
         ae->selectAll();
+    } else if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+        tv->selectAllText();
     }
 }
 
@@ -2506,6 +2506,11 @@ void MainWindow::convertLowerUpper(bool toUpper)
         ce->convertToLower();
     textCursor.setPosition(textCursorPosition,QTextCursor::MoveAnchor);
     ce->setTextCursor(textCursor);
+}
+
+void MainWindow::resetLoadAmound()
+{
+    mStatusWidgets->setLoadAmount(1.0);
 }
 
 void MainWindow::on_actionSet_to_Uppercase_triggered()
@@ -2647,11 +2652,11 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
     }
     if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-        window->updateLoadAmount(1.0);
 //        MainWindow::disconnect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(tv, &TextView::loadAmount, window, &MainWindow::updateLoadAmount);
+        MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
+        window->resetLoadAmound();
     }
     window->searchDialog()->setActiveEditWidget(nullptr);
     mEditor = editor;
@@ -2666,7 +2671,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
 //        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(tv, &TextView::loadAmount, window, &MainWindow::updateLoadAmount);
+        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
 
         // TODO(JM) used for updateExtraSelections (can we pass the internal CodeEdit?)
 //        window->searchDialog()->setActiveEditWidget(tv);

@@ -77,7 +77,9 @@ public:
         return (editorType(w) == EditorType::log) ? static_cast<ProcessLogEdit*>(w) : nullptr;
     }
     inline static TextView* toTextView(QWidget* w) {
-        return (editorType(w) == EditorType::txtRo) ? static_cast<TextView*>(w) : nullptr;
+        return (editorType(w) == EditorType::txtRo) ? static_cast<TextView*>(w)
+                                                    : (w && editorType(w->parentWidget()) == EditorType::txtRo)
+                                                      ? static_cast<TextView*>(w->parentWidget())  : nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;

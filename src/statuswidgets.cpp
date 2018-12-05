@@ -93,11 +93,11 @@ void StatusWidgets::setEditMode(EditMode mode)
 void StatusWidgets::setPosAndAnchor(QPoint pos, QPoint anchor)
 {
     QString posText;
-    if (pos.isNull()) {
-        posText = "     ";
+    if (pos.isNull() || pos.y() == -1) {
+        posText = "      ";
     } else {
-        QString estimated = pos.y()<0 ? "~" : "";
-        posText = QString("%3%1 / %2").arg(pos.y()).arg(pos.x()).arg(estimated);
+        QString estimated = (pos.y() < 0) ? "~" : "";
+        posText = QString("%3%1 / %2").arg(qAbs(pos.y())).arg(pos.x()).arg(estimated);
         if (!anchor.isNull() && anchor != pos) {
             estimated = (pos.y()<0 || anchor.y()<0) ? "~" : "";
             QString absLineDiff = QString::number(qAbs(qAbs(pos.y())-qAbs(anchor.y()))+1);

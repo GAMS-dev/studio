@@ -37,8 +37,10 @@ class TextView : public QAbstractScrollArea
     Q_OBJECT
 public:
     explicit TextView(QWidget *parent = nullptr);
-    int lineCount() const;
     void loadFile(const QString &fileName, QList<int> codecMibs);
+    qint64 fileSize() const;
+    int lineCount() const;
+    int knownLines() const;
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
     QPoint position() const;
@@ -47,12 +49,9 @@ public:
     void copySelection();
     void selectAllText();
 
-
 signals:
     void blockCountChanged(int newBlockCount);
-    void loadAmount(qreal percent);
-    void findLineAmount(qreal percent);
-//    void cursorPositionChanged();
+    void loadAmountChanged();
     void selectionChanged();
 
 private slots:
@@ -65,9 +64,9 @@ private slots:
     void updatePosAndAnchor();
 
 protected:
-//    friend class FileMeta;
-//    void setMarks(const LineMarks *marks);
-//    const LineMarks* marks() const;
+    friend class FileMeta;
+    void setMarks(const LineMarks *marks);
+    const LineMarks* marks() const;
 
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;

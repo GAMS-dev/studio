@@ -85,6 +85,11 @@ void TextView::loadFile(const QString &fileName, QList<int> codecMibs)
     mPeekTimer.start(100);
 }
 
+qint64 TextView::fileSize() const
+{
+    return mMapper.size();
+}
+
 void TextView::zoomIn(int range)
 {
     mEdit->zoomIn(range);
@@ -103,6 +108,11 @@ QPoint TextView::position() const
 QPoint TextView::anchor() const
 {
     return mMapper.anchor();
+}
+
+int TextView::knownLines() const
+{
+    return mMapper.knownLineNrs();
 }
 
 void TextView::copySelection()
@@ -128,12 +138,10 @@ void TextView::selectAllText()
 void TextView::peekMoreLines()
 {
     TextMapper::ProgressAmount amount = mMapper.peekChunksForLineNrs(4);
-    if (amount.part < amount.all) mPeekTimer.start(100);
-    emit loadAmount(qreal(amount.part) / amount.all);
+    // keep timer alive
+    if (amount.part < amount.all) mPeekTimer.start(50);
+    emit loadAmountChanged();
     emit blockCountChanged(lineCount());
-    if (mLineToFind >= 0) {
-        emit findLineAmount(qreal(mMapper.knownLineNrs()) / mLineToFind);
-    }
 }
 
 void TextView::outerScrollAction(int action)
@@ -214,15 +222,15 @@ void TextView::focusInEvent(QFocusEvent *event)
     mEdit->setFocus();
 }
 
-//void TextView::setMarks(const LineMarks *marks)
-//{
-//    mEdit->setMarks(marks);
-//}
+void TextView::setMarks(const LineMarks *marks)
+{
+    mEdit->setMarks(marks);
+}
 
-//const LineMarks *TextView::marks() const
-//{
-//    return mEdit->marks();
-//}
+const LineMarks *TextView::marks() const
+{
+    return mEdit->marks();
+}
 
 void TextView::editKeyPressEvent(QKeyEvent *event)
 {

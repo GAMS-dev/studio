@@ -164,7 +164,7 @@ void TextMapper::updateLineOffsets(Chunk *chunk) const
     ChunkLines *cl = &mChunkLineNrs[chunk->nr];
     if (cl->lineCount < 0) { // init ChunkLines on first visit
         cl->lineCount = chunk->lineCount();
-        cl->linesStart = chunk->start + chunk->lineBytes.first();
+        cl->linesStartPos = chunk->start + chunk->lineBytes.first();
         cl->linesByteSize = chunk->lineBytes.last() - chunk->lineBytes.first();
         if (cl->chunkNr == 0) { // only for chunk0
             cl->lineOffset = 0;
@@ -475,7 +475,7 @@ int TextMapper::absTopLine() const
     if (!chunk) return -1;
     const ChunkLines &topCL = mChunkLineNrs.at(chunk->nr);
     if (topCL.lineOffset < 0) {
-        qint64 absPos = topCL.linesStart + chunk->lineBytes.at(mTopLine.localLine);
+        qint64 absPos = topCL.linesStartPos + chunk->lineBytes.at(mTopLine.localLine);
         double estimateLine = absPos / mBytesPerLine;
         return -int(estimateLine);
     }
@@ -594,7 +594,7 @@ void TextMapper::updateBytesPerLine(const ChunkLines &chunkLines) const
     double absKnownLinesSize = chunkLines.linesByteSize;
     if (chunkLines.lineOffset >= 0) {
         absKnownLines += chunkLines.lineOffset;
-        absKnownLinesSize += chunkLines.linesStart;
+        absKnownLinesSize += chunkLines.linesStartPos;
     }
     mBytesPerLine = absKnownLinesSize / absKnownLines;
 }
@@ -667,7 +667,7 @@ TextMapper::Chunk* TextMapper::chunkForLine(int absLine, int *lineInChunk) const
     qint64 pos = 0;
     if (absLine > knownLineNrs()) { // estimate line position
         const ChunkLines &cl = mChunkLineNrs.at(mLastChunkWithLineNr);
-        qint64 posFrom = cl.linesStart + cl.linesByteSize;
+        qint64 posFrom = cl.linesStartPos + cl.linesByteSize;
         qint64 posTo = size();
         double factor = double(absLine - knownLineNrs()) / (qAbs(lineCount()) - knownLineNrs());
         pos = qint64((posTo - posFrom) * factor) + posFrom;
@@ -796,7 +796,7 @@ QPoint TextMapper::convertPos(const CursorPosition &pos) const
     const ChunkLines &cl = mChunkLineNrs.at(pos.chunkNr);
     int line = 0;
     if (cl.lineOffset < 0) {
-        qint64 absPos = mChunkLineNrs.at(pos.chunkNr).linesStart + pos.localLinePos;
+        qint64 absPos = mChunkLineNrs.at(pos.chunkNr).linesStartPos + pos.localLinePos;
         double estimateLine = absPos / mBytesPerLine;
         line = -int(estimateLine);
     } else {
