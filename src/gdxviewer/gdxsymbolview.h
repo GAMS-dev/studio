@@ -60,6 +60,11 @@ private:
     GdxSymbol *mSym = nullptr;
     QByteArray mInitialHeaderState;
     QMenu mContextMenu;
+
+    bool mTableViewEnabled = false;
+    void showListView();
+    void showTableView();
+    void toggleView();
 };
 
 

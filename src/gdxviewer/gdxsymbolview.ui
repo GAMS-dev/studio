@@ -58,6 +58,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QTableView" name="tvTableView">
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>22</number>
+     </attribute>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
       <number>6</number>
@@ -85,6 +92,16 @@
        </property>
        <property name="text">
         <string>Reset</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbToggleView">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Table View</string>
        </property>
       </widget>
      </item>

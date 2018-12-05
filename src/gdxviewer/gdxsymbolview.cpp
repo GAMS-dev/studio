@@ -34,6 +34,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui(new Ui::GdxSymbolView)
 {
     ui->setupUi(this);
+    ui->tvTableView->hide();
 
     //create context menu
     QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -69,6 +70,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
+    connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
@@ -192,6 +194,31 @@ void GdxSymbolView::showContextMenu(QPoint p)
     mContextMenu.exec(ui->tvListView->mapToGlobal(p));
 }
 
+void GdxSymbolView::showListView()
+{
+    ui->tvTableView->hide();
+    ui->tvListView->show();
+    ui->pbToggleView->setText("Table View");
+}
+
+void GdxSymbolView::showTableView()
+{
+    ui->tvListView->hide();
+    ui->tvTableView->show();
+    ui->pbToggleView->setText("List View");
+}
+
+void GdxSymbolView::toggleView()
+{
+    if (mTableViewEnabled) {
+        mTableViewEnabled = false;
+        showListView();
+    } else {
+        mTableViewEnabled = true;
+        showTableView();
+    }
+}
+
 void GdxSymbolView::enableControls()
 {
     ui->tvListView->horizontalHeader()->setEnabled(true);
@@ -201,6 +228,8 @@ void GdxSymbolView::enableControls()
     else
         ui->cbSqueezeDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);
+    if (mSym->dim()>1)
+        ui->pbToggleView->setEnabled(true);
 }
 
 } // namespace gdxviewer
