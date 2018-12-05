@@ -20,6 +20,7 @@
 #include "textview.h"
 #include "logger.h"
 #include "exception.h"
+#include "textviewedit.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -102,6 +103,16 @@ QPoint TextView::position() const
 QPoint TextView::anchor() const
 {
     return mMapper.anchor();
+}
+
+void TextView::copySelection()
+{
+    mEdit->copySelection();
+}
+
+void TextView::selectAllText()
+{
+    mEdit->selectAllText();
 }
 
 //int TextView::findLine(int lineNr)
@@ -202,6 +213,16 @@ void TextView::focusInEvent(QFocusEvent *event)
     Q_UNUSED(event);
     mEdit->setFocus();
 }
+
+//void TextView::setMarks(const LineMarks *marks)
+//{
+//    mEdit->setMarks(marks);
+//}
+
+//const LineMarks *TextView::marks() const
+//{
+//    return mEdit->marks();
+//}
 
 void TextView::editKeyPressEvent(QKeyEvent *event)
 {

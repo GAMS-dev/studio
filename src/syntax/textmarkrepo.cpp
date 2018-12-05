@@ -76,6 +76,8 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
         return nullptr;
     }
     if (!mMarks.contains(fileId)) {
+        if (mMarks.capacity()-5 < mMarks.size())
+            mMarks.reserve(mMarks.capacity()+500);
         mMarks.insert(fileId, new LineMarks());
     }
     TextMark* mark = new TextMark(this, fileId, type, groupId);
@@ -146,8 +148,11 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
 
 const LineMarks *TextMarkRepo::marks(FileId fileId)
 {
-    if (!mMarks.contains(fileId))
+    if (!mMarks.contains(fileId)) {
+        if (mMarks.capacity()-5 < mMarks.size())
+            mMarks.reserve(mMarks.capacity()+500);
         mMarks.insert(fileId, new LineMarks());
+    }
     return mMarks.value(fileId, nullptr);
 }
 

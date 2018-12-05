@@ -46,6 +46,8 @@ public slots:
     void selectAllText() override;
 
 protected:
+    friend class TextView;
+
     void keyPressEvent(QKeyEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
     void recalcWordUnderCursor() override;

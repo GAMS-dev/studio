@@ -70,8 +70,8 @@ protected:
         return ok ? group : NodeId();
     }
 
-    void setMarks(const LineMarks *marks);
-    const LineMarks* marks() const;
+    virtual void setMarks(const LineMarks *marks);
+    virtual const LineMarks* marks() const;
 
 private:
     NodeId mGroupId;

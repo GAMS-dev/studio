@@ -20,12 +20,17 @@
 #ifndef TEXTVIEW_H
 #define TEXTVIEW_H
 
-#include "textviewedit.h"
+#include "textmapper.h"
+#include "syntax/textmarkrepo.h"
+#include <QAbstractScrollArea>
 #include <QStringBuilder>
 #include <QScrollBar>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
+
+class TextViewEdit;
 
 class TextView : public QAbstractScrollArea
 {
@@ -39,8 +44,9 @@ public:
     QPoint position() const;
     QPoint anchor() const;
 //    int findLine(int lineNr);
-    void copySelection() { mEdit->copySelection(); }
-    void selectAllText() { mEdit->selectAllText(); }
+    void copySelection();
+    void selectAllText();
+
 
 signals:
     void blockCountChanged(int newBlockCount);
@@ -59,6 +65,10 @@ private slots:
     void updatePosAndAnchor();
 
 protected:
+//    friend class FileMeta;
+//    void setMarks(const LineMarks *marks);
+//    const LineMarks* marks() const;
+
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
@@ -83,6 +93,7 @@ private:
     int mLineToFind = -1;
     int mTopBufferLines = 100;
     QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
+    LineMarks *mMarks = nullptr;
 
 private:
 
