@@ -40,38 +40,38 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpComma->setShortcutVisibleInContextMenu(true);
     cpComma->setShortcutContext(Qt::WidgetShortcut);
-    ui->tableView->addAction(cpComma);
+    ui->tvListView->addAction(cpComma);
 
     QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
-    ui->tableView->addAction(cpTab);
+    ui->tvListView->addAction(cpTab);
 
     mContextMenu.addSeparator();
 
-    QAction* selectAll = mContextMenu.addAction("Select All\tCtrl+A", ui->tableView, &QTableView::selectAll);
+    QAction* selectAll = mContextMenu.addAction("Select All\tCtrl+A", ui->tvListView, &QTableView::selectAll);
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     selectAll->setShortcutVisibleInContextMenu(true);
-    ui->tableView->addAction(selectAll);
+    ui->tvListView->addAction(selectAll);
 
     //create header
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
     headerView->setEnabled(false);
 
-    ui->tableView->setHorizontalHeader(headerView);
-    ui->tableView->setSortingEnabled(true);
-    ui->tableView->horizontalHeader()->setSortIndicatorShown(true);
-    ui->tableView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
-    ui->tableView->horizontalHeader()->setSectionsClickable(true);
-    ui->tableView->horizontalHeader()->setSectionsMovable(true);
-    ui->tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tvListView->setHorizontalHeader(headerView);
+    ui->tvListView->setSortingEnabled(true);
+    ui->tvListView->horizontalHeader()->setSortIndicatorShown(true);
+    ui->tvListView->horizontalHeader()->setSortIndicator(-1, Qt::AscendingOrder);
+    ui->tvListView->horizontalHeader()->setSectionsClickable(true);
+    ui->tvListView->horizontalHeader()->setSectionsMovable(true);
+    ui->tvListView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
+    connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
 
-    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+    ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -81,31 +81,31 @@ GdxSymbolView::~GdxSymbolView()
 
 void GdxSymbolView::showColumnFilter(QPoint p)
 {
-    int column = ui->tableView->horizontalHeader()->logicalIndexAt(p);
+    int column = ui->tvListView->horizontalHeader()->logicalIndexAt(p);
     if(mSym->isLoaded() && column>=0 && column<mSym->dim()) {
         QMenu m(this);
         m.addAction(new ColumnFilter(mSym, column, this));
-        m.exec(ui->tableView->mapToGlobal(p));
+        m.exec(ui->tvListView->mapToGlobal(p));
     }
 }
 
 void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 {
     if (mSym) {
-        ui->tableView->setUpdatesEnabled(false);
+        ui->tvListView->setUpdatesEnabled(false);
         if (checked) {
             for (int i=0; i<GMS_VAL_MAX; i++) {
                 if (mSym->isAllDefault(i))
-                    ui->tableView->setColumnHidden(mSym->dim()+i, true);
+                    ui->tvListView->setColumnHidden(mSym->dim()+i, true);
                 else
-                    ui->tableView->setColumnHidden(mSym->dim()+i, false);
+                    ui->tvListView->setColumnHidden(mSym->dim()+i, false);
             }
         }
         else {
             for(int i=0; i<GMS_VAL_MAX; i++)
-                ui->tableView->setColumnHidden(mSym->dim()+i, false);
+                ui->tvListView->setColumnHidden(mSym->dim()+i, false);
         }
-        ui->tableView->setUpdatesEnabled(true);
+        ui->tvListView->setUpdatesEnabled(true);
     }
 }
 
@@ -113,7 +113,7 @@ void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
         mSym->resetSortFilter();
-        ui->tableView->horizontalHeader()->restoreState(mInitialHeaderState);
+        ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
     ui->cbSqueezeDefaults->setChecked(false);
 }
@@ -136,17 +136,17 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
     mSym = sym;
     if (mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
-    ui->tableView->setModel(mSym);
+    ui->tvListView->setModel(mSym);
     refreshView();
 }
 
 void GdxSymbolView::copySelectionToClipboard(QString separator)
 {
-    if (!ui->tableView->model())
+    if (!ui->tvListView->model())
         return;
     // row -> column -> QModelIndex
     QMap<int, QMap<int, QString>> sortedSelection;
-    QModelIndexList selection = ui->tableView->selectionModel()->selection().indexes();
+    QModelIndexList selection = ui->tvListView->selectionModel()->selection().indexes();
     if (selection.isEmpty())
         return;
 
@@ -158,7 +158,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     for (QModelIndex idx : selection) {
         int currentRow = idx.row();
         int currentCol = idx.column();
-        currentCol = ui->tableView->horizontalHeader()->visualIndex(currentCol);
+        currentCol = ui->tvListView->horizontalHeader()->visualIndex(currentCol);
         QString currenText = idx.data().toString();
         if (currenText.contains(separator)) {
             if (currenText.contains("\'"))
@@ -189,13 +189,13 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
 
 void GdxSymbolView::showContextMenu(QPoint p)
 {
-    mContextMenu.exec(ui->tableView->mapToGlobal(p));
+    mContextMenu.exec(ui->tvListView->mapToGlobal(p));
 }
 
 void GdxSymbolView::enableControls()
 {
-    ui->tableView->horizontalHeader()->setEnabled(true);
-    mInitialHeaderState = ui->tableView->horizontalHeader()->saveState();
+    ui->tvListView->horizontalHeader()->setEnabled(true);
+    mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU)
         ui->cbSqueezeDefaults->setEnabled(true);
     else
