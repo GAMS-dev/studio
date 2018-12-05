@@ -306,7 +306,7 @@ QMimeData *GamsOptionTableModel::mimeData(const QModelIndexList &indexes) const
 
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    foreach (const QModelIndex &index, indexes) {
+    for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
             if (index.column()>0) {
                 continue;
@@ -367,7 +367,7 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
         QList<int> insertRowList;
         insertRows(beginRow, rows, QModelIndex());
 
-        foreach (const QString &text, newItems) {
+        for (const QString &text : newItems) {
             insertRowList.append( beginRow );
 
             QStringList textList = text.split("=");
@@ -379,7 +379,7 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
             beginRow++;
         }
 
-        foreach (const QString &text, newItems) {
+        for (const QString &text : newItems) {
             QStringList textList = text.split("=");
             QModelIndex idx;
             for(int i=0; i<rowCount(); ++i) {
@@ -398,7 +398,7 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
 
     }  else if (action == Qt::MoveAction ) {
 
-        foreach (const QString &text, newItems) {
+        for (const QString &text : newItems) {
             QStringList textList = text.split("=");
             QModelIndex idx;
             for(int i=0; i<rowCount(QModelIndex()); ++i) {

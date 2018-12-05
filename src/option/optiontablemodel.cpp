@@ -367,7 +367,7 @@ bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction ac
     if (action ==  Qt::CopyAction) {
         insertRows(beginRow, rows, QModelIndex());
 
-        foreach (const QString &text, newItems) {
+        for (const QString &text : newItems) {
             QStringList textList = text.split("=");
             QModelIndex idx = index(beginRow, 0, QModelIndex());
             setData(idx, textList.at(0), Qt::EditRole);

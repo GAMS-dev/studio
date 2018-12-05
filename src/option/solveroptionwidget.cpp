@@ -554,7 +554,7 @@ void SolverOptionWidget::updateTableColumnSpan()
 
 MainWindow *SolverOptionWidget::getMainWindow()
 {
-    foreach(QWidget *widget, qApp->topLevelWidgets())
+    for(QWidget *widget : qApp->topLevelWidgets())
         if (MainWindow *mainWindow = qobject_cast<MainWindow*>(widget))
             return mainWindow;
     return nullptr;

@@ -73,7 +73,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
-    foreach(QString filename, optFiles) {
+    for (QString &filename : optFiles) {
         QString solvername = filename.mid(QString("opt").length());
         solvername.replace(QRegExp(".def"), "");
         if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
@@ -151,7 +151,7 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     // create solver option files
     mActions[actSep3]->setVisible(isGroup);
     mActions[actAddNewOpt]->setVisible(isGroup);
-    foreach (QAction* action, mSolverOptionActions)
+    for (QAction* action : mSolverOptionActions)
         action->setVisible(isGroup);
 
 }
