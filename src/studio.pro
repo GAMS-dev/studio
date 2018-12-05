@@ -159,7 +159,6 @@ SOURCES += \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
-    editors/viewhelper.cpp \
     editors/editorhelper.cpp \
     editors/textviewedit.cpp
 
@@ -268,7 +267,6 @@ HEADERS += \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
-    editors/viewhelper.h \
     editors/editorhelper.h \
     editors/textviewedit.h
 
