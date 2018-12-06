@@ -193,15 +193,15 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selection Up");
     QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selection Down");
     menu.addSeparator();
-    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove Selection");
+    QAction* deleteAction = menu.addAction(QIcon(":/img/delete-all"), "remove Selection");
     menu.addSeparator();
-    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove All");
+
+    QAction* selectAll = menu.addAction("Select All", ui->solverOptionTableView, &QTableView::selectAll);
+    ui->solverOptionTableView->addAction(selectAll);
 
     bool thereIsASelection = (selection.count() > 0);
     bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
     bool isViewCompact = ui->compactViewCheckBox->isChecked();
-
-    deleteAllActions->setVisible( thereIsARow );
 
     commentAction->setVisible( thereIsASelection && !isViewCompact );
 
@@ -210,8 +210,10 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 
     deleteAction->setVisible( thereIsASelection );
 
-    moveUpAction->setVisible(  thereIsASelection && !isViewCompact );
-    moveDownAction->setVisible( thereIsASelection && !isViewCompact );
+    moveUpAction->setVisible(  thereIsASelection && !isViewCompact && (selection.first().row() > 0) );
+    moveDownAction->setVisible( thereIsASelection && !isViewCompact && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+
+    selectAll->setVisible( thereIsARow );
 
     if (thereIsASelection) {
         // move up and down actions are disabled when selection are not contiguous
@@ -325,13 +327,6 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             setModified(true);
             emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
         }
-    } else if (action == deleteAllActions) {
-        mOptionTokenizer->getOption()->resetModficationFlag();
-
-        ui->solverOptionTableView->model()->removeRows(0, ui->solverOptionTableView->model()->rowCount(), QModelIndex());
-        updateTableColumnSpan();
-        setModified(true);
-        emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
     }
 }
 
