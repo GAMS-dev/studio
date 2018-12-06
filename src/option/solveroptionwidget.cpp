@@ -21,6 +21,7 @@
 #include <QShortcut>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QClipboard>
 
 #include "solveroptionwidget.h"
 #include "ui_solveroptionwidget.h"
@@ -79,7 +80,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 //    ui->solverOptionTableView->setColumnHidden(2, true); //false);
 
     connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_toggleRowHeader);
-    connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested,this, &SolverOptionWidget::showOptionContextMenu);
+    connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
     connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
@@ -119,6 +120,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTreeView->setModel( proxymodel );
     ui->solverOptionTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->solverOptionTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->solverOptionTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->solverOptionTreeView->setDragEnabled(true);
     ui->solverOptionTreeView->setDragDropMode(QAbstractItemView::DragOnly);
 
@@ -134,6 +136,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
         ui->solverOptionTreeView->setColumnHidden( 1, true);
 //    ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
     connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
+    connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
 
     connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
          optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
@@ -197,7 +200,6 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     menu.addSeparator();
 
     QAction* selectAll = menu.addAction("Select All", ui->solverOptionTableView, &QTableView::selectAll);
-    ui->solverOptionTableView->addAction(selectAll);
 
     bool thereIsASelection = (selection.count() > 0);
     bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
@@ -330,6 +332,32 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     }
 }
 
+void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
+{
+    QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
+    if (selection.count() <= 0)
+        return;
+
+    QMenu menu(this);
+    QAction* addThisOptionAction = menu.addAction(QIcon(":/img/plus"), "add This Option");
+    menu.addSeparator();
+    QAction* copyAction = menu.addAction("Copy Text");
+    menu.addSeparator();
+    QAction* copyNameAction = menu.addAction("Copy Option Name");
+    QAction* copyDescriptionAction = menu.addAction("Copy Description");
+
+    QAction* action = menu.exec(ui->solverOptionTreeView->viewport()->mapToGlobal(pos));
+    if (action == copyAction) {
+        copyDefinitionToClipboard( -1 );
+    } else if (action == copyNameAction) {
+        copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_OPTION_NAME );
+    } else if (action == copyDescriptionAction) {
+        copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_DESCIPTION );
+    } else if (action == addThisOptionAction) {
+         addOptionFromDefinition(selection.at(0));
+    }
+}
+
 void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
     setModified(true);
@@ -408,6 +436,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     mOptionTableModel->on_updateSolverOptionItem( ui->solverOptionTableView->model()->index(firstRow, lastColumn),
                                                   ui->solverOptionTableView->model()->index(lastRow, lastColumn),
                                                   {Qt::EditRole});
+
+    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
 
     updateTableColumnSpan();
 
@@ -539,6 +569,44 @@ void SolverOptionWidget::showOptionDefinition()
             }
         }
     }
+}
+
+void SolverOptionWidget::copyDefinitionToClipboard(int column)
+{
+    if (ui->solverOptionTreeView->selectionModel()->selectedRows().count() <= 0)
+        return;
+
+    QModelIndex index = ui->solverOptionTreeView->selectionModel()->selectedRows().at(0);
+
+    QString text = "";
+    QModelIndex parentIndex = ui->solverOptionTreeView->model()->parent(index);
+    if (column == -1) { // copy all
+        QStringList strList;
+        if (parentIndex.isValid()) {
+            QModelIndex idx = ui->solverOptionTreeView->model()->index(index.row(), SolverOptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            strList << ui->solverOptionTreeView->model()->data(idx, Qt::DisplayRole).toString();
+            idx = ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
+            strList << ui->solverOptionTreeView->model()->data(idx, Qt::DisplayRole).toString();
+            text = strList.join(", ");
+        } else {
+           for (int j=0; j<ui->solverOptionTreeView->model()->columnCount(); j++) {
+               if (j==SolverOptionDefinitionModel::COLUMN_ENTRY_NUMBER)
+                  continue;
+               QModelIndex columnindex = ui->solverOptionTreeView->model()->index(index.row(), j);
+               strList << ui->solverOptionTreeView->model()->data(columnindex, Qt::DisplayRole).toString();
+           }
+           text = strList.join(", ");
+        }
+    } else {
+        if (parentIndex.isValid()) {
+            QModelIndex idx = ui->solverOptionTreeView->model()->index(index.row(), column, parentIndex);
+            text = ui->solverOptionTreeView->model()->data( idx, Qt::DisplayRole ).toString();
+        } else {
+            text = ui->solverOptionTreeView->model()->data( ui->solverOptionTreeView->model()->index(index.row(), column), Qt::DisplayRole ).toString();
+        }
+    }
+    QClipboard* clip = QApplication::clipboard();
+    clip->setText( text );
 }
 
 void SolverOptionWidget::updateEditActions(bool modified)

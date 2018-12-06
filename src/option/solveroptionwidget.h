@@ -67,6 +67,7 @@ signals:
 
 public slots:
     void showOptionContextMenu(const QPoint &pos);
+    void showDefinitionContextMenu(const QPoint &pos);
     void addOptionFromDefinition(const QModelIndex &index);
 
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
@@ -87,6 +88,7 @@ public slots:
 
 private slots:
     void showOptionDefinition();
+    void copyDefinitionToClipboard(int column);
 
 private:
     Ui::SolverOptionWidget *ui;

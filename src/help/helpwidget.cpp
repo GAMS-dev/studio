@@ -391,7 +391,7 @@ void HelpWidget::on_actionOpenInBrowser_triggered()
 
 void HelpWidget::on_actionCopyPageURL_triggered()
 {
-    QClipboard* clip = QApplication::clipboard();;
+    QClipboard* clip = QApplication::clipboard();
     clip->setText( ui->webEngineView->page()->url().toString());
 }
 
