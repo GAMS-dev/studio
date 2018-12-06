@@ -495,8 +495,24 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
         if (!item->key.isEmpty() && !item->key.startsWith("*"))
             return QString("* %1%2%3").arg(key).arg(separator).arg(value);
     }
-    if (!item->text.isEmpty() && !item->text.startsWith("!"))
-       return QString("%1%2%3 !%4").arg(key).arg(separator).arg(value).arg(text);
+
+    OptionDefinition optdef;
+    if (mOption->isValid(key))
+       optdef = mOption->getOptionDefinition(key);
+    else if (mOption->isASynonym(key))
+            optdef = mOption->getOptionDefinition( mOption->getNameFromSynonym(key));
+
+    if (optdef.dataType == optDataString) {
+        if (value.contains(" ")) {
+            if (!value.startsWith("\""))
+                value.prepend("\"");
+            if (!value.endsWith("\""))
+                value.append("\"");
+            qDebug() << "format value [" << value << "]";
+        }
+    }
+//    if (!item->text.isEmpty() && !item->text.startsWith("!"))
+//       return QString("%1%2%3 !%4").arg(key).arg(separator).arg(value).arg(text);
 
     return QString("%1%2%3").arg(key).arg(separator).arg(value);
 }
