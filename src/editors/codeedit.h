@@ -154,6 +154,7 @@ protected:
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
+    virtual int effectiveBlockNr(const int &localBlockNr) const;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);

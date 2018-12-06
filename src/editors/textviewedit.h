@@ -51,6 +51,8 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
     void recalcWordUnderCursor() override;
+    int effectiveBlockNr(const int &localBlockNr) const override;
+
 //    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections) override;
 
 //    QString lineNrText(int blockNr) override {
@@ -69,6 +71,7 @@ private:
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;
+
 };
 
 

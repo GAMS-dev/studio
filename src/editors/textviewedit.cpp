@@ -132,5 +132,16 @@ void TextViewEdit::recalcWordUnderCursor()
     }
 }
 
+int TextViewEdit::effectiveBlockNr(const int &localBlockNr) const
+{
+    int res = mMapper.absTopLine();
+    if (res < 0) {
+        res -= localBlockNr;
+    } else {
+        res += localBlockNr;
+    }
+    return res;
+}
+
 } // namespace studio
 } // namespace gams

@@ -1312,6 +1312,11 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
+int CodeEdit::effectiveBlockNr(const int &localBlockNr) const
+{
+    return localBlockNr;
+}
+
 QString CodeEdit::lineNrText(int blockNr)
 {
     return QString::number(blockNr);
@@ -1363,9 +1368,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 
-            if (marks()->hasVisibleMarks() && marks()->contains(blockNumber)) {
+            if (marks()->hasVisibleMarks() && marks()->contains(effectiveBlockNr(blockNumber))) {
                 int iTop = (2+top+bottom-iconSize())/2;
-                painter.drawPixmap(1, iTop, marks()->value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
+                painter.drawPixmap(1, iTop, marks()->value(effectiveBlockNr(blockNumber))->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 
