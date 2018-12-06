@@ -217,7 +217,6 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
             return Value_Out_Of_Range;
         else
             return No_Error;
-        break;
      }
     case optTypeBoolean: {
         bool isCorrectDataType = false;
