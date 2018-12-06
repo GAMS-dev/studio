@@ -387,14 +387,17 @@ void FileMeta::load(QList<int> codecMibs)
         return;
     }
     if (kind() == FileKind::Opt) {
+        bool textOptEditor = true;
         for (QWidget *wid : mEditors) {
             option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
             if (so) {
+                textOptEditor = false;
                 mCodec = QTextCodec::codecForMib(codecMibs[0]);
                 so->on_reloadSolverOptionFile(mCodec);
             }
         }
-        return;
+        if (!textOptEditor)
+            return;
     }
     if (kind() == FileKind::Lst) {
         for (QWidget *wid : mEditors) {
