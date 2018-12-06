@@ -76,7 +76,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>add option descaription as end of line comment</string>
+         <string>add option description as end of line comment</string>
         </property>
        </widget>
       </item>

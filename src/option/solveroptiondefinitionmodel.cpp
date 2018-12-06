@@ -41,7 +41,6 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
 {
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
-qDebug() << "create mimeData => ...";
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
@@ -50,23 +49,35 @@ qDebug() << "create mimeData => ...";
                 continue;
             }
 
-            QString text;
             OptionDefinitionItem *childItem = static_cast<OptionDefinitionItem*>(index.internalPointer());
             OptionDefinitionItem *parentItem = childItem->parentItem();
 
             if (parentItem == rootItem) {
+                if (addCommentAbove) {
+                    QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
+                    stream << QString("* %1").arg(data(descriptionIndex, Qt::DisplayRole).toString());
+                }
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
-                text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(defValueIndex, Qt::DisplayRole).toString());
+                QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+                stream << QString("%1=%2=%3").arg(data(index, Qt::DisplayRole).toString())
+                                             .arg(data(defValueIndex, Qt::DisplayRole).toString())
+                                             .arg(data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
-                text = QString("%1=%2").arg(parentItem->data(index.column()).toString()).arg(data(index, Qt::DisplayRole).toString());
+                if (addCommentAbove) {
+                    stream << QString("* %1").arg(parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
+
+                    QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
+                    stream << QString("* %1 - %2").arg(data(index, Qt::DisplayRole).toString())
+                                                  .arg(data(descriptionIndex, Qt::DisplayRole).toString());
+                }
+                stream << QString("%1=%2=%3").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
+                                             .arg(data(index, Qt::DisplayRole).toString())
+                                             .arg(parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
             }
-            qDebug() << "create mimeData => " << text;
-            stream << text;
         }
     }
 
     mimeData->setData("application/vnd.solver-opt.text", encodedData);
-    qDebug() << "create mimeData => " << mimeData->formats().at(0);
     return mimeData;
 }
 
@@ -115,6 +126,11 @@ void SolverOptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptio
         }
     }
     endResetModel();
+}
+
+void SolverOptionDefinitionModel::on_addCommentAbove_stateChanged(int checkState)
+{
+    addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
 

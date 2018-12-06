@@ -979,14 +979,14 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
        inputFile.close();
     }
 // TODO (JP) to be removed
-    qDebug() << "read : " << items.size() << "lines : " << i  << " options.";
-    for(int k=0; k<items.size(); k++) {
-        SolverOptionItem* item = items.at(k);
-        qDebug() <<  QString(" # %1:%2:[%3]=[%4] -%5-> (%6|%7) [%8]").arg(k).arg(item->optionId)
-                     .arg(item->key).arg(item->value.toString())
-                     .arg(item->error)
-                     .arg(item->disabled?"C":"X").arg(item->modified?"M":"X").arg(item->text);
-    }
+//    qDebug() << "read : " << items.size() << "lines : " << i  << " options.";
+//    for(int k=0; k<items.size(); k++) {
+//        SolverOptionItem* item = items.at(k);
+//        qDebug() <<  QString(" # %1:%2:[%3]=[%4] -%5-> (%6|%7) [%8]").arg(k).arg(item->optionId)
+//                     .arg(item->key).arg(item->value.toString())
+//                     .arg(item->error)
+//                     .arg(item->disabled?"C":"X").arg(item->modified?"M":"X").arg(item->text);
+//    }
     return items;
 }
 

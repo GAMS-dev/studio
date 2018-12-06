@@ -37,7 +37,10 @@ public:
 public slots:
     void modifyOptionDefinitionItem(const SolverOptionItem* optionItems);
     void modifyOptionDefinition(const QList<SolverOptionItem *> &optionItems);
+    void on_addCommentAbove_stateChanged(int checkState);
 
+protected:
+    bool addCommentAbove = false;
 };
 
 } // namespace option

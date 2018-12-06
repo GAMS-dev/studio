@@ -348,9 +348,6 @@ Qt::DropActions SolverOptionTableModel::supportedDropActions() const
 bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     Q_UNUSED(column);
-    for(QString f : mimedata->formats()) {
-       qDebug() << "format:" << f;
-    }
     if (action == Qt::IgnoreAction)
         return true;
 
@@ -369,27 +366,42 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
        ++rows;
     }
 
-    int beginRow;
+    int beginRow = -1;
 
     if (row != -1)
         beginRow = row;
     else if (parent.isValid())
-        beginRow = parent.row();
+            beginRow = parent.row();
     else
         beginRow = rowCount(QModelIndex());
 
     if (action ==  Qt::CopyAction) {
-        insertRows(beginRow, rows, QModelIndex());
+        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
 
         for (const QString &text : newItems) {
-            QStringList textList = text.split("=");
-            QModelIndex idx = index(beginRow, 0, QModelIndex());
-            setData(idx, textList.at(0), Qt::EditRole);
-            idx = index(beginRow, 1, QModelIndex());
-            setData(idx, textList.at(1), Qt::EditRole);
-            emit newTableRowDropped(index(beginRow, 0, QModelIndex()));
+            insertRows(beginRow, 1, QModelIndex());
+            if (text.startsWith("*")) {
+                QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+                setData(idx, text, Qt::EditRole);
+                setHeaderData( idx.row(), Qt::Vertical,
+                            Qt::CheckState(Qt::PartiallyChecked),
+                            Qt::CheckStateRole );
+            } else {
+                QStringList textList = text.split("=");
+                QModelIndex keyidx = index(beginRow, SolverOptionTableModel::COLUMN_OPTION_KEY);
+                setData(keyidx, textList.at( SolverOptionTableModel::COLUMN_OPTION_KEY ), Qt::EditRole);
+                QModelIndex validx = index(beginRow, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+                setData(validx, textList.at(SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::EditRole);
+                QModelIndex ididx = index(beginRow, SolverOptionTableModel::COLUMN_ENTRY_NUMBER);
+                setData(ididx, textList.at(SolverOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::EditRole);
+                setHeaderData( validx.row(), Qt::Vertical,
+                            Qt::CheckState(Qt::Unchecked),
+                            Qt::CheckStateRole );
+                emit newTableRowDropped(keyidx);
+            }
             beginRow++;
         }
+        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
         return true;
 
     }
@@ -538,6 +550,11 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
+}
+
+void SolverOptionTableModel::on_addCommentAbove_stateChanged(int checkState)
+{
+    addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
 void SolverOptionTableModel::setRowCount(int rows)

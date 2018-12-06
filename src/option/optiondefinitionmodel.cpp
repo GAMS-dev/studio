@@ -285,10 +285,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             columnData.append(optdef.defaultValue.toDouble());
             break;
         case optDataString:
-            if (optdef.subType == optsubNoValue)
-               columnData.append("(no Value)");
-            else
-               columnData.append(optdef.defaultValue.toString());
+            columnData.append(optdef.defaultValue.toString());
             break;
         default:
             columnData.append("");
@@ -307,7 +304,10 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             break;
         case optTypeString :
             columnData.append("");
-            columnData.append("String");
+            if (optdef.subType == optsubNoValue)
+               columnData.append("String (no Value)");
+            else
+               columnData.append("String");
             break;
         case optTypeBoolean :
             columnData.append("");

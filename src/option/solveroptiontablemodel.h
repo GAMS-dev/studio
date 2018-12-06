@@ -72,6 +72,7 @@ public slots:
     void on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeSolverOptionItem();
     void on_toggleRowHeader(int logicalIndex);
+    void on_addCommentAbove_stateChanged(int checkState);
 
 protected:
     QList<SolverOptionItem *> mOptionItem;
@@ -80,6 +81,8 @@ protected:
 
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
+
+    bool addCommentAbove = false;
 
     void setRowCount(int rows);
     void updateCheckState();

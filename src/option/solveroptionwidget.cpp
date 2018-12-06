@@ -146,6 +146,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
 
     connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAbove_stateChanged);
+    connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
+    connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
@@ -337,6 +339,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
     setModified(true);
 
+    disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+
     QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
     QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
                                                           ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
@@ -366,12 +370,12 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
         QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_ENTRY_NUMBER);
 
-        ui->solverOptionTableView->model()->setData( insertKeyIndex, descriptionData, Qt::EditRole);
-        ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
-        ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
         ui->solverOptionTableView->model()->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
                                                            Qt::CheckState(Qt::PartiallyChecked),
                                                            Qt::CheckStateRole );
+        ui->solverOptionTableView->model()->setData( insertKeyIndex, descriptionData, Qt::EditRole);
+        ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
+        ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
         if (parentIndex.row() >= 0) {  // insert enum comment description row
             descriptionIndex = ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
             QString strData =  selectedValueData;
@@ -384,12 +388,12 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             insertValueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
             insertNumberIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_ENTRY_NUMBER);
 
-            ui->solverOptionTableView->model()->setData( insertKeyIndex, strData, Qt::EditRole);
-            ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
-            ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
             ui->solverOptionTableView->model()->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
                                                                Qt::CheckState(Qt::PartiallyChecked),
                                                                Qt::CheckStateRole );
+            ui->solverOptionTableView->model()->setData( insertKeyIndex, strData, Qt::EditRole);
+            ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
+            ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
         }
     }
     // insert option row
@@ -402,6 +406,13 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
+
+    int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
+    int lastRow = ui->solverOptionTableView->model()->rowCount()-1;
+    int firstRow = (addCommentAbove ? lastRow-2 : lastRow);
+    mOptionTableModel->on_updateSolverOptionItem( ui->solverOptionTableView->model()->index(firstRow, lastColumn),
+                                                  ui->solverOptionTableView->model()->index(lastRow, lastColumn),
+                                                  {Qt::EditRole});
 
     updateTableColumnSpan();
 
@@ -572,6 +583,9 @@ int SolverOptionWidget::getItemCount() const
 
 void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 {
+    updateTableColumnSpan();
+    ui->solverOptionTableView->selectRow(index.row());
+
     QString optionName = ui->solverOptionTableView->model()->data(index, Qt::DisplayRole).toString();
     QModelIndexList definitionItems = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                      Qt::DisplayRole,
@@ -580,6 +594,8 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
     for(QModelIndex item : definitionItems) {
         ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
+
+
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 }
 

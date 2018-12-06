@@ -29,6 +29,8 @@ SolverOptionSetting::SolverOptionSetting(QWidget *parent) :
     ui(new Ui::SolverOptionSetting)
 {
     ui->setupUi(this);
+    ui->addEOLCommentCheckBox->setVisible(false);
+    ui->readwriteGroupBox->setVisible(false);
 }
 
 SolverOptionSetting::~SolverOptionSetting()
