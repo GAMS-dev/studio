@@ -369,11 +369,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         if (mSettings->autoIndent() && e->key() == Qt::Key_Backspace) {
             int pos = textCursor().positionInBlock();
 
-            QString line = textCursor().block().text().mid(0, pos);
-            QRegularExpression regex("^\\s+$");
-            bool allWhitespace = regex.match(line).hasMatch();
+            QString line = textCursor().block().text();
+            QRegularExpression regex("^(\\s+)");
+            QRegularExpressionMatch match = regex.match(line);
+            bool allWhitespace = match.hasMatch();
 
-            if (allWhitespace) {
+            if (allWhitespace && !textCursor().hasSelection() && match.capturedLength() == pos) {
                 indent(-mSettings->tabSize());
                 e->accept();
                 return;
