@@ -53,6 +53,9 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextView::editScrollChanged);
     connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
+    connect(mEdit, &AbstractEdit::toggleBookmark, this, &TextView::toggleBookmark);
+    connect(mEdit, &AbstractEdit::jumpToNextBookmark, this, &TextView::jumpToNextBookmark);
+
     mPeekTimer.setSingleShot(true);
     connect(&mPeekTimer, &QTimer::timeout, this, &TextView::peekMoreLines);
     mEdit->verticalScrollBar()->setVisible(false);
@@ -124,6 +127,11 @@ void TextView::copySelection()
 void TextView::selectAllText()
 {
     mEdit->selectAllText();
+}
+
+AbstractEdit *TextView::edit()
+{
+    return mEdit;
 }
 
 //int TextView::findLine(int lineNr)

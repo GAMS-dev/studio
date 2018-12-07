@@ -304,6 +304,11 @@ void FileMeta::addEditor(QWidget *edit)
             ptEdit->viewport()->setMouseTracking(true);
         }
     }
+    if (TextView* tv = ViewHelper::toTextView(edit)) {
+        connect(tv, &TextView::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        connect(tv, &TextView::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+    }
     if (mEditors.size() == 1) emit documentOpened();
     if (ptEdit)
         ptEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
@@ -336,6 +341,10 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
                 unlinkAndFreeDocument();
             }
         }
+    }
+
+    if (mEditors.isEmpty()) {
+        mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
     }
     if (scEdit && mHighlighter) {
         disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
@@ -524,6 +533,10 @@ void FileMeta::marksChanged(QSet<NodeId> groups)
         AbstractEdit * ed = ViewHelper::toAbstractEdit(w);
         if (ed && (groups.isEmpty() || groups.contains(ed->groupId()))) {
             ed->marksChanged();
+        }
+        TextView * tv = ViewHelper::toTextView(w);
+        if (tv && (groups.isEmpty() || groups.contains(tv->groupId()))) {
+            tv->marksChanged();
         }
     }
     if (mHighlighter) mHighlighter->rehighlight();

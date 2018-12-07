@@ -97,6 +97,7 @@ LineNumberArea* CodeEdit::lineNumberArea()
 void CodeEdit::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+    mLineNumberArea->repaint();
 }
 
 void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)

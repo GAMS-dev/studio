@@ -22,6 +22,7 @@
 
 #include "textmapper.h"
 #include "syntax/textmarkrepo.h"
+#include "editors/abstractedit.h"
 #include <QAbstractScrollArea>
 #include <QStringBuilder>
 #include <QScrollBar>
@@ -48,11 +49,14 @@ public:
 //    int findLine(int lineNr);
     void copySelection();
     void selectAllText();
+    AbstractEdit *edit();
 
 signals:
     void blockCountChanged(int newBlockCount);
     void loadAmountChanged();
     void selectionChanged();
+    void toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
 
 private slots:
     void editScrollChanged();
@@ -74,6 +78,16 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
+    inline FileId fileId() {
+        bool ok;
+        FileId file = property("fileId").toInt(&ok);
+        return ok ? file : FileId();
+    }
+    inline NodeId groupId() {
+        bool ok;
+        NodeId group = property("groupId").toInt(&ok);
+        return ok ? group : NodeId();
+    }
 
 private:
     void init();
