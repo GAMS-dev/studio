@@ -27,5 +27,11 @@ void ProjectTreeView::fixFocus()
         setCurrentIndex(mi);
 }
 
+void ProjectTreeView::selectAll()
+{
+    expandAll();
+    QTreeView::selectAll();
+}
+
 } // namespace studio
 } // namespace gams

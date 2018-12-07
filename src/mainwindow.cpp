@@ -538,6 +538,20 @@ void MainWindow::setActiveMIB(int active)
 void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
 {
     if (mRecent.group == group) updateRunState();
+
+    ProjectRunGroupNode* runGroup = group->toRunGroup();
+    ProjectLogNode* log = runGroup->logNode();
+
+    QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+    for (int i = 0; i < ui->logTabs->children().size(); i++) {
+        if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
+
+            if (runGroup->gamsProcessState() == QProcess::Running)
+                ui->logTabs->tabBar()->tabButton(i, closeSide)->hide();
+            else if (runGroup->gamsProcessState() == QProcess::NotRunning)
+                ui->logTabs->tabBar()->tabButton(i, closeSide)->show();
+        }
+    }
 }
 
 void MainWindow::projectContextMenuRequested(const QPoint& pos)

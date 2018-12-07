@@ -55,8 +55,8 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actAddNew, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
     mActions.insert(actSep3, addSeparator());
 
-    mActions.insert(actCloseGroup, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(actCloseFile, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(actCloseGroup, addAction(mTxtCloseGroup, this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 
 //    mActions.insert(2, addSeparator());
 //    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
@@ -92,12 +92,18 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     mActions[actRename]->setEnabled(single);
 
     mActions[actSep1]->setVisible(isGroup);
-    mActions[actSep1]->setEnabled(single);
-
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 
-    // all files
     mActions[actCloseFile]->setVisible(fileNode);
+    mActions[actCloseGroup]->setVisible(isGroup);
+
+    if (!single) {
+        mActions[actCloseGroup]->setText(mTxtCloseGroup + "s");
+        mActions[actCloseFile]->setText(mTxtCloseFile + "s");
+    } else {
+        mActions[actCloseGroup]->setText(mTxtCloseGroup);
+        mActions[actCloseFile]->setText(mTxtCloseFile);
+    }
 }
 
 void ProjectContextMenu::onCloseFile()

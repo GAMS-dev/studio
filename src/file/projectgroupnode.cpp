@@ -549,9 +549,6 @@ void ProjectRunGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newSt
     emit gamsProcessStateChanged(this);
 }
 
-
-
-
 ProjectRootNode::ProjectRootNode(ProjectRepo* repo)
     : ProjectGroupNode("Root", "", NodeType::root), mRepo(repo)
 {
