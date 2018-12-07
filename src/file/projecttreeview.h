@@ -17,7 +17,7 @@ protected:
     void fixFocus();
 
 public slots:
-    void selectAll();
+    void selectAll() override;
 };
 
 } // namespace studio
