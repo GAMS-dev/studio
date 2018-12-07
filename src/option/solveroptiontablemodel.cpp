@@ -278,9 +278,9 @@ bool SolverOptionTableModel::insertRows(int row, int count, const QModelIndex &p
 
     beginInsertRows(QModelIndex(), row, row + count - 1);
     if (mOptionItem.size() == row)
-         mOptionItem.append(new SolverOptionItem(-1, "", "", "", false, false));
+         mOptionItem.append(new SolverOptionItem());
     else
-        mOptionItem.insert(row, (new SolverOptionItem(-1, "", "", "", false, false)));
+        mOptionItem.insert(row, (new SolverOptionItem()));
 
     updateCheckState();
 

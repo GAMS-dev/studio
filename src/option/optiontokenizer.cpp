@@ -529,7 +529,6 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         item->text = "";
         item->error = No_Error;
         item->disabled = true;
-        item->modified = !firstTime;
     } else if (text.simplified().isEmpty()) {
         item->optionId = -1;
         item->key = "";
@@ -537,7 +536,6 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         item->text = "";
         item->error = No_Error;
         item->disabled = true;
-        item->modified = !firstTime;
     } else {
         if (str.startsWith("*"))
             text = str.mid(1).simplified();
@@ -614,10 +612,9 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                    item->optionId = i;
                    item->key = key;
                    item->value = value;
-                   item->text = ""; //text.startsWith("*") ? text : QString("* %1").arg(text);
+                   item->text = "";
                    item->error = (errorType == No_Error || errorType == Deprecated_Option) ? errorType : Value_Out_Of_Range;
                    item->disabled = false;
-                   item->modified = !firstTime;
 
                    mOption->setModified(QString::fromLatin1(name), true);
                    break;
@@ -628,10 +625,9 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
            item->optionId = -1;
            item->key = text;
            item->value = "";
-           item->text = ""; //text.startsWith("*") ? text : QString("* %1").arg(text);
+           item->text = "";
            item->error = errorType;
            item->disabled = false;
-           item->modified = !firstTime;
        }
     }
 
@@ -885,8 +881,6 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
                    item->value = definedValue;
                    item->text = "";
                    item->error = errorType;
-                   item->modified = false;
-
                    if (errorType == No_Error || errorType == Deprecated_Option)
                        item->error = errorType;
                    else
@@ -988,7 +982,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
        while (!in.atEnd()) {
            i++;
            optResetAll( mOPTHandle );
-           SolverOptionItem* item = new SolverOptionItem(-1, "", "", "", false, false, No_Error);
+           SolverOptionItem* item = new SolverOptionItem(); // -1, "", "", "", false, false, No_Error);
            getOptionItemFromStr(item, true, in.readLine());
            items.append( item );
        }
@@ -1256,7 +1250,6 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
         QString str = QString("%1 %2").arg(key).arg(value);
         qDebug() << "validating[" << str << "]";
         updateOptionItem(key, value, item);
-        item->modified = true;
     }
 }
 

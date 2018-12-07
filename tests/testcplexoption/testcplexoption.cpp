@@ -663,8 +663,8 @@ void TestCPLEXOption::testReadOptionFile()
     // then
     QCOMPARE( items.size(), 31 );
 
-    for(int i=0; i<items.size(); i++)
-        QVERIFY( !items.at(i)->modified );
+//    for(int i=0; i<items.size(); i++)
+//        QVERIFY( !items.at(i)->modified );
 
 
     // commments
@@ -1011,26 +1011,26 @@ void TestCPLEXOption::testWriteOptionFile()
 {
     // given
     QList<SolverOptionItem *> items;
-    items.append(new SolverOptionItem(-1, "", "", "*----------------------- ", true, false));
-    items.append(new SolverOptionItem(-1, " comment line....", "", "*  this is a comment  line", true, true));
-    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true, false));
-    items.append(new SolverOptionItem(-1, "", "", "", true, false));
-    items.append(new SolverOptionItem(6, "advind", "1", "advind 1", false, false));
-    items.append(new SolverOptionItem(45, "cuts", "2", "cuts 2", false, false));
-    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true, false));
-    items.append(new SolverOptionItem(74, "cost.feaspref", "0.9", "cost.feaspref 0.9", false, false));
-    items.append(new SolverOptionItem(74, "x.feaspref", "1.0", "x.feaspref 0.9", false, true));
-    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true, false));
-    items.append(new SolverOptionItem(7, "aggcutlim", "1000000000", "", false, true));
-    items.append(new SolverOptionItem(71, "eprhs", "0.001", "*  eprhs=0.001", true, false));
-    items.append(new SolverOptionItem(-1, "", "", "", true, false));
-    items.append(new SolverOptionItem(27, "benderspartitioninstage", "1", "", false, true));
-    items.append(new SolverOptionItem(50, "dettilim", "1e+075", "dettilim 1e+075", false, false));
-    items.append(new SolverOptionItem(176, "rerun", "auto", "rerun=auto", true, false));
-    items.append(new SolverOptionItem(193, "solnpoolcapacity", "1100000000", "solnpoolcapacity=1100000000", false, false));
-    items.append(new SolverOptionItem(195, "solnpoolintensity", "3", "solnpoolintensity  3", false, false));
-    items.append(new SolverOptionItem(216, "tuning", "str1, str2, str3", "tuning str1, str2, str3", false, false));
-    items.append(new SolverOptionItem(216, "tuning", "str 4, str 5", "tuning str 4, str 5", false, false));
+    items.append(new SolverOptionItem(-1, "", "", "*----------------------- ", true));
+    items.append(new SolverOptionItem(-1, " comment line....", "", "*  this is a comment  line", true));
+    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true));
+    items.append(new SolverOptionItem(-1, "", "", "", true));
+    items.append(new SolverOptionItem(6, "advind", "1", "advind 1", false));
+    items.append(new SolverOptionItem(45, "cuts", "2", "cuts 2", false));
+    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true));
+    items.append(new SolverOptionItem(74, "cost.feaspref", "0.9", "cost.feaspref 0.9", false));
+    items.append(new SolverOptionItem(74, "x.feaspref", "1.0", "x.feaspref 0.9", false));
+    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true));
+    items.append(new SolverOptionItem(7, "aggcutlim", "1000000000", "", false));
+    items.append(new SolverOptionItem(71, "eprhs", "0.001", "*  eprhs=0.001", true));
+    items.append(new SolverOptionItem(-1, "", "", "", true));
+    items.append(new SolverOptionItem(27, "benderspartitioninstage", "1", "", false));
+    items.append(new SolverOptionItem(50, "dettilim", "1e+075", "dettilim 1e+075", false));
+    items.append(new SolverOptionItem(176, "rerun", "auto", "rerun=auto", true));
+    items.append(new SolverOptionItem(193, "solnpoolcapacity", "1100000000", "solnpoolcapacity=1100000000", false));
+    items.append(new SolverOptionItem(195, "solnpoolintensity", "3", "solnpoolintensity  3", false));
+    items.append(new SolverOptionItem(216, "tuning", "str1, str2, str3", "tuning str1, str2, str3", false));
+    items.append(new SolverOptionItem(216, "tuning", "str 4, str 5", "tuning str 4, str 5", false));
 
     // when
     QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"), QTextCodec::codecForLocale()) );

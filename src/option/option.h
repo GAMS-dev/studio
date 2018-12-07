@@ -59,23 +59,16 @@ struct OptionItem {
 
 struct SolverOptionItem {
     SolverOptionItem() { }
-    SolverOptionItem(int id, QString k, QString v) :
-          optionId(id), key(k), value(v) { }
-    SolverOptionItem(QString t, bool disabledFlag, bool modifiedFlag) :
-          text(t), disabled(disabledFlag), modified(modifiedFlag) { }
-    SolverOptionItem(QString t, bool disabledFlag, bool modifiedFlag, OptionErrorType e) :
-          text(t), disabled(disabledFlag), modified(modifiedFlag), error(e) { }
-    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag, bool modifiedFlag) :
-          optionId(id), key(k), value(v), text(t), disabled(disabledFlag), modified(modifiedFlag) { }
-    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag, bool modifiedFlag, OptionErrorType e) :
-          optionId(id), key(k), value(v), text(t), disabled(disabledFlag), modified(modifiedFlag), error(e)  { }
+    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag) :
+        optionId(id), key(k), value(v), text(t), disabled(disabledFlag) {}
+    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag, OptionErrorType e) :
+          optionId(id), key(k), value(v), text(t), disabled(disabledFlag), error(e) { }
 
     int optionId = -1;
     QString key = "";
     QVariant value = "";
     QString text = "";
     bool disabled = false;
-    bool modified = false;
     OptionErrorType error = No_Error;
 };
 
