@@ -74,7 +74,6 @@ public slots:
     void on_newTableRowDropped(const QModelIndex &index);
 
     bool saveOptionFile(const QString &location);
-    void on_problemSavingOptionFile(const QString &location);
 
     void on_reloadSolverOptionFile(QTextCodec* codec);
     void on_toggleRowHeader(int logicalIndex);

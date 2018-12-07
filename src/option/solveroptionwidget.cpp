@@ -459,17 +459,6 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
     return saveAs(location);
 }
 
-void SolverOptionWidget::on_problemSavingOptionFile(const QString &location)
-{
-    int answer = QMessageBox::question(this, "Problem Saving Option File"
-                                       , QString("File %1 has been saved.\nBut there is an errror and not all option and values may not have beeen saved correctly.").arg(location)
-                                       , "Load the saved option file", "Continue editing the options");
-    if (answer==0)
-        on_reloadSolverOptionFile(mCodec);
-    else
-        setModified(true);
-}
-
 void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
 {
     if (codec != mCodec) {
