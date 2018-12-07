@@ -21,6 +21,7 @@
 #include "logger.h"
 #include "exception.h"
 #include "textviewedit.h"
+#include "keys.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -350,6 +351,11 @@ void TextView::updatePosAndAnchor()
         mEdit->setTextCursor(cursor);
         mEdit->verticalScrollBar()->setValue(scrollPos);
     }
+}
+
+void TextView::marksChanged()
+{
+    mEdit->marksChanged();
 }
 
 

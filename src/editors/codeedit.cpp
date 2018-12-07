@@ -1312,11 +1312,6 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
-int CodeEdit::effectiveBlockNr(const int &localBlockNr) const
-{
-    return localBlockNr;
-}
-
 QString CodeEdit::lineNrText(int blockNr)
 {
     return QString::number(blockNr);

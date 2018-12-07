@@ -63,6 +63,9 @@ private slots:
     void handleSelectionChange();
     void updatePosAndAnchor();
 
+protected slots:
+    void marksChanged();
+
 protected:
     friend class FileMeta;
     void setMarks(const LineMarks *marks);

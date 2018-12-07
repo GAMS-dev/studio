@@ -579,7 +579,7 @@
     <string>Settings</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+,</string>
+    <string>Ctrl+Shift+,</string>
    </property>
   </action>
   <action name="actionCompile_with_GDX_Creation">

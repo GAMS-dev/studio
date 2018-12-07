@@ -120,6 +120,18 @@ void Keys::reset()
     *seq << QKeySequence("Shift+Ctrl+Left");
     setHotkey(Hotkey::SelectCharGroupLeft, seq);
 
+    seq = new KeySeqList("BookmarkToggle","Set or erase bookmark of the current line");
+    *seq << QKeySequence("Ctrl+M");
+    setHotkey(Hotkey::BookmarkToggle, seq);
+
+    seq = new KeySeqList("BookmarkNext","Move to the next stored bookmark");
+    *seq << QKeySequence("Ctrl+.");
+    setHotkey(Hotkey::BookmarkNext, seq);
+
+    seq = new KeySeqList("BookmarkPrev","Move to the previous stored bookmark");
+    *seq << QKeySequence("Ctrl+,");
+    setHotkey(Hotkey::BookmarkPrev, seq);
+
     seq = new KeySeqList("Shift+Alt+Up","start block edit");
     *seq << QKeySequence("Shift+Alt+Down") << QKeySequence("Shift+Alt+Left") << QKeySequence("Shift+Alt+Right");
     setHotkey(Hotkey::BlockEditStart, seq);

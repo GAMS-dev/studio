@@ -47,6 +47,8 @@ public:
 
 signals:
     void requestLstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
+    void toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
 
 protected:
     friend class FileMeta;
@@ -64,6 +66,11 @@ protected:
     virtual void marksChanged();
     QList<TextMark *> cachedLineMarks(int lineNr);
     const QList<TextMark*> &marksAtMouse() const;
+    inline FileId fileId() {
+        bool ok;
+        FileId file = property("fileId").toInt(&ok);
+        return ok ? file : FileId();
+    }
     inline NodeId groupId() {
         bool ok;
         NodeId group = property("groupId").toInt(&ok);
@@ -72,6 +79,7 @@ protected:
 
     virtual void setMarks(const LineMarks *marks);
     virtual const LineMarks* marks() const;
+    virtual int effectiveBlockNr(const int &localBlockNr) const;
 
 private:
     NodeId mGroupId;
