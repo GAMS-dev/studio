@@ -472,9 +472,12 @@ void SolverOptionWidget::on_problemSavingOptionFile(const QString &location)
 
 void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
 {
-    mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
-    mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
-    setModified(false);
+    if (codec != mCodec) {
+        mCodec = codec;
+        mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+        mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
+        setModified(false);
+    }
 }
 
 void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
