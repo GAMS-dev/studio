@@ -417,6 +417,7 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     }
     ProjectFileNode* file = findFile(fileMeta, fileGroup, false);
     if (!file) {
+        mTreeModel->deselectAll();
         if (fileMeta->kind() == FileKind::Log) {
             ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
             return runGroup->logNode();
@@ -446,42 +447,15 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
     return log;
 }
 
-void ProjectRepo::saveNodeAs(ProjectFileNode *node, QString location)
+void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
-    FileMeta* destFM = nullptr;
+    FileMeta* destFM = mFileRepo->fileMeta(target);
     if (!sourceFM->document()) return;
 
-    bool hasOtherSourceNode = (fileNodes(sourceFM->id()).size() > 1);
-    bool hasOtherDestNode = mFileRepo->fileMeta(location);
-    bool needReplaceSpecialFile = (node->assignedRunGroup()->specialFile(sourceFM->kind()) == node->location());
-
-    if (!hasOtherSourceNode && !hasOtherDestNode) {
-        // no other nodes to this file: just change the location
-        sourceFM->saveAs(location, false);
-        destFM = sourceFM;
-    } else {
-        destFM = mFileRepo->findOrCreateFileMeta(location);
-        if (hasOtherDestNode) {
-            emit closeFileEditors(destFM->id());
-        }
-        destFM->takeEditsFrom(sourceFM);
-        if (destFM->document()) destFM->document()->setModified();
-        node->replaceFile(destFM);
-        mFileRepo->unwatch(destFM);
-        destFM->save();
-        mFileRepo->watch(destFM);
-    }
-    if(needReplaceSpecialFile) {
-        if (sourceFM->kind() != destFM->kind()) {
-            node->assignedRunGroup()->setSpecialFile(destFM->kind(), QString());
-        } else if (destFM->kind() == FileKind::Gms) {
-            node->assignedRunGroup()->setRunnableGms(destFM);
-        } else {
-            node->assignedRunGroup()->setSpecialFile(destFM->kind(), location);
-        }
-    }
-
+    if (destFM) mFileRepo->unwatch(destFM);
+    sourceFM->saveAs(target);
+    if (destFM) mFileRepo->watch(destFM);
 }
 
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
@@ -533,11 +507,6 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
 void ProjectRepo::editorActivated(QWidget* edit)
 {
     ProjectFileNode *node = findFileNode(edit);
-//    FileId fId = FileMeta::toAbstractEdit(edit)
-//            ? FileMeta::toAbstractEdit(edit)->fileId() : FileMeta::toGdxViewer(edit)
-//              ? FileMeta::toGdxViewer(edit)->fileId() : FileMeta::toReferenceViewer(edit)
-//                ? FileMeta::toReferenceViewer(edit)->fileId() : FileId();
-//    DEB() << "Searched for Node(" << int(fId);
     if (!node) return;
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);

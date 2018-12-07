@@ -67,6 +67,7 @@ protected:
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void deselectAll();
     const QVector<QModelIndex> popDeclined();
 
     void update(const QModelIndex& ind = QModelIndex());

@@ -345,12 +345,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             int pos = cursor.positionInBlock();
             cursor.beginEditBlock();
             QString leadingText = cursor.block().text().left(pos).trimmed();
-            if (leadingText.isEmpty()) {
-                cursor.movePosition(QTextCursor::StartOfBlock);
-                cursor.insertText("\n");
-                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos);
-            } else {
-                cursor.insertText("\n");
+            cursor.insertText("\n");
+            if (!leadingText.isEmpty()) {
                 if (cursor.block().previous().isValid())
                     truncate(cursor.block().previous());
                 adjustIndent(cursor);
@@ -369,6 +365,20 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             indent(-mSettings->tabSize());
             e->accept();
             return;
+        }
+        if (mSettings->autoIndent() && e->key() == Qt::Key_Backspace) {
+            int pos = textCursor().positionInBlock();
+
+            QString line = textCursor().block().text();
+            QRegularExpression regex("^(\\s+)");
+            QRegularExpressionMatch match = regex.match(line);
+            bool allWhitespace = match.hasMatch();
+
+            if (allWhitespace && !textCursor().hasSelection() && match.capturedLength() == pos) {
+                indent(-mSettings->tabSize());
+                e->accept();
+                return;
+            }
         }
     }
 
@@ -451,17 +461,19 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
 bool CodeEdit::allowClosing(int chIndex)
 {
-    QRegularExpression allowsAutoclose("[\\s\n\r,;\\)\\{\\}\\]\u2029]");
-    QRegularExpressionMatch match = allowsAutoclose.match(
-                                        QString(document()->characterAt(textCursor().position()))
-                                        );
-    QChar prior = document()->characterAt(textCursor().position() - 1);
+    QString allowingChars(",;){}] ");
+    bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1;
+    bool nextLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
 
-    // if char before and after the cursor are a matching pair: OK
+    // insert closing if next char permits or is end of line
+    bool allowAutoClose =  nextAllows || nextLinebreak;
+
+    // if char before and after the cursor are a matching pair: allow
+    QChar prior = document()->characterAt(textCursor().position() - 1);
     bool matchingPairExisting = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
 
     // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
-    return match.hasMatch() && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
+    return allowAutoClose && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)

@@ -106,10 +106,7 @@ void TextMarkRepo::clear()
 void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
 {
     FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
-    ProjectFileNode* pfn = mProjectRepo->findFile(fm);
-
-    // add to tree if not existent
-    if (!pfn) mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findRunGroup(mark->groupId()));
+    mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findRunGroup(mark->groupId()));
 
     if (fm) fm->jumpTo(mark->groupId(), focus, mark->line(), mark->blockEnd());
 }

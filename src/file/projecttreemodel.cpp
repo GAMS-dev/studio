@@ -344,6 +344,12 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
     }
 }
 
+void ProjectTreeModel::deselectAll()
+{
+    mSelected.clear();
+    dataChanged(rootModelIndex(), index(rowCount(rootModelIndex())));
+}
+
 QVector<NodeId> ProjectTreeModel::selectedIds() const
 {
     return mSelected;
