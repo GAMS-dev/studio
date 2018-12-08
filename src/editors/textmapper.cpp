@@ -61,7 +61,8 @@ bool TextMapper::openFile(const QString &fileName)
             DEB() << "Could not open file " << fileName;
             return false;
         }
-        mOversizeMapper.setSize(mFile.size());
+        mSize = mFile.size();
+//        mOversizeMapper.setSize(mFile.size());
         int chunkCount = int(mFile.size()/mChunkSize)+1;
         mChunkLineNrs.reserve(chunkCount);
         for (int i = mChunkLineNrs.size(); i < chunkCount; ++i) {
@@ -150,7 +151,8 @@ void TextMapper::clear()
     mChunkLineNrs.clear();
     mChunkLineNrs.squeeze();
     mDelimiter.clear();
-    mOversizeMapper.setSize(0);
+    mSize = 0;
+//    mOversizeMapper.setSize(0);
 }
 
 
@@ -284,12 +286,6 @@ bool TextMapper::setMappingSizes(int bufferdLines, int chunkSizeInBytes, int chu
 void TextMapper::setVisibleLineCount(int visibleLines)
 {
     mVisibleLineCount = visibleLines;
-}
-
-bool TextMapper::setTopOffset(int byteBlockNr, int remain)
-{
-    qint64 byteNr = qBound(0LL, mOversizeMapper.map(byteBlockNr, remain), size()-1);
-    return setTopOffset(byteNr);
 }
 
 bool TextMapper::setTopOffset(qint64 byteNr)
@@ -462,13 +458,6 @@ TextMapper::Changes TextMapper::popChanges()
     return res;
 }
 
-
-int TextMapper::fileSizeInByteBlocks(int *remain)
-{
-    if (remain) *remain = mOversizeMapper.remain(size());
-    return mOversizeMapper.map(size());
-}
-
 int TextMapper::absTopLine() const
 {
     Chunk *chunk = getChunk(mTopLine.chunkNr);
@@ -509,20 +498,6 @@ void TextMapper::dumpTopChunk(int maxlen)
     Chunk *res = mChunks.last();
     DEB() << "Chunk " << res->nr << ": '"
           << res->bArray.left((maxlen-5)/2) << "' ... '" << res->bArray.right((maxlen-5)/2) << "'";
-}
-
-const char* TextMapper::rawLine(int localLineNr, int *lineInChunk) const
-{
-    int licData;
-    if (!lineInChunk) lineInChunk = &licData;
-    if (mChunks.isEmpty()) return QByteArray();
-    Chunk *chunk1 = chunkForRelativeLine(localLineNr, lineInChunk);
-    // get the text of the line
-    QByteArray raw;
-    raw.setRawData(static_cast<const char*>(chunk1->bArray)+chunk1->lineBytes.at(*lineInChunk),
-                   uint(mChunks.last()->lineBytes.at(*lineInChunk+1)
-                        - mChunks.last()->lineBytes.at(*lineInChunk) - mDelimiter.size()));
-    return raw;
 }
 
 QString TextMapper::line(int localLineNr, int *lineInChunk) const
@@ -599,7 +574,7 @@ void TextMapper::updateBytesPerLine(const ChunkLines &chunkLines) const
     mBytesPerLine = absKnownLinesSize / absKnownLines;
 }
 
-int TextMapper::absPos(int absLineNr, int charNr, int *remain)
+qint64 TextMapper::absPos(int absLineNr, int charNr)
 {
     int lineInChunk;
     Chunk *chunk = chunkForLine(absLineNr, &lineInChunk);
@@ -609,8 +584,7 @@ int TextMapper::absPos(int absLineNr, int charNr, int *remain)
         rawCharNr = mCodec ? mCodec->fromUnicode(text).length() : text.length();
     }
     qint64 pos = chunk->start + chunk->lineBytes.at(lineInChunk) + rawCharNr;
-    if (remain) *remain = mOversizeMapper.remain(pos);
-    return mOversizeMapper.map(pos);
+    return pos;
 }
 
 int TextMapper::relPos(int localLineNr, int charNr)
@@ -836,19 +810,15 @@ int TextMapper::selectionSize() const
     return int(selSize);
 }
 
-TextMapper::ProgressAmount TextMapper::peekChunksForLineNrs(int chunkCount)
+bool TextMapper::peekChunksForLineNrs(int chunkCount)
 {
-    ProgressAmount res;
-    res.all = mOversizeMapper.map(size());
     int known = mLastChunkWithLineNr;
     Chunk *chunk = nullptr;
     for (int i = 1; i <= chunkCount; ++i) {
         chunk = loadChunk(known + i);
         if (!chunk) break;
     }
-    if (!chunk) res.part = res.all;
-    else res.part = mOversizeMapper.map(chunk->start+chunk->size);
-    return res;
+    return mLastChunkWithLineNr < this->chunkCount()-1;
 }
 
 int TextMapper::moveTopLine(int lineDelta)

@@ -32,32 +32,6 @@ namespace gams {
 namespace studio {
 
 ///
-/// class OversizeMapper
-/// Maps the size of a file (qint64) to a block size (int) and a remain (int). By setting a size the OversizeMapper
-/// calculates the minimum of necessary bytes in a block. If a file size is less than the maximum of an integer the
-/// factor will be 1 and the remain always 0.
-///
-struct OversizeMapper {
-    void setSize(const qint64 &_size) {
-        size = _size;
-        bytesInBlock = int((size - 1) / std::numeric_limits<int>::max()) + 1;
-    }
-    inline qint64 map(const int &block, const int &remain = 0) const {
-        return (qint64(block) * bytesInBlock) + remain;
-    }
-    inline int map(const qint64 &value) const {
-        // TODO(JM) check size-overflow AFTER calculation
-        return int(((value>size) ? size : value) / bytesInBlock);
-    }
-    inline int remain(const qint64 &value) const {
-        // TODO(JM) check size-overflow AFTER calculation
-        return int( ((value>size) ? size : value) % bytesInBlock);
-    }
-    qint64 size;
-    int bytesInBlock;
-};
-
-///
 /// class TextMapper
 /// Opens a file into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
 /// model on the fly.
@@ -66,7 +40,6 @@ class TextMapper: public QObject
 {
     Q_OBJECT
 public:
-    struct ProgressAmount { int part = 0; int all = 0; };
     enum Change { Nothing, Selection=1, Scroll=2, Buffer=4, All=7 };
     typedef QFlags<Change> Changes;
 
@@ -77,7 +50,7 @@ private:
         qint64 start = -1;
         int size = 0;
         uchar* map = nullptr;
-        QByteArray bArray; // TODO(JM) may be redundant
+        QByteArray bArray;
         QVector<int> lineBytes;
         bool isValid() const { return start >= 0;}
         int lineCount() const { return lineBytes.size()-1; }
@@ -121,11 +94,12 @@ public:
     void setCodec(QTextCodec *codec);
 
     bool openFile(const QString &fileName);
-    qint64 size() const { return mOversizeMapper.size; }
-    ProgressAmount peekChunksForLineNrs(int chunkCount);
+    qint64 size() const { return mSize; }
+    bool peekChunksForLineNrs(int chunkCount);
 
     bool setMappingSizes(int bufferedLines = 60, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
     void setVisibleLineCount(int visibleLines);
+    int visibleLineCount() { return mVisibleLineCount; }
     bool setVisibleTopLine(double region);
     bool setVisibleTopLine(int lineNr);
     int moveVisibleTopLine(int lineDelta);
@@ -150,21 +124,16 @@ public:
 public:  // test supporting methods (DELETE LATER) <<<<<<<<<<<<<<<<<<<<<
     int topChunk() const;
     void dumpTopChunk(int maxlen);
-    const char *rawLine(int localLineNr, int *lineInChunk = nullptr) const;
-    int lastChunkWithLines() const { return mLastChunkWithLineNr; }
-    int findChunk(int lineNr);
-    inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
-    int fileSizeInByteBlocks(int *remain = nullptr);
-    QString line(int localLineNr, int *lineInChunk = nullptr) const;
-    int absPos(int absLineNr, int charNr = 0, int *remain = nullptr);
+    qint64 absPos(int absLineNr, int charNr = 0);
     int relPos(int localLineNr, int charNr = 0);
-
-public:  // to-be-private methods (MOVE TO private) <<<<<<<<<<<<<<<<<<<<
-    bool setTopOffset(int byteBlockNr, int remain = 0);
-    bool setTopOffset(qint64 byteNr);
-    bool setTopLine(int lineNr);
     int moveTopLine(int lineDelta);
 
+public:  // to-be-private methods (MOVE TO private) <<<<<<<<<<<<<<<<<<<<
+    QString line(int localLineNr, int *lineInChunk = nullptr) const;
+    inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
+    int findChunk(int lineNr);
+    bool setTopOffset(qint64 byteNr);
+    bool setTopLine(int lineNr);
 
 private:
     void initDelimiter(Chunk *chunk) const;
@@ -193,7 +162,7 @@ private:
     int mVisibleTopLine = 0;
     int mBufferedLineCount = 0;
     int mVisibleLineCount = 0;
-    OversizeMapper mOversizeMapper;
+    qint64 mSize = 0;
     CursorPosition mAnchor;
     CursorPosition mPosition;
     Changes mChanges = Nothing;

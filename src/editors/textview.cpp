@@ -104,6 +104,18 @@ void TextView::zoomOut(int range)
     mEdit->zoomOut(range);
 }
 
+bool TextView::jumpTo(int lineNr, int charNr)
+{
+    if (lineNr > mMapper.knownLineNrs()) return false;
+    int vTop = mMapper.absTopLine()+mMapper.visibleOffset();
+    int vAll = mMapper.visibleLineCount();
+    if (lineNr < vTop+(vAll/3) || lineNr > vTop+(vAll*2/3)) {
+        mMapper.setVisibleTopLine(lineNr-(vAll/3));
+        vTop = mMapper.absTopLine()+mMapper.visibleOffset();
+    }
+    mMapper.setPosRelative(lineNr - vTop, charNr);
+}
+
 QPoint TextView::position() const
 {
     return mMapper.position();
@@ -146,9 +158,8 @@ AbstractEdit *TextView::edit()
 
 void TextView::peekMoreLines()
 {
-    TextMapper::ProgressAmount amount = mMapper.peekChunksForLineNrs(4);
-    // keep timer alive
-    if (amount.part < amount.all) mPeekTimer.start(50);
+    // peek and keep timer alive if not done
+    if (mMapper.peekChunksForLineNrs(4)) mPeekTimer.start(50);
     emit loadAmountChanged();
     emit blockCountChanged(lineCount());
 }

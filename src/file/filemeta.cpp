@@ -489,8 +489,8 @@ FileDifferences FileMeta::compare(QString fileName)
 void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
 {
     emit mFileRepo->openFile(this, groupId, focus, codecMib());
-
-    AbstractEdit* edit = mEditors.size() ? ViewHelper::toAbstractEdit(mEditors.first()) : nullptr;
+    if (!mEditors.size()) return;
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
         QTextCursor tc = QTextCursor(block);
@@ -502,6 +502,11 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
         int mv = int(line - lines/2);
         if (qAbs(mv) > lines/3)
             edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
+        return;
+    }
+    TextView *tv = ViewHelper::toTextView(mEditors.first());
+    if (tv && line < tv->lineCount()) {
+        tv->jumpTo(line, column);
     }
 }
 

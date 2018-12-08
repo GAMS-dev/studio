@@ -158,15 +158,11 @@ void TestTextMapper::testPosString2Raw()
 
     // ---------- check updating of lineCounting
     mMapper->setTopOffset(20000);
-    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
     mMapper->setTopOffset(70000);
-    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
     qDebug() << "Current absolute top line should be less than 0: " << mMapper->absTopLine();
     QVERIFY(mMapper->absTopLine() < 0);
     mMapper->setTopOffset(50000);
-    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
     mMapper->setTopOffset(35000);
-    qDebug() << "lastChunkWithLines: " << mMapper->lastChunkWithLines();
     mMapper->setTopOffset(70000);
     QCOMPARE(mMapper->absTopLine(), 693);
 

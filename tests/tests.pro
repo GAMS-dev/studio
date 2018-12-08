@@ -23,6 +23,4 @@ TEMPLATE = subdirs
 SUBDIRS += testcommonpaths \
            testeditors \
            testservicelocators \
-           testoversizemapper \
-           testservicelocators \
            testtextmapper

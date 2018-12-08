@@ -44,6 +44,7 @@ public:
     int knownLines() const;
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
+    bool jumpTo(int lineNr, int charNr);
     QPoint position() const;
     QPoint anchor() const;
 //    int findLine(int lineNr);
