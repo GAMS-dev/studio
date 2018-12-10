@@ -59,6 +59,15 @@
    </item>
    <item>
     <widget class="QTableView" name="tvTableView">
+     <property name="tabKeyNavigation">
+      <bool>false</bool>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ContiguousSelection</enum>
+     </property>
      <attribute name="verticalHeaderDefaultSectionSize">
       <number>22</number>
      </attribute>
