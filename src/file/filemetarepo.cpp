@@ -112,17 +112,13 @@ void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, NodeId refGro
     FileMeta *fm = fileMeta(refFileId);
     ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm, mProjectRepo->asGroup(refGroupId)) : nullptr;
     ProjectAbstractNode * node = startNode;
-    int debInt = 0;  // DEBUG ONLY
     while (!bookmark && startNode) {
-        ++debInt; // DEBUG ONLY
-        DEB() << "Node " << node->name() << " " << (node->toGroup() ? "G" : "N");
         node = back ? mProjectRepo->previous(node) : mProjectRepo->next(node);
         FileId fileId = node->toFile() ? node->toFile()->file()->id() : FileId();
         if (fileId.isValid() && mTextMarkRepo->hasBookmarks(fileId, node->parentNode()->id())) {
             bookmark = mTextMarkRepo->findBookmark(fileId, node->parentNode()->id(), -1, back);
         }
         if (node == startNode) break;
-        if (debInt > 20) break; // DEBUG ONLY
     }
 
     if (bookmark) bookmark->jumpToMark();

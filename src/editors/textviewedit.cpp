@@ -143,5 +143,17 @@ int TextViewEdit::effectiveBlockNr(const int &localBlockNr) const
     return res;
 }
 
+void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
+{
+    QTextEdit::ExtraSelection selection;
+    selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = textCursor();
+    // TODO(JM) get cursor when jumped to a line via lxi
+    selection.cursor.movePosition(QTextCursor::StartOfBlock);
+    selection.cursor.clearSelection();
+    selections.append(selection);
+}
+
 } // namespace studio
 } // namespace gams

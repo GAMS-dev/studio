@@ -149,7 +149,7 @@ protected:
     void setAllowBlockEdit(bool allow);
     virtual void recalcWordUnderCursor();
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
-    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
+    virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);

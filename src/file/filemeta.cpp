@@ -329,8 +329,6 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
     mEditors.removeAt(i);
 
     if (aEdit) {
-        aEdit->viewport()->removeEventFilter(this);
-        aEdit->removeEventFilter(this);
         QTextDocument *doc = new QTextDocument(aEdit);
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc)); // w/o layout the setDocument() fails
         aEdit->setDocument(doc);
@@ -374,10 +372,14 @@ void FileMeta::load(QList<int> codecMibs)
         }
         return;
     }
-    if (kind() == FileKind::TxtRO) {
+    if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         for (QWidget *wid: mEditors) {
             TextView *tView = ViewHelper::toTextView(wid);
             if (tView) tView->loadFile(location(), codecMibs);
+            if (kind() == FileKind::Lst) {
+                lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
+                if (lxi) lxi->loadLxi();
+            }
         }
         return;
     }
@@ -387,12 +389,6 @@ void FileMeta::load(QList<int> codecMibs)
             if (refViewer) refViewer->on_referenceFileChanged();
         }
         return;
-    }
-    if (kind() == FileKind::Lst) {
-        for (QWidget *wid : mEditors) {
-            lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
-            if (lxi) lxi->loadLxi();
-        }
     }
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
@@ -504,8 +500,7 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
             edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
         return;
     }
-    TextView *tv = ViewHelper::toTextView(mEditors.first());
-    if (tv && line < tv->lineCount()) {
+    if (TextView *tv = ViewHelper::toTextView(mEditors.first())) {
         tv->jumpTo(line, column);
     }
 }
@@ -638,11 +633,18 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
-    } else if (kind() == FileKind::TxtRO) {
+    } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
+        res = tView;
 //        tView->loadFile(location());
 //        QTimer::singleShot(1, tView, &PagingTextView::reorganize);
-        res = tView;
+        if (kind() == FileKind::Lst) {
+            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
+        }
+        if (kind() == FileKind::Log || kind() == FileKind::Lst || kind() == FileKind::TxtRO) {
+//            tView->setReadOnly(true);
+//            tView->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+        }
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
@@ -657,10 +659,10 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
         res = edit;
-        if (kind() == FileKind::Lst) {
-            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(codeEdit, location(), tabWidget));
-        }
-        if (kind() == FileKind::Log || kind() == FileKind::Lst || kind() == FileKind::TxtRO) {
+//        if (kind() == FileKind::Lst) {
+//            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(codeEdit, location(), tabWidget));
+//        }
+        if (kind() == FileKind::Log || /*kind() == FileKind::Lst ||*/ kind() == FileKind::TxtRO) {
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }

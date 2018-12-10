@@ -24,7 +24,7 @@
 #include "lxiparser.h"
 #include "lxitreemodel.h"
 #include "lxitreeitem.h"
-#include "editors/codeedit.h"
+#include "editors/textview.h"
 #include "exception.h"
 #include "ui_lxiviewer.h"
 #include "file/projectgroupnode.h"
@@ -33,15 +33,15 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiViewer::LxiViewer(CodeEdit *codeEditor, const QString &lstFile, QWidget *parent):
+LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
-    mCodeEdit(codeEditor),
+    mTextView(textView),
     mLstFile(lstFile)
 {
     ui->setupUi(this);
 
-    ui->splitter->addWidget(mCodeEdit);
+    ui->splitter->addWidget(mTextView);
 
     QFileInfo info(mLstFile);
     mLxiFile = info.path() + "/" + info.baseName() + ".lxi";
@@ -51,7 +51,7 @@ LxiViewer::LxiViewer(CodeEdit *codeEditor, const QString &lstFile, QWidget *pare
     ui->splitter->setStretchFactor(1, 3);
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
-    connect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+//    connect(mTextView, &TextView::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 
 LxiViewer::~LxiViewer()
@@ -62,9 +62,9 @@ LxiViewer::~LxiViewer()
     delete ui;
 }
 
-CodeEdit *LxiViewer::codeEdit() const
+TextView *LxiViewer::textView() const
 {
-    return mCodeEdit;
+    return mTextView;
 }
 
 void LxiViewer::loadLxi()
@@ -98,7 +98,7 @@ void LxiViewer::jumpToTreeItem()
     if (ui->splitter->widget(0)->isHidden())
         return;
 
-    int lineNr  = mCodeEdit->textCursor().block().blockNumber();
+    int lineNr  = mTextView->position().y();
     LxiTreeModel* lxiTreeModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
     if (!lxiTreeModel) return;
     int itemIdx = 0;
@@ -132,18 +132,9 @@ void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
         else
             return;
     }
-
-    QTextBlock tb = mCodeEdit->document()->findBlockByNumber(lineNr);
-    while (tb.isValid() && tb.text().isEmpty()) {
-        tb = tb.next();
-    }
-    lineNr  = tb.blockNumber();
-    QTextCursor cursor = mCodeEdit->textCursor();
-    cursor.setPosition(tb.position());
-
-    disconnect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
-    mCodeEdit->jumpTo(cursor);
-    connect(mCodeEdit, &CodeEdit::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+//    disconnect(mTextView, &TextView::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+    mTextView->jumpTo(lineNr, 0);
+//    connect(mTextView, &TextView::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 
 } // namespace lxiviewer

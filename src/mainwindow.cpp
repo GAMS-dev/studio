@@ -2015,7 +2015,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         if (focus) {
             lxiviewer::LxiViewer* lxiViewer = ViewHelper::toLxiViewer(edit);
             if (lxiViewer)
-                lxiViewer->codeEdit()->setFocus();
+                lxiViewer->textView()->setFocus();
             else
                 tabWidget->currentWidget()->setFocus();
             if (runGroup)

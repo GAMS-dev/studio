@@ -52,6 +52,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
     void recalcWordUnderCursor() override;
     int effectiveBlockNr(const int &localBlockNr) const override;
+    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
 
 //    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections) override;
 

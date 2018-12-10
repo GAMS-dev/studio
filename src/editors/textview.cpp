@@ -111,9 +111,12 @@ bool TextView::jumpTo(int lineNr, int charNr)
     int vAll = mMapper.visibleLineCount();
     if (lineNr < vTop+(vAll/3) || lineNr > vTop+(vAll*2/3)) {
         mMapper.setVisibleTopLine(lineNr-(vAll/3));
+        topLineMoved();
         vTop = mMapper.absTopLine()+mMapper.visibleOffset();
     }
     mMapper.setPosRelative(lineNr - vTop, charNr);
+    updatePosAndAnchor();
+    return true;
 }
 
 QPoint TextView::position() const
@@ -145,16 +148,6 @@ AbstractEdit *TextView::edit()
 {
     return mEdit;
 }
-
-//int TextView::findLine(int lineNr)
-//{
-//    if (mMapper.lineCount() >= 0 || lineNr < mMapper.knownLineNrs()) {
-//        if (mMapper.setVisibleTopLine(qMax(0, lineNr - mVisibleLines/2))) return lineNr;
-//    }
-//    mTransferedLineAmount = 0;
-//    mLineToFind = lineNr;
-//    return mMapper.knownLineNrs();
-//}
 
 void TextView::peekMoreLines()
 {
@@ -338,6 +331,7 @@ void TextView::topLineMoved()
         updatePosAndAnchor();
         mEdit->blockSignals(true);
         mEdit->verticalScrollBar()->setValue(mMapper.visibleOffset());
+        mEdit->verticalScrollBar()->setValue(mMapper.visibleOffset()); // workaround: isn't set correctly on the first time
         mEdit->blockSignals(false);
         updateVScrollZone();
         mEdit->updateExtraSelections();
