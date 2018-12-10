@@ -22,7 +22,6 @@
 
 #include <QMap>
 #include <QString>
-#include <QStringList>
 
 struct cfgRec;
 typedef struct cfgRec *cfgHandle_t;

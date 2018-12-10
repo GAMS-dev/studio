@@ -22,14 +22,17 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH += $$SRCPATH    \
+INCLUDEPATH += $$SRCPATH            \
+               $$SRCPATH/locators   \
                $$SRCPATH/support
 
 HEADERS +=                  \
     testgamslicenseinfo.h
 
-SOURCES +=                                  \
-    testgamslicenseinfo.cpp                 \
-    $$SRCPATH/support/gamslicenseinfo.cpp   \
-    $$SRCPATH/commonpaths.cpp               \
+SOURCES +=                                      \
+    testgamslicenseinfo.cpp                     \
+    $$SRCPATH/locators/defaultsystemlogger.cpp  \
+    $$SRCPATH/locators/sysloglocator.cpp        \
+    $$SRCPATH/support/gamslicenseinfo.cpp       \
+    $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/exception.cpp

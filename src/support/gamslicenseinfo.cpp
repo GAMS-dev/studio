@@ -19,11 +19,11 @@
  */
 #include "gamslicenseinfo.h"
 #include "commonpaths.h"
+#include "locators/abstractsystemlogger.h"
+#include "locators/sysloglocator.h"
 #include "cfgmcc.h"
 #include "palmcc.h"
 #include "gclgms.h"
-
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -31,26 +31,28 @@ namespace support {
 
 GamsLicenseInfo::GamsLicenseInfo()
 {
+    auto logger = SysLogLocator::systemLog();
+
     char msg[GMS_SSSIZE];
     if (!cfgCreateD(&mCFG,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
                     sizeof(msg)))
-        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+        logger->appendLog(msg, LogMsgType::Error);
     auto configFile = CommonPaths::systemDir() + "/" + mConfigFile; // TODO(AF): QDIR/CommonPath usage?
     if (cfgReadConfig(mCFG, configFile.toStdString().c_str())) {
         cfgGetMsg(mCFG, msg);
-        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+        logger->appendLog(msg, LogMsgType::Error);
     }
     if (!palCreateD(&mPAL,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
                     sizeof(msg)))
-        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+        logger->appendLog(msg, LogMsgType::Error);
     auto license = CommonPaths::systemDir() + "/" + mLicenseFile;
-    int rc; // TODO(AF): what is rc?
+    int rc;
     if (!palLicenseReadU(mPAL, license.toStdString().c_str(), msg, &rc))
-        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
+        logger->appendLog(msg, LogMsgType::Error);
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()

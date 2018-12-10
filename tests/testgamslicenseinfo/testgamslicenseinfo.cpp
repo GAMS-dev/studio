@@ -22,8 +22,6 @@
 #include "commonpaths.h"
 #include "cfgmcc.h"
 
-#include <QDebug>
-
 using namespace gams::studio;
 using namespace gams::studio::support;
 
