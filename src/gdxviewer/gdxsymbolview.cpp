@@ -102,20 +102,37 @@ void GdxSymbolView::showColumnFilter(QPoint p)
 void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 {
     if (mSym) {
-        ui->tvListView->setUpdatesEnabled(false);
-        if (checked) {
-            for (int i=0; i<GMS_VAL_MAX; i++) {
-                if (mSym->isAllDefault(i))
-                    ui->tvListView->setColumnHidden(mSym->dim()+i, true);
-                else
+        if (mSym->tableView()) {
+            ui->tvTableView->setUpdatesEnabled(false);
+            if (checked) {
+                for (int col=0; col<mSym->columnCount(); col++) {
+                    if (mSym->isAllDefault(col))
+                        ui->tvTableView->setColumnHidden(col, true);
+                    else
+                        ui->tvTableView->setColumnHidden(col, false);
+                }
+            }
+            else {
+                for (int col=0; col<mSym->columnCount(); col++)
+                    ui->tvTableView->setColumnHidden(col, false);
+            }
+            ui->tvTableView->setUpdatesEnabled(true);
+        } else {
+            ui->tvListView->setUpdatesEnabled(false);
+            if (checked) {
+                for (int i=0; i<GMS_VAL_MAX; i++) {
+                    if (mSym->isAllDefault(i))
+                        ui->tvListView->setColumnHidden(mSym->dim()+i, true);
+                    else
+                        ui->tvListView->setColumnHidden(mSym->dim()+i, false);
+                }
+            }
+            else {
+                for(int i=0; i<GMS_VAL_MAX; i++)
                     ui->tvListView->setColumnHidden(mSym->dim()+i, false);
             }
+            ui->tvListView->setUpdatesEnabled(true);
         }
-        else {
-            for(int i=0; i<GMS_VAL_MAX; i++)
-                ui->tvListView->setColumnHidden(mSym->dim()+i, false);
-        }
-        ui->tvListView->setUpdatesEnabled(true);
     }
 }
 
@@ -134,6 +151,7 @@ void GdxSymbolView::refreshView()
         return;
     if(mSym->isLoaded())
         mSym->filterRows();
+    toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
 }
 
 GdxSymbol *GdxSymbolView::sym() const

@@ -334,6 +334,32 @@ void GdxSymbol::calcDefaultColumns()
     }
 }
 
+void GdxSymbol::calcDefaultColumnsTableView()
+{
+    mDefaultColumnTableView.clear();
+    mDefaultColumnTableView.resize(columnCount());
+    if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)
+        return; // symbols other than variable and equation do not have default values
+    double defVal;
+    for(int col=0; col<columnCount(); col++) {
+        if (mType == GMS_DT_VAR)
+            defVal = gmsDefRecVar[mSubType][col%GMS_VAL_MAX];
+        else if (mType == GMS_DT_EQU)
+            defVal = gmsDefRecEqu[mSubType][col%GMS_VAL_MAX];
+        for(int row=0; row<rowCount(); row++) {
+            QVector<uint> keys = mTvRowHeaders[row] + mTvColHeaders[col];
+            double val = defVal;
+            if (mTvKeysToValIdx.contains(keys))
+                val = mValues[mTvKeysToValIdx[keys]];
+            if(defVal != val) {
+                mDefaultColumnTableView[col] = false;
+                break;
+            }
+            mDefaultColumnTableView[col] = true;
+        }
+    }
+}
+
 //TODO(CW): refactoring for better performance
 void GdxSymbol::calcUelsInColumn()
 {
@@ -510,7 +536,14 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
     std::stable_sort(mTvRowHeaders.begin(), mTvRowHeaders.end());
     std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
 
+    calcDefaultColumnsTableView();
+
     endResetModel();
+}
+
+QVector<bool> GdxSymbol::defaultColumnTableView() const
+{
+    return mDefaultColumnTableView;
 }
 
 bool GdxSymbol::tableView() const
@@ -525,9 +558,9 @@ int GdxSymbol::tvColDim() const
 
 void GdxSymbol::setTableView(bool tableView)
 {
-    if (tableView)
-        initTableView(1, QVector<int>());
     mTableView = tableView;
+    if (mTableView)
+        initTableView(1, QVector<int>());
 }
 
 std::vector<bool> GdxSymbol::filterActive() const
@@ -572,10 +605,17 @@ void GdxSymbol::resetSortFilter()
 
 bool GdxSymbol::isAllDefault(int valColIdx)
 {
-    if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
-        return mDefaultColumn[valColIdx];
-    else
-        return false;
+    if (tableView()) {
+        if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+            return mDefaultColumnTableView[valColIdx];
+        else
+            return false;
+    } else {
+        if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+            return mDefaultColumn[valColIdx];
+        else
+            return false;
+    }
 }
 
 int GdxSymbol::subType() const

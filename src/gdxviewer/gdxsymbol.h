@@ -75,11 +75,14 @@ public:
 
     bool tableView() const;
 
+    QVector<bool> defaultColumnTableView() const;
+
 signals:
     void loadFinished();
 
 private:
     void calcDefaultColumns();
+    void calcDefaultColumnsTableView();
     void calcUelsInColumn();
     void loadMetaData();
     void loadDomains();
@@ -116,6 +119,7 @@ private:
     QStringList mDomains;
 
     bool mDefaultColumn[GMS_VAL_MAX] {false};
+    QVector<bool> mDefaultColumnTableView;
 
     std::vector<double> mSpecValSortVal;
 
