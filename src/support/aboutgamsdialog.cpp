@@ -68,11 +68,10 @@ QString AboutGAMSDialog::gamsLicense()
     about << CheckForUpdateWrapper::distribVersionString();
     about << "</big></b><br/><br/>";
 
-    // TODO(AF): optimize GAMS output
     GamsProcess gproc;
     int licenseLines = 5;
     for (auto line : gproc.aboutGAMS().split("\n")) {
-        //qDebug() << "LINE >> " << line;
+        qDebug() << "LINE >> " << line;
         if (line.contains("__")) {
             --licenseLines;
             if (4 == licenseLines)
@@ -81,17 +80,15 @@ QString AboutGAMSDialog::gamsLicense()
                 about << line + "\n" << "</pre>";
             else
                 about << line + "\n";
+        } else if (line.startsWith("#L")) {
+            continue;
+        } else if (line.contains("gamslice.txt")) {
+            about << line;
         } else {
-//            QRegExp regex("^\\s$");
-//            if (regex.exactMatch(line)) continue;
             about << line << "<br/>";
         }
     }
 
-//    about << "<br/><br/>For further information about GAMS please visit ";
-//    about << "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-//    qDebug() << "#################################";
-//    qDebug() << about.join("");
     return about.join("");
 }
 
