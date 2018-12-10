@@ -47,7 +47,10 @@ GamsLicenseInfo::GamsLicenseInfo()
                     msg,
                     sizeof(msg)))
         qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
-    // TODO(AF): wait for palLicenseReadU
+    auto license = CommonPaths::systemDir() + "/" + mLicenseFile;
+    int rc; // TODO(AF): what is rc?
+    if (!palLicenseReadU(mPAL, license.toStdString().c_str(), msg, &rc))
+        qDebug() << "ERROR: " << msg; // TODO(AF): execption/syslog
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
@@ -100,7 +103,7 @@ bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
 }
 
 QString GamsLicenseInfo::solverLicense(int solverId) const
-{ // TODO(AF): review, test
+{
     int days;
     char *codes = solverCodes(solverId);
     if (palLicenseCheckSubX(mPAL,

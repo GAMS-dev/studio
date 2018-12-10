@@ -25,7 +25,6 @@
 
 #include <QClipboard>
 #include <QSortFilterProxyModel>
-#include <QDebug>
 
 namespace gams {
 namespace studio {

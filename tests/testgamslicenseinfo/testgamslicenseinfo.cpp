@@ -200,4 +200,20 @@ void TestGamsLicenseInfo::testSolverCapabilityBothInvalidNegative()
     QVERIFY2(!capable, "There shall be no capability returned.");
 }
 
+void TestGamsLicenseInfo::testSolverLicense()
+{
+    bool test = true;
+    GamsLicenseInfo gamsLicenseInfo;
+    auto solverKeys = gamsLicenseInfo.solverNames().keys();
+    QVERIFY(gamsLicenseInfo.solvers() == solverKeys.size());
+    for (auto solverId : solverKeys) {
+        // use solverID+1 because there is no solver with Id 0
+        auto result = gamsLicenseInfo.solverLicense(solverId+1);
+        test = result.contains("Demo") || result.contains("Full") ||
+                result.contains("Evaluation") || result.contains("Expired");
+        if (!test) break;
+    }
+    QVERIFY(test);
+}
+
 QTEST_MAIN(TestGamsLicenseInfo)

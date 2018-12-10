@@ -55,7 +55,7 @@ private slots:
     void testSolverCapabilityBothInvalid();
     void testSolverCapabilityBothInvalidNegative();
 
-    //void testSolverLicense(); // TODO(AF)
+    void testSolverLicense();
 
 };
 
