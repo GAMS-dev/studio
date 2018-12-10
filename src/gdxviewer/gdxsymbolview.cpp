@@ -22,8 +22,11 @@
 #include "gdxsymbolheaderview.h"
 #include "gdxsymbol.h"
 #include "columnfilter.h"
+#include "nestedheaderview.h"
 
 #include <QClipboard>
+#include <QDebug>
+
 
 namespace gams {
 namespace studio {
@@ -55,7 +58,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     selectAll->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(selectAll);
 
-    //create header
+    //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
     headerView->setEnabled(false);
 
@@ -67,6 +70,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->horizontalHeader()->setSectionsMovable(true);
     ui->tvListView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    //ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
+    //ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
+
     connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
@@ -74,6 +80,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+    ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -139,6 +147,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
     if (mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tvListView->setModel(mSym);
+    ui->tvTableView->setModel(mSym);
     refreshView();
 }
 
@@ -185,7 +194,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     }
     sList.pop_back();  // remove last newline
 
-    QClipboard* clip = QApplication::clipboard();;
+    QClipboard* clip = QApplication::clipboard();
     clip->setText(sList.join(""));
 }
 
@@ -196,6 +205,7 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::showListView()
 {
+    mSym->setTableView(false);
     ui->tvTableView->hide();
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
@@ -203,9 +213,18 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
+    mSym->setTableView(true);
+
+    ui->pbToggleView->setText("List View");
+
+    NestedHeaderView *hvV = new NestedHeaderView(Qt::Vertical);
+    NestedHeaderView *hvH = new NestedHeaderView(Qt::Horizontal);
+    ui->tvTableView->setVerticalHeader(hvV);
+    ui->tvTableView->setHorizontalHeader(hvH);
+    hvV->init();
+    hvH->init();
     ui->tvListView->hide();
     ui->tvTableView->show();
-    ui->pbToggleView->setText("List View");
 }
 
 void GdxSymbolView::toggleView()
@@ -217,6 +236,7 @@ void GdxSymbolView::toggleView()
         mTableViewEnabled = true;
         showTableView();
     }
+    refreshView();
 }
 
 void GdxSymbolView::enableControls()

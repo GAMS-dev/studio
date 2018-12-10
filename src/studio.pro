@@ -157,7 +157,8 @@ SOURCES += \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
     editors/viewhelper.cpp \
-    editors/editorhelper.cpp
+    editors/editorhelper.cpp \
+    gdxviewer/nestedheaderview.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -262,7 +263,8 @@ HEADERS += \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
     editors/viewhelper.h \
-    editors/editorhelper.h
+    editors/editorhelper.h \
+    gdxviewer/nestedheaderview.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
