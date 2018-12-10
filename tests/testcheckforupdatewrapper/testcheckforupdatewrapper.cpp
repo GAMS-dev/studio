@@ -84,6 +84,7 @@ void TestCheckForUpdateWrapper::testLastDistribVersion()
 void TestCheckForUpdateWrapper::testLastDistribVersionShort()
 {
     CheckForUpdateWrapper c4uWrapper;
+    c4uWrapper.checkForUpdate(); // call to fill str below
     QString result = c4uWrapper.lastDistribVersionShort();
     qDebug() << result;
     QRegExp regexp("^\\d+\\.\\d$");
