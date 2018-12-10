@@ -56,13 +56,6 @@ private:
     char* solverCodes(int solverId) const;
 
 private:
-#if defined(__APPLE__) || defined(__unix__)
-    const QString mConfigFile = "gmscmpun.txt";
-#else
-    const QString mConfigFile = "gmscmpnt.txt";
-#endif
-    const QString mLicenseFile = "gamslice.txt";
-
     cfgHandle_t mCFG;
     palHandle_t mPAL;
 };

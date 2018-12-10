@@ -167,4 +167,22 @@ void TestCommonPaths::testAbsolutePathNotExisting()
     QVERIFY(!result.compare(absolutPath));
 }
 
+void TestCommonPaths::testConfigFile()
+{
+    auto actual = CommonPaths::configFile();
+#if defined(__APPLE__) || defined(__unix__)
+    QDir expected(CommonPaths::systemDir() + "/" + "gmscmpun.txt");
+#else
+    QDir expected(CommonPaths::systemDir() + "/" + "gmscmpnt.txt");
+#endif
+    QCOMPARE(actual, expected.path());
+}
+
+void TestCommonPaths::testLicenseFile()
+{
+    auto actual = CommonPaths::licenseFile();
+    QDir expected(CommonPaths::systemDir() + "/" + "gamslice.txt");
+    QCOMPARE(actual, expected.path());
+}
+
 QTEST_MAIN(TestCommonPaths)

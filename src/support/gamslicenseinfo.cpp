@@ -39,8 +39,8 @@ GamsLicenseInfo::GamsLicenseInfo()
                     msg,
                     sizeof(msg)))
         logger->appendLog(msg, LogMsgType::Error);
-    auto configFile = CommonPaths::systemDir() + "/" + mConfigFile; // TODO(AF): QDIR/CommonPath usage?
-    if (cfgReadConfig(mCFG, configFile.toStdString().c_str())) {
+    if (cfgReadConfig(mCFG,
+                      CommonPaths::configFile().toStdString().c_str())) {
         cfgGetMsg(mCFG, msg);
         logger->appendLog(msg, LogMsgType::Error);
     }
@@ -49,9 +49,11 @@ GamsLicenseInfo::GamsLicenseInfo()
                     msg,
                     sizeof(msg)))
         logger->appendLog(msg, LogMsgType::Error);
-    auto license = CommonPaths::systemDir() + "/" + mLicenseFile;
     int rc;
-    if (!palLicenseReadU(mPAL, license.toStdString().c_str(), msg, &rc))
+    if (!palLicenseReadU(mPAL,
+                         CommonPaths::licenseFile().toStdString().c_str(),
+                         msg,
+                         &rc))
         logger->appendLog(msg, LogMsgType::Error);
 }
 
