@@ -50,6 +50,8 @@ private slots:
     void testDistribIsLast();
 
     void testStudioVersion();
+
+    void testDistribVersionString();
 };
 
 #endif // TESTCHECKFORUPDATEWRAPPER_H

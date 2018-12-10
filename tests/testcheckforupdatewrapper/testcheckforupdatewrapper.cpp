@@ -108,5 +108,11 @@ void TestCheckForUpdateWrapper::testStudioVersion()
     QVERIFY(expected.contains(result));
 }
 
+void TestCheckForUpdateWrapper::testDistribVersionString()
+{
+    auto version = CheckForUpdateWrapper::distribVersionString();
+    QRegExp regexp("^\\d+\\.\\d\\.\\d\\s[\\w\\W]*");
+    QVERIFY(regexp.exactMatch(version));
+}
 
 QTEST_MAIN(TestCheckForUpdateWrapper)

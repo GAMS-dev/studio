@@ -21,7 +21,6 @@
 #include "gclgms.h"
 #include "c4umcc.h"
 #include "commonpaths.h"
-#include "exception.h"
 
 #include <cstring>
 
@@ -144,7 +143,7 @@ QString CheckForUpdateWrapper::distribVersionString()
         char version[16];
         return c4uWrapper.distribVersionString(version, 16);
     }
-    EXCEPT() << c4uWrapper.message();
+    return QString();
 }
 
 char* CheckForUpdateWrapper::distribVersionString(char *version, size_t length)
