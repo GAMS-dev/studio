@@ -22,6 +22,7 @@
 #include "gdxsymboltable.h"
 
 #include <QMutex>
+#include <QSet>
 
 namespace gams {
 namespace studio {
@@ -464,8 +465,8 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
 
     mTvColDim = nrColDim;
     mTvDimOrder = dimOrder;
-    QHash<QVector<uint>, int> seenColHeaders;
-    QHash<QVector<uint>, int> seenRowHeaders;
+    QSet<QVector<uint>> seenColHeaders;
+    QSet<QVector<uint>> seenRowHeaders;
 
     mTvRowHeaders.clear();
     mTvColHeaders.clear();
@@ -499,14 +500,14 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
 
                 if (rowHeader != lastRowHeader) {
                     if (!seenRowHeaders.contains(rowHeader)) {
-                        seenRowHeaders[rowHeader] = 1;
+                        seenRowHeaders.insert(rowHeader);
                         mTvRowHeaders.push_back(rowHeader);
                     }
                     lastRowHeader = rowHeader;
                 }
                 if (colHeader != lastColHeader) {
                     if (!seenColHeaders.contains(colHeader)) {
-                        seenColHeaders[colHeader] = 1;
+                        seenColHeaders.insert(colHeader);
                         mTvColHeaders.push_back(colHeader);
                     }
                     lastColHeader = colHeader;
@@ -518,14 +519,14 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
 
             if (rowHeader != lastRowHeader) {
                 if (!seenRowHeaders.contains(rowHeader)) {
-                    seenRowHeaders[rowHeader] = 1;
+                    seenRowHeaders.insert(rowHeader);
                     mTvRowHeaders.push_back(rowHeader);
                     lastRowHeader = rowHeader;
                 }
             }
             if (colHeader != lastColHeader) {
                 if (!seenColHeaders.contains(colHeader)) {
-                    seenColHeaders[colHeader] = 1;
+                    seenColHeaders.insert(colHeader);
                     mTvColHeaders.push_back(colHeader);
                     lastColHeader = colHeader;
                 }
