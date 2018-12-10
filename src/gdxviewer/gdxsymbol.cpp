@@ -478,7 +478,7 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
         lastColHeader[i] = 0;
     int r;
     for (int rec=0; rec<mFilterRecCount; rec++) {
-        r = mRecFilterIdx[rec];
+        r = mRecSortIdx[mRecFilterIdx[rec]];
         int keyIdx = r*mDim;
         QVector<uint> rowHeader;
         QVector<uint> colHeader;
@@ -501,15 +501,15 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
                     if (!seenRowHeaders.contains(rowHeader)) {
                         seenRowHeaders[rowHeader] = 1;
                         mTvRowHeaders.push_back(rowHeader);
-                        lastRowHeader = rowHeader;
                     }
+                    lastRowHeader = rowHeader;
                 }
                 if (colHeader != lastColHeader) {
                     if (!seenColHeaders.contains(colHeader)) {
                         seenColHeaders[colHeader] = 1;
                         mTvColHeaders.push_back(colHeader);
-                        lastColHeader = colHeader;
                     }
+                    lastColHeader = colHeader;
                 }
             }
         } else {
