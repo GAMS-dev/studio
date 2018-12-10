@@ -629,7 +629,7 @@
     <string>Ctrl+A</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
+    <enum>Qt::WidgetShortcut</enum>
    </property>
   </action>
   <action name="actionCopy">

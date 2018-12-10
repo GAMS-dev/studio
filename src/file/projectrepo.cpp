@@ -417,6 +417,7 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
     }
     ProjectFileNode* file = findFile(fileMeta, fileGroup, false);
     if (!file) {
+        mTreeModel->deselectAll();
         if (fileMeta->kind() == FileKind::Log) {
             ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
             return runGroup->logNode();
@@ -506,11 +507,6 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
 void ProjectRepo::editorActivated(QWidget* edit)
 {
     ProjectFileNode *node = findFileNode(edit);
-//    FileId fId = FileMeta::toAbstractEdit(edit)
-//            ? FileMeta::toAbstractEdit(edit)->fileId() : FileMeta::toGdxViewer(edit)
-//              ? FileMeta::toGdxViewer(edit)->fileId() : FileMeta::toReferenceViewer(edit)
-//                ? FileMeta::toReferenceViewer(edit)->fileId() : FileId();
-//    DEB() << "Searched for Node(" << int(fId);
     if (!node) return;
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);

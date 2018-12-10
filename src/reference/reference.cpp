@@ -23,10 +23,10 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-Reference::Reference(QString referenceFile, QObject *parent) :
-    QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile))
+Reference::Reference(QString referenceFile, QTextCodec* codec, QObject *parent) :
+    QObject(parent), mCodec(codec), mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
-    loadReferenceFile();
+    loadReferenceFile(mCodec);
 }
 
 Reference::~Reference()
@@ -133,9 +133,15 @@ Reference::ReferenceState Reference::state() const
     return mState;
 }
 
-void Reference::loadReferenceFile()
+QTextCodec *Reference::codec() const
+{
+    return mCodec;
+}
+
+void Reference::loadReferenceFile(QTextCodec* codec)
 {
     emit loadStarted();
+    mCodec = codec;
     mState = ReferenceState::Loading;
     clear();
     mValid = parseFile(mReferenceFile);
@@ -150,6 +156,7 @@ bool Reference::parseFile(QString referenceFile)
         return false;
     }
     QTextStream in(&file);
+    in.setCodec(mCodec);
 
     QStringList recordList;
     QString idx;

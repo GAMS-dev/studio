@@ -355,16 +355,18 @@ void FileMeta::load(QList<int> codecMibs)
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
-            gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid);
-            if (gdxViewer)
-                gdxViewer->reload();
+            if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
+                mCodec = QTextCodec::codecForMib(codecMibs[0]);
+                gdxViewer->reload(mCodec);
+            }
         }
         return;
     }
     if (kind() == FileKind::Ref) {
         for (QWidget *wid: mEditors) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
-            if (refViewer) refViewer->on_referenceFileChanged();
+            mCodec = QTextCodec::codecForMib(codecMibs[0]);
+            if (refViewer) refViewer->on_referenceFileChanged(mCodec);
         }
         return;
     }
@@ -605,16 +607,17 @@ bool FileMeta::isOpen() const
 QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, QList<int> codecMibs)
 {
     QWidget* res = nullptr;
+    if (codecMibs.size() == 1 && codecMibs.first() == -1) codecMibs = QList<int>() << QTextCodec::codecForLocale()->mibEnum();
+    mCodec = QTextCodec::codecForMib(codecMibs[0]);
     if (kind() == FileKind::Gdx) {
-        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), tabWidget));
+        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
-        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
+        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        if (codecMibs.size() == 1 && codecMibs.first() == -1) codecMibs = QList<int>();
         if (kind() == FileKind::Log) {
             edit = ViewHelper::initEditorType(new ProcessLogEdit(tabWidget));
         } else {
@@ -639,7 +642,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     ViewHelper::setFileId(res, id());
     ViewHelper::setGroupId(res, runGroup->id());
     ViewHelper::setLocation(res, location());
-    tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
+    int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
+    tabWidget->setTabToolTip(i, location());
     addEditor(res);
     if (mEditors.size() == 1 && ViewHelper::toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMibs);
