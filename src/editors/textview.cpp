@@ -169,11 +169,11 @@ bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags 
     if (pos.y() < 0 || pos.x() < 0) pos = QPoint();
 
     int relStart = pos.y() - mMapper.absTopLine();
-    int posOffset = 0;
-    if (pos.x()) {
-        posOffset = mMapper.line(relStart).length() - pos.x();
-    }
+    int posOffset = pos.x();
+
     if (flags.testFlag(QTextDocument::FindBackward)) {
+        // search backwards
+        if (pos.x()) posOffset = mMapper.line(relStart).length() - pos.x();
         relStart -= size-1;
         if (mMapper.absTopLine() + relStart < 0) {
             size += mMapper.absTopLine() + relStart;
@@ -181,10 +181,7 @@ bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags 
         }
         while (!found) {
             QString textBlock = mMapper.lines(relStart, size);
-            if (textBlock.isEmpty()) break;
-            if (posOffset) {
-                textBlock = textBlock.left(textBlock.length() - posOffset);
-            }
+            if (posOffset) textBlock = textBlock.left(textBlock.length() - posOffset - 1);
 
             QRegularExpressionMatch match;
             textBlock.lastIndexOf(seachRegex, -posOffset, &match);
@@ -198,9 +195,10 @@ bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags 
                 found = true;
             }
             posOffset = 0;
-            relStart += size;
+            if (mMapper.absTopLine()+relStart <= 0) break;
         }
     } else {
+        // search forwards
         while (!found) {
             QString textBlock = mMapper.lines(relStart, size);
             if (textBlock.isEmpty()) break;
@@ -220,7 +218,7 @@ bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags 
         }
     }
     if (found) {
-        mMapper.setVisibleTopLine(mMapper.position().y() - mVisibleLines/3);
+        mMapper.setVisibleTopLine(qMax(0, mMapper.position().y() - mVisibleLines/3));
         topLineMoved();
         updatePosAndAnchor();
     }
