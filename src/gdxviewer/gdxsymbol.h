@@ -78,6 +78,7 @@ private:
     void loadMetaData();
     void loadDomains();
     double specVal2SortVal(double val);
+    QVariant formatValue(double val) const;
 
 private:
     gdxHandle_t mGdx = nullptr;

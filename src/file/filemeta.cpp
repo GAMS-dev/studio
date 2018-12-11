@@ -382,7 +382,8 @@ void FileMeta::load(QList<int> codecMibs)
     if (kind() == FileKind::Ref) {
         for (QWidget *wid: mEditors) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
-            if (refViewer) refViewer->on_referenceFileChanged();
+            mCodec = QTextCodec::codecForMib(codecMibs[0]);
+            if (refViewer) refViewer->on_referenceFileChanged(mCodec);
         }
         return;
     }
@@ -667,7 +668,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
-        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
+        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
     } else {
@@ -697,7 +698,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     ViewHelper::setFileId(res, id());
     ViewHelper::setGroupId(res, runGroup->id());
     ViewHelper::setLocation(res, location());
-    tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
+    int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
+    tabWidget->setTabToolTip(i, location());
     addEditor(res);
     if (mEditors.size() == 1 && ViewHelper::toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMibs);

@@ -88,8 +88,8 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep5, addSeparator());
 
-    mActions.insert(actCloseGroup, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(actCloseFile, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
+    mActions.insert(actCloseGroup, addAction(mTxtCloseGroup, this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 
     mActions.insert(actSep6, addSeparator());
 
@@ -135,8 +135,6 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     mActions[actRename]->setEnabled(single);
 
     mActions[actSep1]->setVisible(isGroup);
-    mActions[actSep1]->setEnabled(single);
-
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 //    mActions[actSetMain]->setEnabled(single);
 
@@ -144,16 +142,22 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     mActions[actAddExisting]->setVisible(isGroup);
     mActions[actCloseGroup]->setVisible(isGroup);
 
-    // all files
     mActions[actCloseFile]->setVisible(fileNode);
+    mActions[actCloseGroup]->setVisible(isGroup);
 
+    if (!single) {
+        mActions[actCloseGroup]->setText(mTxtCloseGroup + "s");
+        mActions[actCloseFile]->setText(mTxtCloseFile + "s");
+    } else {
+        mActions[actCloseGroup]->setText(mTxtCloseGroup);
+        mActions[actCloseFile]->setText(mTxtCloseFile);
+    }
 
     // create solver option files
     mActions[actSep3]->setVisible(isGroup);
     mActions[actAddNewOpt]->setVisible(isGroup);
     for (QAction* action : mSolverOptionActions)
         action->setVisible(isGroup);
-
 }
 
 void ProjectContextMenu::onCloseFile()

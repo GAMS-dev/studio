@@ -34,10 +34,11 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-ReferenceViewer::ReferenceViewer(QString referenceFile, QWidget *parent) :
+ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ReferenceViewer),
-    mReference(new Reference(referenceFile))
+    mCodec(codec),
+    mReference(new Reference(referenceFile, codec))
 {
     ui->setupUi(this);
 
@@ -98,9 +99,9 @@ ReferenceViewer::~ReferenceViewer()
     delete mReference;
 }
 
-void ReferenceViewer::on_referenceFileChanged()
+void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
 {
-    mReference->loadReferenceFile();
+    mReference->loadReferenceFile(codec);
 }
 
 void ReferenceViewer::updateView(bool status)

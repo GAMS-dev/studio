@@ -133,34 +133,14 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
             return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
         else {
             double val = 0.0;
-            if (mType == GMS_DT_PAR)
+            if (mType <= GMS_DT_PAR) // Set, Parameter
                 val = mValues[row];
-            else if (mType == GMS_DT_SET) {
-                val = mValues[row];
-                return mGdxSymbolTable->getElementText((int) val);
-            }
-            else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+            else // Variable, Equation
                 val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
-            //apply special values:
-            if (val<GMS_SV_UNDEF)
-                return QString::number(val, 'g', 15);
-            else {
-                if (val == GMS_SV_UNDEF)
-                    return "UNDEF";
-                if (val == GMS_SV_NA)
-                    return "NA";
-                if (val == GMS_SV_PINF)
-                    return "+INF";
-                if (val == GMS_SV_MINF)
-                    return "-INF";
-                if (val == GMS_SV_EPS)
-                    return "EPS";
-                else if (val>=GMS_SV_ACR) {
-                    char acr[GMS_SSSIZE];
-                    gdxAcronymName(mGdx, val, acr);
-                    return QString(acr);
-                }
-            }
+            if (mType == GMS_DT_SET)
+                return mGdxSymbolTable->getElementText((int) val);
+            else
+                return formatValue(val);
         }
     }
     else if (role == Qt::TextAlignmentRole) {
@@ -364,6 +344,29 @@ double GdxSymbol::specVal2SortVal(double val)
         return  mSpecValSortVal[GMS_SVIDX_EPS];
     else
         return val;
+}
+
+QVariant GdxSymbol::formatValue(double val) const
+{
+    if (val<GMS_SV_UNDEF)
+        return QString::number(val, 'g', 15);
+    else {
+        if (val == GMS_SV_UNDEF)
+            return "UNDEF";
+        if (val == GMS_SV_NA)
+            return "NA";
+        if (val == GMS_SV_PINF)
+            return "+INF";
+        if (val == GMS_SV_MINF)
+            return "-INF";
+        if (val == GMS_SV_EPS)
+            return "EPS";
+        else if (val>=GMS_SV_ACR) {
+            char acr[GMS_SSSIZE];
+            gdxAcronymName(mGdx, val, acr);
+            return QString(acr);
+        }
+    }
 }
 
 std::vector<bool> GdxSymbol::filterActive() const
