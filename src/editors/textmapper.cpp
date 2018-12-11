@@ -32,7 +32,7 @@ TextMapper::TextMapper(QObject *parent): QObject(parent)
 {
     mCodec = QTextCodec::codecForLocale();
     setMappingSizes();
-    clear();
+    closeFile();
 }
 
 TextMapper::~TextMapper()
@@ -55,7 +55,7 @@ void TextMapper::setCodec(QTextCodec *codec)
 bool TextMapper::openFile(const QString &fileName)
 {
     if (!fileName.isEmpty()) {
-        clear();
+        closeFile();
         mFile.setFileName(fileName);
         if (!mFile.open(QFile::ReadOnly)) {
             DEB() << "Could not open file " << fileName;
@@ -137,7 +137,7 @@ bool TextMapper::updateMaxTop() // to be updated on change of size or mBufferedL
 //}
 
 
-void TextMapper::clear()
+void TextMapper::closeFile()
 {
     if (mFile.isOpen()) {
         for (Chunk *block: mChunks) {
@@ -393,7 +393,7 @@ int TextMapper::moveVisibleTopLine(int lineDelta)
 //      if (mTopLine.absStart == mMaxTopLine.absStart) {
     if (mVisibleTopLine > mBufferedLineCount/3) {
         // buffer is at absolute end
-        int localTop = qBound(mBufferedLineCount/3, mVisibleTopLine+lineDelta, mBufferedLineCount-mVisibleLineCount-1);
+        int localTop = qBound(mBufferedLineCount/3, mVisibleTopLine+lineDelta, mBufferedLineCount-mVisibleLineCount-3);
         lineDelta += mVisibleTopLine-localTop;
         mVisibleTopLine = localTop;
         if (!lineDelta) return mVisibleTopLine;
@@ -806,7 +806,7 @@ int TextMapper::selectionSize() const
     if ((mPosition.chunkNr < 0) || (mAnchor.chunkNr < 0) || (mPosition == mAnchor)) return 0;
     qint64 selSize = qAbs( qAbs(mPosition.absLinePos)+mPosition.effectiveCharNr()
                            - qAbs(mAnchor.absLinePos)+mAnchor.effectiveCharNr() );
-    if (selSize >= std::numeric_limits<int>::max()/2) return -1;
+    if (selSize >= std::numeric_limits<int>::max() / 20) return -1;
     return int(selSize);
 }
 

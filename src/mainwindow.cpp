@@ -1739,6 +1739,15 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
     mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
+
+    ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->specialFile(FileKind::Lst));
+    if (lstNode) {
+        for (QWidget *wid: lstNode->file()->editors()) {
+            if (TextView *tv = ViewHelper::toTextView(wid)) {
+                tv->closeFile();
+            }
+        }
+    }
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
@@ -1901,6 +1910,9 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
             if (ViewHelper::toAbstractEdit(wid))
                 ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                               : AbstractEdit::NoWrap);
+            if (ViewHelper::toTextView(wid))
+                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+                                                                                          : AbstractEdit::NoWrap);
         }
     }
     if (logNode->file()->isOpen()) {
@@ -2282,10 +2294,13 @@ void MainWindow::updateEditorLineWrapping()
                                                                                   : QPlainTextEdit::NoWrap;
     QWidgetList editList = mFileMetaRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
-        AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i));
-        if (ed) {
+        if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
             ed->blockCountChanged(0); // force redraw for line number area
             ed->setLineWrapMode(ViewHelper::toLogEdit(ed) ? wrapModeProcess : wrapModeEditor);
+        }
+        if (TextView* tv = ViewHelper::toTextView(editList.at(i))) {
+            tv->blockCountChanged(0); // force redraw for line number area
+            tv->setLineWrapMode(ViewHelper::toLogEdit(tv) ? wrapModeProcess : wrapModeEditor);
         }
     }
 }

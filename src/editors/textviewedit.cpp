@@ -30,7 +30,9 @@ namespace studio {
 TextViewEdit::TextViewEdit(TextMapper &mapper, QWidget *parent)
     : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings())
 {
+    setReadOnly(true);
     setAllowBlockEdit(false);
+    setLineWrapMode(QPlainTextEdit::NoWrap);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
 }
 
@@ -53,10 +55,10 @@ void TextViewEdit::copySelection()
     }
     if (selSize > 5*1024*1024) {
         QStringList list;
-        list << "KB" << "MB" << "GB" << "TB";
+        list << "KB" << "MB" << "GB";
         QStringListIterator i(list);
         QString unit("bytes");
-        while(selSize >= 1024.0 && i.hasNext()) {
+        while (selSize >= 1024.0 && i.hasNext()) {
             unit = i.next();
             selSize /= 1024.0;
         }
@@ -64,7 +66,6 @@ void TextViewEdit::copySelection()
         QMessageBox::StandardButton choice = QMessageBox::question(this, "Large selection", text);
         if (choice != QMessageBox::Yes) return;
     }
-    // TODO(JM) transfer selection into clipboard
     mMapper.copyToClipboard();
 }
 
@@ -148,10 +149,7 @@ void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = textCursor();
-    // TODO(JM) get cursor when jumped to a line via lxi
-    selection.cursor.movePosition(QTextCursor::StartOfBlock);
-    selection.cursor.clearSelection();
+    selection.cursor = QTextCursor(document()->findBlockByNumber(mMapper.position(true).y()));
     selections.append(selection);
 }
 

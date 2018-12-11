@@ -39,19 +39,16 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     setFocusPolicy(Qt::NoFocus);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mEdit = new TextViewEdit(mMapper, this);
-    mEdit->setReadOnly(true);
     mEdit->setFrameShape(QFrame::NoFrame);
-    mEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-//    mEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QVBoxLayout *lay = new QVBoxLayout(this);
     setLayout(lay);
     lay->addWidget(mEdit);
 
-//    mEdit->setCursorWidth(0);
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
     connect(mEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextView::editScrollChanged);
     connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
+    connect(mEdit, &TextViewEdit::cursorPositionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     connect(mEdit, &AbstractEdit::toggleBookmark, this, &TextView::toggleBookmark);
     connect(mEdit, &AbstractEdit::jumpToNextBookmark, this, &TextView::jumpToNextBookmark);
@@ -89,6 +86,11 @@ void TextView::loadFile(const QString &fileName, QList<int> codecMibs)
     mPeekTimer.start(100);
 }
 
+void TextView::closeFile()
+{
+    mMapper.closeFile();
+}
+
 qint64 TextView::fileSize() const
 {
     return mMapper.size();
@@ -110,12 +112,13 @@ bool TextView::jumpTo(int lineNr, int charNr)
     int vTop = mMapper.absTopLine()+mMapper.visibleOffset();
     int vAll = mMapper.visibleLineCount();
     if (lineNr < vTop+(vAll/3) || lineNr > vTop+(vAll*2/3)) {
-        mMapper.setVisibleTopLine(lineNr-(vAll/3));
+        mMapper.setVisibleTopLine(qMax(0, lineNr-(vAll/3)));
         topLineMoved();
         vTop = mMapper.absTopLine()+mMapper.visibleOffset();
     }
-    mMapper.setPosRelative(lineNr - vTop, charNr);
+    mMapper.setPosRelative(lineNr - mMapper.absTopLine(), charNr);
     updatePosAndAnchor();
+    setFocus();
     return true;
 }
 
@@ -147,6 +150,13 @@ void TextView::selectAllText()
 AbstractEdit *TextView::edit()
 {
     return mEdit;
+}
+
+void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
+{
+    Q_UNUSED(mode);
+    DEB() << "Line wrapping is currently unsupported.";
+//    mEdit->setLineWrapMode(mode);
 }
 
 void TextView::peekMoreLines()
@@ -343,27 +353,27 @@ void TextView::updatePosAndAnchor()
 {
     QPoint pos = mMapper.position(true);
     QPoint anchor = mMapper.anchor(true);
-    if (pos.y() < 0) {
-        return;
+    if (pos.y() < 0) return;
+
+    int scrollPos = mEdit->verticalScrollBar()->value();
+    ChangeKeeper x(mDocChanging);
+    QTextCursor cursor = mEdit->textCursor();
+    if (anchor.y() < 0 && pos == anchor) {
+        QTextBlock block = mEdit->document()->findBlockByNumber(pos.y());
+        int p = block.position() + qMin(block.length()-1, pos.x());
+        cursor.setPosition(p);
     } else {
-        int scrollPos = mEdit->verticalScrollBar()->value();
-        ChangeKeeper x(mDocChanging);
-        QTextCursor cursor = mEdit->textCursor();
-        if (anchor.y() < 0 && pos == anchor) {
-            QTextBlock block = mEdit->document()->findBlockByNumber(pos.y());
-            int p = block.position() + qMin(block.length()-1, pos.x());
-            cursor.setPosition(p);
-        } else {
-            QTextBlock block = mEdit->document()->findBlockByNumber(anchor.y());
-            int p = block.position() + qMin(block.length()-1, anchor.x());
-            cursor.setPosition(p);
-            block = mEdit->document()->findBlockByNumber(pos.y());
-            p = block.position() + qMin(block.length()-1, pos.x());
-            cursor.setPosition(p, QTextCursor::KeepAnchor);
-        }
-        mEdit->setTextCursor(cursor);
-        mEdit->verticalScrollBar()->setValue(scrollPos);
+        QTextBlock block = mEdit->document()->findBlockByNumber(anchor.y());
+        int p = block.position() + qMin(block.length()-1, anchor.x());
+        cursor.setPosition(p);
+        block = mEdit->document()->findBlockByNumber(pos.y());
+        p = block.position() + qMin(block.length()-1, pos.x());
+        cursor.setPosition(p, QTextCursor::KeepAnchor);
     }
+    disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
+    mEdit->setTextCursor(cursor);
+    connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
+    mEdit->verticalScrollBar()->setValue(scrollPos);
 }
 
 void TextView::marksChanged()

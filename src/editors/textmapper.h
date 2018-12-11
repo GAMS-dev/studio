@@ -94,6 +94,7 @@ public:
     void setCodec(QTextCodec *codec);
 
     bool openFile(const QString &fileName);
+    void closeFile();
     qint64 size() const { return mSize; }
     bool peekChunksForLineNrs(int chunkCount);
 
@@ -137,7 +138,6 @@ public:  // to-be-private methods (MOVE TO private) <<<<<<<<<<<<<<<<<<<<
 
 private:
     void initDelimiter(Chunk *chunk) const;
-    void clear();
     bool updateMaxTop();
     Chunk *getChunk(int chunkNr) const;
     Chunk *loadChunk(int chunkNr) const;

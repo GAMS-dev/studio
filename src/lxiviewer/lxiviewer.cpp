@@ -51,7 +51,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     ui->splitter->setStretchFactor(1, 3);
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
-//    connect(mTextView, &TextView::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+    connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 
 LxiViewer::~LxiViewer()
@@ -99,6 +99,8 @@ void LxiViewer::jumpToTreeItem()
         return;
 
     int lineNr  = mTextView->position().y();
+    if (lineNr < 0) return; // negative lineNr is estimated
+
     LxiTreeModel* lxiTreeModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
     if (!lxiTreeModel) return;
     int itemIdx = 0;
@@ -132,9 +134,9 @@ void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
         else
             return;
     }
-//    disconnect(mTextView, &TextView::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+    disconnect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
     mTextView->jumpTo(lineNr, 0);
-//    connect(mTextView, &TextView::cursorPositionChanged, this, &LxiViewer::jumpToTreeItem);
+    connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 
 } // namespace lxiviewer

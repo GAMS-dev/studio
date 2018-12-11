@@ -24,6 +24,7 @@
 #include "syntax/textmarkrepo.h"
 #include "editors/abstractedit.h"
 #include <QAbstractScrollArea>
+#include <QPlainTextEdit>
 #include <QStringBuilder>
 #include <QScrollBar>
 #include <QTimer>
@@ -39,6 +40,7 @@ class TextView : public QAbstractScrollArea
 public:
     explicit TextView(QWidget *parent = nullptr);
     void loadFile(const QString &fileName, QList<int> codecMibs);
+    void closeFile();
     qint64 fileSize() const;
     int lineCount() const;
     int knownLines() const;
@@ -51,6 +53,7 @@ public:
     void copySelection();
     void selectAllText();
     AbstractEdit *edit();
+    void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
 
 signals:
     void blockCountChanged(int newBlockCount);
@@ -58,6 +61,7 @@ signals:
     void selectionChanged();
     void toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
+//    void cursorPositionChanged();
 
 private slots:
     void editScrollChanged();
