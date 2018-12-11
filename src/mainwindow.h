@@ -236,6 +236,8 @@ private slots:
     void on_actionPaste_triggered();
     void on_actionCopy_triggered();
     void on_actionSelect_All_triggered();
+    void on_collapseAll();
+    void on_expandAll();
     void on_actionCut_triggered();
     void on_actionSet_to_Uppercase_triggered();
     void on_actionSet_to_Lowercase_triggered();
@@ -332,7 +334,6 @@ private:
     int mTimerID;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
-
 };
 
 }
