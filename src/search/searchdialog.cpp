@@ -109,8 +109,8 @@ void SearchDialog::on_btn_FindAll_clicked()
     updateMatchAmount(mCachedResults.size());
     mMain->showResults(mCachedResults);
 
-    CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit);
-    if (ce) ce->updateExtraSelections();
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
+    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
 }
 
 QList<Result> SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
@@ -392,34 +392,39 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
-
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
-    matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
-    if (mCachedResults.size() > 0) { // has any matches at all
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
-        if (matchSelection.isNull()) { // empty selection == reached end of document
+        if (mCachedResults.size() > 0) { // has any matches at all
 
-            QTextCursor tc(edit->document()); // set to top
-            if (direction == SearchDirection::Backward)
-                tc.movePosition(QTextCursor::End); // move to bottom
+            if (matchSelection.isNull()) { // empty selection == reached end of document
+
+                QTextCursor tc(edit->document()); // set to top
+                if (direction == SearchDirection::Backward)
+                    tc.movePosition(QTextCursor::End); // move to bottom
+                edit->setTextCursor(tc);
+
+                // try once more to start over
+                if (!second) selectNextMatch(direction, true);
+                else setSearchStatus(SearchStatus::NoResults);
+
+            } else { // found next match
+                edit->jumpTo(matchSelection);
+                edit->setTextCursor(matchSelection);
+            }
+        } else { // search had no matches so do nothing
+            setSearchStatus(SearchStatus::NoResults);
+            QTextCursor tc = edit->textCursor();
+            tc.clearSelection();
             edit->setTextCursor(tc);
-
-            // try once more to start over
-            if (!second) selectNextMatch(direction, true);
-            else setSearchStatus(SearchStatus::NoResults);
-
-        } else { // found next match
-            edit->jumpTo(matchSelection);
-            edit->setTextCursor(matchSelection);
+            return;
         }
-    } else { // search had no matches so do nothing
-        setSearchStatus(SearchStatus::NoResults);
-        QTextCursor tc = edit->textCursor();
-        tc.clearSelection();
-        edit->setTextCursor(tc);
-        return;
+    }
+
+    if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        tv->findText(searchRegex, flags);
     }
 
     // set match and counter

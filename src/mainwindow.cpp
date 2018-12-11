@@ -1910,9 +1910,9 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
             if (ViewHelper::toAbstractEdit(wid))
                 ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                               : AbstractEdit::NoWrap);
-            if (ViewHelper::toTextView(wid))
-                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-                                                                                          : AbstractEdit::NoWrap);
+//            if (ViewHelper::toTextView(wid))
+//                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+//                                                                                          : AbstractEdit::NoWrap);
         }
     }
     if (logNode->file()->isOpen()) {
@@ -2001,6 +2001,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
             tv->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
+            connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
         }
         if (ViewHelper::toCodeEdit(edit) || ViewHelper::toLogEdit(edit)) {
             AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
@@ -2373,9 +2375,11 @@ void MainWindow::on_actionGo_To_triggered()
     int result = dialog.exec();
     if (QDialog::Rejected == result)
         return;
-    CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
-    if (codeEdit)
+    if (CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor()))
         codeEdit->jumpTo(dialog.lineNumber());
+    if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
+        tv->jumpTo(dialog.lineNumber(), 0);
+    // TODO(JM) for TextView: keep dialog open if the line number is beyond knownLineNumbers
 }
 
 void MainWindow::on_actionRedo_triggered()

@@ -52,6 +52,8 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     connect(mEdit, &AbstractEdit::toggleBookmark, this, &TextView::toggleBookmark);
     connect(mEdit, &AbstractEdit::jumpToNextBookmark, this, &TextView::jumpToNextBookmark);
+    connect(mEdit, &TextViewEdit::searchFindNextPressed, this, &TextView::searchFindNextPressed);
+    connect(mEdit, &TextViewEdit::searchFindPrevPressed, this, &TextView::searchFindPrevPressed);
 
     mPeekTimer.setSingleShot(true);
     connect(&mPeekTimer, &QTimer::timeout, this, &TextView::peekMoreLines);
@@ -156,7 +158,48 @@ void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
 {
     Q_UNUSED(mode);
     DEB() << "Line wrapping is currently unsupported.";
-//    mEdit->setLineWrapMode(mode);
+    //    mEdit->setLineWrapMode(mode);
+}
+
+bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags)
+{
+    bool found = false;
+    int size = 3 * mTopBufferLines;
+    QPoint pos = mMapper.position();
+    if (pos.y() < 0 || pos.x() < 0) pos = QPoint();
+
+    int relStart = pos.y() - mMapper.absTopLine();
+    int posOffset = pos.x();
+    if (flags.testFlag(QTextDocument::FindBackward)) {
+        relStart -= size-1;
+        if (mMapper.absTopLine() + relStart < 0) relStart = 0;
+        while (!found) {
+            QString textBlock = mMapper.lines(relStart, size);
+            posOffset = -1;
+            found = true;
+        }
+    } else {
+        ++posOffset;
+        while (!found) {
+            QString textBlock = mMapper.lines(relStart, size);
+            if (textBlock.isEmpty()) break;
+            QRegularExpressionMatch match;
+            textBlock.indexOf(seachRegex, posOffset, &match);
+            if (match.hasMatch()) {
+                QStringRef ref = textBlock.midRef(posOffset, match.capturedStart()-posOffset);
+                int line = ref.count("\n") + relStart;
+                int charNr = match.capturedStart() - posOffset - qMax(0, ref.lastIndexOf("\n") + mMapper.delimiter().length());
+                mMapper.setPosRelative(line, charNr);
+                mMapper.setPosRelative(line, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
+                DEB() << "selection: " << (mMapper.absTopLine() + line) << ", " << charNr;
+                mMapper.setVisibleTopLine(mMapper.absTopLine() + relStart + line - mVisibleLines/3);
+                updatePosAndAnchor();
+                found = true;
+            }
+            posOffset = 0;
+        }
+    }
+    return found;
 }
 
 void TextView::peekMoreLines()
@@ -374,6 +417,11 @@ void TextView::updatePosAndAnchor()
     mEdit->setTextCursor(cursor);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     mEdit->verticalScrollBar()->setValue(scrollPos);
+}
+
+void TextView::updateExtraSelections()
+{
+    mEdit->updateExtraSelections();
 }
 
 void TextView::marksChanged()

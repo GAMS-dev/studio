@@ -96,6 +96,7 @@ public:
     bool openFile(const QString &fileName);
     void closeFile();
     qint64 size() const { return mSize; }
+    QString delimiter() { return mDelimiter; }
     bool peekChunksForLineNrs(int chunkCount);
 
     bool setMappingSizes(int bufferedLines = 60, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
