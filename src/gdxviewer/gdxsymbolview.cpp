@@ -223,6 +223,7 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::showListView()
 {
+    ui->pbResetSortFilter->setEnabled(true);
     mSym->setTableView(false);
     ui->tvTableView->hide();
     ui->tvListView->show();
@@ -231,6 +232,7 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
+    ui->pbResetSortFilter->setEnabled(false);
     mSym->setTableView(true);
 
     ui->pbToggleView->setText("List View");
