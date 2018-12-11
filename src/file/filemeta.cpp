@@ -427,9 +427,13 @@ void FileMeta::save()
 
 void FileMeta::saveAs(const QString &target)
 {
-    if (QFile::exists(target))
-        QFile::remove(target);
-    QFile::copy(mLocation, target);
+    if (QFileInfo(mLocation) == QFileInfo(target)) {
+        save();
+    } else {
+        if (QFile::exists(target))
+            QFile::remove(target);
+        QFile::copy(mLocation, target);
+    }
     mFileRepo->findOrCreateFileMeta(target);
 }
 
