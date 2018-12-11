@@ -99,13 +99,11 @@ pipeline {
                 macos: {
                     node('macos') {
                         sh '''
-                            ls -al
                             mkdir reports
                             cd tests/bin
                             for f in *; do
                                 ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
-                            ls -al $WORKSPACE/reports
                         '''
                         junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
