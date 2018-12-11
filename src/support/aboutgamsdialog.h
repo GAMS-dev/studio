@@ -47,7 +47,6 @@ private:
 
 private slots:
     void on_copylicense_clicked();
-    void on_close_clicked();
 
 private:
     Ui::AboutGAMSDialog *ui;

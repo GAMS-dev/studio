@@ -123,11 +123,6 @@ QString AboutGAMSDialog:: aboutStudio()
     return about;
 }
 
-void AboutGAMSDialog::on_close_clicked()
-{
-    close();
-}
-
 }
 }
 }

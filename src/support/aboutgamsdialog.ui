@@ -181,7 +181,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="close">
+          <widget class="QPushButton" name="ok">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -189,7 +189,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Close</string>
+            <string>OK</string>
            </property>
            <property name="iconSize">
             <size>
@@ -227,5 +227,22 @@
  <resources>
   <include location="../../icons/icons.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>ok</sender>
+   <signal>clicked()</signal>
+   <receiver>gams::studio::support::AboutGAMSDialog</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>451</x>
+     <y>443</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>259</x>
+     <y>243</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
