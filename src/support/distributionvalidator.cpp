@@ -56,7 +56,7 @@ void DistributionValidator::checkBitness()
     if (is64 && !joat64.exists())
         messages << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory:"
                  << gamsPath;
-    SysLogLocator::systemLog()->appendLog(messages.join(" "), LogMsgType::Error);
+    SysLogLocator::systemLog()->append(messages.join(" "), LogMsgType::Error);
 #endif
 }
 
