@@ -1305,12 +1305,11 @@ void MainWindow::on_actionAbout_Studio_triggered()
     QMessageBox box(this);
     box.setIcon(QMessageBox::Information);
     box.setWindowTitle(ui->actionAbout_Studio->text());
-    box.setText(support::AboutGAMSDialog::aboutStudio());
+    box.setTextFormat(Qt::RichText);
+    box.setText(support::AboutGAMSDialog::header());
+    box.setInformativeText(support::AboutGAMSDialog::aboutStudio());
     box.setIconPixmap(QPixmap(":/img/gams-w24"));
     box.addButton("Close", QMessageBox::RejectRole);
-    QSpacerItem* horizontalSpacer = new QSpacerItem(560, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    QGridLayout* layout = static_cast<QGridLayout*>(box.layout());
-    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
     box.exec();
 }
 

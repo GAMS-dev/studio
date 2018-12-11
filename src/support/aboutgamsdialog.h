@@ -40,6 +40,7 @@ public:
 
     static QString studioInfo();
     static QString aboutStudio();
+    static QString header();
 
 private:
     QString gamsLicense();

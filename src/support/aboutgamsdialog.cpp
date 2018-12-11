@@ -97,10 +97,14 @@ void AboutGAMSDialog::on_copylicense_clicked()
     clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
 }
 
+QString AboutGAMSDialog::header()
+{
+    return "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";//<br/><br/>";
+}
+
 QString AboutGAMSDialog:: aboutStudio()
 {
-    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
-    about += studioInfo();
+    QString about = studioInfo();
     about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
     about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
     about += "This program is free software: you can redistribute it and/or modify ";
@@ -115,7 +119,7 @@ QString AboutGAMSDialog:: aboutStudio()
     about += "along with this program. If not, see ";
     about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>.<br/><br/>";
     about += "The source code of the program can be accessed at ";
-    about += "<a href=\"https://github.com/GAMS-dev/studio\">https://github.com/GAMS-dev/studio/</a>.";
+    about += "<a href=\"https://github.com/GAMS-dev/studio\">https://github.com/GAMS-dev/studio/</a></p>.";
     return about;
 }
 
