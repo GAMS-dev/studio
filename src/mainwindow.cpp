@@ -543,7 +543,7 @@ void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
     ProjectRunGroupNode* runGroup = group->toRunGroup();
     ProjectLogNode* log = runGroup->logNode();
 
-    QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+    QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
     for (int i = 0; i < ui->logTabs->children().size(); i++) {
         if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
 
@@ -1302,15 +1302,14 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionAbout_Studio_triggered()
 {
-    QMessageBox box(this);
-    box.setIcon(QMessageBox::Information);
-    box.setWindowTitle(ui->actionAbout_Studio->text());
-    box.setTextFormat(Qt::RichText);
-    box.setText(support::AboutGAMSDialog::header());
-    box.setInformativeText(support::AboutGAMSDialog::aboutStudio());
-    box.setIconPixmap(QPixmap(":/img/gams-w24"));
-    box.addButton("Close", QMessageBox::RejectRole);
-    box.exec();
+    QMessageBox about(this);
+    about.setWindowTitle(ui->actionAbout_Studio->text());
+    about.setTextFormat(Qt::RichText);
+    about.setText(support::AboutGAMSDialog::header());
+    about.setInformativeText(support::AboutGAMSDialog::aboutStudio());
+    about.setIconPixmap(QPixmap(":/img/gams-w24"));
+    about.addButton(QMessageBox::Ok);
+    about.exec();
 }
 
 void MainWindow::on_actionAbout_GAMS_triggered()
