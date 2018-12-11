@@ -86,7 +86,6 @@ pipeline {
                 windowsX86: {
                     node('windowsX86') {
                         bat '''
-                            echo off
                             mkdir reports
                             cd tests/bin
                             for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
