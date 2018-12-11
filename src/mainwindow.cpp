@@ -1208,24 +1208,24 @@ void MainWindow::processFileEvents()
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    mSyslog->appendLog(text, LogMsgType::Info);
+    mSyslog->append(text, LogMsgType::Info);
 }
 
 void MainWindow::postGamsRun(NodeId origin)
 {
     if (origin == -1) {
-        mSyslog->appendLog("No fileId set to process", LogMsgType::Error);
+        mSyslog->append("No fileId set to process", LogMsgType::Error);
         return;
     }
     // TODO(JM) Replace the FileId by NodeId in GamsProcess
     ProjectRunGroupNode* groupNode = mProjectRepo.findRunGroup(origin);
     if (!groupNode) {
-        mSyslog->appendLog("No group attached to process", LogMsgType::Error);
+        mSyslog->append("No group attached to process", LogMsgType::Error);
         return;
     }
     FileMeta *runMeta = groupNode->runnableGms();
     if (!runMeta) {
-        mSyslog->appendLog("Invalid runable attached to process", LogMsgType::Error);
+        mSyslog->append("Invalid runable attached to process", LogMsgType::Error);
         return;
     }
     if(groupNode && runMeta->exists(true)) {
@@ -1742,7 +1742,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->specialFile(FileKind::Gms));
     if (gmsFilePath == "") {
-        mSyslog->appendLog("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
+        mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
         return;
     }

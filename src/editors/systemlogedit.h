@@ -32,7 +32,7 @@ class SystemLogEdit : public AbstractEdit, public AbstractSystemLogger
 {
 public:
     SystemLogEdit(QWidget *parent = nullptr);
-    void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
+    void append(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
 
     EditorType type() override;
 

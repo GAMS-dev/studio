@@ -38,23 +38,23 @@ GamsLicenseInfo::GamsLicenseInfo()
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
                     sizeof(msg)))
-        logger->appendLog(msg, LogMsgType::Error);
+        logger->append(msg, LogMsgType::Error);
     if (cfgReadConfig(mCFG,
                       CommonPaths::configFile().toStdString().c_str())) {
         cfgGetMsg(mCFG, msg);
-        logger->appendLog(msg, LogMsgType::Error);
+        logger->append(msg, LogMsgType::Error);
     }
     if (!palCreateD(&mPAL,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
                     sizeof(msg)))
-        logger->appendLog(msg, LogMsgType::Error);
+        logger->append(msg, LogMsgType::Error);
     int rc; // additional return code, not used here
     if (!palLicenseReadU(mPAL,
                          CommonPaths::licenseFile().toStdString().c_str(),
                          msg,
                          &rc))
-        logger->appendLog(msg, LogMsgType::Error);
+        logger->append(msg, LogMsgType::Error);
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()

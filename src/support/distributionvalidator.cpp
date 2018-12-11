@@ -68,7 +68,7 @@ void DistributionValidator::checkCompatibility()
         QString error = QString("Could not find GAMS. Please check our GAMS setup. %1\n%2")
                                 .arg("The installation instructions can be found at www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL")
                                 .arg("Current path to GAMS: " + CommonPaths::systemDir());
-        SysLogLocator::systemLog()->appendLog(error, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(error, LogMsgType::Error);
         return;
     }
     else if (about.contains(GAMS_DISTRIB_VERSION_SHORT)) {
@@ -83,9 +83,9 @@ void DistributionValidator::checkCompatibility()
         QString error = QString("Found incompatible GAMS %1 but GAMS %2 or %3 was expected.")
                 .arg(regex.cap(regex.captureCount()))
                 .arg(GAMS_DISTRIB_VERSION_SHORT).arg(GAMS_DISTRIB_VERSION_NEXT_SHORT);
-        SysLogLocator::systemLog()->appendLog(error, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(error, LogMsgType::Error);
     } else
-        SysLogLocator::systemLog()->appendLog("Could not validate GAMS Distribution version.", LogMsgType::Error);
+        SysLogLocator::systemLog()->append("Could not validate GAMS Distribution version.", LogMsgType::Error);
 }
 
 }
