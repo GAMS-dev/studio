@@ -1300,7 +1300,6 @@ void MainWindow::on_actionHelp_triggered()
 #endif
 }
 
-
 void MainWindow::on_actionAbout_Studio_triggered()
 {
     QMessageBox box(this);

@@ -49,7 +49,7 @@ GamsLicenseInfo::GamsLicenseInfo()
                     msg,
                     sizeof(msg)))
         logger->appendLog(msg, LogMsgType::Error);
-    int rc;
+    int rc; // additional return code, not used here
     if (!palLicenseReadU(mPAL,
                          CommonPaths::licenseFile().toStdString().c_str(),
                          msg,
