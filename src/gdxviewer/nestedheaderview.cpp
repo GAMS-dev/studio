@@ -1,6 +1,7 @@
 #include "nestedheaderview.h"
 
 #include <QTableView>
+#include <QScrollBar>
 
 namespace gams {
 namespace studio {
@@ -20,6 +21,11 @@ NestedHeaderView::~NestedHeaderView()
 void NestedHeaderView::init()
 {
     calcSectionSize();
+    // need to update the first visible sections when scrolling in order to trigger the repaint for showing all labels for the first section
+    if (orientation() == Qt::Vertical)
+        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(orientation(), 0, 2); });
+    else
+        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(orientation(), 0, 2); });
 }
 
 int NestedHeaderView::dim() const
@@ -36,6 +42,7 @@ int NestedHeaderView::dim() const
 
 void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
+    painter->save();
     if (!rect.isValid())
         return;
     QStyleOptionHeader opt;
@@ -47,7 +54,8 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
     QStringList labelCurSection = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();
     QStringList labelPrevSection;
 
-    if (logicalIndex > 0)
+    // first section needs always show all labels
+    if (logicalIndex > 0 && sectionViewportPosition(logicalIndex) != 0)
         labelPrevSection = model()->headerData(logicalIndex-1, orientation(), Qt::DisplayRole).toStringList();
     else {
         for(int i=0; i<dim(); i++)
@@ -107,6 +115,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
         }
     }
     painter->setBrushOrigin(oldBO);
+    painter->restore();
 }
 
 void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
