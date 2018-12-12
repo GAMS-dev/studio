@@ -482,10 +482,10 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
                       Qt::CheckState(Qt::Checked),
                       Qt::CheckStateRole );
           }
-
+          emit solverOptionModelChanged(mOptionItem);
        } else if (roles.first()==Qt::CheckStateRole) {
             qDebug() << roles.first() << ", checkstate update " << idx.row() << "," << idx.column();
-                  emit solverOptionItemModelChanged(mOptionItem.at(idx.row()));
+                  emit solverOptionModelChanged(mOptionItem);
        }
     }
 
