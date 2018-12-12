@@ -80,6 +80,8 @@ QString AboutGAMSDialog::gamsLicense()
                 about << line + "\n";
         } else if (line.startsWith("#L")) {
             continue;
+        } else if (line.contains("License file not found")) {
+            about << "<br/>" << line  << "<br/>";
         } else if (line.contains("gamslice.txt")) {
             about << line;
         } else {
