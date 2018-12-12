@@ -97,11 +97,11 @@ void StatusWidgets::setPosAndAnchor(QPoint pos, QPoint anchor)
         posText = "      ";
     } else {
         QString estimated = (pos.y() < 0) ? "~" : "";
-        posText = QString("%3%1 / %2").arg(qAbs(pos.y())).arg(pos.x()).arg(estimated);
+        posText = QString("%1%2 / %3").arg(estimated).arg(qAbs(pos.y())).arg(pos.x());
         if (!anchor.isNull() && anchor != pos) {
             estimated = (pos.y()<0 || anchor.y()<0) ? "~" : "";
             QString absLineDiff = QString::number(qAbs(qAbs(pos.y())-qAbs(anchor.y()))+1);
-            posText += QString(" (%3%1 / %2)").arg(absLineDiff).arg(qAbs(pos.x()-anchor.x())).arg(estimated);
+            posText += QString(" (%1%2 / %3)").arg(estimated).arg(absLineDiff).arg(qAbs(pos.x()-anchor.x()));
         }
     }
     mEditPosAnsSel->setText(posText);
