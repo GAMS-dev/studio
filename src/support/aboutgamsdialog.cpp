@@ -94,7 +94,7 @@ void AboutGAMSDialog::on_copylicense_clicked()
 {
     GamsProcess gproc;
     QClipboard *clip = QGuiApplication::clipboard();
-    clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
+    clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS().replace("#L", ""));
 }
 
 QString AboutGAMSDialog::header()
