@@ -176,7 +176,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Copy License Information</string>
+            <string>Copy System Information</string>
            </property>
           </widget>
          </item>
