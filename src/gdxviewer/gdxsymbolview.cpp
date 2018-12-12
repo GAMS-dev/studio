@@ -175,7 +175,13 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
         return;
     // row -> column -> QModelIndex
     QMap<int, QMap<int, QString>> sortedSelection;
-    QModelIndexList selection = ui->tvListView->selectionModel()->selection().indexes();
+    QTableView *tv;
+    if (mSym->tableView())
+        tv = ui->tvTableView;
+    else
+        tv = ui->tvListView;
+
+    QModelIndexList selection = tv->selectionModel()->selection().indexes();
     if (selection.isEmpty())
         return;
 
@@ -187,7 +193,10 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     for (QModelIndex idx : selection) {
         int currentRow = idx.row();
         int currentCol = idx.column();
-        currentCol = ui->tvListView->horizontalHeader()->visualIndex(currentCol);
+        if (tv->isColumnHidden(currentCol))
+            continue;
+
+        currentCol = tv->horizontalHeader()->visualIndex(currentCol);
         QString currenText = idx.data().toString();
         if (currenText.contains(separator)) {
             if (currenText.contains("\'"))
@@ -205,8 +214,11 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
 
     QStringList sList;
     for(int r=minRow; r<maxRow+1; r++) {
-        for(int c=minCol; c<maxCol+1; c++)
+        for(int c=minCol; c<maxCol+1; c++) {
+            if (tv->isColumnHidden(tv->horizontalHeader()->logicalIndex(c)))
+                continue;
             sList << sortedSelection[r][c] << separator;
+        }
         sList.pop_back(); // remove last separator
         sList << "\n";
     }
