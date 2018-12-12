@@ -31,15 +31,15 @@ void TestCodeEdit::test_nextWord()
     int offset = 0;
 
     EditorHelper::nextWord(offset, pos, text);
-    QCOMPARE(pos, 4);
+    QCOMPARE(pos, 5);
     EditorHelper::nextWord(offset, pos, text);
-    QCOMPARE(pos, 7);
+    QCOMPARE(pos, 8);
     EditorHelper::nextWord(offset, pos, text);
-    QCOMPARE(pos, 11);
+    QCOMPARE(pos, 12);
     EditorHelper::nextWord(offset, pos, text);
-    QCOMPARE(pos, 13);
+    QCOMPARE(pos, 14);
     EditorHelper::nextWord(offset, pos, text);
-    QCOMPARE(pos, 20);
+    QCOMPARE(pos, 21);
     EditorHelper::nextWord(offset, pos, text);
     QCOMPARE(pos, 25);  // the nextWord function is required to return text.length()+1 when
                         // reaching the end of a given text
