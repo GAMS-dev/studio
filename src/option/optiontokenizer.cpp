@@ -487,7 +487,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
     QString key = item->key;
     QString value = item->value.toString();
     QString text = item->text;
-    qDebug() << "format1 :" << item->key << "," << item->value << "," << item->text;
+    qDebug() << "format1 :" << item->key << "," << item->value.toString() << "," << item->text;
 
     if (item->disabled) {
         if (key.startsWith("*") && key.mid(1).simplified().isEmpty())
@@ -502,7 +502,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
     else if (mOption->isASynonym(key))
             optdef = mOption->getOptionDefinition( mOption->getNameFromSynonym(key));
 
-    if (optdef.dataType == optDataString) {
+    if (optdef.dataType == optDataString || optdef.dataType == optDataStrList) {
         if (value.contains(" ")) {
             if (!value.startsWith("\""))
                 value.prepend("\"");
@@ -982,7 +982,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
        while (!in.atEnd()) {
            i++;
            optResetAll( mOPTHandle );
-           SolverOptionItem* item = new SolverOptionItem(); // -1, "", "", "", false, false, No_Error);
+           SolverOptionItem* item = new SolverOptionItem();
            getOptionItemFromStr(item, true, in.readLine());
            items.append( item );
        }
