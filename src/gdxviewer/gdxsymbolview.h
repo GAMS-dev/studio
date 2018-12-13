@@ -65,6 +65,9 @@ private:
     void showListView();
     void showTableView();
     void toggleView();
+
+    void selectAll();
+
 };
 
 

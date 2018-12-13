@@ -53,10 +53,10 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     mContextMenu.addSeparator();
 
-    QAction* selectAll = mContextMenu.addAction("Select All\tCtrl+A", ui->tvListView, &QTableView::selectAll);
-    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    selectAll->setShortcutVisibleInContextMenu(true);
-    ui->tvListView->addAction(selectAll);
+    QAction* aSelectAll = mContextMenu.addAction("Select All\tCtrl+A", [this]() { selectAll(); });
+    aSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    aSelectAll->setShortcutVisibleInContextMenu(true);
+    ui->tvListView->addAction(aSelectAll);
 
     //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
@@ -269,6 +269,15 @@ void GdxSymbolView::toggleView()
         showTableView();
     }
     refreshView();
+}
+
+void GdxSymbolView::selectAll()
+{
+    if (mSym->tableView())
+        ui->tvTableView->selectAll();
+    else
+        ui->tvListView->selectAll();
+
 }
 
 void GdxSymbolView::enableControls()
