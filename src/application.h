@@ -21,7 +21,7 @@
 #define APPLICATION_H
 
 #include "commandlineparser.h"
-#include "distributionvalidator.h"
+#include "support/distributionvalidator.h"
 #include "mainwindow.h"
 
 #include <memory>
@@ -109,7 +109,7 @@ private:
 private:
     std::unique_ptr<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
-    DistributionValidator mDistribValidator;
+    support::DistributionValidator mDistribValidator;
     QString mServerName;
     QLocalServer mServer;
 };

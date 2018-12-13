@@ -82,11 +82,25 @@ public:
     ///
     static QString absolutPath(const QString &dir);
 
+    ///
+    /// \brief Get GAMS config file name (with path).
+    /// \return Returns GAMS config file name.
+    ///
+    static QString configFile();
+
+    ///
+    /// \brief Get GAMS license file name (with path).
+    /// \return Returns GAMS license file name.
+    ///
+    static QString licenseFile();
+
 private:
     CommonPaths();
 
 private:
     static QString SystemDir;
+    static const QString ConfigFile;
+    static const QString LicenseFile;
 };
 
 }

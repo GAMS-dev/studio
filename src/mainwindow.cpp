@@ -46,11 +46,12 @@
 #include "search/searchresultlist.h"
 #include "resultsview.h"
 #include "gotodialog.h"
-#include "updatedialog.h"
-#include "checkforupdatewrapper.h"
+#include "support/updatedialog.h"
+#include "support/checkforupdatewrapper.h"
 #include "autosavehandler.h"
-#include "distributionvalidator.h"
+#include "support/distributionvalidator.h"
 #include "tabdialog.h"
+#include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
 
 namespace gams {
@@ -545,7 +546,7 @@ void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
     ProjectRunGroupNode* runGroup = group->toRunGroup();
     ProjectLogNode* log = runGroup->logNode();
 
-    QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, this);
+    QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
     for (int i = 0; i < ui->logTabs->children().size(); i++) {
         if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
 
@@ -1210,24 +1211,24 @@ void MainWindow::processFileEvents()
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    mSyslog->appendLog(text, LogMsgType::Info);
+    mSyslog->append(text, LogMsgType::Info);
 }
 
 void MainWindow::postGamsRun(NodeId origin)
 {
     if (origin == -1) {
-        mSyslog->appendLog("No fileId set to process", LogMsgType::Error);
+        mSyslog->append("No fileId set to process", LogMsgType::Error);
         return;
     }
     // TODO(JM) Replace the FileId by NodeId in GamsProcess
     ProjectRunGroupNode* groupNode = mProjectRepo.findRunGroup(origin);
     if (!groupNode) {
-        mSyslog->appendLog("No group attached to process", LogMsgType::Error);
+        mSyslog->append("No group attached to process", LogMsgType::Error);
         return;
     }
     FileMeta *runMeta = groupNode->runnableGms();
     if (!runMeta) {
-        mSyslog->appendLog("Invalid runable attached to process", LogMsgType::Error);
+        mSyslog->append("Invalid runable attached to process", LogMsgType::Error);
         return;
     }
     if(groupNode && runMeta->exists(true)) {
@@ -1302,55 +1303,22 @@ void MainWindow::on_actionHelp_triggered()
 #endif
 }
 
-QString MainWindow::studioInfo()
+void MainWindow::on_actionAbout_Studio_triggered()
 {
-    QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
-    ret += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
-    ret += "Build Date: " __DATE__ " " __TIME__ "<br/><br/>";
-
-    return ret;
+    QMessageBox about(this);
+    about.setWindowTitle(ui->actionAbout_Studio->text());
+    about.setTextFormat(Qt::RichText);
+    about.setText(support::AboutGAMSDialog::header());
+    about.setInformativeText(support::AboutGAMSDialog::aboutStudio());
+    about.setIconPixmap(QPixmap(":/img/gams-w24"));
+    about.addButton(QMessageBox::Ok);
+    about.exec();
 }
 
-void MainWindow::on_actionAbout_triggered()
+void MainWindow::on_actionAbout_GAMS_triggered()
 {
-    QString about = "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b><br/><br/>";
-    about += studioInfo();
-    about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";
-    about += "Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com><br/><br/>";
-    about += "This program is free software: you can redistribute it and/or modify ";
-    about += "it under the terms of the GNU General Public License as published by ";
-    about += "the Free Software Foundation, either version 3 of the License, or ";
-    about += "(at your option) any later version.<br/><br/>";
-    about += "This program is distributed in the hope that it will be useful, ";
-    about += "but WITHOUT ANY WARRANTY; without even the implied warranty of ";
-    about += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the ";
-    about += "GNU General Public License for more details.<br/><br/>";
-    about += "You should have received a copy of the GNU General Public License ";
-    about += "along with this program. If not, see ";
-    about += "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>.<br/><br/>";
-    about += "The source code of the program can be accessed at ";
-    about += "<a href=\"https://github.com/GAMS-dev/studio\">https://github.com/GAMS-dev/studio/</a>.";
-    about += "<br/><br/><b><big>GAMS Distribution ";
-    about += CheckForUpdateWrapper::distribVersionString();
-    about += "</big></b><br/><br/>";
-    GamsProcess gproc;
-    about += gproc.aboutGAMS().replace("\n", "<br/>");
-    about += "<br/><br/>For further information about GAMS please visit ";
-    about += "<a href=\"https://www.gams.com\">https://www.gams.com</a>.<br/>";
-
-    QMessageBox box(this);
-    box.setIcon(QMessageBox::Information);
-    box.setWindowTitle("About GAMS Studio");
-    box.setText(about);
-    box.setIconPixmap(QPixmap(":/img/gams-w24"));
-    box.addButton("Close", QMessageBox::RejectRole);
-    box.addButton("Copy product info", QMessageBox::AcceptRole);
-    int answer = box.exec();
-
-    if (answer) {
-        QClipboard *clip = QGuiApplication::clipboard();
-        clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS());
-    }
+    support::AboutGAMSDialog dialog(ui->actionAbout_GAMS->text(), this);
+    dialog.exec();
 }
 
 void MainWindow::on_actionAbout_Qt_triggered()
@@ -1360,7 +1328,7 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionUpdate_triggered()
 {
-    UpdateDialog updateDialog(this);
+    support::UpdateDialog updateDialog(this);
     updateDialog.checkForUpdate();
     updateDialog.exec();
 }
@@ -1777,7 +1745,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->specialFile(FileKind::Gms));
     if (gmsFilePath == "") {
-        mSyslog->appendLog("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
+        mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
         return;
     }

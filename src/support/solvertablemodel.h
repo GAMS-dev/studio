@@ -17,28 +17,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ABSTRACTSYSTEMLOGGER_H
-#define ABSTRACTSYSTEMLOGGER_H
+#ifndef SOLVERTABLEMODEL_H
+#define SOLVERTABLEMODEL_H
 
-#include <QString>
+#include <QAbstractTableModel>
+
+#include "gamslicenseinfo.h"
 
 namespace gams {
 namespace studio {
+namespace support {
 
-enum class LogMsgType { Error, Warning, Info };
-
-class AbstractSystemLogger
+class SolverTableModel
+        : public QAbstractTableModel
 {
+    Q_OBJECT
 
 public:
-    virtual ~AbstractSystemLogger() {}
-    virtual void append(const QString &msg, LogMsgType type = LogMsgType::Warning) = 0;
+    SolverTableModel(QObject *parent = nullptr);
 
-protected:
-    AbstractSystemLogger() {}
+    virtual QVariant headerData(int section, Qt::Orientation oriantation, int role = Qt::DisplayRole) const override;
+
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    virtual int rowCount(const QModelIndex &parennt = QModelIndex()) const override;
+
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+private:
+    GamsLicenseInfo mLicenseInfo;
+    QMap<int, QString> mHorizontalHeaderData;
+    QMap<int, QString> mVerticalHeaderData;
+
+    const int RowShift = 1;
 };
 
 }
 }
+}
 
-#endif // ABSTRACTSYSTEMLOGGER_H
+#endif // SOLVERTABLEMODEL_H

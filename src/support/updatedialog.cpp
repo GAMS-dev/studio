@@ -17,28 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ABSTRACTSYSTEMLOGGER_H
-#define ABSTRACTSYSTEMLOGGER_H
-
-#include <QString>
+#include "updatedialog.h"
+#include "ui_updatedialog.h"
+#include "checkforupdatewrapper.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
+namespace support {
 
-enum class LogMsgType { Error, Warning, Info };
-
-class AbstractSystemLogger
+UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
+    : QDialog(parent, f),
+      ui(new Ui::UpdateDialog)
 {
+    ui->setupUi(this);
+}
 
-public:
-    virtual ~AbstractSystemLogger() {}
-    virtual void append(const QString &msg, LogMsgType type = LogMsgType::Warning) = 0;
-
-protected:
-    AbstractSystemLogger() {}
-};
+void UpdateDialog::checkForUpdate()
+{
+    CheckForUpdateWrapper c4uWrapper;
+    if (c4uWrapper.isValid()) {
+        ui->updateInfo->setText(c4uWrapper.checkForUpdate());
+    } else {
+        EXCEPT() << c4uWrapper.message();
+    }
+}
 
 }
 }
-
-#endif // ABSTRACTSYSTEMLOGGER_H
+}

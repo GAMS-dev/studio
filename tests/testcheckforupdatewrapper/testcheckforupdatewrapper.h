@@ -17,30 +17,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "updatedialog.h"
-#include "ui_updatedialog.h"
-#include "checkforupdatewrapper.h"
-#include "exception.h"
+#ifndef TESTCHECKFORUPDATEWRAPPER_H
+#define TESTCHECKFORUPDATEWRAPPER_H
 
-namespace gams {
-namespace studio {
+#include <QtTest/QTest>
 
-UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
-    : QDialog(parent, f),
-      ui(new Ui::UpdateDialog)
+class TestCheckForUpdateWrapper : public QObject
 {
-    ui->setupUi(this);
-}
+    Q_OBJECT
 
-void UpdateDialog::checkForUpdate()
-{
-    CheckForUpdateWrapper c4uWrapper;
-    if (c4uWrapper.isValid()) {
-        ui->updateInfo->setText(c4uWrapper.checkForUpdate());
-    } else {
-        EXCEPT() << c4uWrapper.message();
-    }
-}
+private slots:
+    void initTestCase();
 
-}
-}
+    void testCheckForUpdateWrapper();
+
+    void testIsValid();
+
+    void testMessage();
+
+    void testClearMessage();
+
+    void testCheckForUpdate();
+
+    void testCurrentDistribVersion();
+
+    void testCurrentDistribVersionShort();
+
+    void testLastDistribVersion();
+
+    void testLastDistribVersionShort();
+
+    void testDistribIsLast();
+
+    void testStudioVersion();
+
+    void testDistribVersionString();
+};
+
+#endif // TESTCHECKFORUPDATEWRAPPER_H

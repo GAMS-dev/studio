@@ -212,7 +212,8 @@ private slots:
     void on_actionGAMS_Library_triggered();
     // About
     void on_actionHelp_triggered();
-    void on_actionAbout_triggered();
+    void on_actionAbout_Studio_triggered();
+    void on_actionAbout_GAMS_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
     // View
@@ -264,7 +265,6 @@ private slots:
     void focusProjectExplorer();
     void renameGroup(ProjectGroupNode *group);
 
-
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -294,7 +294,6 @@ private:
     void updateEditorLineWrapping();
     void analyzeCommandLine(GamsProcess *process, const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
-    QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);

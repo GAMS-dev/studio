@@ -30,6 +30,14 @@ namespace studio {
 
 QString CommonPaths::SystemDir = QString();
 
+#if defined(__APPLE__) || defined(__unix__)
+    const QString CommonPaths::ConfigFile = "gmscmpun.txt";
+#else
+    const QString CommonPaths::ConfigFile = "gmscmpnt.txt";
+#endif
+
+const QString CommonPaths::LicenseFile = "gamslice.txt";
+
 CommonPaths::CommonPaths()
 {
 
@@ -114,6 +122,18 @@ QString CommonPaths::absolutPath(const QString &dir)
         return "";
     QDir d(dir);
     return d.absolutePath();
+}
+
+QString CommonPaths::configFile()
+{
+    QDir configFile(systemDir() + "/" + ConfigFile);
+    return configFile.path();
+}
+
+QString CommonPaths::licenseFile()
+{
+    QDir licenseFile(systemDir() + "/" + LicenseFile);
+    return licenseFile.path();
 }
 
 }

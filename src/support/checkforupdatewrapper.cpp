@@ -21,12 +21,12 @@
 #include "gclgms.h"
 #include "c4umcc.h"
 #include "commonpaths.h"
-#include "exception.h"
 
 #include <cstring>
 
 namespace gams {
 namespace studio {
+namespace support {
 
 /**
   * Possible improvments
@@ -48,8 +48,7 @@ CheckForUpdateWrapper::CheckForUpdateWrapper()
 
 CheckForUpdateWrapper::~CheckForUpdateWrapper()
 {
-    if (isValid())
-        c4uFree(&mC4UHandle);
+    if (isValid()) c4uFree(&mC4UHandle);
 }
 
 bool CheckForUpdateWrapper::isValid() const
@@ -144,7 +143,7 @@ QString CheckForUpdateWrapper::distribVersionString()
         char version[16];
         return c4uWrapper.distribVersionString(version, 16);
     }
-    EXCEPT() << c4uWrapper.message();
+    return QString();
 }
 
 char* CheckForUpdateWrapper::distribVersionString(char *version, size_t length)
@@ -163,5 +162,6 @@ void CheckForUpdateWrapper::getMessages(int &messageIndex, char *buffer)
     }
 }
 
+}
 }
 }

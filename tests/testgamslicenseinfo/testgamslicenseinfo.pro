@@ -18,28 +18,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT += core testlib gui widgets
+TEMPLATE = app
 
-CONFIG += c++14
-CONFIG -= app_bundle
+include(../tests.pri)
 
-DESTDIR = ../bin
+INCLUDEPATH += $$SRCPATH            \
+               $$SRCPATH/locators   \
+               $$SRCPATH/support
 
-# Setup and include the GAMS distribution
-include(../gamsdependency.pri)
+HEADERS +=                  \
+    testgamslicenseinfo.h
 
-macx {
-# ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
-# ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
-#    ICON = studio.icns
-#    QMAKE_INFO_PLIST=Info.plist
-}
-unix {
-    LIBS += -ldl
-}
-win32 {
-    LIBS += -luser32
-}
-
-TESTSROOT = $$_PRO_FILE_PWD_/..
-SRCPATH = $$TESTSROOT/../src
+SOURCES +=                                      \
+    testgamslicenseinfo.cpp                     \
+    $$SRCPATH/locators/defaultsystemlogger.cpp  \
+    $$SRCPATH/locators/sysloglocator.cpp        \
+    $$SRCPATH/support/gamslicenseinfo.cpp       \
+    $$SRCPATH/commonpaths.cpp                   \
+    $$SRCPATH/exception.cpp

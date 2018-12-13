@@ -17,28 +17,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ABSTRACTSYSTEMLOGGER_H
-#define ABSTRACTSYSTEMLOGGER_H
+#ifndef ABOUTGAMSDIALOG_H
+#define ABOUTGAMSDIALOG_H
 
-#include <QString>
+#include <QDialog>
 
 namespace gams {
 namespace studio {
+namespace support {
 
-enum class LogMsgType { Error, Warning, Info };
+namespace Ui {
+class AboutGAMSDialog;
+}
 
-class AbstractSystemLogger
+class AboutGAMSDialog : public QDialog
 {
+    Q_OBJECT
 
 public:
-    virtual ~AbstractSystemLogger() {}
-    virtual void append(const QString &msg, LogMsgType type = LogMsgType::Warning) = 0;
+    explicit AboutGAMSDialog(const QString &title, QWidget *parent = nullptr);
+    ~AboutGAMSDialog();
 
-protected:
-    AbstractSystemLogger() {}
+    static QString studioInfo();
+    static QString aboutStudio();
+    static QString header();
+
+private:
+    QString gamsLicense();
+
+private slots:
+    void on_copylicense_clicked();
+
+private:
+    Ui::AboutGAMSDialog *ui;
 };
 
 }
 }
-
-#endif // ABSTRACTSYSTEMLOGGER_H
+}
+#endif // ABOUTGAMSDIALOG_H

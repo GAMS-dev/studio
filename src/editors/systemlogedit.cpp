@@ -36,7 +36,7 @@ SystemLogEdit::SystemLogEdit(QWidget *parent)
     mHighlighter->setDocument(document());
 }
 
-void SystemLogEdit::appendLog(const QString &msg, LogMsgType type)
+void SystemLogEdit::append(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
     QString logLevel = level(type);

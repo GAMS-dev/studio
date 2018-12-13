@@ -17,40 +17,51 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DISTRIBUTIONVALIDATOR_H
-#define DISTRIBUTIONVALIDATOR_H
+#ifndef GAMSLICENSEINFO_H
+#define GAMSLICENSEINFO_H
 
-#include <QThread>
+#include <QMap>
+#include <QString>
 
-class QString;
+struct cfgRec;
+typedef struct cfgRec *cfgHandle_t;
+
+struct palRec;
+typedef struct palRec *palHandle_t;
 
 namespace gams {
 namespace studio {
+namespace support {
 
-class DistributionValidator
-    : public QThread
+class GamsLicenseInfo
 {
-    Q_OBJECT
-
 public:
-    DistributionValidator(QObject *parent = Q_NULLPTR);
+    GamsLicenseInfo();
+    ~GamsLicenseInfo();
 
-    void run() override;
+    int solvers() const;
+
+    int solverId(const QString &name);
+
+    QString solverName(int id) const;
+    QMap<int, QString> solverNames();
+
+    QMap<int, QString> modelTypeNames();
+
+    bool solverCapability(int solver, int modelType) const;
+
+    QString solverLicense(int solverId) const;
 
 private:
-    ///
-    /// \brief Verify the GAMS Distribution bitness on Windows.
-    /// \remark On Windows we support both 32 Bit and 64 Bit.
-    ///
-    void checkBitness();
+    char* solverCodes(int solverId) const;
 
-    ///
-    /// \brief Check the GAMS Distribution to GAMS Studio compatibility.
-    ///
-    void checkCompatibility();
+private:
+    cfgHandle_t mCFG;
+    palHandle_t mPAL;
 };
 
 }
 }
+}
 
-#endif // DISTRIBUTIONVALIDATOR_H
+#endif // GAMSLICENSEINFO_H
