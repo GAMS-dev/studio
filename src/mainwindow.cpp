@@ -144,6 +144,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
+    connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
+    connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -2384,6 +2387,11 @@ void MainWindow::on_actionCopy_triggered()
 
 void MainWindow::on_actionSelect_All_triggered()
 {
+    if (focusWidget() == ui->projectView){
+        ui->projectView->selectAll();
+        return;
+    }
+
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget()) return;
 
@@ -2397,6 +2405,16 @@ void MainWindow::on_actionSelect_All_triggered()
         if (!ae) return;
         ae->selectAll();
     }
+}
+
+void MainWindow::on_expandAll()
+{
+    ui->projectView->expandAll();
+}
+
+void MainWindow::on_collapseAll()
+{
+    ui->projectView->collapseAll();
 }
 
 void MainWindow::on_actionCut_triggered()
