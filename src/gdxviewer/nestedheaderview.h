@@ -20,10 +20,10 @@ public:
     void init();
 
 protected:
-    void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const;
-    void mouseMoveEvent(QMouseEvent *event);
-    void leaveEvent(QEvent *event);
-    QSize sectionSizeFromContents(int logicalIndex) const;
+    void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    QSize sectionSizeFromContents(int logicalIndex) const override;
 
 private:
     void calcSectionSize();
