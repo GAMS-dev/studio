@@ -84,7 +84,7 @@ FileMeta::~FileMeta()
 {
     if (mDocument) unlinkAndFreeDocument();
     mFileRepo->textMarkRepo()->removeMarks(id());
-    mFileRepo->removedFile(this);
+    mFileRepo->removeFile(this);
 }
 
 QVector<QPoint> FileMeta::getEditPositions()
@@ -427,9 +427,13 @@ void FileMeta::save()
 
 void FileMeta::saveAs(const QString &target)
 {
-    if (QFile::exists(target))
-        QFile::remove(target);
-    QFile::copy(mLocation, target);
+    if (QFileInfo(mLocation) == QFileInfo(target)) {
+        save();
+    } else {
+        if (QFile::exists(target))
+            QFile::remove(target);
+        QFile::copy(mLocation, target);
+    }
     mFileRepo->findOrCreateFileMeta(target);
 }
 
