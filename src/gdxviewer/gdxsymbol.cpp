@@ -436,23 +436,22 @@ QVariant GdxSymbol::formatValue(double val) const
 {
     if (val<GMS_SV_UNDEF)
         return QString::number(val, 'g', 15);
-    else {
-        if (val == GMS_SV_UNDEF)
-            return "UNDEF";
-        if (val == GMS_SV_NA)
-            return "NA";
-        if (val == GMS_SV_PINF)
-            return "+INF";
-        if (val == GMS_SV_MINF)
-            return "-INF";
-        if (val == GMS_SV_EPS)
-            return "EPS";
-        else if (val>=GMS_SV_ACR) {
-            char acr[GMS_SSSIZE];
-            gdxAcronymName(mGdx, val, acr);
-            return QString(acr);
-        }
+    if (val == GMS_SV_UNDEF)
+        return "UNDEF";
+    if (val == GMS_SV_NA)
+        return "NA";
+    if (val == GMS_SV_PINF)
+        return "+INF";
+    if (val == GMS_SV_MINF)
+        return "-INF";
+    if (val == GMS_SV_EPS)
+        return "EPS";
+    if (val>=GMS_SV_ACR) {
+        char acr[GMS_SSSIZE];
+        gdxAcronymName(mGdx, val, acr);
+        return QString(acr);
     }
+    return QVariant();
 }
 
 void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
