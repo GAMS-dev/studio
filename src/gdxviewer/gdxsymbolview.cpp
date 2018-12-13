@@ -261,13 +261,10 @@ void GdxSymbolView::showTableView()
 
 void GdxSymbolView::toggleView()
 {
-    if (mTableViewEnabled) {
-        mTableViewEnabled = false;
+    if (mSym->tableView())
         showListView();
-    } else {
-        mTableViewEnabled = true;
+    else
         showTableView();
-    }
     refreshView();
 }
 
