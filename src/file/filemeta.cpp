@@ -84,7 +84,7 @@ FileMeta::~FileMeta()
 {
     if (mDocument) unlinkAndFreeDocument();
     mFileRepo->textMarkRepo()->removeMarks(id());
-    mFileRepo->removedFile(this);
+    mFileRepo->removeFile(this);
 }
 
 QVector<QPoint> FileMeta::getEditPositions()

@@ -62,7 +62,7 @@ signals:
 
 public slots:
     void openFile(FileMeta* fm, NodeId groupId, bool focus = true, int codecMib = -1);
-    void removedFile(FileMeta* fileMeta);
+    void removeFile(FileMeta* fileMeta);
 
 private slots:
 //    void dirChanged(const QString& path);

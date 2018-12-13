@@ -2101,7 +2101,7 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
         FileMeta* fm = node->file();
         mProjectRepo.closeNode(node);
         if (nodeCountToFile == 1) {
-            mFileMetaRepo.removedFile(fm);
+            mFileMetaRepo.removeFile(fm);
             fm->deleteLater();
         }
     }
