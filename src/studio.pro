@@ -93,6 +93,7 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
+    gdxviewer/nestedheaderview.cpp \
     keys.cpp \
     locators/searchlocator.cpp \
     logger.cpp \
@@ -197,6 +198,7 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
+    gdxviewer/nestedheaderview.h \
     keys.h \
     locators/searchlocator.h \
     logger.h \
