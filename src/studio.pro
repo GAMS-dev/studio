@@ -161,7 +161,8 @@ SOURCES += \
     support/gamslicenseinfo.cpp         \
     support/solvertablemodel.cpp        \
     editors/viewhelper.cpp              \
-    editors/editorhelper.cpp
+    editors/editorhelper.cpp \
+    maintabcontextmenu.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -270,7 +271,8 @@ HEADERS += \
     support/gamslicenseinfo.h       \
     support/solvertablemodel.h      \
     editors/viewhelper.h            \
-    editors/editorhelper.h
+    editors/editorhelper.h \
+    maintabcontextmenu.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

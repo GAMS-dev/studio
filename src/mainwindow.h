@@ -31,6 +31,7 @@
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+#include "maintabcontextmenu.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -177,6 +178,7 @@ private slots:
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
+    void mainTabContextMenuRequested(const QPoint& pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void closeHelpView();
@@ -322,6 +324,8 @@ private:
     StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
+    MainTabContextMenu mMainTabContextMenu;
+
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     int mExternFileEventChoice = -1;

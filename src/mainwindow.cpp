@@ -98,7 +98,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
-
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
@@ -147,6 +146,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
+
+    ui->mainTab->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mainTab->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -572,6 +574,14 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
+{
+    mMainTabContextMenu.setParent(ui->mainTab->tabBar());
+    int tabIndex = ui->mainTab->tabBar()->tabAt(pos);
+    mMainTabContextMenu.setTabIndex(tabIndex);
+    mMainTabContextMenu.exec(ui->mainTab->mapToGlobal(pos));
 }
 
 void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
