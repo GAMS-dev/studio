@@ -559,6 +559,8 @@ void SolverOptionWidget::showOptionDefinition()
                                 ui->solverOptionTreeView->model()->index(idx.row(), ui->solverOptionTreeView->model()->columnCount()-1));
                 ui->solverOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
             }
+            if (indices.size() > 0)
+                ui->solverOptionTreeView->scrollTo(indices.first(), QAbstractItemView::PositionAtCenter);
         }
     }
 }
