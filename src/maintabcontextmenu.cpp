@@ -52,7 +52,7 @@ void MainTabContextMenu::closeAllRight()
 {
     int tabs = mParent->tabCount();
     for (int i = mTabIndex + 1; i < tabs; i++)
-        mParent->on_mainTab_tabCloseRequested(mTabIndex + 1);
+        mParent->on_mainTab_tabCloseRequested(tabs - mTabIndex - i);
 }
 
 void MainTabContextMenu::setTabIndex(int tab)
