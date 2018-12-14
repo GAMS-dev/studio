@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "maintabcontextmenu.h"
+#include "mainwindow.h"
+
 #include <QDebug>
 
 namespace gams {
@@ -31,29 +33,28 @@ enum TabActions {
     actCloseAllToRight,
 };
 
-MainTabContextMenu::MainTabContextMenu()
+MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 {
-    mActions.insert(actClose, addAction("&Close", this, &MainTabContextMenu::dummy));
-    mActions.insert(actCloseAll, addAction("Close &All", this, &MainTabContextMenu::dummy));
-    mActions.insert(actCloseAllExceptVisible, addAction("Close &except visible", this, &MainTabContextMenu::dummy));
-    mActions.insert(actCloseAllToLeft, addAction("Close all &left", this, &MainTabContextMenu::dummy));
-    mActions.insert(actCloseAllToRight, addAction("Close all &right", this, &MainTabContextMenu::dummy));
+    mActions.insert(actClose, addAction("&Close", mParent, &MainWindow::on_actionClose_triggered));
+    mActions.insert(actCloseAll, addAction("Close &All", mParent, &MainWindow::on_actionClose_All_triggered));
+    mActions.insert(actCloseAllExceptVisible, addAction("Close &except visible", mParent, &MainWindow::on_actionClose_All_Except_triggered));
+    mActions.insert(actCloseAllToLeft, addAction("Close all &left", this, &MainTabContextMenu::closeAllLeft));
+    mActions.insert(actCloseAllToRight, addAction("Close all &right", this, &MainTabContextMenu::closeAllRight));
 }
 
-void MainTabContextMenu::dummy()
+void MainTabContextMenu::closeAllLeft()
 {
-    qDebug() /*rogo: delete*/ << "dumdumdumdumdumdumdum";
+    qDebug() /*rogo: delete*/ << "close left";
+}
+
+void MainTabContextMenu::closeAllRight()
+{
+    qDebug() /*rogo: delete*/ << "close right";
 }
 
 void MainTabContextMenu::setTabIndex(int tab)
 {
-    qDebug() /*rogo: delete*/ << "tab" << tab;
     mTabIndex = tab;
-}
-
-void MainTabContextMenu::setParent(QTabBar* tabParent)
-{
-    mParent = tabParent;
 }
 
 }

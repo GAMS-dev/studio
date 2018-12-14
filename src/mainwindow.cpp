@@ -63,8 +63,8 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
-
-      mAutosaveHandler(new AutosaveHandler(this))
+      mAutosaveHandler(new AutosaveHandler(this)),
+      mMainTabContextMenu(this)
 {
     mSettings = SettingsLocator::settings();
     mHistory = new HistoryData();
@@ -578,7 +578,6 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
 
 void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
 {
-    mMainTabContextMenu.setParent(ui->mainTab->tabBar());
     int tabIndex = ui->mainTab->tabBar()->tabAt(pos);
     mMainTabContextMenu.setTabIndex(tabIndex);
     mMainTabContextMenu.exec(ui->mainTab->mapToGlobal(pos));

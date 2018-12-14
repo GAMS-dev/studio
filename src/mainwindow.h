@@ -54,6 +54,7 @@ class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
 
+
 struct RecentData {
 
     QWidget *editor() const;
@@ -77,6 +78,8 @@ struct HistoryData {
 
 class MainWindow : public QMainWindow
 {
+    friend MainTabContextMenu;
+
     Q_OBJECT
 
 public:

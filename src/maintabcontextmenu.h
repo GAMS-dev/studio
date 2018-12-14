@@ -26,20 +26,24 @@
 namespace gams {
 namespace studio {
 
+class MainWindow;
 class MainTabContextMenu : public QMenu
 {
     Q_OBJECT
 
 public:
-    MainTabContextMenu();
-    void dummy();
-    void setParent(QTabBar* tabParent);
+    MainTabContextMenu(MainWindow* parent);
+    void setParent(MainWindow* mainParent);
     void setTabIndex(int tab);
 
 private:
     QHash<int, QAction*> mActions;
-    QTabBar* mParent = nullptr;
+    MainWindow* mParent = nullptr;
     int mTabIndex = -1;
+
+private slots:
+    void closeAllLeft();
+    void closeAllRight();
 };
 
 }
