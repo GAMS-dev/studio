@@ -34,7 +34,8 @@ void TestCPLEXOption::initTestCase()
     const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     CommonPaths::setSystemDir(expected.toLatin1());
     // when
-    optionTokenizer = new OptionTokenizer(QString("optcplex.def"));
+    QString optdef = "optcplex.def";
+    optionTokenizer = new OptionTokenizer(optdef);
     if  ( !optionTokenizer->getOption()->available() ) {
        QFAIL("expected successful read of optcplex.def, but failed");
     }
@@ -48,7 +49,6 @@ void TestCPLEXOption::initTestCase()
         Dcreated = true;
 
     // test cplex for now
-    QString optdef = "optcplex.def";
     if (optReadDefinition(mOPTHandle, QDir(CommonPaths::systemDir()).filePath(optdef).toLatin1())) {
         optdefRead = false;
     } else {
@@ -1279,8 +1279,20 @@ void TestCPLEXOption::testReadFromStr()
     optResetAll(mOPTHandle);
 }
 
+void TestCPLEXOption::testEOLChars()
+{
+    char eolchars[256];
+    int numchar = optEOLChars( mOPTHandle, eolchars);
+
+    QCOMPARE( 1, numchar );
+    QCOMPARE( "!", QString::fromLatin1(eolchars) );
+}
+
 void TestCPLEXOption::cleanupTestCase()
 {
+    if (mOPTHandle)
+        optFree(&mOPTHandle);
+
     if (optionTokenizer)
         delete optionTokenizer;
 }

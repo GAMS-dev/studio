@@ -21,6 +21,8 @@
 
 #include "testconopt4option.h"
 #include "commonpaths.h"
+#include "gclgms.h"
+#include "optcc.h"
 
 using gams::studio::CommonPaths;
 
@@ -33,6 +35,22 @@ void TestConopt4Option::initTestCase()
     optionTokenizer = new OptionTokenizer(QString("optconopt4.def"));
     if  ( !optionTokenizer->getOption()->available() ) {
        QFAIL("expected successful read of optconopt4.def, but failed");
+    }
+
+    // when
+    char msg[GMS_SSSIZE];
+    optCreateD(&mOPTHandle, CommonPaths::systemDir().toLatin1(), msg, sizeof(msg));
+    if (msg[0] != '\0')
+        Dcreated = false;
+    else
+        Dcreated = true;
+
+    // test cplex for now
+    QString optdef = "optconopt4.def";
+    if (optReadDefinition(mOPTHandle, QDir(CommonPaths::systemDir()).filePath(optdef).toLatin1())) {
+        optdefRead = false;
+    } else {
+        optdefRead = true;
     }
 }
 
@@ -372,8 +390,20 @@ void TestConopt4Option::testWriteOptionFile()
     QCOMPARE(i, items.size());
 }
 
+void TestConopt4Option::testEOLChars()
+{
+    char eolchars[256];
+    int numchar = optEOLChars( mOPTHandle, eolchars);
+
+    QCOMPARE( 3, numchar );
+    QCOMPARE( ";#!", QString::fromLatin1(eolchars) );
+}
+
 void TestConopt4Option::cleanupTestCase()
 {
+    if (mOPTHandle)
+        optFree(&mOPTHandle);
+
     if (optionTokenizer)
         delete optionTokenizer;
 }

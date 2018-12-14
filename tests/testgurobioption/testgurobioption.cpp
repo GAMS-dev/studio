@@ -21,6 +21,8 @@
 
 #include "commonpaths.h"
 #include "testgurobioption.h"
+#include "gclgms.h"
+#include "optcc.h"
 
 using gams::studio::CommonPaths;
 
@@ -33,6 +35,22 @@ void TestGUROBIOption::initTestCase()
     optionTokenizer = new OptionTokenizer(QString("optgurobi.def"));
     if  ( !optionTokenizer->getOption()->available() ) {
        QFAIL("expected successful read of optgurobi.def, but failed");
+    }
+
+    // when
+    char msg[GMS_SSSIZE];
+    optCreateD(&mOPTHandle, CommonPaths::systemDir().toLatin1(), msg, sizeof(msg));
+    if (msg[0] != '\0')
+        Dcreated = false;
+    else
+        Dcreated = true;
+
+    // test cplex for now
+    QString optdef = "optgurobi.def";
+    if (optReadDefinition(mOPTHandle, QDir(CommonPaths::systemDir()).filePath(optdef).toLatin1())) {
+        optdefRead = false;
+    } else {
+        optdefRead = true;
     }
 }
 
@@ -437,8 +455,20 @@ void TestGUROBIOption::testWriteOptionFile()
     QCOMPARE(i, items.size());
 }
 
+void TestGUROBIOption::testEOLChars()
+{
+    char eolchars[256];
+    int numchar = optEOLChars( mOPTHandle, eolchars);
+
+    QCOMPARE( 0, numchar );
+    QVERIFY( QString::fromLatin1(eolchars).isEmpty() );
+}
+
 void TestGUROBIOption::cleanupTestCase()
 {
+    if (mOPTHandle)
+        optFree(&mOPTHandle);
+
     if (optionTokenizer)
         delete optionTokenizer;
 }

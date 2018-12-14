@@ -32,6 +32,8 @@ class TestOptionAPI : public QObject
 private slots:
     void initTestCase();
 
+    void testEOLChars();
+
     void testReadFromStr_data();
     void testReadFromStr();
 

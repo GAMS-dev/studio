@@ -21,7 +21,8 @@
 
 #include "commonpaths.h"
 #include "testminosoption.h"
-
+#include "gclgms.h"
+#include "optcc.h"
 using gams::studio::CommonPaths;
 
 void TestMINOSOption::initTestCase()
@@ -30,9 +31,25 @@ void TestMINOSOption::initTestCase()
     const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     CommonPaths::setSystemDir(expected.toLatin1());
     // when
-    optionTokenizer = new OptionTokenizer(QString("optminos.def"));
+    QString optdef = "optminos.def";
+    optionTokenizer = new OptionTokenizer(optdef);
     if  ( !optionTokenizer->getOption()->available() ) {
        QFAIL("expected successful read of optminos.def, but failed");
+    }
+
+    // when
+    char msg[GMS_SSSIZE];
+    optCreateD(&mOPTHandle, CommonPaths::systemDir().toLatin1(), msg, sizeof(msg));
+    if (msg[0] != '\0')
+        Dcreated = false;
+    else
+        Dcreated = true;
+
+    // test cplex for now
+    if (optReadDefinition(mOPTHandle, QDir(CommonPaths::systemDir()).filePath(optdef).toLatin1())) {
+        optdefRead = false;
+    } else {
+        optdefRead = true;
     }
 }
 
@@ -466,8 +483,20 @@ void TestMINOSOption::testWriteOptionFile()
 
 }
 
+void TestMINOSOption::testEOLChars()
+{
+    char eolchars[256];
+    int numchar = optEOLChars( mOPTHandle, eolchars);
+
+    QCOMPARE( 1, numchar );
+    QCOMPARE( "*", QString::fromLatin1(eolchars) );
+}
+
 void TestMINOSOption::cleanupTestCase()
 {
+    if (mOPTHandle)
+        optFree(&mOPTHandle);
+
     if (optionTokenizer)
         delete optionTokenizer;
 }

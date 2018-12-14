@@ -63,11 +63,17 @@ private slots:
 
     void testWriteOptionFile();
 
+    void testEOLChars();
+
     void cleanupTestCase();
 
 private:
     bool containKey(QList<OptionItem> &items, const QString &key) const;
     QVariant getValue(QList<OptionItem> &items, const QString &key) const;
+
+    bool Dcreated = false;
+    bool optdefRead = false;
+    optHandle_t mOPTHandle;
 
     OptionTokenizer* optionTokenizer;
 };

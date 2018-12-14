@@ -86,6 +86,8 @@ private slots:
     void testReadFromStr_data();
     void testReadFromStr();
 
+    void testEOLChars();
+
     void cleanupTestCase();
 
 private:

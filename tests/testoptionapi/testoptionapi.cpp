@@ -48,6 +48,15 @@ void TestOptionAPI::initTestCase()
     }
 }
 
+void TestOptionAPI::testEOLChars()
+{
+    char eolchars[256];
+    int numchar = optEOLChars( mOPTHandle, eolchars);
+
+    QCOMPARE( 1, numchar );
+    QCOMPARE( "*", QString::fromLatin1(eolchars) );
+}
+
 void TestOptionAPI::testReadFromStr_data()
 {
     QVERIFY( Dcreated && optdefRead );
@@ -157,7 +166,8 @@ void TestOptionAPI::testReadFromStr()
 
 void TestOptionAPI::cleanupTestCase()
 {
-    optFree(&mOPTHandle);
+    if (mOPTHandle)
+       optFree(&mOPTHandle);
 }
 
 int TestOptionAPI::logAndClearMessage()
