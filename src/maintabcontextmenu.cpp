@@ -44,12 +44,15 @@ MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 
 void MainTabContextMenu::closeAllLeft()
 {
-    qDebug() /*rogo: delete*/ << "close left";
+    for (int i = mTabIndex - 1; i >= 0; i--)
+        mParent->on_mainTab_tabCloseRequested(i);
 }
 
 void MainTabContextMenu::closeAllRight()
 {
-    qDebug() /*rogo: delete*/ << "close right";
+    int tabs = mParent->tabCount();
+    for (int i = mTabIndex + 1; i < tabs; i++)
+        mParent->on_mainTab_tabCloseRequested(mTabIndex + 1);
 }
 
 void MainTabContextMenu::setTabIndex(int tab)

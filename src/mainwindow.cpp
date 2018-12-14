@@ -244,6 +244,11 @@ bool MainWindow::event(QEvent *event)
     return QMainWindow::event(event);
 }
 
+int MainWindow::tabCount()
+{
+    return ui->mainTab->count();
+}
+
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
 {
     openFileNode(mProjectRepo.findOrCreateFileNode(filepath, group), true);

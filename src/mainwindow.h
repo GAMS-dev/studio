@@ -279,6 +279,7 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
+    int tabCount();
 
 private:
     void initTabs();
