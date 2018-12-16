@@ -2371,13 +2371,16 @@ void MainWindow::on_actionGo_To_triggered()
 {
     if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
         return;
-    GoToDialog dialog(this);
+    CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
+    TextView *tv = ViewHelper::toTextView(mRecent.editor());
+    int maxLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
+    GoToDialog dialog(this, maxLines);
     int result = dialog.exec();
     if (QDialog::Rejected == result)
         return;
-    if (CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor()))
+    if (codeEdit)
         codeEdit->jumpTo(dialog.lineNumber());
-    if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
+    if (tv)
         tv->jumpTo(dialog.lineNumber(), 0);
     // TODO(JM) for TextView: keep dialog open if the line number is beyond knownLineNumbers
 }

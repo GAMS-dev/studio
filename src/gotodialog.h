@@ -34,7 +34,7 @@ class GoToDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit GoToDialog(QWidget *parent = nullptr);
+    explicit GoToDialog(QWidget *parent = nullptr, int maxLines = 1000000);
 
     ~GoToDialog();
 

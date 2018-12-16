@@ -25,13 +25,13 @@
 namespace gams {
 namespace studio {
 
-GoToDialog::GoToDialog(QWidget *parent)
+GoToDialog::GoToDialog(QWidget *parent, int maxLines)
     : QDialog(parent),
       ui(new Ui::GoToDialog)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
-    ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this));
+    ui->lineEdit->setValidator(new QIntValidator(0, maxLines, this));
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
