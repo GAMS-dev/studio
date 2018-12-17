@@ -1240,8 +1240,6 @@ void MainWindow::postGamsRun(NodeId origin)
 
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
 
-        if (lstNode) lstNode->enhanceMarksFromLst();
-
         if (mSettings->openLst())
             openFileNode(lstNode);
     }
@@ -1724,7 +1722,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
-        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
+        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
         if (ViewHelper::toCodeEdit(wid) || ViewHelper::toLogEdit(wid))
             ViewHelper::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
         if (ViewHelper::toAbstractEdit(wid))
@@ -1879,7 +1877,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
-            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), QList<int>() << logNode->file()->codecMib());
+            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
             wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (ViewHelper::toAbstractEdit(wid))
                 ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
@@ -1959,7 +1957,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
             }
         }
-        edit = fileMeta->createEdit(tabWidget, runGroup, QList<int>() << codecMib);
+        edit = fileMeta->createEdit(tabWidget, runGroup, codecMib);
         if (!edit) {
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;
