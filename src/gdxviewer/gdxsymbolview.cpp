@@ -25,8 +25,6 @@
 #include "nestedheaderview.h"
 
 #include <QClipboard>
-#include <QDebug>
-
 
 namespace gams {
 namespace studio {
@@ -101,12 +99,14 @@ void GdxSymbolView::showColumnFilter(QPoint p)
 
 void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 {
+    if (mSym->type() != GMS_DT_VAR && mSym->type() != GMS_DT_EQU)
+        return;
     if (mSym) {
         if (mSym->tableView()) {
             ui->tvTableView->setUpdatesEnabled(false);
             if (checked) {
                 for (int col=0; col<mSym->columnCount(); col++) {
-                    if (mSym->isAllDefault(col))
+                    if (mSym->isAllDefault(col) || !mShowValColActions[col%GMS_DT_MAX]->isChecked())
                         ui->tvTableView->setColumnHidden(col, true);
                     else
                         ui->tvTableView->setColumnHidden(col, false);
@@ -114,14 +114,14 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
             }
             else {
                 for (int col=0; col<mSym->columnCount(); col++)
-                    ui->tvTableView->setColumnHidden(col, false);
+                    ui->tvTableView->setColumnHidden(col, !mShowValColActions[col%GMS_DT_MAX]->isChecked());
             }
             ui->tvTableView->setUpdatesEnabled(true);
         } else {
             ui->tvListView->setUpdatesEnabled(false);
             if (checked) {
                 for (int i=0; i<GMS_VAL_MAX; i++) {
-                    if (mSym->isAllDefault(i))
+                    if (mSym->isAllDefault(i) || !mShowValColActions[i]->isChecked())
                         ui->tvListView->setColumnHidden(mSym->dim()+i, true);
                     else
                         ui->tvListView->setColumnHidden(mSym->dim()+i, false);
@@ -129,7 +129,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
             }
             else {
                 for(int i=0; i<GMS_VAL_MAX; i++)
-                    ui->tvListView->setColumnHidden(mSym->dim()+i, false);
+                    ui->tvListView->setColumnHidden(mSym->dim()+i, !mShowValColActions[i]->isChecked());
             }
             ui->tvListView->setUpdatesEnabled(true);
         }
@@ -139,10 +139,16 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
+        if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
+            for (int i=0; i<GMS_VAL_MAX; i++)
+                mShowValColActions[i]->setChecked(true);
+        }
         mSym->resetSortFilter();
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
     ui->cbSqueezeDefaults->setChecked(false);
+
+
 }
 
 void GdxSymbolView::refreshView()
@@ -166,6 +172,19 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tvListView->setModel(mSym);
     ui->tvTableView->setModel(mSym);
+
+    if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
+        QVector<QString> valColNames;
+        valColNames<< "Level" << "Marginal" << "Lower Bound" << "Upper Bound" << "Scale";
+        QMenu* valColMenu = mContextMenu.addMenu("Visible Value Columns");
+        QAction *action;
+        for(int i=0; i<GMS_VAL_MAX; i++) {
+            action = valColMenu->addAction(valColNames[i], [this, i]() {toggleColumnHidden(i);});
+            action->setCheckable(true);
+            action->setChecked(true);
+            mShowValColActions.append(action);
+        }
+    }
     refreshView();
 }
 
@@ -226,6 +245,17 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
 
     QClipboard* clip = QApplication::clipboard();
     clip->setText(sList.join(""));
+}
+
+void GdxSymbolView::toggleColumnHidden(int valCol)
+{
+    if (mSym->tableView()) {
+        for (int i=0; i<mSym->rowCount(); i++) {
+            ui->tvTableView->setColumnHidden(i, !mShowValColActions[i%GMS_DT_MAX]);
+        }
+    } else
+        ui->tvListView->setColumnHidden(valCol+mSym->dim(), !mShowValColActions[valCol]);
+    toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)

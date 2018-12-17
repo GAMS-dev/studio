@@ -22,6 +22,8 @@
 
 #include <QFrame>
 #include <QMenu>
+#include <QVector>
+#include <QAction>
 
 namespace gams {
 namespace studio {
@@ -44,6 +46,7 @@ public:
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym);
     void copySelectionToClipboard(QString separator);
+    void toggleColumnHidden(int valCol);
 
 public slots:
     void enableControls();
@@ -67,6 +70,7 @@ private:
 
     void selectAll();
 
+    QVector<QAction *> mShowValColActions;
 };
 
 
