@@ -494,7 +494,24 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
 void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     mTreeModel->selectionChanged(selected, deselected);
-    emit deselect(mTreeModel->popDeclined());
+    QVector<QModelIndex> groups;
+    for (QModelIndex ind: mTreeModel->popAddGroups()) {
+        if (!mTreeView->isExpanded(ind))
+            groups << ind;
+    }
+    QItemSelectionModel *selModel = mTreeView->selectionModel();
+    for (QModelIndex ind: mTreeModel->popDeclined()) {
+        selModel->select(ind, QItemSelectionModel::Deselect);
+    }
+    for (QModelIndex group: groups) {
+        if (!mTreeView->isExpanded(group)) {
+            mTreeView->setExpanded(group, true);
+            for (int row = 0; row < mTreeModel->rowCount(group); ++row) {
+                QModelIndex ind = mTreeModel->index(row, 0, group);
+                selModel->select(ind, QItemSelectionModel::Select);
+            }
+        }
+    }
 }
 
 void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)

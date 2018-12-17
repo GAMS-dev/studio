@@ -132,6 +132,7 @@ signals:
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void changed();
     void deselect(const QVector<QModelIndex> &declined);
+    void select(const QVector<QModelIndex> &selected);
     void closeFileEditors(FileId fileId);
 
 public slots:

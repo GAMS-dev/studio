@@ -69,6 +69,7 @@ protected:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void deselectAll();
     const QVector<QModelIndex> popDeclined();
+    const QVector<QModelIndex> popAddGroups();
 
     void update(const QModelIndex& ind = QModelIndex());
 
@@ -79,6 +80,7 @@ private:
     NodeId mCurrent;
     QVector<NodeId> mSelected;
     QVector<QModelIndex> mDeclined;
+    QVector<QModelIndex> mAddGroups;
 };
 
 } // namespace studio

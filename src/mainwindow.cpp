@@ -132,7 +132,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
-    connect(&mProjectRepo, &ProjectRepo::deselect, this, &MainWindow::projectDeselect);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -1904,14 +1903,6 @@ void MainWindow::storeTree()
 {
     // TODO(JM) add settings methods to store each part separately
     mSettings->saveSettings(this);
-}
-
-void MainWindow::projectDeselect(const QVector<QModelIndex> &declined)
-{
-    QItemSelectionModel *selModel = ui->projectView->selectionModel();
-    for (QModelIndex ind: declined) {
-        selModel->select(ind, QItemSelectionModel::Deselect);
-    }
 }
 
 void MainWindow::raiseEdit(QWidget *widget)

@@ -330,11 +330,15 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
                                                               : nodeId(selected.indexes().first())
                                          : mSelected.first();
     ProjectAbstractNode *first = mProjectRepo->node(firstId);
+    mAddGroups.clear();
     int selKind = !first ? 0 : first->toGroup() ? 1 : 2;
     for (const QModelIndex &ind: selected.indexes()) {
         NodeId id = nodeId(ind);
         ProjectAbstractNode *node = mProjectRepo->node(id);
         int nodeKind = !node ? 0 : node->toGroup() ? 1 : 2;
+        if (nodeKind == 1 && selKind == 2) {
+            mAddGroups << ind;
+        }
         if (id.isValid() && !mSelected.contains(id) && (!selKind || nodeKind == selKind)) {
             mSelected << id;
             dataChanged(ind, ind);
@@ -359,6 +363,13 @@ const QVector<QModelIndex> ProjectTreeModel::popDeclined()
 {
     QVector<QModelIndex> res = mDeclined;
     mDeclined.clear();
+    return res;
+}
+
+const QVector<QModelIndex> ProjectTreeModel::popAddGroups()
+{
+    QVector<QModelIndex> res = mAddGroups;
+    mAddGroups.clear();
     return res;
 }
 

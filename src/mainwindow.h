@@ -172,7 +172,6 @@ private slots:
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
     void storeTree();
-    void projectDeselect(const QVector<QModelIndex> &declined);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
