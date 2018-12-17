@@ -28,6 +28,8 @@
 #include "studiosettings.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -389,26 +391,34 @@ void FileMeta::load(QList<int> codecMibs)
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
 
-        // TODO(JM) Read in lines to enable progress information
-        // !! For paging: reading must ensure being at the start of a line - not in the middle of a unicode-character
         const QByteArray data(file.readAll());
         QTextCodec *codec = nullptr;
+        QString invalidCodecs;
         for (int mib: mibs) {
             QTextCodec::ConverterState state;
             codec = QTextCodec::codecForMib(mib);
             if (codec) {
                 QString text = codec->toUnicode(data.constData(), data.size(), &state);
-                if (state.invalidChars == 0) {
+                if (state.invalidChars != 0) {
+                    invalidCodecs += (invalidCodecs.isEmpty() ? "" : ", ") + codec->name();
+                }
+
+                if (state.invalidChars == 0 || mib == mibs.last()) {
                     QVector<QPoint> edPos = getEditPositions();
                     mLoading = true;
                     document()->setPlainText(text);
                     setEditPositions(edPos);
                     mLoading = false;
                     mCodec = codec;
+                    if (!invalidCodecs.isEmpty()) {
+                        SysLogLocator::systemLog()->append(location() + " can't be encoded to " + invalidCodecs
+                                                           + ". Encoding used: " + codec->name(), LogMsgType::Info);
+
+                    }
                     break;
                 }
             } else {
-                DEB() << "System doesn't contain codec for MIB " << mib;
+                SysLogLocator::systemLog()->append("System doesn't contain codec for MIB " + QString::number(mib), LogMsgType::Info);
             }
         }
         file.close();

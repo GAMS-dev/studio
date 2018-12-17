@@ -912,7 +912,7 @@ void MainWindow::codecReload(QAction *action)
         if (reload) {
             fm->load(action->data().toInt());
 
-            updateMenuToCodec(action->data().toInt());
+            updateMenuToCodec(fm->codecMib());
             mStatusWidgets->setEncoding(fm->codecMib());
         }
     }
