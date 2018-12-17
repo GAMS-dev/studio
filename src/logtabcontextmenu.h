@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MAINTABCONTEXTMENU_H
-#define MAINTABCONTEXTMENU_H
+#ifndef LOGTABCONTEXTMENU_H
+#define LOGTABCONTEXTMENU_H
 
 #include <QMenu>
 #include <QTabBar>
@@ -27,12 +27,12 @@ namespace gams {
 namespace studio {
 
 class MainWindow;
-class MainTabContextMenu : public QMenu
+class LogTabContextMenu : public QMenu
 {
     Q_OBJECT
 
 public:
-    MainTabContextMenu(MainWindow* parent);
+    LogTabContextMenu(MainWindow* parent);
     void setTabIndex(int tab);
 
 private:
@@ -41,11 +41,13 @@ private:
     int mTabIndex = -1;
 
 private slots:
+    void close();
+    void closeAll();
+    void closeAllExceptVisible();
     void closeAllLeft();
     void closeAllRight();
 };
 
 }
 }
-
-#endif // MAINTABCONTEXTMENU_H
+#endif // LOGTABCONTEXTMENU_H

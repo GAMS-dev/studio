@@ -64,7 +64,8 @@ MainWindow::MainWindow(QWidget *parent)
       mProjectRepo(this),
       mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
       mAutosaveHandler(new AutosaveHandler(this)),
-      mMainTabContextMenu(this)
+      mMainTabContextMenu(this),
+      mLogTabContextMenu(this)
 {
     mSettings = SettingsLocator::settings();
     mHistory = new HistoryData();
@@ -149,6 +150,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->mainTab->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mainTab->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
+    ui->logTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->logTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::logTabContextMenuRequested);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -244,9 +247,14 @@ bool MainWindow::event(QEvent *event)
     return QMainWindow::event(event);
 }
 
-int MainWindow::tabCount()
+int MainWindow::mainTabCount()
 {
     return ui->mainTab->count();
+}
+
+int MainWindow::logTabCount()
+{
+    return ui->logTabs->count();
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
@@ -585,7 +593,14 @@ void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
 {
     int tabIndex = ui->mainTab->tabBar()->tabAt(pos);
     mMainTabContextMenu.setTabIndex(tabIndex);
-    mMainTabContextMenu.exec(ui->mainTab->mapToGlobal(pos));
+    mMainTabContextMenu.exec(ui->mainTab->tabBar()->mapToGlobal(pos));
+}
+
+void MainWindow::logTabContextMenuRequested(const QPoint& pos)
+{
+    int tabIndex = ui->logTabs->tabBar()->tabAt(pos);
+    mLogTabContextMenu.setTabIndex(tabIndex);
+    mLogTabContextMenu.exec(ui->logTabs->tabBar()->mapToGlobal(pos));
 }
 
 void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)

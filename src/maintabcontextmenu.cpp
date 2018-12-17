@@ -20,8 +20,6 @@
 #include "maintabcontextmenu.h"
 #include "mainwindow.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 
@@ -50,7 +48,7 @@ void MainTabContextMenu::closeAllLeft()
 
 void MainTabContextMenu::closeAllRight()
 {
-    int tabs = mParent->tabCount();
+    int tabs = mParent->mainTabCount();
     for (int i = mTabIndex + 1; i < tabs; i++)
         mParent->on_mainTab_tabCloseRequested(tabs - mTabIndex - i);
 }

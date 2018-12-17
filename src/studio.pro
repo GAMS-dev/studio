@@ -162,7 +162,8 @@ SOURCES += \
     support/solvertablemodel.cpp        \
     editors/viewhelper.cpp              \
     editors/editorhelper.cpp \
-    maintabcontextmenu.cpp
+    maintabcontextmenu.cpp \
+    logtabcontextmenu.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -272,7 +273,8 @@ HEADERS += \
     support/solvertablemodel.h      \
     editors/viewhelper.h            \
     editors/editorhelper.h \
-    maintabcontextmenu.h
+    maintabcontextmenu.h \
+    logtabcontextmenu.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

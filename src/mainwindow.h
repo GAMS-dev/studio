@@ -32,6 +32,7 @@
 #include "commandlineparser.h"
 #include "statuswidgets.h"
 #include "maintabcontextmenu.h"
+#include "logtabcontextmenu.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -79,6 +80,7 @@ struct HistoryData {
 class MainWindow : public QMainWindow
 {
     friend MainTabContextMenu;
+    friend LogTabContextMenu;
 
     Q_OBJECT
 
@@ -182,6 +184,7 @@ private slots:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);
+    void logTabContextMenuRequested(const QPoint& pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void closeHelpView();
@@ -279,7 +282,8 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
-    int tabCount();
+    int mainTabCount();
+    int logTabCount();
 
 private:
     void initTabs();
@@ -329,6 +333,7 @@ private:
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;
+    LogTabContextMenu mLogTabContextMenu;
 
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
