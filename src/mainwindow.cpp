@@ -683,7 +683,8 @@ void MainWindow::updateEditorBlockCount()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
+    if (!searchDialog()->searchTerm().isEmpty())
+        searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
