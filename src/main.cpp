@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setApplicationVersion(STUDIO_VERSION);
+    QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
 
     Application app(argc, argv);
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
