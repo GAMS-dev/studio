@@ -25,6 +25,7 @@
 #include "nestedheaderview.h"
 
 #include <QClipboard>
+#include <QWidgetAction>
 
 namespace gams {
 namespace studio {
@@ -176,14 +177,20 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
         QVector<QString> valColNames;
         valColNames<< "Level" << "Marginal" << "Lower Bound" << "Upper Bound" << "Scale";
-        QMenu* valColMenu = mContextMenu.addMenu("Visible Value Columns");
-        QAction *action;
+        QWidgetAction *checkableAction = new QWidgetAction(ui->tbVisibleValCols);
+        QWidget *widget = new QWidget();
+        QVBoxLayout *layout = new QVBoxLayout();
+        widget->setLayout(layout);
+        checkableAction->setDefaultWidget(widget);
+        QCheckBox *cb;
         for(int i=0; i<GMS_VAL_MAX; i++) {
-            action = valColMenu->addAction(valColNames[i], [this, i]() {toggleColumnHidden(i);});
-            action->setCheckable(true);
-            action->setChecked(true);
-            mShowValColActions.append(action);
+            cb = new QCheckBox(valColNames[i]);
+            cb->setChecked(true);
+            layout->addWidget(cb);
+            connect(cb, &QCheckBox::toggled, [this, i]() {toggleColumnHidden(i);});
+            mShowValColActions.append(cb);
         }
+        ui->tbVisibleValCols->addAction(checkableAction);
     }
     refreshView();
 }
@@ -256,6 +263,7 @@ void GdxSymbolView::toggleColumnHidden(int valCol)
     } else
         ui->tvListView->setColumnHidden(valCol+mSym->dim(), !mShowValColActions[valCol]);
     toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
+
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
@@ -315,8 +323,10 @@ void GdxSymbolView::enableControls()
 {
     ui->tvListView->horizontalHeader()->setEnabled(true);
     mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
-    if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU)
+    if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
         ui->cbSqueezeDefaults->setEnabled(true);
+        ui->tbVisibleValCols->setEnabled(true);
+    }
     else
         ui->cbSqueezeDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);

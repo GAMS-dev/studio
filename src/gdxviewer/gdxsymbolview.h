@@ -24,6 +24,7 @@
 #include <QMenu>
 #include <QVector>
 #include <QAction>
+#include <QCheckBox>
 
 namespace gams {
 namespace studio {
@@ -70,7 +71,7 @@ private:
 
     void selectAll();
 
-    QVector<QAction *> mShowValColActions;
+    QVector<QCheckBox *> mShowValColActions;
 };
 
 
