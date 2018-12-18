@@ -341,6 +341,8 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
 void ProjectRepo::closeNode(ProjectFileNode *node)
 {
     ProjectRunGroupNode *runGroup = node->assignedRunGroup();
+    FileMeta *fm = node->file();
+    int nodeCountToFile = fileNodes(fm->id()).count();
 
     if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
         DEB() << "Close error: Node has open editors";
@@ -370,7 +372,9 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
         }
     }
     node->deleteLater();
-    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
+    if (nodeCountToFile == 1) {
+        fm->deleteLater();
+    }
 }
 
 void ProjectRepo::purgeGroup(ProjectGroupNode *group)

@@ -2056,12 +2056,7 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
     if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
         if (nodeCountToFile == 1)
             closeFileEditors(node->file()->id());
-        FileMeta* fm = node->file();
         mProjectRepo.closeNode(node);
-        if (nodeCountToFile == 1) {
-            mFileMetaRepo.removeFile(fm);
-            fm->deleteLater();
-        }
     }
     mProjectRepo.purgeGroup(group);
 }
