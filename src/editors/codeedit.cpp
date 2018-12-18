@@ -148,20 +148,8 @@ void CodeEdit::checkBlockInsertion()
     mBlockEditRealPos = -1;
 }
 
-//void debugUndoStack(QVector<BlockEditPos*> &posStack, int index)
-//{
-//    DEB() << "---- Undo/Redo position stack ---- " << index;
-//    int i = 0;
-//    for (BlockEditPos* bp: posStack) {
-//        if (bp) DEB() << (index==i ? "* " : "  ") << bp->startLine << "-" << bp->currentLine << " / " << bp->column;
-//        else    DEB() << (index==i ? "* " : "  ") << "---";
-//        i++;
-//    }
-//}
-
 void CodeEdit::undoCommandAdded()
 {
-//    DEB() << "undo added, steps:  " << document()->availableUndoSteps();
     while (document()->availableUndoSteps()-1 < mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
     while (document()->availableUndoSteps() > mBlockEditPos.size()) {
@@ -169,12 +157,10 @@ void CodeEdit::undoCommandAdded()
         if (mBlockEdit) bPos = new BlockEditPos(mBlockEdit->startLine(), mBlockEdit->currentLine(), mBlockEdit->column());
         mBlockEditPos.append(bPos);
     }
-//    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
 }
 
 void CodeEdit::extendedRedo()
 {
-//    DEB() << "REDO";
     if (mBlockEdit) endBlockEdit();
     redo();
     updateBlockEditPos();
@@ -182,7 +168,6 @@ void CodeEdit::extendedRedo()
 
 void CodeEdit::extendedUndo()
 {
-//    DEB() << "UNDO";
     if (mBlockEdit) endBlockEdit();
     undo();
     updateBlockEditPos();
@@ -294,6 +279,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     if (mBlockEdit) {
         if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
+            return;
         } else {
             mBlockEdit->keyPressEvent(e);
             return;
@@ -1475,8 +1461,6 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->indent(-mEdit->mSettings->tabSize());
         return;
     } else if (e->text().length()) {
-//        replaceBlockText(e->text());
-
         mEdit->mBlockEditRealPos = mEdit->textCursor().position();
         QTextCursor cur = mEdit->textCursor();
         cur.joinPreviousEditBlock();
