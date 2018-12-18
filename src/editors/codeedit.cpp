@@ -1159,8 +1159,8 @@ void CodeEdit::updateExtraSelections()
 
         QRegularExpressionMatch match = regexp.match(selectedText);
 
-        //   (  not caused by parenthiesis matching                               )
-        if (((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay)
+        //   (  not caused by parenthiesis matching                               )  OR has selection
+        if ((((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || textCursor().hasSelection())
               // ( depending on settings: no selection necessary OR has selection )
               && (mSettings->wordUnderCursor() || textCursor().hasSelection())
               // (      wait for timer            OR            user scrolled             )
