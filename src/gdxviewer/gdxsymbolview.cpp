@@ -260,7 +260,11 @@ void GdxSymbolView::toggleColumnHidden(int valCol)
 
 void GdxSymbolView::showContextMenu(QPoint p)
 {
-    mContextMenu.exec(ui->tvListView->mapToGlobal(p));
+    //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
+    if (mSym->tableView())
+        mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvTableView->verticalHeader()->width(), ui->tvTableView->horizontalHeader()->height()));
+    else
+        mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
 }
 
 void GdxSymbolView::showListView()
