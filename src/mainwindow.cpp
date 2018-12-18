@@ -63,8 +63,9 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
-
-      mAutosaveHandler(new AutosaveHandler(this))
+      mAutosaveHandler(new AutosaveHandler(this)),
+      mMainTabContextMenu(this),
+      mLogTabContextMenu(this)
 {
     mSettings = SettingsLocator::settings();
     mHistory = new HistoryData();
@@ -98,7 +99,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
-
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
@@ -146,6 +146,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
+
+    ui->mainTab->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mainTab->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
+    ui->logTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->logTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::logTabContextMenuRequested);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -239,6 +244,21 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     }
     return QMainWindow::event(event);
+}
+
+int MainWindow::logTabCount()
+{
+    return ui->logTabs->count();
+}
+
+int MainWindow::currentLogTab()
+{
+    return ui->logTabs->currentIndex();
+}
+
+QTabWidget* MainWindow::mainTabs()
+{
+    return ui->mainTab;
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
@@ -571,6 +591,20 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
+{
+    int tabIndex = ui->mainTab->tabBar()->tabAt(pos);
+    mMainTabContextMenu.setTabIndex(tabIndex);
+    mMainTabContextMenu.exec(ui->mainTab->tabBar()->mapToGlobal(pos));
+}
+
+void MainWindow::logTabContextMenuRequested(const QPoint& pos)
+{
+    int tabIndex = ui->logTabs->tabBar()->tabAt(pos);
+    mLogTabContextMenu.setTabIndex(tabIndex);
+    mLogTabContextMenu.exec(ui->logTabs->tabBar()->mapToGlobal(pos));
 }
 
 void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
@@ -1356,6 +1390,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         closeFileEditors(fc->id());
+    } else if (ret == QMessageBox::Cancel) {
+        return;
     }
     mClosedTabsIndexes << index;
 }

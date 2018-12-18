@@ -31,6 +31,8 @@
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+#include "maintabcontextmenu.h"
+#include "logtabcontextmenu.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -52,6 +54,7 @@ class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
+
 
 struct RecentData {
 
@@ -76,6 +79,9 @@ struct HistoryData {
 
 class MainWindow : public QMainWindow
 {
+    friend MainTabContextMenu;
+    friend LogTabContextMenu;
+
     Q_OBJECT
 
 public:
@@ -176,6 +182,8 @@ private slots:
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
+    void mainTabContextMenuRequested(const QPoint& pos);
+    void logTabContextMenuRequested(const QPoint& pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void closeHelpView();
@@ -273,6 +281,9 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
+    int logTabCount();
+    int currentLogTab();
+    QTabWidget* mainTabs();
 
 private:
     void initTabs();
@@ -321,6 +332,9 @@ private:
     StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
+    MainTabContextMenu mMainTabContextMenu;
+    LogTabContextMenu mLogTabContextMenu;
+
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     int mExternFileEventChoice = -1;
