@@ -247,14 +247,19 @@ bool MainWindow::event(QEvent *event)
     return QMainWindow::event(event);
 }
 
-int MainWindow::mainTabCount()
-{
-    return ui->mainTab->count();
-}
-
 int MainWindow::logTabCount()
 {
     return ui->logTabs->count();
+}
+
+int MainWindow::currentLogTab()
+{
+    return ui->logTabs->currentIndex();
+}
+
+QTabWidget* MainWindow::mainTabs()
+{
+    return ui->mainTab;
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)

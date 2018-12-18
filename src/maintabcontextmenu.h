@@ -41,6 +41,7 @@ private:
     int mTabIndex = -1;
 
 private slots:
+    void close();
     void closeAllLeft();
     void closeAllRight();
 };

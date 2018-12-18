@@ -33,11 +33,16 @@ enum TabActions {
 
 MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 {
-    mActions.insert(actClose, addAction("&Close", mParent, &MainWindow::on_actionClose_triggered));
+    mActions.insert(actClose, addAction("&Close", this, &MainTabContextMenu::close));
     mActions.insert(actCloseAll, addAction("Close &All", mParent, &MainWindow::on_actionClose_All_triggered));
     mActions.insert(actCloseAllExceptVisible, addAction("Close &except visible", mParent, &MainWindow::on_actionClose_All_Except_triggered));
     mActions.insert(actCloseAllToLeft, addAction("Close all &left", this, &MainTabContextMenu::closeAllLeft));
     mActions.insert(actCloseAllToRight, addAction("Close all &right", this, &MainTabContextMenu::closeAllRight));
+}
+
+void MainTabContextMenu::close()
+{
+    mParent->on_mainTab_tabCloseRequested(mTabIndex);
 }
 
 void MainTabContextMenu::closeAllLeft()
@@ -48,9 +53,17 @@ void MainTabContextMenu::closeAllLeft()
 
 void MainTabContextMenu::closeAllRight()
 {
-    int tabs = mParent->mainTabCount();
-    for (int i = mTabIndex + 1; i < tabs; i++)
-        mParent->on_mainTab_tabCloseRequested(tabs - mTabIndex - i);
+    QTabWidget* tabs = mParent->mainTabs();
+    QWidget* idxPtr = tabs->widget(mTabIndex+1); // start with tab to the right
+
+    while (idxPtr) {
+        QWidget *old = idxPtr;
+
+        int next = tabs->indexOf(idxPtr);
+        idxPtr = tabs->widget(++next);
+
+        mParent->on_mainTab_tabCloseRequested(tabs->indexOf(old));
+    }
 }
 
 void MainTabContextMenu::setTabIndex(int tab)

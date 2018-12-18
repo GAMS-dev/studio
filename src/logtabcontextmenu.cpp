@@ -49,7 +49,7 @@ void LogTabContextMenu::closeAll()
 {
     int tabs = mParent->logTabCount();
 
-    for (int i = tabs-1; i >= 0; i--)
+    for (int i = tabs - 1; i >= 0; i--)
         mParent->on_logTabs_tabCloseRequested(i);
 }
 
@@ -57,8 +57,8 @@ void LogTabContextMenu::closeAllExceptVisible()
 {
     int tabs = mParent->logTabCount();
 
-    for (int i = tabs-1; i >= 0; i--) {
-        if (i == mTabIndex) continue;
+    for (int i = tabs - 1; i >= 0; i--) {
+        if (i == mParent->currentLogTab()) continue;
         mParent->on_logTabs_tabCloseRequested(i);
     }
 }
@@ -71,9 +71,8 @@ void LogTabContextMenu::closeAllLeft()
 
 void LogTabContextMenu::closeAllRight()
 {
-    int tabs = mParent->logTabCount();
-    for (int i = mTabIndex + 1; i < tabs; i++)
-        mParent->on_logTabs_tabCloseRequested(tabs - mTabIndex - i);
+    for (int i = mParent->logTabCount(); i > mTabIndex; i--)
+        mParent->on_logTabs_tabCloseRequested(i);
 }
 
 
