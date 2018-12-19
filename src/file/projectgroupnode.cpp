@@ -237,6 +237,13 @@ GamsProcess *ProjectRunGroupNode::gamsProcess() const
     return mGamsProcess.get();
 }
 
+QIcon ProjectRunGroupNode::icon()
+{
+    if (gamsProcessState() == QProcess::NotRunning)
+        return ProjectGroupNode::icon();
+    return projectRepo()->runAnimateIcon();
+}
+
 bool ProjectRunGroupNode::hasLogNode() const
 {
     return mLogNode;
@@ -509,7 +516,7 @@ void ProjectRunGroupNode::clearSpecialFiles()
 
 QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const
 {
-    return mGamsProcess->state();
+    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
 QString ProjectRunGroupNode::tooltip()

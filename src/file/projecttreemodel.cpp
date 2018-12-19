@@ -207,13 +207,14 @@ void ProjectTreeModel::setDebugMode(bool debug)
 
 bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    Q_UNUSED(role);
     if (!index.isValid()) return false;
     ProjectAbstractNode *node = mProjectRepo->node(index);
     if (!node) return false;
-    ProjectGroupNode *group = node->toGroup();
-    if (!group) return false;
-    group->setName(value.toString());
+    if (role == Qt::EditRole) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) return false;
+        group->setName(value.toString());
+    }
     emit dataChanged(index, index);
     return true;
 }

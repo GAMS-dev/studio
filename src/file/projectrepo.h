@@ -125,6 +125,7 @@ public:
 
     void setDebugMode(bool debug);
     bool debugMode() const;
+    QIcon runAnimateIcon() const;
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -137,6 +138,7 @@ signals:
     void closeFileEditors(FileId fileId);
 
 public slots:
+    void gamsProcessStateChange(ProjectGroupNode* group);
     void fileChanged(FileId fileId);
     void nodeChanged(NodeId nodeId);
     void closeGroup(ProjectGroupNode* group);
@@ -144,6 +146,7 @@ public slots:
     void purgeGroup(ProjectGroupNode *group);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
+    void stepRunAnimation();
 
 private:
     friend class ProjectRunGroupNode;
@@ -158,6 +161,7 @@ private:
     }
     bool parseGdxHeader(QString location);
 
+
 private:
     FileId mNextId;
     ProjectTreeView* mTreeView = nullptr;
@@ -166,6 +170,10 @@ private:
     QVector<ProjectAbstractNode*> mActiveStack;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
+    QVector<ProjectRunGroupNode*> mRunnigGroups;
+    QTimer mRunAnimateTimer;
+    QVector<QIcon> mRunIcons;
+    int mRunAnimateIndex = 0;
     bool mDebugMode = false;
 };
 

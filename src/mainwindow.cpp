@@ -565,7 +565,7 @@ void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
     ProjectRunGroupNode* runGroup = group->toRunGroup();
     ProjectLogNode* log = runGroup->logNode();
 
-    QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
+    QTabBar::ButtonPosition closeSide = QTabBar::ButtonPosition(style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this));
     for (int i = 0; i < ui->logTabs->children().size(); i++) {
         if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
 

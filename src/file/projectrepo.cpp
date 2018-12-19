@@ -39,11 +39,18 @@ ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectRootNode(this)))
 {
     addToIndex(mTreeModel->rootNode());
+    mRunAnimateTimer.setInterval(150);
+    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run1"));
+    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run2"));
+    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run3"));
+    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run4"));
+    connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 
 ProjectRepo::~ProjectRepo()
 {
-    FileType::clear(); // TODO(JM) There may be a better place to clear the static type-list.
+    mRunAnimateTimer.stop();
+    FileType::clear();
     delete mTreeModel;
 }
 
@@ -303,6 +310,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
         FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
         runGroup = new ProjectRunGroupNode(name, path, runFile);
         group = runGroup;
+        connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
         connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     } else
         group = new ProjectGroupNode(name, path);
@@ -546,6 +554,17 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
         runGroup->lstTexts(marks, result);
 }
 
+void ProjectRepo::stepRunAnimation()
+{
+    mRunAnimateIndex = (++mRunAnimateIndex % mRunIcons.size());
+    DEB() << "step animation to " << mRunAnimateIndex;
+    for (ProjectRunGroupNode* runGroup: mRunnigGroups) {
+        QModelIndex ind = mTreeModel->index(runGroup);
+        if (ind.isValid())
+            emit mTreeModel->dataChanged(ind, ind);
+    }
+}
+
 void ProjectRepo::editorActivated(QWidget* edit)
 {
     ProjectFileNode *node = findFileNode(edit);
@@ -572,6 +591,31 @@ bool ProjectRepo::parseGdxHeader(QString location)
         return data.contains("\aGAMSGDX\a");
     }
     return false;
+}
+
+QIcon ProjectRepo::runAnimateIcon() const
+{
+    return mRunIcons.at(mRunAnimateIndex);
+}
+
+void ProjectRepo::gamsProcessStateChange(ProjectGroupNode *group)
+{
+    ProjectRunGroupNode *runGroup = group->toRunGroup();
+    QModelIndex ind = mTreeModel->index(runGroup);
+    if (runGroup->gamsProcess()->state() == QProcess::NotRunning) {
+        mRunnigGroups.removeAll(runGroup);
+        if (ind.isValid()) emit mTreeModel->dataChanged(ind, ind);
+    } else if (!mRunnigGroups.contains(runGroup)) {
+        mRunnigGroups << runGroup;
+        if (ind.isValid()) emit mTreeModel->dataChanged(ind, ind);
+    }
+    if (mRunnigGroups.isEmpty() && mRunAnimateTimer.isActive()) {
+        mRunAnimateTimer.stop();
+        mRunAnimateIndex = 0;
+    } else if (!mRunnigGroups.isEmpty() && !mRunAnimateTimer.isActive()) {
+        mRunAnimateIndex = 0;
+        mRunAnimateTimer.start();
+    }
 }
 
 bool ProjectRepo::debugMode() const
