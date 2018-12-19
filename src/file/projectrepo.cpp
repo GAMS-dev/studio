@@ -484,12 +484,33 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
     QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
     while (i.hasNext()) {
         i.next();
-        ProjectFileNode* fileNode = i.value()->toFile();
-        if (fileNode && fileNode->file()->id() == fileId) {
-            ProjectRunGroupNode *runGroup = fileNode->assignedRunGroup();
-            if (runGroup && !res.contains(runGroup)) {
+        if (fileId.isValid()) {
+            ProjectFileNode* fileNode = i.value()->toFile();
+            if (fileNode && fileNode->file()->id() == fileId) {
+                ProjectRunGroupNode *runGroup = fileNode->assignedRunGroup();
+                if (runGroup && !res.contains(runGroup)) {
+                    res << runGroup;
+                }
+            }
+        } else {
+            ProjectRunGroupNode* runGroup = i.value()->toRunGroup();
+            if (runGroup) {
                 res << runGroup;
             }
+        }
+    }
+    return res;
+}
+
+QVector<GamsProcess *> ProjectRepo::listProcesses()
+{
+    QVector<GamsProcess *> res;
+    QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
+    while (i.hasNext()) {
+        i.next();
+        ProjectRunGroupNode* runGroup = i.value()->toRunGroup();
+        if (runGroup && runGroup->gamsProcess()) {
+            res << runGroup->gamsProcess();
         }
     }
     return res;

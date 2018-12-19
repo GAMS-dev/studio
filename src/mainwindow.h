@@ -292,6 +292,7 @@ private:
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
+    bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);

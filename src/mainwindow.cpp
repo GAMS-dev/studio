@@ -1496,6 +1496,34 @@ void MainWindow::addToOpenedFiles(QString filePath)
     if (mWp) mWp->historyChanged(history());
 }
 
+bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
+{
+    if (runGroups.isEmpty()) return true;
+    QVector<ProjectRunGroupNode *> runningGroups;
+    QStringList runningNames;
+    for (ProjectRunGroupNode* runGroup: runGroups) {
+        if (runGroup->gamsProcess() && runGroup->gamsProcess()->state() != QProcess::NotRunning) {
+            runningGroups << runGroup;
+            runningNames << runGroup->name();
+        }
+    }
+    if (runningGroups.isEmpty()) return true;
+    QString title = runningNames.size() > 1 ? QString::number(runningNames.size())+" processes are running"
+                                            : runningNames.first()+" is running";
+    QString message = runningNames.size() > 1 ? "processes?\n" : "process?\n";
+    while (runningNames.size() > 4) runningNames.removeLast();
+    while (runningNames.size() < runningGroups.size()) runningNames << "...";
+    message += runningNames.join("\n");
+    int choice = QMessageBox::question(this, title,
+                          "Do you want to stop the "+message,
+                          "Stop", "Cancel");
+    if (choice == 1) return false;
+    for (ProjectRunGroupNode* runGroup: runningGroups) {
+        runGroup->gamsProcess()->stop();
+    }
+    return true;
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog(mSettings->userModelLibraryDir(), this);
@@ -1567,7 +1595,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     mSettings->saveSettings(this);
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
-    if (requestCloseChanged(oFiles)) {
+    if (!terminateProcessesConditionally(mProjectRepo.runGroups())) {
+        event->setAccepted(false);
+    } else if (requestCloseChanged(oFiles)) {
         on_actionClose_All_triggered();
         closeHelpView();
         mTextMarkRepo.clear();
@@ -2051,15 +2081,14 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     ProjectGroupNode *parentGroup = group->parentNode();
     if (parentGroup && parentGroup->type() == NodeType::root) parentGroup = nullptr;
     ProjectRunGroupNode *runGroup = group->assignedRunGroup();
+    if (!terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
+        return;
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
     for (ProjectFileNode *node: group->listFiles(true)) {
         if (node->isModified()) changedFiles << node->file();
         if (node->file()->isOpen()) openFiles << node->file();
     }
-
-    if (runGroup->gamsProcessState() == QProcess::Running)
-        runGroup->gamsProcess()->stop();
 
     if (requestCloseChanged(changedFiles)) {
         // TODO(JM)  close if selected
@@ -2088,6 +2117,9 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
     // count nodes to the same file
     int nodeCountToFile = mProjectRepo.fileNodes(node->file()->id()).count();
     ProjectGroupNode *group = node->parentNode();
+    ProjectRunGroupNode *runGroup = node->assignedRunGroup();
+    if (!terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
+        return;
     // not the last OR not modified OR permitted
     if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
         if (nodeCountToFile == 1)

@@ -116,7 +116,8 @@ public:
             , QString explicitName = QString());
     ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup = nullptr, QString explicitName = QString());
     QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
-    QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId) const;
+    QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId = FileId()) const;
+    QVector<GamsProcess*> listProcesses();
     void editorActivated(QWidget *edit);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
