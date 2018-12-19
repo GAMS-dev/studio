@@ -100,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
+    connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
@@ -1676,7 +1677,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
             ProjectFileNode *node = addNode("", item, group);
             openFileNode(node);
             if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
-                QApplication::processEvents(QEventLoop::AllEvents, 1);
+            QApplication::processEvents(QEventLoop::AllEvents, 1);
         } else {
             filesNotFound.append(item);
         }
@@ -2118,7 +2119,7 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
     int nodeCountToFile = mProjectRepo.fileNodes(node->file()->id()).count();
     ProjectGroupNode *group = node->parentNode();
     ProjectRunGroupNode *runGroup = node->assignedRunGroup();
-    if (!terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
+    if (runGroup && !terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
         return;
     // not the last OR not modified OR permitted
     if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {

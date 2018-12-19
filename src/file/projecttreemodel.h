@@ -52,6 +52,7 @@ public:
 
 protected:
     friend class ProjectRepo;
+    friend class ProjectTreeView;
 
     bool insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child);
     bool removeChild(ProjectAbstractNode* child);

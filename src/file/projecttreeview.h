@@ -12,12 +12,22 @@ class ProjectTreeView : public QTreeView
 public:
     explicit ProjectTreeView(QWidget *parent = nullptr);
 
+signals:
+    void dropFiles(QModelIndex idx, QStringList files);
 protected:
     void focusOutEvent(QFocusEvent *event) override;
     void fixFocus();
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void updateDrag(QDragMoveEvent *event);
 
 public slots:
     void selectAll() override;
+
+private:
+    QModelIndex mCurrentBeforeDrag;
 };
 
 } // namespace studio

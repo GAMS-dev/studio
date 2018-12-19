@@ -147,6 +147,7 @@ public slots:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
     void stepRunAnimation();
+    void dropFiles(QModelIndex idx, QStringList files);
 
 private:
     friend class ProjectRunGroupNode;

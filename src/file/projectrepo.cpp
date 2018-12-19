@@ -21,6 +21,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QApplication>
+#include <QMessageBox>
 
 #include "projectrepo.h"
 #include "exception.h"
@@ -358,7 +359,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     }
 
     // Remove reference (if this is a lst file referenced in a log)
-    if (runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
+    if (runGroup && runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
         runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
@@ -368,7 +369,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     }
 
     // if this file is marked as runnable remove reference
-    if (runGroup->runnableGms() == node->file()) {
+    if (runGroup && runGroup->runnableGms() == node->file()) {
         runGroup->setRunnableGms();
         for (int i = 0; i < runGroup->childCount(); i++) {
             // choose next as main gms file
@@ -563,6 +564,39 @@ void ProjectRepo::stepRunAnimation()
         if (ind.isValid())
             emit mTreeModel->dataChanged(ind, ind);
     }
+}
+
+void ProjectRepo::dropFiles(QModelIndex idx, QStringList files)
+{
+    ProjectGroupNode *group = nullptr;
+    if (idx.isValid()) {
+        ProjectAbstractNode *aNode = node(idx);
+        group = aNode->toGroup();
+        if (!group) group = aNode->parentNode();
+    } else {
+        QFileInfo firstFile(files.first());
+        group = createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
+    }
+    if (!group) return;
+
+    QStringList filesNotFound;
+    QList<ProjectFileNode*> gmsFiles;
+    for (QString item: files) {
+        if (QFileInfo(item).exists()) {
+            ProjectFileNode* file = group->findOrCreateFileNode(item);
+            if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
+        } else {
+            filesNotFound << item;
+        }
+    }
+    if (!filesNotFound.isEmpty()) {
+        DEB() << "Files not found:\n" << filesNotFound.join("\n");
+    }
+    ProjectRunGroupNode *runGroup = group->toRunGroup();
+    if (runGroup && !runGroup->runnableGms() && !gmsFiles.isEmpty()) {
+        runGroup->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
+    }
+
 }
 
 void ProjectRepo::editorActivated(QWidget* edit)
