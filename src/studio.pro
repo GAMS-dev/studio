@@ -150,22 +150,21 @@ SOURCES += \
     gotodialog.cpp \
     editors/abstractedit.cpp \
     editors/codeedit.cpp \
-    editors/textmapper.cpp \
-    editors/textview.cpp \
+    editors/editorhelper.cpp \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
+    editors/textmapper.cpp \
+    editors/textview.cpp \
+    editors/textviewedit.cpp \
     editors/viewhelper.cpp \
     encodingsdialog.cpp \
     tabdialog.cpp \
     locators/settingslocator.cpp \
     locators/sysloglocator.cpp \
     locators/defaultsystemlogger.cpp \
-    editors/textviewedit.cpp \
     support/aboutgamsdialog.cpp         \
     support/gamslicenseinfo.cpp         \
-    support/solvertablemodel.cpp        \
-    editors/viewhelper.cpp              \
-    editors/editorhelper.cpp
+    support/solvertablemodel.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -262,10 +261,12 @@ HEADERS += \
     gotodialog.h \
     editors/abstractedit.h \
     editors/codeedit.h \
+    editors/editorhelper.h \
     editors/processlogedit.h \
     editors/systemlogedit.h \
     editors/textmapper.h \
     editors/textview.h \
+    editors/textviewedit.h \
     editors/viewhelper.h \
     encodingsdialog.h \
     tabdialog.h \
@@ -273,12 +274,9 @@ HEADERS += \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
     locators/defaultsystemlogger.h \
-    editors/textviewedit.h \
     support/aboutgamsdialog.h       \
     support/gamslicenseinfo.h       \
-    support/solvertablemodel.h      \
-    editors/viewhelper.h            \
-    editors/editorhelper.h
+    support/solvertablemodel.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
