@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QKeyEvent>
+#include <editors/viewhelper.h>
 
 namespace gams {
 namespace studio {
@@ -128,13 +129,16 @@ int TabListModel::rowCount(const QModelIndex &parent) const
 
 QVariant TabListModel::data(const QModelIndex &index, int role) const
 {
-    if (role == Qt::DisplayRole)
-        return mTabs->tabBar()->tabText(index.row());
+    if (role == Qt::DisplayRole) {
+        QString location = nameAppendix(index);
+        return mTabs->tabBar()->tabText(index.row()) + (!location.isEmpty() ? " [" + location + "]" : "");
+    }
     if (role == Qt::SizeHintRole) {
         QFont font = mTabs->font();
         if (index.row() == mTabs->currentIndex()) font.setBold(true);
+        QString location = nameAppendix(index);
         QFontMetrics fm = QFontMetrics(font);
-        return QSize(fm.width(mTabs->tabText(index.row())), fm.height()+4);
+        return QSize(fm.width(mTabs->tabText(index.row()) + " [" + location + "]"), fm.height()+4);
     }
     if (role == Qt::FontRole) {
         QFont font = mTabs->font();
@@ -146,6 +150,15 @@ QVariant TabListModel::data(const QModelIndex &index, int role) const
         return mTabs->palette().color(mTabs->backgroundRole());
     }
     return  QVariant();
+}
+
+QString TabListModel::nameAppendix(const QModelIndex &index) const
+{
+    QString appendix = ViewHelper::location(mTabs->widget(index.row()));
+    QFileInfo fi(appendix);
+    appendix = fi.absoluteDir().dirName();
+    if (appendix == ".") appendix = "";
+    return appendix;
 }
 
 } // namespace studio

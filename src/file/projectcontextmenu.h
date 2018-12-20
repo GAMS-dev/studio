@@ -36,7 +36,6 @@ class ProjectContextMenu : public QMenu
 public:
     ProjectContextMenu();
     void setNodes(QVector<ProjectAbstractNode*> selected);
-
     void setParent(QWidget *parent);
 
 signals:
@@ -49,6 +48,9 @@ signals:
     void getSourcePath(QString& source);
     void openLogFor(ProjectAbstractNode* node, bool createMissing);
     void renameGroup(ProjectGroupNode* group);
+    void selectAll();
+    void expandAll();
+    void collapseAll();
 
 private slots:
     void onCloseGroup();
@@ -57,6 +59,9 @@ private slots:
     void onAddNewFile();
     void onSetMainFile();
     void onRenameGroup();
+    void onSelectAll();
+    void onExpandAll();
+    void onCollapseAll();
 
 private:
     void onOpenFileLoc();
@@ -66,9 +71,14 @@ private:
     QVector<ProjectAbstractNode*> mNodes;
     QHash<int, QAction*> mActions;
     QWidget *mParent = nullptr;
+
+    // Strings
+    QString mTxtCloseGroup = "Close &group";
+    QString mTxtCloseFile = "Close &file";
 };
 
 } // namespace studio
 } // namespace gams
 
 #endif // PROJECTCONTEXTMENU_H
+

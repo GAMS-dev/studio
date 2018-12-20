@@ -28,6 +28,8 @@
 #include "studiosettings.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -84,7 +86,7 @@ FileMeta::~FileMeta()
 {
     if (mDocument) unlinkAndFreeDocument();
     mFileRepo->textMarkRepo()->removeMarks(id());
-    mFileRepo->removedFile(this);
+    mFileRepo->removeFile(this);
 }
 
 QVector<QPoint> FileMeta::getEditPositions()
@@ -356,17 +358,15 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
 
 void FileMeta::load(int codecMib)
 {
-    load(codecMib==-1 ? QList<int>() : QList<int>() << codecMib);
-}
+    // TODO(JM) Later, this method should be moved to the new DataWidget
+    if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
 
-void FileMeta::load(QList<int> codecMibs)
-{
     mData = Data(location());
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
-                mCodec = QTextCodec::codecForMib(codecMibs[0]);
+                mCodec = QTextCodec::codecForMib(codecMib);
                 gdxViewer->reload(mCodec);
             }
         }
@@ -375,7 +375,7 @@ void FileMeta::load(QList<int> codecMibs)
     if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         for (QWidget *wid: mEditors) {
             TextView *tView = ViewHelper::toTextView(wid);
-            if (tView) tView->loadFile(location(), codecMibs);
+            if (tView) tView->loadFile(location(), codecMib);
             if (kind() == FileKind::Lst) {
                 lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
                 if (lxi) lxi->loadLxi();
@@ -386,7 +386,8 @@ void FileMeta::load(QList<int> codecMibs)
     if (kind() == FileKind::Ref) {
         for (QWidget *wid: mEditors) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
-            if (refViewer) refViewer->on_referenceFileChanged();
+            mCodec = QTextCodec::codecForMib(codecMib);
+            if (refViewer) refViewer->on_referenceFileChanged(mCodec);
         }
         return;
     }
@@ -395,32 +396,32 @@ void FileMeta::load(QList<int> codecMibs)
         linkDocument(doc);
     }
 
-    QList<int> mibs = codecMibs;
-    mibs << QTextCodec::codecForLocale()->mibEnum();
-
     QFile file(location());
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
+
         const QByteArray data(file.readAll());
         QTextCodec *codec = nullptr;
-        for (int mib: mibs) {
-            QTextCodec::ConverterState state;
-            codec = QTextCodec::codecForMib(mib);
-            if (codec) {
-                QString text = codec->toUnicode(data.constData(), data.size(), &state);
-                if (state.invalidChars == 0) {
-                    QVector<QPoint> edPos = getEditPositions();
-                    mLoading = true;
-                    document()->setPlainText(text);
-                    setEditPositions(edPos);
-                    mLoading = false;
-                    mCodec = codec;
-                    break;
-                }
-            } else {
-                DEB() << "System doesn't contain codec for MIB " << mib;
+        QString invalidCodecs;
+        QTextCodec::ConverterState state;
+        codec = QTextCodec::codecForMib(codecMib);
+        if (codec) {
+            QString text = codec->toUnicode(data.constData(), data.size(), &state);
+            if (state.invalidChars != 0) {
+                invalidCodecs += (invalidCodecs.isEmpty() ? "" : ", ") + codec->name();
             }
+            QVector<QPoint> edPos = getEditPositions();
+            mLoading = true;
+            document()->setPlainText(text);
+            setEditPositions(edPos);
+            mLoading = false;
+            mCodec = codec;
+            if (!invalidCodecs.isEmpty()) {
+                DEB() << " can't be encoded to " + invalidCodecs + ". Encoding used: " + codec->name();
+            }
+        } else {
+            SysLogLocator::systemLog()->append("System doesn't contain codec for MIB " + QString::number(codecMib), LogMsgType::Info);
         }
         file.close();
         document()->setModified(false);
@@ -437,9 +438,13 @@ void FileMeta::save()
 
 void FileMeta::saveAs(const QString &target)
 {
-    if (QFile::exists(target))
-        QFile::remove(target);
-    QFile::copy(mLocation, target);
+    if (QFileInfo(mLocation) == QFileInfo(target)) {
+        save();
+    } else {
+        if (QFile::exists(target))
+            QFile::remove(target);
+        QFile::copy(mLocation, target);
+    }
     mFileRepo->findOrCreateFileMeta(target);
 }
 
@@ -622,17 +627,17 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, QList<int> codecMibs)
+QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib)
 {
     QWidget* res = nullptr;
-    if (codecMibs.size() == 1 && codecMibs.first() == -1) codecMibs = QList<int>() << QTextCodec::codecForLocale()->mibEnum();
-    mCodec = QTextCodec::codecForMib(codecMibs[0]);
+    if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
+    mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gdx) {
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
     } else if (kind() == FileKind::Ref) {
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
-        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), tabWidget));
+        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
         res = tView;
@@ -670,10 +675,11 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     ViewHelper::setFileId(res, id());
     ViewHelper::setGroupId(res, runGroup->id());
     ViewHelper::setLocation(res, location());
-    tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
+    int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
+    tabWidget->setTabToolTip(i, location());
     addEditor(res);
     if (mEditors.size() == 1 && kind() != FileKind::Log && (ViewHelper::toAbstractEdit(res) || ViewHelper::toTextView(res)))
-        load(codecMibs);
+        load(codecMib);
     return res;
 }
 

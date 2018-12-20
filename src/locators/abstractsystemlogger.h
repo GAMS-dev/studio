@@ -32,7 +32,7 @@ class AbstractSystemLogger
 
 public:
     virtual ~AbstractSystemLogger() {}
-    virtual void appendLog(const QString &msg, LogMsgType type = LogMsgType::Warning) = 0;
+    virtual void append(const QString &msg, LogMsgType type = LogMsgType::Warning) = 0;
 
 protected:
     AbstractSystemLogger() {}

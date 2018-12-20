@@ -66,7 +66,7 @@ public:
     QString tooltip() override;
     virtual NodeId runGroupId() const;
 //    QTextCodec *codec() const;
-    void enhanceMarksFromLst();
+//    void enhanceMarksFromLst();
 
 protected:
     friend class ProjectLogNode;

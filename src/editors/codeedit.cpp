@@ -365,12 +365,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             int pos = cursor.positionInBlock();
             cursor.beginEditBlock();
             QString leadingText = cursor.block().text().left(pos).trimmed();
-            if (leadingText.isEmpty()) {
-                cursor.movePosition(QTextCursor::StartOfBlock);
-                cursor.insertText("\n");
-                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos);
-            } else {
-                cursor.insertText("\n");
+            cursor.insertText("\n");
+            if (!leadingText.isEmpty()) {
                 if (cursor.block().previous().isValid())
                     truncate(cursor.block().previous());
                 adjustIndent(cursor);
@@ -389,6 +385,20 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             indent(-mSettings->tabSize());
             e->accept();
             return;
+        }
+        if (mSettings->autoIndent() && e->key() == Qt::Key_Backspace) {
+            int pos = textCursor().positionInBlock();
+
+            QString line = textCursor().block().text();
+            QRegularExpression regex("^(\\s+)");
+            QRegularExpressionMatch match = regex.match(line);
+            bool allWhitespace = match.hasMatch();
+
+            if (allWhitespace && !textCursor().hasSelection() && match.capturedLength() == pos) {
+                indent(-mSettings->tabSize());
+                e->accept();
+                return;
+            }
         }
     }
 

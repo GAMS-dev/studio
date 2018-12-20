@@ -31,7 +31,7 @@ public:
     DefaultSystemLogger() {}
 
 public:
-    void appendLog(const QString &msg, LogMsgType type) override;
+    void append(const QString &msg, LogMsgType type) override;
 };
 
 }

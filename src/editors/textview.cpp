@@ -75,9 +75,10 @@ int TextView::lineCount() const
     return mMapper.lineCount();
 }
 
-void TextView::loadFile(const QString &fileName, QList<int> codecMibs)
+void TextView::loadFile(const QString &fileName, int codecMib)
 {
-    mMapper.setCodec(codecMibs.size() ? QTextCodec::codecForMib(codecMibs.at(0)) : QTextCodec::codecForLocale());
+    if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
+    mMapper.setCodec(codecMib == -1 ? QTextCodec::codecForMib(codecMib) : QTextCodec::codecForLocale());
     mMapper.openFile(fileName);
     updateVScrollZone();
     int count = (mMapper.lineCount() < 0) ? mTopBufferLines*3 : mMapper.lineCount();

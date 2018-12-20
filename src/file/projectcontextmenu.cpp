@@ -39,6 +39,10 @@ enum ContextAction {
     actSep3,
     actCloseGroup,
     actCloseFile,
+    actSep4,
+    actSelectAll,
+    actExpandAll,
+    actCollapseAll,
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -46,20 +50,22 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
+
     mActions.insert(actSep1, addSeparator());
-
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
-    mActions.insert(actSep2, addSeparator());
 
+    mActions.insert(actSep2, addSeparator());
     mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
     mActions.insert(actAddNew, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+
     mActions.insert(actSep3, addSeparator());
+    mActions.insert(actSelectAll, addAction("Select &all", this, &ProjectContextMenu::onSelectAll));
+    mActions.insert(actCollapseAll, addAction("Collapse all", this, &ProjectContextMenu::onCollapseAll));
+    mActions.insert(actExpandAll, addAction("Expand all", this, &ProjectContextMenu::onExpandAll));
 
-    mActions.insert(actCloseGroup, addAction("Close &group", this, &ProjectContextMenu::onCloseGroup));
-    mActions.insert(actCloseFile, addAction("Close &file", this, &ProjectContextMenu::onCloseFile));
-
-//    mActions.insert(2, addSeparator());
-//    mActions.insert(2, addAction("Re&name",  this, &ProjectContextMenu::onRenameFile));
+    mActions.insert(actSep4, addSeparator());
+    mActions.insert(actCloseGroup, addAction(mTxtCloseGroup, this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 }
 
 void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
@@ -92,12 +98,18 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     mActions[actRename]->setEnabled(single);
 
     mActions[actSep1]->setVisible(isGroup);
-    mActions[actSep1]->setEnabled(single);
-
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 
-    // all files
     mActions[actCloseFile]->setVisible(fileNode);
+    mActions[actCloseGroup]->setVisible(isGroup);
+
+    if (!single) {
+        mActions[actCloseGroup]->setText(mTxtCloseGroup + "s");
+        mActions[actCloseFile]->setText(mTxtCloseFile + "s");
+    } else {
+        mActions[actCloseGroup]->setText(mTxtCloseGroup);
+        mActions[actCloseFile]->setText(mTxtCloseFile);
+    }
 }
 
 void ProjectContextMenu::onCloseFile()
@@ -238,5 +250,18 @@ void ProjectContextMenu::onOpenLog()
     if (mNodes.first()) emit openLogFor(mNodes.first(), true);
 }
 
+void ProjectContextMenu::onSelectAll()
+{
+    emit selectAll();
+}
+
+void ProjectContextMenu::onExpandAll()
+{
+    emit expandAll();
+}
+void ProjectContextMenu::onCollapseAll()
+{
+    emit collapseAll();
+}
 } // namespace studio
 } // namespace gams

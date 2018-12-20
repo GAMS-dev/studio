@@ -23,9 +23,8 @@
 namespace gams {
 namespace studio {
 
-class SystemLogLocator;
 class AbstractSystemLogger;
-class SystemLogEdit;
+
 class SysLogLocator
 {
 public:

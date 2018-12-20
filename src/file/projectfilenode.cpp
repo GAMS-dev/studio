@@ -132,17 +132,14 @@ NodeId ProjectFileNode::runGroupId() const
     return NodeId();
 }
 
-void ProjectFileNode::enhanceMarksFromLst()
-{
-    return;
-
-    // TODO(JM) enhance lines via TextMapper
-
+//void ProjectFileNode::enhanceMarksFromLst()
+//{
 //    if (file()->kind() != FileKind::Lst) return;
 //    if (!file()->exists(true)) return;
 //    if (!file()->isOpen()) {
 //        file()->load(file()->codecMib());
 //    }
+//    // TODO(JM) Perform a large-file-test if this should have an own thread
 //    const LineMarks* marks = textMarkRepo()->marks(file()->id());
 //    //                     0     1 2       3 4                    5               6           7       8
 //    //                            (    $nr               |        nr+description      |  descr.   |  any  )
@@ -200,7 +197,7 @@ void ProjectFileNode::enhanceMarksFromLst()
 //        }
 //        assignedRunGroup()->setLstErrorText(lineNr, orderedErrText.join("\n"));
 //    }
-}
+//}
 
 } // namespace studio
 } // namespace gams

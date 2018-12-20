@@ -17,32 +17,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef UPDATEDIALOG_H
-#define UPDATEDIALOG_H
+#ifndef DISTRIBUTIONVALIDATOR_H
+#define DISTRIBUTIONVALIDATOR_H
 
-#include <QDialog>
+#include <QThread>
 
-namespace Ui {
-class UpdateDialog;
-}
+class QString;
 
 namespace gams {
 namespace studio {
+namespace support {
 
-class UpdateDialog : public QDialog
+class DistributionValidator
+    : public QThread
 {
     Q_OBJECT
 
 public:
-    explicit UpdateDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    DistributionValidator(QObject *parent = Q_NULLPTR);
 
-    void checkForUpdate();
+    void run() override;
 
 private:
-    Ui::UpdateDialog *ui;
+    ///
+    /// \brief Verify the GAMS Distribution bitness on Windows.
+    /// \remark On Windows we support both 32 Bit and 64 Bit.
+    ///
+    void checkBitness();
+
+    ///
+    /// \brief Check the GAMS Distribution to GAMS Studio compatibility.
+    ///
+    void checkCompatibility();
 };
 
 }
 }
+}
 
-#endif // UPDATEDIALOG_H
+#endif // DISTRIBUTIONVALIDATOR_H

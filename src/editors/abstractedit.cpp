@@ -34,6 +34,7 @@ AbstractEdit::AbstractEdit(QWidget *parent)
 {
     viewport()->installEventFilter(this);
     installEventFilter(this);
+    setTextInteractionFlags(Qt::TextEditorInteraction);
 }
 
 AbstractEdit::~AbstractEdit()

@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -205,8 +205,10 @@
     </property>
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
-    <addaction name="actionAbout"/>
+    <addaction name="actionAbout_GAMS"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout_Qt"/>
+    <addaction name="actionAbout_Studio"/>
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
@@ -418,14 +420,20 @@
     <string>F1</string>
    </property>
   </action>
-  <action name="actionAbout">
+  <action name="actionAbout_Studio">
    <property name="text">
-    <string>&amp;About</string>
+    <string>About Studio</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
    </property>
   </action>
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutQtRole</enum>
    </property>
   </action>
   <action name="actionOutput_View">
@@ -627,7 +635,7 @@
     <string>Ctrl+A</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
+    <enum>Qt::WidgetShortcut</enum>
    </property>
   </action>
   <action name="actionCopy">
@@ -907,6 +915,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionAbout_GAMS">
+   <property name="text">
+    <string>About GAMS</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
  </widget>

@@ -83,7 +83,7 @@ void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
     watch(fileMeta);
 }
 
-void FileMetaRepo::removedFile(FileMeta *fileMeta)
+void FileMetaRepo::removeFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
         mFiles.remove(fileMeta->id());

@@ -23,7 +23,7 @@
 namespace gams {
 namespace studio {
 
-void DefaultSystemLogger::appendLog(const QString &msg, LogMsgType type)
+void DefaultSystemLogger::append(const QString &msg, LogMsgType type)
 {
     Q_UNUSED(msg);
     Q_UNUSED(type);
