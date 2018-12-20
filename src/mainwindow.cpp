@@ -2747,8 +2747,8 @@ void MainWindow::setForeground()
 {
 #if defined (WIN32)
    HWND WinId= HWND(winId());
-   if (this->windowState() == Qt::WindowMinimized) {
-       this->setWindowState(Qt::WindowActive);
+   if (this->windowState() & Qt::WindowMinimized) {
+       this->setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
    }
    DWORD foregroundThreadPId = GetWindowThreadProcessId(GetForegroundWindow(),nullptr);
    DWORD mwThreadPId = GetWindowThreadProcessId(WinId,nullptr);
