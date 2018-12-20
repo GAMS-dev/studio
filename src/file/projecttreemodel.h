@@ -49,6 +49,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
     QModelIndex current() {return index(mCurrent);}
     QVector<NodeId> selectedIds() const;
+    QMap<int, QVariant> itemData(const QModelIndex &index) const;
 
 protected:
     friend class ProjectRepo;
@@ -65,6 +66,7 @@ protected:
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);
     bool isCurrentGroup(const QModelIndex& ind) const;
+    QModelIndex findGroup(QModelIndex ind);
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);

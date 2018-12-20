@@ -46,10 +46,6 @@
         <file alias="question">question.svg</file>
         <file alias="ref-file">ref-file.svg</file>
         <file alias="run-gdx">play-gdx.svg</file>
-        <file alias="run1">run1.svg</file>
-        <file alias="run2">run2.svg</file>
-        <file alias="run3">run3.svg</file>
-        <file alias="run4">run4.svg</file>
         <file alias="stackoverflow">so-icon.svg</file>
         <file alias="stop">stop.svg</file>
         <file alias="times">times.svg</file>

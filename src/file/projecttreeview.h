@@ -1,6 +1,7 @@
 #ifndef PROJECTTREEVIEW_H
 #define PROJECTTREEVIEW_H
 
+#include "common.h"
 #include <QTreeView>
 
 namespace gams {
@@ -14,9 +15,11 @@ public:
 
 signals:
     void dropFiles(QModelIndex idx, QStringList files);
+    void closeNode(NodeId nodeId);
 protected:
     void focusOutEvent(QFocusEvent *event) override;
     void fixFocus();
+    void startDrag(Qt::DropActions supportedActions) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
@@ -27,7 +30,7 @@ public slots:
     void selectAll() override;
 
 private:
-    QModelIndex mCurrentBeforeDrag;
+    QItemSelection mSelectionBeforeDrag;
 };
 
 } // namespace studio

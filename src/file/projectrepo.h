@@ -122,6 +122,9 @@ public:
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
     void saveNodeAs(ProjectFileNode* node, const QString &target);
+    void closeGroup(ProjectGroupNode* group);
+    void closeNode(ProjectFileNode* node);
+    void purgeGroup(ProjectGroupNode *group);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -141,9 +144,7 @@ public slots:
     void gamsProcessStateChange(ProjectGroupNode* group);
     void fileChanged(FileId fileId);
     void nodeChanged(NodeId nodeId);
-    void closeGroup(ProjectGroupNode* group);
-    void closeNode(ProjectFileNode* node);
-    void purgeGroup(ProjectGroupNode *group);
+    void closeNodeById(NodeId nodeId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
     void stepRunAnimation();

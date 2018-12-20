@@ -140,6 +140,16 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::ToolTipRole:
         return mProjectRepo->node(ind)->tooltip();
 
+    case Qt::UserRole: {
+        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
+        if (node) return node->location();
+        break;
+    }
+    case Qt::UserRole+1: {
+        ProjectAbstractNode *node = mProjectRepo->node(ind);
+        if (node) return int(node->id());
+        break;
+    }
     default:
         break;
     }
@@ -226,7 +236,10 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
     ProjectAbstractNode *node = mProjectRepo->node(index);
     if (!node) return flags;
     ProjectGroupNode *group = node->toGroup();
-    if (group) flags.setFlag(Qt::ItemIsEditable);
+    if (group) {
+        flags.setFlag(Qt::ItemIsEditable);
+        flags.setFlag(Qt::ItemIsDropEnabled);
+    } else flags.setFlag(Qt::ItemIsDragEnabled);
     return flags;
 }
 
@@ -313,6 +326,18 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
     return false;
 }
 
+QModelIndex ProjectTreeModel::findGroup(QModelIndex ind)
+{
+    if (ind.isValid()) {
+        ProjectAbstractNode *node = mProjectRepo->node(ind);
+        if (!node) return ind;
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        ind = index(group);
+    }
+    return ind;
+}
+
 bool ProjectTreeModel::isSelected(const QModelIndex& ind) const
 {
     return ind.isValid() && mSelected.contains(nodeId(ind));
@@ -358,6 +383,14 @@ void ProjectTreeModel::deselectAll()
 QVector<NodeId> ProjectTreeModel::selectedIds() const
 {
     return mSelected;
+}
+
+QMap<int, QVariant> ProjectTreeModel::itemData(const QModelIndex &index) const
+{
+    QMap<int, QVariant> res = QAbstractItemModel::itemData(index);
+    res.insert(Qt::UserRole, data(index, Qt::UserRole));
+    res.insert(Qt::UserRole+1, data(index, Qt::UserRole+1));
+    return res;
 }
 
 const QVector<QModelIndex> ProjectTreeModel::popDeclined()

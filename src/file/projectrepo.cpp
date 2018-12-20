@@ -319,6 +319,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
     mTreeModel->insertChild(offset, _parent, group);
     connect(group, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
+    mTreeView->setExpanded(mTreeModel->index(group), true);
 
 //    connect(group, &ProjectGroupNode::removeNode, this, &ProjectRepo::removeNode);
 //    connect(group, &ProjectGroupNode::requestNode, this, &ProjectRepo::addNode);
@@ -388,9 +389,11 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
 
 void ProjectRepo::purgeGroup(ProjectGroupNode *group)
 {
-    if (!group) return;
+    if (!group || group->toRoot()) return;
+    ProjectGroupNode *parGroup = group->parentNode();
     if (group->isEmpty()) {
         closeGroup(group);
+        if (parGroup) purgeGroup(parGroup);
     }
 }
 
@@ -614,6 +617,15 @@ void ProjectRepo::nodeChanged(NodeId nodeId)
     if (!nd) return;
     QModelIndex ndIndex = mTreeModel->index(nd);
     emit mTreeModel->dataChanged(ndIndex, ndIndex);
+}
+
+void ProjectRepo::closeNodeById(NodeId nodeId)
+{
+    ProjectAbstractNode *aNode = node(nodeId);
+    ProjectGroupNode *group = aNode ? aNode->parentNode() : nullptr;
+    if (aNode->toFile()) closeNode(aNode->toFile());
+    if (aNode->toGroup()) closeGroup(aNode->toGroup());
+    if (group) purgeGroup(group);
 }
 
 bool ProjectRepo::parseGdxHeader(QString location)

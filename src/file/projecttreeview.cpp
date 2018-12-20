@@ -8,6 +8,8 @@
 namespace gams {
 namespace studio {
 
+const QString cItemModelData("application/x-qabstractitemmodeldatalist");
+
 ProjectTreeView::ProjectTreeView(QWidget *parent) : QTreeView(parent)
 {
     setDragDropMode(DragDrop);
@@ -31,9 +33,14 @@ void ProjectTreeView::fixFocus()
         setCurrentIndex(mi);
 }
 
+void ProjectTreeView::startDrag(Qt::DropActions supportedActions)
+{
+    QTreeView::startDrag(supportedActions | Qt::MoveAction);
+}
+
 void ProjectTreeView::dragEnterEvent(QDragEnterEvent *event)
 {
-    mCurrentBeforeDrag = static_cast<ProjectTreeModel*>(model())->current();
+    mSelectionBeforeDrag = selectionModel()->selection();
     updateDrag(event);
 }
 
@@ -44,42 +51,72 @@ void ProjectTreeView::dragMoveEvent(QDragMoveEvent *event)
 
 void ProjectTreeView::dragLeaveEvent(QDragLeaveEvent *event)
 {
-    static_cast<ProjectTreeModel*>(model())->setCurrent(mCurrentBeforeDrag);
-    mCurrentBeforeDrag = QModelIndex();
+    selectionModel()->select(mSelectionBeforeDrag, QItemSelectionModel::ClearAndSelect);
+    mSelectionBeforeDrag.clear();
     QTreeView::dragLeaveEvent(event);
 }
 
 void ProjectTreeView::dropEvent(QDropEvent *event)
 {
+    QStringList pathList;
+    QList<NodeId> idList;
+    if (event->mimeData()->formats().contains(cItemModelData)) {
+        event->accept();
+        QByteArray data = event->mimeData()->data(cItemModelData);
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        while (!stream.atEnd()) {
+            int row, col;
+            QMap<int,  QVariant> roleDataMap;
+            stream >> row >> col >> roleDataMap;
+            pathList << roleDataMap.value(Qt::UserRole).toString();
+            int idNr = roleDataMap.value(Qt::UserRole+1).toInt();
+            if (idNr > 0) idList << NodeId(idNr); // skips the root node
+        }
+        emit dropFiles(indexAt(event->pos()), pathList);
+
+        // [workaround] sometimes the dropAction isn't set correctly
+        if (!event->keyboardModifiers().testFlag(Qt::ControlModifier)
+                && event->mimeData()->formats().contains(cItemModelData)) {
+            event->setDropAction(Qt::MoveAction);
+        } else {
+            event->setDropAction(Qt::CopyAction);
+        }
+    }
     if (event->mimeData()->hasUrls()) {
         event->accept();
-        QStringList pathList;
         for (QUrl url: event->mimeData()->urls()) {
             pathList << url.toLocalFile();
         }
         emit dropFiles(indexAt(event->pos()), pathList);
     }
-    static_cast<ProjectTreeModel*>(model())->setCurrent(mCurrentBeforeDrag);
-    mCurrentBeforeDrag = QModelIndex();
+    selectionModel()->select(mSelectionBeforeDrag, QItemSelectionModel::ClearAndSelect);
+    mSelectionBeforeDrag.clear();
     stopAutoScroll();
+    if (event->dropAction() & Qt::MoveAction) {
+        for (NodeId nodeId: idList) {
+            emit closeNode(nodeId);
+        }
+    }
 }
 
 void ProjectTreeView::updateDrag(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasUrls()) {
+    if (event->mimeData()->hasUrls() || event->mimeData()->formats().contains(cItemModelData)) {
         if (event->pos().y() > size().height()-50 || event->pos().y() < 50) {
             startAutoScroll();
         } else {
             stopAutoScroll();
         }
-        ProjectTreeModel* m = static_cast<ProjectTreeModel*>(model());
+        ProjectTreeModel* treeModel = static_cast<ProjectTreeModel*>(model());
         QModelIndex ind = indexAt(event->pos());
-        if (ind.isValid()) {
-            event->setDropAction(Qt::TargetMoveAction);
+        if (!event->keyboardModifiers().testFlag(Qt::ControlModifier)
+                && event->mimeData()->formats().contains(cItemModelData)) {
+            event->setDropAction(Qt::MoveAction);
         } else {
             event->setDropAction(Qt::CopyAction);
         }
-        m->setCurrent(ind);
+        QModelIndex groupInd = treeModel->findGroup(ind);
+        selectionModel()->select(groupInd, QItemSelectionModel::ClearAndSelect);
         event->accept();
     } else {
         event->ignore();

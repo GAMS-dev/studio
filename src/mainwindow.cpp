@@ -101,6 +101,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
+    connect(ui->projectView, &ProjectTreeView::closeNode, &mProjectRepo, &ProjectRepo::closeNodeById);
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
