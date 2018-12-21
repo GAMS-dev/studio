@@ -35,20 +35,20 @@ namespace support {
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
     char buffer[GMS_SSSIZE];
-    if (!c4uCreateD(&mC4UHandle, CommonPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
+    if (!c4uCreateD(&mC4U, CommonPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
         mMessages << "Could not load c4u library: " << buffer;
         mValid = false;
     }
     if (isValid() && !c4uCorrectLibraryVersion(buffer, GMS_SSSIZE)) {
         mMessages << "Incompatible GAMS distribution: " << buffer;
-        c4uFree(&mC4UHandle);
+        c4uFree(&mC4U);
         mValid = false;
     }
 }
 
 CheckForUpdateWrapper::~CheckForUpdateWrapper()
 {
-    if (isValid()) c4uFree(&mC4UHandle);
+    if (isValid()) c4uFree(&mC4U);
 }
 
 bool CheckForUpdateWrapper::isValid() const
@@ -72,16 +72,16 @@ QString CheckForUpdateWrapper::checkForUpdate()
         return QString();
 
     char buffer[GMS_SSSIZE];
-    c4uReadLice(mC4UHandle, CommonPaths::systemDir().toLatin1(),
+    c4uReadLice(mC4U, CommonPaths::systemDir().toLatin1(),
                 QString(CommonPaths::systemDir()).append("/gamslice.txt").toLatin1(), false);
-    c4uCreateMsg(mC4UHandle);
+    c4uCreateMsg(mC4U);
 
     int messageIndex=0;
     mMessages << "GAMS Distribution";
     getMessages(messageIndex, buffer);
 
     mMessages << "\nGAMS Studio";
-    c4uCheck4NewStudio(mC4UHandle, studioVersion());
+    c4uCheck4NewStudio2(mC4U, STUDIO_MAJOR_VERSION, STUDIO_MINOR_VERSION, STUDIO_PATCH_LEVEL);
     getMessages(messageIndex, buffer);
 
     return message();
@@ -90,7 +90,7 @@ QString CheckForUpdateWrapper::checkForUpdate()
 int CheckForUpdateWrapper::currentDistribVersion()
 {
     if (isValid())
-        return c4uThisRel(mC4UHandle);
+        return c4uThisRel(mC4U);
     return -1;
 }
 
@@ -99,7 +99,7 @@ QString CheckForUpdateWrapper::currentDistribVersionShort()
     if (!isValid())
         return QString();
     char buffer[16];
-    c4uThisRelStr(mC4UHandle, buffer);
+    c4uThisRelStr(mC4U, buffer);
     QString version(buffer);
     int index = version.lastIndexOf('.');
     return version.remove(index, version.size());
@@ -107,8 +107,8 @@ QString CheckForUpdateWrapper::currentDistribVersionShort()
 
 int CheckForUpdateWrapper::lastDistribVersion()
 {
-    if (isValid() && c4uCheck4Update(mC4UHandle))
-        return c4uLastRel(mC4UHandle);
+    if (isValid() && c4uCheck4Update(mC4U))
+        return c4uLastRel(mC4U);
     return -1;
 }
 
@@ -117,7 +117,7 @@ QString CheckForUpdateWrapper::lastDistribVersionShort()
     if (!isValid())
         return QString();
     char buffer[16];
-    c4uLastRelStr(mC4UHandle, buffer);
+    c4uLastRelStr(mC4U, buffer);
     QString version(buffer);
     int index = version.lastIndexOf('.');
     return version.remove(index, version.size());
@@ -149,15 +149,15 @@ QString CheckForUpdateWrapper::distribVersionString()
 char* CheckForUpdateWrapper::distribVersionString(char *version, size_t length)
 {
     char buffer[GMS_SSSIZE];
-    c4uThisRelStr(mC4UHandle, buffer);
+    c4uThisRelStr(mC4U, buffer);
     std::strncpy(version, buffer, GMS_SSSIZE<length ? GMS_SSSIZE : length);
     return version;
 }
 
 void CheckForUpdateWrapper::getMessages(int &messageIndex, char *buffer)
 {
-    for (int c=c4uMsgCount(mC4UHandle); messageIndex<c; ++messageIndex) {
-        if (c4uGetMsg(mC4UHandle, messageIndex, buffer))
+    for (int c=c4uMsgCount(mC4U); messageIndex<c; ++messageIndex) {
+        if (c4uGetMsg(mC4U, messageIndex, buffer))
             mMessages.append(buffer);
     }
 }

@@ -222,13 +222,14 @@ private:
         void setColumn(int column);
         void setOverwriteMode(bool overwrite);
         bool overwriteMode() const;
+        void setSize(int size);
 
     private:
         CodeEdit* mEdit;
         int mStartLine = 0;
         int mCurrentLine = 0;
         int mColumn = 0;
-        int mSize = 0;
+        const int mSize = 0;
         bool mBlinkStateHidden = false;
         CharType mLastCharType = CharType::None;
         QList<QTextEdit::ExtraSelection> mSelections;

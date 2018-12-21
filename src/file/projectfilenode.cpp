@@ -53,6 +53,7 @@ QIcon ProjectFileNode::icon()
 {
     ProjectGroupNode* par = parentNode();
     while (par && !par->toRunGroup()) par = par->parentNode();
+    if (!par) return QIcon();
     QString runMark = par->toRunGroup()->specialFile(FileKind::Gms) == location() ? "-run" : "";
     if (file()->kind() == FileKind::Gms)
         return QIcon(":/img/gams-w"+runMark);
