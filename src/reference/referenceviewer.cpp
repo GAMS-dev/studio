@@ -52,6 +52,8 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     mTabWidget->setTabsClosable(false);
     mTabWidget->setTabBarAutoHide(false);
     mTabWidget->setTabPosition(QTabWidget::West);
+    mTabWidget->setDocumentMode(true);
+    mTabWidget->setElideMode(Qt::ElideNone);
     mTabWidget->tabBar()->setStyle( new ReferenceTabStyle );
 
     SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(mReference, SymbolDataType::Unknown, this);
