@@ -37,7 +37,6 @@ class ProjectContextMenu : public QMenu
 public:
     ProjectContextMenu();
     void setNodes(QVector<ProjectAbstractNode*> selected);
-
     void setParent(QWidget *parent);
 
 signals:
@@ -53,6 +52,9 @@ signals:
     void createSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile);
     void newSolverOptionFile(ProjectGroupNode* group, const QString &solverOptionDefinitionFile, const QString &optionFile);
     void openFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void selectAll();
+    void expandAll();
+    void collapseAll();
 
 private slots:
     void onCloseGroup();
@@ -61,6 +63,9 @@ private slots:
     void onAddNewFile();
     void onSetMainFile();
     void onRenameGroup();
+    void onSelectAll();
+    void onExpandAll();
+    void onCollapseAll();
 
     void onCreateSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile);
 private:

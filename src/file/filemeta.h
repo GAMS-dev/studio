@@ -71,7 +71,7 @@ public:
     void resetTempReloadState();
     void setModified();
 
-    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>(), bool forcedAsTextEdit = false);
+    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedAsTextEdit = false);
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
@@ -79,7 +79,6 @@ public:
     void removeEditor(QWidget* edit, bool suppressCloseSignal = false);
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib);
-    void load(QList<int> codecMibs = QList<int>());
     void save();
     void saveAs(const QString &location);
     void renameToBackup();

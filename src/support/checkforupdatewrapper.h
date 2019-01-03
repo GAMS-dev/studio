@@ -27,6 +27,7 @@ typedef struct c4uRec *c4uHandle_t;
 
 namespace gams {
 namespace studio {
+namespace support {
 
 class CheckForUpdateWrapper
 {
@@ -127,10 +128,11 @@ private:
 
 private:
     bool mValid = true;
-    c4uHandle_t mC4UHandle;
+    c4uHandle_t mC4U;
     QStringList mMessages;
 };
 
+}
 }
 }
 

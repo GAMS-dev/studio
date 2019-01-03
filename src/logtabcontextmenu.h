@@ -17,32 +17,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef UPDATEDIALOG_H
-#define UPDATEDIALOG_H
+#ifndef LOGTABCONTEXTMENU_H
+#define LOGTABCONTEXTMENU_H
 
-#include <QDialog>
-
-namespace Ui {
-class UpdateDialog;
-}
+#include <QMenu>
+#include <QTabBar>
 
 namespace gams {
 namespace studio {
 
-class UpdateDialog : public QDialog
+class MainWindow;
+class LogTabContextMenu : public QMenu
 {
     Q_OBJECT
 
 public:
-    explicit UpdateDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-
-    void checkForUpdate();
+    LogTabContextMenu(MainWindow* parent);
+    void setTabIndex(int tab);
 
 private:
-    Ui::UpdateDialog *ui;
+    QHash<int, QAction*> mActions;
+    MainWindow* mParent = nullptr;
+    int mTabIndex = -1;
+
+private slots:
+    void close();
+    void closeAll();
+    void closeAllExceptVisible();
+    void closeAllLeft();
+    void closeAllRight();
 };
 
 }
 }
-
-#endif // UPDATEDIALOG_H
+#endif // LOGTABCONTEXTMENU_H

@@ -54,7 +54,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTabWidget->addTab( logEdit, "Message" );
     SolverOptionSetting* settingEdit = new SolverOptionSetting(this);
     ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
-    mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+    mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
     QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mCodec);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
@@ -463,7 +463,7 @@ void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
 {
     if (codec != mCodec) {
         mCodec = codec;
-        mOptionTokenizer->logger()->appendLog(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+        mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
         mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
         setModified(false);
     }
@@ -667,7 +667,7 @@ bool SolverOptionWidget::saveAs(const QString &location)
 {
     setModified(false);
     bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location, mCodec);
-    mOptionTokenizer->logger()->appendLog(QString("Saved options into %1").arg(location), LogMsgType::Info);
+    mOptionTokenizer->logger()->append(QString("Saved options into %1").arg(location), LogMsgType::Info);
     return success;
 }
 

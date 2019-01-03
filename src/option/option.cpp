@@ -431,7 +431,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
-        SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
         qDebug() << QString("ERROR: ").arg(msg);
         optFree(&mOPTHandle);
         return false;
@@ -576,7 +576,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
          return true;
      } else {
 
-        SysLogLocator::systemLog()->appendLog( QString("Problem reading definition file: %1").arg(QDir(systemPath).filePath(optionFileName)), LogMsgType::Error);
+        SysLogLocator::systemLog()->append( QString("Problem reading definition file: %1").arg(QDir(systemPath).filePath(optionFileName)), LogMsgType::Error);
         qDebug() << "Problem reading definition file " << QDir(systemPath).filePath(optionFileName).toLatin1();
         optFree(&mOPTHandle);
         return false;

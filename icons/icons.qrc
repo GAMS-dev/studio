@@ -22,6 +22,10 @@
         <file alias="filter-off">filter-off.svg</file>
         <file alias="folder">folder.svg</file>
         <file alias="folder-open">folder-open.svg</file>
+        <file alias="folder-run1">folder-run1.svg</file>
+        <file alias="folder-run2">folder-run2.svg</file>
+        <file alias="folder-run3">folder-run3.svg</file>
+        <file alias="folder-run4">folder-run3.svg</file>
         <file alias="fork">code-fork.svg</file>
         <file alias="forward">angle-down.svg</file>
         <file alias="gams">gamslogo.svg</file>

@@ -86,6 +86,7 @@ class ProjectRunGroupNode : public ProjectGroupNode
 {
     Q_OBJECT
 public:
+    QIcon icon() override;
     bool hasLogNode() const;
     ProjectLogNode* logNode();
     FileMeta *runnableGms() const;

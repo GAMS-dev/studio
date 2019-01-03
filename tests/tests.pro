@@ -27,6 +27,8 @@ SUBDIRS += testminosoption
 SUBDIRS += testgurobioption
 SUBDIRS += testoptionapi
 SUBDIRS += testdoclocation
-SUBDIRS += testcommonpaths \
-           testeditors \
-           testservicelocators
+SUBDIRS += testcommonpaths              \
+           testservicelocators          \
+           testgamslicenseinfo          \
+           testcheckforupdatewrapper    \
+           testeditors

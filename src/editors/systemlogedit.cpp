@@ -19,6 +19,7 @@
  */
 #include "systemlogedit.h"
 #include "syntax/systemloghighlighter.h"
+#include "logger.h"
 
 #include <QDesktopServices>
 #include <QTime>
@@ -36,12 +37,13 @@ SystemLogEdit::SystemLogEdit(QWidget *parent)
     mHighlighter->setDocument(document());
 }
 
-void SystemLogEdit::appendLog(const QString &msg, LogMsgType type)
+void SystemLogEdit::append(const QString &msg, LogMsgType type)
 {
     if (msg.isEmpty()) return;
     QString logLevel = level(type);
     QString time = QTime::currentTime().toString("hh:mm:ss");
     appendPlainText(logLevel + " [" + time + "]: " + msg);
+    DEB() << logLevel << " [" << time << "]: " << msg;
 }
 
 void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)

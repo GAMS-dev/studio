@@ -47,7 +47,7 @@ OptionTokenizer::OptionTokenizer(const QString &optionFileName)
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
-        logger()->appendLog(msg, LogMsgType::Error);
+        logger()->append(msg, LogMsgType::Error);
         optFree(&mOPTHandle);
         mOPTAvailable = false;
     }
@@ -667,26 +667,26 @@ OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
         optGetMessage(mOPTHandle, i, svalue, &itype );
         switch (itype) {
         case optMsgValueWarning : {
-            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+            logger()->append(QString::fromLatin1(svalue), LogMsgType::Error);
             type = Value_Out_Of_Range;
             break;
         }
         case optMsgDeprecated : {
-            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
+            logger()->append(QString::fromLatin1(svalue), LogMsgType::Warning);
             type = Deprecated_Option;
             break;
         }
         case optMsgDefineError: {
-            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+            logger()->append(QString::fromLatin1(svalue), LogMsgType::Error);
             type = Invalid_Key;
             break;
         }
         case optMsgValueError: {
-            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+            logger()->append(QString::fromLatin1(svalue), LogMsgType::Error);
             type = Incorrect_Value_Type; break;
         }
         case optMsgUserError: {
-            logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
+            logger()->append(QString::fromLatin1(svalue), LogMsgType::Warning);
             type = Unknown_Error; break;
         }
 //        case optMsgTooManyMsgs: { type = Unknown_Error; break; }
@@ -711,16 +711,16 @@ bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
        hasbeenLogged = true;
        switch (itype) {
        case optMsgHelp:
-           logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Info);
+           logger()->append(QString::fromLatin1(svalue), LogMsgType::Info);
            break;
        case optMsgValueWarning :
        case optMsgDeprecated :
-           logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Warning);
+           logger()->append(QString::fromLatin1(svalue), LogMsgType::Warning);
            break;
        case optMsgDefineError:
        case optMsgValueError:
        case optMsgUserError:
-           logger()->appendLog(QString::fromLatin1(svalue), LogMsgType::Error);
+           logger()->append(QString::fromLatin1(svalue), LogMsgType::Error);
            break;
        default:
            break;
@@ -750,37 +750,37 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
         case optMsgHelp:
             if (messageType != Unknown_Error) {
                 messageType = Unknown_Error;
-               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Info);
+               if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Info);
             }
             break;
         case optMsgValueWarning :
             if (messageType != Value_Out_Of_Range) {
                messageType = Value_Out_Of_Range;
-               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Warning);
+               if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Warning);
             }
             break;
         case optMsgDeprecated :
             if (messageType != Deprecated_Option) {
                messageType = Deprecated_Option;
-               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Warning);
+               if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Warning);
             }
             break;
         case optMsgDefineError:
             if (messageType != Invalid_Key) {
                 messageType = Invalid_Key;
-                if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
             break;
         case optMsgValueError:
             if (messageType != Incorrect_Value_Type) {
                messageType = Incorrect_Value_Type;
-               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+               if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
             break;
         case optMsgUserError:
             if (messageType != Invalid_Key) {
                messageType = Invalid_Key;
-               if (logged) logger()->appendLog(QString::fromLatin1(msg), LogMsgType::Error);
+               if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
             break;
         default:
@@ -997,7 +997,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
 
     QFile outputFile(absoluteFilepath);
     if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        logger()->appendLog( QString("expected to write %1, but failed").arg(absoluteFilepath), LogMsgType::Error );
+        logger()->append( QString("expected to write %1, but failed").arg(absoluteFilepath), LogMsgType::Error );
         return false;
     }
 
@@ -1010,28 +1010,28 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
             out << formatOption( item ) << endl;
             switch (item->error) {
             case Invalid_Key:
-                logger()->appendLog( QString("Unknown option '%1'").arg(item->key),
-                                     LogMsgType::Warning );
+                logger()->append( QString("Unknown option '%1'").arg(item->key),
+                                  LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Incorrect_Value_Type:
-                logger()->appendLog( QString("Option key '%1' has an incorrect value type").arg(item->key),
-                                     LogMsgType::Warning );
+                logger()->append( QString("Option key '%1' has an incorrect value type").arg(item->key),
+                                  LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Value_Out_Of_Range:
-                logger()->appendLog( QString("Value '%1' for option key '%2' is out of range").arg(item->key).arg(item->value.toString()),
-                                     LogMsgType::Warning );
+                logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key).arg(item->value.toString()),
+                                  LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Deprecated_Option:
-                logger()->appendLog( QString("Option '%1' is deprecated, will be eventually ignored").arg(item->key),
-                                     LogMsgType::Warning );
+                logger()->append( QString("Option '%1' is deprecated, will be eventually ignored").arg(item->key),
+                                  LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case Override_Option:
-                logger()->appendLog( QString("Value '%1' for option key '%2' will be overriden").arg(item->key).arg(item->value.toString()),
-                                     LogMsgType::Warning );
+                logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key).arg(item->value.toString()),
+                                  LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
             case No_Error:
@@ -1053,7 +1053,7 @@ QList<OptionItem> OptionTokenizer::readOptionParameterFile(const QString &absolu
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
-        logger()->appendLog(msg, LogMsgType::Error);
+        logger()->append(msg, LogMsgType::Error);
         optFree(&mOPTHandle);
         return items;
     }
@@ -1142,7 +1142,7 @@ bool OptionTokenizer::writeOptionParameterFile(const QList<OptionItem> &items, c
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
-        SysLogLocator::systemLog()->appendLog(msg, LogMsgType::Error);
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
         optFree(&mOPTHandle);
         return false;
     }

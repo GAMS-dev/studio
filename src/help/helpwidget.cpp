@@ -32,7 +32,7 @@
 #include "ui_helpwidget.h"
 
 #include "bookmarkdialog.h"
-#include "checkforupdatewrapper.h"
+#include "support/checkforupdatewrapper.h"
 #include "commonpaths.h"
 #include "gclgms.h"
 #include "helpdata.h"
@@ -541,7 +541,7 @@ QUrl HelpWidget::getStartPageUrl()
 
 QUrl HelpWidget::getOnlineStartPageUrl()
 {
-    CheckForUpdateWrapper c4uWrapper;
+    support::CheckForUpdateWrapper c4uWrapper;
     if (!c4uWrapper.isValid())
         return HelpData::getLatestOnlineHelpUrl();
 
@@ -559,7 +559,7 @@ bool HelpWidget::isDocumentAvailable(const QString &path, const QString &chapter
 
 bool HelpWidget::isCurrentReleaseTheLatestVersion()
 {
-    CheckForUpdateWrapper c4uWrapper;
+    support::CheckForUpdateWrapper c4uWrapper;
     if (c4uWrapper.isValid())
        return (c4uWrapper.currentDistribVersion() == c4uWrapper.lastDistribVersion());
     else
@@ -568,7 +568,7 @@ bool HelpWidget::isCurrentReleaseTheLatestVersion()
 
 QString HelpWidget::getCurrentReleaseVersion()
 {
-    CheckForUpdateWrapper c4uWrapper;
+    support::CheckForUpdateWrapper c4uWrapper;
     if (c4uWrapper.isValid())
        return c4uWrapper.currentDistribVersionShort();
     else
