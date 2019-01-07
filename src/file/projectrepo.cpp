@@ -41,10 +41,10 @@ ProjectRepo::ProjectRepo(QObject* parent)
 {
     addToIndex(mTreeModel->rootNode());
     mRunAnimateTimer.setInterval(150);
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run1"));
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run2"));
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run3"));
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run4"));
+    mRunIcons << QIcon(":/img/folder-run1");
+    mRunIcons << QIcon(":/img/folder-run2");
+    mRunIcons << QIcon(":/img/folder-run3");
+    mRunIcons << QIcon(":/img/folder-run4");
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 
@@ -561,7 +561,6 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
 void ProjectRepo::stepRunAnimation()
 {
     mRunAnimateIndex = (++mRunAnimateIndex % mRunIcons.size());
-    DEB() << "step animation to " << mRunAnimateIndex;
     for (ProjectRunGroupNode* runGroup: mRunnigGroups) {
         QModelIndex ind = mTreeModel->index(runGroup);
         if (ind.isValid())
