@@ -345,7 +345,7 @@ void GdxSymbol::calcDefaultColumnsTableView()
     for(int col=0; col<columnCount(); col++) {
         if (mType == GMS_DT_VAR)
             defVal = gmsDefRecVar[mSubType][col%GMS_VAL_MAX];
-        else if (mType == GMS_DT_EQU)
+        else // mType == GMS_DT_EQU
             defVal = gmsDefRecEqu[mSubType][col%GMS_VAL_MAX];
         for(int row=0; row<rowCount(); row++) {
             QVector<uint> keys = mTvRowHeaders[row] + mTvColHeaders[col];
