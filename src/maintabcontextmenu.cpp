@@ -69,6 +69,9 @@ void MainTabContextMenu::closeAllRight()
 void MainTabContextMenu::setTabIndex(int tab)
 {
     mTabIndex = tab;
+    mActions.value(actCloseAllExceptVisible)->setEnabled(mParent->mainTabs()->count() > 1);
+    mActions.value(actCloseAllToLeft)->setEnabled(mTabIndex);
+    mActions.value(actCloseAllToRight)->setEnabled(mTabIndex < mParent->mainTabs()->count()-1);
 }
 
 }
