@@ -350,6 +350,7 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
 
 void ProjectRepo::closeNode(ProjectFileNode *node)
 {
+    ProjectGroupNode *group = node->parentNode();
     ProjectRunGroupNode *runGroup = node->assignedRunGroup();
     FileMeta *fm = node->file();
     int nodeCountToFile = fileNodes(fm->id()).count();
@@ -385,6 +386,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     if (nodeCountToFile == 1) {
         fm->deleteLater();
     }
+    purgeGroup(group);
 }
 
 void ProjectRepo::purgeGroup(ProjectGroupNode *group)
@@ -568,7 +570,7 @@ void ProjectRepo::stepRunAnimation()
     }
 }
 
-void ProjectRepo::dropFiles(QModelIndex idx, QStringList files)
+void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act)
 {
     ProjectGroupNode *group = nullptr;
     if (idx.isValid()) {
@@ -598,7 +600,15 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files)
     if (runGroup && !runGroup->runnableGms() && !gmsFiles.isEmpty()) {
         runGroup->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
     }
-
+    if (act & Qt::MoveAction) {
+        for (NodeId nodeId: knownIds) {
+            ProjectAbstractNode* aNode = node(nodeId);
+            ProjectFileNode* file = aNode->toFile();
+            if (!file) continue;
+            if (file->parentNode() != group)
+                closeNode(file);
+        }
+    }
 }
 
 void ProjectRepo::editorActivated(QWidget* edit)

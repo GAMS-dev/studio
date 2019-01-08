@@ -72,8 +72,6 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
             int idNr = roleDataMap.value(Qt::UserRole+1).toInt();
             if (idNr > 0) idList << NodeId(idNr); // skips the root node
         }
-        emit dropFiles(indexAt(event->pos()), pathList);
-
         // [workaround] sometimes the dropAction isn't set correctly
         if (!event->keyboardModifiers().testFlag(Qt::ControlModifier)
                 && event->mimeData()->formats().contains(cItemModelData)) {
@@ -81,22 +79,18 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
         } else {
             event->setDropAction(Qt::CopyAction);
         }
+        emit dropFiles(indexAt(event->pos()), pathList, idList, event->dropAction());
     }
     if (event->mimeData()->hasUrls()) {
         event->accept();
         for (QUrl url: event->mimeData()->urls()) {
             pathList << url.toLocalFile();
         }
-        emit dropFiles(indexAt(event->pos()), pathList);
+        emit dropFiles(indexAt(event->pos()), pathList, idList, Qt::CopyAction);
     }
     selectionModel()->select(mSelectionBeforeDrag, QItemSelectionModel::ClearAndSelect);
     mSelectionBeforeDrag.clear();
     stopAutoScroll();
-    if (event->dropAction() & Qt::MoveAction) {
-        for (NodeId nodeId: idList) {
-            emit closeNode(nodeId);
-        }
-    }
 }
 
 void ProjectTreeView::updateDrag(QDragMoveEvent *event)
