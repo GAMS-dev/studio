@@ -14,7 +14,8 @@ public:
     explicit ProjectTreeView(QWidget *parent = nullptr);
 
 signals:
-    void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction);
+    void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction,
+                   QList<QModelIndex> &newSelection);
 protected:
     void focusOutEvent(QFocusEvent *event) override;
     void fixFocus();

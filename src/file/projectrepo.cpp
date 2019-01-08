@@ -570,7 +570,8 @@ void ProjectRepo::stepRunAnimation()
     }
 }
 
-void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act)
+void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act
+                            , QList<QModelIndex> &newSelection)
 {
     ProjectGroupNode *group = nullptr;
     if (idx.isValid()) {
@@ -585,13 +586,19 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
 
     QStringList filesNotFound;
     QList<ProjectFileNode*> gmsFiles;
+    QList<NodeId> newIds;
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
             ProjectFileNode* file = group->findOrCreateFileNode(item);
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
+            if (!newIds.contains(file->id())) newIds << file->id();
         } else {
             filesNotFound << item;
         }
+    }
+    for (NodeId id: newIds) {
+        QModelIndex mi = mTreeModel->index(id);
+        newSelection << mi;
     }
     if (!filesNotFound.isEmpty()) {
         DEB() << "Files not found:\n" << filesNotFound.join("\n");
