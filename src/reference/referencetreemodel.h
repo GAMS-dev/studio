@@ -48,8 +48,6 @@ public:
 
     bool removeRows(int row, int count, const QModelIndex &parent) override;
 
-    void resetModel();
-
 signals:
     void referenceSelectionChanged(ReferenceItem item);
 

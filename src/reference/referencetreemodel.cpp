@@ -172,17 +172,6 @@ bool ReferenceTreeModel::removeRows(int row, int count, const QModelIndex &paren
     return success;
 }
 
-void ReferenceTreeModel::resetModel()
-{
-    beginResetModel();
-
-    if (rowCount() > 0) {
-        removeRows(0, rowCount(), QModelIndex());
-    }
-
-    endResetModel();
-}
-
 void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
 {
     mCurrentSymbolID = symbolid;
