@@ -48,7 +48,6 @@ public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
     ~SymbolReferenceWidget();
 
-    void selectItem(const QModelIndex &id);
 public slots:
     void toggleSearchColumns(bool checked);
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
@@ -56,9 +55,6 @@ public slots:
     void resetModel();
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
-
-protected:
-    void showEvent(QShowEvent *event);
 
 private:
     Ui::SymbolReferenceWidget *ui;
@@ -73,9 +69,6 @@ private:
     SymbolDataType::SymbolType mType;
 
     ReferenceViewer* mReferenceViewer;
-
-    QModelIndex mLastItem;
-
 };
 
 } // namespace reference

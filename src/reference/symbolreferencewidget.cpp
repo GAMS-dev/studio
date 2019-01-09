@@ -107,7 +107,6 @@ void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemS
 
         SymbolId id = selected.indexes().at(0).data().toInt();
         mReferenceTreeModel->updateSelectedSymbol(id);
-        mLastItem = ui->symbolView->selectionModel()->currentIndex();
     }
 }
 
@@ -134,7 +133,7 @@ void SymbolReferenceWidget::jumpToFile(const QModelIndex &index)
 
 void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
 {
-    QModelIndex parentIndex =  ui->referenceView->model()->parent(index);
+    QModelIndex  parentIndex =  ui->referenceView->model()->parent(index);
     if (parentIndex.row() >= 0) {
         QVariant location = ui->referenceView->model()->data(index.sibling(index.row(), 0), Qt::UserRole);
         QVariant lineNumber = ui->referenceView->model()->data(index.sibling(index.row(), 1), Qt::UserRole);
@@ -143,12 +142,6 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
         ReferenceItem item(-1, ReferenceDataType::typeFrom(typeName.toString()), location.toString(), lineNumber.toInt(), colNumber.toInt());
         emit mReferenceViewer->jumpTo( item );
     }
-}
-
-void SymbolReferenceWidget::showEvent(QShowEvent *event)
-{
-    QWidget::showEvent(event);
-    ui->symbolView->selectRow(mLastItem.row());
 }
 
 } // namespace reference

@@ -42,7 +42,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
 {
     ui->setupUi(this);
 
-    mTabWidget = new QTabWidget(this);
+    mTabWidget =  new QTabWidget(this);
     mTabWidget->setObjectName(QStringLiteral("tabWidget"));
     QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     sizePolicy.setHorizontalStretch(3);
