@@ -246,7 +246,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
-    bool isGamsLine = line.startsWith("*** ");
+//    bool isGamsLine = true; // line.startsWith("*** ");
     if (line.startsWith("*** Error ")) {
         bool ok = false;
         posA = 9;
@@ -302,7 +302,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         }
     }
     if (line.startsWith("--- ")) {
-        isGamsLine = true;
+//        isGamsLine = true;
         int fEnd = line.indexOf('(');
         if (fEnd >= 0) {
             int nrEnd = line.indexOf(')', fEnd);
@@ -318,7 +318,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
 
         if (posB+5 < line.length()) {
             TextMark::Type tmType = errFound ? TextMark::link : TextMark::target;
-            if (isGamsLine && line.midRef(posB+1,4) == "LST:") {
+            if (line.midRef(posB+1,4) == "LST:") {
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
                 posB++;
@@ -349,7 +349,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 }
                 marks << mark;
 
-            } else if (isGamsLine && (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:")) {
+            } else if (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:") {
                 LinkData mark;
                 QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
                 int lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
@@ -368,10 +368,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                     state = Outside;
                 marks << mark;
 
-            } else if (isGamsLine && line.midRef(posB+1,4) == "TIT:") {
+            } else if (line.midRef(posB+1,4) == "TIT:") {
                 return QString();
             } else {
-                // no GAMS line: restore missing braces
+                // no link reference: restore missing braces
                 result += '['+capture(line, posA, posB, 1, ']')+']';
                 posB++;
             }

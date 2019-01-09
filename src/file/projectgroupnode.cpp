@@ -51,7 +51,7 @@ ProjectGroupNode::~ProjectGroupNode()
 
 QIcon ProjectGroupNode::icon()
 {
-    return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
+    return QIcon(":/img/folder-open");
 }
 
 int ProjectGroupNode::childCount() const
@@ -235,6 +235,13 @@ void ProjectRunGroupNode::updateRunState(const QProcess::ProcessState &state)
 GamsProcess *ProjectRunGroupNode::gamsProcess() const
 {
     return mGamsProcess.get();
+}
+
+QIcon ProjectRunGroupNode::icon()
+{
+    if (gamsProcessState() == QProcess::NotRunning)
+        return ProjectGroupNode::icon();
+    return projectRepo()->runAnimateIcon();
 }
 
 bool ProjectRunGroupNode::hasLogNode() const
@@ -509,7 +516,7 @@ void ProjectRunGroupNode::clearSpecialFiles()
 
 QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const
 {
-    return mGamsProcess->state();
+    return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
 QString ProjectRunGroupNode::tooltip()

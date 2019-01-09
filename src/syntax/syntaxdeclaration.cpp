@@ -105,7 +105,7 @@ SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxState::Declarat
     list = QList<QPair<QString, QString>> {{"Variable", ""}, {"Variables", ""}};
     mKeywords.insert(SyntaxState::DeclarationVariableType, new DictList(list));
     mSubStates << SyntaxState::Directive << SyntaxState::CommentLine << SyntaxState::CommentEndline
-               << SyntaxState::CommentInline << SyntaxState::Identifier;
+               << SyntaxState::CommentInline << SyntaxState::DeclarationTable << SyntaxState::Identifier;
 }
 
 SyntaxBlock SyntaxDeclaration::find(SyntaxState entryState, const QString& line, int index)
@@ -193,7 +193,7 @@ SyntaxBlock SyntaxDeclarationTable::find(SyntaxState entryState, const QString &
     end = findEnd(state(), line, start);
     if (end > start) {
         if (entryState == SyntaxState::DeclarationSetType || entryState == SyntaxState::DeclarationVariableType
-                || entryState == SyntaxState::Declaration || entryState == SyntaxState::DeclarationTable)
+                || entryState == SyntaxState::DeclarationTable)
             return SyntaxBlock(this, start, end, true, SyntaxStateShift::reset);
         return SyntaxBlock(this, start, end, false, SyntaxStateShift::in, state());
     }
@@ -289,7 +289,7 @@ SyntaxBlock SyntaxEmbedded::find(SyntaxState entryState, const QString &line, in
 
 SyntaxEmbeddedBody::SyntaxEmbeddedBody() : SyntaxAbstract(SyntaxState::EmbeddedBody)
 {
-    mSubStates << SyntaxState::EmbeddedEnd;
+    mSubStates << SyntaxState::EmbeddedEnd << SyntaxState::Directive;
 }
 
 SyntaxBlock SyntaxEmbeddedBody::find(SyntaxState entryState, const QString &line, int index)
