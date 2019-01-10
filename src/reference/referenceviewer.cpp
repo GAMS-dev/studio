@@ -120,6 +120,10 @@ void ReferenceViewer::updateView(bool status)
     mTabWidget->setTabText(8, QString("Function (%1)").arg(mReference->findReference(SymbolDataType::Funct).size()));
     mTabWidget->setTabText(9, QString("Unused (%1)").arg(mReference->findReference(SymbolDataType::Unused).size()));
     mTabWidget->setTabText(10, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
+    for(int i=0; i<mTabWidget->count(); i++) {
+        SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(mTabWidget->widget(i));
+        refWidget->resetModel();
+    }
 }
 
 } // namespace reference
