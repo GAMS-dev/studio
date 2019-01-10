@@ -25,6 +25,8 @@
 #include <QFile>
 #include <QStandardPaths>
 
+#include <QDebug>
+
 namespace gams {
 namespace studio {
 
@@ -55,8 +57,20 @@ void CommonPaths::setSystemDir(const QString &sysdir)
         const QString subPath = QString(QDir::separator()).append("..");
 #ifdef __APPLE__
         gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
-        if (!QDir(gamsPath).exists())
-            gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_NEXT_SHORT "/sysdir";
+        qDebug() << gamsPath;
+        if (!QDir(gamsPath).exists()) {
+            gamsPath = "/Applications/GAMS" + QString::number(GAMS_DISTRIB_MAJOR) + "/sysdir";
+            qDebug() << gamsPath;
+        }
+        if (!QDir(gamsPath).exists()) {
+           gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_NEXT_SHORT "/sysdir";
+           qDebug() << gamsPath;
+        }
+        if (!QDir(gamsPath).exists()) {
+            gamsPath = "/Applications/GAMS" + QString::number(GAMS_DISTRIB_NEXT_MAJOR) + "/sysdir";
+            qDebug() << gamsPath;
+        }
+        qDebug() << gamsPath;
 #elif __unix__
         QFileInfo fileInfo(qgetenv("APPIMAGE"));
         gamsPath = fileInfo.absoluteDir().path().append(subPath);
