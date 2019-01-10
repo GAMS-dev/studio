@@ -1027,7 +1027,6 @@ void MainWindow::activeTabChanged(int index)
                 mStatusWidgets->setFileName(fc->location());
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
-                node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
         }
