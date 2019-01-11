@@ -562,7 +562,7 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
 
 void ProjectRepo::stepRunAnimation()
 {
-    mRunAnimateIndex = (++mRunAnimateIndex % mRunIcons.size());
+    mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIcons.size());
     for (ProjectRunGroupNode* runGroup: mRunnigGroups) {
         QModelIndex ind = mTreeModel->index(runGroup);
         if (ind.isValid())
