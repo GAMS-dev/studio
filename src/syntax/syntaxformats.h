@@ -39,6 +39,7 @@ enum class SyntaxState {
     CommentBlock,
     CommentEndline,
     CommentInline,
+    String,
 
     Semicolon,
     Comma,
@@ -212,6 +213,15 @@ class SyntaxDelimiter: public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxDelimiter(SyntaxState state);
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class SyntaxString: public SyntaxAbstract
+{
+    QChar mDelimiter;
+public:
+    SyntaxString(QChar delimiter = '\'');
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };

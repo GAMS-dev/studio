@@ -55,13 +55,16 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
     QStringList labelPrevSection;
 
     // first section needs always show all labels
-    if (logicalIndex > 0 && sectionViewportPosition(logicalIndex) != 0)
-        labelPrevSection = model()->headerData(logicalIndex-1, orientation(), Qt::DisplayRole).toStringList();
+    if (logicalIndex > 0 && sectionViewportPosition(logicalIndex) !=0) {
+        int prevIndex = logicalIndex -1;
+        while (prevIndex >0 && ((QTableView*)this->parent())->isColumnHidden(prevIndex)) //find the preceding column that is not hidden
+            prevIndex--;
+        labelPrevSection = model()->headerData(prevIndex, orientation(), Qt::DisplayRole).toStringList();
+    }
     else {
         for(int i=0; i<dim(); i++)
             labelPrevSection << "";
     }
-
     QPointF oldBO = painter->brushOrigin();
 
     int lastRowWidth = 0;

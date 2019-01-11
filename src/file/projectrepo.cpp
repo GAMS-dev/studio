@@ -41,10 +41,10 @@ ProjectRepo::ProjectRepo(QObject* parent)
 {
     addToIndex(mTreeModel->rootNode());
     mRunAnimateTimer.setInterval(150);
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run1"));
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run2"));
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run3"));
-    mRunIcons << QIcon::fromTheme("folder", QIcon(":/img/folder-run4"));
+    mRunIcons << QIcon(":/img/folder-run1");
+    mRunIcons << QIcon(":/img/folder-run2");
+    mRunIcons << QIcon(":/img/folder-run3");
+    mRunIcons << QIcon(":/img/folder-run4");
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 
@@ -350,6 +350,7 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
 
 void ProjectRepo::closeNode(ProjectFileNode *node)
 {
+    ProjectGroupNode *group = node->parentNode();
     ProjectRunGroupNode *runGroup = node->assignedRunGroup();
     FileMeta *fm = node->file();
     int nodeCountToFile = fileNodes(fm->id()).count();
@@ -385,6 +386,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     if (nodeCountToFile == 1) {
         fm->deleteLater();
     }
+    purgeGroup(group);
 }
 
 void ProjectRepo::purgeGroup(ProjectGroupNode *group)
@@ -560,8 +562,7 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
 
 void ProjectRepo::stepRunAnimation()
 {
-    mRunAnimateIndex = (++mRunAnimateIndex % mRunIcons.size());
-    DEB() << "step animation to " << mRunAnimateIndex;
+    mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIcons.size());
     for (ProjectRunGroupNode* runGroup: mRunnigGroups) {
         QModelIndex ind = mTreeModel->index(runGroup);
         if (ind.isValid())
@@ -569,7 +570,8 @@ void ProjectRepo::stepRunAnimation()
     }
 }
 
-void ProjectRepo::dropFiles(QModelIndex idx, QStringList files)
+void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act
+                            , QList<QModelIndex> &newSelection)
 {
     ProjectGroupNode *group = nullptr;
     if (idx.isValid()) {
@@ -584,13 +586,19 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files)
 
     QStringList filesNotFound;
     QList<ProjectFileNode*> gmsFiles;
+    QList<NodeId> newIds;
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
             ProjectFileNode* file = group->findOrCreateFileNode(item);
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
+            if (!newIds.contains(file->id())) newIds << file->id();
         } else {
             filesNotFound << item;
         }
+    }
+    for (NodeId id: newIds) {
+        QModelIndex mi = mTreeModel->index(id);
+        newSelection << mi;
     }
     if (!filesNotFound.isEmpty()) {
         DEB() << "Files not found:\n" << filesNotFound.join("\n");
@@ -599,7 +607,15 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files)
     if (runGroup && !runGroup->runnableGms() && !gmsFiles.isEmpty()) {
         runGroup->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
     }
-
+    if (act & Qt::MoveAction) {
+        for (NodeId nodeId: knownIds) {
+            ProjectAbstractNode* aNode = node(nodeId);
+            ProjectFileNode* file = aNode->toFile();
+            if (!file) continue;
+            if (file->parentNode() != group)
+                closeNode(file);
+        }
+    }
 }
 
 void ProjectRepo::editorActivated(QWidget* edit)

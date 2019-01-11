@@ -289,7 +289,7 @@ SyntaxBlock SyntaxEmbedded::find(SyntaxState entryState, const QString &line, in
 
 SyntaxEmbeddedBody::SyntaxEmbeddedBody() : SyntaxAbstract(SyntaxState::EmbeddedBody)
 {
-    mSubStates << SyntaxState::EmbeddedEnd;
+    mSubStates << SyntaxState::EmbeddedEnd << SyntaxState::Directive;
 }
 
 SyntaxBlock SyntaxEmbeddedBody::find(SyntaxState entryState, const QString &line, int index)
