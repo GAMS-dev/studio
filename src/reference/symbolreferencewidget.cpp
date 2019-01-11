@@ -53,7 +53,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
     ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.3));
+    ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.4));
 
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);

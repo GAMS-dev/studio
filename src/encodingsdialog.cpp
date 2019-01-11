@@ -56,7 +56,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
 
         ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" "+QString(codec->aliases().join(", "))+" "));
         ui->tableWidget->setVerticalHeaderItem(row, new QTableWidgetItem());
-        ui->tableWidget->setRowHeight(row, int(ui->tableWidget->fontMetrics().height()*1.3));
+        ui->tableWidget->setRowHeight(row, int(ui->tableWidget->fontMetrics().height()*1.4));
         row++;
     }
     ui->tableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);

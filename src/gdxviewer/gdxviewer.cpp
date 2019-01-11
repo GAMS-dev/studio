@@ -230,7 +230,7 @@ bool GdxViewer::init()
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->sortByColumn(1,Qt::AscendingOrder);
     ui->tvSymbols->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(ui->tvSymbols->fontMetrics().height()*1.3));
+    ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(ui->tvSymbols->fontMetrics().height()*1.4));
 
     connect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     connect(ui->lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);

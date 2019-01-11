@@ -69,7 +69,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->horizontalHeader()->setSectionsMovable(true);
     ui->tvListView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvListView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tvListView->verticalHeader()->setDefaultSectionSize(int(ui->tvListView->fontMetrics().height()*1.3));
+    ui->tvListView->verticalHeader()->setDefaultSectionSize(int(ui->tvListView->fontMetrics().height()*1.4));
 
     //ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
     //ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
