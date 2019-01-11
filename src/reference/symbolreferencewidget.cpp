@@ -46,8 +46,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->setModel( mSymbolTableProxyModel );
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->symbolView->setSortingEnabled(true);
     ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
+    ui->symbolView->setSortingEnabled(true);
     ui->symbolView->resizeColumnsToContents();
     ui->symbolView->setAlternatingRowColors(true);
 
