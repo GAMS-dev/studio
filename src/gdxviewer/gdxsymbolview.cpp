@@ -80,9 +80,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -193,6 +191,10 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
         }
         ui->tbVisibleValCols->addAction(checkableAction);
     }
+
+    connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+
     refreshView();
 }
 
