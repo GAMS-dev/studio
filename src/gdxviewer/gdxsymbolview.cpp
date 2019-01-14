@@ -150,8 +150,7 @@ void GdxSymbolView::resetSortFilter()
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
     ui->cbSqueezeDefaults->setChecked(false);
-
-
+    showListView();
 }
 
 void GdxSymbolView::refreshView()
@@ -279,7 +278,6 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::showListView()
 {
-    ui->pbResetSortFilter->setEnabled(true);
     mSym->setTableView(false);
     ui->tvTableView->hide();
 
@@ -293,7 +291,6 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
-    ui->pbResetSortFilter->setEnabled(false);
     mSym->setTableView(true);
 
     ui->pbToggleView->setText("List View");
