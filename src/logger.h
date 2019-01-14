@@ -130,6 +130,7 @@ private:
 #    define DEB() gams::studio::Logger() << Logger::indent()
 #  else
 #    define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(__FUNCSIG__)
+#    define PEEKTIME() gams::studio::Logger() << Logger::indent() << _GamsTimeTracer_.timeString()
 #    define TRACE() gams::studio::Tracer _GamsTracer_(__FUNCSIG__)
 #    define DEB() gams::studio::Logger() << Logger::indent()
 #  endif

@@ -62,7 +62,7 @@ public:
 
     inline static AbstractEdit* toAbstractEdit(QWidget* w) {
         EditorType t = editorType(w);
-        return (t == EditorType::log || t == EditorType::source || t == EditorType::txt)
+        return (t == EditorType::log || t == EditorType::syslog || t == EditorType::source || t == EditorType::txt)
                 ? static_cast<AbstractEdit*>(w) : nullptr;
     }
     inline static CodeEdit* toCodeEdit(QWidget* w) {

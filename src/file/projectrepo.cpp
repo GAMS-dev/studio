@@ -21,6 +21,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QApplication>
+#include <QMessageBox>
 
 #include "projectrepo.h"
 #include "exception.h"
@@ -39,10 +40,17 @@ ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectRootNode(this)))
 {
     addToIndex(mTreeModel->rootNode());
+    mRunAnimateTimer.setInterval(150);
+    mRunIcons << QIcon(":/img/folder-run1");
+    mRunIcons << QIcon(":/img/folder-run2");
+    mRunIcons << QIcon(":/img/folder-run3");
+    mRunIcons << QIcon(":/img/folder-run4");
+    connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 
 ProjectRepo::~ProjectRepo()
 {
+    mRunAnimateTimer.stop();
     FileType::clear();
     delete mTreeModel;
 }
@@ -339,6 +347,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
         FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
         runGroup = new ProjectRunGroupNode(name, path, runFile);
         group = runGroup;
+        connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
         connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     } else
         group = new ProjectGroupNode(name, path);
@@ -346,6 +355,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
     mTreeModel->insertChild(offset, _parent, group);
     connect(group, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
+    mTreeView->setExpanded(mTreeModel->index(group), true);
 
 //    connect(group, &ProjectGroupNode::removeNode, this, &ProjectRepo::removeNode);
 //    connect(group, &ProjectGroupNode::requestNode, this, &ProjectRepo::addNode);
@@ -376,7 +386,10 @@ void ProjectRepo::closeGroup(ProjectGroupNode* group)
 
 void ProjectRepo::closeNode(ProjectFileNode *node)
 {
+    ProjectGroupNode *group = node->parentNode();
     ProjectRunGroupNode *runGroup = node->assignedRunGroup();
+    FileMeta *fm = node->file();
+    int nodeCountToFile = fileNodes(fm->id()).count();
 
     if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
         DEB() << "Close error: Node has open editors";
@@ -384,7 +397,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     }
 
     // Remove reference (if this is a lst file referenced in a log)
-    if (runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
+    if (runGroup && runGroup->hasLogNode() && runGroup->logNode()->lstNode() == node)
         runGroup->logNode()->resetLst();
 
     // close actual file and remove repo node
@@ -394,7 +407,7 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
     }
 
     // if this file is marked as runnable remove reference
-    if (runGroup->runnableGms() == node->file()) {
+    if (runGroup && runGroup->runnableGms() == node->file()) {
         runGroup->setRunnableGms();
         for (int i = 0; i < runGroup->childCount(); i++) {
             // choose next as main gms file
@@ -406,14 +419,19 @@ void ProjectRepo::closeNode(ProjectFileNode *node)
         }
     }
     node->deleteLater();
-    // TODO(JM) check if this was the last node for the FileMeta - then also remove the FileMeta
+    if (nodeCountToFile == 1) {
+        fm->deleteLater();
+    }
+    purgeGroup(group);
 }
 
 void ProjectRepo::purgeGroup(ProjectGroupNode *group)
 {
-    if (!group) return;
+    if (!group || group->toRoot()) return;
+    ProjectGroupNode *parGroup = group->parentNode();
     if (group->isEmpty()) {
         closeGroup(group);
+        if (parGroup) purgeGroup(parGroup);
     }
 }
 
@@ -516,12 +534,33 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
     QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
     while (i.hasNext()) {
         i.next();
-        ProjectFileNode* fileNode = i.value()->toFile();
-        if (fileNode && fileNode->file()->id() == fileId) {
-            ProjectRunGroupNode *runGroup = fileNode->assignedRunGroup();
-            if (runGroup && !res.contains(runGroup)) {
+        if (fileId.isValid()) {
+            ProjectFileNode* fileNode = i.value()->toFile();
+            if (fileNode && fileNode->file()->id() == fileId) {
+                ProjectRunGroupNode *runGroup = fileNode->assignedRunGroup();
+                if (runGroup && !res.contains(runGroup)) {
+                    res << runGroup;
+                }
+            }
+        } else {
+            ProjectRunGroupNode* runGroup = i.value()->toRunGroup();
+            if (runGroup) {
                 res << runGroup;
             }
+        }
+    }
+    return res;
+}
+
+QVector<GamsProcess *> ProjectRepo::listProcesses()
+{
+    QVector<GamsProcess *> res;
+    QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
+    while (i.hasNext()) {
+        i.next();
+        ProjectRunGroupNode* runGroup = i.value()->toRunGroup();
+        if (runGroup && runGroup->gamsProcess()) {
+            res << runGroup->gamsProcess();
         }
     }
     return res;
@@ -530,7 +569,24 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
 void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     mTreeModel->selectionChanged(selected, deselected);
-    emit deselect(mTreeModel->popDeclined());
+    QVector<QModelIndex> groups;
+    for (QModelIndex ind: mTreeModel->popAddGroups()) {
+        if (!mTreeView->isExpanded(ind))
+            groups << ind;
+    }
+    QItemSelectionModel *selModel = mTreeView->selectionModel();
+    for (QModelIndex ind: mTreeModel->popDeclined()) {
+        selModel->select(ind, QItemSelectionModel::Deselect);
+    }
+    for (QModelIndex group: groups) {
+        if (!mTreeView->isExpanded(group)) {
+            mTreeView->setExpanded(group, true);
+            for (int row = 0; row < mTreeModel->rowCount(group); ++row) {
+                QModelIndex ind = mTreeModel->index(row, 0, group);
+                selModel->select(ind, QItemSelectionModel::Select);
+            }
+        }
+    }
 }
 
 void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)
@@ -538,6 +594,64 @@ void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStri
     ProjectRunGroupNode *runGroup = asRunGroup(groupId);
     if (runGroup)
         runGroup->lstTexts(marks, result);
+}
+
+void ProjectRepo::stepRunAnimation()
+{
+    mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIcons.size());
+    for (ProjectRunGroupNode* runGroup: mRunnigGroups) {
+        QModelIndex ind = mTreeModel->index(runGroup);
+        if (ind.isValid())
+            emit mTreeModel->dataChanged(ind, ind);
+    }
+}
+
+void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act
+                            , QList<QModelIndex> &newSelection)
+{
+    ProjectGroupNode *group = nullptr;
+    if (idx.isValid()) {
+        ProjectAbstractNode *aNode = node(idx);
+        group = aNode->toGroup();
+        if (!group) group = aNode->parentNode();
+    } else {
+        QFileInfo firstFile(files.first());
+        group = createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
+    }
+    if (!group) return;
+
+    QStringList filesNotFound;
+    QList<ProjectFileNode*> gmsFiles;
+    QList<NodeId> newIds;
+    for (QString item: files) {
+        if (QFileInfo(item).exists()) {
+            ProjectFileNode* file = group->findOrCreateFileNode(item);
+            if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
+            if (!newIds.contains(file->id())) newIds << file->id();
+        } else {
+            filesNotFound << item;
+        }
+    }
+    for (NodeId id: newIds) {
+        QModelIndex mi = mTreeModel->index(id);
+        newSelection << mi;
+    }
+    if (!filesNotFound.isEmpty()) {
+        DEB() << "Files not found:\n" << filesNotFound.join("\n");
+    }
+    ProjectRunGroupNode *runGroup = group->toRunGroup();
+    if (runGroup && !runGroup->runnableGms() && !gmsFiles.isEmpty()) {
+        runGroup->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
+    }
+    if (act & Qt::MoveAction) {
+        for (NodeId nodeId: knownIds) {
+            ProjectAbstractNode* aNode = node(nodeId);
+            ProjectFileNode* file = aNode->toFile();
+            if (!file) continue;
+            if (file->parentNode() != group)
+                closeNode(file);
+        }
+    }
 }
 
 void ProjectRepo::editorActivated(QWidget* edit)
@@ -557,6 +671,15 @@ void ProjectRepo::nodeChanged(NodeId nodeId)
     emit mTreeModel->dataChanged(ndIndex, ndIndex);
 }
 
+void ProjectRepo::closeNodeById(NodeId nodeId)
+{
+    ProjectAbstractNode *aNode = node(nodeId);
+    ProjectGroupNode *group = aNode ? aNode->parentNode() : nullptr;
+    if (aNode->toFile()) closeNode(aNode->toFile());
+    if (aNode->toGroup()) closeGroup(aNode->toGroup());
+    if (group) purgeGroup(group);
+}
+
 bool ProjectRepo::parseGdxHeader(QString location)
 {
     QFile file(location);
@@ -566,6 +689,31 @@ bool ProjectRepo::parseGdxHeader(QString location)
         return data.contains("\aGAMSGDX\a");
     }
     return false;
+}
+
+QIcon ProjectRepo::runAnimateIcon() const
+{
+    return mRunIcons.at(mRunAnimateIndex);
+}
+
+void ProjectRepo::gamsProcessStateChange(ProjectGroupNode *group)
+{
+    ProjectRunGroupNode *runGroup = group->toRunGroup();
+    QModelIndex ind = mTreeModel->index(runGroup);
+    if (runGroup->gamsProcess()->state() == QProcess::NotRunning) {
+        mRunnigGroups.removeAll(runGroup);
+        if (ind.isValid()) emit mTreeModel->dataChanged(ind, ind);
+    } else if (!mRunnigGroups.contains(runGroup)) {
+        mRunnigGroups << runGroup;
+        if (ind.isValid()) emit mTreeModel->dataChanged(ind, ind);
+    }
+    if (mRunnigGroups.isEmpty() && mRunAnimateTimer.isActive()) {
+        mRunAnimateTimer.stop();
+        mRunAnimateIndex = 0;
+    } else if (!mRunnigGroups.isEmpty() && !mRunAnimateTimer.isActive()) {
+        mRunAnimateIndex = 0;
+        mRunAnimateTimer.start();
+    }
 }
 
 bool ProjectRepo::debugMode() const

@@ -181,6 +181,14 @@ SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, bool &h
     while (isWhitechar(line, start))
         ++start;
     end = line.indexOf(mDelimiter, start);
+    QStringList quotes {"\'\"[" , "\'\"]"};
+    for (int i = 0; i < 3; ++i) {
+        int qStart = line.indexOf(quotes.at(0).at(i), start);
+        if (qStart < end) {
+            int qEnd = line.indexOf(quotes.at(1).at(i), qStart+1);
+            if (qEnd > end) end = line.indexOf(mDelimiter, qEnd);
+        }
+    }
     if (end < 0) end = line.length();
     hasContent = (end > start);
     return SyntaxBlock(this, index, end, SyntaxStateShift::shift);

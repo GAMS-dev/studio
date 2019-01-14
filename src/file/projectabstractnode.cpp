@@ -184,7 +184,7 @@ void ProjectAbstractNode::setActive()
 
 bool ProjectAbstractNode::debugMode() const
 {
-    return projectRepo()->debugMode();
+    return projectRepo() ? projectRepo()->debugMode() : false;
 }
 
 

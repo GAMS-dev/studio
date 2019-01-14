@@ -31,7 +31,11 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QTableView" name="symbolView"/>
+     <widget class="QTableView" name="symbolView">
+      <attribute name="horizontalHeaderHighlightSections">
+       <bool>false</bool>
+      </attribute>
+     </widget>
      <widget class="QTreeView" name="referenceView"/>
     </widget>
    </item>

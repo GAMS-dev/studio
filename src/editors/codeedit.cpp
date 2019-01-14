@@ -153,20 +153,8 @@ void CodeEdit::checkBlockInsertion()
     mBlockEditRealPos = -1;
 }
 
-//void debugUndoStack(QVector<BlockEditPos*> &posStack, int index)
-//{
-//    DEB() << "---- Undo/Redo position stack ---- " << index;
-//    int i = 0;
-//    for (BlockEditPos* bp: posStack) {
-//        if (bp) DEB() << (index==i ? "* " : "  ") << bp->startLine << "-" << bp->currentLine << " / " << bp->column;
-//        else    DEB() << (index==i ? "* " : "  ") << "---";
-//        i++;
-//    }
-//}
-
 void CodeEdit::undoCommandAdded()
 {
-//    DEB() << "undo added, steps:  " << document()->availableUndoSteps();
     while (document()->availableUndoSteps()-1 < mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
     while (document()->availableUndoSteps() > mBlockEditPos.size()) {
@@ -174,12 +162,10 @@ void CodeEdit::undoCommandAdded()
         if (mBlockEdit) bPos = new BlockEditPos(mBlockEdit->startLine(), mBlockEdit->currentLine(), mBlockEdit->column());
         mBlockEditPos.append(bPos);
     }
-//    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
 }
 
 void CodeEdit::extendedRedo()
 {
-//    DEB() << "REDO";
     if (mBlockEdit) endBlockEdit();
     redo();
     updateBlockEditPos();
@@ -187,7 +173,6 @@ void CodeEdit::extendedRedo()
 
 void CodeEdit::extendedUndo()
 {
-//    DEB() << "UNDO";
     if (mBlockEdit) endBlockEdit();
     undo();
     updateBlockEditPos();
@@ -314,6 +299,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     if (mBlockEdit) {
         if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
+            return;
         } else {
             mBlockEdit->keyPressEvent(e);
             return;
@@ -1206,8 +1192,8 @@ void CodeEdit::updateExtraSelections()
                               || sender() == this->verticalScrollBar()
                               || sender() == nullptr);
 
-        //   (  not caused by parenthiesis matching                               )
-        if ( ( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay)
+        //    (  not caused by parenthiesis matching                               ) OR has selection
+        if ( (( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || hasSelection())
                // ( depending on settings: no selection necessary OR has selection )
                && (mSettings->wordUnderCursor() || hasSelection())
                // (  depending on settings: no selection necessary skip word-timer )
@@ -1399,7 +1385,7 @@ CodeEdit::BlockEdit::BlockEdit(CodeEdit* edit, int blockNr, int colNr)
     mStartLine = blockNr;
     mCurrentLine = blockNr;
     mColumn = colNr;
-    mSize = 0;
+    setSize(0);
 }
 
 CodeEdit::BlockEdit::~BlockEdit()
@@ -1411,7 +1397,7 @@ CodeEdit::BlockEdit::~BlockEdit()
 void CodeEdit::BlockEdit::selectTo(int blockNr, int colNr)
 {
     mCurrentLine = blockNr;
-    mSize = colNr - mColumn;
+    setSize(colNr - mColumn);
     updateExtraSelections();
     startCursorTimer();
 }
@@ -1423,7 +1409,7 @@ void CodeEdit::BlockEdit::selectToEnd()
          ; block.blockNumber() <= qMax(mStartLine, mCurrentLine); block=block.next()) {
         if (end < block.length()-1) end = block.length()-1;
     }
-    mSize = end - mColumn;
+    setSize(end - mColumn);
 }
 
 QString CodeEdit::BlockEdit::blockText()
@@ -1484,6 +1470,13 @@ bool CodeEdit::BlockEdit::overwriteMode() const
     return mOverwrite;
 }
 
+void CodeEdit::BlockEdit::setSize(int size)
+{
+    //const ensures the size is only changed HERE
+    *(const_cast<int*>(&mSize)) = size;
+    mLastCharType = CharType::None;
+}
+
 int CodeEdit::BlockEdit::startLine() const
 {
     return mStartLine;
@@ -1497,15 +1490,19 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     if (moveKeys.contains(e->key())) {
         if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
         if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
-        if (e->key() == Qt::Key_Home) mSize = -mColumn;
+        if (e->key() == Qt::Key_Home) setSize(-mColumn);
         if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Right) {
-            EditorHelper::nextWord(mColumn, mSize, block.text());
-        } else if (e->key() == Qt::Key_Right) mSize++;
+            int size = mSize;
+            EditorHelper::nextWord(mColumn, size, block.text());
+            setSize(size);
+        } else if (e->key() == Qt::Key_Right) setSize(mSize+1);
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            EditorHelper::prevWord(mColumn, mSize, block.text());
-        } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) mSize--;
+            int size = mSize;
+            EditorHelper::prevWord(mColumn, size, block.text());
+            setSize(size);
+        } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) setSize(mSize-1);
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)
             cursor.setPosition(block.position()+mColumn+mSize);
@@ -1515,7 +1512,10 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         updateExtraSelections();
         emit mEdit->cursorPositionChanged();
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
-        if (!mSize && mColumn >= 0) mSize = (e->key() == Qt::Key_Backspace) ? -1 : 1;
+        if (!mSize && mColumn >= 0) {
+            mLastCharType = CharType::None;
+            setSize((e->key() == Qt::Key_Backspace) ? -1 : 1);
+        }
         replaceBlockText("");
     } else if (e == Hotkey::Indent) {
         mEdit->indent(mEdit->mSettings->tabSize());
@@ -1524,8 +1524,6 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->indent(-mEdit->mSettings->tabSize());
         return;
     } else if (e->text().length()) {
-//        replaceBlockText(e->text());
-
         mEdit->mBlockEditRealPos = mEdit->textCursor().position();
         QTextCursor cur = mEdit->textCursor();
         cur.joinPreviousEditBlock();
@@ -1680,7 +1678,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     if (mEdit->isReadOnly()) return;
     if (texts.isEmpty()) texts << "";
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
-    bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
+    bool newUndoBlock = texts.count() > 1 || mLastCharType != charType || texts.at(0).length() != 1;
     // append empty lines if needed
     int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
     if (missingLines > 0) {
@@ -1752,7 +1750,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
         }
     }
     mColumn += insertWidth;
-    mSize = 0;
+    setSize(0);
     mLastCharType = charType;
     cursor.endEditBlock();
 }

@@ -92,11 +92,12 @@ enum struct EditorType {
     undefined = 0,
     source = 1,
     log = 2,
-    txt = 3,
-    txtRo = 4,
-    lxiLst = 5,
-    gdx = 6,
-    ref = 7,
+    syslog = 3,
+    txt = 4,
+    txtRo = 5,
+    lxiLst = 6,
+    gdx = 7,
+    ref = 8,
 };
 
 }

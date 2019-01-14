@@ -31,6 +31,8 @@
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+#include "maintabcontextmenu.h"
+#include "logtabcontextmenu.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -52,6 +54,7 @@ class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
+
 
 struct RecentData {
 
@@ -76,6 +79,9 @@ struct HistoryData {
 
 class MainWindow : public QMainWindow
 {
+    friend MainTabContextMenu;
+    friend LogTabContextMenu;
+
     Q_OBJECT
 
 public:
@@ -174,11 +180,12 @@ private slots:
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
     void storeTree();
-    void projectDeselect(const QVector<QModelIndex> &declined);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
+    void mainTabContextMenuRequested(const QPoint& pos);
+    void logTabContextMenuRequested(const QPoint& pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void closeHelpView();
@@ -276,6 +283,9 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
+    int logTabCount();
+    int currentLogTab();
+    QTabWidget* mainTabs();
 
 private:
     void initTabs();
@@ -284,6 +294,7 @@ private:
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
+    bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
@@ -324,6 +335,9 @@ private:
     StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
+    MainTabContextMenu mMainTabContextMenu;
+    LogTabContextMenu mLogTabContextMenu;
+
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     int mExternFileEventChoice = -1;

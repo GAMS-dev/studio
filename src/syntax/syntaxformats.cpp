@@ -136,19 +136,32 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxSta
 
     // TODO(JM) parse source file: src\gamscmex\gmsdco.gms or better create a lib that can be called to get the list
     QList<QPair<QString, QString>> data = SyntaxData::directives();
+    QStringList blockEndingDirectives;
+    blockEndingDirectives << "offText" << "pauseEmbeddedCode" << "endEmbeddedCode" << "offEmbeddedCode";
     for (const QPair<QString, QString> &list: data) {
-        mDirectives << list.first;
-        mDescription << list.second;
+        if (blockEndingDirectives.contains(list.first)) {
+            // block-ending directives are checked separately -> ignore here
+            blockEndingDirectives.removeAll(list.first);
+        } else {
+            mDirectives << list.first;
+            mDescription << list.second;
+        }
     }
-    // offtext is checked separately, so remove it here
-    int i = mDirectives.indexOf(QRegExp("offText", Qt::CaseInsensitive));
-    if (i>0) {
-        mDirectives.removeAt(i);
-        mDescription.removeAt(i);
+    if (!blockEndingDirectives.isEmpty()) {
+        DEB() << "Initialization error in SyntaxDirective. Unknown directive(s): " << blockEndingDirectives.join(",");
     }
     // !!! Enter special states always in lowercase
     mSpecialStates.insert(QString("title").toLower(), SyntaxState::Title);
     mSpecialStates.insert(QString("onText").toLower(), SyntaxState::CommentBlock);
+    mSpecialStates.insert(QString("embeddedCode").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("embeddedCodeS").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("embeddedCodeV").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("continueEmbeddedCode").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("continueEmbeddedCodeS").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("continueEmbeddedCodeV").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("onEmbeddedCode").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("onEmbeddedCodeS").toLower(), SyntaxState::EmbeddedBody);
+    mSpecialStates.insert(QString("onEmbeddedCodeV").toLower(), SyntaxState::EmbeddedBody);
     mSpecialStates.insert(QString("hidden").toLower(), SyntaxState::DirectiveComment);
 }
 
@@ -157,7 +170,13 @@ SyntaxBlock SyntaxDirective::find(SyntaxState entryState, const QString& line, i
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
     if (entryState == SyntaxState::CommentBlock) {
-        if (match.captured(2).compare("offtext", Qt::CaseInsensitive)==0)
+        if (match.captured(2).compare("offtext", Qt::CaseInsensitive) == 0)
+            return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxStateShift::out);
+        return SyntaxBlock(this);
+    } else if (entryState == SyntaxState::EmbeddedBody) {
+        if (match.captured(2).compare("pauseembeddedcode", Qt::CaseInsensitive) == 0
+                || match.captured(2).compare("endembeddedcode", Qt::CaseInsensitive) == 0
+                || match.captured(2).compare("offembeddedcode", Qt::CaseInsensitive) == 0)
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxStateShift::out);
         return SyntaxBlock(this);
     }
@@ -273,6 +292,30 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, bool &has
     if (state() == SyntaxState::Semicolon)
         return SyntaxBlock(this, index, end, SyntaxStateShift::reset);
     return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+}
+
+SyntaxString::SyntaxString(QChar delimiter)
+     : SyntaxAbstract(SyntaxState::String), mDelimiter(delimiter)
+{}
+
+SyntaxBlock SyntaxString::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState)
+    int start = index;
+    while (isWhitechar(line, start)) start++;
+    if (start < line.length()-1 && line.at(start) == mDelimiter) {
+        return SyntaxBlock(this, start, start+1, SyntaxStateShift::shift);
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock SyntaxString::validTail(const QString &line, int index, bool &hasContent)
+{
+    int end = line.indexOf(mDelimiter, index);
+    hasContent = false;
+    if (end < 0) return SyntaxBlock(this, index, line.length()-1, true, SyntaxStateShift::out);
+    hasContent = end < line.length();
+    return SyntaxBlock(this, index, end, SyntaxStateShift::out);
 }
 
 } // namespace studio

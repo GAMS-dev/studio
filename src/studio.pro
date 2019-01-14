@@ -164,7 +164,9 @@ SOURCES += \
     locators/defaultsystemlogger.cpp \
     support/aboutgamsdialog.cpp         \
     support/gamslicenseinfo.cpp         \
-    support/solvertablemodel.cpp
+    support/solvertablemodel.cpp        \
+    maintabcontextmenu.cpp \
+    logtabcontextmenu.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -276,6 +278,9 @@ HEADERS += \
     locators/defaultsystemlogger.h \
     support/aboutgamsdialog.h       \
     support/gamslicenseinfo.h       \
+    support/solvertablemodel.h      \
+    maintabcontextmenu.h \
+    logtabcontextmenu.h \
     support/solvertablemodel.h
 
 FORMS += \

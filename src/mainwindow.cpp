@@ -63,8 +63,9 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
-
-      mAutosaveHandler(new AutosaveHandler(this))
+      mAutosaveHandler(new AutosaveHandler(this)),
+      mMainTabContextMenu(this),
+      mLogTabContextMenu(this)
 {
     mSettings = SettingsLocator::settings();
     mHistory = new HistoryData();
@@ -98,8 +99,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
-
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
+    connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
@@ -132,7 +133,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
-    connect(&mProjectRepo, &ProjectRepo::deselect, this, &MainWindow::projectDeselect);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -147,6 +147,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
+
+    ui->mainTab->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mainTab->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
+    ui->logTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->logTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::logTabContextMenuRequested);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -165,6 +170,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
 
     mSyslog = new SystemLogEdit(this);
+    ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
 
@@ -240,6 +246,21 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     }
     return QMainWindow::event(event);
+}
+
+int MainWindow::logTabCount()
+{
+    return ui->logTabs->count();
+}
+
+int MainWindow::currentLogTab()
+{
+    return ui->logTabs->currentIndex();
+}
+
+QTabWidget* MainWindow::mainTabs()
+{
+    return ui->mainTab;
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
@@ -546,7 +567,7 @@ void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
     ProjectRunGroupNode* runGroup = group->toRunGroup();
     ProjectLogNode* log = runGroup->logNode();
 
-    QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
+    QTabBar::ButtonPosition closeSide = QTabBar::ButtonPosition(style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this));
     for (int i = 0; i < ui->logTabs->children().size(); i++) {
         if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
 
@@ -572,6 +593,20 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
+{
+    int tabIndex = ui->mainTab->tabBar()->tabAt(pos);
+    mMainTabContextMenu.setTabIndex(tabIndex);
+    mMainTabContextMenu.exec(ui->mainTab->tabBar()->mapToGlobal(pos));
+}
+
+void MainWindow::logTabContextMenuRequested(const QPoint& pos)
+{
+    int tabIndex = ui->logTabs->tabBar()->tabAt(pos);
+    mLogTabContextMenu.setTabIndex(tabIndex);
+    mLogTabContextMenu.exec(ui->logTabs->tabBar()->mapToGlobal(pos));
 }
 
 void MainWindow::setProjectNodeExpanded(const QModelIndex& mi, bool expanded)
@@ -695,7 +730,8 @@ void MainWindow::updateLoadAmount()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
+    if (!searchDialog()->searchTerm().isEmpty())
+        searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
 void MainWindow::getAdvancedActions(QList<QAction*>* actions)
@@ -998,7 +1034,6 @@ void MainWindow::activeTabChanged(int index)
                 mStatusWidgets->setFileName(fc->location());
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
-                node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
         }
@@ -1362,6 +1397,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         closeFileEditors(fc->id());
+    } else if (ret == QMessageBox::Cancel) {
+        return;
     }
     mClosedTabsIndexes << index;
 }
@@ -1466,6 +1503,34 @@ void MainWindow::addToOpenedFiles(QString filePath)
     if (mWp) mWp->historyChanged(history());
 }
 
+bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
+{
+    if (runGroups.isEmpty()) return true;
+    QVector<ProjectRunGroupNode *> runningGroups;
+    QStringList runningNames;
+    for (ProjectRunGroupNode* runGroup: runGroups) {
+        if (runGroup->gamsProcess() && runGroup->gamsProcess()->state() != QProcess::NotRunning) {
+            runningGroups << runGroup;
+            runningNames << runGroup->name();
+        }
+    }
+    if (runningGroups.isEmpty()) return true;
+    QString title = runningNames.size() > 1 ? QString::number(runningNames.size())+" processes are running"
+                                            : runningNames.first()+" is running";
+    QString message = runningNames.size() > 1 ? "processes?\n" : "process?\n";
+    while (runningNames.size() > 4) runningNames.removeLast();
+    while (runningNames.size() < runningGroups.size()) runningNames << "...";
+    message += runningNames.join("\n");
+    int choice = QMessageBox::question(this, title,
+                          "Do you want to stop the "+message,
+                          "Stop", "Cancel");
+    if (choice == 1) return false;
+    for (ProjectRunGroupNode* runGroup: runningGroups) {
+        runGroup->gamsProcess()->stop();
+    }
+    return true;
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog(mSettings->userModelLibraryDir(), this);
@@ -1537,7 +1602,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     mSettings->saveSettings(this);
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
-    if (requestCloseChanged(oFiles)) {
+    if (!terminateProcessesConditionally(mProjectRepo.runGroups())) {
+        event->setAccepted(false);
+    } else if (requestCloseChanged(oFiles)) {
         on_actionClose_All_triggered();
         closeHelpView();
         mTextMarkRepo.clear();
@@ -1616,7 +1683,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
             ProjectFileNode *node = addNode("", item, group);
             openFileNode(node);
             if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
-                QApplication::processEvents(QEventLoop::AllEvents, 1);
+            QApplication::processEvents(QEventLoop::AllEvents, 1);
         } else {
             filesNotFound.append(item);
         }
@@ -1887,7 +1954,6 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     ProjectLogNode* logNode = mProjectRepo.logNode(node);
     if (!logNode) return;
 
-    setOutputViewVisibility(true);
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
@@ -1904,6 +1970,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     if (logNode->file()->isOpen()) {
         ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
+            setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
@@ -1921,14 +1988,6 @@ void MainWindow::storeTree()
 {
     // TODO(JM) add settings methods to store each part separately
     mSettings->saveSettings(this);
-}
-
-void MainWindow::projectDeselect(const QVector<QModelIndex> &declined)
-{
-    QItemSelectionModel *selModel = ui->projectView->selectionModel();
-    for (QModelIndex ind: declined) {
-        selModel->select(ind, QItemSelectionModel::Deselect);
-    }
 }
 
 void MainWindow::raiseEdit(QWidget *widget)
@@ -2045,15 +2104,14 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     ProjectGroupNode *parentGroup = group->parentNode();
     if (parentGroup && parentGroup->type() == NodeType::root) parentGroup = nullptr;
     ProjectRunGroupNode *runGroup = group->assignedRunGroup();
+    if (!terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
+        return;
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
     for (ProjectFileNode *node: group->listFiles(true)) {
         if (node->isModified()) changedFiles << node->file();
         if (node->file()->isOpen()) openFiles << node->file();
     }
-
-    if (runGroup->gamsProcessState() == QProcess::Running)
-        runGroup->gamsProcess()->stop();
 
     if (requestCloseChanged(changedFiles)) {
         for (FileMeta *file: openFiles) {
@@ -2081,16 +2139,14 @@ void MainWindow::closeNodeConditionally(ProjectFileNode* node)
     // count nodes to the same file
     int nodeCountToFile = mProjectRepo.fileNodes(node->file()->id()).count();
     ProjectGroupNode *group = node->parentNode();
+    ProjectRunGroupNode *runGroup = node->assignedRunGroup();
+    if (runGroup && !terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
+        return;
     // not the last OR not modified OR permitted
     if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
         if (nodeCountToFile == 1)
             closeFileEditors(node->file()->id());
-        FileMeta* fm = node->file();
         mProjectRepo.closeNode(node);
-        if (nodeCountToFile == 1) {
-            mFileMetaRepo.removeFile(fm);
-            fm->deleteLater();
-        }
     }
     mProjectRepo.purgeGroup(group);
 }
@@ -2751,8 +2807,8 @@ void MainWindow::setForeground()
 {
 #if defined (WIN32)
    HWND WinId= HWND(winId());
-   if (this->windowState() == Qt::WindowMinimized) {
-       this->setWindowState(Qt::WindowActive);
+   if (this->windowState() & Qt::WindowMinimized) {
+       this->setWindowState((windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
    }
    DWORD foregroundThreadPId = GetWindowThreadProcessId(GetForegroundWindow(),nullptr);
    DWORD mwThreadPId = GetWindowThreadProcessId(WinId,nullptr);

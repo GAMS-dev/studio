@@ -147,9 +147,6 @@ pipeline {
                     agent { label 'master' }
                     steps {
                         sh '''
-                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-                        '''
-                        sh '''
                             # create folder structure
                             mkdir -p appdir/usr/bin
                             mkdir -p appdir/usr/share/pixmaps
@@ -164,9 +161,7 @@ pipeline {
                             mkdir -p appdir/usr/plugins/imageformats
                             cp /opt/Qt/5.11.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
 
-                            chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage --version
-                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
+                            linuxdeployqt-5-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
                         '''
                         script {
                             def versionData = artifactVersion()

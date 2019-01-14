@@ -128,7 +128,7 @@ private:
 
 private:
     bool mValid = true;
-    c4uHandle_t mC4UHandle;
+    c4uHandle_t mC4U;
     QStringList mMessages;
 };
 

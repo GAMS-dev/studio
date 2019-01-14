@@ -17,27 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef REFERENCETABSTYLE_H
-#define REFERENCETABSTYLE_H
+#ifndef MAINTABCONTEXTMENU_H
+#define MAINTABCONTEXTMENU_H
 
-#include <QProxyStyle>
+#include <QMenu>
+#include <QTabBar>
 
 namespace gams {
 namespace studio {
-namespace reference {
 
-class ReferenceTabStyle : public QProxyStyle
+class MainWindow;
+class MainTabContextMenu : public QMenu
 {
-public:
-    virtual QSize sizeFromContents(ContentsType type, const QStyleOption *option,
-                           const QSize &size, const QWidget *widget) const override;
+    Q_OBJECT
 
-    virtual void drawControl(ControlElement element, const QStyleOption *option,
-                             QPainter *painter, const QWidget *widget) const override;
+public:
+    MainTabContextMenu(MainWindow* parent);
+    void setTabIndex(int tab);
+
+private:
+    QHash<int, QAction*> mActions;
+    MainWindow* mParent = nullptr;
+    int mTabIndex = -1;
+
+private slots:
+    void close();
+    void closeAllLeft();
+    void closeAllRight();
 };
 
-} // namespace reference
-} // namespace studio
-} // namespace gams
+}
+}
 
-#endif // REFERENCETABSTYLE_H
+#endif // MAINTABCONTEXTMENU_H
