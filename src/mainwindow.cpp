@@ -170,6 +170,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
 
     mSyslog = new SystemLogEdit(this);
+    ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
 
