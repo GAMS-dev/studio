@@ -303,7 +303,6 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     QString gmsPath = gmsFile->location();
     QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
     setSpecialFile(FileKind::Gms, gmsPath);
-    setSpecialFile(FileKind::Lst, lstPath);
     if (hasLogNode()) logNode()->resetLst();
 }
 
@@ -388,11 +387,16 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     bool defaultOverride = false;
     // iterate options
     for (OptionItem item : itemList) {
-        // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
             setSpecialFile(FileKind::Lst, path + item.value);
+
+            // check if lst creation is deactivated:
+            if ((QString::compare(item.value, "nul", Qt::CaseInsensitive) == 0)
+                        || (QString::compare(item.value, "/dev/null", Qt::CaseInsensitive) == 0))
+                mSpecialFiles.remove(FileKind::Lst);
+
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
             QString name = item.value;

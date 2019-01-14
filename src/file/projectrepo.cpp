@@ -402,9 +402,9 @@ void ProjectRepo::purgeGroup(ProjectGroupNode *group)
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
                                                    , QString explicitName)
 {
-    if (location.isEmpty()) {
-        EXCEPT() << "Couldn't create a FileMeta for filename '" << location << "'";
-    }
+    if (location.isEmpty())
+        return nullptr;
+
     if (!knownType || knownType->kind() == FileKind::None)
         knownType = parseGdxHeader(location) ? &FileType::from(FileKind::Gdx) : nullptr;
 
