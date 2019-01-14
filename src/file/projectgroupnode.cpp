@@ -385,6 +385,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     clearSpecialFiles();
     setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst");
 
+    bool defaultOverride = false;
     // iterate options
     for (OptionItem item : itemList) {
         // output (o) found
@@ -404,13 +405,16 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             setSpecialFile(FileKind::Ref, path + name);
         }
 
-        if (defaultGamsArgs.contains(item.key)) {
-            SysLogLocator::systemLog()->append("You are overwriting at least one GAMS Studio default argument. "
-                                 "Some of these are necessary to ensure a smooth experience. "
-                                 "Use at your own risk!", LogMsgType::Warning);
-        }
+        if (defaultGamsArgs.contains(item.key))
+            defaultOverride = true;
+
         gamsArgs[item.key] = item.value;
     }
+
+    if (defaultOverride)
+        SysLogLocator::systemLog()->append("You are overwriting at least one GAMS Studio default argument. "
+                     "Some of these are necessary to ensure a smooth experience. "
+                     "Use at your own risk!", LogMsgType::Warning);
 
     // prepare return value
 #if defined(__unix__) || defined(__APPLE__)
@@ -471,6 +475,7 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
     FileMeta* runNode = runnableGms();
     for (QString loc : mSpecialFiles.values()) {
+
         ProjectFileNode* node = findOrCreateFileNode(loc);
         node->file()->setKind(mSpecialFiles.key(loc));
         if (runNode)
