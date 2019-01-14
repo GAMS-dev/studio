@@ -51,7 +51,7 @@ ProjectGroupNode::~ProjectGroupNode()
 
 QIcon ProjectGroupNode::icon()
 {
-    return QIcon::fromTheme("folder", QIcon(":/img/folder-open"));
+    return QIcon(":/img/folder-open");
 }
 
 int ProjectGroupNode::childCount() const

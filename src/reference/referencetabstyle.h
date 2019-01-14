@@ -31,7 +31,9 @@ class ReferenceTabStyle : public QProxyStyle
 public:
     virtual QSize sizeFromContents(ContentsType type, const QStyleOption *option,
                            const QSize &size, const QWidget *widget) const override;
-    virtual void drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const override;
+
+    virtual void drawControl(ControlElement element, const QStyleOption *option,
+                             QPainter *painter, const QWidget *widget) const override;
 };
 
 } // namespace reference

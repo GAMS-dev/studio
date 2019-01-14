@@ -23,6 +23,7 @@
 #include <QString>
 #include <QColor>
 #include <QHash>
+#include <QMutex>
 
 class QSettings;
 
@@ -148,6 +149,7 @@ private:
     QSettings *mUserSettings = nullptr;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
+    QMutex mMutex;
 
     // general settings page
     QString mDefaultWorkspace;

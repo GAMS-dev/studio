@@ -102,7 +102,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
-    connect(ui->projectView, &ProjectTreeView::closeNode, &mProjectRepo, &ProjectRepo::closeNodeById);
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
@@ -1044,7 +1043,6 @@ void MainWindow::activeTabChanged(int index)
                 mStatusWidgets->setFileName(fc->location());
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
-                node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
         } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
@@ -1999,7 +1997,6 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     ProjectLogNode* logNode = mProjectRepo.logNode(node);
     if (!logNode) return;
 
-    setOutputViewVisibility(true);
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
@@ -2013,6 +2010,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     if (logNode->file()->isOpen()) {
         ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
+            setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
