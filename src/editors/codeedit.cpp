@@ -1630,7 +1630,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     if (mEdit->isReadOnly()) return;
     if (texts.isEmpty()) texts << "";
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
-    bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
+    bool newUndoBlock = texts.count() > 1 || mLastCharType != charType || texts.at(0).length() != 1;
     // append empty lines if needed
     int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
     if (missingLines > 0) {
