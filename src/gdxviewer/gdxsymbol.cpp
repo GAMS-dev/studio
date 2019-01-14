@@ -541,6 +541,11 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
     endResetModel();
 }
 
+QVector<int> GdxSymbol::tvDimOrder() const
+{
+    return mTvDimOrder;
+}
+
 QVector<bool> GdxSymbol::defaultColumnTableView() const
 {
     return mDefaultColumnTableView;
@@ -556,11 +561,11 @@ int GdxSymbol::tvColDim() const
     return mTvColDim;
 }
 
-void GdxSymbol::setTableView(bool tableView)
+void GdxSymbol::setTableView(bool tableView, int colDim, QVector<int> tvDims)
 {
     mTableView = tableView;
     if (mTableView)
-        initTableView(1, QVector<int>());
+        initTableView(colDim, tvDims);
 }
 
 std::vector<bool> GdxSymbol::filterActive() const

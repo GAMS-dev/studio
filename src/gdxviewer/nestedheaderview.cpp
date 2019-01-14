@@ -2,6 +2,9 @@
 
 #include <QTableView>
 #include <QScrollBar>
+#include <QDrag>
+#include <QMimeData>
+#include <QApplication>
 
 namespace gams {
 namespace studio {
@@ -10,7 +13,7 @@ namespace gdxviewer {
 NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
     :QHeaderView(orientation, parent)
 {
-
+    setAcceptDrops(true);
 }
 
 NestedHeaderView::~NestedHeaderView()
@@ -78,6 +81,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
             //int rowWidth = getSectionSize(logicalIndex, i).width();
+
             int rowWidth = mMaxSectionWidth[i];
 
             if (labelPrevSection[i] != labelCurSection[i])
@@ -121,15 +125,88 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
     painter->restore();
 }
 
+void NestedHeaderView::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        mDragStartPosition = event->pos();
+    QHeaderView::mousePressEvent(event);
+}
+
 void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
 {
     QHeaderView::mouseMoveEvent(event);
     mMousePos = event->pos();
+    if ((event->buttons() & Qt::LeftButton) && (mMousePos - mDragStartPosition).manhattanLength() > QApplication::startDragDistance()) {
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
+        if (orientation() == Qt::Vertical)
+            mimeData->setData("GDXDRAGDROP/COL", QByteArray::number(pointToDimension(mDragStartPosition)));
+        else
+            mimeData->setData("GDXDRAGDROP/ROW", QByteArray::number(pointToDimension(mDragStartPosition)));
+        drag->setMimeData(mimeData);
+        drag->exec();
+    }
+
     if(orientation() == Qt::Vertical)
         headerDataChanged(orientation(),0, qMax(0,model()->rowCount()-1));
     else
         headerDataChanged(orientation(),0, qMax(0,model()->columnCount()-1));
 }
+
+void NestedHeaderView::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasFormat("GDXDRAGDROP/COL") || event->mimeData()->hasFormat("GDXDRAGDROP/ROW"))
+        event->acceptProposedAction();
+}
+
+void NestedHeaderView::dragMoveEvent(QDragMoveEvent *event)
+{
+    int dimIdxEnd = pointToDimension(event->pos());
+    int orientationEnd = orientation();
+    if (orientationEnd == Qt::Horizontal)
+        dimIdxEnd += sym()->dim()-sym()->tvColDim();
+    if (orientation() == Qt::Horizontal)
+        dimIdxEnd = dimIdxEnd - sym()->dim() + dim();
+}
+
+void NestedHeaderView::dropEvent(QDropEvent *event)
+{
+    int dimIdxStart;
+    int orientationStart;
+    if (event->mimeData()->hasFormat("GDXDRAGDROP/ROW")) {
+        dimIdxStart = event->mimeData()->data("GDXDRAGDROP/ROW").toInt() + (sym()->dim()-sym()->tvColDim());
+        orientationStart = Qt::Horizontal;
+    }
+    else {
+        dimIdxStart = event->mimeData()->data("GDXDRAGDROP/COL").toInt();
+        orientationStart = Qt::Vertical;
+    }
+
+    int dimIdxEnd = pointToDimension(event->pos());
+    int orientationEnd = orientation();
+    if (orientationEnd == Qt::Horizontal)
+        dimIdxEnd += sym()->dim()-sym()->tvColDim();
+
+    if (dimIdxStart == dimIdxEnd && orientationStart == orientationEnd) { //nothing happens
+        event->accept();
+        return;
+    }
+
+    int newColDim = sym()->tvColDim();
+    if (orientationStart != orientationEnd) {
+        if (orientationStart == Qt::Vertical)
+            newColDim++;
+        else
+            newColDim--;
+    }
+    QVector<int> tvDims = sym()->tvDimOrder();
+    tvDims.move(dimIdxStart, dimIdxEnd);
+
+    event->accept();
+    sym()->setTableView(true, newColDim, tvDims);
+    init();
+}
+
 
 void NestedHeaderView::leaveEvent(QEvent *event)
 {
@@ -174,6 +251,26 @@ void NestedHeaderView::calcSectionSize()
                 QSize s = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
                 mMaxSectionWidth[d] = qMax(s.width(), mMaxSectionWidth[d]);
             }
+        }
+    }
+}
+
+int NestedHeaderView::pointToDimension(QPoint p)
+{
+    if (orientation() == Qt::Vertical) {
+        int totWidth = 0;
+        for(int i=0; i<dim(); i++) {
+            totWidth += mMaxSectionWidth[i];
+            if (p.x() < totWidth)
+                return i;
+        }
+    } else {
+        int sectionHeight = QHeaderView::sectionSizeFromContents(0).height();
+        int totHeight = 0;
+        for(int i=0; i<dim(); i++) {
+            totHeight += sectionHeight;
+            if (p.y() < totHeight)
+                return i;
         }
     }
 }

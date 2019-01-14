@@ -69,13 +69,15 @@ public:
     std::vector<bool> filterActive() const;
     void setFilterActive(const std::vector<bool> &filterActive);
 
-    void setTableView(bool tableView);
+    void setTableView(bool tableView, int colDim = 1, QVector<int> tvDims = QVector<int>());
 
     int tvColDim() const;
 
     bool tableView() const;
 
     QVector<bool> defaultColumnTableView() const;
+
+    QVector<int> tvDimOrder() const;
 
 signals:
     void loadFinished();
