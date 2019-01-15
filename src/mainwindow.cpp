@@ -87,8 +87,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
 #endif
-    ui->actionNextTab->setShortcuts(ui->actionNextTab->shortcuts() << QKeySequence("Meta+Tab"));
-    ui->actionPreviousTab->setShortcuts(ui->actionPreviousTab->shortcuts() << QKeySequence("Meta+Shift+Tab"));
 
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
