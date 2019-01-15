@@ -2380,8 +2380,10 @@ void MainWindow::writeTabs(QJsonObject &json) const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
+    AbstractEdit *edit = ViewHelper::toAbstractEdit(mRecent.editor());
+    if ((ui->mainTab->currentWidget() == mWp) || !edit)
         return;
+
     GoToDialog dialog(this);
     int result = dialog.exec();
     if (QDialog::Rejected == result)
