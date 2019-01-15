@@ -43,7 +43,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
         mSymbolTableProxyModel->setFilterKeyColumn(1);
     mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    ui->symbolView->setModel( mSymbolTableProxyModel );
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
@@ -55,20 +54,16 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.4));
 
+    ui->symbolView->setModel( mSymbolTableProxyModel );
+
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
     connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
     connect(ui->allColumnToggleSearch, &QCheckBox::toggled, this, &SymbolReferenceWidget::toggleSearchColumns);
 
-    mReferenceTreeProxyModel = new QSortFilterProxyModel(this);
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
+    ui->referenceView->setModel( mReferenceTreeModel );
 
-    mReferenceTreeProxyModel->setFilterKeyColumn(-1);
-    mReferenceTreeProxyModel->setSourceModel( mReferenceTreeModel );
-    mReferenceTreeProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    mReferenceTreeProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-
-    ui->referenceView->setModel( mReferenceTreeProxyModel );
     ui->referenceView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);

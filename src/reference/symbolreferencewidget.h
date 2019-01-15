@@ -60,7 +60,6 @@ private:
     Ui::SymbolReferenceWidget *ui;
 
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
-    QSortFilterProxyModel* mReferenceTreeProxyModel = nullptr;
 
     SymbolTableModel* mSymbolTableModel;
     ReferenceTreeModel* mReferenceTreeModel;
