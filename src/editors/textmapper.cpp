@@ -601,10 +601,10 @@ int TextMapper::relPos(int localLineNr, int charNr)
     return int(pos);
 }
 
-void TextMapper::copyToClipboard()
+QString TextMapper::selectedText() const
 {
-    if (mChunks.isEmpty()) return;
-    if (mPosition.chunkNr < 0 || mAnchor.chunkNr < 0 || mPosition == mAnchor) return;
+    if (mChunks.isEmpty()) return QString();
+    if (mPosition.chunkNr < 0 || mAnchor.chunkNr < 0 || mPosition == mAnchor) return QString();
     QByteArray all;
     CursorPosition pFrom = qMin(mAnchor, mPosition);
     CursorPosition pTo = qMax(mAnchor, mPosition);
@@ -630,9 +630,16 @@ void TextMapper::copyToClipboard()
 
         chunk = getChunk(chunk->nr + 1);
     }
+    return mCodec ? mCodec->toUnicode(all) : all;
+}
 
-    QClipboard *clip = QGuiApplication::clipboard();
-    clip->setText(mCodec ? mCodec->toUnicode(all) : all);
+void TextMapper::copyToClipboard()
+{
+    QString text = selectedText();
+    if (!text.isEmpty()) {
+        QClipboard *clip = QGuiApplication::clipboard();
+        clip->setText(text);
+    }
 }
 
 TextMapper::Chunk* TextMapper::chunkForLine(int absLine, int *lineInChunk) const

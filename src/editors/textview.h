@@ -49,8 +49,10 @@ public:
     bool jumpTo(int lineNr, int charNr);
     QPoint position() const;
     QPoint anchor() const;
+    bool hasSelection() const;
 //    int findLine(int lineNr);
     void copySelection();
+    QString selectedText() const;
     void selectAllText();
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);

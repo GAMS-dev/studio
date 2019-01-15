@@ -387,7 +387,7 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 
 void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 {
-    QTextCursor matchSelection;
+    QPoint matchPos;
     QRegularExpression searchRegex = createRegex();
 
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
@@ -395,7 +395,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
 
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
+        QTextCursor matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
         if (mCachedResults.size() > 0) { // has any matches at all
 
@@ -413,6 +413,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
             } else { // found next match
                 edit->jumpTo(matchSelection);
                 edit->setTextCursor(matchSelection);
+                matchPos.setY(matchSelection.blockNumber()+1);
+                matchPos.setX(matchSelection.columnNumber() - matchSelection.selectedText().length());
             }
         } else { // search had no matches so do nothing
             setSearchStatus(SearchStatus::NoResults);
@@ -424,14 +426,17 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     }
 
     if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-        tv->findText(searchRegex, flags);
+        bool found = tv->findText(searchRegex, flags);
+        if (found) {
+            matchPos = tv->position();
+        }
     }
 
     // set match and counter
     int count = 0;
     for (Result match: mCachedResults.resultList()) {
-        if (match.lineNr() == matchSelection.blockNumber()+1
-                && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
+        if (match.lineNr() == matchPos.y()
+                && match.colNr() == matchPos.x()) {
             updateMatchAmount(mCachedResults.size(), count+1);
             break;
         } else {
@@ -500,15 +505,15 @@ void SearchDialog::clearResults()
     setSearchStatus(SearchStatus::Clear);
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    if (!edit) return;
-
-    QTextCursor tc = edit->textCursor();
-    tc.clearSelection();
-    edit->setTextCursor(tc);
+    if (edit) {
+        QTextCursor tc = edit->textCursor();
+        tc.clearSelection();
+        edit->setTextCursor(tc);
+    }
     mCachedResults.clear();
 
-    CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit);
-    if (ce) ce->updateExtraSelections();
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
+    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
 }
 
 void SearchDialog::setSearchStatus(SearchStatus status)
@@ -555,16 +560,27 @@ void SearchDialog::insertHistory()
 void SearchDialog::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
-    AbstractEdit *edit = ViewHelper::toAbstractEdit(widget);
     ProjectAbstractNode *fsc = mMain->projectRepo()->findFileNode(widget);
-    if (!fsc || !edit) return;
+    if (!fsc) return;
 
-    if (edit->textCursor().hasSelection()) {
-        ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
-        ui->combo_search->setCurrentIndex(0);
-    } else {
-        ui->combo_search->setEditText(ui->combo_search->itemText(0));
-        mFirstReturn = false;
+    if (AbstractEdit *edit = ViewHelper::toAbstractEdit(widget)) {
+        if (edit->textCursor().hasSelection()) {
+            ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
+            ui->combo_search->setCurrentIndex(0);
+        } else {
+            ui->combo_search->setEditText(ui->combo_search->itemText(0));
+            mFirstReturn = false;
+        }
+    }
+
+    if (TextView *tv = ViewHelper::toTextView(widget)) {
+        if (tv->hasSelection()) {
+            ui->combo_search->insertItem(-1, tv->selectedText());
+            ui->combo_search->setCurrentIndex(0);
+        } else {
+            ui->combo_search->setEditText(ui->combo_search->itemText(0));
+            mFirstReturn = false;
+        }
     }
 
     ui->combo_search->setFocus();

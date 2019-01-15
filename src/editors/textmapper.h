@@ -114,6 +114,7 @@ public:
 
     QString lines(int localLineNrFrom, int lineCount) const;
 
+    QString selectedText() const;
     void copyToClipboard();
 
     void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
