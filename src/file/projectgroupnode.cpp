@@ -382,7 +382,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QFileInfo fi(gmsLocation);
     // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
-    setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst");
+    setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst"); // set default
 
     bool defaultOverride = false;
     // iterate options
@@ -496,6 +496,8 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
     QString fullPath = path;
     if (QFileInfo(path).isRelative())
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
+
+    fullPath.remove("\"");
 
     if (QFileInfo(fullPath).suffix().isEmpty()) {
         switch (kind) {
