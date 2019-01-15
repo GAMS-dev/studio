@@ -402,6 +402,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".gdx";
             setSpecialFile(FileKind::Gdx, path + name);
+
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
             QString name = item.value;
@@ -515,7 +516,10 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
         }
     }
 
-    mSpecialFiles.insert(kind, fullPath);
+    if (!mSpecialFiles.contains(kind))
+        mSpecialFiles.insert(kind, fullPath);
+    else
+        qDebug() /*rogo: delete*/ << "blocked:" << fullPath;
 }
 
 void ProjectRunGroupNode::clearSpecialFiles()
