@@ -2752,8 +2752,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
 
-        // TODO(JM) used for updateExtraSelections (can we pass the internal CodeEdit?)
-//        window->searchDialog()->setActiveEditWidget(tv);
+        window->searchDialog()->setActiveEditWidget(tv);
     }
     window->searchDialog()->invalidateCache();
     window->updateEditorMode();

@@ -152,7 +152,7 @@ protected:
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
-    void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
+    virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
 
 signals:

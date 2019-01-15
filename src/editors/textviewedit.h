@@ -53,6 +53,7 @@ protected:
     void recalcWordUnderCursor() override;
     int effectiveBlockNr(const int &localBlockNr) const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
+    void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections) override;
 
 //    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections) override;
 
@@ -72,7 +73,6 @@ private:
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;
-
 };
 
 

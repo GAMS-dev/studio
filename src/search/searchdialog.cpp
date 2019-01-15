@@ -652,7 +652,7 @@ SearchResultList* SearchDialog::cachedResults()
     return &mCachedResults;
 }
 
-void SearchDialog::setActiveEditWidget(AbstractEdit *edit)
+void SearchDialog::setActiveEditWidget(QWidget *edit)
 {
     mActiveEdit = edit;
 }
