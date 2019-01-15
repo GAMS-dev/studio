@@ -322,6 +322,7 @@ void TestTextMapper::testClipboard()
     mMapper->setPosRelative(2, 89);
     mMapper->setPosRelative(3, 7, QTextCursor::KeepAnchor);
     mMapper->copyToClipboard();
+    QApplication::instance()->thread()->msleep(10);
     QCOMPARE(clip->text(), QString("long lines.\nThis is"));
 
 //    QApplication::instance()->thread()->msleep(ms);
