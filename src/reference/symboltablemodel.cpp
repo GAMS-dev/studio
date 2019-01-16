@@ -30,6 +30,10 @@ SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType ty
     mSymbolsHeader    << "Entry" << "Name"           << "Dim" << "Domain" << "Text";
     mFileHeader       << "Entry" << "Name"           << "Text";
     mFileUsedHeader   << "File Location";
+
+    mSortMap.resize( mReference->findReference(mType).size() );
+    for(int i=0; i<mReference->findReference(mType).size(); i++)
+        mSortMap[i] = i;
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -60,8 +64,6 @@ QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, in
                if (index < mFileUsedHeader.size())
                   return mFileUsedHeader[index];
                break;
-           default:
-               break;
            }
        }
     }
@@ -87,7 +89,6 @@ int SymbolTableModel::rowCount(const QModelIndex &parent) const
     case SymbolDataType::FileUsed :
         return mReference->getFileUsed().size();
     case SymbolDataType::Unknown :
-    default:
         return mReference->size();
     }
 }
@@ -113,8 +114,6 @@ int SymbolTableModel::columnCount(const QModelIndex &parent) const
         return mFileHeader.size();
     case SymbolDataType::FileUsed :
         return mFileUsedHeader.size();
-    default:
-        break;
     }
     return 0;
 
@@ -150,6 +149,7 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::DisplayRole: {
          QList<SymbolReferenceItem*> refList = mReference->findReference(mType);
+         int idx = mSortMap[index.row()];
          switch(mType) {
          case SymbolDataType::Set :
          case SymbolDataType::Acronym :
@@ -157,49 +157,23 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
          case SymbolDataType::Variable :
          case SymbolDataType::Equation :
              switch(index.column()) {
-             case 0: return QString::number(refList.at(index.row())->id());
-             case 1: return refList.at(index.row())->name();
-             case 2: return QString::number(refList.at(index.row())->dimension());
-             case 3: {
-                 QList<SymbolId> dom = refList.at(index.row())->domain();
-                 if (dom.size() > 0) {
-                    QString domainStr = "(";
-                    domainStr.append(  mReference->findReference( dom.at(0) )->name() );
-                    for(int i=1; i<dom.size(); i++) {
-                        domainStr.append( "," );
-                        domainStr.append( mReference->findReference( dom.at(i) )->name() );
-                    }
-                    domainStr.append( ")" );
-                    return domainStr;
-                 }
-                 break;
-             }
-             case 4: return refList.at(index.row())->explanatoryText();
+             case 0: return QString::number( refList.at(idx)->id() );
+             case 1: return refList.at(idx)->name();
+             case 2: return QString::number( refList.at(idx)->dimension() );
+             case 3: return getDomainStr( refList.at(idx)->domain() );
+             case 4: return refList.at(idx)->explanatoryText();
              default: break;
              }
              break;
          case SymbolDataType::Unknown :
          case SymbolDataType::Unused :
               switch(index.column()) {
-              case 0: return QString::number(refList.at(index.row())->id());
-              case 1: return refList.at(index.row())->name();
-              case 2: return SymbolDataType::from(refList.at(index.row())->type()).name();
-              case 3: return QString::number(refList.at(index.row())->dimension());
-              case 4: {
-                  QList<SymbolId> dom = refList.at(index.row())->domain();
-                  if (dom.size() > 0) {
-                     QString domainStr = "(";
-                     domainStr.append(  mReference->findReference( dom.at(0) )->name() );
-                     for(int i=1; i<dom.size(); i++) {
-                         domainStr.append( "," );
-                         domainStr.append( mReference->findReference( dom.at(i) )->name() );
-                     }
-                     domainStr.append( ")" );
-                     return domainStr;
-                  }
-                  break;
-              }
-              case 5: return refList.at(index.row())->explanatoryText();
+              case 0: return QString::number( refList.at(idx)->id() );
+              case 1: return refList.at(idx)->name();
+              case 2: return SymbolDataType::from( refList.at(idx)->type() ).name();
+              case 3: return QString::number( refList.at(idx)->dimension() );
+              case 4: return getDomainStr( refList.at(idx)->domain() );
+              case 5: return refList.at(idx)->explanatoryText();
               default: break;
               }
               break;
@@ -207,17 +181,15 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
          case SymbolDataType::Funct :
          case SymbolDataType::Model :
              switch(index.column()) {
-             case 0: return QString::number(refList.at(index.row())->id());
-             case 1: return refList.at(index.row())->name();;
-             case 2: return SymbolDataType::from(refList.at(index.row())->type()).name();
-             case 3: return refList.at(index.row())->explanatoryText();
+             case 0: return QString::number( refList.at(idx)->id() );
+             case 1: return refList.at(idx)->name();;
+             case 2: return SymbolDataType::from( refList.at(idx)->type() ).name();
+             case 3: return refList.at(idx)->explanatoryText();
              default: break;
              }
              break;
          case SymbolDataType::FileUsed :
-             return mReference->getFileUsed().at(index.row());
-         default:
-             break;
+             return mReference->getFileUsed().at(idx);
          }
          break;
     }
@@ -226,6 +198,74 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
     }
 
     return QVariant();
+}
+
+void SymbolTableModel::sort(int column, Qt::SortOrder order)
+{
+    QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+    qDebug() << " *** column : " << column << " size=" << items.size();
+    SortType sortType = getSortTypeOf(column);
+    ColumnType colType = getColumnTypeOf(column);
+
+    switch(sortType) {
+    case sortInt: {
+
+        QList<QPair<int, int>> idxList;
+        for(int rec=0; rec<items.size(); rec++) {
+            if (colType == columnId)
+               idxList.append(QPair<int, int>(rec, items.at(rec)->id()) );
+            else if (colType == columnDimension)
+                    idxList.append(QPair<int, int>(rec, items.at(rec)->dimension()) );
+        }
+        if (order == Qt::SortOrder::AscendingOrder)
+           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.second < b.second; });
+        else
+           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.second > b.second; });
+
+        for(int rec=0; rec<items.size(); rec++) {
+            mSortMap[rec] = idxList.at(rec).first;
+            qDebug() << "name rec=" << rec << " (" << idxList.at(rec).first << "," << idxList.at(rec).second <<")";
+        }
+        layoutChanged();
+        break;
+    }
+    case sortString: {
+
+        QList<QPair<int, QString>> idxList;
+        for(int rec=0; rec<items.size(); rec++) {
+            if (colType == columnName) {
+               idxList.append(QPair<int, QString>(rec, items.at(rec)->name()) );
+            } else if (colType == columnText) {
+                    idxList.append(QPair<int, QString>(rec, items.at(rec)->explanatoryText()) );
+            } else if (colType == columnType) {
+                       SymbolDataType::SymbolType type = items.at(rec)->type();
+                       idxList.append(QPair<int, QString>(rec, SymbolDataType::from(type).name()) );
+            } else if (colType == columnDomain) {
+                      QString domainStr = getDomainStr( items.at(rec)->domain() );
+                      idxList.append(QPair<int, QString>(rec, domainStr) );
+            } else {
+                idxList.append(QPair<int, QString>(rec, "") );
+            }
+        }
+        if (order == Qt::SortOrder::AscendingOrder)
+           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return a.second < b.second; });
+        else
+           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return a.second > b.second; });
+
+        for(int rec=0; rec<items.size(); rec++) {
+            mSortMap[rec] = idxList.at(rec).first;
+            qDebug() << "name rec=" << rec << " (" << idxList.at(rec).first << "," << idxList.at(rec).second <<")";
+        }
+        layoutChanged();
+        break;
+    }
+    case sortUnknown:  {
+        for(int rec=0; rec<items.size(); rec++)
+            mSortMap[rec] = rec;
+        layoutChanged();
+        break;
+    }
+    }
 }
 
 QModelIndex SymbolTableModel::index(int row, int column, const QModelIndex &parent) const
@@ -243,6 +283,115 @@ void SymbolTableModel::resetModel()
     }
     endResetModel();
 }
+SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const
+{
+    switch(mType) {
+    case SymbolDataType::Set :
+    case SymbolDataType::Acronym :
+    case SymbolDataType::Parameter :
+    case SymbolDataType::Variable :
+    case SymbolDataType::Equation : {
+        if (column == 0 || column == 2)
+           return sortInt;
+        else if (column == 1 || column == 3 || column == 4)
+                return sortString;
+        else
+            return sortUnknown;
+    }
+    case SymbolDataType::Model :
+    case SymbolDataType::Funct :
+    case SymbolDataType::File : {
+        if (column == 0)
+           return sortInt;
+        else if (column == 1 || column ==2 || column == 3)
+                return sortString;
+        else
+            return sortUnknown;
+    }
+    case SymbolDataType::FileUsed : {
+        if (column == 0 || column == 3)
+           return sortString;
+        else
+            return sortUnknown;
+    }
+    case SymbolDataType::Unknown :
+    case SymbolDataType::Unused : {
+        if (column == 0 || column == 3)
+           return sortInt;
+        else if (column == 1 || column == 2 || column == 4 || column == 5)
+                return sortString;
+        else
+            return sortUnknown;
+    }
+    }
+    return sortUnknown;
+}
+
+
+SymbolTableModel::ColumnType SymbolTableModel::getColumnTypeOf(int column) const
+{
+    switch(mType) {
+    case SymbolDataType::Set :
+    case SymbolDataType::Acronym :
+    case SymbolDataType::Parameter :
+    case SymbolDataType::Variable :
+    case SymbolDataType::Equation : {
+        switch(column) {
+        case 0 : return columnId;
+        case 1 : return columnName;
+        case 2 : return columnDimension;
+        case 3 : return columnDomain;
+        case 4:  return columnText;
+        default: break;
+        }
+        break;
+    }
+    case SymbolDataType::Model :
+    case SymbolDataType::Funct :
+    case SymbolDataType::File : {
+        switch(column) {
+        case 0 : return columnId;
+        case 1 : return columnName;
+        case 2 : return columnText;
+        default: break;
+        }
+        break;
+    }
+    case SymbolDataType::Unknown :
+    case SymbolDataType::Unused : {
+        switch(column) {
+        case 0 : return columnId;
+        case 1 : return columnName;
+        case 2 : return columnType;
+        case 3 : return columnDimension;
+        case 4 : return columnDomain;
+        case 5:  return columnText;
+        default: break;
+        }
+        break;
+    }
+    case SymbolDataType::FileUsed :
+        return columnFileLocation;
+    }
+    return columnUnknown;
+}
+
+QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
+{
+    if (domain.size() > 0) {
+       QString domainStr = "(";
+       domainStr.append(  mReference->findReference( domain.at(0) )->name() );
+       for(int i=1; i<domain.size(); i++) {
+           domainStr.append( "," );
+           domainStr.append( mReference->findReference( domain.at(i) )->name() );
+       }
+       domainStr.append( ")" );
+       return domainStr;
+    } else {
+        return "";
+    }
+}
+
 
 } // namespace reference
 } // namespace studio

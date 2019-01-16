@@ -34,14 +34,14 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 
     mSymbolTableModel = new SymbolTableModel(mReference, mType, this);
 
-    mSymbolTableProxyModel= new QSortFilterProxyModel(this);
-    mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    mSymbolTableProxyModel->setSourceModel( mSymbolTableModel );
-    if (mType == SymbolDataType::File)
-        mSymbolTableProxyModel->setFilterKeyColumn(0);
-    else
-        mSymbolTableProxyModel->setFilterKeyColumn(1);
-    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+//    mSymbolTableProxyModel= new QSortFilterProxyModel(this);
+//    mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+//    mSymbolTableProxyModel->setSourceModel( mSymbolTableModel );
+//    if (mType == SymbolDataType::File)
+//        mSymbolTableProxyModel->setFilterKeyColumn(0);
+//    else
+//        mSymbolTableProxyModel->setFilterKeyColumn(1);
+//    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -54,11 +54,11 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.4));
 
-    ui->symbolView->setModel( mSymbolTableProxyModel );
+    ui->symbolView->setModel( mSymbolTableModel );
 
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
-    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
+//    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
     connect(ui->allColumnToggleSearch, &QCheckBox::toggled, this, &SymbolReferenceWidget::toggleSearchColumns);
 
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
@@ -84,14 +84,15 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
 
 void SymbolReferenceWidget::toggleSearchColumns(bool checked)
 {
-    if (checked) {
-        mSymbolTableProxyModel->setFilterKeyColumn(-1);
-    } else {
-        if (mType == SymbolDataType::File)
-            mSymbolTableProxyModel->setFilterKeyColumn(0);
-        else
-            mSymbolTableProxyModel->setFilterKeyColumn(1);
-    }
+    return;
+//    if (checked) {
+//        mSymbolTableProxyModel->setFilterKeyColumn(-1);
+//    } else {
+//        if (mType == SymbolDataType::File)
+//            mSymbolTableProxyModel->setFilterKeyColumn(0);
+//        else
+//            mSymbolTableProxyModel->setFilterKeyColumn(1);
+//    }
 }
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)

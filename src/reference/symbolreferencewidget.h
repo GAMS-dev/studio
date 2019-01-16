@@ -59,8 +59,6 @@ public slots:
 private:
     Ui::SymbolReferenceWidget *ui;
 
-    QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
-
     SymbolTableModel* mSymbolTableModel;
     ReferenceTreeModel* mReferenceTreeModel;
 
