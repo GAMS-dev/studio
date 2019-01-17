@@ -480,10 +480,14 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
     FileMeta* runNode = runnableGms();
     for (QString loc : mSpecialFiles.values()) {
 
-        ProjectFileNode* node = findOrCreateFileNode(loc);
-        node->file()->setKind(mSpecialFiles.key(loc));
-        if (runNode)
-            node->file()->setCodec(runNode->codec());
+        if (QFileInfo::exists(loc)) {
+            ProjectFileNode* node = findOrCreateFileNode(loc);
+            node->file()->setKind(mSpecialFiles.key(loc));
+            if (runNode)
+                node->file()->setCodec(runNode->codec());
+        } else {
+            SysLogLocator::systemLog()->append("Could not create " + loc, LogMsgType::Error);
+        }
     }
 }
 
