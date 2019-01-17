@@ -88,6 +88,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
 #endif
 
+    if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
+        ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
+        ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
+        ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
+    }
+
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
     ui->statusBar->setFont(font);
@@ -2819,5 +2825,27 @@ void MainWindow::on_actionPreviousTab_triggered()
     if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
 }
 
+void MainWindow::on_actionToggleBookmark_triggered()
+{
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        edit->sendToggleBookmark();
+    }
+}
+
+void MainWindow::on_actionNextBookmark_triggered()
+{
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        edit->sendJumpToNextBookmark();
+    }
+}
+
+void MainWindow::on_actionPreviousBookmark_triggered()
+{
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        edit->sendJumpToPrevBookmark();
+    }
+}
+
 }
 }
+

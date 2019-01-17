@@ -39,6 +39,9 @@ public:
     virtual EditorType type() = 0;
     virtual void setOverwriteMode(bool overwrite);
     virtual bool overwriteMode() const;
+    void sendToggleBookmark();
+    void sendJumpToNextBookmark();
+    void sendJumpToPrevBookmark();
 
     void jumpTo(const QTextCursor &cursor);
     void jumpTo(int line, int column = 0);
