@@ -1991,6 +1991,11 @@ void MainWindow::storeTree()
     mSettings->saveSettings(this);
 }
 
+void MainWindow::cloneBookmarkMenu(QMenu *menu)
+{
+    menu->addAction(ui->actionToggleBookmark);
+}
+
 void MainWindow::raiseEdit(QWidget *widget)
 {
     while (widget && widget != this) {
@@ -2042,6 +2047,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         if (ViewHelper::toCodeEdit(edit)) {
             CodeEdit* ce = ViewHelper::toCodeEdit(edit);
             connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+            connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
             connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
         }
@@ -2844,6 +2850,11 @@ void MainWindow::on_actionPreviousBookmark_triggered()
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
         edit->sendJumpToPrevBookmark();
     }
+}
+
+void MainWindow::on_actionRemoveBookmarks_triggered()
+{
+    mTextMarkRepo.removeBookmarks();
 }
 
 }

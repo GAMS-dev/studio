@@ -52,6 +52,7 @@ signals:
     void requestLstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
     void toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
+    void cloneBookmarkMenu(QMenu *menu);
 
 protected:
     friend class FileMeta;
