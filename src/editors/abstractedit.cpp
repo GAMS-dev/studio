@@ -24,6 +24,7 @@
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
 #include "logger.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
@@ -75,6 +76,11 @@ const LineMarks* AbstractEdit::marks() const
     return mMarks;
 }
 
+int AbstractEdit::effectiveBlockNr(const int &localBlockNr) const
+{
+    return localBlockNr;
+}
+
 void AbstractEdit::showToolTip(const QList<TextMark*> marks)
 {
     if (marks.size() > 0) {
@@ -116,12 +122,28 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
 
 void AbstractEdit::keyPressEvent(QKeyEvent *e)
 {
-    QPlainTextEdit::keyPressEvent(e);
-    Qt::CursorShape shape = Qt::IBeamCursor;
-    if (e->modifiers() & Qt::ControlModifier) {
-        if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
+    if (e == Hotkey::BookmarkToggle) {
+        FileId fi = fileId();
+        NodeId gi = groupId();
+        if (fi.isValid() && gi.isValid()) {
+            emit toggleBookmark(fi, gi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+        }
+    } else if (e == Hotkey::BookmarkNext) {
+        FileId fi = fileId();
+        NodeId gi = groupId();
+        emit jumpToNextBookmark(false, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    } else if (e == Hotkey::BookmarkPrev) {
+        FileId fi = fileId();
+        NodeId gi = groupId();
+        emit jumpToNextBookmark(true, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    } else {
+        QPlainTextEdit::keyPressEvent(e);
+        Qt::CursorShape shape = Qt::IBeamCursor;
+        if (e->modifiers() & Qt::ControlModifier) {
+            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
+        }
+        viewport()->setCursor(shape);
     }
-    viewport()->setCursor(shape);
 }
 
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)

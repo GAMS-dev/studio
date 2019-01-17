@@ -297,6 +297,8 @@ void FileMeta::addEditor(QWidget *edit)
         else
             ptEdit->setDocument(mDocument);
         connect(ptEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
+        connect(ptEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        connect(ptEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         if (scEdit) {
             connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
         }
@@ -336,6 +338,10 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
                 unlinkAndFreeDocument();
             }
         }
+    }
+
+    if (mEditors.isEmpty()) {
+        mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
     }
     if (scEdit && mHighlighter) {
         disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);

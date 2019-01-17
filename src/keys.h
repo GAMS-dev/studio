@@ -41,6 +41,9 @@ enum class Hotkey {
     MoveCharGroupLeft = 22,
     SelectCharGroupRight = 23,
     SelectCharGroupLeft = 24,
+    BookmarkToggle = 25,
+    BookmarkNext = 26,
+    BookmarkPrev = 27,
     BlockEditStart = 51,
     BlockEditEnd = 52,
 

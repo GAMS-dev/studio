@@ -96,7 +96,12 @@ LineNumberArea* CodeEdit::lineNumberArea()
 
 void CodeEdit::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
+    static int laWidth = 0;
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+    if (viewportMargins().left() != laWidth) {
+        mLineNumberArea->repaint();
+        laWidth = viewportMargins().left();
+    }
 }
 
 void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
@@ -647,6 +652,7 @@ void CodeEdit::marksChanged()
 {
     AbstractEdit::marksChanged();
     updateLineNumberAreaWidth(0);
+    mLineNumberArea->repaint();
 }
 
 void CodeEdit::dragEnterEvent(QDragEnterEvent* e)

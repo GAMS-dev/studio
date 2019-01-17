@@ -18,23 +18,24 @@ TextMarkRepo::~TextMarkRepo()
 {
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types)
+void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types, int lineNr)
 {
-    removeMarks(fileId, groupId, false, types);
+    removeMarks(fileId, groupId, false, types, lineNr);
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types)
+void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types, int lineNr)
 {
-    removeMarks(fileId, NodeId(), true, types);
+    removeMarks(fileId, NodeId(), true, types, lineNr);
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types)
+void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr)
 {
     LineMarks* marks = mMarks.value(fileId);
     if (!marks) return;
+    bool remainingBookmarks = false;
     QSet<NodeId> groups;
     LineMarks::iterator it = marks->begin();
-    if ((types.isEmpty() || types.contains(TextMark::all)) && allGroups) {
+    if ((types.isEmpty() || types.contains(TextMark::all)) && lineNr == -1 && allGroups) {
         // delete all
         while (it != marks->end()) {
             delete *it;
@@ -46,13 +47,19 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
         while (it != marks->end()) {
             TextMark* mark = (*it);
             ++it;
-            if (types.contains(mark->type()) && (allGroups || mark->groupId() == groupId)) {
+            if (types.contains(mark->type())
+                    && (allGroups || mark->groupId() == groupId)
+                    && (lineNr == -1 || lineNr == mark->line()) ) {
                 groups << mark->groupId();
                 marks->remove(mark->line(), mark);
                 delete mark;
+            } else {
+                if (!remainingBookmarks && mark->type() == TextMark::bookmark)
+                    remainingBookmarks = true;
             }
         }
     }
+    if (!remainingBookmarks) mBookmarkedFiles.removeAll(fileId);
     if (groups.isEmpty()) return;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
     if (fm) fm->marksChanged();
@@ -82,7 +89,30 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
     mark->setPosition(line, column, size);
     LineMarks *marks = mMarks.value(fileId);
     marks->insert(mark->line(), mark);
+    if (mark->type() == TextMark::bookmark && !mBookmarkedFiles.contains(fileId))
+        mBookmarkedFiles << fileId;
+    FileMeta *fm = mFileRepo->fileMeta(fileId);
+    if (fm) fm->marksChanged();
     return mark;
+}
+
+bool TextMarkRepo::hasBookmarks(FileId fileId, NodeId groupId)
+{
+    return mBookmarkedFiles.contains(fileId);
+}
+
+TextMark *TextMarkRepo::findBookmark(FileId fileId, NodeId groupId, int currentLine, bool back)
+{
+    TextMark* res = nullptr;
+    QList<TextMark*> bookmarks = marks(fileId, -1, groupId, TextMark::bookmark);
+    for (TextMark *mark: bookmarks) {
+        if (back) {
+            if ((currentLine < 0 || mark->line() < currentLine) && (!res || res->line() < mark->line())) res = mark;
+        } else {
+            if (mark->line() > currentLine && (!res || res->line() > mark->line())) res = mark;
+        }
+    }
+    return res;
 }
 
 QTextDocument *TextMarkRepo::document(FileId fileId) const
@@ -101,6 +131,7 @@ void TextMarkRepo::clear()
         mMarks.remove(fileId);
         delete marks;
     }
+    mBookmarkedFiles.clear();
 }
 
 void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
