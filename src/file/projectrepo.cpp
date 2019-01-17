@@ -618,14 +618,14 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     }
 }
 
-void ProjectRepo::editorActivated(QWidget* edit)
+void ProjectRepo::editorActivated(QWidget* edit, bool select)
 {
     ProjectFileNode *node = findFileNode(edit);
     if (!node) return;
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);
     mTreeView->setCurrentIndex(mi);
-    mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
+    if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
 }
 
 void ProjectRepo::nodeChanged(NodeId nodeId)

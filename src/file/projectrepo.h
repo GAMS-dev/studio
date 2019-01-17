@@ -118,7 +118,7 @@ public:
     QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId = FileId()) const;
     QVector<GamsProcess*> listProcesses();
-    void editorActivated(QWidget *edit);
+    void editorActivated(QWidget *edit, bool select);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
     void saveNodeAs(ProjectFileNode* node, const QString &target);

@@ -2209,7 +2209,9 @@ void MainWindow::on_mainTab_currentChanged(int index)
     QWidget* edit = ui->mainTab->widget(index);
     if (!edit) return;
 
-    if (mStartedUp) mProjectRepo.editorActivated(edit);
+    if (mStartedUp) {
+        mProjectRepo.editorActivated(edit, focusWidget() != ui->projectView);
+    }
     ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();
