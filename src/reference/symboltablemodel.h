@@ -45,6 +45,8 @@ public:
     void resetModel();
 
     int getSortedIndexOf(const SymbolId id) const;
+    void toggleSearchColumns(bool checked);
+    void setFilterPattern(const QString& pattern);
 
     static const int COLUMN_SYMBOLID = 0;
 
@@ -70,6 +72,8 @@ private:
     SortType getSortTypeOf(int column) const;
     ColumnType getColumnTypeOf(int column) const;
     QString getDomainStr(const QList<SymbolId>& domain) const;
+    bool isFilteredActive(int idx, SymbolReferenceItem* item, int column, const QString& pattern);
+    void filterRows();
 
     SymbolDataType::SymbolType mType;
 
@@ -80,6 +84,10 @@ private:
 
     Reference* mReference = nullptr;
 
+    int mFilteredKeyColumn = -1;
+    QString mFilteredPattern = "";
+
+    std::vector<bool> mFilterActive;
     std::vector<int> mSortMap;
 };
 

@@ -58,8 +58,9 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     connect(mSymbolTableModel, &SymbolTableModel::symbolSelectionToBeUpdated, this, &SymbolReferenceWidget::updateSymbolSelection);
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
-//    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
-    connect(ui->allColumnToggleSearch, &QCheckBox::toggled, this, &SymbolReferenceWidget::toggleSearchColumns);
+    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
+    connect(ui->allColumnToggleSearch, &QCheckBox::toggled, mSymbolTableModel, &SymbolTableModel::toggleSearchColumns);
+//    connect(ui->caseSensitveSearch, &QCheckBox::toggled, mSymbolTableModel, &SymbolTableModel::toggleCaseSenstiveSearch);
 
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
     ui->referenceView->setModel( mReferenceTreeModel );
@@ -80,19 +81,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 SymbolReferenceWidget::~SymbolReferenceWidget()
 {
     delete ui;
-}
-
-void SymbolReferenceWidget::toggleSearchColumns(bool checked)
-{
-    return;
-//    if (checked) {
-//        mSymbolTableProxyModel->setFilterKeyColumn(-1);
-//    } else {
-//        if (mType == SymbolDataType::File)
-//            mSymbolTableProxyModel->setFilterKeyColumn(0);
-//        else
-//            mSymbolTableProxyModel->setFilterKeyColumn(1);
-//    }
 }
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
@@ -147,9 +135,9 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
 void SymbolReferenceWidget::updateSymbolSelection()
 {
     int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolID );
+    ui->symbolView->selectionModel()->clearCurrentIndex();
+    ui->symbolView->selectionModel()->clearSelection();
     if (updatedSelectedRow >= 0) {
-        ui->symbolView->selectionModel()->clearCurrentIndex();
-        ui->symbolView->selectionModel()->clearSelection();
         QModelIndex topLeftIdx = mSymbolTableModel->index( updatedSelectedRow, 0 );
         QModelIndex bottomRightIdx = mSymbolTableModel->index( updatedSelectedRow, mSymbolTableModel->columnCount()-1 );
         ui->symbolView->selectionModel()->select( QItemSelection(topLeftIdx, bottomRightIdx), QItemSelectionModel::Select);

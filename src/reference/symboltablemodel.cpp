@@ -31,9 +31,20 @@ SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType ty
     mFileHeader       << "Entry" << "Name"           << "Text";
     mFileUsedHeader   << "File Location";
 
-    mSortMap.resize( mReference->findReference(mType).size() );
-    for(int i=0; i<mReference->findReference(mType).size(); i++)
+    int size = mReference->findReference(mType).size();
+    mSortMap.resize( size );
+    for(int i=0; i<size; i++)
         mSortMap[i] = i;
+
+    mFilterActive.resize( size );
+    for(int i=0; i<size; i++)
+        mFilterActive[i] = false;
+
+    if (type == SymbolDataType::SymbolType::FileUsed)
+        mFilteredKeyColumn = 0;
+    else
+        mFilteredKeyColumn = 1;
+    mFilteredPattern = "";
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -297,6 +308,29 @@ int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
     return rec < items.size() ? rec : -1;
 }
 
+void SymbolTableModel::toggleSearchColumns(bool checked)
+{
+    qDebug() << "check toggle :" << (checked ? "Y" : "N");
+    if (checked) {
+        mFilteredKeyColumn = -1;
+    } else {
+        if (mType == SymbolDataType::File)
+            mFilteredKeyColumn = 0;
+        else
+            mFilteredKeyColumn = 1;
+    }
+    filterRows();
+    layoutChanged();
+}
+
+void SymbolTableModel::setFilterPattern(const QString &pattern)
+{
+    qDebug() << "pattern :" << pattern;
+    mFilteredPattern = pattern;
+    filterRows();
+    layoutChanged();
+}
+
 SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const
 {
     switch(mType) {
@@ -404,6 +438,46 @@ QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
     } else {
         return "";
     }
+}
+
+bool SymbolTableModel::isFilteredActive(int idx, SymbolReferenceItem *item, int column, const QString &pattern)
+{
+    QRegExp rx(pattern);
+    rx.setCaseSensitivity(Qt::CaseInsensitive);
+    if (mType == SymbolDataType::SymbolType::FileUsed) {
+        return (rx.indexIn( mReference->getFileUsed().at(idx)) > -1);
+    } else {
+        ColumnType type = getColumnTypeOf(column);
+        switch(type) {
+        case columnId: return (rx.indexIn(QString::number( item->id() )) > -1);
+        case columnName: return (rx.indexIn(item->name()) > -1);
+        default: // search every column
+            QStringList strList = {
+                QString::number( item->id() ),
+                item->name(),
+                SymbolDataType::from( item->type() ).name(),
+                QString::number(item->dimension() ),
+                getDomainStr( item->domain() ),
+                item->explanatoryText()
+            };
+            return (rx.indexIn(strList.join(" ")) > -1);
+        }
+    }
+}
+
+void SymbolTableModel::filterRows()
+{
+    qDebug() << "filteredRow";
+    if (mFilteredPattern.isEmpty())  // nothing to be filtered
+        return;
+
+    QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+    for(int rec=0; rec<items.size(); rec++)
+        mFilterActive[rec] = isFilteredActive(rec, items.at(rec), mFilteredKeyColumn, mFilteredPattern);
+
+    for(int rec=0; rec<items.size(); rec++)
+        qDebug() << rec << " : " << (mFilterActive[rec] ? "active" : "NOT active");
+
 }
 
 

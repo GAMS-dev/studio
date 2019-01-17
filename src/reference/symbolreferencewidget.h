@@ -49,7 +49,6 @@ public:
     ~SymbolReferenceWidget();
 
 public slots:
-    void toggleSearchColumns(bool checked);
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     void expandResetModel();
     void resetModel();
