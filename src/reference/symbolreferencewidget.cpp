@@ -55,7 +55,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.4));
 
     ui->symbolView->setModel( mSymbolTableModel );
-
+    connect(mSymbolTableModel, &SymbolTableModel::symbolSelectionToBeUpdated, this, &SymbolReferenceWidget::updateSymbolSelection);
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
 //    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
@@ -100,11 +100,13 @@ void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemS
     Q_UNUSED(deselected);
     if (selected.indexes().size() > 0) {
         if (mType == SymbolDataType::FileUsed) {
+            mCurrentSymbolID = -1;
             return;
         }
 
-        SymbolId id = selected.indexes().at(0).data().toInt();
-        mReferenceTreeModel->updateSelectedSymbol(id);
+        QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOLID);
+        mCurrentSymbolID = mSymbolTableModel->data( idx ).toInt();
+        mReferenceTreeModel->updateSelectedSymbol(mCurrentSymbolID);
     }
 }
 
@@ -139,6 +141,18 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
         QVariant typeName = ui->referenceView->model()->data(index.sibling(index.row(), 3), Qt::UserRole);
         ReferenceItem item(-1, ReferenceDataType::typeFrom(typeName.toString()), location.toString(), lineNumber.toInt(), colNumber.toInt());
         emit mReferenceViewer->jumpTo( item );
+    }
+}
+
+void SymbolReferenceWidget::updateSymbolSelection()
+{
+    int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolID );
+    if (updatedSelectedRow >= 0) {
+        ui->symbolView->selectionModel()->clearCurrentIndex();
+        ui->symbolView->selectionModel()->clearSelection();
+        QModelIndex topLeftIdx = mSymbolTableModel->index( updatedSelectedRow, 0 );
+        QModelIndex bottomRightIdx = mSymbolTableModel->index( updatedSelectedRow, mSymbolTableModel->columnCount()-1 );
+        ui->symbolView->selectionModel()->select( QItemSelection(topLeftIdx, bottomRightIdx), QItemSelectionModel::Select);
     }
 }
 

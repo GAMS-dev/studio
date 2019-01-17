@@ -227,6 +227,7 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
             qDebug() << "name rec=" << rec << " (" << idxList.at(rec).first << "," << idxList.at(rec).second <<")";
         }
         layoutChanged();
+        emit symbolSelectionToBeUpdated();
         break;
     }
     case sortString: {
@@ -257,6 +258,7 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
             qDebug() << "name rec=" << rec << " (" << idxList.at(rec).first << "," << idxList.at(rec).second <<")";
         }
         layoutChanged();
+        emit symbolSelectionToBeUpdated();
         break;
     }
     case sortUnknown:  {
@@ -283,6 +285,18 @@ void SymbolTableModel::resetModel()
     }
     endResetModel();
 }
+
+int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
+{
+    QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+    int rec;
+    for(rec=0; rec<items.size(); rec++) {
+        if (items.at(mSortMap[rec])->id() == id)
+            break;
+    }
+    return rec < items.size() ? rec : -1;
+}
+
 SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const
 {
     switch(mType) {

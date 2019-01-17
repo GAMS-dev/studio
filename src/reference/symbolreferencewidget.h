@@ -55,6 +55,7 @@ public slots:
     void resetModel();
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
+    void updateSymbolSelection();
 
 private:
     Ui::SymbolReferenceWidget *ui;
@@ -66,6 +67,8 @@ private:
     SymbolDataType::SymbolType mType;
 
     ReferenceViewer* mReferenceViewer;
+
+    SymbolId mCurrentSymbolID;
 };
 
 } // namespace reference

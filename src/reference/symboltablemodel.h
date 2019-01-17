@@ -29,8 +29,10 @@ namespace reference {
 
 class SymbolTableModel : public QAbstractTableModel
 {
+    Q_OBJECT
+
 public:
-    SymbolTableModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
+    explicit SymbolTableModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -38,9 +40,16 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
     void resetModel();
+
+    int getSortedIndexOf(const SymbolId id) const;
+
+    static const int COLUMN_SYMBOLID = 0;
+
+signals:
+    void symbolSelectionToBeUpdated();
 
 private:
     enum SortType {
