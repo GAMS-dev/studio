@@ -56,7 +56,7 @@ int SolverTableModel::columnCount(const QModelIndex &parent) const
 int SolverTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return mVerticalHeaderData.size()-RowShift;
+    return mVerticalHeaderData.size();
 }
 
 QVariant SolverTableModel::data(const QModelIndex &index, int role) const
