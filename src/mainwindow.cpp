@@ -1786,6 +1786,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    markTypes << TextMark::bookmark;
     mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
@@ -1796,6 +1797,17 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
             ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                           : AbstractEdit::NoWrap);
     }
+    // cleanup bookmarks
+    QVector<FileKind> cleanupKinds;
+    cleanupKinds << FileKind::Gdx << FileKind::Gsp << FileKind::Log << FileKind::Lst << FileKind::Lxi << FileKind::Ref;
+    markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
+    for (const FileKind &kind: cleanupKinds) {
+        if (runGroup->hasSpecialFile(kind)) {
+            FileMeta *file = mFileMetaRepo.fileMeta(runGroup->specialFile(kind));
+            if (file) mTextMarkRepo.removeMarks(file->id(), markTypes);
+        }
+    }
+
     if (!mSettings->clearLog()) {
         logNode->markOld();
     } else {
