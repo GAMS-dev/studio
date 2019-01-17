@@ -625,6 +625,7 @@ void ProjectRepo::editorActivated(QWidget* edit)
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);
     mTreeView->setCurrentIndex(mi);
+    mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
 }
 
 void ProjectRepo::nodeChanged(NodeId nodeId)
