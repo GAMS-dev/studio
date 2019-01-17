@@ -518,8 +518,6 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
 
     if (!mSpecialFiles.contains(kind))
         mSpecialFiles.insert(kind, fullPath);
-    else
-        qDebug() /*rogo: delete*/ << "blocked:" << fullPath;
 }
 
 void ProjectRunGroupNode::clearSpecialFiles()
