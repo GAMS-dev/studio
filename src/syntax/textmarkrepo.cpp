@@ -96,7 +96,7 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
     return mark;
 }
 
-bool TextMarkRepo::hasBookmarks(FileId fileId, NodeId groupId)
+bool TextMarkRepo::hasBookmarks(FileId fileId)
 {
     return mBookmarkedFiles.contains(fileId);
 }

@@ -106,7 +106,7 @@ void FileMetaRepo::toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int
 void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr)
 {
     TextMark *bookmark = nullptr;
-    if (mTextMarkRepo->hasBookmarks(refFileId, refGroupId)) {
+    if (mTextMarkRepo->hasBookmarks(refFileId)) {
         bookmark = mTextMarkRepo->findBookmark(refFileId, refGroupId, refLineNr, back);
     }
     FileMeta *fm = fileMeta(refFileId);
@@ -115,7 +115,7 @@ void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, NodeId refGro
     while (!bookmark && startNode) {
         node = back ? mProjectRepo->previous(node) : mProjectRepo->next(node);
         FileId fileId = node->toFile() ? node->toFile()->file()->id() : FileId();
-        if (fileId.isValid() && mTextMarkRepo->hasBookmarks(fileId, node->parentNode()->id())) {
+        if (fileId.isValid() && mTextMarkRepo->hasBookmarks(fileId)) {
             bookmark = mTextMarkRepo->findBookmark(fileId, node->parentNode()->id(), -1, back);
         }
         if (node == startNode) break;
