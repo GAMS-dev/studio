@@ -438,9 +438,9 @@ void ProjectRepo::purgeGroup(ProjectGroupNode *group)
 ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
                                                    , QString explicitName)
 {
-    if (location.isEmpty()) {
-        EXCEPT() << "Couldn't create a FileMeta for filename '" << location << "'";
-    }
+    if (location.isEmpty())
+        return nullptr;
+
     if (!knownType || knownType->kind() == FileKind::None)
         knownType = parseGdxHeader(location) ? &FileType::from(FileKind::Gdx) : nullptr;
 
@@ -654,13 +654,14 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     }
 }
 
-void ProjectRepo::editorActivated(QWidget* edit)
+void ProjectRepo::editorActivated(QWidget* edit, bool select)
 {
     ProjectFileNode *node = findFileNode(edit);
     if (!node) return;
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);
     mTreeView->setCurrentIndex(mi);
+    if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
 }
 
 void ProjectRepo::nodeChanged(NodeId nodeId)
