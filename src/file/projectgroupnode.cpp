@@ -448,12 +448,12 @@ QString ProjectRunGroupNode::normalizePath(const QString &path, QString file) {
     QString ret = "";
     file.remove("\"");
 
-    if (QFileInfo(file).isRelative())
+    if (QFileInfo(file).isRelative()) {
         ret = path;
 
-    if (! (ret.endsWith("/") || ret.endsWith("\\")) )
-        ret += "/";
-
+        if (! ret.endsWith(QDir::separator()))
+            ret += QDir::separator();
+    }
     ret.append(file);
 
     return QFileInfo(ret).absoluteFilePath();
