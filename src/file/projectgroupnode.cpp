@@ -378,43 +378,42 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
             path = item.value;
-            if (! (path.endsWith("/") || path.endsWith("\\")) )
-                path += "/";
-
+            path.remove("\"");
             gamsArgs[item.key] = item.value;
         }
     }
 
     QFileInfo fi(gmsLocation);
-    if (path.isEmpty()) path = fi.path() + QDir::separator();
+    if (path.isEmpty()) path = fi.path();
+
     // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
-    setSpecialFile(FileKind::Lst, normalizePath(path + fi.baseName() + ".lst")); // set default
+    setSpecialFile(FileKind::Lst, normalizePath(path, fi.baseName() + ".lst"));
 
     bool defaultOverride = false;
-    // iterate options
     for (OptionItem item : itemList) {
+
+        // lst handling
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
-            setSpecialFile(FileKind::Lst, normalizePath(path + item.value));
+            setSpecialFile(FileKind::Lst, normalizePath(path, item.value));
 
-            // check if lst creation is deactivated:
             if ((QString::compare(item.value, "nul", Qt::CaseInsensitive) == 0)
                         || (QString::compare(item.value, "/dev/null", Qt::CaseInsensitive) == 0))
-                mSpecialFiles.remove(FileKind::Lst);
+                mSpecialFiles.remove(FileKind::Lst); // lst deactivated by parameter
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".gdx";
-            setSpecialFile(FileKind::Gdx, normalizePath(path + name));
+            setSpecialFile(FileKind::Gdx, normalizePath(path, name));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".ref";
-            setSpecialFile(FileKind::Ref, normalizePath(path + name));
+            setSpecialFile(FileKind::Ref, normalizePath(path, name));
         }
 
         if (defaultGamsArgs.contains(item.key))
@@ -444,8 +443,20 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     return output;
 }
 
-QString ProjectRunGroupNode::normalizePath(const QString &path) {
-    return QFileInfo(path).absoluteFilePath();
+QString ProjectRunGroupNode::normalizePath(const QString &path, QString file) {
+
+    QString ret = "";
+    file.remove("\"");
+
+    if (QFileInfo(file).isRelative())
+        ret = path;
+
+    if (! (ret.endsWith("/") || ret.endsWith("\\")) )
+        ret += "/";
+
+    ret.append(file);
+
+    return QFileInfo(ret).absoluteFilePath();
 }
 
 bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
