@@ -72,7 +72,8 @@ private:
     SortType getSortTypeOf(int column) const;
     ColumnType getColumnTypeOf(int column) const;
     QString getDomainStr(const QList<SymbolId>& domain) const;
-    bool isFilteredActive(int idx, SymbolReferenceItem* item, int column, const QString& pattern);
+    bool isFilteredActive(SymbolReferenceItem* item, int column, const QString& pattern);
+    bool isLocationFilteredActive(int idx, int column, const QString& pattern);
     void filterRows();
 
     SymbolDataType::SymbolType mType;
@@ -87,8 +88,10 @@ private:
     int mFilteredKeyColumn = -1;
     QString mFilteredPattern = "";
 
+    int mFilteredRecordSize = 0;
     std::vector<bool> mFilterActive;
-    std::vector<int> mSortMap;
+    std::vector<int> mFilterIdxMap;
+    std::vector<int> mSortIdxMap;
 };
 
 } // namespace reference

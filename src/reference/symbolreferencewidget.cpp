@@ -34,15 +34,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 
     mSymbolTableModel = new SymbolTableModel(mReference, mType, this);
 
-//    mSymbolTableProxyModel= new QSortFilterProxyModel(this);
-//    mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-//    mSymbolTableProxyModel->setSourceModel( mSymbolTableModel );
-//    if (mType == SymbolDataType::File)
-//        mSymbolTableProxyModel->setFilterKeyColumn(0);
-//    else
-//        mSymbolTableProxyModel->setFilterKeyColumn(1);
-//    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
@@ -134,13 +125,20 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
 
 void SymbolReferenceWidget::updateSymbolSelection()
 {
+    if (mType == SymbolDataType::FileUsed) {
+        mCurrentSymbolID = -1;
+        return;
+    }
+
     int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolID );
     ui->symbolView->selectionModel()->clearCurrentIndex();
     ui->symbolView->selectionModel()->clearSelection();
-    if (updatedSelectedRow >= 0) {
+    if (updatedSelectedRow >= 0 && updatedSelectedRow < ui->symbolView->model()->rowCount()) {
         QModelIndex topLeftIdx = mSymbolTableModel->index( updatedSelectedRow, 0 );
         QModelIndex bottomRightIdx = mSymbolTableModel->index( updatedSelectedRow, mSymbolTableModel->columnCount()-1 );
         ui->symbolView->selectionModel()->select( QItemSelection(topLeftIdx, bottomRightIdx), QItemSelectionModel::Select);
+    } else {
+         mReferenceTreeModel->resetModel();
     }
 }
 
