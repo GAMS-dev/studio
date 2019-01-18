@@ -205,8 +205,7 @@ void TestGamsLicenseInfo::testSolverLicense()
     auto solverKeys = gamsLicenseInfo.solverNames().keys();
     QVERIFY(gamsLicenseInfo.solvers() == solverKeys.size());
     for (auto solverId : solverKeys) {
-        // use solverID+1 because there is no solver with Id 0
-        auto result = gamsLicenseInfo.solverLicense(solverId+1);
+        auto result = gamsLicenseInfo.solverLicense(solverId);
         test = result.contains("Demo") || result.contains("Full") ||
                 result.contains("Evaluation") || result.contains("Expired");
         if (!test) break;
