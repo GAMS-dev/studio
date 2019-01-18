@@ -71,6 +71,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 SymbolReferenceWidget::~SymbolReferenceWidget()
 {
     delete ui;
+    delete mSymbolTableModel;
+    delete mReferenceTreeModel;
 }
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)

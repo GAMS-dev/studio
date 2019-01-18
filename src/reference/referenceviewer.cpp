@@ -97,6 +97,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
 
 ReferenceViewer::~ReferenceViewer()
 {
+    delete mTabWidget;
     delete ui;
     delete mReference;
 }
