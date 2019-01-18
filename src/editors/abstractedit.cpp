@@ -24,6 +24,7 @@
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
 #include "logger.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
@@ -47,6 +48,33 @@ void AbstractEdit::setOverwriteMode(bool overwrite)
 bool AbstractEdit::overwriteMode() const
 {
     return QPlainTextEdit::overwriteMode();
+}
+
+void AbstractEdit::sendToggleBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit toggleBookmark(fi, gi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+    }
+}
+
+void AbstractEdit::sendJumpToNextBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit jumpToNextBookmark(false, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    }
+}
+
+void AbstractEdit::sendJumpToPrevBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit jumpToNextBookmark(true, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    }
 }
 
 QMimeData* AbstractEdit::createMimeDataFromSelection() const
@@ -73,6 +101,11 @@ void AbstractEdit::setMarks(const LineMarks *marks)
 const LineMarks* AbstractEdit::marks() const
 {
     return mMarks;
+}
+
+int AbstractEdit::effectiveBlockNr(const int &localBlockNr) const
+{
+    return localBlockNr;
 }
 
 void AbstractEdit::showToolTip(const QList<TextMark*> marks)

@@ -146,6 +146,42 @@ ProjectFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     return group->findFile(fileMeta, true);
 }
 
+ProjectAbstractNode *ProjectRepo::next(ProjectAbstractNode *node)
+{
+    if (!node || node->toRoot()) return nullptr;
+    // for non-empty groups the next node is the first child
+    if (node->toGroup() && node->toGroup()->childCount())
+        return node->toGroup()->childNode(0);
+    // for last-children
+    ProjectGroupNode *group = node->parentNode();
+    while (group->indexOf(node) == group->childCount()-1) {
+        if (group->toRoot()) return group->toRoot()->childNode(0);
+        node = group;
+        group = node->parentNode();
+    }
+    return group->childNode(group->indexOf(node)+1);
+}
+
+ProjectAbstractNode *ProjectRepo::previous(ProjectAbstractNode *node)
+{
+    if (!node || node->toRoot()) return nullptr;
+    int i = node->parentNode()->indexOf(node);
+    if (i > 0) {
+        node = node->parentNode()->childNode(i-1);
+    } else if (node->parentNode()->toRoot()) {
+        node = node->parentNode()->childNode(node->parentNode()->childCount()-1);
+    } else {
+        return node->parentNode();
+    }
+    ProjectGroupNode *group = group = node->toGroup();
+    while (group && group->childCount()) {
+        node = group->childNode(group->childCount()-1);
+        group = node->toGroup();
+        if (!group) return node;
+    }
+    return node;
+}
+
 inline ProjectLogNode *ProjectRepo::asLogNode(NodeId id) const
 {
     ProjectAbstractNode* res = mNodes.value(id, nullptr);
