@@ -354,6 +354,12 @@ QStringList ProjectRunGroupNode::getRunParametersHistory() const
     return mRunParametersHistory;
 }
 
+///
+/// \brief ProjectRunGroupNode::analyzeParameters translates the gms file and an OptionItem list into a single QStringList, while also setting all extracted parameters for this group
+/// \param gmsLocation gms file to be run
+/// \param itemList list of options given by studio and user
+/// \return QStringList all arguments
+///
 QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList)
 {
     // set studio default parameters
@@ -380,9 +386,10 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     }
 
     QFileInfo fi(gmsLocation);
+    if (path.isEmpty()) path = fi.path() + QDir::separator();
     // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
-    setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst"); // set default
+    setSpecialFile(FileKind::Lst, normalizePath(path + fi.baseName() + ".lst")); // set default
 
     bool defaultOverride = false;
     // iterate options
@@ -390,7 +397,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
-            setSpecialFile(FileKind::Lst, path + item.value);
+            setSpecialFile(FileKind::Lst, normalizePath(path + item.value));
 
             // check if lst creation is deactivated:
             if ((QString::compare(item.value, "nul", Qt::CaseInsensitive) == 0)
@@ -401,13 +408,13 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".gdx";
-            setSpecialFile(FileKind::Gdx, path + name);
+            setSpecialFile(FileKind::Gdx, normalizePath(path + name));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".ref";
-            setSpecialFile(FileKind::Ref, path + name);
+            setSpecialFile(FileKind::Ref, normalizePath(path + name));
         }
 
         if (defaultGamsArgs.contains(item.key))
@@ -435,6 +442,10 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
     SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
     return output;
+}
+
+QString ProjectRunGroupNode::normalizePath(const QString &path) {
+    return QFileInfo(path).absoluteFilePath();
 }
 
 bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const

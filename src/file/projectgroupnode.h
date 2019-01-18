@@ -75,10 +75,7 @@ protected:
 private:
     QList<ProjectAbstractNode*> mChildNodes;
     QString mLocation;
-
 };
-
-
 
 class ProjectRunGroupNode : public ProjectGroupNode
 {
@@ -132,6 +129,9 @@ private:
     QHash<int, QString> mLstErrorTexts;
     QStringList mRunParametersHistory;
     QHash<FileKind, QString> mSpecialFiles;
+
+private:
+    QString normalizePath(const QString &path);
 
 };
 
