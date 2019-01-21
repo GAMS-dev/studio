@@ -47,6 +47,7 @@ class SymbolReferenceWidget : public QWidget
 public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
     ~SymbolReferenceWidget();
+    void selectSearchField();
 
 public slots:
     void toggleSearchColumns(bool checked);

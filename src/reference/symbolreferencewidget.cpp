@@ -99,6 +99,11 @@ void SymbolReferenceWidget::toggleSearchColumns(bool checked)
     }
 }
 
+void SymbolReferenceWidget::selectSearchField()
+{
+    ui->symbolSearchLineEdit->setFocus();
+}
+
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
     Q_UNUSED(deselected);
