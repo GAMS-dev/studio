@@ -46,13 +46,6 @@ public:
 
     bool notify(QObject *object, QEvent *event) override;
 
-    //
-    // \brief Open associated files, like <c>gms</c>.
-    // \remark This is for Windows and Linux only. See <c>event(QEvent*)</c> for macos.
-    //
-    // JM: moved to MainWindow. Reason: must be called while event-loop is running
-//    void openAssociatedFiles();
-
     ///
     /// \brief Show a <c>QMessageBox::critical</c> message.
     /// \param title Title of the message.
