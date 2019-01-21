@@ -85,9 +85,25 @@ QString GamsLicenseInfo::solverName(int id) const
 QMap<int, QString> GamsLicenseInfo::solverNames()
 {
     QMap<int, QString> names;
-    for (int i=1; i<=solvers(); ++i)
-        names[i] = solverName(i);
+    int j=1;
+    for (int i=1; i<=solvers(); ++i) {
+        if (!cfgAlgHidden(mCFG, i)) {
+            names[j++] = solverName(i);
+        }
+    }
     return names;
+}
+
+QMap<int, int> GamsLicenseInfo::solverIndices()
+{
+    QMap<int, int> indices;
+    int j=1;
+    for (int i=1; i<=solvers(); ++i) {
+        if (!cfgAlgHidden(mCFG, i)) {
+            indices[j++] = i;
+        }
+    }
+    return indices;
 }
 
 QMap<int, QString> GamsLicenseInfo::modelTypeNames()
