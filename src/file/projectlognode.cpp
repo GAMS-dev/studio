@@ -260,7 +260,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
 
         QString fName;
         int lineNr;
-        int size = -1;
+        int size;
         int colStart = 0;
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
@@ -269,8 +269,12 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             result = capture(line, posA, posB, 0, ':').toString();
             // TODO(JM) review for the case the file is in a sub-directory
             fName = mRunGroup->location() + '/' + mLastSourceFile;
+            if (posB+2 < line.length()) {
+                int subLen = (line.contains('[') ? line.indexOf('['): line.length()) - (posB+2);
+                mCurrentErrorHint.text = line.mid(posB+2, subLen);
+            }
             lineNr = errNr-1;
-            size = -1;
+            size = 0;
             colStart = -1;
         } else {
             lstColStart = -1;

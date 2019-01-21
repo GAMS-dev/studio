@@ -301,6 +301,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
     if (!_parent) _parent = mTreeModel->rootNode();
     if (!_parent) FATAL() << "Can't get tree-model root-node";
 
+    // TODO (JM) add groups at end and sort afterwards
     bool hit;
     int offset = _parent->peekIndex(name, &hit);
     if (hit) offset++;
