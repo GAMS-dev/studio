@@ -73,7 +73,7 @@ private:
     ColumnType getColumnTypeOf(int column) const;
     QString getDomainStr(const QList<SymbolId>& domain) const;
     bool isFilteredActive(SymbolReferenceItem* item, int column, const QString& pattern);
-    bool isLocationFilteredActive(int idx, int column, const QString& pattern);
+    bool isLocationFilteredActive(int idx, const QString& pattern);
     void filterRows();
 
     SymbolDataType::SymbolType mType;

@@ -51,7 +51,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
     connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
     connect(ui->allColumnToggleSearch, &QCheckBox::toggled, mSymbolTableModel, &SymbolTableModel::toggleSearchColumns);
-//    connect(ui->caseSensitveSearch, &QCheckBox::toggled, mSymbolTableModel, &SymbolTableModel::toggleCaseSenstiveSearch);
 
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
     ui->referenceView->setModel( mReferenceTreeModel );

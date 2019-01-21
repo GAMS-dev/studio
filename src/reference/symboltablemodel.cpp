@@ -209,7 +209,6 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
 void SymbolTableModel::sort(int column, Qt::SortOrder order)
 {
     QList<SymbolReferenceItem *> items = mReference->findReference(mType);
-    qDebug() << " *** column : " << column << " size=" << items.size();
     SortType sortType = getSortTypeOf(column);
     ColumnType colType = getColumnTypeOf(column);
 
@@ -230,7 +229,6 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
 
         for(int rec=0; rec<items.size(); rec++) {
             mSortIdxMap[rec] = idxList.at(rec).first;
-//            qDebug() << "name rec=" << rec << " (" << idxList.at(rec).first << "," << idxList.at(rec).second <<")";
         }
         filterRows();
         layoutChanged();
@@ -243,7 +241,6 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
         if (colType == columnFileLocation) {
             QStringList fileUsed = mReference->getFileUsed();
             for(int rec=0; rec<fileUsed.size(); rec++) {
-//                qDebug() << "fileLoc:"  << mReference->getFileUsed().at(rec);
                 idxList.append(QPair<int, QString>(rec, mReference->getFileUsed().at(rec)) );
             }
         } else  {
@@ -271,14 +268,12 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
         if (colType == columnFileLocation) {
             for(int rec=0; rec< mReference->getFileUsed().size(); rec++) {
                 mSortIdxMap[rec] = idxList.at(rec).first;
-//                qDebug() << "name rec=" << rec << " (" << idxList.at(rec).first << "," << idxList.at(rec).second <<")";
             }
             filterRows();
             layoutChanged();
         } else {
             for(int rec=0; rec<items.size(); rec++) {
                 mSortIdxMap[rec] = idxList.at(rec).first;
-//                qDebug() << "name rec=" << rec << " (" << idxList.at(rec).first << "," << idxList.at(rec).second <<")";
             }
             filterRows();
             layoutChanged();
@@ -473,7 +468,7 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
     }
 }
 
-bool SymbolTableModel::isLocationFilteredActive(int idx, int column, const QString &pattern)
+bool SymbolTableModel::isLocationFilteredActive(int idx, const QString &pattern)
 {
     QRegExp rx(pattern);
     rx.setCaseSensitivity(Qt::CaseInsensitive);
@@ -486,7 +481,6 @@ bool SymbolTableModel::isLocationFilteredActive(int idx, int column, const QStri
 
 void SymbolTableModel::filterRows()
 {
-//    qDebug() << "filteredRow : col=" << mFilteredKeyColumn << ",pattern=[" << mFilteredPattern << "]";
     int size = 0;
     if (mType == SymbolDataType::SymbolType::FileUsed)
         size = mReference->getFileUsed().size();
@@ -510,12 +504,11 @@ void SymbolTableModel::filterRows()
         QStringList items = mReference->getFileUsed();
 
         for(int rec=0; rec<items.size(); rec++) {
-            mFilterActive[mSortIdxMap[rec]] = isLocationFilteredActive(rec, mFilteredKeyColumn, mFilteredPattern);
+            mFilterActive[mSortIdxMap[rec]] = isLocationFilteredActive(rec, mFilteredPattern);
         }
 
         int filteredRecordSize = 0;
         for(int rec=0; rec<items.size(); rec++) {
-//            qDebug() << rec << " : " << (mFilterActive[rec] ? "active" : "NOT active");
             if (mFilterActive[mSortIdxMap[rec]])
                filteredRecordSize++;
         }
@@ -526,8 +519,6 @@ void SymbolTableModel::filterRows()
                continue;
            } else {
                mFilterIdxMap[filteredRec++] = i;
-//               qDebug() << "i=" << i << " -sort->"<< mSortIdxMap[i]
-//                        << ",filteredRec=" << filteredRec-1 << "-filered->" << mFilterIdxMap[filteredRec-1];
            }
         }
 
@@ -544,7 +535,6 @@ void SymbolTableModel::filterRows()
 
         int filteredRecordSize = 0;
         for(int rec=0; rec<items.size(); rec++) {
-//            qDebug() << rec << " : " << (mFilterActive[rec] ? "active" : "NOT active");
             if (mFilterActive[mSortIdxMap[rec]])
                filteredRecordSize++;
         }
@@ -555,8 +545,6 @@ void SymbolTableModel::filterRows()
                continue;
            } else {
                mFilterIdxMap[filteredRec++] = i;
-//               qDebug() << "i=" << i << " -sort->"<< mSortIdxMap[i]
-//                        << ",filteredRec=" << filteredRec-1 << "-filered->" << mFilterIdxMap[filteredRec-1];
            }
         }
 
