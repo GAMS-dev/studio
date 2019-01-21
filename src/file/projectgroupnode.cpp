@@ -376,9 +376,10 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QString path = "";
     for (OptionItem item : itemList) {
         if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            path = item.value;
-            path.remove("\"");
+            path = normalizePath(item.value, "");
             gamsArgs[item.key] = item.value;
         }
     }
@@ -397,11 +398,13 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
+            mSpecialFiles.remove(FileKind::Lst); // remove default
+
+            if (!(QString::compare(item.value, "nul", Qt::CaseInsensitive) == 0
+                        || QString::compare(item.value, "/dev/null", Qt::CaseInsensitive) == 0))
             setSpecialFile(FileKind::Lst, normalizePath(path, item.value));
 
-            if ((QString::compare(item.value, "nul", Qt::CaseInsensitive) == 0)
-                        || (QString::compare(item.value, "/dev/null", Qt::CaseInsensitive) == 0))
-                mSpecialFiles.remove(FileKind::Lst); // lst deactivated by parameter
+
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
@@ -443,12 +446,13 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     return output;
 }
 
-QString ProjectRunGroupNode::normalizePath(const QString &path, QString file) {
+QString ProjectRunGroupNode::normalizePath(QString path, QString file) {
 
     QString ret = "";
     file.remove("\"");
+    path.remove("\"");
 
-    if (QFileInfo(file).isRelative()) {
+    if (file.isEmpty() || QFileInfo(file).isRelative()) {
         ret = path;
 
         if (! ret.endsWith(QDir::separator()))
