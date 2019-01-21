@@ -88,10 +88,10 @@ private:
     int mFilteredKeyColumn = -1;
     QString mFilteredPattern = "";
 
-    int mFilteredRecordSize = 0;
+    size_t mFilteredRecordSize = 0;
     std::vector<bool> mFilterActive;
-    std::vector<int> mFilterIdxMap;
-    std::vector<int> mSortIdxMap;
+    std::vector<size_t> mFilterIdxMap;
+    std::vector<size_t> mSortIdxMap;
 };
 
 } // namespace reference
