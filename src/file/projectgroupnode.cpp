@@ -449,7 +449,8 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 QString ProjectRunGroupNode::normalizePath(QString path, QString file) {
 
     QString ret = "";
-    file.remove("\"");
+    file.remove("\"");                        // remove quotes from filename
+    file.remove(QRegularExpression("\\s*$")); // remove trailing spaces
     path.remove("\"");
 
     if (file.isEmpty() || QFileInfo(file).isRelative()) {
