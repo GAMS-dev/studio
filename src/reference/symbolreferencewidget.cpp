@@ -33,10 +33,14 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->setupUi(this);
 
     mSymbolTableModel = new SymbolTableModel(mReference, mType, this);
+    ui->symbolView->setModel( mSymbolTableModel );
 
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
+    if (mType == SymbolDataType::SymbolType::FileUsed)
+        ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
+    else
+        ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
     ui->symbolView->setSortingEnabled(true);
     ui->symbolView->resizeColumnsToContents();
     ui->symbolView->setAlternatingRowColors(true);
@@ -45,7 +49,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.4));
 
-    ui->symbolView->setModel( mSymbolTableModel );
     connect(mSymbolTableModel, &SymbolTableModel::symbolSelectionToBeUpdated, this, &SymbolReferenceWidget::updateSymbolSelection);
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
