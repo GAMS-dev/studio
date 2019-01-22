@@ -31,29 +31,7 @@ SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType ty
     mFileHeader       << "Entry" << "Name"           << "Text";
     mFileUsedHeader   << "File Location";
 
-    size_t size = 0;
-
-    if (type == SymbolDataType::SymbolType::FileUsed) {
-        size = static_cast<size_t>(mReference->getFileUsed().size());
-        mFilteredKeyColumn = 0;
-    } else {
-        size = static_cast<size_t>(mReference->findReference(mType).size());
-        mFilteredKeyColumn = 1;
-    }
-    mSortIdxMap.resize( size );
-    for(size_t i=0; i<size; i++) {
-        mSortIdxMap[i] = i;
-    }
-
-    mFilterIdxMap.resize( size );
-    mFilterActive.resize( size );
-    for(size_t i=0; i<size; i++) {
-        mFilterIdxMap[i] = i;
-        mFilterActive[i] = false;
-    }
-
-    mFilteredRecordSize = size;
-    mFilteredPattern = "";
+    resetSizeAndIndices();
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -300,6 +278,7 @@ void SymbolTableModel::resetModel()
     if (rowCount() > 0) {
         removeRows(0, rowCount(), QModelIndex());
     }
+    resetSizeAndIndices();
     endResetModel();
 }
 
@@ -556,6 +535,33 @@ void SymbolTableModel::filterRows()
     }
     beginResetModel();
     endResetModel();
+}
+
+void SymbolTableModel::resetSizeAndIndices()
+{
+    size_t size = 0;
+
+    if (mType == SymbolDataType::SymbolType::FileUsed) {
+        size = static_cast<size_t>(mReference->getFileUsed().size());
+        mFilteredKeyColumn = 0;
+    } else {
+        size = static_cast<size_t>(mReference->findReference(mType).size());
+        mFilteredKeyColumn = 1;
+    }
+    mSortIdxMap.resize( size );
+    for(size_t i=0; i<size; i++) {
+        mSortIdxMap[i] = i;
+    }
+
+    mFilterIdxMap.resize( size );
+    mFilterActive.resize( size );
+    for(size_t i=0; i<size; i++) {
+        mFilterIdxMap[i] = i;
+        mFilterActive[i] = false;
+    }
+
+    mFilteredRecordSize = size;
+    mFilteredPattern = "";
 }
 
 } // namespace reference

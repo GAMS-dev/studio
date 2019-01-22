@@ -75,6 +75,7 @@ private:
     bool isFilteredActive(SymbolReferenceItem* item, int column, const QString& pattern);
     bool isLocationFilteredActive(int idx, const QString& pattern);
     void filterRows();
+    void resetSizeAndIndices();
 
     SymbolDataType::SymbolType mType;
 
