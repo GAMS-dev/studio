@@ -131,7 +131,7 @@ private:
     QHash<FileKind, QString> mSpecialFiles;
 
 private:
-    QString normalizePath(QString path, QString file);
+    QString cleanPath(QString path, QString file);
 
 };
 

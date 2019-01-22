@@ -379,7 +379,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
                 || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            path = normalizePath(item.value, "");
+            path = cleanPath(item.value, "");
             gamsArgs[item.key] = item.value;
         }
     }
@@ -389,17 +389,15 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
     // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
-    setSpecialFile(FileKind::Lst, normalizePath(path, fi.baseName() + ".lst"));
+    setSpecialFile(FileKind::Lst, cleanPath(path, fi.baseName() + ".lst"));
 
     bool defaultOverride = false;
     for (OptionItem item : itemList) {
 
-        // pre processing
+        // convert to native seperator
         QString value = item.value;
-        qDebug() << "prior" << value;
         value = value.replace('/', QDir::separator());
         value = value.replace('\\', QDir::separator());
-        qDebug() << "subseq" << value;
 
         // lst handling
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
@@ -409,17 +407,17 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
             if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
                         || QString::compare(value, "/dev/null", Qt::CaseInsensitive) == 0))
-            setSpecialFile(FileKind::Lst, normalizePath(path, value));
+            setSpecialFile(FileKind::Lst, cleanPath(path, value));
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
             if (value == "default") value = fi.baseName() + ".gdx";
-            setSpecialFile(FileKind::Gdx, normalizePath(path, value));
+            setSpecialFile(FileKind::Gdx, cleanPath(path, value));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
             if (value == "default") value = fi.baseName() + ".ref";
-            setSpecialFile(FileKind::Ref, normalizePath(path, value));
+            setSpecialFile(FileKind::Ref, cleanPath(path, value));
         }
 
         if (defaultGamsArgs.contains(item.key))
@@ -433,23 +431,31 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
                      "Some of these are necessary to ensure a smooth experience. "
                      "Use at your own risk!", LogMsgType::Warning);
 
-    // prepare return value
+    // prepare gams command
 #if defined(__unix__) || defined(__APPLE__)
     QStringList output { QDir::toNativeSeparators(gmsLocation) };
 #else
     QStringList output { "\""+QDir::toNativeSeparators(gmsLocation)+"\"" };
 #endif
+    // normalize gams parameter format
     for(QString k : gamsArgs.keys()) {
         output.append(k + "=" + gamsArgs.value(k));
     }
+    // console output
     QString msg = "Running GAMS:";
     msg.append(output.join(" "));
-
     SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
+
     return output;
 }
 
-QString ProjectRunGroupNode::normalizePath(QString path, QString file) {
+///
+/// \brief ProjectRunGroupNode::normalizePath removes quotes and trims whitespaces for use within studio. do not pass to gams!
+/// \param path workign dir
+/// \param file file name, can be absolute or relative
+/// \return cleaned path
+///
+QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
 
     QString ret = "";
     file.remove("\"");                        // remove quotes from filename
