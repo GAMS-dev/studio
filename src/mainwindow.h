@@ -157,6 +157,7 @@ public slots:
 
     void commandLineHelpTriggered();
     void optionRunChanged();
+    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>());
 
 private slots:
     void openInitialFiles();

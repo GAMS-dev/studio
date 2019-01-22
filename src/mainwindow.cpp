@@ -141,6 +141,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
+    connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
@@ -728,7 +729,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::on_actionNew_triggered()
+void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups)
 {
     QString path = mRecent.path;
     if (path.isEmpty()) path = ".";
@@ -740,8 +741,8 @@ void MainWindow::on_actionNew_triggered()
     int nr = 1;
     while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
     path += QString("/new%1.gms").arg(nr);
-    int choice = 0;
-    while (choice < 1) {
+    int choice = 4;
+    while (choice == 4) {
         QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
                                                         tr("GAMS code (*.gms *.inc );;"
                                                            "Text files (*.txt);;"
@@ -753,35 +754,58 @@ void MainWindow::on_actionNew_triggered()
         QFile file(filePath);
         bool exists = file.exists();
         FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
-        choice = destFM ? -1 : exists ? 0 : 1;
-        if (choice < 0) {
+
+        // choices:   0=duplicate   1=overwrite   2=open-existing   3=open-new   4=abort
+        if (destFM) {
             choice = QMessageBox::question(this, "file in use"
                                            , QString("%1 is already in use.").arg(filePath)
-                                           , "Select other", "Open", "Abort", 0, 2);
-            if (choice == 1) {
-                openFilePath(filePath);
-                return;
+                                           , "Duplicate", "Open", "Back", 1, 2);
+            choice *= 2;                    // 0 - 2 - 4
+            if (groups.isEmpty() && choice == 0) {
+                groups << mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
             }
-        } else if (choice < 1) {
+        } else if (exists) {
             choice = QMessageBox::question(this, "File exists", filePath+" already exists."
-                                           , "Select other", "Overwrite", "Abort", 0, 2);
+                                           , "Overwrite", "Open", "Back", 1, 2);
+            ++choice;
+            if (choice > 1) ++choice;       // 1 - 3 - 4
         } else {
-            choice = 1;
+            choice = groups.isEmpty() ? 2 : 3;
         }
 
-        if (choice == 1) {
+        if (choice < 4) {
             if (!file.exists()) { // new
                 file.open(QIODevice::WriteOnly);
                 file.close();
-            } else { // replace old
+            } else if (choice == 1) { // replace old
                 file.resize(0);
             }
-            if (ProjectFileNode *fc = addNode("", filePath)) {
-                fc->file()->save();
-                openFileNode(fc);
+
+            if (choice == 2) { // default for new_file and existing_node
+                openFilePath(filePath);
+                return;
             }
+
+            if (groups.isEmpty()) {
+                if (ProjectFileNode *fc = addNode("", filePath)) {
+                    fc->file()->save();
+                    // TODO(JM) at choice==0 -> create Node (look at TreeView)
+                    openFileNode(fc);
+                }
+            } else {
+                for (ProjectGroupNode *group: groups) {
+                    addToGroup(group, filePath);
+                }
+            }
+
         }
     }
+}
+
+void MainWindow::on_actionNew_triggered()
+{
+    QString fileLocation;
+    newFileDialog();
 }
 
 void MainWindow::on_actionOpen_triggered()

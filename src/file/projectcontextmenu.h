@@ -51,6 +51,7 @@ signals:
     void selectAll();
     void expandAll();
     void collapseAll();
+    void newFileDialog(QVector<ProjectGroupNode *> groups);
 
 private slots:
     void onCloseGroup();

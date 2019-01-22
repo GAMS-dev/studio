@@ -151,31 +151,6 @@ void ProjectContextMenu::onAddExisitingFile()
 
 void ProjectContextMenu::onAddNewFile()
 {
-    QString sourcePath = "";
-    emit getSourcePath(sourcePath);
-
-    QString filePath = QFileDialog::getSaveFileName(mParent,
-                                                    "Create new file...",
-                                                    sourcePath,
-                                                    tr("GAMS code (*.gms *.inc);;"
-                                                       "Text files (*.txt);;"
-                                                       "All files (*.*)"),
-                                                    nullptr,
-                                                    DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
-    if (filePath == "") return;
-
-    QFileInfo fi(filePath);
-    if (fi.suffix().isEmpty())
-        filePath += ".gms";
-
-    QFile file(filePath);
-    if (!file.exists()) { // create
-        file.open(QIODevice::WriteOnly);
-        file.close();
-    } else { // replace old
-        file.resize(0);
-    }
     QVector<ProjectGroupNode*> groups;
     for (ProjectAbstractNode *node: mNodes) {
         ProjectGroupNode *group = node->toGroup();
@@ -183,9 +158,7 @@ void ProjectContextMenu::onAddNewFile()
         if (!groups.contains(group))
             groups << group;
     }
-    for (ProjectGroupNode *group: groups) {
-        emit addExistingFile(group, filePath);
-    }
+    emit newFileDialog(groups);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
