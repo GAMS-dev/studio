@@ -459,7 +459,7 @@ QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
 
     QString ret = "";
     file.remove("\"");                        // remove quotes from filename
-    file.remove(QRegularExpression("\\s*$")); // remove trailing spaces
+    file = file.trimmed();
     path.remove("\"");
 
     if (file.isEmpty() || QFileInfo(file).isRelative()) {
