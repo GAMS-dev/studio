@@ -46,6 +46,8 @@ public:
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
 
+    QMap<int, int> solverIndices();
+
     QMap<int, QString> modelTypeNames();
 
     bool solverCapability(int solver, int modelType) const;
