@@ -27,6 +27,7 @@
 #include <QMessageBox>
 #include <QFileOpenEvent>
 #include <QLocalSocket>
+#include <QWindow>
 
 namespace gams {
 namespace studio {
@@ -138,7 +139,14 @@ bool Application::event(QEvent *event)
 {
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mMainWindow->openFilePath(openEvent->url().path());
+        mMainWindow->setInitialFiles({openEvent->url().path()});
+        mMainWindow->openFiles({openEvent->url().path()});
+        for (auto window : allWindows()) {
+            if (!window->isVisible())
+                continue;
+            window->show();
+            window->raise();
+        }
     }
     return QApplication::event(event);
 }
