@@ -239,9 +239,9 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
             }
         }
         if (order == Qt::SortOrder::AscendingOrder)
-           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return a.second < b.second; });
+           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return (QString::localeAwareCompare(a.second, b.second) < 0); });
         else
-           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return a.second > b.second; });
+           std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return (QString::localeAwareCompare(a.second, b.second) > 0); });
 
         if (colType == columnFileLocation) {
             for(int rec=0; rec< mReference->getFileUsed().size(); rec++) {
