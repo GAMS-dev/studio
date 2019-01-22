@@ -50,18 +50,15 @@ public:
     void selectSearchField();
 
 public slots:
-    void toggleSearchColumns(bool checked);
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     void expandResetModel();
     void resetModel();
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
+    void updateSymbolSelection();
 
 private:
     Ui::SymbolReferenceWidget *ui;
-
-    QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
-    QSortFilterProxyModel* mReferenceTreeProxyModel = nullptr;
 
     SymbolTableModel* mSymbolTableModel;
     ReferenceTreeModel* mReferenceTreeModel;
@@ -70,6 +67,8 @@ private:
     SymbolDataType::SymbolType mType;
 
     ReferenceViewer* mReferenceViewer;
+
+    SymbolId mCurrentSymbolID;
 };
 
 } // namespace reference
