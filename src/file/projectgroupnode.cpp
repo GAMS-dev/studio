@@ -394,35 +394,38 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     bool defaultOverride = false;
     for (OptionItem item : itemList) {
 
+        // pre processing
+        QString value = item.value;
+        qDebug() << "prior" << value;
+        value = value.replace('/', QDir::separator());
+        value = value.replace('\\', QDir::separator());
+        qDebug() << "subseq" << value;
+
         // lst handling
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
             mSpecialFiles.remove(FileKind::Lst); // remove default
 
-            if (!(QString::compare(item.value, "nul", Qt::CaseInsensitive) == 0
-                        || QString::compare(item.value, "/dev/null", Qt::CaseInsensitive) == 0))
-            setSpecialFile(FileKind::Lst, normalizePath(path, item.value));
-
-
+            if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
+                        || QString::compare(value, "/dev/null", Qt::CaseInsensitive) == 0))
+            setSpecialFile(FileKind::Lst, normalizePath(path, value));
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
-            QString name = item.value;
-            if (name == "default") name = fi.baseName() + ".gdx";
-            setSpecialFile(FileKind::Gdx, normalizePath(path, name));
+            if (value == "default") value = fi.baseName() + ".gdx";
+            setSpecialFile(FileKind::Gdx, normalizePath(path, value));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
-            QString name = item.value;
-            if (name == "default") name = fi.baseName() + ".ref";
-            setSpecialFile(FileKind::Ref, normalizePath(path, name));
+            if (value == "default") value = fi.baseName() + ".ref";
+            setSpecialFile(FileKind::Ref, normalizePath(path, value));
         }
 
         if (defaultGamsArgs.contains(item.key))
             defaultOverride = true;
 
-        gamsArgs[item.key] = item.value;
+        gamsArgs[item.key] = value;
     }
 
     if (defaultOverride)
