@@ -80,9 +80,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -150,8 +148,7 @@ void GdxSymbolView::resetSortFilter()
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
     ui->cbSqueezeDefaults->setChecked(false);
-
-
+    showListView();
 }
 
 void GdxSymbolView::refreshView()
@@ -194,6 +191,10 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
         }
         ui->tbVisibleValCols->addAction(checkableAction);
     }
+
+    connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+
     refreshView();
 }
 
@@ -279,7 +280,6 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::showListView()
 {
-    ui->pbResetSortFilter->setEnabled(true);
     mSym->setTableView(false);
     ui->tvTableView->hide();
 
@@ -293,7 +293,6 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
-    ui->pbResetSortFilter->setEnabled(false);
     mSym->setTableView(true);
 
     ui->pbToggleView->setText("List View");

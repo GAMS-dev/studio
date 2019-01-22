@@ -180,6 +180,7 @@ private slots:
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
     void storeTree();
+    void cloneBookmarkMenu(QMenu *menu);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -273,6 +274,14 @@ private slots:
     void focusCmdLine();
     void focusProjectExplorer();
     void renameGroup(ProjectGroupNode *group);
+
+    void on_actionToggleBookmark_triggered();
+
+    void on_actionNextBookmark_triggered();
+
+    void on_actionPreviousBookmark_triggered();
+
+    void on_actionRemoveBookmarks_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);

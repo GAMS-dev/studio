@@ -96,7 +96,7 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
     return mark;
 }
 
-bool TextMarkRepo::hasBookmarks(FileId fileId, NodeId groupId)
+bool TextMarkRepo::hasBookmarks(FileId fileId)
 {
     return mBookmarkedFiles.contains(fileId);
 }
@@ -113,6 +113,15 @@ TextMark *TextMarkRepo::findBookmark(FileId fileId, NodeId groupId, int currentL
         }
     }
     return res;
+}
+
+void TextMarkRepo::removeBookmarks()
+{
+    QVector<FileId> files = mBookmarkedFiles;
+    for (FileId fileId: files) {
+        QList<TextMark*> bookmarks = marks(fileId, -1, -1, TextMark::bookmark);
+        removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark);
+    }
 }
 
 QTextDocument *TextMarkRepo::document(FileId fileId) const

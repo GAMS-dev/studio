@@ -85,7 +85,7 @@ QString GamsLicenseInfo::solverName(int id) const
 QMap<int, QString> GamsLicenseInfo::solverNames()
 {
     QMap<int, QString> names;
-    for (int i=0; i<solvers(); ++i)
+    for (int i=1; i<=solvers(); ++i)
         names[i] = solverName(i);
     return names;
 }

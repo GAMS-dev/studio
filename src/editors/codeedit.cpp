@@ -662,6 +662,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         QList<QAction*> ret;
         emit requestAdvancedActions(&ret);
         submenu->addActions(ret);
+        emit cloneBookmarkMenu(menu);
     }
     menu->exec(e->globalPos());
     delete menu;

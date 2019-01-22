@@ -77,7 +77,7 @@ public:
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
     void editToTop(QWidget* edit);
-    void removeEditor(QWidget* edit, bool suppressCloseSignal = false);
+    void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib);
     void save();
@@ -101,7 +101,6 @@ signals:
     void changed(FileId fileId);
     void documentOpened();
     void documentClosed();
-    void openFile(FileMeta* fileMeta, bool focus = true, FileId runId = -1, int codecMib = -1);
 
 private slots:
     void modificationChanged(bool modiState);

@@ -50,6 +50,33 @@ bool AbstractEdit::overwriteMode() const
     return QPlainTextEdit::overwriteMode();
 }
 
+void AbstractEdit::sendToggleBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit toggleBookmark(fi, gi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+    }
+}
+
+void AbstractEdit::sendJumpToNextBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit jumpToNextBookmark(false, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    }
+}
+
+void AbstractEdit::sendJumpToPrevBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit jumpToNextBookmark(true, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    }
+}
+
 QMimeData* AbstractEdit::createMimeDataFromSelection() const
 {
     QMimeData* mimeData = new QMimeData();
@@ -122,28 +149,12 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
 
 void AbstractEdit::keyPressEvent(QKeyEvent *e)
 {
-    if (e == Hotkey::BookmarkToggle) {
-        FileId fi = fileId();
-        NodeId gi = groupId();
-        if (fi.isValid() && gi.isValid()) {
-            emit toggleBookmark(fi, gi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
-        }
-    } else if (e == Hotkey::BookmarkNext) {
-        FileId fi = fileId();
-        NodeId gi = groupId();
-        emit jumpToNextBookmark(false, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
-    } else if (e == Hotkey::BookmarkPrev) {
-        FileId fi = fileId();
-        NodeId gi = groupId();
-        emit jumpToNextBookmark(true, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
-    } else {
-        QPlainTextEdit::keyPressEvent(e);
-        Qt::CursorShape shape = Qt::IBeamCursor;
-        if (e->modifiers() & Qt::ControlModifier) {
-            if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
-        }
-        viewport()->setCursor(shape);
+    QPlainTextEdit::keyPressEvent(e);
+    Qt::CursorShape shape = Qt::IBeamCursor;
+    if (e->modifiers() & Qt::ControlModifier) {
+        if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
     }
+    viewport()->setCursor(shape);
 }
 
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)

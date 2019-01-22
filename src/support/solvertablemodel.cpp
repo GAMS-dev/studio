@@ -56,7 +56,7 @@ int SolverTableModel::columnCount(const QModelIndex &parent) const
 int SolverTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return mVerticalHeaderData.size()-RowShift;
+    return mVerticalHeaderData.size();
 }
 
 QVariant SolverTableModel::data(const QModelIndex &index, int role) const
@@ -73,7 +73,7 @@ QVariant SolverTableModel::data(const QModelIndex &index, int role) const
     if (index.column() == 0)
         return mLicenseInfo.solverLicense(index.row()+RowShift);
 
-    if (mLicenseInfo.solverCapability(index.row(), index.column()))
+    if (mLicenseInfo.solverCapability(index.row()+RowShift, index.column()))
         return "X";
     return QVariant();
 }

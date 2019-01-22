@@ -321,7 +321,7 @@ void FileMeta::editToTop(QWidget *edit)
     addEditor(edit);
 }
 
-void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
+void FileMeta::removeEditor(QWidget *edit)
 {
     int i = mEditors.indexOf(edit);
     if (i < 0) return;
@@ -336,7 +336,7 @@ void FileMeta::removeEditor(QWidget *edit, bool suppressCloseSignal)
         aEdit->setDocument(doc);
 
         if (mEditors.isEmpty()) {
-            if (!suppressCloseSignal) emit documentClosed();
+            emit documentClosed();
             if (kind() != FileKind::Log) {
                 unlinkAndFreeDocument();
             }
