@@ -119,7 +119,7 @@ void ProjectGroupNode::setLocation(const QString& location)
 
 QString ProjectGroupNode::tooltip()
 {
-    QString res = location();
+    QString res = QDir::toNativeSeparators(location());
     if (debugMode()) {
         res.append("\nNodeId: "+QString::number(id()));
         res.append("\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?"));
@@ -538,7 +538,7 @@ QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const
 
 QString ProjectRunGroupNode::tooltip()
 {
-    QString res(location());
+    QString res(QDir::toNativeSeparators(location()));
     if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
     if (!specialFile(FileKind::Lst).isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(specialFile(FileKind::Lst)).fileName());

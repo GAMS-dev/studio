@@ -643,7 +643,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     ViewHelper::setGroupId(res, runGroup->id());
     ViewHelper::setLocation(res, location());
     int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
-    tabWidget->setTabToolTip(i, location());
+    tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
     addEditor(res);
     if (mEditors.size() == 1 && ViewHelper::toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMib);

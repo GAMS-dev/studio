@@ -29,6 +29,7 @@
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextCodec>
+#include <QDir>
 
 namespace gams {
 namespace studio {
@@ -107,7 +108,7 @@ QString ProjectFileNode::location() const
 
 QString ProjectFileNode::tooltip()
 {
-    QString tip = location();
+    QString tip = QDir::toNativeSeparators(location());
     if (!file()->exists(true)) tip += "\n--missing--";
     if (!debugMode())
         return tip;
