@@ -2242,11 +2242,19 @@ void MainWindow::on_actionSearch_triggered()
 #endif
     } else {
        ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
-       if (fc && fc->file()->kind() == FileKind::Gdx) {
-           gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
-           gdx->selectSearchField();
-           return;
+       if (fc) {
+           if (fc->file()->kind() == FileKind::Gdx) {
+               gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
+               gdx->selectSearchField();
+               return;
+           }
+           if (fc->file()->kind() == FileKind::Ref) {
+               reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor());
+               refViewer->selectSearchField();
+               return;
+           }
        }
+
        // e.g. needed for KDE to raise the search dialog when minimized
        if (mSearchDialog->isMinimized())
            mSearchDialog->setWindowState(Qt::WindowMaximized);

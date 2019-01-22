@@ -101,6 +101,12 @@ ReferenceViewer::~ReferenceViewer()
     delete mReference;
 }
 
+void ReferenceViewer::selectSearchField()
+{
+    SymbolReferenceWidget* tabWidget = static_cast<SymbolReferenceWidget*>(mTabWidget->currentWidget());
+    tabWidget->selectSearchField();
+}
+
 void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
 {
     mReference->loadReferenceFile(codec);
