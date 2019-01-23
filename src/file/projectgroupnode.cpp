@@ -256,6 +256,18 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
     mLogNode = logNode;
 }
 
+void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
+{
+    ProjectGroupNode::removeChild(child);
+    ProjectFileNode *file = child->toFile();
+    if (file) {
+        QList<FileKind> kinds = mSpecialFiles.keys(file->location());
+        for (const FileKind &kind: kinds) {
+            mSpecialFiles.remove(kind);
+        }
+    }
+}
+
 ProjectLogNode *ProjectRunGroupNode::logNode()
 {
     if (!mLogNode) {

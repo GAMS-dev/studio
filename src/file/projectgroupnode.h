@@ -67,7 +67,7 @@ protected:
 
     ProjectGroupNode(QString name, QString location, NodeType type = NodeType::group);
     void insertChild(ProjectAbstractNode *child);
-    void removeChild(ProjectAbstractNode *child);
+    virtual void removeChild(ProjectAbstractNode *child);
     void setLocation(const QString &location);
     int peekIndex(const QString &name, bool* hit = nullptr);
     const QList<ProjectAbstractNode*> &internalNodeList() const { return mChildNodes; }
@@ -122,6 +122,7 @@ protected:
     void updateRunState(const QProcess::ProcessState &state);
     void lstTexts(const QList<TextMark*> &marks, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
+    void removeChild(ProjectAbstractNode *child) override;
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
@@ -132,7 +133,6 @@ private:
 
 private:
     QString cleanPath(QString path, QString file);
-
 };
 
 
