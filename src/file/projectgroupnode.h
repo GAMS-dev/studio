@@ -58,6 +58,8 @@ public:
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
     QVector<ProjectFileNode*> listFiles(bool recurse = false) const;
+    void moveChildNode(int from, int to);
+    const QList<ProjectAbstractNode*> &childNodes() const { return mChildNodes; }
 
 protected:
     friend class ProjectRepo;
@@ -66,11 +68,9 @@ protected:
     friend class ProjectFileNode;
 
     ProjectGroupNode(QString name, QString location, NodeType type = NodeType::group);
-    void insertChild(ProjectAbstractNode *child);
+    void appendChild(ProjectAbstractNode *child);
     void removeChild(ProjectAbstractNode *child);
     void setLocation(const QString &location);
-    int peekIndex(const QString &name, bool* hit = nullptr);
-    const QList<ProjectAbstractNode*> &internalNodeList() const { return mChildNodes; }
 
 private:
     QList<ProjectAbstractNode*> mChildNodes;

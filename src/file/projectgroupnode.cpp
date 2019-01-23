@@ -74,31 +74,10 @@ int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
     return mChildNodes.indexOf(child);
 }
 
-void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
+void ProjectGroupNode::appendChild(ProjectAbstractNode* child)
 {
     if (!child || mChildNodes.contains(child)) return;
     mChildNodes.append(child);
-    int i = mChildNodes.size()-1;
-    while (i > 0 && child->name().compare(mChildNodes.at(i-1)->name(), Qt::CaseInsensitive) < 0)
-        --i;
-    if (i < mChildNodes.size()-1)
-        mChildNodes.move(mChildNodes.size()-1, i);
-// TODO(JM) set runableGms if missing
-
-//    bool hit;
-//    int pos = peekIndex(child->name(), &hit);
-//    if (hit) pos++;
-//    mChildList.insert(pos, child);
-//    if (child->type() == ProjectAbstractNode::File) {
-//        // TODO(JM) move file binding to FileMetaRepo
-//        TextMarkRepo *markList = marks(child->location());
-//        markList->bind(static_cast<ProjectFileNode*>(child));
-//    }
-//    if (!mAttachedFiles.contains(child->location())) {
-//        mAttachedFiles << child->location();
-//    }
-//    if (child->testFlag(cfActive))
-//        setFlag(cfActive);
 }
 
 void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
@@ -173,7 +152,7 @@ ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location)
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
 {
-    for (ProjectAbstractNode* node: internalNodeList()) {
+    for (ProjectAbstractNode* node: childNodes()) {
         ProjectRunGroupNode* runGroup = node->toRunGroup();
         if (runGroup && runGroup->isProcess(process))
             return runGroup;
@@ -188,7 +167,7 @@ ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *proce
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(FileId runId) const
 {
-    for (ProjectAbstractNode* node: internalNodeList()) {
+    for (ProjectAbstractNode* node: childNodes()) {
         ProjectRunGroupNode* runGroup = node->toRunGroup();
         if (runGroup && runGroup->runnableGms()->id() == runId)
             return runGroup;
@@ -214,6 +193,11 @@ QVector<ProjectFileNode *> ProjectGroupNode::listFiles(bool recurse) const
         }
     }
     return res;
+}
+
+void ProjectGroupNode::moveChildNode(int from, int to)
+{
+    mChildNodes.move(from, to);
 }
 
 ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
@@ -279,7 +263,7 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     ProjectFileNode *gmsFileNode;
     if (!gmsFile) {
         // find alternative runable file
-        for (ProjectAbstractNode *node: internalNodeList()) {
+        for (ProjectAbstractNode *node: childNodes()) {
             gmsFileNode = node->toFile();
             if (gmsFileNode->file()->kind() == FileKind::Gms) {
                 gmsFile = gmsFileNode->file();
@@ -584,23 +568,6 @@ QString ProjectRunGroupNode::tooltip()
     }
     return res;
 }
-
-int ProjectGroupNode::peekIndex(const QString& name, bool *hit)
-{
-    if (hit) *hit = false;
-    for (int i = 0; i < childCount(); ++i) {
-        ProjectAbstractNode *child = childNode(i);
-        QString other = child->name();
-        int comp = name.compare(other, Qt::CaseInsensitive);
-        if (comp < 0) return i;
-        if (comp == 0) {
-            if (hit) *hit = true;
-            return i;
-        }
-    }
-    return childCount();
-}
-
 
 void ProjectRunGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
