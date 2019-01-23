@@ -79,7 +79,6 @@ public:
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib);
     void save();
-    void saveAs(const QString &location);
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
@@ -90,6 +89,7 @@ public:
     void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
+    void setLocation(const QString &location);
 
 public slots:
     void reload();
@@ -124,7 +124,6 @@ private:
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();
-    void setLocation(const QString &location);
 
 private:
     FileId mId;

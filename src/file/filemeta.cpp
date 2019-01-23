@@ -421,18 +421,6 @@ void FileMeta::save()
     internalSave(location());
 }
 
-void FileMeta::saveAs(const QString &target)
-{
-    if (QFileInfo(mLocation) == QFileInfo(target)) {
-        save();
-    } else {
-        if (QFile::exists(target))
-            QFile::remove(target);
-        QFile::copy(mLocation, target);
-    }
-    mFileRepo->findOrCreateFileMeta(target);
-}
-
 void FileMeta::renameToBackup()
 {
     const int MAX_BACKUPS = 3;

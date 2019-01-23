@@ -469,12 +469,14 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
 void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
-    FileMeta* destFM = mFileRepo->fileMeta(target);
+    QString oldFile = node->location();
     if (!sourceFM->document()) return;
 
-    if (destFM) mFileRepo->unwatch(destFM);
-    sourceFM->saveAs(target);
-    if (destFM) mFileRepo->watch(destFM);
+    sourceFM->setLocation(target);
+    sourceFM->document()->setModified(true);
+    sourceFM->save();
+
+    findOrCreateFileNode(oldFile, node->assignedRunGroup());
 }
 
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const

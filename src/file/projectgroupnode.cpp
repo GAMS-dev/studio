@@ -301,7 +301,6 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     }
     setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
     QString gmsPath = gmsFile->location();
-    QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
     setSpecialFile(FileKind::Gms, gmsPath);
     if (hasLogNode()) logNode()->resetLst();
 }
