@@ -294,8 +294,8 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
         DEB() << "Only files of FileKind::Gms can become runable";
         return;
     }
+    setSpecialFile(FileKind::Gms, "");
     if (!gmsFile) {
-        setSpecialFile(FileKind::Gms, "");
         setSpecialFile(FileKind::Lst, "");
         return;
     }
