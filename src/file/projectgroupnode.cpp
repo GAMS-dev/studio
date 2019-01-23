@@ -256,6 +256,18 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
     mLogNode = logNode;
 }
 
+void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
+{
+    ProjectGroupNode::removeChild(child);
+    ProjectFileNode *file = child->toFile();
+    if (file) {
+        QList<FileKind> kinds = mSpecialFiles.keys(file->location());
+        for (const FileKind &kind: kinds) {
+            mSpecialFiles.remove(kind);
+        }
+    }
+}
+
 ProjectLogNode *ProjectRunGroupNode::logNode()
 {
     if (!mLogNode) {
@@ -294,8 +306,8 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
         DEB() << "Only files of FileKind::Gms can become runable";
         return;
     }
+    setSpecialFile(FileKind::Gms, "");
     if (!gmsFile) {
-        setSpecialFile(FileKind::Gms, "");
         setSpecialFile(FileKind::Lst, "");
         return;
     }

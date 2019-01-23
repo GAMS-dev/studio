@@ -82,6 +82,7 @@ void AbstractEdit::showToolTip(const QList<TextMark*> marks)
                 //(marks.first()->textCursor());
         cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, marks.first()->column());
         QPoint pos = cursorRect(cursor).bottomLeft();
+        if (pos.x() < 10) pos.setX(10);
         QStringList tips;
         emit requestLstTexts(groupId(), marks, tips);
         QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
@@ -183,7 +184,8 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
     mMarksAtMouse.clear();
     int col = cursor.positionInBlock();
     for (TextMark* mark: marks) {
-        if ((!mark->groupId().isValid() || mark->groupId() == groupId()) && mark->inColumn(col))
+        if ((!mark->groupId().isValid() || mark->groupId() == groupId())
+                && (mark->inColumn(col) || e->x() < 0))
             mMarksAtMouse << mark;
     }
     if (!mMarksAtMouse.isEmpty() && (isReadOnly() || e->x() < 0))
