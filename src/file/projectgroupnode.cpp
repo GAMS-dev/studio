@@ -303,7 +303,6 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     QString gmsPath = gmsFile->location();
     QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
     setSpecialFile(FileKind::Gms, gmsPath);
-    setSpecialFile(FileKind::Lst, lstPath);
     if (hasLogNode()) logNode()->resetLst();
 }
 
@@ -383,20 +382,27 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QFileInfo fi(gmsLocation);
     // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
-    setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst");
+    setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst"); // set default
 
+    bool defaultOverride = false;
     // iterate options
     for (option::OptionItem item : itemList) {
-        // output (o) found
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
             setSpecialFile(FileKind::Lst, path + item.value);
+
+            // check if lst creation is deactivated:
+            if ((QString::compare(item.value, "nul", Qt::CaseInsensitive) == 0)
+                        || (QString::compare(item.value, "/dev/null", Qt::CaseInsensitive) == 0))
+                mSpecialFiles.remove(FileKind::Lst);
+
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
             QString name = item.value;
             if (name == "default") name = fi.baseName() + ".gdx";
             setSpecialFile(FileKind::Gdx, path + name);
+
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
             QString name = item.value;
@@ -404,13 +410,16 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             setSpecialFile(FileKind::Ref, path + name);
         }
 
-        if (defaultGamsArgs.contains(item.key)) {
-            SysLogLocator::systemLog()->append("You are overwriting at least one GAMS Studio default argument. "
-                                 "Some of these are necessary to ensure a smooth experience. "
-                                 "Use at your own risk!", LogMsgType::Warning);
-        }
+        if (defaultGamsArgs.contains(item.key))
+            defaultOverride = true;
+
         gamsArgs[item.key] = item.value;
     }
+
+    if (defaultOverride)
+        SysLogLocator::systemLog()->append("You are overwriting at least one GAMS Studio default argument. "
+                     "Some of these are necessary to ensure a smooth experience. "
+                     "Use at your own risk!", LogMsgType::Warning);
 
     // prepare return value
 #if defined(__unix__) || defined(__APPLE__)
@@ -471,10 +480,15 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
     FileMeta* runNode = runnableGms();
     for (QString loc : mSpecialFiles.values()) {
-        ProjectFileNode* node = findOrCreateFileNode(loc);
-        node->file()->setKind(mSpecialFiles.key(loc));
-        if (runNode)
-            node->file()->setCodec(runNode->codec());
+
+        if (QFileInfo::exists(loc)) {
+            ProjectFileNode* node = findOrCreateFileNode(loc);
+            node->file()->setKind(mSpecialFiles.key(loc));
+            if (runNode)
+                node->file()->setCodec(runNode->codec());
+        } else {
+            SysLogLocator::systemLog()->append("Could not create " + loc, LogMsgType::Error);
+        }
     }
 }
 
@@ -487,6 +501,8 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
     QString fullPath = path;
     if (QFileInfo(path).isRelative())
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
+
+    fullPath.remove("\"");
 
     if (QFileInfo(fullPath).suffix().isEmpty()) {
         switch (kind) {
@@ -504,7 +520,8 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
         }
     }
 
-    mSpecialFiles.insert(kind, fullPath);
+    if (!mSpecialFiles.contains(kind))
+        mSpecialFiles.insert(kind, fullPath);
 }
 
 void ProjectRunGroupNode::clearSpecialFiles()

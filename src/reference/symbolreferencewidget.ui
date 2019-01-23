@@ -32,6 +32,9 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTableView" name="symbolView">
+      <property name="tabKeyNavigation">
+       <bool>false</bool>
+      </property>
       <attribute name="horizontalHeaderHighlightSections">
        <bool>false</bool>
       </attribute>

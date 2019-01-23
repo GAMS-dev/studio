@@ -64,7 +64,7 @@ public:
         EditorType t = editorType(w);
         if (t == EditorType::lxiLst)
             return toLxiViewer(w)->codeEdit();
-        return (t == EditorType::log || t == EditorType::source || t == EditorType::txt)
+        return (t == EditorType::log || t == EditorType::syslog || t == EditorType::source || t == EditorType::txt)
                 ? static_cast<AbstractEdit*>(w) : nullptr;
     }
     inline static CodeEdit* toCodeEdit(QWidget* w) {

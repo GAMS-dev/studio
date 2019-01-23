@@ -91,6 +91,9 @@ public:
 
     ProjectFileNode* findFileNode(QWidget *editWidget) const;
 
+    ProjectAbstractNode* next(ProjectAbstractNode* node);
+    ProjectAbstractNode* previous(ProjectAbstractNode* node);
+
     /// Get the <c>ProjectLogNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectLogNode</c>.
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
@@ -118,7 +121,7 @@ public:
     QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId = FileId()) const;
     QVector<GamsProcess*> listProcesses();
-    void editorActivated(QWidget *edit);
+    void editorActivated(QWidget *edit, bool select);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
     void saveNodeAs(ProjectFileNode* node, const QString &target);

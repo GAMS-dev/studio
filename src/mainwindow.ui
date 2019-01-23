@@ -182,6 +182,21 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="menuBookmarks">
+     <property name="title">
+      <string>Bookmarks</string>
+     </property>
+     <addaction name="actionToggleBookmark"/>
+     <addaction name="actionPreviousBookmark"/>
+     <addaction name="actionNextBookmark"/>
+     <addaction name="separator"/>
+     <addaction name="actionRemoveBookmarks"/>
+    </widget>
+    <widget class="QMenu" name="menuReset_Views_to_default">
+     <property name="title">
+      <string>Reset Views to default</string>
+     </property>
+    </widget>
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
     <addaction name="actionOption_View"/>
@@ -197,7 +212,8 @@
     <addaction name="actionNextTab"/>
     <addaction name="actionPreviousTab"/>
     <addaction name="separator"/>
-    <addaction name="actionReset_Views"/>
+    <addaction name="menuBookmarks"/>
+    <addaction name="menuReset_Views_to_default"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -834,26 +850,6 @@
     <enum>QAction::HighPriority</enum>
    </property>
   </action>
-  <action name="actionReset_Views">
-   <property name="text">
-    <string>Reset Views to default</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+F2</string>
-   </property>
-   <property name="visible">
-    <bool>true</bool>
-   </property>
-   <property name="iconVisibleInMenu">
-    <bool>false</bool>
-   </property>
-   <property name="shortcutVisibleInContextMenu">
-    <bool>true</bool>
-   </property>
-   <property name="priority">
-    <enum>QAction::HighPriority</enum>
-   </property>
-  </action>
   <action name="actionInterrupt">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
@@ -923,6 +919,59 @@
    </property>
    <property name="menuRole">
     <enum>QAction::ApplicationSpecificRole</enum>
+   </property>
+  </action>
+  <action name="actionToggleBookmark">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/bookmark</normaloff>:/img/bookmark</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle Bookmark</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles bookmark for the current line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionNextBookmark">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/forward</normaloff>:/img/forward</iconset>
+   </property>
+   <property name="text">
+    <string>Next Bookmark</string>
+   </property>
+   <property name="toolTip">
+    <string>Jumps to the next bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+.</string>
+   </property>
+  </action>
+  <action name="actionPreviousBookmark">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/backward</normaloff>:/img/backward</iconset>
+   </property>
+   <property name="text">
+    <string>Previous Bookmark</string>
+   </property>
+   <property name="toolTip">
+    <string>Jumps to the previous bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="actionRemoveBookmarks">
+   <property name="text">
+    <string>Remove Bookmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Removes all Bookmarks</string>
    </property>
   </action>
  </widget>

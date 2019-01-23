@@ -89,6 +89,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
 #endif
 
+    if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
+        ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
+        ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
+        ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
+    }
+
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
     ui->statusBar->setFont(font);
@@ -177,6 +183,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
 
     mSyslog = new SystemLogEdit(this);
+    ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
 
@@ -1843,6 +1850,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // prepare the log
     ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    markTypes << TextMark::bookmark;
     mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
@@ -1853,6 +1861,17 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
             ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                           : AbstractEdit::NoWrap);
     }
+    // cleanup bookmarks
+    QVector<FileKind> cleanupKinds;
+    cleanupKinds << FileKind::Gdx << FileKind::Gsp << FileKind::Log << FileKind::Lst << FileKind::Lxi << FileKind::Ref;
+    markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
+    for (const FileKind &kind: cleanupKinds) {
+        if (runGroup->hasSpecialFile(kind)) {
+            FileMeta *file = mFileMetaRepo.fileMeta(runGroup->specialFile(kind));
+            if (file) mTextMarkRepo.removeMarks(file->id(), markTypes);
+        }
+    }
+
     if (!mSettings->clearLog()) {
         logNode->markOld();
     } else {
@@ -2030,6 +2049,11 @@ void MainWindow::storeTree()
     mSettings->saveSettings(this);
 }
 
+void MainWindow::cloneBookmarkMenu(QMenu *menu)
+{
+    menu->addAction(ui->actionToggleBookmark);
+}
+
 void MainWindow::raiseEdit(QWidget *widget)
 {
     while (widget && widget != this) {
@@ -2082,6 +2106,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         if (ViewHelper::toCodeEdit(edit)) {
             CodeEdit* ce = ViewHelper::toCodeEdit(edit);
             connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+            connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
             connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
         }
@@ -2270,7 +2295,9 @@ void MainWindow::on_mainTab_currentChanged(int index)
     QWidget* edit = ui->mainTab->widget(index);
     if (!edit) return;
 
-    if (mStartedUp) mProjectRepo.editorActivated(edit);
+    if (mStartedUp) {
+        mProjectRepo.editorActivated(edit, focusWidget() != ui->projectView);
+    }
     ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();
@@ -2441,8 +2468,10 @@ void MainWindow::writeTabs(QJsonObject &json) const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp) || (mRecent.editor() == nullptr))
+    AbstractEdit *edit = ViewHelper::toAbstractEdit(mRecent.editor());
+    if ((ui->mainTab->currentWidget() == mWp) || !edit)
         return;
+
     GoToDialog dialog(this);
     int result = dialog.exec();
     if (QDialog::Rejected == result)
@@ -2872,5 +2901,32 @@ void MainWindow::on_actionPreviousTab_triggered()
     if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
 }
 
+void MainWindow::on_actionToggleBookmark_triggered()
+{
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        edit->sendToggleBookmark();
+    }
+}
+
+void MainWindow::on_actionNextBookmark_triggered()
+{
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        edit->sendJumpToNextBookmark();
+    }
+}
+
+void MainWindow::on_actionPreviousBookmark_triggered()
+{
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        edit->sendJumpToPrevBookmark();
+    }
+}
+
+void MainWindow::on_actionRemoveBookmarks_triggered()
+{
+    mTextMarkRepo.removeBookmarks();
+}
+
 }
 }
+

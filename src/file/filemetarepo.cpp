@@ -92,6 +92,38 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
     }
 }
 
+void FileMetaRepo::toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine)
+{
+    if (mTextMarkRepo->marks(fileId, lineNr, groupId, TextMark::bookmark).isEmpty()) {
+        // add bookmark
+        mTextMarkRepo->createMark(fileId, groupId, TextMark::bookmark, -1, lineNr, posInLine);
+    } else {
+        // remove bookmark
+        mTextMarkRepo->removeMarks(fileId, groupId, QSet<TextMark::Type>() << TextMark::bookmark, lineNr);
+    }
+}
+
+void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr)
+{
+    TextMark *bookmark = nullptr;
+    if (mTextMarkRepo->hasBookmarks(refFileId)) {
+        bookmark = mTextMarkRepo->findBookmark(refFileId, refGroupId, refLineNr, back);
+    }
+    FileMeta *fm = fileMeta(refFileId);
+    ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm, mProjectRepo->asGroup(refGroupId)) : nullptr;
+    ProjectAbstractNode * node = startNode;
+    while (!bookmark && startNode) {
+        node = back ? mProjectRepo->previous(node) : mProjectRepo->next(node);
+        FileId fileId = node->toFile() ? node->toFile()->file()->id() : FileId();
+        if (fileId.isValid() && mTextMarkRepo->hasBookmarks(fileId)) {
+            bookmark = mTextMarkRepo->findBookmark(fileId, node->parentNode()->id(), -1, back);
+        }
+        if (node == startNode) break;
+    }
+
+    if (bookmark) bookmark->jumpToMark();
+}
+
 TextMarkRepo *FileMetaRepo::textMarkRepo() const
 {
     if (!mTextMarkRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";

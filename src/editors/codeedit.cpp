@@ -96,7 +96,12 @@ LineNumberArea* CodeEdit::lineNumberArea()
 
 void CodeEdit::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
+    static int laWidth = 0;
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+    if (viewportMargins().left() != laWidth) {
+        mLineNumberArea->repaint();
+        laWidth = viewportMargins().left();
+    }
 }
 
 void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
@@ -638,6 +643,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         QList<QAction*> ret;
         emit requestAdvancedActions(&ret);
         submenu->addActions(ret);
+        emit cloneBookmarkMenu(menu);
     }
     menu->exec(e->globalPos());
     delete menu;
@@ -647,6 +653,7 @@ void CodeEdit::marksChanged()
 {
     AbstractEdit::marksChanged();
     updateLineNumberAreaWidth(0);
+    mLineNumberArea->repaint();
 }
 
 void CodeEdit::dragEnterEvent(QDragEnterEvent* e)
@@ -1630,7 +1637,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     if (mEdit->isReadOnly()) return;
     if (texts.isEmpty()) texts << "";
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
-    bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
+    bool newUndoBlock = texts.count() > 1 || mLastCharType != charType || texts.at(0).length() != 1;
     // append empty lines if needed
     int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
     if (missingLines > 0) {
