@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
-    connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, this, &MainWindow::renameGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, &mProjectRepo, &ProjectRepo::renameGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
@@ -2741,11 +2741,6 @@ void MainWindow::resetViews()
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
-}
-
-void MainWindow::renameGroup(ProjectGroupNode* group)
-{
-    ui->projectView->edit(mProjectRepo.treeModel()->index(group));
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
