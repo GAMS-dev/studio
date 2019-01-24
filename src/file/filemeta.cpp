@@ -124,7 +124,7 @@ void FileMeta::internalSave(const QString &location)
 {
     QFile file(location);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        EXCEPT() << "Can't open the file";
+        EXCEPT() << "Can't save " << location;
     QTextStream out(&file);
     if (mCodec) out.setCodec(mCodec);
     mActivelySaved = true;

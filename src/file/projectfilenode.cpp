@@ -34,11 +34,10 @@
 namespace gams {
 namespace studio {
 
-ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, ProjectGroupNode* group, NodeType type)
+ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, NodeType type)
     : ProjectAbstractNode(fileMeta?fileMeta->name():"[NULL]", type), mFileMeta(fileMeta)
 {
     if (!mFileMeta) EXCEPT() << "The assigned FileMeta must not be null.";
-    if (group) setParentNode(group);
 }
 
 ProjectFileNode::~ProjectFileNode()
