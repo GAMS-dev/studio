@@ -68,7 +68,7 @@ private:
 
     ReferenceViewer* mReferenceViewer;
 
-    SymbolId mCurrentSymbolID;
+    SymbolId mCurrentSymbolID = -1;
 };
 
 } // namespace reference

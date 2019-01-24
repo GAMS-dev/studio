@@ -88,6 +88,8 @@ private:
 
     int mFilteredKeyColumn = -1;
     QString mFilteredPattern = "";
+    int mCurrentSortedColumn = 0;
+    Qt::SortOrder mCurrentAscendingSort = Qt::AscendingOrder;
 
     size_t mFilteredRecordSize = 0;
     std::vector<bool> mFilterActive;

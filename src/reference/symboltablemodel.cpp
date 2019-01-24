@@ -32,6 +32,12 @@ SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType ty
     mFileUsedHeader   << "File Location";
 
     resetSizeAndIndices();
+
+    if (mType == SymbolDataType::FileUsed)
+        mCurrentSortedColumn = 0;
+    else
+        mCurrentSortedColumn = 1;
+    mCurrentAscendingSort = Qt::AscendingOrder;
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -186,6 +192,9 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
 
 void SymbolTableModel::sort(int column, Qt::SortOrder order)
 {
+    mCurrentSortedColumn = column;
+    mCurrentAscendingSort = order;
+
     QList<SymbolReferenceItem *> items = mReference->findReference(mType);
     SortType sortType = getSortTypeOf(column);
     ColumnType colType = getColumnTypeOf(column);
@@ -279,6 +288,7 @@ void SymbolTableModel::resetModel()
         removeRows(0, rowCount(), QModelIndex());
     }
     resetSizeAndIndices();
+    sort(mCurrentSortedColumn, mCurrentAscendingSort);
     endResetModel();
 }
 
