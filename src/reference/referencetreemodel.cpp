@@ -197,13 +197,40 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
     parents << mRootItem;
 
     SymbolReferenceItem* symbolRef = mReference->findReference(mCurrentSymbolID);
-    insertSymbolReference(parents, symbolRef->declare(), "Declared");
-    insertSymbolReference(parents, symbolRef->define(), "Defined");
-    insertSymbolReference(parents, symbolRef->assign(), "Assigned");
-    insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicitly Assigned");
-    insertSymbolReference(parents, symbolRef->control(), "Controlled");
-    insertSymbolReference(parents, symbolRef->reference(), "Referenced");
+    if (symbolRef) {
+        insertSymbolReference(parents, symbolRef->declare(), "Declared");
+        insertSymbolReference(parents, symbolRef->define(), "Defined");
+        insertSymbolReference(parents, symbolRef->assign(), "Assigned");
+        insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicitly Assigned");
+        insertSymbolReference(parents, symbolRef->control(), "Controlled");
+        insertSymbolReference(parents, symbolRef->reference(), "Referenced");
+    }
+    endResetModel();
+}
 
+void ReferenceTreeModel::updateSelectedSymbol(const QString &symbolName)
+{
+    mCurrentSymbolID = -1;
+
+    beginResetModel();
+
+    if (rowCount() > 0) {
+        removeRows(0, rowCount(), QModelIndex());
+    }
+
+    QList<ReferenceItemModel*> parents;
+    parents << mRootItem;
+
+    SymbolReferenceItem* symbolRef = mReference->findReference(symbolName);
+    if (symbolRef) {
+        mCurrentSymbolID = symbolRef->id();
+        insertSymbolReference(parents, symbolRef->declare(), "Declared");
+        insertSymbolReference(parents, symbolRef->define(), "Defined");
+        insertSymbolReference(parents, symbolRef->assign(), "Assigned");
+        insertSymbolReference(parents, symbolRef->implicitAssign(), "Implicitly Assigned");
+        insertSymbolReference(parents, symbolRef->control(), "Controlled");
+        insertSymbolReference(parents, symbolRef->reference(), "Referenced");
+    }
     endResetModel();
 }
 

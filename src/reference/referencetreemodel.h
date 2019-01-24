@@ -49,12 +49,11 @@ public:
     bool removeRows(int row, int count, const QModelIndex &parent) override;
 
     void resetModel();
+    void updateSelectedSymbol(SymbolId symbolid);
+    void updateSelectedSymbol(const QString &symbolName);
 
 signals:
     void referenceSelectionChanged(ReferenceItem item);
-
-public slots:
-    void updateSelectedSymbol(SymbolId symbolid);
 
 private:
     void insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem*>& referenceItemList, const QString& referenceType);

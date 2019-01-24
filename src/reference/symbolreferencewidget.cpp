@@ -89,12 +89,17 @@ void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemS
     if (selected.indexes().size() > 0) {
         if (mType == SymbolDataType::FileUsed) {
             mCurrentSymbolID = -1;
-            return;
+            QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_FILEUSED_NAME);
+            mCurrentSymbolSelection = mSymbolTableModel->data( idx ).toString();
+            mReferenceTreeModel->resetModel();
+        } else {
+            QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_ID);
+            mCurrentSymbolID = mSymbolTableModel->data( idx ).toInt();
+            idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_NAME);
+            mCurrentSymbolSelection = mSymbolTableModel->data( idx ).toString();
+            mReferenceTreeModel->updateSelectedSymbol( mCurrentSymbolSelection );
         }
 
-        QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOLID);
-        mCurrentSymbolID = mSymbolTableModel->data( idx ).toInt();
-        mReferenceTreeModel->updateSelectedSymbol(mCurrentSymbolID);
     }
 }
 
@@ -107,8 +112,32 @@ void SymbolReferenceWidget::expandResetModel()
 
 void SymbolReferenceWidget::resetModel()
 {
+//    qDebug() << "symrefwidget resetModel::" << mCurrentSymbolID << ":" << mCurrentSymbolSelection;
     mSymbolTableModel->resetModel();
     mReferenceTreeModel->resetModel();
+
+    if (mCurrentSymbolSelection.isEmpty() && mCurrentSymbolID==-1)
+        return;
+
+    QModelIndex idx = (mType==SymbolDataType::FileUsed ?
+        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_FILEUSED_NAME):
+        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_SYMBOL_NAME) );
+    QModelIndexList items = mSymbolTableModel->match(idx, Qt::DisplayRole,
+                                                     mCurrentSymbolSelection, 1,
+                                                     Qt::MatchExactly);
+//    ui->symbolView->selectionModel()->clearSelection();
+    int i = 0;
+    for(QModelIndex itemIdx : items) {
+//        qDebug() << i++ << ":match:(" << itemIdx.row() << "," << itemIdx.column() << "):"
+//                 << mSymbolTableModel->data(itemIdx).toString();
+//        if (QString::localeAwareCompare(mSymbolTableModel->data(itemIdx).toString(), mCurrentSymbolSelection)!=0)
+//            continue;
+        ui->symbolView->selectionModel()->select(
+                    QItemSelection(
+                        mSymbolTableModel->index(itemIdx.row(),0),
+                        mSymbolTableModel->index(itemIdx.row(),mSymbolTableModel->columnCount()- 1)),
+                    QItemSelectionModel::ClearAndSelect);
+    }
 }
 
 void SymbolReferenceWidget::jumpToFile(const QModelIndex &index)
@@ -134,12 +163,7 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
 
 void SymbolReferenceWidget::updateSymbolSelection()
 {
-    if (mType == SymbolDataType::FileUsed) {
-        mCurrentSymbolID = -1;
-        return;
-    }
-
-    int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolID );
+    int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolSelection );
     ui->symbolView->selectionModel()->clearCurrentIndex();
     ui->symbolView->selectionModel()->clearSelection();
     if (updatedSelectedRow >= 0 && updatedSelectedRow < ui->symbolView->model()->rowCount()) {

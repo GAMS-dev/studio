@@ -45,10 +45,13 @@ public:
     void resetModel();
 
     int getSortedIndexOf(const SymbolId id) const;
+    int getSortedIndexOf(const QString &name) const;
     void toggleSearchColumns(bool checked);
     void setFilterPattern(const QString& pattern);
 
-    static const int COLUMN_SYMBOLID = 0;
+    static const int COLUMN_SYMBOL_ID = 0;
+    static const int COLUMN_SYMBOL_NAME = 1;
+    static const int COLUMN_FILEUSED_NAME = 0;
 
 signals:
     void symbolSelectionToBeUpdated();

@@ -304,6 +304,29 @@ int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
     return rec < items.size() ? rec : -1;
 }
 
+int SymbolTableModel::getSortedIndexOf(const QString &name) const
+{
+    if (mType == SymbolDataType::FileUsed) {
+       QStringList items = mReference->getFileUsed();
+       int rec = -1;
+       for(rec=0; rec<items.size(); rec++) {
+           int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[ static_cast<size_t>(rec) ] ] );
+           if (QString::localeAwareCompare(items.at(idx), name) == 0)
+               break;
+       }
+       return rec < items.size() ? rec : -1;
+    } else {
+       QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+       int rec = -1;
+       for(rec=0; rec<items.size(); rec++) {
+           int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[ static_cast<size_t>(rec) ] ] );
+           if (QString::localeAwareCompare(items.at(idx)->name(), name) == 0)
+               break;
+       }
+       return rec < items.size() ? rec : -1;
+    }
+}
+
 void SymbolTableModel::toggleSearchColumns(bool checked)
 {
     if (checked) {

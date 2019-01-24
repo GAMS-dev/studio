@@ -69,6 +69,7 @@ private:
     ReferenceViewer* mReferenceViewer;
 
     SymbolId mCurrentSymbolID = -1;
+    QString mCurrentSymbolSelection = "";
 };
 
 } // namespace reference
