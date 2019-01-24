@@ -394,6 +394,11 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         value = value.replace('/', QDir::separator());
         value = value.replace('\\', QDir::separator());
 
+        // regex to remove dots at the end of a filename
+        QRegularExpression notDotAsEnding("(\\.+)[\"\\\\ ]*$");
+        QRegularExpressionMatch match = notDotAsEnding.match(value);
+        if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
+
         // lst handling
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
