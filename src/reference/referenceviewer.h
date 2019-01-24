@@ -60,7 +60,6 @@ private:
     QTextCodec *mCodec;
 
     Reference* mReference;
-    QTabWidget* mTabWidget;    
 };
 
 } // namespace reference
