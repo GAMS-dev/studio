@@ -51,6 +51,7 @@ public:
     QModelIndex current() {return index(mCurrent);}
     QVector<NodeId> selectedIds() const;
     QMap<int, QVariant> itemData(const QModelIndex &index) const;
+    void sortChildNodes(ProjectGroupNode *group);
 
 protected:
     friend class ProjectRepo;
@@ -60,7 +61,6 @@ protected:
     bool removeChild(ProjectAbstractNode* child);
     NodeId nodeId(const QModelIndex &ind) const;
     QModelIndex index(const NodeId id) const;
-    void sortChildNodes(ProjectGroupNode *group);
 
     /// Tells if a model index is the current node
     /// \param ind

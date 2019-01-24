@@ -879,6 +879,7 @@ void MainWindow::on_actionSave_As_triggered()
             openFileNode(newNode, true);
         }
     }
+    mProjectRepo.treeModel()->sortChildNodes(node->parentNode());
 }
 
 void MainWindow::on_actionSave_All_triggered()

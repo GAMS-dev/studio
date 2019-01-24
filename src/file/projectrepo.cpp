@@ -468,10 +468,12 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
     QString oldFile = node->location();
     if (!sourceFM->document()) return;
 
+    // set location to new file
     sourceFM->setLocation(target);
     sourceFM->document()->setModified(true);
     sourceFM->save();
 
+    // re-add old file
     findOrCreateFileNode(oldFile, node->assignedRunGroup());
 }
 
