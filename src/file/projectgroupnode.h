@@ -122,7 +122,7 @@ protected:
     void updateRunState(const QProcess::ProcessState &state);
     void lstTexts(const QList<TextMark*> &marks, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
-    void removeChild(ProjectAbstractNode *child) override;
+    void removeChild(ProjectAbstractNode *child);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
