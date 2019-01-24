@@ -701,8 +701,8 @@ void MainWindow::updateEditorPos()
             anchor = QPoint(cursor.positionInBlock()+1, cursor.blockNumber()+1);
         }
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
-        pos = tv->position();
-        anchor = tv->anchor();
+        pos = tv->position() + QPoint(1,1);
+        anchor = tv->anchor() + QPoint(1,1);
 //        if (pos == anchor)
     }
     mStatusWidgets->setPosAndAnchor(pos, anchor);
