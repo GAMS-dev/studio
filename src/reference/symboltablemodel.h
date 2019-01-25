@@ -32,7 +32,7 @@ class SymbolTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit SymbolTableModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
+    explicit SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -43,6 +43,9 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
     void resetModel();
+    void initModel(Reference* ref);
+
+    bool isModelLoaded();
 
     int getSortedIndexOf(const SymbolId id) const;
     int getSortedIndexOf(const QString &name) const;

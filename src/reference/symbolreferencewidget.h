@@ -49,10 +49,13 @@ public:
     ~SymbolReferenceWidget();
     void selectSearchField();
 
+    bool isModelLoaded();
+
 public slots:
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     void expandResetModel();
     void resetModel();
+    void initModel();
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
     void updateSymbolSelection();

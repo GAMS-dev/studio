@@ -23,8 +23,8 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
-     QAbstractTableModel(parent), mType(type), mReference(ref)
+SymbolTableModel::SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent) :
+    QAbstractTableModel(parent), mType(type), mReference(nullptr)
 {
     mAllSymbolsHeader << "Entry" << "Name" << "Type" << "Dim" << "Domain" << "Text";
     mSymbolsHeader    << "Entry" << "Name"           << "Dim" << "Domain" << "Text";
@@ -110,6 +110,9 @@ int SymbolTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
 {
+    if (!mReference)
+        return QVariant();
+
     if (mReference->isEmpty())
         return QVariant();
 
@@ -194,6 +197,9 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
 {
     mCurrentSortedColumn = column;
     mCurrentAscendingSort = order;
+
+    if (!mReference)
+        return;
 
     QList<SymbolReferenceItem *> items = mReference->findReference(mType);
     SortType sortType = getSortTypeOf(column);
@@ -292,8 +298,22 @@ void SymbolTableModel::resetModel()
     endResetModel();
 }
 
+void SymbolTableModel::initModel(Reference *ref)
+{
+    mReference = ref;
+    resetModel();
+}
+
+bool SymbolTableModel::isModelLoaded()
+{
+    return (mReference!=nullptr);
+}
+
 int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
 {
+    if (!mReference)
+        return -1;
+
     QList<SymbolReferenceItem *> items = mReference->findReference(mType);
     int rec;
     for(rec=0; rec<items.size(); rec++) {
@@ -306,6 +326,9 @@ int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
 
 int SymbolTableModel::getSortedIndexOf(const QString &name) const
 {
+    if (!mReference)
+        return -1;
+
     if (mType == SymbolDataType::FileUsed) {
        QStringList items = mReference->getFileUsed();
        int rec = -1;
@@ -442,6 +465,9 @@ SymbolTableModel::ColumnType SymbolTableModel::getColumnTypeOf(int column) const
 
 QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
 {
+    if (!mReference)
+        return "";
+
     if (domain.size() > 0) {
        QString domainStr = "(";
        domainStr.append(  mReference->findReference( domain.at(0) )->name() );
@@ -494,6 +520,9 @@ bool SymbolTableModel::isLocationFilteredActive(int idx, const QString &pattern)
 
 void SymbolTableModel::filterRows()
 {
+    if (!mReference)
+        return;
+
     size_t size = 0;
     // there is no filter
     if (mFilteredPattern.isEmpty()) {
@@ -575,10 +604,12 @@ void SymbolTableModel::resetSizeAndIndices()
     size_t size = 0;
 
     if (mType == SymbolDataType::SymbolType::FileUsed) {
-        size = static_cast<size_t>(mReference->getFileUsed().size());
+        if (mReference)
+            size = static_cast<size_t>(mReference->getFileUsed().size());
         mFilteredKeyColumn = 0;
     } else {
-        size = static_cast<size_t>(mReference->findReference(mType).size());
+        if (mReference)
+           size = static_cast<size_t>(mReference->findReference(mType).size());
         mFilteredKeyColumn = 1;
     }
     mSortIdxMap.resize( size );

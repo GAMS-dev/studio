@@ -78,7 +78,9 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
 
     ui->tabWidget->setCurrentIndex(0);
+    allSymbolsRefWidget->initModel();
 
+    connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &ReferenceViewer::on_tabBarClicked);
     connect(mReference, &Reference::loadFinished, this, &ReferenceViewer::updateView);
 }
 
@@ -101,6 +103,13 @@ void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
         SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(i));
         refWidget->resetModel();
     }
+}
+
+void ReferenceViewer::on_tabBarClicked(int index)
+{
+    SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(index));
+    if (!refWidget->isModelLoaded())
+        refWidget->initModel();
 }
 
 void ReferenceViewer::updateView(bool status)

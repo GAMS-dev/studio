@@ -20,6 +20,8 @@
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
 
+#include "logger.h"
+
 namespace gams {
 namespace studio {
 namespace reference {
@@ -32,7 +34,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 {
     ui->setupUi(this);
 
-    mSymbolTableModel = new SymbolTableModel(mReference, mType, this);
+    mSymbolTableModel = new SymbolTableModel(mType, this);
     ui->symbolView->setModel( mSymbolTableModel );
 
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -42,7 +44,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     else
         ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
     ui->symbolView->setSortingEnabled(true);
-    ui->symbolView->resizeColumnsToContents();
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
@@ -81,6 +82,11 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
 void SymbolReferenceWidget::selectSearchField()
 {
     ui->symbolSearchLineEdit->setFocus();
+}
+
+bool SymbolReferenceWidget::isModelLoaded()
+{
+    return mSymbolTableModel->isModelLoaded();
 }
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
@@ -131,6 +137,14 @@ void SymbolReferenceWidget::resetModel()
                         mSymbolTableModel->index(itemIdx.row(),mSymbolTableModel->columnCount()- 1)),
                     QItemSelectionModel::ClearAndSelect);
     }
+}
+
+void SymbolReferenceWidget::initModel()
+{
+    if (!mSymbolTableModel->isModelLoaded())
+        mSymbolTableModel->initModel(mReference);
+
+    mReferenceTreeModel->resetModel();
 }
 
 void SymbolReferenceWidget::jumpToFile(const QModelIndex &index)
