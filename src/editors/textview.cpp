@@ -236,6 +236,11 @@ bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags 
     return found;
 }
 
+void TextView::setFont(const QFont& f)
+{
+    mEdit->setFont(f);
+}
+
 void TextView::peekMoreLines()
 {
     // peek and keep timer alive if not done

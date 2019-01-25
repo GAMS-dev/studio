@@ -57,6 +57,7 @@ public:
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
     bool findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags);
+    void setFont(const QFont& f);
 
 signals:
     void blockCountChanged(int newBlockCount);
