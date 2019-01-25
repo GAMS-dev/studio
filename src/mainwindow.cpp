@@ -2898,13 +2898,18 @@ void MainWindow::on_actionToggleBookmark_triggered()
 {
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
         edit->sendToggleBookmark();
+    } else if (TextView* tv = ViewHelper::toTextView(mRecent.editor())) {
+        tv->edit()->sendToggleBookmark();
     }
+
 }
 
 void MainWindow::on_actionNextBookmark_triggered()
 {
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
         edit->sendJumpToNextBookmark();
+    } else if (TextView* tv = ViewHelper::toTextView(mRecent.editor())) {
+        tv->edit()->sendJumpToNextBookmark();
     }
 }
 
@@ -2912,6 +2917,8 @@ void MainWindow::on_actionPreviousBookmark_triggered()
 {
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor())) {
         edit->sendJumpToPrevBookmark();
+    } else if (TextView* tv = ViewHelper::toTextView(mRecent.editor())) {
+        tv->edit()->sendJumpToPrevBookmark();
     }
 }
 

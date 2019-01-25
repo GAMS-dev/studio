@@ -130,9 +130,9 @@ public:  // test supporting methods (DELETE LATER) <<<<<<<<<<<<<<<<<<<<<
     qint64 absPos(int absLineNr, int charNr = 0);
     int relPos(int localLineNr, int charNr = 0);
     int moveTopLine(int lineDelta);
+    QString line(int localLineNr, int *lineInChunk = nullptr) const;
 
 public:  // to-be-private methods (MOVE TO private) <<<<<<<<<<<<<<<<<<<<
-    QString line(int localLineNr, int *lineInChunk = nullptr) const;
     inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
     int findChunk(int lineNr);
     bool setTopOffset(qint64 byteNr);

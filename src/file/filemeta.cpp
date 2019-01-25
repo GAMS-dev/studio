@@ -288,32 +288,32 @@ void FileMeta::addEditor(QWidget *edit)
     mEditors.prepend(edit);
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
-    AbstractEdit* ptEdit = ViewHelper::toAbstractEdit(edit);
+    AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
 
-    if (ptEdit) {
+    if (aEdit) {
         if (!mDocument)
-            linkDocument(ptEdit->document());
+            linkDocument(aEdit->document());
         else
-            ptEdit->setDocument(mDocument);
-        connect(ptEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
-        connect(ptEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
-        connect(ptEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+            aEdit->setDocument(mDocument);
+        connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
+        connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         if (scEdit) {
             connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
         }
-        if (!ptEdit->viewport()->hasMouseTracking()) {
-            ptEdit->viewport()->setMouseTracking(true);
+        if (!aEdit->viewport()->hasMouseTracking()) {
+            aEdit->viewport()->setMouseTracking(true);
         }
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
-        connect(tv, &TextView::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
-        connect(tv, &TextView::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     }
     if (mEditors.size() == 1) emit documentOpened();
-    if (ptEdit)
-        ptEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+    if (aEdit)
+        aEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
 void FileMeta::editToTop(QWidget *edit)
@@ -341,6 +341,12 @@ void FileMeta::removeEditor(QWidget *edit)
                 unlinkAndFreeDocument();
             }
         }
+        disconnect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+    }
+    if (TextView* tv = ViewHelper::toTextView(edit)) {
+        disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
 
     if (mEditors.isEmpty()) {
