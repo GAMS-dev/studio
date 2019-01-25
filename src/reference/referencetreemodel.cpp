@@ -81,6 +81,7 @@ QVariant ReferenceTreeModel::data(const QModelIndex &index, int role) const
 
         if (parentItem != mRootItem)
             return item->data(index.column());
+        break;
     }
     default:
         break;

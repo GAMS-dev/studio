@@ -112,7 +112,6 @@ void SymbolReferenceWidget::expandResetModel()
 
 void SymbolReferenceWidget::resetModel()
 {
-//    qDebug() << "symrefwidget resetModel::" << mCurrentSymbolID << ":" << mCurrentSymbolSelection;
     mSymbolTableModel->resetModel();
     mReferenceTreeModel->resetModel();
 
@@ -125,13 +124,7 @@ void SymbolReferenceWidget::resetModel()
     QModelIndexList items = mSymbolTableModel->match(idx, Qt::DisplayRole,
                                                      mCurrentSymbolSelection, 1,
                                                      Qt::MatchExactly);
-//    ui->symbolView->selectionModel()->clearSelection();
-    int i = 0;
     for(QModelIndex itemIdx : items) {
-//        qDebug() << i++ << ":match:(" << itemIdx.row() << "," << itemIdx.column() << "):"
-//                 << mSymbolTableModel->data(itemIdx).toString();
-//        if (QString::localeAwareCompare(mSymbolTableModel->data(itemIdx).toString(), mCurrentSymbolSelection)!=0)
-//            continue;
         ui->symbolView->selectionModel()->select(
                     QItemSelection(
                         mSymbolTableModel->index(itemIdx.row(),0),
