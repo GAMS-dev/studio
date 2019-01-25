@@ -26,6 +26,8 @@
 #include <QFile>
 #include <QSet>
 #include <QTextCursor>
+#include <QMutex>
+#include <QTimer>
 //#include "syntax.h"
 
 namespace gams {
@@ -94,7 +96,7 @@ public:
     void setCodec(QTextCodec *codec);
 
     bool openFile(const QString &fileName);
-    void closeFile();
+    void closeAndReset();
     qint64 size() const { return mSize; }
     QString delimiter() { return mDelimiter; }
     bool peekChunksForLineNrs(int chunkCount);
@@ -138,6 +140,9 @@ public:  // to-be-private methods (MOVE TO private) <<<<<<<<<<<<<<<<<<<<
     bool setTopOffset(qint64 byteNr);
     bool setTopLine(int lineNr);
 
+private slots:
+    void closeFile();
+
 private:
     void initDelimiter(Chunk *chunk) const;
     bool updateMaxTop();
@@ -158,6 +163,8 @@ private:
     mutable QVector<ChunkLines> mChunkLineNrs;
     mutable int mLastChunkWithLineNr = -1;
     mutable double mBytesPerLine = 20.0;
+    mutable QMutex mMutex;
+    mutable QTimer mTimer;
 
     LinePosition mTopLine;
     LinePosition mMaxTopLine;

@@ -1800,14 +1800,6 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     markTypes << TextMark::bookmark;
     mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
 
-    ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->specialFile(FileKind::Lst));
-    if (lstNode) {
-        for (QWidget *wid: lstNode->file()->editors()) {
-            if (TextView *tv = ViewHelper::toTextView(wid)) {
-                tv->closeFile();
-            }
-        }
-    }
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
@@ -1860,6 +1852,11 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
     GamsProcess* process = runGroup->gamsProcess();
     process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+    if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->specialFile(FileKind::Lst))) {
+        for (QWidget *wid: lstNode->file()->editors()) {
+            if (TextView *tv = ViewHelper::toTextView(wid)) tv->closeFile();
+        }
+    }
     process->setGroupId(runGroup->id());
     process->setWorkingDir(workDir);
     process->execute();

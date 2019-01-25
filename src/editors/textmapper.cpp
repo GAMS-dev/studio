@@ -32,7 +32,10 @@ TextMapper::TextMapper(QObject *parent): QObject(parent)
 {
     mCodec = QTextCodec::codecForLocale();
     setMappingSizes();
-    closeFile();
+    mTimer.setInterval(200);
+    mTimer.setSingleShot(true);
+    connect(&mTimer, &QTimer::timeout, this, &TextMapper::closeFile);
+    closeAndReset();
 }
 
 TextMapper::~TextMapper()
@@ -55,14 +58,13 @@ void TextMapper::setCodec(QTextCodec *codec)
 bool TextMapper::openFile(const QString &fileName)
 {
     if (!fileName.isEmpty()) {
-        closeFile();
+        closeAndReset();
         mFile.setFileName(fileName);
         if (!mFile.open(QFile::ReadOnly)) {
             DEB() << "Could not open file " << fileName;
             return false;
         }
         mSize = mFile.size();
-//        mOversizeMapper.setSize(mFile.size());
         int chunkCount = int(mFile.size()/mChunkSize)+1;
         mChunkLineNrs.reserve(chunkCount);
         for (int i = mChunkLineNrs.size(); i < chunkCount; ++i) {
@@ -107,52 +109,20 @@ bool TextMapper::updateMaxTop() // to be updated on change of size or mBufferedL
     return true;
 }
 
-//void TextMapper::cloneWithLineNrs()
-//{
-//    QFile f(mFile.fileName()+"~");
-//    if (f.open((QFile::WriteOnly))) {
-//        int max = qAbs(lineCount());
-//        int c[] = {0,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000};
-//        int digits = max<c[4] ? (max<c[2] ? (max<c[1] ? 1 : 2) : (max<c[3] ? 3 : 4))
-//                  : (max<c[8] ? (max<c[6] ? (max<c[5] ? 5 : 6) : (max<c[7] ? 7 : 8)) : 9);
-//        int absLine = 0;
-//        for (int cNr = 0; cNr < chunkCount(); ++cNr) {
-//            Chunk *chunk = getChunk(cNr);
-//            for (int lin = 0; lin < chunk->lineCount(); ++lin) {
-//                QString lineStr = QString::number(lin+absLine);
-//                if (lineStr.length() < digits)
-//                    lineStr = "\n" + QString('0', digits-lineStr.length()) + lineStr;
-//                else lineStr = "\n" + lineStr + " ";
-//                f.write(lineStr.toLocal8Bit());
-//                QByteArray raw;
-//                raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(lin),
-//                               uint(mChunks.last()->lineBytes.at(lin+1)
-//                                    - mChunks.last()->lineBytes.at(lin) - mDelimiter.size()));
-//                f.write(raw);
-//            }
-//            absLine += chunk->lineCount();
-//        }
-//        f.close();
-//    }
-//}
-
-
-void TextMapper::closeFile()
+void TextMapper::closeAndReset()
 {
-    if (mFile.isOpen()) {
-        for (Chunk *block: mChunks) {
-            mFile.unmap(block->map);
-        }
-        mFile.close();
-        mChunks.clear();
+    closeFile();
+    for (Chunk *block: mChunks) {
+        mFile.unmap(block->map);
     }
+    mFile.close();
+    mChunks.clear();
     mLastChunkWithLineNr = -1;
     mBytesPerLine = 20.0;
     mChunkLineNrs.clear();
     mChunkLineNrs.squeeze();
     mDelimiter.clear();
     mSize = 0;
-//    mOversizeMapper.setSize(0);
 }
 
 
@@ -234,7 +204,16 @@ TextMapper::Chunk* TextMapper::loadChunk(int chunkNr) const
     if (cStart < 0) cStart = 0;                                     // crop at start of file
     qint64 cEnd = chunkStart + mChunkSize;
     if (cEnd > size()) cEnd = size();   // crop at end of file
-    uchar* map = mFile.map(cStart, cEnd - cStart);
+    uchar* map = nullptr;
+    {
+        QMutexLocker locker(&mMutex);
+        if (mFile.isOpen() || mFile.open(QFile::ReadOnly)) {
+            map = mFile.map(cStart, cEnd - cStart);
+            mTimer.start();
+        } else {
+            DEB() << "Could not open file " << mFile.fileName();
+        }
+    }
     if (!map) return nullptr;
 
     // mapping succeeded initialise chunk
@@ -321,6 +300,14 @@ bool TextMapper::setTopLine(int lineNr)
         return true;
     }
     return false;
+}
+
+void TextMapper::closeFile()
+{
+    QMutexLocker locker(&mMutex);
+    if (mFile.isOpen()) mFile.close();
+    DEB() << "File is closed";
+    mTimer.stop();
 }
 
 bool TextMapper::setVisibleTopLine(double region)

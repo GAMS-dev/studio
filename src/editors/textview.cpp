@@ -91,7 +91,7 @@ void TextView::loadFile(const QString &fileName, int codecMib)
 
 void TextView::closeFile()
 {
-    mMapper.closeFile();
+    mMapper.closeAndReset();
 }
 
 qint64 TextView::fileSize() const
