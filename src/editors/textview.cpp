@@ -167,9 +167,7 @@ AbstractEdit *TextView::edit()
 
 void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
 {
-    if (mode == QPlainTextEdit::WidgetWidth)
-        DEB() << "Line wrapping is currently unsupported.";
-    mEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
+    mEdit->setLineWrapMode(mode);
 }
 
 bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags)
