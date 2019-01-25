@@ -243,6 +243,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
     if (line.isEmpty()) return QString("");
     TextMark* errMark = nullptr;
     bool errFound = false;
+    bool isRuntimeError = false;
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
@@ -264,7 +265,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         int colStart = 0;
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
-            isValidError = true;
+            isValidError = false;
+            isRuntimeError = true;
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
             // TODO(JM) review for the case the file is in a sub-directory
@@ -295,6 +297,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.col = line.indexOf(" ")+1;
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
+                DEB() << fName;
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
                 mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
                                                            mCurrentErrorHint.lstLine, lineNr, colStart, size);
@@ -323,6 +326,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         if (posB+5 < line.length()) {
             TextMark::Type tmType = errFound ? TextMark::link : TextMark::target;
             if (line.midRef(posB+1,4) == "LST:") {
+                if (isRuntimeError) tmType = TextMark::error;
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
                 posB++;
