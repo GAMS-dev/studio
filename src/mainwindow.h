@@ -276,11 +276,8 @@ private slots:
     void renameGroup(ProjectGroupNode *group);
 
     void on_actionToggleBookmark_triggered();
-
     void on_actionNextBookmark_triggered();
-
     void on_actionPreviousBookmark_triggered();
-
     void on_actionRemoveBookmarks_triggered();
 
 protected:
