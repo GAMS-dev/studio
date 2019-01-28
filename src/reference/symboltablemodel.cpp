@@ -210,10 +210,11 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
 
         QList<QPair<int, int>> idxList;
         for(int rec=0; rec<items.size(); rec++) {
+            int idx = static_cast<int>(mSortIdxMap[static_cast<size_t>(rec)]);
             if (colType == columnId)
-               idxList.append(QPair<int, int>(rec, items.at(rec)->id()) );
+               idxList.append(QPair<int, int>(idx, items.at(idx)->id()) );
             else if (colType == columnDimension)
-                    idxList.append(QPair<int, int>(rec, items.at(rec)->dimension()) );
+                    idxList.append(QPair<int, int>(idx, items.at(idx)->dimension()) );
         }
         if (order == Qt::SortOrder::AscendingOrder)
            std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.second < b.second; });
@@ -238,18 +239,19 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
             }
         } else  {
             for(int rec=0; rec<items.size(); rec++) {
+                int idx = static_cast<int>(mSortIdxMap[static_cast<size_t>(rec)]);
                 if (colType == columnName) {
-                    idxList.append(QPair<int, QString>(rec, items.at(rec)->name()) );
+                    idxList.append(QPair<int, QString>(idx, items.at(idx)->name()) );
                 } else if (colType == columnText) {
-                          idxList.append(QPair<int, QString>(rec, items.at(rec)->explanatoryText()) );
+                          idxList.append(QPair<int, QString>(idx, items.at(idx)->explanatoryText()) );
                 } else if (colType == columnType) {
-                          SymbolDataType::SymbolType type = items.at(rec)->type();
-                          idxList.append(QPair<int, QString>(rec, SymbolDataType::from(type).name()) );
+                          SymbolDataType::SymbolType type = items.at(idx)->type();
+                          idxList.append(QPair<int, QString>(idx, SymbolDataType::from(type).name()) );
                 } else if (colType == columnDomain) {
-                          QString domainStr = getDomainStr( items.at(rec)->domain() );
-                          idxList.append(QPair<int, QString>(rec, domainStr) );
+                          QString domainStr = getDomainStr( items.at(idx)->domain() );
+                          idxList.append(QPair<int, QString>(idx, domainStr) );
                 } else  {
-                    idxList.append(QPair<int, QString>(rec, "") );
+                    idxList.append(QPair<int, QString>(idx, "") );
                 }
             }
         }
