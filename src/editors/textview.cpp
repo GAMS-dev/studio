@@ -167,7 +167,9 @@ AbstractEdit *TextView::edit()
 
 void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
 {
-    mEdit->setLineWrapMode(mode);
+    if (mode == QPlainTextEdit::WidgetWidth)
+        DEB() << "Line wrapping is currently unsupported.";
+    mEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
 bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags)
@@ -232,11 +234,6 @@ bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags 
         updatePosAndAnchor();
     }
     return found;
-}
-
-void TextView::setFont(const QFont& f)
-{
-    mEdit->setFont(f);
 }
 
 void TextView::peekMoreLines()
