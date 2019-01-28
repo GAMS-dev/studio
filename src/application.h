@@ -82,6 +82,8 @@ public slots:
     ///
     void receiveFileArguments();
 
+    void logError(const QString &message);
+
 protected:
     ///
     /// \brief Reimplemented QObject::event function.

@@ -22,6 +22,8 @@
 #include "studiosettings.h"
 #include "commonpaths.h"
 #include "locators/settingslocator.h"
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 
 #include <iostream>
 #include <QMessageBox>
@@ -45,6 +47,7 @@ Application::Application(int& argc, char** argv)
     mServerName = "com.gams.studio." + userName;
 
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
+    connect(&mDistribValidator, &support::DistributionValidator::newError, this, &Application::logError);
 }
 
 void Application::init()
@@ -133,6 +136,11 @@ void Application::receiveFileArguments()
     mMainWindow->openFiles(QString(socket->readAll()).split("\n", QString::SkipEmptyParts));
     socket->deleteLater();
     mMainWindow->setForegroundOSCheck();
+}
+
+void Application::logError(const QString &message)
+{
+    SysLogLocator::systemLog()->append(message, LogMsgType::Error);
 }
 
 bool Application::event(QEvent *event)
