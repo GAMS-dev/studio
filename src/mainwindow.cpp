@@ -2358,7 +2358,7 @@ void MainWindow::updateEditorLineWrapping()
     QPlainTextEdit::LineWrapMode wrapModeEditor = mSettings->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                               : QPlainTextEdit::NoWrap;
     QPlainTextEdit::LineWrapMode wrapModeProcess = mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
-                                                                                  : QPlainTextEdit::NoWrap;
+                                                                                : QPlainTextEdit::NoWrap;
     QWidgetList editList = mFileMetaRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {

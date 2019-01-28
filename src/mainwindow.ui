@@ -192,11 +192,6 @@
      <addaction name="separator"/>
      <addaction name="actionRemoveBookmarks"/>
     </widget>
-    <widget class="QMenu" name="menuReset_Views_to_default">
-     <property name="title">
-      <string>Reset Views to default</string>
-     </property>
-    </widget>
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
     <addaction name="actionOption_View"/>
@@ -213,7 +208,7 @@
     <addaction name="actionPreviousTab"/>
     <addaction name="separator"/>
     <addaction name="menuBookmarks"/>
-    <addaction name="menuReset_Views_to_default"/>
+    <addaction name="actionReset_Views"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -972,6 +967,17 @@
    </property>
    <property name="toolTip">
     <string>Removes all Bookmarks</string>
+   </property>
+  </action>
+  <action name="actionReset_Views">
+   <property name="text">
+    <string>Reset views</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F2</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
  </widget>

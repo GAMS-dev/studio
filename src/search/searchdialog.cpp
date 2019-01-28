@@ -274,9 +274,9 @@ void SearchDialog::updateSearchResults()
     setSearchStatus(SearchStatus::Searching);
     QApplication::sendPostedEvents();
     mCachedResults.clear();
-    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
     mCachedResults.setSearchTerm(createRegex().pattern());
     mCachedResults.useRegex(regex());
+    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
     mHasChanged = false;
 }
 
@@ -284,7 +284,9 @@ void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    if (mHasChanged) updateSearchResults();
+    // only cache when we have changes or are not searching a large file
+    if (mHasChanged && !ViewHelper::toTextView(mMain->recent()->editor()))
+        updateSearchResults();
 
     selectNextMatch(direction);
 }
@@ -423,12 +425,15 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
             edit->setTextCursor(tc);
             return;
         }
-    }
-
-    if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        setSearchStatus(SearchStatus::Searching);
         bool found = tv->findText(searchRegex, flags);
         if (found) {
+            setSearchStatus(SearchStatus::Clear);
             matchPos = tv->position();
+        }
+        else {
+            setSearchStatus(SearchStatus::NoResults);
         }
     }
 
