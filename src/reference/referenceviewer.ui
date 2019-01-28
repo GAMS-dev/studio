@@ -48,6 +48,9 @@
        <property name="currentIndex">
         <number>-1</number>
        </property>
+       <property name="elideMode">
+        <enum>Qt::ElideNone</enum>
+       </property>
        <property name="documentMode">
         <bool>true</bool>
        </property>
