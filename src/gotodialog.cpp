@@ -57,6 +57,7 @@ void GoToDialog::setMaxLines(int maxLines)
     if (!ui->maxLines->isVisible()) {
         ui->maxLines->setVisible(true);
         ui->label_2->setVisible(true);
+        ui->lineEdit->setPlaceholderText(QString());
     }
     mMaxLines = qAbs(maxLines);
     qreal amount = qreal(mMaxLines) / qreal(mLineNumber);
