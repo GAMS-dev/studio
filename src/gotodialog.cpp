@@ -31,7 +31,10 @@ GoToDialog::GoToDialog(QWidget *parent, int maxLines)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
-    ui->lineEdit->setValidator(new QIntValidator(0, maxLines, this));
+    ui->lineEdit->setPlaceholderText(QString::number(maxLines));
+    int min = parent->fontMetrics().width(QString::number(maxLines)+"0");
+    ui->lineEdit->setMinimumWidth(min);
+//    ui->lineEdit->setValidator(new QIntValidator(0, maxLines, this));
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 

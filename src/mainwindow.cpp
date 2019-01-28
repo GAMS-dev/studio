@@ -2434,8 +2434,7 @@ void MainWindow::writeTabs(QJsonObject &json) const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    AbstractEdit *edit = ViewHelper::toAbstractEdit(mRecent.editor());
-    if ((ui->mainTab->currentWidget() == mWp) || !edit)
+    if ((ui->mainTab->currentWidget() == mWp))
         return;
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());

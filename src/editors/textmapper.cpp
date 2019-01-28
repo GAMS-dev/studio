@@ -216,7 +216,7 @@ TextMapper::Chunk* TextMapper::loadChunk(int chunkNr) const
     }
     if (!map) return nullptr;
 
-    // mapping succeeded initialise chunk
+    // mapping succeeded: initialise chunk
     Chunk *res = new Chunk();
     res->nr = chunkNr;
     res->map = map;
