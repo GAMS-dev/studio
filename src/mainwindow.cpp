@@ -2439,15 +2439,16 @@ void MainWindow::on_actionGo_To_triggered()
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
     int maxLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
-    GoToDialog dialog(this, maxLines);
+    GoToDialog dialog(this, maxLines, bool(tv));
+    if (tv) connect(tv, &TextView::loadAmountChanged, &dialog, &GoToDialog::setMaxLines);
     int result = dialog.exec();
+    if (tv) disconnect(tv, &TextView::loadAmountChanged, &dialog, &GoToDialog::setMaxLines);
     if (QDialog::Rejected == result)
         return;
     if (codeEdit)
         codeEdit->jumpTo(dialog.lineNumber());
     if (tv)
         tv->jumpTo(dialog.lineNumber(), 0);
-    // TODO(JM) for TextView: keep dialog open if the line number is beyond knownLineNumbers
 }
 
 void MainWindow::on_actionRedo_triggered()

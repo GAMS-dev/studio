@@ -121,6 +121,7 @@ bool TextView::jumpTo(int lineNr, int charNr)
     }
     mMapper.setPosRelative(lineNr - mMapper.absTopLine(), charNr);
     updatePosAndAnchor();
+    emit selectionChanged();
     setFocus();
     return true;
 }
@@ -240,7 +241,7 @@ void TextView::peekMoreLines()
 {
     // peek and keep timer alive if not done
     if (mMapper.peekChunksForLineNrs(4)) mPeekTimer.start(50);
-    emit loadAmountChanged();
+    emit loadAmountChanged(mMapper.knownLineNrs());
     emit blockCountChanged(lineCount());
 }
 

@@ -60,7 +60,7 @@ public:
 
 signals:
     void blockCountChanged(int newBlockCount);
-    void loadAmountChanged();
+    void loadAmountChanged(int knownLineCount);
     void selectionChanged();
     void searchFindNextPressed();
     void searchFindPrevPressed();

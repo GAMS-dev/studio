@@ -306,7 +306,6 @@ void TextMapper::closeFile()
 {
     QMutexLocker locker(&mMutex);
     if (mFile.isOpen()) mFile.close();
-    DEB() << "File is closed";
     mTimer.stop();
 }
 

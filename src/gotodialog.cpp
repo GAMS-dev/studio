@@ -21,20 +21,24 @@
 #include "ui_gotodialog.h"
 
 #include <QIntValidator>
+#include <QPainter>
 
 namespace gams {
 namespace studio {
 
-GoToDialog::GoToDialog(QWidget *parent, int maxLines)
+GoToDialog::GoToDialog(QWidget *parent, int maxLines, bool wait)
     : QDialog(parent),
-      ui(new Ui::GoToDialog)
+      ui(new Ui::GoToDialog),
+      mMaxLines(qAbs(maxLines)),
+      mWait(wait)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     ui->lineEdit->setPlaceholderText(QString::number(maxLines));
     int min = parent->fontMetrics().width(QString::number(maxLines)+"0");
     ui->lineEdit->setMinimumWidth(min);
-//    ui->lineEdit->setValidator(new QIntValidator(0, maxLines, this));
+    ui->maxLines->setVisible(false);
+    ui->label_2->setVisible(false);
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
@@ -48,10 +52,42 @@ int GoToDialog::lineNumber() const
     return mLineNumber;
 }
 
+void GoToDialog::setMaxLines(int maxLines)
+{
+    if (!ui->maxLines->isVisible()) {
+        ui->maxLines->setVisible(true);
+        ui->label_2->setVisible(true);
+    }
+    mMaxLines = qAbs(maxLines);
+    qreal amount = qreal(mMaxLines) / qreal(mLineNumber);
+
+    QLabel *la = ui->maxLines;
+    la->setText(QString::number(mMaxLines));
+    QPalette pal = la->palette();
+    QPixmap pix(la->size());
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setBrush(QColor(100,150,200, 100));
+    p.setPen(Qt::NoPen);
+    int x = qRound(la->width() * qBound(0.0 ,amount, 1.0));
+    if (amount < 1.0)
+        p.drawRect(QRect(0, 0, x, la->height()));
+    pal.setBrush(QPalette::Background, QBrush(pix));
+    la->setPalette(pal);
+    la->repaint();
+
+    if (!mWait && mLineNumber <= mMaxLines)
+        accept();
+}
+
 void GoToDialog::on_goToButton_clicked()
 {
-    mLineNumber =(ui->lineEdit->text().toInt())-1;
-    accept();
+    mLineNumber = (ui->lineEdit->text().toInt())-1;
+    if (!mWait && mLineNumber > mMaxLines)
+        ui->lineEdit->setText(QString::number(mMaxLines));
+    if (mLineNumber <= mMaxLines)
+        accept();
+    mWait = false;
 }
 
 }
