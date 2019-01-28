@@ -157,7 +157,6 @@ void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
 
 void TextViewEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    TRACE();
     SearchDialog *searchDialog = SearchLocator::searchDialog();
     if (!searchDialog) return;
     QString searchTerm = searchDialog->searchTerm();
