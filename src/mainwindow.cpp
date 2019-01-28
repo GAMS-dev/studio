@@ -2345,7 +2345,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
         if (ViewHelper::toCodeEdit(edit) || ViewHelper::toLogEdit(edit))
             ViewHelper::toAbstractEdit(edit)->setFont(font);
         else if (ViewHelper::toTextView(edit))
-            ViewHelper::toTextView(edit)->setFont(font);
+            ViewHelper::toTextView(edit)->edit()->setFont(font);
     }
     for (QWidget* log: openLogs())
         log->setFont(font);
