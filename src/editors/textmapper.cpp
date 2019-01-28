@@ -75,6 +75,7 @@ bool TextMapper::openFile(const QString &fileName)
         if (chunk && chunk->isValid()) {
             mTopLine.lineCount = chunk->lineCount();
             mTopLine.localLine = 0;
+            setPosRelative(0,0);
             updateMaxTop();
             return true;
         }

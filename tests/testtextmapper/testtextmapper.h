@@ -48,7 +48,6 @@ private slots:
     void testLineNrEstimation();
     void testFindLine();
     void testPosAndAnchor();
-    void testClipboard();
 
 private:
     TextMapper *mMapper;

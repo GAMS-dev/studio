@@ -25,7 +25,7 @@
 #include <QStandardPaths>
 #include <QClipboard>
 #include <QApplication>
-#include <QThread>
+//#include <QThread>
 
 using gams::studio::TextMapper;
 
@@ -303,65 +303,6 @@ void TestTextMapper::testPosAndAnchor()
     QCOMPARE(mMapper->position(true).y(), 99); // cropped to buffer
     mMapper->setTopLine(1920);
     QCOMPARE(mMapper->position(true).y(), 10);
-}
-
-void TestTextMapper::testClipboard()
-{
-//    ulong ms = 1; // As the windows clipboard cries on fast changes in a row we have to slow it down a bit
-    QClipboard *clip = QApplication::clipboard();
-
-    // ---------- check clipbord content
-//    clip->clear();
-//    mMapper->setPosRelative(2, 0);
-//    mMapper->setPosRelative(2, 7, QTextCursor::KeepAnchor);
-//    mMapper->copyToClipboard();
-//    QCOMPARE(clip->text(), QString("This is"));
-
-//    QApplication::instance()->thread()->msleep(ms);
-    clip->clear();
-    mMapper->setPosRelative(2, 89);
-    mMapper->setPosRelative(3, 7, QTextCursor::KeepAnchor);
-    mMapper->copyToClipboard();
-    QApplication::instance()->thread()->msleep(10);
-    QCOMPARE(clip->text(), QString("long lines.\nThis is"));
-
-//    QApplication::instance()->thread()->msleep(ms);
-//    clip->clear();
-//    mMapper->setPosRelative(300, 0);
-//    mMapper->setPosRelative(400, 7, QTextCursor::KeepAnchor);
-//    mMapper->copyToClipboard();
-//    QStringList list = clip->text().split("\n");
-//    QCOMPARE(list.count(), 101);
-//    QCOMPARE(list.last(), QString("This is"));
-
-//    QApplication::instance()->thread()->msleep(ms);
-//    clip->clear();
-//    mMapper->setTopOffset(5000000);
-//    mMapper->moveTopLine(496);
-//    QCOMPARE(mMapper->line(0), trUtf8("Some characters 'äüößÄÜÖê€µ@' to test the codec."));
-//    QCOMPARE(mMapper->topChunk(), 308);
-//    mMapper->setPosRelative(-1, 0);
-//    mMapper->setPosRelative(0, 0, QTextCursor::KeepAnchor);
-//    mMapper->copyToClipboard();
-//    QCOMPARE(clip->text(), trUtf8("This is line 50000 of the testfile - the last numerated.\n"));
-
-//    QApplication::instance()->thread()->msleep(ms);
-//    clip->clear();
-//    mMapper->setPosRelative(0, 0);
-//    mMapper->setPosRelative(0, 100, QTextCursor::KeepAnchor);
-//    mMapper->copyToClipboard();
-//    QCOMPARE(clip->text(), mMapper->line(0));
-
-//    QApplication::instance()->thread()->msleep(ms);
-//    clip->clear();
-//    mMapper->setPosRelative(-20000, 0);
-//    mMapper->setPosRelative(0, 100, QTextCursor::KeepAnchor);
-//    mMapper->copyToClipboard();
-//    QCOMPARE(mMapper->selectionSize(), 2020015);
-//    // differs in size by 11 for the last lines 11 utf8 characters taking 2 char each
-//    QCOMPARE(mMapper->selectionSize(), clip->text().length() + 11);
-
-    clip->clear();
 }
 
 
