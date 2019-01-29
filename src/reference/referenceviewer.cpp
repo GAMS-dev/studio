@@ -108,7 +108,7 @@ void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
 void ReferenceViewer::on_tabBarClicked(int index)
 {
     SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(index));
-    if (!refWidget->isModelLoaded())
+    if (refWidget && !refWidget->isModelLoaded())
         refWidget->initModel();
 }
 
