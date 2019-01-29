@@ -20,6 +20,8 @@
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
 
+#include "logger.h"
+
 namespace gams {
 namespace studio {
 namespace reference {
@@ -32,43 +34,31 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 {
     ui->setupUi(this);
 
-    mSymbolTableModel = new SymbolTableModel(mReference, mType, this);
+    mSymbolTableModel = new SymbolTableModel(mType, this);
+    ui->symbolView->setModel( mSymbolTableModel );
 
-    mSymbolTableProxyModel= new QSortFilterProxyModel(this);
-    mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    mSymbolTableProxyModel->setSourceModel( mSymbolTableModel );
-    if (mType == SymbolDataType::File)
-        mSymbolTableProxyModel->setFilterKeyColumn(0);
-    else
-        mSymbolTableProxyModel->setFilterKeyColumn(1);
-    mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-
-    ui->symbolView->setModel( mSymbolTableProxyModel );
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
+    if (mType == SymbolDataType::SymbolType::FileUsed)
+        ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
+    else
+        ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
     ui->symbolView->setSortingEnabled(true);
-    ui->symbolView->resizeColumnsToContents();
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
     ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.4));
 
+    connect(mSymbolTableModel, &SymbolTableModel::symbolSelectionToBeUpdated, this, &SymbolReferenceWidget::updateSymbolSelection);
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
-    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
-    connect(ui->allColumnToggleSearch, &QCheckBox::toggled, this, &SymbolReferenceWidget::toggleSearchColumns);
+    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
+    connect(ui->allColumnToggleSearch, &QCheckBox::toggled, mSymbolTableModel, &SymbolTableModel::toggleSearchColumns);
 
-    mReferenceTreeProxyModel = new QSortFilterProxyModel(this);
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
+    ui->referenceView->setModel( mReferenceTreeModel );
 
-    mReferenceTreeProxyModel->setFilterKeyColumn(-1);
-    mReferenceTreeProxyModel->setSourceModel( mReferenceTreeModel );
-    mReferenceTreeProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    mReferenceTreeProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-
-    ui->referenceView->setModel( mReferenceTreeProxyModel );
     ui->referenceView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);
@@ -85,18 +75,18 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 SymbolReferenceWidget::~SymbolReferenceWidget()
 {
     delete ui;
+    delete mSymbolTableModel;
+    delete mReferenceTreeModel;
 }
 
-void SymbolReferenceWidget::toggleSearchColumns(bool checked)
+void SymbolReferenceWidget::selectSearchField()
 {
-    if (checked) {
-        mSymbolTableProxyModel->setFilterKeyColumn(-1);
-    } else {
-        if (mType == SymbolDataType::File)
-            mSymbolTableProxyModel->setFilterKeyColumn(0);
-        else
-            mSymbolTableProxyModel->setFilterKeyColumn(1);
-    }
+    ui->symbolSearchLineEdit->setFocus();
+}
+
+bool SymbolReferenceWidget::isModelLoaded()
+{
+    return mSymbolTableModel->isModelLoaded();
 }
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
@@ -104,11 +94,18 @@ void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemS
     Q_UNUSED(deselected);
     if (selected.indexes().size() > 0) {
         if (mType == SymbolDataType::FileUsed) {
-            return;
+            mCurrentSymbolID = -1;
+            QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_FILEUSED_NAME);
+            mCurrentSymbolSelection = mSymbolTableModel->data( idx ).toString();
+            mReferenceTreeModel->resetModel();
+        } else {
+            QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_ID);
+            mCurrentSymbolID = mSymbolTableModel->data( idx ).toInt();
+            idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_NAME);
+            mCurrentSymbolSelection = mSymbolTableModel->data( idx ).toString();
+            mReferenceTreeModel->updateSelectedSymbol( mCurrentSymbolSelection );
         }
 
-        SymbolId id = selected.indexes().at(0).data().toInt();
-        mReferenceTreeModel->updateSelectedSymbol(id);
     }
 }
 
@@ -122,6 +119,31 @@ void SymbolReferenceWidget::expandResetModel()
 void SymbolReferenceWidget::resetModel()
 {
     mSymbolTableModel->resetModel();
+    mReferenceTreeModel->resetModel();
+
+    if (mCurrentSymbolSelection.isEmpty() && mCurrentSymbolID==-1)
+        return;
+
+    QModelIndex idx = (mType==SymbolDataType::FileUsed ?
+        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_FILEUSED_NAME):
+        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_SYMBOL_NAME) );
+    QModelIndexList items = mSymbolTableModel->match(idx, Qt::DisplayRole,
+                                                     mCurrentSymbolSelection, 1,
+                                                     Qt::MatchExactly);
+    for(QModelIndex itemIdx : items) {
+        ui->symbolView->selectionModel()->select(
+                    QItemSelection(
+                        mSymbolTableModel->index(itemIdx.row(),0),
+                        mSymbolTableModel->index(itemIdx.row(),mSymbolTableModel->columnCount()- 1)),
+                    QItemSelectionModel::ClearAndSelect);
+    }
+}
+
+void SymbolReferenceWidget::initModel()
+{
+    if (!mSymbolTableModel->isModelLoaded())
+        mSymbolTableModel->initModel(mReference);
+
     mReferenceTreeModel->resetModel();
 }
 
@@ -143,6 +165,20 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
         QVariant typeName = ui->referenceView->model()->data(index.sibling(index.row(), 3), Qt::UserRole);
         ReferenceItem item(-1, ReferenceDataType::typeFrom(typeName.toString()), location.toString(), lineNumber.toInt(), colNumber.toInt());
         emit mReferenceViewer->jumpTo( item );
+    }
+}
+
+void SymbolReferenceWidget::updateSymbolSelection()
+{
+    int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolSelection );
+    ui->symbolView->selectionModel()->clearCurrentIndex();
+    ui->symbolView->selectionModel()->clearSelection();
+    if (updatedSelectedRow >= 0 && updatedSelectedRow < ui->symbolView->model()->rowCount()) {
+        QModelIndex topLeftIdx = mSymbolTableModel->index( updatedSelectedRow, 0 );
+        QModelIndex bottomRightIdx = mSymbolTableModel->index( updatedSelectedRow, mSymbolTableModel->columnCount()-1 );
+        ui->symbolView->selectionModel()->select( QItemSelection(topLeftIdx, bottomRightIdx), QItemSelectionModel::Select);
+    } else {
+         mReferenceTreeModel->resetModel();
     }
 }
 

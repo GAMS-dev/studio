@@ -271,7 +271,6 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
-    void renameGroup(ProjectGroupNode *group);
 
     void on_actionToggleBookmark_triggered();
 

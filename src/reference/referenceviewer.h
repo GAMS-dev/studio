@@ -43,6 +43,7 @@ class ReferenceViewer : public QWidget
 public:
     explicit ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent = nullptr);
     ~ReferenceViewer();
+    void selectSearchField();
 
 signals:
     void jumpTo(ReferenceItem item);
@@ -51,6 +52,7 @@ public slots:
     // TODO: on_referenceFileChagned to be removed when
     //       a ReferenceViewer does not create own Reference Object
     void on_referenceFileChanged(QTextCodec* codec);
+    void on_tabBarClicked(int index);
     void updateView(bool status);
 
 private:
@@ -59,7 +61,6 @@ private:
     QTextCodec *mCodec;
 
     Reference* mReference;
-    QTabWidget* mTabWidget;    
 };
 
 } // namespace reference
