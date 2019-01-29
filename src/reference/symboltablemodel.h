@@ -32,7 +32,7 @@ class SymbolTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit SymbolTableModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
+    explicit SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -43,12 +43,18 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
     void resetModel();
+    void initModel(Reference* ref);
+
+    bool isModelLoaded();
 
     int getSortedIndexOf(const SymbolId id) const;
+    int getSortedIndexOf(const QString &name) const;
     void toggleSearchColumns(bool checked);
     void setFilterPattern(const QString& pattern);
 
-    static const int COLUMN_SYMBOLID = 0;
+    static const int COLUMN_SYMBOL_ID = 0;
+    static const int COLUMN_SYMBOL_NAME = 1;
+    static const int COLUMN_FILEUSED_NAME = 0;
 
 signals:
     void symbolSelectionToBeUpdated();
@@ -88,6 +94,8 @@ private:
 
     int mFilteredKeyColumn = -1;
     QString mFilteredPattern = "";
+    int mCurrentSortedColumn = 0;
+    Qt::SortOrder mCurrentAscendingSort = Qt::AscendingOrder;
 
     size_t mFilteredRecordSize = 0;
     std::vector<bool> mFilterActive;

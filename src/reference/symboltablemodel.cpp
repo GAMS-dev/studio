@@ -23,8 +23,8 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType type, QObject *parent) :
-     QAbstractTableModel(parent), mType(type), mReference(ref)
+SymbolTableModel::SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent) :
+    QAbstractTableModel(parent), mType(type), mReference(nullptr)
 {
     mAllSymbolsHeader << "Entry" << "Name" << "Type" << "Dim" << "Domain" << "Text";
     mSymbolsHeader    << "Entry" << "Name"           << "Dim" << "Domain" << "Text";
@@ -32,6 +32,12 @@ SymbolTableModel::SymbolTableModel(Reference *ref, SymbolDataType::SymbolType ty
     mFileUsedHeader   << "File Location";
 
     resetSizeAndIndices();
+
+    if (mType == SymbolDataType::FileUsed)
+        mCurrentSortedColumn = 0;
+    else
+        mCurrentSortedColumn = 1;
+    mCurrentAscendingSort = Qt::AscendingOrder;
 }
 
 QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -104,6 +110,9 @@ int SymbolTableModel::columnCount(const QModelIndex &parent) const
 
 QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
 {
+    if (!mReference)
+        return QVariant();
+
     if (mReference->isEmpty())
         return QVariant();
 
@@ -186,6 +195,12 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
 
 void SymbolTableModel::sort(int column, Qt::SortOrder order)
 {
+    mCurrentSortedColumn = column;
+    mCurrentAscendingSort = order;
+
+    if (!mReference)
+        return;
+
     QList<SymbolReferenceItem *> items = mReference->findReference(mType);
     SortType sortType = getSortTypeOf(column);
     ColumnType colType = getColumnTypeOf(column);
@@ -195,10 +210,11 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
 
         QList<QPair<int, int>> idxList;
         for(int rec=0; rec<items.size(); rec++) {
+            int idx = static_cast<int>(mSortIdxMap[static_cast<size_t>(rec)]);
             if (colType == columnId)
-               idxList.append(QPair<int, int>(rec, items.at(rec)->id()) );
+               idxList.append(QPair<int, int>(idx, items.at(idx)->id()) );
             else if (colType == columnDimension)
-                    idxList.append(QPair<int, int>(rec, items.at(rec)->dimension()) );
+                    idxList.append(QPair<int, int>(idx, items.at(idx)->dimension()) );
         }
         if (order == Qt::SortOrder::AscendingOrder)
            std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, int> a, QPair<int, int> b) { return a.second < b.second; });
@@ -223,18 +239,19 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
             }
         } else  {
             for(int rec=0; rec<items.size(); rec++) {
+                int idx = static_cast<int>(mSortIdxMap[static_cast<size_t>(rec)]);
                 if (colType == columnName) {
-                    idxList.append(QPair<int, QString>(rec, items.at(rec)->name()) );
+                    idxList.append(QPair<int, QString>(idx, items.at(idx)->name()) );
                 } else if (colType == columnText) {
-                          idxList.append(QPair<int, QString>(rec, items.at(rec)->explanatoryText()) );
+                          idxList.append(QPair<int, QString>(idx, items.at(idx)->explanatoryText()) );
                 } else if (colType == columnType) {
-                          SymbolDataType::SymbolType type = items.at(rec)->type();
-                          idxList.append(QPair<int, QString>(rec, SymbolDataType::from(type).name()) );
+                          SymbolDataType::SymbolType type = items.at(idx)->type();
+                          idxList.append(QPair<int, QString>(idx, SymbolDataType::from(type).name()) );
                 } else if (colType == columnDomain) {
-                          QString domainStr = getDomainStr( items.at(rec)->domain() );
-                          idxList.append(QPair<int, QString>(rec, domainStr) );
+                          QString domainStr = getDomainStr( items.at(idx)->domain() );
+                          idxList.append(QPair<int, QString>(idx, domainStr) );
                 } else  {
-                    idxList.append(QPair<int, QString>(rec, "") );
+                    idxList.append(QPair<int, QString>(idx, "") );
                 }
             }
         }
@@ -279,11 +296,26 @@ void SymbolTableModel::resetModel()
         removeRows(0, rowCount(), QModelIndex());
     }
     resetSizeAndIndices();
+    sort(mCurrentSortedColumn, mCurrentAscendingSort);
     endResetModel();
+}
+
+void SymbolTableModel::initModel(Reference *ref)
+{
+    mReference = ref;
+    resetModel();
+}
+
+bool SymbolTableModel::isModelLoaded()
+{
+    return (mReference!=nullptr);
 }
 
 int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
 {
+    if (!mReference)
+        return -1;
+
     QList<SymbolReferenceItem *> items = mReference->findReference(mType);
     int rec;
     for(rec=0; rec<items.size(); rec++) {
@@ -292,6 +324,32 @@ int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
             break;
     }
     return rec < items.size() ? rec : -1;
+}
+
+int SymbolTableModel::getSortedIndexOf(const QString &name) const
+{
+    if (!mReference)
+        return -1;
+
+    if (mType == SymbolDataType::FileUsed) {
+       QStringList items = mReference->getFileUsed();
+       int rec = -1;
+       for(rec=0; rec<items.size(); rec++) {
+           int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[ static_cast<size_t>(rec) ] ] );
+           if (QString::localeAwareCompare(items.at(idx), name) == 0)
+               break;
+       }
+       return rec < items.size() ? rec : -1;
+    } else {
+       QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+       int rec = -1;
+       for(rec=0; rec<items.size(); rec++) {
+           int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[ static_cast<size_t>(rec) ] ] );
+           if (QString::localeAwareCompare(items.at(idx)->name(), name) == 0)
+               break;
+       }
+       return rec < items.size() ? rec : -1;
+    }
 }
 
 void SymbolTableModel::toggleSearchColumns(bool checked)
@@ -409,6 +467,9 @@ SymbolTableModel::ColumnType SymbolTableModel::getColumnTypeOf(int column) const
 
 QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
 {
+    if (!mReference)
+        return "";
+
     if (domain.size() > 0) {
        QString domainStr = "(";
        domainStr.append(  mReference->findReference( domain.at(0) )->name() );
@@ -461,6 +522,9 @@ bool SymbolTableModel::isLocationFilteredActive(int idx, const QString &pattern)
 
 void SymbolTableModel::filterRows()
 {
+    if (!mReference)
+        return;
+
     size_t size = 0;
     // there is no filter
     if (mFilteredPattern.isEmpty()) {
@@ -542,10 +606,12 @@ void SymbolTableModel::resetSizeAndIndices()
     size_t size = 0;
 
     if (mType == SymbolDataType::SymbolType::FileUsed) {
-        size = static_cast<size_t>(mReference->getFileUsed().size());
+        if (mReference)
+            size = static_cast<size_t>(mReference->getFileUsed().size());
         mFilteredKeyColumn = 0;
     } else {
-        size = static_cast<size_t>(mReference->findReference(mType).size());
+        if (mReference)
+           size = static_cast<size_t>(mReference->findReference(mType).size());
         mFilteredKeyColumn = 1;
     }
     mSortIdxMap.resize( size );

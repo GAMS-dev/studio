@@ -20,6 +20,8 @@
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
 
+#include "logger.h"
+
 namespace gams {
 namespace studio {
 namespace reference {
@@ -32,7 +34,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 {
     ui->setupUi(this);
 
-    mSymbolTableModel = new SymbolTableModel(mReference, mType, this);
+    mSymbolTableModel = new SymbolTableModel(mType, this);
     ui->symbolView->setModel( mSymbolTableModel );
 
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -42,7 +44,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     else
         ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
     ui->symbolView->setSortingEnabled(true);
-    ui->symbolView->resizeColumnsToContents();
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
@@ -83,18 +84,28 @@ void SymbolReferenceWidget::selectSearchField()
     ui->symbolSearchLineEdit->setFocus();
 }
 
+bool SymbolReferenceWidget::isModelLoaded()
+{
+    return mSymbolTableModel->isModelLoaded();
+}
+
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
     Q_UNUSED(deselected);
     if (selected.indexes().size() > 0) {
         if (mType == SymbolDataType::FileUsed) {
             mCurrentSymbolID = -1;
-            return;
+            QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_FILEUSED_NAME);
+            mCurrentSymbolSelection = mSymbolTableModel->data( idx ).toString();
+            mReferenceTreeModel->resetModel();
+        } else {
+            QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_ID);
+            mCurrentSymbolID = mSymbolTableModel->data( idx ).toInt();
+            idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOL_NAME);
+            mCurrentSymbolSelection = mSymbolTableModel->data( idx ).toString();
+            mReferenceTreeModel->updateSelectedSymbol( mCurrentSymbolSelection );
         }
 
-        QModelIndex idx = mSymbolTableModel->index(selected.indexes().at(0).row(), SymbolTableModel::COLUMN_SYMBOLID);
-        mCurrentSymbolID = mSymbolTableModel->data( idx ).toInt();
-        mReferenceTreeModel->updateSelectedSymbol(mCurrentSymbolID);
     }
 }
 
@@ -108,6 +119,31 @@ void SymbolReferenceWidget::expandResetModel()
 void SymbolReferenceWidget::resetModel()
 {
     mSymbolTableModel->resetModel();
+    mReferenceTreeModel->resetModel();
+
+    if (mCurrentSymbolSelection.isEmpty() && mCurrentSymbolID==-1)
+        return;
+
+    QModelIndex idx = (mType==SymbolDataType::FileUsed ?
+        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_FILEUSED_NAME):
+        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_SYMBOL_NAME) );
+    QModelIndexList items = mSymbolTableModel->match(idx, Qt::DisplayRole,
+                                                     mCurrentSymbolSelection, 1,
+                                                     Qt::MatchExactly);
+    for(QModelIndex itemIdx : items) {
+        ui->symbolView->selectionModel()->select(
+                    QItemSelection(
+                        mSymbolTableModel->index(itemIdx.row(),0),
+                        mSymbolTableModel->index(itemIdx.row(),mSymbolTableModel->columnCount()- 1)),
+                    QItemSelectionModel::ClearAndSelect);
+    }
+}
+
+void SymbolReferenceWidget::initModel()
+{
+    if (!mSymbolTableModel->isModelLoaded())
+        mSymbolTableModel->initModel(mReference);
+
     mReferenceTreeModel->resetModel();
 }
 
@@ -134,12 +170,7 @@ void SymbolReferenceWidget::jumpToReferenceItem(const QModelIndex &index)
 
 void SymbolReferenceWidget::updateSymbolSelection()
 {
-    if (mType == SymbolDataType::FileUsed) {
-        mCurrentSymbolID = -1;
-        return;
-    }
-
-    int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolID );
+    int updatedSelectedRow = mSymbolTableModel->getSortedIndexOf( mCurrentSymbolSelection );
     ui->symbolView->selectionModel()->clearCurrentIndex();
     ui->symbolView->selectionModel()->clearSelection();
     if (updatedSelectedRow >= 0 && updatedSelectedRow < ui->symbolView->model()->rowCount()) {
