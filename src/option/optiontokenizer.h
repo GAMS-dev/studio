@@ -102,8 +102,9 @@ private:
     bool logMessage(optHandle_t &mOPTHandle);
     OptionErrorType logAndClearMessage(optHandle_t &OPTHandle, bool logged = true);
 
-    QString getKeyFromStr(QString &line, QString &hintKey);
-    QString getValueFromStr(QString &line, int itype, QString &hintKey, QString &hintValue);
+    QString getKeyFromStr(const QString &line, const QString &hintKey);
+    QString getValueFromStr(const QString &line, const int itype, const QString &hintKey, const QString &hintValue);
+    QString getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);

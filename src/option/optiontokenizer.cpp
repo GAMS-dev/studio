@@ -546,6 +546,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         bool valueRead = false;
         QString key = "";
         QString value = "";
+        QString eolComment = "";
         for (int i = 1; i <= optCount(mOPTHandle); ++i) {
             int idefined, idefinedR, irefnr, itype, iopttype, ioptsubtype;
             optGetInfoNr(mOPTHandle, i, &idefined, &idefinedR, &irefnr, &itype, &iopttype, &ioptsubtype);
@@ -608,11 +609,14 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 default: break;
                 }
 
+                if (mOption->isEOLCharDefined()) {
+                    eolComment = getEOLCommentFromStr(text, key, value);
+                }
                 if (valueRead) {
                    item->optionId = i;
                    item->key = key;
                    item->value = value;
-                   item->text = "";
+                   item->text = eolComment;
                    item->error = (errorType == No_Error || errorType == Deprecated_Option) ? errorType : Value_Out_Of_Range;
                    item->disabled = false;
 
@@ -911,7 +915,7 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
     return (logAndClearMessage(mOPTHandle, false)==No_Error);
 }
 
-QString OptionTokenizer::getKeyFromStr(QString &line, QString &hintKey)
+QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintKey)
 {
     QString key = "";
     if (line.contains(hintKey, Qt::CaseInsensitive)) {
@@ -948,7 +952,7 @@ QString OptionTokenizer::getKeyFromStr(QString &line, QString &hintKey)
     return key;
 }
 
-QString OptionTokenizer::getValueFromStr(QString &line, int itype, QString &hintKey,  QString &hintValue)
+QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, const QString &hintKey, const QString &hintValue)
 {
     if (itype==optDataDouble || hintValue.isEmpty()) {
        QString key = getKeyFromStr(line, hintKey);
@@ -967,6 +971,23 @@ QString OptionTokenizer::getValueFromStr(QString &line, int itype, QString &hint
            return "";
        }
     }
+}
+
+QString OptionTokenizer::getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue)
+{
+    QStringRef strref = line.midRef(0, line.size());
+    if (line.contains(hintKey))
+         strref = strref.mid( hintKey.size(), strref.size() ).trimmed();
+
+    if (line.contains(hintValue))
+        strref = strref.mid( hintValue.size(), strref.size() ).trimmed();
+
+    for(QChar ch : mOption->getEOLChars()) {
+        if (strref.startsWith(ch)) {
+            return line.mid( line.indexOf(strref), line.size()).simplified();
+        }
+    }
+    return QString();
 }
 
 QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QTextCodec* codec)

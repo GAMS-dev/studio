@@ -145,6 +145,9 @@ public:
     QString getDescription(const QString &optionName) const;
     QList<OptionValue> getValueList(const QString &optionName) const;
 
+    QString getEOLChars() const;
+    bool isEOLCharDefined() const;
+
     QStringList getKeyList() const;
     QStringList getValidNonDeprecatedKeyList() const;
     QStringList getKeyAndSynonymList() const;
@@ -179,6 +182,7 @@ private:
     QString mOptionDefinitionPath;
     QString mOptionDefinitionFile;
 
+    QString mEOLChars;
     QMap<QString, OptionDefinition> mOption;
     QMap<QString, QString> mSynonymMap;
     QMap<int, QString> mOptionTypeNameMap;

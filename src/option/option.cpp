@@ -274,6 +274,16 @@ QList<OptionValue> Option::getValueList(const QString &optionName) const
     return mOption[optionName.toUpper()].valueList;
 }
 
+QString Option::getEOLChars() const
+{
+    return mEOLChars;
+}
+
+bool Option::isEOLCharDefined() const
+{
+    return !mEOLChars.isEmpty();
+}
+
 QStringList Option::getKeyList() const
 {
     QStringList keyList;
@@ -455,6 +465,13 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
              optGetGroupNr(mOPTHandle, i, name, &group, &helpContextNr, help);
              mOptionGroup.insert(i, OptionGroup(name, i, (helpContextNr==0), QString::fromLatin1(help), helpContextNr));
          }
+
+         char eolchars[GMS_SSSIZE];
+         int numChars = optEOLChars(mOPTHandle, eolchars);
+         if (numChars>0)
+             mEOLChars = QString(eolchars);
+         else
+             mEOLChars = "";
 
          for (int i = 1; i <= optCount(mOPTHandle); ++i) {
 
