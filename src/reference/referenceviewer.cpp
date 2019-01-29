@@ -93,7 +93,8 @@ ReferenceViewer::~ReferenceViewer()
 void ReferenceViewer::selectSearchField()
 {
     SymbolReferenceWidget* tabWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
-    tabWidget->selectSearchField();
+    if (tabWidget)
+        tabWidget->selectSearchField();
 }
 
 void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
