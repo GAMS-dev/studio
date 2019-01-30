@@ -24,6 +24,7 @@
 #include <QMainWindow>
 #include "lineeditcompleteevent.h"
 #include "optioncompleterdelegate.h"
+#include "solveroptiontablemodel.h"
 
 namespace gams {
 namespace studio {
@@ -39,10 +40,10 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     Q_UNUSED(option);
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
-    if (index.column()==0) {
+    if (index.column()==SolverOptionTableModel::COLUMN_OPTION_KEY) {
         completer->setModel(new QStringListModel(mOption->getValidNonDeprecatedKeyList()));
-    } else {
-        QVariant key = index.model()->data( index.model()->index(index.row(), 0) );
+    } else  if (index.column()==SolverOptionTableModel::COLUMN_OPTION_VALUE) {
+        QVariant key = index.model()->data( index.model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_KEY) );
         if (mOption->isValid(key.toString())) {
             completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(key.toString())) );
         } else {

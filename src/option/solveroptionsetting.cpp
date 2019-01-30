@@ -39,6 +39,8 @@ SolverOptionSetting::SolverOptionSetting(QString eolchars, QWidget *parent) :
     } else {
         mDefaultEOLChar = QChar();
     }
+    connect(ui->eolCommentCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+        [=](int index){ emit EOLCharChanged(ui->eolCommentCharComboBox->itemText(index).at(0)); });
 }
 
 SolverOptionSetting::~SolverOptionSetting()

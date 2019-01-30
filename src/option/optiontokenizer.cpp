@@ -490,7 +490,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
     QString key = item->key;
     QString value = item->value.toString();
     QString text = item->text;
-    qDebug() << "format1 :" << item->key << "," << item->value.toString() << "," << item->text;
+    qDebug() << __FUNCTION__ << item->key << "," << item->value.toString() << "," << item->text;
 
     if (item->disabled) {
         if (key.startsWith("*") && key.mid(1).simplified().isEmpty())
@@ -514,10 +514,10 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
             qDebug() << "format value [" << value << "]";
         }
     }
-//    if (!item->text.isEmpty() && !item->text.startsWith("!"))
-//       return QString("%1%2%3 !%4").arg(key).arg(separator).arg(value).arg(text);
-
-    return QString("%1%2%3").arg(key).arg(separator).arg(value);
+    if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
+       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text);
+    else
+       return QString("%1%2%3").arg(key).arg(separator).arg(value);
 }
 
 bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str)
@@ -616,6 +616,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                     eolComment = getEOLCommentFromStr(text, key, value);
                 }
                 if (valueRead) {
+                   qDebug() << "readoptionfile:" << mOption->getEOLChars() << ":" << eolComment;
                    item->optionId = i;
                    item->key = key;
                    item->value = value;
@@ -663,6 +664,11 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
     }
     QList<OptionError> errList = this->format( tokenizedItems );
     this->formatLineEdit(lineEdit, errList);
+}
+
+void OptionTokenizer::on_EOLCommentChar_changed(const QChar ch)
+{
+    mEOLCommentChar = ch;
 }
 
 OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
@@ -798,9 +804,9 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
     return messageType;
 }
 
-bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOptionItem *item)
+bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem *item)
 {
-    qDebug() << "(" << key << ","<<value << ")";
+    qDebug() << __FUNCTION__ << "(" << key << ","<<value << "," << text << ")";
     QString str = QString("%1 %2").arg(key).arg(value);
 
     optResetAll( mOPTHandle );
@@ -808,8 +814,8 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
         item->optionId = -1;
         item->key = str;
         item->value = "";
-        item->text = "";
-       item->error = No_Error;
+        item->text = text;
+        item->error = No_Error;
         item->disabled = true;
     } else {
        optReadFromStr( mOPTHandle, str.toLatin1() );
@@ -886,7 +892,7 @@ bool OptionTokenizer::updateOptionItem(QString &key, QString &value,  SolverOpti
                    item->optionId = i;
                    item->key = definedKey;
                    item->value = definedValue;
-                   item->text = "";
+                   item->text = text;
                    item->error = errorType;
                    if (errorType == No_Error || errorType == Deprecated_Option)
                        item->error = errorType;
@@ -987,7 +993,7 @@ QString OptionTokenizer::getEOLCommentFromStr(const QString &line, const QString
 
     for(QChar ch : mOption->getEOLChars()) {
         if (strref.startsWith(ch)) {
-            return line.mid( line.indexOf(strref), line.size()).simplified();
+            return line.mid( line.indexOf(strref)+1, line.size()).simplified();
         }
     }
     return QString();
@@ -1271,9 +1277,10 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
 
         QString key = item->key;
         QString value = item->value.toString();
-        QString str = QString("%1 %2").arg(key).arg(value);
+        QString text = item->text;
+        QString str = QString("%1 %2 %3").arg(key).arg(value).arg(text);
         qDebug() << "validating[" << str << "]";
-        updateOptionItem(key, value, item);
+        updateOptionItem(key, value, text, item);
     }
 }
 
@@ -1291,6 +1298,11 @@ AbstractSystemLogger *OptionTokenizer::logger()
 void OptionTokenizer::provideLogger(AbstractSystemLogger *optionLogEdit)
 {
     mOptionLogger = optionLogEdit;
+}
+
+QChar OptionTokenizer::getEOLCommentChar() const
+{
+    return mEOLCommentChar;
 }
 
 void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {

@@ -60,7 +60,7 @@ public:
     static const int COLUMN_EOL_COMMENT = 2;
 
     // temporary, for debug only
-    int getColumnEntryNumber();
+    int getColumnEntryNumber() const;
     void setColumnEntryNumber(int column);
 
 signals:

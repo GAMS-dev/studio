@@ -52,8 +52,12 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
     ui->solverOptionTabWidget->addTab( logEdit, "Message" );
+
     SolverOptionSetting* settingEdit = new SolverOptionSetting(mOptionTokenizer->getOption()->getEOLChars(), this);
+    mOptionTokenizer->on_EOLCommentChar_changed( settingEdit->getDefaultEOLCharacter() );
+    connect(settingEdit, &SolverOptionSetting::EOLCharChanged, mOptionTokenizer, &OptionTokenizer::on_EOLCommentChar_changed);
     ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
+
     mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
     QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mCodec);

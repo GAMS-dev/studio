@@ -43,6 +43,7 @@ public:
 signals:
     void addCommentAboveChanged(int checkState);
     void addOptionDescriptionAsComment(int checkState);
+    void EOLCharChanged(QChar ch);
 
 private slots:
     void on_addCommentAboveCheckBox_stateChanged(int checkState);

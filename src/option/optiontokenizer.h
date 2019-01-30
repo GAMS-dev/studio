@@ -65,7 +65,7 @@ public:
 
     QString formatOption(const SolverOptionItem *item);
     bool getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str);
-    bool updateOptionItem(QString &key, QString &value, SolverOptionItem* item);
+    bool updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem* item);
 
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QTextCodec* codec);
     bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QTextCodec* codec);
@@ -81,14 +81,18 @@ public:
     AbstractSystemLogger* logger();
     void provideLogger(AbstractSystemLogger* optionLogEdit);
 
+    QChar getEOLCommentChar() const;
+
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
     void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
+    void on_EOLCommentChar_changed(const QChar ch);
 
 private:
     Option* mOption = nullptr;
     optHandle_t mOPTHandle;
     bool mOPTAvailable = false;
+    QChar mEOLCommentChar = QChar();
 
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
