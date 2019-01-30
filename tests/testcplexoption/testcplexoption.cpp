@@ -833,14 +833,14 @@ void TestCPLEXOption::testReadOptionFile()
 
     QCOMPARE( items.at(28)->key, "advind");
     QCOMPARE( items.at(28)->value.toString(), "2");
-    QCOMPARE( items.at(28)->text, "! this sets the option to two");
+    QCOMPARE( items.at(28)->text, "this sets the option to two");
     QCOMPARE( items.at(28)->optionId, 6 );
     QVERIFY( !items.at(28)->disabled );
     QVERIFY( items.at(28)->error == No_Error );
 
     QCOMPARE( items.at(29)->key, "workdir");
     QCOMPARE( items.at(29)->value.toString(), "/x/y");
-    QCOMPARE( items.at(29)->text, "!/z/a/b");
+    QCOMPARE( items.at(29)->text, "/z/a/b");
     QCOMPARE( items.at(29)->optionId, 252 );
     QVERIFY( !items.at(29)->disabled );
     QVERIFY( items.at(29)->error == No_Error );
