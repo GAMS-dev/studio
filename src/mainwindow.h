@@ -227,7 +227,7 @@ private slots:
     // View
     void on_actionOutput_View_triggered(bool checked);
     void on_actionProject_View_triggered(bool checked);
-    void on_actionOption_View_triggered(bool checked);
+    void on_actionOption_View_triggered(bool);
     void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();

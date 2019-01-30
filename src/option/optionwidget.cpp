@@ -40,7 +40,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->setupUi(this);
 
     mGamsOptionTokenizer = new CommandLineTokenizer(QString("optgams.def"));
-//    mCommandLineHistory = new CommandLineHistory(this);
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
     setInterruptActionGroup(aInterrupt, actionStop);
@@ -277,21 +276,6 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->gamsOptionTableView->selectRow(ui->gamsOptionTableView->model()->rowCount()-1);
 }
 
-//void OptionWidget::loadCommandLineOption(const QString &location)
-//{
-//    ui->gamsOptionCommandLine->clear();
-//    QStringList option =  mCommandLineHistory->getHistoryFor(location);
-//    for (QString str: option) {
-//       ui->gamsOptionCommandLine->insertItem(0, str );
-//    }
-//    ui->gamsOptionCommandLine->setCurrentIndex(0);
-//    ui->gamsOptionCommandLine->setCurrentContext(location);
-//    ui->gamsOptionCommandLine->setEnabled(true);
-
-////    setRunActionsEnabled(false);
-////    setInterruptActionsEnabled(false);
-//}
-
 void OptionWidget::loadCommandLineOption(const QStringList &history)
 {
     ui->gamsOptionCommandLine->clear();
@@ -429,8 +413,7 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
                 return ui->gamsOptionTreeView->model()->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
             }
         }
-    } /*else if (widget == ui->gamsOptionCommandLine) {
-    }*/
+    }
     return selectedOptions;
 }
 

@@ -76,12 +76,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    // Timers
     mFileTimer.setSingleShot(true);
     mFileTimer.setInterval(100);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
+
+    // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
@@ -94,10 +97,13 @@ MainWindow::MainWindow(QWidget *parent)
         ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
     }
 
+    // Status Bar
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
     ui->statusBar->setFont(font);
     mStatusWidgets = new StatusWidgets(this);
+
+    // Project View Setup
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mProjectRepo.treeModel());
     ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
@@ -125,8 +131,7 @@ MainWindow::MainWindow(QWidget *parent)
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
-    ui->dockOptionEditor->setWidget(mGamsOptionWidget);
-    ui->dockOptionEditor->show();
+    ui->toolBar->addWidget(mGamsOptionWidget);
 
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
@@ -310,7 +315,7 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
     ui->actionOption_View->setChecked(visibility);
-    ui->dockOptionEditor->setVisible(visibility);
+    // TODO(rogo) add option widget to maintab
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -355,10 +360,9 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
     dockWidgetShow(ui->dockProjectView, checked);
 }
 
-void MainWindow::on_actionOption_View_triggered(bool checked)
+void MainWindow::on_actionOption_View_triggered(bool)
 {
-    dockWidgetShow(ui->dockOptionEditor, checked);
-    if(!checked) ui->dockOptionEditor->setFloating(false);
+    // TODO(rogo): handle option widget
 }
 
 void MainWindow::on_actionHelp_View_triggered(bool checked)
@@ -643,7 +647,7 @@ void MainWindow::projectViewVisibiltyChanged(bool visibility)
 
 void MainWindow::optionViewVisibiltyChanged(bool visibility)
 {
-    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(ui->dockOptionEditor).count());
+    // TODO(rogo)
 }
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)
@@ -2763,9 +2767,10 @@ void MainWindow::resetViews()
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
-        } else if (dock == ui->dockOptionEditor) {
+        }/* else if (dock == ui->dockOptionEditor) {
             addDockWidget(Qt::TopDockWidgetArea, dock);
-        }
+        }*/
+        // TODO(rogo): do we need to handle option widget here?
     }
 }
 
