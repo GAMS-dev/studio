@@ -131,7 +131,21 @@ MainWindow::MainWindow(QWidget *parent)
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
+    ui->toolBar->addAction(ui->actionNew);
+    ui->toolBar->addAction(ui->actionOpen);
+    ui->toolBar->addAction(ui->actionSave);
+    ui->toolBar->addSeparator();
+    ui->toolBar->addAction(ui->actionUndo);
+    ui->toolBar->addAction(ui->actionRedo);
+    ui->toolBar->addSeparator();
+    ui->toolBar->addAction(ui->actionCopy);
+    ui->toolBar->addAction(ui->actionCut);
+    ui->toolBar->addAction(ui->actionPaste);
+    ui->toolBar->addSeparator();
     ui->toolBar->addWidget(mGamsOptionWidget);
+    ui->toolBar->addSeparator();
+    ui->toolBar->addAction(ui->actionSettings);
+    ui->toolBar->addAction(ui->actionGAMS_Library);
 
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
@@ -2873,4 +2887,3 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 
 }
 }
-
