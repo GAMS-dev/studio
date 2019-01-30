@@ -77,10 +77,13 @@ OptionTokenizer::OptionTokenizer(const QString &optionFileName)
 
 OptionTokenizer::~OptionTokenizer()
 {
-    delete mOption;
-
+    if (mOptionLogger)
+        delete mOptionLogger;
+    if (mOption)
+        delete mOption;
     optFree(&mOPTHandle);
 }
+
 
 QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
 {
