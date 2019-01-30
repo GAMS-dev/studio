@@ -35,17 +35,23 @@ class SolverOptionSetting : public QWidget
     Q_OBJECT
 
 public:
-    explicit SolverOptionSetting(QWidget *parent = nullptr);
+    explicit SolverOptionSetting(QString eolchars, QWidget *parent = nullptr);
     ~SolverOptionSetting();
+
+    QChar getDefaultEOLCharacter();
 
 signals:
     void addCommentAboveChanged(int checkState);
+    void addOptionDescriptionAsComment(int checkState);
 
 private slots:
     void on_addCommentAboveCheckBox_stateChanged(int checkState);
+    void on_addEOLCommentCheckBox_stateChanged(int checkState);
 
 private:
     Ui::SolverOptionSetting *ui;
+    QString mEOLChars;
+    QChar mDefaultEOLChar;
 };
 
 }

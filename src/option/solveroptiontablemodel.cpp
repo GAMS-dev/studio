@@ -29,7 +29,13 @@ namespace option {
 SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
-    mHeader << "Option" << "Value" << "Debug Entry";
+    if (mOption->isEOLCharDefined()) {
+        mHeader << "Option" << "Value" << "Comment" << "Debug Entry";
+        columnEntryNumber = 3;
+    } else {
+         mHeader << "Option" << "Value" << "Debug Entry";
+         columnEntryNumber = 2;
+    }
 
     updateCheckState();
 }
@@ -124,16 +130,24 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
                 return QVariant(text);
             } else if (col==COLUMN_OPTION_VALUE) {
                        return QVariant("");
-            } else if (col==COLUMN_ENTRY_NUMBER ) {
-                 return QVariant(mOptionItem.at(row)->optionId);
+            } else if (col==columnEntryNumber) {
+                      return QVariant(mOptionItem.at(row)->optionId);
             }
         } else { // not a comment
             if (col==COLUMN_OPTION_KEY) {
                 return QVariant(mOptionItem.at(row)->key);
             } else if (col==COLUMN_OPTION_VALUE) {
                      return mOptionItem.at(row)->value;
-            } else if (col==COLUMN_ENTRY_NUMBER) {
-                return QVariant(mOptionItem.at(row)->optionId);
+            } else {
+                if (addEOLComment) {
+                   if (col==COLUMN_EOL_COMMENT)
+                       return QVariant(mOptionItem.at(row)->text);
+                   else if (col==columnEntryNumber)
+                           return QVariant(mOptionItem.at(row)->optionId);
+                } else {
+                   if (col==columnEntryNumber)
+                       return QVariant(mOptionItem.at(row)->optionId);
+                }
             }
         }
         break;
@@ -173,9 +187,12 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             case Deprecated_Option:
                  return QVariant::fromValue(QColor(Qt::darkYellow));
             case No_Error:
-                 return QVariant::fromValue(QColor(Qt::black));
+                if (addEOLComment && col==COLUMN_EOL_COMMENT)
+                    return QVariant::fromValue(QColor(Qt::gray));
+                else
+                    return QVariant::fromValue(QColor(Qt::black));
             default:
-                 return QVariant::fromValue(QColor(Qt::black));
+                return QVariant::fromValue(QColor(Qt::black));
             }
         }
      }
@@ -249,9 +266,19 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         case COLUMN_OPTION_VALUE :
             mOptionItem[index.row()]->value = dataValue;
             break;
-        case COLUMN_ENTRY_NUMBER :
-            mOptionItem[index.row()]->optionId = dataValue.toInt();
+        default:
             break;
+        }
+        if (addEOLComment) {
+            if (index.column()==COLUMN_EOL_COMMENT)
+                mOptionItem[index.row()]->text = dataValue;
+            else
+                mOptionItem[index.row()]->optionId = dataValue.toInt();
+        } else {
+            if (index.column()==columnEntryNumber)
+                mOptionItem[index.row()]->optionId = dataValue.toInt();
+            else
+                mOptionItem[index.row()]->text = "";
         }
         emit dataChanged(index, index, roles);
     } else if (role == Qt::CheckStateRole) {
@@ -362,6 +389,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     while (!stream.atEnd()) {
        QString text;
        stream >> text;
+       qDebug() << text;
        newItems << text;
        ++rows;
     }
@@ -387,13 +415,20 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                             Qt::CheckState(Qt::PartiallyChecked),
                             Qt::CheckStateRole );
             } else {
+                qDebug() << " HEY, split!";
                 QStringList textList = text.split("=");
                 QModelIndex keyidx = index(beginRow, SolverOptionTableModel::COLUMN_OPTION_KEY);
                 setData(keyidx, textList.at( SolverOptionTableModel::COLUMN_OPTION_KEY ), Qt::EditRole);
                 QModelIndex validx = index(beginRow, SolverOptionTableModel::COLUMN_OPTION_VALUE);
                 setData(validx, textList.at(SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::EditRole);
-                QModelIndex ididx = index(beginRow, SolverOptionTableModel::COLUMN_ENTRY_NUMBER);
-                setData(ididx, textList.at(SolverOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::EditRole);
+                if (addEOLComment) {
+                    QModelIndex commentidx = index(beginRow, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+                    qDebug() << " add [" << textList.at(SolverOptionTableModel::COLUMN_EOL_COMMENT) << "] into ("
+                             << commentidx.row() << "," << commentidx.column() << ")";
+                    setData(commentidx, textList.at(SolverOptionTableModel::COLUMN_EOL_COMMENT), Qt::EditRole);
+                }
+                QModelIndex ididx = index(beginRow, columnEntryNumber);
+                setData(ididx, textList.at(columnEntryNumber), Qt::EditRole);
                 setHeaderData( validx.row(), Qt::Vertical,
                             Qt::CheckState(Qt::Unchecked),
                             Qt::CheckStateRole );
@@ -412,6 +447,16 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
 QList<SolverOptionItem *> SolverOptionTableModel::getCurrentListOfOptionItems() const
 {
     return mOptionItem;
+}
+
+int SolverOptionTableModel::getColumnEntryNumber()
+{
+    return columnEntryNumber;
+}
+
+void SolverOptionTableModel::setColumnEntryNumber(int column)
+{
+    columnEntryNumber = column;
 }
 
 void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem)
@@ -457,7 +502,7 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
     int row = idx.row();
     while(row <= bottomRight.row()) {
         idx = index(row++, idx.column());
-        if (idx.column()==COLUMN_ENTRY_NUMBER) {
+        if (idx.column()==columnEntryNumber) {
             qDebug() << roles.first() << ", ignore update" << idx.row() << "," << idx.column();
             continue;
         }
@@ -528,7 +573,7 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
             mCheckState[logicalIndex] = QVariant(Qt::Checked);
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_KEY), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
-        setData( index(logicalIndex, SolverOptionTableModel::COLUMN_ENTRY_NUMBER), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
+        setData( index(logicalIndex, columnEntryNumber), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     } else {  // to comment
         QString text, key;
@@ -546,7 +591,7 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         mCheckState[logicalIndex] = QVariant(Qt::PartiallyChecked);
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_KEY), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
-        setData( index(logicalIndex, SolverOptionTableModel::COLUMN_ENTRY_NUMBER), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
+        setData( index(logicalIndex, columnEntryNumber), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
@@ -555,6 +600,11 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
 void SolverOptionTableModel::on_addCommentAbove_stateChanged(int checkState)
 {
     addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
+}
+
+void SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged(int checkState)
+{
+    addEOLComment = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
 void SolverOptionTableModel::setRowCount(int rows)

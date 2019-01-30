@@ -24,13 +24,21 @@ namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionSetting::SolverOptionSetting(QWidget *parent) :
+SolverOptionSetting::SolverOptionSetting(QString eolchars, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SolverOptionSetting)
+    ui(new Ui::SolverOptionSetting),
+    mEOLChars(eolchars)
 {
     ui->setupUi(this);
-    ui->addEOLCommentCheckBox->setVisible(false);
-    ui->readwriteGroupBox->setVisible(false);
+    ui->addEOLCommentCheckBox->setVisible(!eolchars.isEmpty());
+    ui->readwriteGroupBox->setVisible(!eolchars.isEmpty());
+    if (!eolchars.isEmpty()) {
+        for(int i=0; i<eolchars.size(); i++)
+           ui->eolCommentCharComboBox->addItem(eolchars.at(i));
+        mDefaultEOLChar = mEOLChars.at(0);
+    } else {
+        mDefaultEOLChar = QChar();
+    }
 }
 
 SolverOptionSetting::~SolverOptionSetting()
@@ -38,9 +46,19 @@ SolverOptionSetting::~SolverOptionSetting()
     delete ui;
 }
 
+QChar SolverOptionSetting::getDefaultEOLCharacter()
+{
+    return mDefaultEOLChar;
+}
+
 void SolverOptionSetting::on_addCommentAboveCheckBox_stateChanged(int checkState)
 {
     emit addCommentAboveChanged(checkState);
+}
+
+void SolverOptionSetting::on_addEOLCommentCheckBox_stateChanged(int checkState)
+{
+    emit addOptionDescriptionAsComment(checkState);
 }
 
 }

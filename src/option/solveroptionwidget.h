@@ -84,6 +84,7 @@ public slots:
     void on_openAsTextButton_clicked(bool checked = false);
 
    void on_addCommentAbove_stateChanged(int checkState);
+   void on_addEOLCommentCheckBox_stateChanged(int checkState);
 
 private slots:
     void showOptionDefinition();
@@ -94,7 +95,10 @@ private:
     FileId mFileId;
     QString mLocation;
     QString mSolverName;
+
+    bool isViewCompact = false;
     bool addCommentAbove = false;
+    bool addEOLComment = false;
 
     QTextCodec* mCodec;
     SolverOptionTableModel* mOptionTableModel;

@@ -57,7 +57,11 @@ public:
 
     static const int COLUMN_OPTION_KEY = 0;
     static const int COLUMN_OPTION_VALUE = 1;
-    static const int COLUMN_ENTRY_NUMBER = 2;
+    static const int COLUMN_EOL_COMMENT = 2;
+
+    // temporary, for debug only
+    int getColumnEntryNumber();
+    void setColumnEntryNumber(int column);
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
@@ -72,7 +76,9 @@ public slots:
     void on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeSolverOptionItem();
     void on_toggleRowHeader(int logicalIndex);
+
     void on_addCommentAbove_stateChanged(int checkState);
+    void on_addEOLCommentCheckBox_stateChanged(int checkState);
 
 protected:
     QList<SolverOptionItem *> mOptionItem;
@@ -83,10 +89,13 @@ protected:
     Option* mOption;
 
     bool addCommentAbove = false;
+    bool addEOLComment = false;
 
     void setRowCount(int rows);
     void updateCheckState();
 
+    // temporary, for debug only
+    int columnEntryNumber = 2;
 };
 
 } // namepsace option

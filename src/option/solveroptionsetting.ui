@@ -50,7 +50,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>When inserting new option, always</string>
+         <string>When inserting new option from definition, always</string>
         </property>
        </widget>
       </item>

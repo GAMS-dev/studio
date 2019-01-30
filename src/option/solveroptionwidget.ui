@@ -123,7 +123,7 @@
           <item>
            <widget class="QCheckBox" name="compactViewCheckBox">
             <property name="toolTip">
-             <string>View options without comment lines</string>
+             <string>View options without comments and empty lines</string>
             </property>
             <property name="text">
              <string>Compact View</string>

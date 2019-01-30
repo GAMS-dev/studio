@@ -48,31 +48,31 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             if (index.column()>0) {
                 continue;
             }
-
             OptionDefinitionItem *childItem = static_cast<OptionDefinitionItem*>(index.internalPointer());
             OptionDefinitionItem *parentItem = childItem->parentItem();
 
+            QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
             if (parentItem == rootItem) {
                 if (addCommentAbove) {
-                    QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
                     stream << QString("* %1").arg(data(descriptionIndex, Qt::DisplayRole).toString());
                 }
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
                 QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
-                stream << QString("%1=%2=%3").arg(data(index, Qt::DisplayRole).toString())
-                                             .arg(data(defValueIndex, Qt::DisplayRole).toString())
-                                             .arg(data(optionIdIndex, Qt::DisplayRole).toString());
+                stream << QString("%1=%2=%3=%4").arg(data(index, Qt::DisplayRole).toString())
+                                                .arg(data(defValueIndex, Qt::DisplayRole).toString())
+                                                .arg(data(descriptionIndex, Qt::DisplayRole).toString())
+                                                .arg(data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
                 if (addCommentAbove) {
                     stream << QString("* %1").arg(parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
 
-                    QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
                     stream << QString("* %1 - %2").arg(data(index, Qt::DisplayRole).toString())
                                                   .arg(data(descriptionIndex, Qt::DisplayRole).toString());
                 }
-                stream << QString("%1=%2=%3").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
-                                             .arg(data(index, Qt::DisplayRole).toString())
-                                             .arg(parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
+                stream << QString("%1=%2=%3=%4").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
+                                                .arg(data(index, Qt::DisplayRole).toString())
+                                                .arg(data(descriptionIndex, Qt::DisplayRole).toString())
+                                                .arg(parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
             }
         }
     }
@@ -132,7 +132,6 @@ void SolverOptionDefinitionModel::on_addCommentAbove_stateChanged(int checkState
 {
     addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
 }
-
 
 } // namespace option
 } // namespace studio
