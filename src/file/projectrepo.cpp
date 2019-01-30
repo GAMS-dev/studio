@@ -332,14 +332,15 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
     }
 }
 
+void ProjectRepo::renameGroup(ProjectGroupNode* group)
+{
+    mTreeView->edit(mTreeModel->index(group));
+}
+
 ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent)
 {
     if (!_parent) _parent = mTreeModel->rootNode();
     if (!_parent) FATAL() << "Can't get tree-model root-node";
-
-    bool hit;
-    int offset = _parent->peekIndex(name, &hit);
-    if (hit) offset++;
 
     ProjectGroupNode* group;
     ProjectRunGroupNode* runGroup = nullptr;
@@ -352,15 +353,11 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
     } else
         group = new ProjectGroupNode(name, path);
     addToIndex(group);
-    mTreeModel->insertChild(offset, _parent, group);
+    mTreeModel->insertChild(_parent->childCount(), _parent, group);
     connect(group, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
     mTreeView->setExpanded(mTreeModel->index(group), true);
-
-//    connect(group, &ProjectGroupNode::removeNode, this, &ProjectRepo::removeNode);
-//    connect(group, &ProjectGroupNode::requestNode, this, &ProjectRepo::addNode);
-//    connect(group, &ProjectGroupNode::findOrCreateFileNode, this, &ProjectRepo::findOrCreateFileNode);
-
+    mTreeModel->sortChildNodes(_parent);
     return group;
 }
 
@@ -476,12 +473,12 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
             ProjectRunGroupNode *runGroup = fileGroup->assignedRunGroup();
             return runGroup->logNode();
         }
-        file = new ProjectFileNode(fileMeta, fileGroup);
+        file = new ProjectFileNode(fileMeta);
         if (!explicitName.isNull())
             file->setName(explicitName);
-        int offset = fileGroup->peekIndex(file->name());
         addToIndex(file);
-        mTreeModel->insertChild(offset, fileGroup, file);
+        mTreeModel->insertChild(fileGroup->childCount(), fileGroup, file);
+        mTreeModel->sortChildNodes(fileGroup);
     }
     connect(fileGroup, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
@@ -504,12 +501,16 @@ ProjectLogNode*ProjectRepo::logNode(ProjectAbstractNode* node)
 void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
-    FileMeta* destFM = mFileRepo->fileMeta(target);
+    QString oldFile = node->location();
     if (!sourceFM->document() && sourceFM->kind() != FileKind::Opt) return;
 
-    if (destFM) mFileRepo->unwatch(destFM);
-    sourceFM->saveAs(target);
-    if (destFM) mFileRepo->watch(destFM);
+    // set location to new file
+    sourceFM->setLocation(target);
+    sourceFM->document()->setModified(true);
+    sourceFM->save();
+
+    // re-add old file
+    findOrCreateFileNode(oldFile, node->assignedRunGroup());
 }
 
 QVector<ProjectFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const

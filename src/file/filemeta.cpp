@@ -133,7 +133,7 @@ void FileMeta::internalSave(const QString &location)
     }
     QFile file(location);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        EXCEPT() << "Can't open the file";
+        EXCEPT() << "Can't save " << location;
     QTextStream out(&file);
     if (mCodec) out.setCodec(mCodec);
     mActivelySaved = true;
@@ -457,18 +457,6 @@ void FileMeta::save()
     internalSave(location());
 }
 
-void FileMeta::saveAs(const QString &target)
-{
-    if (QFileInfo(mLocation) == QFileInfo(target)) {
-        save();
-    } else {
-        if (QFile::exists(target))
-            QFile::remove(target);
-        QFile::copy(mLocation, target);
-    }
-    mFileRepo->findOrCreateFileMeta(target);
-}
-
 void FileMeta::renameToBackup()
 {
     const int MAX_BACKUPS = 3;
@@ -705,7 +693,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     ViewHelper::setGroupId(res, runGroup->id());
     ViewHelper::setLocation(res, location());
     int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
-    tabWidget->setTabToolTip(i, location());
+    tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
     addEditor(res);
     if (mEditors.size() == 1 && ViewHelper::toAbstractEdit(res) && kind() != FileKind::Log)
         load(codecMib);
