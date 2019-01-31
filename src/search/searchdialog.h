@@ -93,6 +93,7 @@ public slots:
 
 protected slots:
     void returnPressed();
+    void searchResume();
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -151,6 +152,10 @@ private:
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = false;
     bool mFirstReturn = false;
+    TextView *mSplitSeachView = nullptr;
+    QRegularExpression mSplitSearchRegEx;
+    QTextDocument::FindFlags mSplitSearchFlags;
+    bool mSplitSearchContinue = false;
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
 };
 

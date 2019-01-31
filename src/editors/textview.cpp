@@ -173,6 +173,17 @@ void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
     mEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
+bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
+{
+    bool found = mMapper.findText(searchRegex, flags, continueFind);
+    if (found) {
+        mMapper.setVisibleTopLine(qMax(0, mMapper.position().y() - mVisibleLines/3));
+        topLineMoved();
+        updatePosAndAnchor();
+    }
+    return found;
+}
+
 bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags)
 {
     bool found = false;

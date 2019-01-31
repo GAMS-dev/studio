@@ -56,6 +56,7 @@ public:
     void selectAllText();
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
+    bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
     bool findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags);
 
 signals:

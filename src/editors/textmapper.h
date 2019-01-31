@@ -26,6 +26,7 @@
 #include <QFile>
 #include <QSet>
 #include <QTextCursor>
+#include <QTextDocument>
 #include <QMutex>
 #include <QTimer>
 //#include "syntax.h"
@@ -108,13 +109,14 @@ public:
     bool setVisibleTopLine(int lineNr);
     int moveVisibleTopLine(int lineDelta);
 
-    Changes popChanges();
+    Changes popChanges(); // TODO (JM) deprecated!
     int visibleOffset() const;
     int absTopLine() const;
     int lineCount() const;
     int knownLineNrs() const;
 
     QString lines(int localLineNrFrom, int lineCount) const;
+    bool findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind);
 
     QString selectedText() const;
     void copyToClipboard();
@@ -155,6 +157,8 @@ private:
     QPoint convertPos(const CursorPosition &pos) const;
     Chunk *chunkForLine(int absLine, int *lineInChunk) const;
     QString line(Chunk *chunk, int chunkLineNr) const;
+    QString lines(Chunk *chunk, int startLine, int &lineCount);
+    void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 
 private:
     mutable QFile mFile;                // mutable to provide consistant logical const-correctness
@@ -174,6 +178,7 @@ private:
     qint64 mSize = 0;
     CursorPosition mAnchor;
     CursorPosition mPosition;
+    int mFindChunk = 0;
     Changes mChanges = Nothing;
 
     QTextCodec *mCodec = nullptr;

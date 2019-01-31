@@ -345,6 +345,27 @@ void SearchDialog::returnPressed() {
     }
 }
 
+void SearchDialog::searchResume()
+{
+    if (mSplitSeachView && mSplitSeachView == ViewHelper::toTextView(mMain->recent()->editor())) {
+        bool found = mSplitSeachView->findText(mSplitSearchRegEx, mSplitSearchFlags, mSplitSearchContinue);
+        if (found) {
+            setSearchStatus(SearchStatus::Clear);
+//            matchPos = tv->position();
+        }
+        else {
+            setSearchStatus(SearchStatus::NoResults);
+        }
+        if (mSplitSearchContinue)
+            QTimer::singleShot(50, this, &SearchDialog::searchResume);
+        else {
+            mSplitSeachView = nullptr;
+            mSplitSearchRegEx = QRegularExpression();
+        }
+    }
+
+}
+
 void SearchDialog::closeEvent(QCloseEvent *e) {
     setSearchStatus(SearchStatus::Clear);
     QDialog::closeEvent(e);
@@ -426,15 +447,13 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
             return;
         }
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        mSplitSeachView = tv;
+        mSplitSearchRegEx = searchRegex;
+        mSplitSearchFlags = flags;
+        mSplitSearchContinue = false;
         setSearchStatus(SearchStatus::Searching);
-        bool found = tv->findText(searchRegex, flags);
-        if (found) {
-            setSearchStatus(SearchStatus::Clear);
-            matchPos = tv->position();
-        }
-        else {
-            setSearchStatus(SearchStatus::NoResults);
-        }
+        searchResume();
+//        bool found = tv->findText(searchRegex, flags);
     }
 
     // set match and counter

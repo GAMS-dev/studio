@@ -525,6 +525,57 @@ QString TextMapper::lines(int localLineNrFrom, int lineCount) const
     // get the text of the line
 }
 
+bool TextMapper::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind)
+{
+    bool backwards = flags.testFlag(QTextDocument::FindBackward);
+    int part = backwards ? 2 : 1;
+    CursorPosition *refPos = &mPosition;
+    if (hasSelection()) {
+        if (backwards && mAnchor < mPosition) refPos = &mAnchor;
+        if (!backwards && mPosition < mAnchor) refPos = &mAnchor;
+    }
+    if (!continueFind) {
+        mFindChunk = refPos->chunkNr;
+        part = backwards ? 1 : 2;
+        continueFind = true;
+    }
+    if (mFindChunk != refPos->chunkNr) part = 0; // search in complete chunk
+
+    while (continueFind) {
+        int startLine = part==2 ? refPos->localLine : 0;
+        int lineCount = part==1 ? refPos->localLine+1 : -1;
+        Chunk *chunk = loadChunk(mFindChunk);
+        QString textBlock = lines(chunk, startLine, lineCount);
+        int ind = backwards ? -1 : 0;
+        if (part == 1) ind = textBlock.lastIndexOf(mDelimiter) + refPos->charNr;
+        if (part == 2) ind = refPos->charNr;
+        QRegularExpressionMatch match;
+        if (backwards) textBlock.lastIndexOf(seachRegex, ind, &match);
+        else textBlock.indexOf(seachRegex, ind, &match);
+        if (match.hasMatch() || match.hasPartialMatch()) {
+            QStringRef ref = textBlock.leftRef(match.capturedStart());
+            int line = ref.count("\n");
+            int charNr = line ? match.capturedStart() - ref.lastIndexOf("\n") - 1
+                              : match.capturedStart();
+            setPosAbsolute(chunk, line+startLine, charNr);
+            setPosAbsolute(chunk, line+startLine, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
+            continueFind = false;
+            return true;
+        }
+        if (refPos->chunkNr == mFindChunk && backwards == (part==2)) {
+            // reached start-chunk again - nothing found
+            continueFind = false;
+        } else {
+            // currently searching only one chunk before returning to event-loop
+            // maybe repeat for several chunks before interrupt
+            if (backwards) mFindChunk = mFindChunk==0 ? chunkCount()-1 : mFindChunk-1;
+            else mFindChunk = mFindChunk==chunkCount()-1 ? 0 : mFindChunk+1;
+            break;
+        }
+    }
+    return false;
+}
+
 TextMapper::Chunk* TextMapper::chunkForRelativeLine(int lineDelta, int *lineInChunk) const
 {
     if (lineInChunk) *lineInChunk = -1;
@@ -670,6 +721,19 @@ QString TextMapper::line(TextMapper::Chunk *chunk, int chunkLineNr) const
     return mCodec ? mCodec->toUnicode(raw) : QString(raw);
 }
 
+QString TextMapper::lines(Chunk *chunk, int startLine, int &lineCount)
+{
+    if (!chunk) return QString();
+    QString res;
+    if (lineCount <= 0) lineCount = chunk->lineCount()-startLine;
+    QByteArray raw;
+    raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(startLine),
+                   uint(chunk->lineBytes.at(startLine+lineCount) - chunk->lineBytes.at(startLine) - mDelimiter.size()));
+    if (!res.isEmpty()) res.append(mDelimiter);
+    res.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
+    return res;
+}
+
 int TextMapper::visibleOffset() const
 {
     return mVisibleTopLine;
@@ -698,17 +762,22 @@ void TextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMo
 {
     int lineInChunk;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
+    setPosAbsolute(chunk, lineInChunk, charNr, mode);
+}
+
+void TextMapper::setPosAbsolute(TextMapper::Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode)
+{
     if (!chunk) {
         mPosition = CursorPosition();
         mAnchor = CursorPosition();
         return;
     }
     // requesting the line moved the chunk to the top, so we can use the last chunk here
-    mPosition.chunkNr = mChunks.last()->nr;
+    mPosition.chunkNr = chunk->nr;
     mPosition.localLine = lineInChunk;
-    mPosition.localLinePos = mChunks.last()->lineBytes.at(lineInChunk);
-    mPosition.lineLen = mChunks.last()->lineBytes.at(lineInChunk+1) - mPosition.localLinePos - mDelimiter.length();
-    mPosition.absLinePos = mChunks.last()->start + mPosition.localLinePos;
+    mPosition.localLinePos = chunk->lineBytes.at(lineInChunk);
+    mPosition.lineLen = chunk->lineBytes.at(lineInChunk+1) - mPosition.localLinePos - mDelimiter.length();
+    mPosition.absLinePos = chunk->start + mPosition.localLinePos;
     mPosition.charNr = charNr;
     if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
 }
