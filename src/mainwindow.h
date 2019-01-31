@@ -190,7 +190,6 @@ private slots:
     void closeHelpView();
     void outputViewVisibiltyChanged(bool visibility);
     void projectViewVisibiltyChanged(bool visibility);
-    void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
     void showMainTabsMenu();
     void showLogTabsMenu();

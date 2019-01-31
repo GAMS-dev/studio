@@ -181,7 +181,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
-    connect(ui->dockOptionEditor, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -657,11 +656,6 @@ void MainWindow::outputViewVisibiltyChanged(bool visibility)
 void MainWindow::projectViewVisibiltyChanged(bool visibility)
 {
     ui->actionProject_View->setChecked(visibility || tabifiedDockWidgets(ui->dockProjectView).count());
-}
-
-void MainWindow::optionViewVisibiltyChanged(bool visibility)
-{
-    // TODO(rogo)
 }
 
 void MainWindow::helpViewVisibilityChanged(bool visibility)

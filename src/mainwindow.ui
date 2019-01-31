@@ -484,6 +484,10 @@
    </property>
   </action>
   <action name="actionNew">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/file</normaloff>:/img/file</iconset>
+   </property>
    <property name="text">
     <string>&amp;New...</string>
    </property>
@@ -492,6 +496,10 @@
    </property>
   </action>
   <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/folder-open-bw</normaloff>:/img/folder-open-bw</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -500,6 +508,10 @@
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/save</normaloff>:/img/save</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -555,6 +567,10 @@
    </property>
   </action>
   <action name="actionGAMS_Library">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/database</normaloff>:/img/database</iconset>
+   </property>
    <property name="text">
     <string>&amp;Model Library Explorer</string>
    </property>
@@ -605,6 +621,10 @@
    </property>
   </action>
   <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/cogs</normaloff>:/img/cogs</iconset>
+   </property>
    <property name="text">
     <string>Settings</string>
    </property>
@@ -661,6 +681,10 @@
    </property>
   </action>
   <action name="actionCopy">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/copy</normaloff>:/img/copy</iconset>
+   </property>
    <property name="text">
     <string>&amp;Copy</string>
    </property>
@@ -672,6 +696,10 @@
    </property>
   </action>
   <action name="actionPaste">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/paste</normaloff>:/img/paste</iconset>
+   </property>
    <property name="text">
     <string>&amp;Paste</string>
    </property>
@@ -680,6 +708,10 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/undo</normaloff>:/img/undo</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -688,6 +720,10 @@
    </property>
   </action>
   <action name="actionRedo">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/redo</normaloff>:/img/redo</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -704,6 +740,10 @@
    </property>
   </action>
   <action name="actionCut">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/cut</normaloff>:/img/cut</iconset>
+   </property>
    <property name="text">
     <string>&amp;Cut</string>
    </property>
