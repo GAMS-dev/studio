@@ -61,9 +61,12 @@ public:
     QString getSolverName() const;
     int getItemCount() const;
 
+    bool isViewCompact() const;
+
 signals:
     void modificationChanged(bool modifiedState);
     void itemCountChanged(int newItemCount);
+    void compactViewChanged(bool compact);
 
 public slots:
     void showOptionContextMenu(const QPoint &pos);
@@ -96,7 +99,6 @@ private:
     QString mLocation;
     QString mSolverName;
 
-    bool isViewCompact = false;
     bool addCommentAbove = false;
     bool addEOLComment = false;
 

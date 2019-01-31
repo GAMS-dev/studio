@@ -40,6 +40,9 @@ QStringList SolverOptionDefinitionModel::mimeTypes() const
 QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData* mimeData = new QMimeData();
+    if (isViewCompact)
+        return mimeData;
+
     QByteArray encodedData;
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
@@ -131,6 +134,11 @@ void SolverOptionDefinitionModel::modifyOptionDefinition(const QList<SolverOptio
 void SolverOptionDefinitionModel::on_addCommentAbove_stateChanged(int checkState)
 {
     addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
+}
+
+void SolverOptionDefinitionModel::on_compactViewChanged(bool compact)
+{
+    isViewCompact = compact;
 }
 
 } // namespace option

@@ -161,6 +161,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
     connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);
 
+    connect(this, &SolverOptionWidget::compactViewChanged, optdefmodel, &SolverOptionDefinitionModel::on_compactViewChanged);
+
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
 
@@ -213,17 +215,16 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 
     bool thereIsASelection = (selection.count() > 0);
     bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
-    bool isViewCompact = ui->compactViewCheckBox->isChecked();
 
-    commentAction->setVisible( thereIsASelection && !isViewCompact );
+    commentAction->setVisible( thereIsASelection && !isViewCompact() );
 
-    insertOptionAction->setVisible( thereIsASelection || !thereIsARow );
-    insertCommentAction->setVisible( (thereIsASelection || !thereIsARow) && !isViewCompact );
+    insertOptionAction->setVisible( thereIsASelection || !thereIsARow || !isViewCompact() );
+    insertCommentAction->setVisible( (thereIsASelection || !thereIsARow) && !isViewCompact() );
 
     deleteAction->setVisible( thereIsASelection );
 
-    moveUpAction->setVisible(  thereIsASelection && !isViewCompact && (selection.first().row() > 0) );
-    moveDownAction->setVisible( thereIsASelection && !isViewCompact && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+    moveUpAction->setVisible(  thereIsASelection && !isViewCompact() && (selection.first().row() > 0) );
+    moveDownAction->setVisible( thereIsASelection && !isViewCompact() && (selection.last().row() < mOptionTableModel->rowCount()-1) );
 
     selectAll->setVisible( thereIsARow );
 
@@ -370,6 +371,9 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
 
 void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
+    if (isViewCompact())
+        return;
+
     setModified(true);
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
@@ -498,7 +502,7 @@ void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 
 void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
 {
-    isViewCompact = (Qt::CheckState(checkState) == Qt::Checked);
+    bool isViewCompact = (Qt::CheckState(checkState) == Qt::Checked);
     if (isViewCompact) {
         ui->solverOptionTableView->hideColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
         ui->solverOptionTableView->hideColumn(mOptionTableModel->getColumnEntryNumber());
@@ -514,7 +518,7 @@ void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
              ui->solverOptionTableView->showRow(i);
        }
     }
-
+    emit compactViewChanged(isViewCompact);
 }
 
 void SolverOptionWidget::on_saveButton_clicked(bool checked)
@@ -666,6 +670,11 @@ QString SolverOptionWidget::getSolverName() const
 int SolverOptionWidget::getItemCount() const
 {
     return ui->solverOptionTableView->model()->rowCount();
+}
+
+bool SolverOptionWidget::isViewCompact() const
+{
+    return ui->compactViewCheckBox->isChecked();
 }
 
 void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
