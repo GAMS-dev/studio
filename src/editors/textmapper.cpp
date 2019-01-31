@@ -438,6 +438,14 @@ int TextMapper::moveVisibleTopLine(int lineDelta)
     return mVisibleTopLine;
 }
 
+void TextMapper::scrollToPosition()
+{
+    if (mPosition.chunkNr < 0) return;
+    double region = double(mPosition.absLinePos + mPosition.effectiveCharNr()) / size();
+    setVisibleTopLine(region);
+    moveVisibleTopLine(-5);
+}
+
 TextMapper::Changes TextMapper::popChanges()
 {
     Changes res = mChanges;
@@ -546,9 +554,15 @@ bool TextMapper::findText(QRegularExpression seachRegex, QTextDocument::FindFlag
         int lineCount = part==1 ? refPos->localLine+1 : -1;
         Chunk *chunk = loadChunk(mFindChunk);
         QString textBlock = lines(chunk, startLine, lineCount);
+        QStringRef partRef(&textBlock);
         int ind = backwards ? -1 : 0;
-        if (part == 1) ind = textBlock.lastIndexOf(mDelimiter) + refPos->charNr;
-        if (part == 2) ind = refPos->charNr;
+        if (part == 1) {
+            textBlock = textBlock.left(textBlock.lastIndexOf(mDelimiter) + mDelimiter.length() + refPos->charNr);
+        }
+        if (part == 2 && !backwards) {
+            ind = refPos->charNr;
+        }
+
         QRegularExpressionMatch match;
         if (backwards) textBlock.lastIndexOf(seachRegex, ind, &match);
         else textBlock.indexOf(seachRegex, ind, &match);

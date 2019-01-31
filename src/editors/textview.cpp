@@ -177,71 +177,7 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 {
     bool found = mMapper.findText(searchRegex, flags, continueFind);
     if (found) {
-        mMapper.setVisibleTopLine(qMax(0, mMapper.position().y() - mVisibleLines/3));
-        topLineMoved();
-        updatePosAndAnchor();
-    }
-    return found;
-}
-
-bool TextView::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags)
-{
-    bool found = false;
-    int lineCount = 3 * mTopBufferLines;
-    QPoint pos = mMapper.position();
-    if (flags.testFlag(QTextDocument::FindBackward))  pos = mMapper.anchor();
-    if (pos.y() < 0 || pos.x() < 0) pos = QPoint();
-
-    int relStart = pos.y() - mMapper.absTopLine();
-
-    if (flags.testFlag(QTextDocument::FindBackward)) {
-        // search backwards
-        int charInLine = mMapper.line(relStart).length() - qMax(0, pos.x());
-        relStart -= lineCount-1;
-        if (mMapper.absTopLine() + relStart < 0) {
-            lineCount += mMapper.absTopLine() + relStart;
-            relStart = -mMapper.absTopLine();
-        }
-        while (!found) {
-            QString textBlock = mMapper.lines(relStart, lineCount);
-            if (charInLine) textBlock = textBlock.left(textBlock.length() - charInLine);
-            QRegularExpressionMatch match;
-            textBlock.lastIndexOf(seachRegex, textBlock.length(), &match);
-            if (match.hasMatch() || match.hasPartialMatch()) {
-                QStringRef ref = textBlock.leftRef(match.capturedStart());
-                int line = ref.count("\n");
-                int charNr = line ? match.capturedStart() - ref.lastIndexOf("\n") - 1
-                                  : match.capturedStart();
-                mMapper.setPosRelative(line+relStart, charNr);
-                mMapper.setPosRelative(line+relStart, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
-                found = true;
-            }
-            charInLine = 0;
-            if (mMapper.absTopLine()+relStart <= 0) break;
-        }
-    } else {
-        int charInLine = pos.x();
-        // search forwards
-        while (!found) {
-            QString textBlock = mMapper.lines(relStart, lineCount);
-            if (textBlock.isEmpty()) break;
-            QRegularExpressionMatch match;
-            textBlock.indexOf(seachRegex, charInLine, &match);
-            if (match.hasMatch()) {
-                QStringRef ref = textBlock.midRef(charInLine, match.capturedStart()-charInLine);
-                int line = ref.count("\n");
-                int charNr = line ? match.capturedStart() - charInLine - ref.lastIndexOf("\n") - 1
-                                  : match.capturedStart();
-                mMapper.setPosRelative(line+relStart, charNr);
-                mMapper.setPosRelative(line+relStart, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
-                found = true;
-            }
-            charInLine = 0;
-            relStart += lineCount;
-        }
-    }
-    if (found) {
-        mMapper.setVisibleTopLine(qMax(0, mMapper.position().y() - mVisibleLines/3));
+        mMapper.scrollToPosition();
         topLineMoved();
         updatePosAndAnchor();
     }

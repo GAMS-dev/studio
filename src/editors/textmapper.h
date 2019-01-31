@@ -108,6 +108,7 @@ public:
     bool setVisibleTopLine(double region);
     bool setVisibleTopLine(int lineNr);
     int moveVisibleTopLine(int lineDelta);
+    void scrollToPosition();
 
     Changes popChanges(); // TODO (JM) deprecated!
     int visibleOffset() const;

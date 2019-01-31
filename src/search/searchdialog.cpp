@@ -353,12 +353,11 @@ void SearchDialog::searchResume()
             setSearchStatus(SearchStatus::Clear);
 //            matchPos = tv->position();
         }
-        else {
-            setSearchStatus(SearchStatus::NoResults);
-        }
         if (mSplitSearchContinue)
             QTimer::singleShot(50, this, &SearchDialog::searchResume);
         else {
+            if (!found)
+                setSearchStatus(SearchStatus::NoResults);
             mSplitSeachView = nullptr;
             mSplitSearchRegEx = QRegularExpression();
         }
