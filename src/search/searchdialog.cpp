@@ -353,9 +353,10 @@ void SearchDialog::searchResume()
             setSearchStatus(SearchStatus::Clear);
 //            matchPos = tv->position();
         }
-        if (mSplitSearchContinue)
+        if (mSplitSearchContinue) {
+            setSearchStatus(SearchStatus::Searching);
             QTimer::singleShot(50, this, &SearchDialog::searchResume);
-        else {
+        } else {
             if (!found)
                 setSearchStatus(SearchStatus::NoResults);
             mSplitSeachView = nullptr;
@@ -544,10 +545,14 @@ void SearchDialog::setSearchStatus(SearchStatus status)
 {
     switch (status) {
     case SearchStatus::Searching:
-        ui->lbl_nrResults->setText("Searching...");
+        ui->lbl_nrResults->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        if (ui->lbl_nrResults->text() == QString("Searching...")) ui->lbl_nrResults->setText("Searching.");
+        else if (ui->lbl_nrResults->text() == QString("Searching.")) ui->lbl_nrResults->setText("Searching..");
+        else ui->lbl_nrResults->setText("Searching...");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     case SearchStatus::NoResults:
+        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("No results.");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
