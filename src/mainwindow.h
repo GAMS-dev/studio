@@ -351,6 +351,7 @@ private:
     int mTimerID;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
+    void initToolBar();
 };
 
 }
