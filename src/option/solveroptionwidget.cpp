@@ -640,7 +640,7 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
 void SolverOptionWidget::updateEditActions(bool modified)
 {
     ui->saveButton->setEnabled(modified);
-    ui->saveAsButton->setEnabled(modified);
+    ui->saveAsButton->setEnabled(true);
     ui->openAsTextButton->setEnabled(!modified);
 }
 
