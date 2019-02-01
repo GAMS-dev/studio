@@ -506,7 +506,8 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 
     // set location to new file
     sourceFM->setLocation(target);
-    sourceFM->document()->setModified(true);
+    if (sourceFM->document())
+        sourceFM->document()->setModified(true);
     sourceFM->save();
 
     // re-add old file
