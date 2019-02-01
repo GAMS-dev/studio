@@ -846,7 +846,7 @@ void TestCPLEXOption::testReadOptionFile()
     QVERIFY( items.at(29)->error == No_Error );
 
     QCOMPARE( items.at(30)->key, "workdir");
-    QCOMPARE( items.at(30)->value.toString(), "/x/y!/z/a/b");
+    QCOMPARE( items.at(30)->value.toString(), "\"/x/y!/z/a/b\"");
     QCOMPARE( items.at(30)->text, "");
     QCOMPARE( items.at(30)->optionId, 252 );
     QVERIFY( !items.at(30)->disabled );
