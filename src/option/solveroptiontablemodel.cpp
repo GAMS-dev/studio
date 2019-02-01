@@ -472,14 +472,16 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
 
     for (int i=0; i<mOptionItem.size(); ++i) {
         if (mOptionItem.at(i)->disabled) {
-            setData( index(i, 0), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
+            setData( index(i, COLUMN_OPTION_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
         } else {
-           setData( index(i, 0), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
-           setData( index(i, 1), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
-           setData( index(i, 2), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
+           setData( index(i, COLUMN_OPTION_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
+           setData( index(i, COLUMN_OPTION_VALUE), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
+           if (mOption->isEOLCharDefined())
+               setData( index(i, COLUMN_EOL_COMMENT), QVariant(mOptionItem.at(i)->text), Qt::EditRole);
+           setData( index(i, getColumnEntryNumber()), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
            if (mOptionItem.at(i)->error == No_Error)
                setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),

@@ -569,6 +569,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
                 QString n = QString(name);
+
                 key = getKeyFromStr(text, n);
                 switch(itype) {
                 case optDataInteger: {  // 1
@@ -806,15 +807,20 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
 
 bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem *item)
 {
-    qDebug() << __FUNCTION__ << "(" << key << ","<<value << "," << text << ")";
-    QString str = QString("%1 %2").arg(key).arg(value);
+    QString str = "";
+
+    QString separator = " ";
+    if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
+       str = QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text);
+    else
+       str = QString("%1%2%3").arg(key).arg(separator).arg(value);
 
     optResetAll( mOPTHandle );
     if (str.simplified().isEmpty() || str.startsWith("*")) {
         item->optionId = -1;
         item->key = str;
         item->value = "";
-        item->text = text;
+        item->text = "";
         item->error = No_Error;
         item->disabled = true;
     } else {
@@ -824,6 +830,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
        bool valueRead = false;
        QString definedKey = "";
        QString definedValue = "";
+       QString eolComment = "";
        char name[GMS_SSSIZE];
        int foundId = -1;
        for (int i = 1; i <= optCount(mOPTHandle); ++i) {
@@ -888,11 +895,15 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                case optDataNone: // 0
                default: break;
                }
+
+               if (mOption->isEOLCharDefined()) {
+                   eolComment = getEOLCommentFromStr(str, definedKey, definedValue);
+               }
                if (valueRead) {
-                   item->optionId = i;
+                  item->optionId = i;
                    item->key = definedKey;
                    item->value = definedValue;
-                   item->text = text;
+                   item->text = eolComment;
                    item->error = errorType;
                    if (errorType == No_Error || errorType == Deprecated_Option)
                        item->error = errorType;
@@ -916,7 +927,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                item->optionId = (foundId != -1) ? foundId :mOption->getOrdinalNumber(key);
                item->key = key;
                item->value = value;
-               item->text = "";
+               item->text = text;
                item->error = errorType;
            }
        }
