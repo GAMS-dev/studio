@@ -21,7 +21,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QTextCodec>
-
+#include <QRegularExpression>
 #include <QDebug>
 
 #include "optiontokenizer.h"
@@ -617,7 +617,6 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                     eolComment = getEOLCommentFromStr(text, key, value);
                 }
                 if (valueRead) {
-                   qDebug() << "readoptionfile:" << mOption->getEOLChars() << ":" << eolComment;
                    item->optionId = i;
                    item->key = key;
                    item->value = value;
@@ -807,7 +806,7 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
 
 bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem *item)
 {
-    QString str = "";
+    QString str = ""; // = QString("%1 %2 ").arg(key).arg(value);
 
     QString separator = " ";
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
@@ -900,7 +899,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    eolComment = getEOLCommentFromStr(str, definedKey, definedValue);
                }
                if (valueRead) {
-                  item->optionId = i;
+                   item->optionId = i;
                    item->key = definedKey;
                    item->value = definedValue;
                    item->text = eolComment;
@@ -981,15 +980,22 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
            return value.mid(1).simplified();
        else
            return value;
+    } else if (itype==optDataString) {
+        if (line.contains(hintValue))
+           return getQuotedStringValue(line, hintValue);
+        else if (line.contains(hintValue, Qt::CaseInsensitive))
+                 return getQuotedStringValue(line.toUpper(), hintValue.toUpper());
+        else
+            return "";
     } else {
-       if (line.contains(hintValue)) {
-           return  line.mid( line.indexOf(hintValue), hintValue.size() );
-       } else if (line.contains(hintValue, Qt::CaseInsensitive)) {
-           int idx = line.toUpper().indexOf(hintValue.toUpper(), Qt::CaseInsensitive);
-           return  line.mid( idx, hintValue.size() );
-       } else {
-           return "";
-       }
+        if (line.contains(hintValue)) {
+            return  line.mid( line.indexOf(hintValue), hintValue.size() );
+        } else if (line.contains(hintValue, Qt::CaseInsensitive)) {
+            int idx = line.toUpper().indexOf(hintValue.toUpper(), Qt::CaseInsensitive);
+            return  line.mid( idx, hintValue.size() );
+        } else {
+            return "";
+        }
     }
 }
 
@@ -1008,6 +1014,24 @@ QString OptionTokenizer::getEOLCommentFromStr(const QString &line, const QString
         }
     }
     return QString();
+}
+
+QString OptionTokenizer::getQuotedStringValue(const QString &line, const QString &value)
+{
+    int startValuePosition = line.indexOf(value);
+    int size = value.size();
+    QString regexpstr = QString("%1%2").arg(value).arg("\"");
+    if (line.indexOf( QRegularExpression(regexpstr), startValuePosition) >= 0) {
+        size++;
+    }
+
+    regexpstr = QString("%1%2").arg("\"").arg(value);
+    if (line.indexOf( QRegularExpression(regexpstr), 0) >= 0) {
+       startValuePosition--;
+       size++;
+    }
+
+    return  line.mid( startValuePosition, size );
 }
 
 QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QTextCodec* codec)
