@@ -20,6 +20,7 @@
 #include "gdxsymbol.h"
 #include "exception.h"
 #include "gdxsymboltable.h"
+#include "nestedheaderview.h"
 
 #include <QMutex>
 #include <QSet>
@@ -52,6 +53,10 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     mSpecValSortVal.push_back(-std::numeric_limits<double>::max()); // GMS_SV_MINF
     mSpecValSortVal.push_back(4.94066E-324); // GMS_SV_EPS
     mSpecValSortVal.push_back(0);  //TODO: Acronyms
+
+    mTvColDim = 1;
+    for(int i=0; i<mDim; i++)
+        mTvDimOrder << i;
 }
 
 GdxSymbol::~GdxSymbol()
@@ -537,13 +542,19 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
     std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
 
     calcDefaultColumnsTableView();
-
+    static_cast<NestedHeaderView*>(mTvTableView->horizontalHeader())->resetLayout();
+    static_cast<NestedHeaderView*>(mTvTableView->verticalHeader())->resetLayout();
     endResetModel();
 }
 
 QVector<int> GdxSymbol::tvDimOrder() const
 {
     return mTvDimOrder;
+}
+
+void GdxSymbol::setTvTableView(QTableView *tv)
+{
+    mTvTableView = tv;
 }
 
 QVector<bool> GdxSymbol::defaultColumnTableView() const
@@ -564,8 +575,13 @@ int GdxSymbol::tvColDim() const
 void GdxSymbol::setTableView(bool tableView, int colDim, QVector<int> tvDims)
 {
     mTableView = tableView;
-    if (mTableView)
-        initTableView(colDim, tvDims);
+    if (mTableView) {
+        if (colDim!=-1) {
+            mTvColDim = colDim;
+            mTvDimOrder = tvDims;
+        }
+        initTableView(mTvColDim, mTvDimOrder);
+    }
 }
 
 std::vector<bool> GdxSymbol::filterActive() const

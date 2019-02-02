@@ -71,9 +71,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tvListView->verticalHeader()->setDefaultSectionSize(int(ui->tvListView->fontMetrics().height()*1.4));
 
-    //ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
-    //ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
-
     connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
@@ -83,6 +80,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+
+    //mSym->setTvTableView(ui->tvTableView);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -175,6 +174,8 @@ void GdxSymbolView::setSym(GdxSymbol *sym)
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tvListView->setModel(mSym);
     ui->tvTableView->setModel(mSym);
+    ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
+    ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
         QVector<QString> valColNames;
@@ -281,7 +282,9 @@ void GdxSymbolView::showListView()
 {
     ui->pbResetSortFilter->setEnabled(true);
     mSym->setTableView(false);
+
     ui->tvTableView->hide();
+
 
     // This is required in order to avoid a bug with the horizontal scrollbar (see 843)
     ui->tvListView->setModel(nullptr);
@@ -294,16 +297,15 @@ void GdxSymbolView::showListView()
 void GdxSymbolView::showTableView()
 {
     ui->pbResetSortFilter->setEnabled(false);
+    mSym->setTvTableView(ui->tvTableView);
     mSym->setTableView(true);
 
     ui->pbToggleView->setText("List View");
 
-    NestedHeaderView *hvV = new NestedHeaderView(Qt::Vertical);
-    NestedHeaderView *hvH = new NestedHeaderView(Qt::Horizontal);
-    ui->tvTableView->setVerticalHeader(hvV);
-    ui->tvTableView->setHorizontalHeader(hvH);
-    hvV->init();
-    hvH->init();
+    //NestedHeaderView *hvV = new NestedHeaderView(Qt::Vertical);
+    //NestedHeaderView *hvH = new NestedHeaderView(Qt::Horizontal);
+    //ui->tvTableView->setVerticalHeader(hvV);
+    //ui->tvTableView->setHorizontalHeader(hvH);
     ui->tvListView->hide();
     ui->tvTableView->show();
 }

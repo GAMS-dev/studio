@@ -5,6 +5,7 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QApplication>
+#include <QMap>
 
 namespace gams {
 namespace studio {
@@ -18,17 +19,24 @@ NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
 
 NestedHeaderView::~NestedHeaderView()
 {
-
+    if (tvSectionWidth)
+        delete tvSectionWidth;
+    if (tvLabelWidth)
+        delete tvLabelWidth;
 }
 
-void NestedHeaderView::init()
+void NestedHeaderView::setModel(QAbstractItemModel *model)
 {
-    calcSectionSize();
-    // need to update the first visible sections when scrolling in order to trigger the repaint for showing all labels for the first section
-    if (orientation() == Qt::Vertical)
-        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(orientation(), 0, 2); });
-    else
-        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(orientation(), 0, 2); });
+    QHeaderView::setModel(model);
+    tvLabelWidth = new QMap<QString, int>();
+    tvSectionWidth = new QVector<int>(dim());
+    bindScrollMechanism();
+}
+
+void NestedHeaderView::resetLayout()
+{
+    tvSectionWidth->clear();
+    tvSectionWidth->resize(dim());
 }
 
 int NestedHeaderView::dim() const
@@ -82,8 +90,11 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Active;
             //int rowWidth = getSectionSize(logicalIndex, i).width();
 
-            int rowWidth = mMaxSectionWidth[i];
+            //int rowWidth = mMaxSectionWidth[i];
+            int rowWidth = tvSectionWidth->at(i);
 
+            if (i==dim()-1)
+                rowWidth -=3;
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
             else
@@ -203,10 +214,16 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     tvDims.move(dimIdxStart, dimIdxEnd);
 
     event->accept();
-    sym()->setTableView(true, newColDim, tvDims);
-    init();
-}
 
+    sym()->setTableView(true, newColDim, tvDims);
+
+    if (orientationStart != orientationEnd) {
+        static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->horizontalHeader())->geometriesChanged();
+        static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->verticalHeader())->geometriesChanged();
+    }
+    else
+        geometriesChanged();
+}
 
 void NestedHeaderView::leaveEvent(QEvent *event)
 {
@@ -214,53 +231,12 @@ void NestedHeaderView::leaveEvent(QEvent *event)
     mMousePos = QPoint(-1,-1);
 }
 
-void NestedHeaderView::calcSectionSize()
-{
-    mMaxSectionWidth.clear();
-    for(int i=0; i<dim(); i++)
-        mMaxSectionWidth << 0;
-    QStyleOptionHeader opt;
-    initStyleOption(&opt);
-
-    QVector<QSet<QString>> labelAlreadySeen(dim());
-
-
-    int indexCount;
-    if (orientation() == Qt::Vertical)
-        indexCount = model()->rowCount();
-    else
-        indexCount = model()->columnCount();
-
-    for(int logicalIndex=0; logicalIndex<indexCount; logicalIndex++) {
-        opt.section = logicalIndex;
-        QVariant var = model()->headerData(logicalIndex, orientation(), Qt::FontRole);
-        QFont fnt;
-        if (var.isValid() && var.canConvert<QFont>())
-            fnt = qvariant_cast<QFont>(var);
-        else
-            fnt = font();
-        fnt.setBold(true);
-        opt.fontMetrics = QFontMetrics(fnt);
-        QStringList text = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();
-        for(int d=0; d<dim(); d++) {
-            QString label = text[d];
-            if (!labelAlreadySeen[d].contains(label)) {
-                labelAlreadySeen[d].insert(label);
-                opt.text = label;
-                //TODO(CW): This function is terribly slow. We avoid calling it multiple times for the same label in a dimension
-                QSize s = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
-                mMaxSectionWidth[d] = qMax(s.width(), mMaxSectionWidth[d]);
-            }
-        }
-    }
-}
-
 int NestedHeaderView::pointToDimension(QPoint p)
 {
     if (orientation() == Qt::Vertical) {
         int totWidth = 0;
         for(int i=0; i<dim(); i++) {
-            totWidth += mMaxSectionWidth[i];
+            totWidth += tvSectionWidth->at(i);
             if (p.x() < totWidth)
                 return i;
         }
@@ -275,6 +251,15 @@ int NestedHeaderView::pointToDimension(QPoint p)
     }
 }
 
+void NestedHeaderView::bindScrollMechanism()
+{
+    // need to update the first visible sections when scrolling in order to trigger the repaint for showing all labels for the first section
+    if (orientation() == Qt::Vertical)
+        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(this->orientation(), 0, 2); });
+    else
+        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(this->orientation(), 0, 2); });
+}
+
 GdxSymbol *NestedHeaderView::sym() const
 {
     return static_cast<GdxSymbol*>(model());
@@ -282,10 +267,36 @@ GdxSymbol *NestedHeaderView::sym() const
 
 QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
+    //TODO: remove these two lines as soon as two separate models for list and table view have been implemented
+    if (!sym()->tableView())
+        return QSize();
     if (orientation() == Qt::Vertical) {
         QSize s(0,sectionSize(logicalIndex));
-        for (int i=0; i<dim(); i++)
-            s.setWidth(mMaxSectionWidth[i] + s.width());
+        QStringList labels = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();
+        for (int i=0; i<dim(); i++) {
+            int width;
+            QString label = labels[i];
+            if (tvLabelWidth->contains(label))
+                width = tvLabelWidth->value(label);
+            else {
+                QStyleOptionHeader opt;
+                initStyleOption(&opt);
+                QVariant var = model()->headerData(logicalIndex, orientation(), Qt::FontRole);
+                QFont fnt;
+                if (var.isValid() && var.canConvert<QFont>())
+                    fnt = qvariant_cast<QFont>(var);
+                else
+                    fnt = font();
+                fnt.setBold(true);
+                opt.fontMetrics = QFontMetrics(fnt);
+                opt.text = labels[i];
+                //QSize s1 = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
+                //width = s1.width();
+                width = opt.fontMetrics.width(opt.text)*1.1;
+            }
+            s.setWidth(s.width() + width);
+            tvSectionWidth->replace(i,qMax(tvSectionWidth->at(i), width));
+        }
         return s;
     } else {
         QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);

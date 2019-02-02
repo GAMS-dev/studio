@@ -22,6 +22,7 @@
 
 #include <QAbstractTableModel>
 #include <QString>
+#include <QTableView>
 
 #include "gdxcc.h"
 
@@ -69,7 +70,7 @@ public:
     std::vector<bool> filterActive() const;
     void setFilterActive(const std::vector<bool> &filterActive);
 
-    void setTableView(bool tableView, int colDim = 1, QVector<int> tvDims = QVector<int>());
+    void setTableView(bool tableView, int colDim = -1, QVector<int> tvDims = QVector<int>());
 
     int tvColDim() const;
 
@@ -78,6 +79,8 @@ public:
     QVector<bool> defaultColumnTableView() const;
 
     QVector<int> tvDimOrder() const;
+
+    void setTvTableView(QTableView* tv);
 
 signals:
     void loadFinished();
@@ -139,6 +142,8 @@ private:
     QHash<QVector<uint>, int> mTvKeysToValIdx;
 
     bool mTableView = false;
+
+    QTableView* mTvTableView = nullptr;
 };
 
 } // namespace gdxviewer
