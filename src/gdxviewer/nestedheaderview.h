@@ -31,12 +31,10 @@ protected:
 
 private:
     int pointToDimension(QPoint p);
-
     void bindScrollMechanism();
 
     GdxSymbol* sym() const;
     int dim() const;
-    //QVector<int> mMaxSectionWidth;
     QPoint mMousePos = QPoint(-1,-1);
     QPoint mDragStartPosition;
 };

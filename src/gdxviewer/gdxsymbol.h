@@ -81,7 +81,6 @@ public:
     QVector<int> tvDimOrder() const;
 
     QVector<int> *getTvSectionWidth() const;
-    void setTvSectionWidth(QVector<int> *value);
 
 signals:
     void loadFinished();

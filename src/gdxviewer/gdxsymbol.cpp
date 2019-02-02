@@ -487,7 +487,6 @@ QVariant GdxSymbol::formatValue(double val) const
 
 void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
 {
-    beginResetModel();
     if (dimOrder.isEmpty()) {
         for(int i=0; i<mDim; i++)
             dimOrder << i;
@@ -571,18 +570,11 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
 
     tvSectionWidth->clear();
     tvSectionWidth->resize(mDim-mTvColDim);
-
-    endResetModel();
 }
 
 QVector<int> *GdxSymbol::getTvSectionWidth() const
 {
     return tvSectionWidth;
-}
-
-void GdxSymbol::setTvSectionWidth(QVector<int> *value)
-{
-    tvSectionWidth = value;
 }
 
 QVector<int> GdxSymbol::tvDimOrder() const
@@ -607,6 +599,7 @@ int GdxSymbol::tvColDim() const
 
 void GdxSymbol::setTableView(bool tableView, int colDim, QVector<int> tvDims)
 {
+    beginResetModel();
     mTableView = tableView;
     if (mTableView) {
         if (colDim!=-1) {
@@ -615,6 +608,7 @@ void GdxSymbol::setTableView(bool tableView, int colDim, QVector<int> tvDims)
         }
         initTableView(mTvColDim, mTvDimOrder);
     }
+    endResetModel();
 }
 
 std::vector<bool> GdxSymbol::filterActive() const

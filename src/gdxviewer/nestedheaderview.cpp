@@ -6,7 +6,6 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
-#include <QVariant>
 
 namespace gams {
 namespace studio {
@@ -78,14 +77,8 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Enabled;
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
-            //int rowWidth = getSectionSize(logicalIndex, i).width();
-
-            //int rowWidth = mMaxSectionWidth[i];
-            //int rowWidth = tvSectionWidth->at(i);
             int rowWidth = static_cast<GdxSymbol*>(model())->getTvSectionWidth()->at(i);
 
-            if (i==dim()-1)
-                rowWidth -=3;
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
             else
@@ -106,8 +99,6 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Enabled;
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
-            //int rowWidth = getSectionSize(logicalIndex, i).width();
-            //int rowWidth = mMaxSectionWidth[i];
 
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
@@ -204,16 +195,11 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     QVector<int> tvDims = sym()->tvDimOrder();
     tvDims.move(dimIdxStart, dimIdxEnd);
 
-    event->accept();
-
     sym()->setTableView(true, newColDim, tvDims);
 
-    if (orientationStart != orientationEnd) {
-        static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->horizontalHeader())->geometriesChanged();
-        static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->verticalHeader())->geometriesChanged();
-    }
-    else
-        geometriesChanged();
+    static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->verticalHeader())->geometriesChanged();
+    static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->horizontalHeader())->geometriesChanged();
+    event->accept();
 }
 
 void NestedHeaderView::leaveEvent(QEvent *event)
