@@ -18,7 +18,6 @@ public:
     NestedHeaderView(Qt::Orientation orientation, QWidget *parent = nullptr);
     ~NestedHeaderView() override;
     void setModel(QAbstractItemModel *model) override;
-    void resetLayout();
 
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
@@ -40,8 +39,6 @@ private:
     //QVector<int> mMaxSectionWidth;
     QPoint mMousePos = QPoint(-1,-1);
     QPoint mDragStartPosition;
-    QVector<int>* tvSectionWidth = nullptr;
-    QMap<QString, int>* tvLabelWidth = nullptr;
 };
 
 } // namespace gdxviewer

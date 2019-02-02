@@ -6,6 +6,7 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
+#include <QVariant>
 
 namespace gams {
 namespace studio {
@@ -19,24 +20,13 @@ NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
 
 NestedHeaderView::~NestedHeaderView()
 {
-    if (tvSectionWidth)
-        delete tvSectionWidth;
-    if (tvLabelWidth)
-        delete tvLabelWidth;
+
 }
 
 void NestedHeaderView::setModel(QAbstractItemModel *model)
 {
     QHeaderView::setModel(model);
-    tvLabelWidth = new QMap<QString, int>();
-    tvSectionWidth = new QVector<int>(dim());
     bindScrollMechanism();
-}
-
-void NestedHeaderView::resetLayout()
-{
-    tvSectionWidth->clear();
-    tvSectionWidth->resize(dim());
 }
 
 int NestedHeaderView::dim() const
@@ -91,7 +81,8 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             //int rowWidth = getSectionSize(logicalIndex, i).width();
 
             //int rowWidth = mMaxSectionWidth[i];
-            int rowWidth = tvSectionWidth->at(i);
+            //int rowWidth = tvSectionWidth->at(i);
+            int rowWidth = static_cast<GdxSymbol*>(model())->getTvSectionWidth()->at(i);
 
             if (i==dim()-1)
                 rowWidth -=3;
@@ -236,7 +227,7 @@ int NestedHeaderView::pointToDimension(QPoint p)
     if (orientation() == Qt::Vertical) {
         int totWidth = 0;
         for(int i=0; i<dim(); i++) {
-            totWidth += tvSectionWidth->at(i);
+            totWidth += static_cast<GdxSymbol*>(model())->getTvSectionWidth()->at(i);
             if (p.x() < totWidth)
                 return i;
         }
@@ -273,30 +264,7 @@ QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
     if (orientation() == Qt::Vertical) {
         QSize s(0,sectionSize(logicalIndex));
         QStringList labels = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();
-        for (int i=0; i<dim(); i++) {
-            int width;
-            QString label = labels[i];
-            if (tvLabelWidth->contains(label))
-                width = tvLabelWidth->value(label);
-            else {
-                QStyleOptionHeader opt;
-                initStyleOption(&opt);
-                QVariant var = model()->headerData(logicalIndex, orientation(), Qt::FontRole);
-                QFont fnt;
-                if (var.isValid() && var.canConvert<QFont>())
-                    fnt = qvariant_cast<QFont>(var);
-                else
-                    fnt = font();
-                fnt.setBold(true);
-                opt.fontMetrics = QFontMetrics(fnt);
-                opt.text = labels[i];
-                //QSize s1 = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
-                //width = s1.width();
-                width = opt.fontMetrics.width(opt.text)*1.1;
-            }
-            s.setWidth(s.width() + width);
-            tvSectionWidth->replace(i,qMax(tvSectionWidth->at(i), width));
-        }
+        s.setWidth(model()->headerData(logicalIndex, orientation(), Qt::SizeHintRole).toInt());
         return s;
     } else {
         QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);

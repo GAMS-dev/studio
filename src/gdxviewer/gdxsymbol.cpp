@@ -57,17 +57,23 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     mTvColDim = 1;
     for(int i=0; i<mDim; i++)
         mTvDimOrder << i;
+
+    tvLabelWidth = new QMap<QString, int>();
+    tvSectionWidth = new QVector<int>();
 }
 
 GdxSymbol::~GdxSymbol()
 {
-
     for(auto v : mUelsInColumn)
         delete v;
     for(auto a: mShowUelInColumn) {
         if(a)
             delete[] a;
     }
+    if (tvSectionWidth)
+        delete tvSectionWidth;
+    if (tvLabelWidth)
+        delete tvLabelWidth;
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -99,6 +105,26 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
                     header << mGdxSymbolTable->uel2Label(uel);
             }
             return header;
+        }
+        else if (role == Qt::SizeHintRole && orientation == Qt::Vertical) {
+            int totalWidth = 0;
+            for (int i=0; i<mDim-mTvColDim; i++) {
+                int width;
+                QString label = mGdxSymbolTable->uel2Label(mTvRowHeaders[section][i]);
+                if (tvLabelWidth->contains(label))
+                    width = tvLabelWidth->value(label);
+                else {
+                    QVariant var = headerData(section, orientation, Qt::FontRole);
+                    QFont fnt;
+                    if (var.isValid() && var.canConvert<QFont>())
+                        fnt = qvariant_cast<QFont>(var);
+                    fnt.setBold(true);
+                    int labelWidth = QFontMetrics(fnt).width(label)*1.1;
+                    totalWidth += labelWidth;
+                    tvSectionWidth->replace(i, qMax(tvSectionWidth->at(i), labelWidth));
+                }
+            }
+            return totalWidth;
         }
     } else {
         if (role == Qt::DisplayRole) {
@@ -542,19 +568,26 @@ void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
     std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
 
     calcDefaultColumnsTableView();
-    static_cast<NestedHeaderView*>(mTvTableView->horizontalHeader())->resetLayout();
-    static_cast<NestedHeaderView*>(mTvTableView->verticalHeader())->resetLayout();
+
+    tvSectionWidth->clear();
+    tvSectionWidth->resize(mDim-mTvColDim);
+
     endResetModel();
+}
+
+QVector<int> *GdxSymbol::getTvSectionWidth() const
+{
+    return tvSectionWidth;
+}
+
+void GdxSymbol::setTvSectionWidth(QVector<int> *value)
+{
+    tvSectionWidth = value;
 }
 
 QVector<int> GdxSymbol::tvDimOrder() const
 {
     return mTvDimOrder;
-}
-
-void GdxSymbol::setTvTableView(QTableView *tv)
-{
-    mTvTableView = tv;
 }
 
 QVector<bool> GdxSymbol::defaultColumnTableView() const

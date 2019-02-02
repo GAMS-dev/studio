@@ -80,7 +80,8 @@ public:
 
     QVector<int> tvDimOrder() const;
 
-    void setTvTableView(QTableView* tv);
+    QVector<int> *getTvSectionWidth() const;
+    void setTvSectionWidth(QVector<int> *value);
 
 signals:
     void loadFinished();
@@ -143,7 +144,8 @@ private:
 
     bool mTableView = false;
 
-    QTableView* mTvTableView = nullptr;
+    QVector<int>* tvSectionWidth = nullptr;
+    QMap<QString, int>* tvLabelWidth = nullptr;
 };
 
 } // namespace gdxviewer

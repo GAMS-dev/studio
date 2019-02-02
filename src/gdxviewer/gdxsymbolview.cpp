@@ -297,7 +297,6 @@ void GdxSymbolView::showListView()
 void GdxSymbolView::showTableView()
 {
     ui->pbResetSortFilter->setEnabled(false);
-    mSym->setTvTableView(ui->tvTableView);
     mSym->setTableView(true);
 
     ui->pbToggleView->setText("List View");
