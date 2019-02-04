@@ -574,13 +574,16 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         mOptionTokenizer->getOptionItemFromStr(mOptionItem.at(logicalIndex), false, mOptionItem.at(logicalIndex)->key);
         if (mOptionItem.at(logicalIndex)->error == No_Error)
             mCheckState[logicalIndex] = QVariant(Qt::Unchecked);
-         else
+        else
             mCheckState[logicalIndex] = QVariant(Qt::Checked);
+        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_KEY), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
         if (mOption->isEOLCharDefined())
             setData( index(logicalIndex, SolverOptionTableModel::COLUMN_EOL_COMMENT), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
         setData( index(logicalIndex, columnEntryNumber), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
+        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     } else {  // to comment
         QString key;
