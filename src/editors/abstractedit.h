@@ -54,6 +54,9 @@ signals:
     void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
 
+protected slots:
+    virtual void marksChanged();
+
 protected:
     friend class FileMeta;
 
@@ -67,7 +70,6 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
-    virtual void marksChanged();
     QList<TextMark *> cachedLineMarks(int lineNr);
     const QList<TextMark*> &marksAtMouse() const;
     inline FileId fileId() {
@@ -80,13 +82,11 @@ protected:
         NodeId group = property("groupId").toInt(&ok);
         return ok ? group : NodeId();
     }
-
     virtual void setMarks(const LineMarks *marks);
     virtual const LineMarks* marks() const;
     virtual int effectiveBlockNr(const int &localBlockNr) const;
 
 private:
-    NodeId mGroupId;
     const LineMarks* mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;

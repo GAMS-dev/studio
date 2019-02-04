@@ -29,15 +29,15 @@
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextCodec>
+#include <QDir>
 
 namespace gams {
 namespace studio {
 
-ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, ProjectGroupNode* group, NodeType type)
+ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, NodeType type)
     : ProjectAbstractNode(fileMeta?fileMeta->name():"[NULL]", type), mFileMeta(fileMeta)
 {
     if (!mFileMeta) EXCEPT() << "The assigned FileMeta must not be null.";
-    if (group) setParentNode(group);
 }
 
 ProjectFileNode::~ProjectFileNode()
@@ -106,7 +106,7 @@ QString ProjectFileNode::location() const
 
 QString ProjectFileNode::tooltip()
 {
-    QString tip = location();
+    QString tip = QDir::toNativeSeparators(location());
     if (!file()->exists(true)) tip += "\n--missing--";
     if (!debugMode())
         return tip;

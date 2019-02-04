@@ -34,7 +34,7 @@ class ReferenceTreeModel : public QAbstractItemModel
     Q_OBJECT
 public:
     ReferenceTreeModel(Reference* ref, QObject *parent = nullptr);
-    ~ReferenceTreeModel();
+    ~ReferenceTreeModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -49,12 +49,8 @@ public:
     bool removeRows(int row, int count, const QModelIndex &parent) override;
 
     void resetModel();
-
-signals:
-    void referenceSelectionChanged(ReferenceItem item);
-
-public slots:
     void updateSelectedSymbol(SymbolId symbolid);
+    void updateSelectedSymbol(const QString &symbolName);
 
 private:
     void insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem*>& referenceItemList, const QString& referenceType);

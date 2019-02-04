@@ -29,19 +29,60 @@ namespace reference {
 
 class SymbolTableModel : public QAbstractTableModel
 {
+    Q_OBJECT
+
 public:
-    SymbolTableModel(Reference* ref, SymbolDataType::SymbolType type, QObject *parent = nullptr);
+    explicit SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
     void resetModel();
+    void initModel(Reference* ref);
+
+    bool isModelLoaded();
+
+    int getSortedIndexOf(const SymbolId id) const;
+    int getSortedIndexOf(const QString &name) const;
+    void toggleSearchColumns(bool checked);
+    void setFilterPattern(const QString& pattern);
+
+    static const int COLUMN_SYMBOL_ID = 0;
+    static const int COLUMN_SYMBOL_NAME = 1;
+    static const int COLUMN_FILEUSED_NAME = 0;
+
+signals:
+    void symbolSelectionToBeUpdated();
 
 private:
+    enum SortType {
+        sortInt = 0,
+        sortString = 1,
+        sortUnknown = 2
+    };
+    enum ColumnType {
+        columnId = 0,
+        columnName = 1,
+        columnType = 2,
+        columnDimension = 3,
+        columnDomain = 4,
+        columnText = 5,
+        columnFileLocation = 6,
+        columnUnknown = 7
+    };
+    SortType getSortTypeOf(int column) const;
+    ColumnType getColumnTypeOf(int column) const;
+    QString getDomainStr(const QList<SymbolId>& domain) const;
+    bool isFilteredActive(SymbolReferenceItem* item, int column, const QString& pattern);
+    bool isLocationFilteredActive(int idx, const QString& pattern);
+    void filterRows();
+    void resetSizeAndIndices();
+
     SymbolDataType::SymbolType mType;
 
     QStringList mAllSymbolsHeader;
@@ -50,6 +91,16 @@ private:
     QStringList mFileUsedHeader;
 
     Reference* mReference = nullptr;
+
+    int mFilteredKeyColumn = -1;
+    QString mFilteredPattern = "";
+    int mCurrentSortedColumn = 0;
+    Qt::SortOrder mCurrentAscendingSort = Qt::AscendingOrder;
+
+    size_t mFilteredRecordSize = 0;
+    std::vector<bool> mFilterActive;
+    std::vector<size_t> mFilterIdxMap;
+    std::vector<size_t> mSortIdxMap;
 };
 
 } // namespace reference

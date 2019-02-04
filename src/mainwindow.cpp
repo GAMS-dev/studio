@@ -143,7 +143,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeGroup, this, &MainWindow::closeGroup);
-    connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, this, &MainWindow::renameGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::renameGroup, &mProjectRepo, &ProjectRepo::renameGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
@@ -897,6 +897,7 @@ void MainWindow::on_actionSave_As_triggered()
             openFileNode(newNode, true);
         }
     }
+    mProjectRepo.treeModel()->sortChildNodes(node->parentNode());
 }
 
 void MainWindow::on_actionSave_All_triggered()
@@ -954,7 +955,7 @@ void MainWindow::codecReload(QAction *action)
         if (fm->isModified()) {
             QMessageBox msgBox;
             msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText(fm->location()+" has been modified.");
+            msgBox.setText(QDir::toNativeSeparators(fm->location())+" has been modified.");
             msgBox.setInformativeText("Do you want to discard your changes and reload it with Character Set "
                                       + action->text() + "?");
             msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
@@ -1013,7 +1014,7 @@ void MainWindow::activeTabChanged(int index)
 
     if (node) {
         mRecent.editFileId = node->file()->id();
-        mStatusWidgets->setFileName(node->location());
+        mStatusWidgets->setFileName(QDir::toNativeSeparators(node->location()));
         mStatusWidgets->setEncoding(node->file()->codecMib());
         mRecent.setEditor(editWidget, this);
         mRecent.group = mProjectRepo.asGroup(ViewHelper::groupId(editWidget));
@@ -1037,7 +1038,7 @@ void MainWindow::activeTabChanged(int index)
             if (fc) {
                 mRecent.editFileId = fc->file()->id();
                 ui->menuconvert_to->setEnabled(false);
-                mStatusWidgets->setFileName(fc->location());
+                mStatusWidgets->setFileName(QDir::toNativeSeparators(fc->location()));
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
                 updateMenuToCodec(node->file()->codecMib());
@@ -1127,7 +1128,7 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
         choice = 0;
     } else {
         if (!ask) return (file->isModified() ? 2 : 1);
-        choice = externChangedMessageBox(file->location(), false, file->isModified(), count);
+        choice = externChangedMessageBox(QDir::toNativeSeparators(file->location()), false, file->isModified(), count);
     }
     if (choice == 0) {
         file->reloadDelayed();
@@ -1161,7 +1162,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     int choice = 0;
     if (!file->isReadOnly()) {
         if (!ask) return 3;
-        choice = externChangedMessageBox(file->location(), true, file->isModified(), count);
+        choice = externChangedMessageBox(QDir::toNativeSeparators(file->location()), true, file->isModified(), count);
     }
     if (choice == 0) {
         if (file->exists(true)) return 0;
@@ -1575,8 +1576,9 @@ bool MainWindow::requestCloseChanged(QVector<FileMeta *> changedFiles)
 
     int ret = QMessageBox::Discard;
     QMessageBox msgBox;
-    QString filesText = changedFiles.size()==1 ? changedFiles.first()->location() + " has been modified."
-                                         : QString::number(changedFiles.size())+" files have been modified";
+    QString filesText = changedFiles.size()==1
+              ? QDir::toNativeSeparators(changedFiles.first()->location()) + " has been modified."
+              : QString::number(changedFiles.size())+" files have been modified";
     ret = showSaveChangesMsgBox(filesText);
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
@@ -1767,7 +1769,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         if (modifiedFiles.size() > 1)
-            msgBox.setText(modifiedFiles.first()->location()+" has been modified.");
+            msgBox.setText(QDir::toNativeSeparators(modifiedFiles.first()->location())+" has been modified.");
         else
             msgBox.setText(QString::number(modifiedFiles.size())+" files have been modified.");
         msgBox.setInformativeText("Do you want to save your changes before running?");
@@ -2289,11 +2291,19 @@ void MainWindow::on_actionSearch_triggered()
 #endif
     } else {
        ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
-       if (fc && fc->file()->kind() == FileKind::Gdx) {
-           gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
-           gdx->selectSearchField();
-           return;
+       if (fc) {
+           if (fc->file()->kind() == FileKind::Gdx) {
+               gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
+               gdx->selectSearchField();
+               return;
+           }
+           if (fc->file()->kind() == FileKind::Ref) {
+               reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor());
+               refViewer->selectSearchField();
+               return;
+           }
        }
+
        // e.g. needed for KDE to raise the search dialog when minimized
        if (mSearchDialog->isMinimized())
            mSearchDialog->setWindowState(Qt::WindowMaximized);
@@ -2813,11 +2823,6 @@ void MainWindow::resetViews()
             addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
-}
-
-void MainWindow::renameGroup(ProjectGroupNode* group)
-{
-    ui->projectView->edit(mProjectRepo.treeModel()->index(group));
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)

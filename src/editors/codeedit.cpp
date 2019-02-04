@@ -78,8 +78,12 @@ int CodeEdit::lineNumberAreaWidth()
     if (showLineNr())
         space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
-    if (marks() && marks()->hasVisibleMarks())
+    if (marks() && marks()->hasVisibleMarks()) {
         space += iconSize();
+        mIconCols = 1;
+    } else {
+        mIconCols = 0;
+    }
 
     return space;
 }
@@ -747,14 +751,13 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     QTextCursor anchor = cursor;
     anchor.setPosition(anchor.anchor());
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.isValid()) break;
+
         cursor.setPosition(block.position());
         if (hasComment)
             cursor.deleteChar();
         else
             cursor.insertText("*");
-
-        if (!block.isValid())
-            break;
     }
     cursor.setPosition(anchor.position());
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
@@ -1334,6 +1337,8 @@ void CodeEdit::setAllowBlockEdit(bool allow)
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
+    bool hasMarks = marks()->hasVisibleMarks();
+    if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::marksChanged);
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -1366,7 +1371,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 
-            if (marks()->hasVisibleMarks() && marks()->contains(effectiveBlockNr(blockNumber))) {
+            if (hasMarks && marks()->contains(effectiveBlockNr(blockNumber))) {
                 int iTop = (2+top+bottom-iconSize())/2;
                 painter.drawPixmap(1, iTop, marks()->value(effectiveBlockNr(blockNumber))->icon().pixmap(QSize(iconSize(),iconSize())));
             }

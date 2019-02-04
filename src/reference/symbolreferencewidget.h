@@ -47,20 +47,21 @@ class SymbolReferenceWidget : public QWidget
 public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
     ~SymbolReferenceWidget();
+    void selectSearchField();
+
+    bool isModelLoaded();
 
 public slots:
-    void toggleSearchColumns(bool checked);
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     void expandResetModel();
     void resetModel();
+    void initModel();
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
+    void updateSymbolSelection();
 
 private:
     Ui::SymbolReferenceWidget *ui;
-
-    QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
-    QSortFilterProxyModel* mReferenceTreeProxyModel = nullptr;
 
     SymbolTableModel* mSymbolTableModel;
     ReferenceTreeModel* mReferenceTreeModel;
@@ -69,6 +70,9 @@ private:
     SymbolDataType::SymbolType mType;
 
     ReferenceViewer* mReferenceViewer;
+
+    SymbolId mCurrentSymbolID = -1;
+    QString mCurrentSymbolSelection = "";
 };
 
 } // namespace reference
