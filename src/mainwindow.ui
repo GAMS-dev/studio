@@ -194,7 +194,6 @@
     </widget>
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
-    <addaction name="actionOption_View"/>
     <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_System_Log"/>

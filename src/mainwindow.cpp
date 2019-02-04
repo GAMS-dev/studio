@@ -339,7 +339,6 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
     ui->actionOption_View->setChecked(visibility);
-    // TODO(rogo) add option widget to maintab
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -382,11 +381,6 @@ void MainWindow::on_actionOutput_View_triggered(bool checked)
 void MainWindow::on_actionProject_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockProjectView, checked);
-}
-
-void MainWindow::on_actionOption_View_triggered(bool)
-{
-    // TODO(rogo): handle option widget
 }
 
 void MainWindow::on_actionHelp_View_triggered(bool checked)
@@ -2781,10 +2775,7 @@ void MainWindow::resetViews()
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
-        }/* else if (dock == ui->dockOptionEditor) {
-            addDockWidget(Qt::TopDockWidgetArea, dock);
-        }*/
-        // TODO(rogo): do we need to handle option widget here?
+        }
     }
 }
 

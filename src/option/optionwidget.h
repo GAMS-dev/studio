@@ -20,6 +20,7 @@
 #ifndef OPTIONWIDGET_H
 #define OPTIONWIDGET_H
 
+#include <QDockWidget>
 #include <QWidget>
 
 #include "option.h"
@@ -85,7 +86,7 @@ public slots:
     void disableOptionEditor();
 
 private slots:
-    void toggleOptionDefinition(bool checked);
+    void toggleExtendedOptionEdit(bool checked);
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX);
@@ -94,6 +95,7 @@ private:
     void setInterruptActionsEnabled(bool enable);
 
     Ui::OptionWidget *ui;
+    QDockWidget *mDock = nullptr;
 
     QAction* actionRun;
     QAction* actionRun_with_GDX_Creation;

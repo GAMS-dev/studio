@@ -45,7 +45,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     setInterruptActionGroup(aInterrupt, actionStop);
 
     ui->gamsOptionWidget->hide();
-    connect(ui->gamsOptionEditorButton, &QAbstractButton::clicked, this, &OptionWidget::toggleOptionDefinition);
+    connect(ui->gamsOptionEditorButton, &QAbstractButton::clicked, this, &OptionWidget::toggleExtendedOptionEdit);
     connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::commandLineHelpTriggered);
 
     connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
@@ -148,7 +148,7 @@ void OptionWidget::on_stopAction()
 
 void OptionWidget::checkOptionDefinition(bool checked)
 {
-    toggleOptionDefinition(checked);
+    toggleExtendedOptionEdit(checked);
 }
 
 bool OptionWidget::isOptionDefinitionChecked()
@@ -301,20 +301,28 @@ void OptionWidget::disableOptionEditor()
     setInterruptActionsEnabled(false);
 }
 
-void OptionWidget::toggleOptionDefinition(bool checked)
+void OptionWidget::toggleExtendedOptionEdit(bool checked)
 {
     ui->gamsOptionEditorButton->setChecked(checked);
     if (checked) {
         ui->gamsOptionEditorButton->setIcon( QIcon(":/img/hide") );
-        ui->gamsOptionEditorButton->setToolTip( "Hide Command Line Parameters Editor"  ) ;
-        ui->gamsOptionWidget->show();
+        ui->gamsOptionEditorButton->setToolTip( "Hide Command Line Parameters Editor"  );
+
+        mDock = new QDockWidget("Arguments", this);
+        mDock->setWidget(ui->gamsOptionWidget);
+        main->addDockWidget(Qt::TopDockWidgetArea, mDock);
+
+        mDock->resize(ui->gamsCommandWidget->size());
         main->updateRunState();
+
         emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
 
     } else {
         ui->gamsOptionEditorButton->setIcon( QIcon(":/img/show") );
-        ui->gamsOptionEditorButton->setToolTip( "Show Command Line Parameters Editor"  ) ;
-        ui->gamsOptionWidget->hide();
+        ui->gamsOptionEditorButton->setToolTip( "Show Command Line Parameters Editor"  );
+
+        main->removeDockWidget(mDock);
+
         main->updateRunState();
         main->resizeOptionEditor(ui->gamsCommandWidget->size());
     }
