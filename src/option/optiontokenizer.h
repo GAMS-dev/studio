@@ -107,6 +107,7 @@ private:
     OptionErrorType logAndClearMessage(optHandle_t &OPTHandle, bool logged = true);
 
     QString getKeyFromStr(const QString &line, const QString &hintKey);
+    QString getDoubleValueFromStr(const QString &line, const QString &hintKey, const double &hintValue);
     QString getValueFromStr(const QString &line, const int itype, const QString &hintKey, const QString &hintValue);
     QString getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue);
     QString getQuotedStringValue(const QString &line, const QString &value);

@@ -58,6 +58,10 @@ OptionTokenizer::OptionTokenizer(const QString &optionFileName)
         mOPTAvailable = false;
     }
 
+    // default is the first EOL char defined, unless user specifies otherwise
+    if (mOption->isEOLCharDefined())
+        mEOLCommentChar = mOption->getEOLChars().at(0);
+
     // option Format
     mInvalidKeyFormat.setFontItalic(true);
     mInvalidKeyFormat.setBackground(Qt::lightGray);
@@ -585,8 +589,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 }
                 case optDataDouble: {  // 2
                      qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
-                     QString dv = QString::number(dvalue);
-                     value = getValueFromStr(text, itype, n, dv);
+                     value = getDoubleValueFromStr(text, n, dvalue);
                      valueRead = true;
                      break;
                 }
@@ -866,8 +869,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                }
                case optDataDouble: {  // 2
                    qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
-                   QString dv = QString::number(dvalue);
-                   definedValue = getValueFromStr(str, itype, n, dv);
+                   definedValue = getDoubleValueFromStr(str, n, dvalue);
                    valueRead = true;
                    break;
                }
@@ -971,15 +973,35 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
     return key;
 }
 
+QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QString &hintKey, const double &hintValue)
+{
+    Q_UNUSED(hintValue);
+    QString key = getKeyFromStr(line, hintKey);
+    QString value = line.mid( key.length() ).simplified();
+    if (value.startsWith('='))
+        value = value.mid(1).simplified();
+    for(QChar ch : mOption->getEOLChars()) {
+        if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
+            value = value.split(getEOLCommentChar(), QString::SkipEmptyParts).at(0).simplified();
+            break;
+        }
+    }
+    bool ok(false);
+    QString(value).toDouble(&ok);
+    if (!ok)
+        return "";
+    else
+        return value;
+}
+
 QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, const QString &hintKey, const QString &hintValue)
 {
-    if (itype==optDataDouble || hintValue.isEmpty()) {
+    if (hintValue.isEmpty()) {
        QString key = getKeyFromStr(line, hintKey);
        QString value = line.mid( key.length() ).simplified();
        if (value.startsWith('='))
-           return value.mid(1).simplified();
-       else
-           return value;
+           value = value.mid(1).simplified();
+       return value;
     } else if (itype==optDataString) {
         if (line.contains(hintValue))
            return getQuotedStringValue(line, hintValue);
