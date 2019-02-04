@@ -248,12 +248,12 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
 void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 {
-    setRunActionsEnabled( isRunnable & !isRunning );
-    setInterruptActionsEnabled( isRunnable & isRunning );
+    setRunActionsEnabled(isRunnable & !isRunning);
+    setInterruptActionsEnabled(isRunnable && isRunning);
 
-    ui->gamsOptionWidget->setEnabled( isRunnable & !isRunning );
-    ui->gamsOptionCommandLine->lineEdit()->setReadOnly( isRunning );
-    ui->gamsOptionCommandLine->lineEdit()->setEnabled( isRunnable & ui->gamsOptionWidget->isHidden() );
+    ui->gamsOptionWidget->setEnabled(isRunnable && !isRunning);
+    ui->gamsOptionCommandLine->lineEdit()->setReadOnly(isRunning);
+    ui->gamsOptionCommandLine->lineEdit()->setEnabled(isRunnable && (!mDock || mDock->isHidden()));
 }
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
@@ -308,11 +308,13 @@ void OptionWidget::toggleExtendedOptionEdit(bool checked)
         ui->gamsOptionEditorButton->setIcon( QIcon(":/img/hide") );
         ui->gamsOptionEditorButton->setToolTip( "Hide Command Line Parameters Editor"  );
 
-        mDock = new QDockWidget("Arguments", this);
-        mDock->setWidget(ui->gamsOptionWidget);
-        main->addDockWidget(Qt::TopDockWidgetArea, mDock);
+        if (!mDock) {
+            mDock = new QDockWidget("Arguments", this);
+            mDock->setWidget(ui->gamsOptionWidget);
+            main->addDockWidget(Qt::TopDockWidgetArea, mDock);
+        }
 
-        mDock->resize(ui->gamsCommandWidget->size());
+        mDock->setVisible(true);
         main->updateRunState();
 
         emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
@@ -321,10 +323,9 @@ void OptionWidget::toggleExtendedOptionEdit(bool checked)
         ui->gamsOptionEditorButton->setIcon( QIcon(":/img/show") );
         ui->gamsOptionEditorButton->setToolTip( "Show Command Line Parameters Editor"  );
 
-        main->removeDockWidget(mDock);
+        if (mDock) mDock->setVisible(false);
 
         main->updateRunState();
-        main->resizeOptionEditor(ui->gamsCommandWidget->size());
     }
 }
 
