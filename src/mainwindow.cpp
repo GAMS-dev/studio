@@ -2781,8 +2781,7 @@ void MainWindow::resetViews()
 
 void MainWindow::resizeOptionEditor(const QSize &size)
 {
-    mGamsOptionWidget->resize( size );
-    this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
+    mGamsOptionWidget->resize(size);
 }
 
 void MainWindow::setForeground()

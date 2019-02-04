@@ -391,15 +391,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockOptionEditor">
-   <property name="windowTitle">
-    <string>Option</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>4</number>
-   </attribute>
-   <widget class="QWidget" name="dockOptionEditorContents"/>
-  </widget>
   <widget class="QDockWidget" name="dockHelpView">
    <property name="windowTitle">
     <string>Help</string>
@@ -412,6 +403,15 @@
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
