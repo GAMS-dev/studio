@@ -624,7 +624,7 @@ void TestCPLEXOption::testReadOptionFile_data()
     out << "advind -1" << endl;                    // integer
     out << "*----------------------- " << endl;
     out << "*  this is a comment  line" << endl;
-    out << "* -----------------------" << endl;
+    out << "*" << endl;
     out << "" << endl;
     out << "cuts 2" << endl;                       // enumstr
     out << "cost.feaspref 0.9" << endl;            // dot option
@@ -687,6 +687,12 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(2)->text     << ""
                            << items.at(2)->optionId << -1
                            << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("*")     << items.at(4)->disabled <<  true
+                           << items.at(4)->key      << "*"
+                           << items.at(4)->value    << QVariant("")
+                           << items.at(4)->text     << ""
+                           << items.at(4)->optionId << -1
+                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
     QTest::newRow("")     << items.at(5)->disabled <<  true
                            << items.at(5)->key      << ""
                            << items.at(5)->value    << QVariant("")

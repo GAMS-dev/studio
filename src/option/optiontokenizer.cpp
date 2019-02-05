@@ -544,12 +544,14 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         item->error = No_Error;
         item->disabled = true;
     } else {
-        if (str.startsWith("*"))
+        if (str.startsWith("*")) {
             text = str.mid(1).simplified();
+            item->optionId = -1;
+        }
+        if (!text.isEmpty())
+           optReadFromStr( mOPTHandle, text.toLatin1() );
 
-        optReadFromStr( mOPTHandle, text.toLatin1() );
         OptionErrorType errorType = logAndClearMessage(  mOPTHandle );
-
         bool valueRead = false;
         QString key = "";
         QString value = "";

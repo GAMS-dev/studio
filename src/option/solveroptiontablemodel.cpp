@@ -122,33 +122,19 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole: {
-        if (mOptionItem.at(row)->disabled) { // comment
-            if (col==COLUMN_OPTION_KEY) {
-                QString text = mOptionItem.at(row)->key;
-                if (mOptionItem.at(row)->key.startsWith("*"))
-                    text = mOptionItem.at(row)->key.mid(1);
-                return QVariant(text);
-            } else if (col==COLUMN_OPTION_VALUE) {
-                       return QVariant("");
-            } else if (col==columnEntryNumber) {
-                      return QVariant(mOptionItem.at(row)->optionId);
-            }
-        } else { // not a comment
-            if (col==COLUMN_OPTION_KEY) {
-                return QVariant(mOptionItem.at(row)->key);
-            } else if (col==COLUMN_OPTION_VALUE) {
-                     return mOptionItem.at(row)->value;
-            } else {
-                if (mOption->isEOLCharDefined()) {
+        if (col==COLUMN_OPTION_KEY) {
+            QString text = mOptionItem.at(row)->key;
+            if (mOptionItem.at(row)->key.startsWith("*"))
+                text = mOptionItem.at(row)->key.mid(1);
+            return QVariant(text);
+        } else  if (mOption->isEOLCharDefined()) {
                    if (col==COLUMN_EOL_COMMENT)
                        return QVariant(mOptionItem.at(row)->text);
                    else if (col==columnEntryNumber)
-                           return QVariant(mOptionItem.at(row)->optionId);
-                } else {
-                   if (col==columnEntryNumber)
                        return QVariant(mOptionItem.at(row)->optionId);
-                }
-            }
+        } else {
+           if (col==columnEntryNumber)
+               return QVariant(mOptionItem.at(row)->optionId);
         }
         break;
     }
@@ -250,8 +236,7 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
         QString dataValue = value.toString();
-        switch (index.column()) {
-        case COLUMN_OPTION_KEY :
+        if (index.column()==COLUMN_OPTION_KEY) {
             if (mOptionItem[index.row()]->disabled) {
                 if (!dataValue.startsWith("*"))
                     mOptionItem[index.row()]->key = QString("* %1").arg(dataValue);
@@ -260,23 +245,22 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
             } else {
                mOptionItem[index.row()]->key = dataValue;
             }
-            break;
-        case COLUMN_OPTION_VALUE :
+
+        } else if (index.column()==COLUMN_OPTION_VALUE) {
             mOptionItem[index.row()]->value = dataValue;
-            break;
-        default:
-            break;
-        }
-        if (mOption->isEOLCharDefined()) {
-            if (index.column()==COLUMN_EOL_COMMENT)
-                mOptionItem[index.row()]->text = dataValue;
-            else
-                mOptionItem[index.row()]->optionId = dataValue.toInt();
         } else {
-            if (index.column()==columnEntryNumber)
-                mOptionItem[index.row()]->optionId = dataValue.toInt();
-            else
-                mOptionItem[index.row()]->text = "";
+            if (mOption->isEOLCharDefined()) {
+                if (index.column()==COLUMN_EOL_COMMENT) {
+                    mOptionItem[index.row()]->text = dataValue;
+                } else {
+                    mOptionItem[index.row()]->optionId = dataValue.toInt();
+                }
+            } else {
+                if (index.column()==columnEntryNumber)
+                    mOptionItem[index.row()]->optionId = dataValue.toInt();
+//                else
+//                    mOptionItem[index.row()]->text = "";
+            }
         }
         emit dataChanged(index, index, roles);
     } else if (role == Qt::CheckStateRole) {
@@ -581,9 +565,8 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
         if (mOption->isEOLCharDefined())
             setData( index(logicalIndex, SolverOptionTableModel::COLUMN_EOL_COMMENT), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
-        setData( index(logicalIndex, columnEntryNumber), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
-
+        setData( index(logicalIndex, columnEntryNumber), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     } else {  // to comment
         QString key;
@@ -604,12 +587,15 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         mOptionItem.at(logicalIndex)->key = key;
         mOptionItem.at(logicalIndex)->value = "";
         mOptionItem.at(logicalIndex)->text = "";
+        mOptionItem.at(logicalIndex)->optionId = -1;
         mOptionItem.at(logicalIndex)->disabled = true;
         mCheckState[logicalIndex] = QVariant(Qt::PartiallyChecked);
+        disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_KEY), mOptionItem.at(logicalIndex)->key, Qt::EditRole );
         setData( index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_VALUE), mOptionItem.at(logicalIndex)->value, Qt::EditRole );
         if (mOption->isEOLCharDefined())
             setData( index(logicalIndex, SolverOptionTableModel::COLUMN_EOL_COMMENT), mOptionItem.at(logicalIndex)->text, Qt::EditRole );
+        connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
         setData( index(logicalIndex, columnEntryNumber), mOptionItem.at(logicalIndex)->optionId, Qt::EditRole );
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
