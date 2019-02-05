@@ -1096,69 +1096,90 @@ void TestCPLEXOption::testNonExistReadOptionFile()
     QCOMPARE( items.size(), 0);
 }
 
-void TestCPLEXOption::testWriteOptionFile()
+void TestCPLEXOption::testWriteOptionFile_data()
 {
     // given
     QList<SolverOptionItem *> items;
-    items.append(new SolverOptionItem(-1, "", "", "*----------------------- ", true));
-    items.append(new SolverOptionItem(-1, " comment line....", "", "*  this is a comment  line", true));
-    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true));
+    items.append(new SolverOptionItem(-1, "*----------------------- ", "", "", true));
+    items.append(new SolverOptionItem(-1, "*  this is a comment  line", "", "", true));
+    items.append(new SolverOptionItem(-1, "*", "", "", true));
     items.append(new SolverOptionItem(-1, "", "", "", true));
-    items.append(new SolverOptionItem(6, "advind", "1", "advind 1", false));
-    items.append(new SolverOptionItem(45, "cuts", "2", "cuts 2", false));
-    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true));
-    items.append(new SolverOptionItem(74, "cost.feaspref", "0.9", "cost.feaspref 0.9", false));
-    items.append(new SolverOptionItem(74, "x.feaspref", "1.0", "x.feaspref 0.9", false));
-    items.append(new SolverOptionItem(-1, "", "", "* -----------------------]", true));
+    items.append(new SolverOptionItem(6, "advind", "1", "", false));
+    items.append(new SolverOptionItem(45, "cuts", "2", "", false));
+    items.append(new SolverOptionItem(-1, "* -----------------------]", "", "", true));
+    items.append(new SolverOptionItem(74, "cost.feaspref", "0.9", "", false));
+    items.append(new SolverOptionItem(74, "x.feaspref", "1.0", "", false));
+    items.append(new SolverOptionItem(-1, "* -----------------------]", "", "", true));
     items.append(new SolverOptionItem(7, "aggcutlim", "1000000000", "", false));
-    items.append(new SolverOptionItem(71, "eprhs", "0.001", "*  eprhs=0.001", true));
+    items.append(new SolverOptionItem(71, "*  eprhs=0.001", "", "", true));
     items.append(new SolverOptionItem(-1, "", "", "", true));
     items.append(new SolverOptionItem(27, "benderspartitioninstage", "1", "", false));
-    items.append(new SolverOptionItem(50, "dettilim", "1e+075", "dettilim 1e+075", false));
-    items.append(new SolverOptionItem(176, "rerun", "auto", "rerun=auto", true));
+    items.append(new SolverOptionItem(50, "dettilim", "1e+075", "", false));
+    items.append(new SolverOptionItem(176, "* rerun auto", "", "", true));
     items.append(new SolverOptionItem(193, "solnpoolcapacity", "1100000000", "solnpoolcapacity=1100000000", false));
-    items.append(new SolverOptionItem(195, "solnpoolintensity", "3", "solnpoolintensity  3", false));
+    items.append(new SolverOptionItem(195, "solnpoolintensity", "3", "", false));
     items.append(new SolverOptionItem(216, "tuning", "str1, str2, str3", "tuning str1, str2, str3", false));
     items.append(new SolverOptionItem(216, "tuning", "str 4, str 5", "tuning str 4, str 5", false));
+    items.append(new SolverOptionItem(-1, "feasoptmode 4 0.1", "", "feasoptmode 4 0.1", false));
+
+    int size = items.size();
 
     // when
     QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"), QTextCodec::codecForLocale()) );
 
-    // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"));
-    int i = 0;
-    if (inputFile.open(QIODevice::ReadOnly)) {
-       QTextStream in(&inputFile);
-       while (!in.atEnd()) {
-           qDebug() << "check #" << i << ":" << in.readLine();
-//          QStringList strList = in.readLine().split( "=" );
-
-//          QVERIFY( containKey (items, strList.at(0)) );
-//          if ((QString::compare(strList.at(0), "advind", Qt::CaseInsensitive)==0) ||
-//              (QString::compare(strList.at(0), "covers", Qt::CaseInsensitive)==0) ||
-//              (QString::compare(strList.at(0), "feasopt", Qt::CaseInsensitive)==0)
-//             ) {
-//             QCOMPARE( getValue(items, strList.at(0)).toInt(), strList.at(1).toInt() );
-//          } else if ((QString::compare(strList.at(0), "dettilim", Qt::CaseInsensitive)==0) ||
-//                     (QString::compare(strList.at(0), "barepcomp", Qt::CaseInsensitive)==0)) {
-//              QCOMPARE( getValue(items, strList.at(0)).toDouble(), strList.at(1).toDouble() );
-//          } else {
-//              QString value = strList.at(1);
-//              if (value.startsWith("\""))
-//                 value = value.right(value.length()-1);
-//              if (value.endsWith("\""))
-//                 value = value.left( value.length()-1);
-//              QCOMPARE( getValue(items, strList.at(0)).toString(), value );
-//          }
-          i++;
-       }
-       inputFile.close();
-    }
-    QCOMPARE(i, items.size());
-
     // clean up
     qDeleteAll(items);
     items.clear();
+
+    // then
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"));
+    int i = 0;
+    QStringList optionItems;
+
+    if (inputFile.open(QIODevice::ReadOnly)) {
+       QTextStream in(&inputFile);
+       while (!in.atEnd()) {
+           optionItems << in.readLine();
+           i++ ;
+       }
+       inputFile.close();
+    }
+
+    QCOMPARE( optionItems.size(), size );
+    QCOMPARE( i, size );
+
+    QTest::addColumn<QString>("optionString");
+    QTest::addColumn<QString>("line");
+
+    QTest::newRow("line0") << optionItems.at(0) <<  "*-----------------------";
+    QTest::newRow("line1") << optionItems.at(1) << "* this is a comment line";
+    QTest::newRow("line2") << optionItems.at(2) << "";
+    QTest::newRow("line3") << optionItems.at(3) << "";
+    QTest::newRow("line4") << optionItems.at(4) << "advind 1";
+    QTest::newRow("line5") << optionItems.at(5) << "cuts 2";
+    QTest::newRow("line6") << optionItems.at(6) << "* -----------------------]";
+    QTest::newRow("line7") << optionItems.at(7) << "cost.feaspref 0.9";
+    QTest::newRow("line8") << optionItems.at(8) << "x.feaspref 1.0";
+    QTest::newRow("line9") << optionItems.at(9) << "* -----------------------]";
+    QTest::newRow("line10") << optionItems.at(10) << "aggcutlim 1000000000";
+    QTest::newRow("line11") << optionItems.at(11) << "* eprhs=0.001";
+    QTest::newRow("line12") << optionItems.at(12) << "";
+    QTest::newRow("line13") << optionItems.at(13) << "benderspartitioninstage 1";
+    QTest::newRow("line14") << optionItems.at(14) << "dettilim 1e+075";
+    QTest::newRow("line15") << optionItems.at(15) << "* rerun auto";
+    QTest::newRow("line16") << optionItems.at(16) << "solnpoolcapacity 1100000000 ! solnpoolcapacity=1100000000";
+    QTest::newRow("line17") << optionItems.at(17) << "solnpoolintensity 3";
+    QTest::newRow("line18") << optionItems.at(18) << "tuning \"str1, str2, str3\" ! tuning str1, str2, str3";
+    QTest::newRow("line19") << optionItems.at(19) << "tuning \"str 4, str 5\" ! tuning str 4, str 5";
+    QTest::newRow("line20") << optionItems.at(20) << "feasoptmode 4 0.1 ! feasoptmode 4 0.1";
+}
+
+void TestCPLEXOption::testWriteOptionFile()
+{
+    QFETCH(QString, optionString);
+    QFETCH(QString, line);
+
+    QCOMPARE( optionString, line );
 }
 
 void TestCPLEXOption::testReadFromStr_data()

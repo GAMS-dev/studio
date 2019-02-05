@@ -491,10 +491,9 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
 {
     // TODO (JP) this method should be awared of separator between option key and value
     QString separator = " ";
-    QString key = item->key;
+    QString key = item->key.simplified();
     QString value = item->value.toString();
     QString text = item->text;
-    qDebug() << __FUNCTION__ << item->key << "," << item->value.toString() << "," << item->text;
 
     if (item->disabled) {
         if (key.startsWith("*") && key.mid(1).simplified().isEmpty())
@@ -515,13 +514,13 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
                 value.prepend("\"");
             if (!value.endsWith("\""))
                 value.append("\"");
-            qDebug() << "format value [" << value << "]";
+//            qDebug() << "format value [" << value << "]";
         }
     }
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
-       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text);
+       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text).simplified();
     else
-       return QString("%1%2%3").arg(key).arg(separator).arg(value);
+       return QString("%1%2%3").arg(key).arg(separator).arg(value).simplified();
 }
 
 bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str)
@@ -1090,8 +1089,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
         return false;
     }
 
-    qDebug() << "writeout :" << items.size() << " using codec :" << codec->name();
-
+//    qDebug() << "writeout :" << items.size() << " using codec :" << codec->name();
     QTextStream out(&outputFile);
     out.setCodec( codec );
 
