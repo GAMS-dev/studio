@@ -111,6 +111,8 @@ public:
     void scrollToPosition();
 
     Changes popChanges(); // TODO (JM) deprecated!
+    int topChunk() const; // TODO (JM) deprecated!
+
     int visibleOffset() const;
     int absTopLine() const;
     int lineCount() const;
@@ -128,20 +130,7 @@ public:
     QPoint anchor(bool local = false) const;
     bool hasSelection() const;
     int selectionSize() const;
-
-public:  // test supporting methods (DELETE LATER) <<<<<<<<<<<<<<<<<<<<<
-    int topChunk() const;
-    void dumpTopChunk(int maxlen);
-    qint64 absPos(int absLineNr, int charNr = 0);
-    int relPos(int localLineNr, int charNr = 0);
-    int moveTopLine(int lineDelta);
-    QString line(int localLineNr, int *lineInChunk = nullptr) const;
-
-public:  // to-be-private methods (MOVE TO private) <<<<<<<<<<<<<<<<<<<<
     inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
-    int findChunk(int lineNr);
-    bool setTopOffset(qint64 byteNr);
-    bool setTopLine(int lineNr);
 
 private slots:
     void closeFile();
@@ -157,6 +146,9 @@ private:
     QPoint convertPosLocal(const CursorPosition &pos) const;
     QPoint convertPos(const CursorPosition &pos) const;
     Chunk *chunkForLine(int absLine, int *lineInChunk) const;
+    bool setTopLine(int lineNr);
+    int findChunk(int lineNr);
+    bool setTopOffset(qint64 byteNr);
     QString line(Chunk *chunk, int chunkLineNr) const;
     QString lines(Chunk *chunk, int startLine, int &lineCount);
     void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);

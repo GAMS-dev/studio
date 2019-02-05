@@ -488,26 +488,19 @@ int TextMapper::topChunk() const
     return chunk ? chunk->nr : -1;
 }
 
-void TextMapper::dumpTopChunk(int maxlen)
-{
-    Chunk *res = mChunks.last();
-    DEB() << "Chunk " << res->nr << ": '"
-          << res->bArray.left((maxlen-5)/2) << "' ... '" << res->bArray.right((maxlen-5)/2) << "'";
-}
-
-QString TextMapper::line(int localLineNr, int *lineInChunk) const
-{
-    int licData;
-    if (!lineInChunk) lineInChunk = &licData;
-    if (mChunks.isEmpty()) return QString();
-    Chunk *chunk1 = chunkForRelativeLine(localLineNr, lineInChunk);
-    // get the text of the line
-    QByteArray raw;
-    raw.setRawData(static_cast<const char*>(chunk1->bArray)+chunk1->lineBytes.at(*lineInChunk),
-                   uint(mChunks.last()->lineBytes.at(*lineInChunk+1)
-                        - mChunks.last()->lineBytes.at(*lineInChunk) - mDelimiter.size()));
-    return mCodec ? mCodec->toUnicode(raw) : QString(raw);
-}
+//QString TextMapper::line(int localLineNr, int *lineInChunk) const
+//{
+//    int licData;
+//    if (!lineInChunk) lineInChunk = &licData;
+//    if (mChunks.isEmpty()) return QString();
+//    Chunk *chunk1 = chunkForRelativeLine(localLineNr, lineInChunk);
+//    // get the text of the line
+//    QByteArray raw;
+//    raw.setRawData(static_cast<const char*>(chunk1->bArray)+chunk1->lineBytes.at(*lineInChunk),
+//                   uint(mChunks.last()->lineBytes.at(*lineInChunk+1)
+//                        - mChunks.last()->lineBytes.at(*lineInChunk) - mDelimiter.size()));
+//    return mCodec ? mCodec->toUnicode(raw) : QString(raw);
+//}
 
 QString TextMapper::lines(int localLineNrFrom, int lineCount) const
 {
@@ -626,32 +619,32 @@ void TextMapper::updateBytesPerLine(const ChunkLines &chunkLines) const
     mBytesPerLine = absKnownLinesSize / absKnownLines;
 }
 
-qint64 TextMapper::absPos(int absLineNr, int charNr)
-{
-    int lineInChunk;
-    Chunk *chunk = chunkForLine(absLineNr, &lineInChunk);
-    int rawCharNr = 0;
-    if (charNr > 0) {
-        QString text = line(chunk, lineInChunk).left(charNr);
-        rawCharNr = mCodec ? mCodec->fromUnicode(text).length() : text.length();
-    }
-    qint64 pos = chunk->start + chunk->lineBytes.at(lineInChunk) + rawCharNr;
-    return pos;
-}
+//qint64 TextMapper::absPos(int absLineNr, int charNr)
+//{
+//    int lineInChunk;
+//    Chunk *chunk = chunkForLine(absLineNr, &lineInChunk);
+//    int rawCharNr = 0;
+//    if (charNr > 0) {
+//        QString text = line(chunk, lineInChunk).left(charNr);
+//        rawCharNr = mCodec ? mCodec->fromUnicode(text).length() : text.length();
+//    }
+//    qint64 pos = chunk->start + chunk->lineBytes.at(lineInChunk) + rawCharNr;
+//    return pos;
+//}
 
-int TextMapper::relPos(int localLineNr, int charNr)
-{
-    int lineInChunk;
-    QString text = line(localLineNr, &lineInChunk).left(charNr);
-    int len = mCodec ? mCodec->fromUnicode(text).length() : text.length();
-    qint64 pos = mChunks.last()->start + mChunks.last()->lineBytes.at(lineInChunk) + len;
-    pos -= mTopLine.absStart;
-    if (qAbs(pos) >= std::numeric_limits<int>::max()) {
-        DEB() << "WARNING: maxint exceeded on calculating TextMapper::relPos("
-              << localLineNr << ", " << charNr << ") = " << pos;
-    }
-    return int(pos);
-}
+//int TextMapper::relPos(int localLineNr, int charNr)
+//{
+//    int lineInChunk;
+//    QString text = line(localLineNr, &lineInChunk).left(charNr);
+//    int len = mCodec ? mCodec->fromUnicode(text).length() : text.length();
+//    qint64 pos = mChunks.last()->start + mChunks.last()->lineBytes.at(lineInChunk) + len;
+//    pos -= mTopLine.absStart;
+//    if (qAbs(pos) >= std::numeric_limits<int>::max()) {
+//        DEB() << "WARNING: maxint exceeded on calculating TextMapper::relPos("
+//              << localLineNr << ", " << charNr << ") = " << pos;
+//    }
+//    return int(pos);
+//}
 
 QString TextMapper::selectedText() const
 {
@@ -896,31 +889,6 @@ bool TextMapper::peekChunksForLineNrs(int chunkCount)
         if (!chunk) break;
     }
     return mLastChunkWithLineNr < this->chunkCount()-1;
-}
-
-int TextMapper::moveTopLine(int lineDelta)
-{
-    if (!lineDelta) return 0;
-    int add = lineDelta < 0 ? -1 : 1;
-    int remain = 0;
-    mTopLine.localLine += lineDelta;
-
-    while (mTopLine.localLine != qBound(0, mTopLine.localLine, mTopLine.lineCount-1)) {
-        Chunk *chunk = getChunk(mTopLine.chunkNr+add);
-        if (chunk) {
-            if (add > 0) mTopLine.localLine -= mTopLine.lineCount;
-            mTopLine.chunkNr = chunk->nr;
-            mTopLine.lineCount = chunk->lineCount();
-            if (add < 0) mTopLine.localLine += mTopLine.lineCount;
-        } else {
-            remain = mTopLine.localLine;
-            if (add > 0) remain -= mTopLine.lineCount;
-            mTopLine.localLine = (add < 0) ? 0 : mTopLine.lineCount-1;
-        }
-    }
-    int diffLine = lineDelta - mTopLine.localLine;
-    mTopLine.localLine = qBound(0, mTopLine.localLine, mTopLine.lineCount-1);
-    return diffLine;
 }
 
 void TextMapper::initDelimiter(Chunk *chunk) const

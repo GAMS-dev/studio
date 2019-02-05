@@ -40,13 +40,10 @@ private slots:
     void testReadChunk1();
     void testMoveBackAChunk();
     void testFetchBeyondChunk();
-    void testPosString2Raw();
     void testReadLines();
     void testUpdateLineCounting();
     void testPeekChunkLineNrs();
-    void testPosCalulation();
     void testLineNrEstimation();
-    void testFindLine();
     void testPosAndAnchor();
 
 private:

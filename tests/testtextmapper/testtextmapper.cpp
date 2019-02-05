@@ -99,26 +99,25 @@ void TestTextMapper::testReadChunk0()
     qDebug() << " max: " << max << " digits: " << digits;
 
     // ---------- check reading chunk 0
-    mMapper->setTopOffset(0);
-    QCOMPARE(mMapper->line(0), "This is line     1 of the testfile. And here are additional characters to get sufficient long lines.");
+    mMapper->setVisibleTopLine(0.0);
+    QCOMPARE(mMapper->lines(0,1), "This is line     1 of the testfile. And here are additional characters to get sufficient long lines.");
     QCOMPARE(mMapper->topChunk(), 0);
-    QCOMPARE(mMapper->absPos(0,0), 0);
 }
 
 void TestTextMapper::testReadChunk1()
 {
     // ---------- check reading chunk 1
-    mMapper->setTopOffset(20000);
-    QCOMPARE(mMapper->line(0), "This is line   199 of the testfile. And here are additional characters to get sufficient long lines.");
+    mMapper->setVisibleTopLine(0.005);
+    QCOMPARE(mMapper->lines(0,1), "This is line   218 of the testfile. And here are additional characters to get sufficient long lines.");
     QCOMPARE(mMapper->topChunk(), 1);
-    QCOMPARE(mMapper->absTopLine(), 198);
+    QCOMPARE(mMapper->absTopLine(), 217);
 }
 
 void TestTextMapper::testMoveBackAChunk()
 {
     // ---------- check moving back across the chunk border
-    mMapper->setTopOffset(20000);
-    mMapper->moveTopLine(-48);
+    mMapper->setVisibleTopLine(0.005);
+    mMapper->moveVisibleTopLine(-67);
     QCOMPARE(mMapper->absTopLine(), 150);
     QCOMPARE(mMapper->topChunk(), 0);
 }
@@ -126,59 +125,32 @@ void TestTextMapper::testMoveBackAChunk()
 void TestTextMapper::testFetchBeyondChunk()
 {
     // ---------- check reading multiple chunks in a row
-    mMapper->moveTopLine(160);
+    mMapper->moveVisibleTopLine(193);
     // ---------- check fetching lines across the chunk border
     QCOMPARE(mMapper->absTopLine(), 160);
     QCOMPARE(mMapper->topChunk(), 0);
-    QCOMPARE(mMapper->line(0), "This is line   161 of the testfile. And here are additional characters to get sufficient long lines.");
-    QCOMPARE(mMapper->line(1), "This is line   162 of the testfile. And here are additional characters to get sufficient long lines.");
-    QCOMPARE(mMapper->line(2), "This is line   163 of the testfile. And here are additional characters to get sufficient long lines.");
-    QCOMPARE(mMapper->line(3), "This is line   164 of the testfile. And here are additional characters to get sufficient long lines.");
-    QCOMPARE(mMapper->line(103), "This is line   264 of the testfile. And here are additional characters to get sufficient long lines.");
-    QCOMPARE(mMapper->line(203), "This is line   364 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->lines(0,1), "This is line   161 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->lines(1,1), "This is line   162 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->lines(2,1), "This is line   163 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->lines(3,1), "This is line   164 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->lines(103,1), "This is line   264 of the testfile. And here are additional characters to get sufficient long lines.");
+    QCOMPARE(mMapper->lines(203,1), "This is line   364 of the testfile. And here are additional characters to get sufficient long lines.");
     QCOMPARE(mMapper->topChunk(), 2);
     QCOMPARE(mMapper->absTopLine(), 160);
     QCOMPARE(mMapper->topChunk(), 0);
 }
 
-void TestTextMapper::testPosString2Raw()
-{
-    // ---------- check positioning in codec vs raw data
-    mMapper->setTopOffset(5000000);
-    QCOMPARE(mMapper->topChunk(), 305);
-    QCOMPARE(mMapper->line(0), "This is line 49505 of the testfile. And here are additional characters to get sufficient long lines.");
-
-    mMapper->moveTopLine(496);
-    QCOMPARE(mMapper->topChunk(), 308);
-    //qDebug() << "LAST LINE: " << mMapper->line(0);
-    QCOMPARE(mMapper->relPos(0,17)-mMapper->relPos(0,0), 17);
-    QCOMPARE(mMapper->relPos(0,18)-mMapper->relPos(0,0), 19);
-    QCOMPARE(mMapper->relPos(0,24)-mMapper->relPos(0,0), 31);
-    QCOMPARE(mMapper->relPos(0,25)-mMapper->relPos(0,0), 33);
-
-    // ---------- check updating of lineCounting
-    mMapper->setTopOffset(20000);
-    mMapper->setTopOffset(70000);
-    qDebug() << "Current absolute top line should be less than 0: " << mMapper->absTopLine();
-    QVERIFY(mMapper->absTopLine() < 0);
-    mMapper->setTopOffset(50000);
-    mMapper->setTopOffset(35000);
-    mMapper->setTopOffset(70000);
-    QCOMPARE(mMapper->absTopLine(), 693);
-
-//        qDebug() << "RAW: "  << mMapper->rawLine(0);
-}
-
 void TestTextMapper::testReadLines()
 {
     // ---------- check read lines
-    mMapper->setTopOffset(70000);
+    mMapper->setVisibleTopLine(0.0104);
+    QCOMPARE(mMapper->topChunk(), 3);
     QVERIFY(mMapper->absTopLine() < 0);
-    mMapper->moveTopLine(-45);
-    QString line1 = mMapper->line(0);
-    mMapper->moveTopLine(-1);
-    QCOMPARE(mMapper->line(1), line1);
-    mMapper->moveTopLine(-1);
+    mMapper->moveVisibleTopLine(-45);
+    QString line1 = mMapper->lines(0,1);
+    mMapper->moveVisibleTopLine(-1);
+    QCOMPARE(mMapper->lines(1,1), line1);
+    mMapper->moveVisibleTopLine(-1);
     QStringList lines = mMapper->lines(0, 4).split("\n");
     QCOMPARE(lines.size(), 4);
     QCOMPARE(lines.at(2), line1);
@@ -188,85 +160,57 @@ void TestTextMapper::testReadLines()
 void TestTextMapper::testUpdateLineCounting()
 {
     // ---------- check updating of lineCounting
-    mMapper->setTopOffset(20000);
+    mMapper->setVisibleTopLine(0.004);
     QCOMPARE(mMapper->topChunk(), 1);
     QCOMPARE(mMapper->knownLineNrs(), 324);
 
-    mMapper->setTopOffset(70000);
+    mMapper->setVisibleTopLine(0.015);
     // NOT all chunks are known from start of file, so the line number just estimated.
     QCOMPARE(mMapper->topChunk(), 4);
     QVERIFY(mMapper->absTopLine() < 0);
 
-    mMapper->setTopOffset(50000);
+    mMapper->setVisibleTopLine(0.012);
     QCOMPARE(mMapper->topChunk(), 3);
     QCOMPARE(mMapper->knownLineNrs(), 324);
 
-    mMapper->setTopOffset(40000);
+    mMapper->setVisibleTopLine(0.01);
     QCOMPARE(mMapper->topChunk(), 2);
     // all chunks are known from start of file, so the line number is known, too.
-    mMapper->setTopOffset(70000);
+    mMapper->setVisibleTopLine(0.015);
     QCOMPARE(mMapper->topChunk(), 4);
-    QCOMPARE(mMapper->absTopLine(), 693);
+    QCOMPARE(mMapper->absTopLine(), 717);
     QCOMPARE(mMapper->knownLineNrs(), 811);
 
-    mMapper->setTopLine(0);
-    qDebug() << mMapper->line(1);
+    mMapper->setVisibleTopLine(0);
+    qDebug() << mMapper->lines(1,1);
     qDebug() << mMapper->lines(49999, 1);
     qDebug() << mMapper->lines(50000, 1);
-    mMapper->setTopLine(20000);
-    mMapper->setTopLine(50000);
-    qDebug() << mMapper->line(0);
+    mMapper->setVisibleTopLine(20000);
+    mMapper->setVisibleTopLine(1.0);
+    qDebug() << mMapper->lines(0,1);
     QCOMPARE(mMapper->topChunk(), mMapper->chunkCount()-1);
 }
 
 void TestTextMapper::testPeekChunkLineNrs()
 {
     // ---------- check peek chunk line numbers
-    mMapper->setTopOffset(70000);
+    mMapper->setVisibleTopLine(0.015);
     QVERIFY(mMapper->absTopLine() < 0);
     mMapper->peekChunksForLineNrs(4);
-    QCOMPARE(mMapper->absTopLine(), 693);
-}
-
-void TestTextMapper::testPosCalulation()
-{
-    // ---------- check position calculation
-    mMapper->setTopOffset(40000);
-    QVERIFY(mMapper->absTopLine() < 0);
-    QCOMPARE(mMapper->relPos(100, 4), 10104);
-    mMapper->peekChunksForLineNrs(4);
-    QCOMPARE(mMapper->absPos(396, 0) + mMapper->relPos(100, 4), mMapper->absPos(496, 4));
-    QCOMPARE(mMapper->absTopLine(), 396);
-    QCOMPARE(mMapper->absPos(396, 0), 39895);
-    QCOMPARE(mMapper->absPos(496, 4), 49999);
+    QCOMPARE(mMapper->absTopLine(), 717);
 }
 
 void TestTextMapper::testLineNrEstimation()
 {
     // ---------- check line number esimation
-    mMapper->setTopOffset(200000);
-    QCOMPARE(mMapper->absTopLine(), -1984);
+    mMapper->setVisibleTopLine(0.04);
+    QCOMPARE(mMapper->absTopLine(), -1971);
     mMapper->peekChunksForLineNrs(1);
     for (int i = 1; i < 11; ++i) {
-        if (i==1) QCOMPARE(mMapper->absTopLine(), -1984);
+        if (i==1) QCOMPARE(mMapper->absTopLine(), -1971);
         mMapper->peekChunksForLineNrs(1);
     }
-    QCOMPARE(mMapper->absTopLine(), 1980);
-}
-
-void TestTextMapper::testFindLine()
-{
-    // ---------- check find line
-    mMapper->setTopOffset(40000);
-    QVERIFY(!mMapper->setTopLine(400));
-    mMapper->peekChunksForLineNrs(4);
-    QVERIFY(mMapper->setTopLine(400));
-    QCOMPARE(mMapper->findChunk(800), 4);
-    mMapper->peekChunksForLineNrs(16);
-    QCOMPARE(mMapper->findChunk(2000), 12);
-    QCOMPARE(mMapper->findChunk(1946), 12);
-    QCOMPARE(mMapper->findChunk(1945), 11);
-    QCOMPARE(mMapper->findChunk(1946+162), 13);
+    QCOMPARE(mMapper->absTopLine(), 1967);
 }
 
 void TestTextMapper::testPosAndAnchor()
@@ -274,7 +218,7 @@ void TestTextMapper::testPosAndAnchor()
     // ---------- check position and anchor handling
     QPoint pos;
     QPoint anc;
-    mMapper->setTopOffset(40000);
+    mMapper->setVisibleTopLine(0.00859); // 40000
     mMapper->setPosRelative(1, 10);
     pos = mMapper->position();
     anc = mMapper->anchor();
@@ -296,12 +240,12 @@ void TestTextMapper::testPosAndAnchor()
     QCOMPARE(anc.x(), 10);
 
     mMapper->peekChunksForLineNrs(16);
-    mMapper->setTopLine(1620);
+    mMapper->setVisibleTopLine(1620);
     mMapper->setPosRelative(0, 0);
     mMapper->setPosRelative(310, 1, QTextCursor::KeepAnchor);
     QCOMPARE(mMapper->anchor(true).y(), 0);
     QCOMPARE(mMapper->position(true).y(), 99); // cropped to buffer
-    mMapper->setTopLine(1920);
+    mMapper->setVisibleTopLine(1920);
     QCOMPARE(mMapper->position(true).y(), 10);
 }
 
