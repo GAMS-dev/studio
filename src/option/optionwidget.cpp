@@ -187,15 +187,15 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
-    QAction* addAction = menu.addAction(QIcon(":/img/plus"), "add new option");
-    QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "insert new option");
+    QAction* addAction = menu.addAction(QIcon(":/img/plus"), "Add new option");
+    QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "Insert new option");
     menu.addSeparator();
-    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option up");
-    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option down");
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "Move selected option up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "Move selected option down");
     menu.addSeparator();
-    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove selected option");
+    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "Remove selected option");
     menu.addSeparator();
-    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove all options");
+    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "Remove all options");
 
     if (ui->gamsOptionTableView->model()->rowCount() <= 0) {
         deleteAllActions->setVisible(false);

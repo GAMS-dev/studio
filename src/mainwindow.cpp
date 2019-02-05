@@ -245,7 +245,8 @@ void MainWindow::initToolBar()
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
-    ui->toolBar->setIconSize(QSize(15, 15));
+    ui->toolBar->setIconSize(QSize(16, 16));
+
     ui->toolBar->addAction(ui->actionNew);
     ui->toolBar->addAction(ui->actionOpen);
     ui->toolBar->addAction(ui->actionSave);
