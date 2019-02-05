@@ -35,6 +35,7 @@ TextViewEdit::TextViewEdit(TextMapper &mapper, QWidget *parent)
     setReadOnly(true);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
 }
 

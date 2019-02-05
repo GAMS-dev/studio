@@ -57,8 +57,6 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
 
     mPeekTimer.setSingleShot(true);
     connect(&mPeekTimer, &QTimer::timeout, this, &TextView::peekMoreLines);
-    mEdit->verticalScrollBar()->setVisible(false);
-
 
 /* --- scrollbar controlling qt-methods
     QObject::connect(control, SIGNAL(documentSizeChanged(QSizeF)), q, SLOT(_q_adjustScrollbars()));
