@@ -590,7 +590,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 }
                 case optDataDouble: {  // 2
                      qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
-                     value = getDoubleValueFromStr(text, n, dvalue);
+                     value = getDoubleValueFromStr(text, n, svalue);
                      valueRead = true;
                      break;
                 }
@@ -870,7 +870,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                }
                case optDataDouble: {  // 2
                    qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
-                   definedValue = getDoubleValueFromStr(str, n, dvalue);
+                   definedValue = getDoubleValueFromStr(str, definedKey, svalue);
                    valueRead = true;
                    break;
                }
@@ -974,13 +974,15 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
     return key;
 }
 
-QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QString &hintKey, const double &hintValue)
+QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QString &key, const QString &hintValue)
 {
-    Q_UNUSED(hintValue);
-    QString key = getKeyFromStr(line, hintKey);
     QString value = line.mid( key.length() ).simplified();
     if (value.startsWith('='))
         value = value.mid(1).simplified();
+
+    if (value.contains(hintValue, Qt::CaseInsensitive))
+        return hintValue;
+
     for(QChar ch : mOption->getEOLChars()) {
         if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
             value = value.split(getEOLCommentChar(), QString::SkipEmptyParts).at(0).simplified();
@@ -1025,10 +1027,13 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
 QString OptionTokenizer::getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue)
 {
     QStringRef strref = line.midRef(0, line.size());
-    if (line.contains(hintKey))
+    if (line.contains(hintKey, Qt::CaseInsensitive))
          strref = strref.mid( hintKey.size(), strref.size() ).trimmed();
 
-    if (line.contains(hintValue))
+    if (strref.startsWith("="))
+        strref = strref.mid( 1, strref.size() ).trimmed();
+
+    if (line.contains(hintValue, Qt::CaseInsensitive))
         strref = strref.mid( hintValue.size(), strref.size() ).trimmed();
 
     for(QChar ch : mOption->getEOLChars()) {
