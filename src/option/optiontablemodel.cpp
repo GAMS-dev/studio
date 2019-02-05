@@ -289,6 +289,7 @@ void OptionTableModel::toggleActiveOptionItem(int index)
 
 void OptionTableModel::on_optionTableModelChanged(const QString &text)
 {
+    // TODO(rogo): here it is!
     beginResetModel();
     itemizeOptionFromCommandLineStr(text);
     validateOption();

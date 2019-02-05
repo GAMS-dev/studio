@@ -31,16 +31,9 @@ class CommandLineOption : public QComboBox
 
 public:
     CommandLineOption(QWidget* parent);
-    CommandLineOption(bool validateFlag, QWidget* parent);
     ~CommandLineOption();
 
-    QString getCurrentOption() const;
-
-    bool isValidated() const;
-    void validated(bool value);
-
-    QString getCurrentContext() const;
-    void setCurrentContext(const QString &currentContext);
+    QString getOptionString() const;
 
     void resetCurrentValue();
 
@@ -55,10 +48,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent *e) override;
 
 private:
-    QString mCurrentOption;
-    QString mCurrentContext;
+    QString mOptionString;
     int mCurrentIndex;
-    bool mValidated;
 };
 
 } // namespace studio

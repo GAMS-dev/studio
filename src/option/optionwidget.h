@@ -95,7 +95,7 @@ private:
     void setInterruptActionsEnabled(bool enable);
 
     Ui::OptionWidget *ui;
-    QDockWidget *mDock = nullptr;
+    QDockWidget *mExtendedEditor = nullptr;
 
     QAction* actionRun;
     QAction* actionRun_with_GDX_Creation;
