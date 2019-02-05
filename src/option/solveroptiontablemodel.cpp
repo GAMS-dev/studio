@@ -127,14 +127,18 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             if (mOptionItem.at(row)->key.startsWith("*"))
                 text = mOptionItem.at(row)->key.mid(1);
             return QVariant(text);
-        } else  if (mOption->isEOLCharDefined()) {
+        } else if (col==COLUMN_OPTION_VALUE) {
+                   return mOptionItem.at(row)->value;
+        } else {
+            if (mOption->isEOLCharDefined()) {
                    if (col==COLUMN_EOL_COMMENT)
                        return QVariant(mOptionItem.at(row)->text);
                    else if (col==columnEntryNumber)
                        return QVariant(mOptionItem.at(row)->optionId);
-        } else {
-           if (col==columnEntryNumber)
-               return QVariant(mOptionItem.at(row)->optionId);
+            } else {
+               if (col==columnEntryNumber)
+                  return QVariant(mOptionItem.at(row)->optionId);
+            }
         }
         break;
     }
@@ -502,7 +506,6 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
               QString text = "";
               if (mOption->isEOLCharDefined()) {
                   text = data( index(idx.row(), SolverOptionTableModel::COLUMN_EOL_COMMENT), Qt::DisplayRole).toString();
-                  qDebug() << "text=[" << text << "]";
               }
 
               mOptionTokenizer->updateOptionItem(key, value, text, mOptionItem.at(idx.row()));
