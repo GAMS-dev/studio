@@ -360,6 +360,7 @@ void TextView::topLineMoved()
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
+        int hScroll = mEdit->horizontalScrollBar()->value();
         mEdit->setPlainText(mMapper.lines(0, 3*mTopBufferLines));
         updatePosAndAnchor();
         mEdit->blockSignals(true);
@@ -369,6 +370,7 @@ void TextView::topLineMoved()
         updateVScrollZone();
         mEdit->updateExtraSelections();
         mEdit->protectWordUnderCursor(false);
+        mEdit->horizontalScrollBar()->setValue(hScroll);
     }
 }
 
