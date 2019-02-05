@@ -2017,6 +2017,19 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
     menu->addAction(ui->actionToggleBookmark);
 }
 
+void MainWindow::ensureInScreen()
+{
+    QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
+    QRect appGeo = geometry();
+    if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
+    if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
+    if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
+    if (appGeo.y() < screenGeo.y()) appGeo.moveTop(screenGeo.y());
+    if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
+    if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
+    if (appGeo != geometry()) setGeometry(appGeo);
+}
+
 void MainWindow::raiseEdit(QWidget *widget)
 {
     while (widget && widget != this) {

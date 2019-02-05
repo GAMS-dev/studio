@@ -732,14 +732,13 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     QTextCursor anchor = cursor;
     anchor.setPosition(anchor.anchor());
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.isValid()) break;
+
         cursor.setPosition(block.position());
         if (hasComment)
             cursor.deleteChar();
         else
             cursor.insertText("*");
-
-        if (!block.isValid())
-            break;
     }
     cursor.setPosition(anchor.position());
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
