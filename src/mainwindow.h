@@ -135,7 +135,8 @@ public:
     void setForeground();
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
-    void resetLoadAmound();
+    void ensureInScreen();
+    void resetLoadAmount();
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;

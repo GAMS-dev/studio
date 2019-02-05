@@ -2012,6 +2012,19 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
     menu->addAction(ui->actionToggleBookmark);
 }
 
+void MainWindow::ensureInScreen()
+{
+    QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
+    QRect appGeo = geometry();
+    if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
+    if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
+    if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
+    if (appGeo.y() < screenGeo.y()) appGeo.moveTop(screenGeo.y());
+    if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
+    if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
+    if (appGeo != geometry()) setGeometry(appGeo);
+}
+
 void MainWindow::raiseEdit(QWidget *widget)
 {
     while (widget && widget != this) {
@@ -2621,7 +2634,7 @@ void MainWindow::convertLowerUpper(bool toUpper)
     ce->setTextCursor(textCursor);
 }
 
-void MainWindow::resetLoadAmound()
+void MainWindow::resetLoadAmount()
 {
     mStatusWidgets->setLoadAmount(1.0);
 }
@@ -2769,7 +2782,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
-        window->resetLoadAmound();
+        window->resetLoadAmount();
     }
     window->searchDialog()->setActiveEditWidget(nullptr);
     mEditor = editor;
