@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QStandardPaths>
+#include <QTextCodec>
 
 #include "testconopt4option.h"
 #include "commonpaths.h"
@@ -292,7 +293,7 @@ void TestConopt4Option::testInvalidOption()
     QCOMPARE( optionTokenizer->getOption()->isASynonym(optionName), synonymValid);
 }
 
-void TestConopt4Option::testReadOptionFile()
+void TestConopt4Option::testReadOptionFile_data()
 {
     // given
     QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op2"));
@@ -303,36 +304,126 @@ void TestConopt4Option::testReadOptionFile()
     out << "* This is comment line" << endl;
     out << "DF_Method 1" << endl;
     out << "Lim_Iteration=100" << endl;
+    out << "Lim_Iteration 100" << endl;
     out << "Flg_Hessian 1" << endl;
     out << "cooptfile \"C:/Users/Dude/coopt.file\"" << endl;
-    out << "Tol_Bound=5.E-9" << endl;
-    out << "HEAPLIMIT 1e20" << endl;
+    out << "Tol_Bound=5.E-9 ; Bound filter tolerance for solution values close to a bound." << endl;
+    out << "HEAPLIMIT 1e20  # Maximum Heap size in MB allowed" << endl;
+    out << "Lim_Variable  1e+03 " << endl;
     outputFile.close();
 
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op2");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
-    QCOMPARE( items.size(), 6 );
+    QCOMPARE( items.size(), 9 );
 
-    QVERIFY( containKey (items,"DF_Method") );
-    QCOMPARE( getValue(items,"DF_Method").toInt(),  QVariant("1").toInt() );
+    QTest::addColumn<bool>("optionItem_disabledFlag");
+    QTest::addColumn<bool>("disabledFlag");
+    QTest::addColumn<QString>("optionItem_optionKey");
+    QTest::addColumn<QString>("optionKey");
+    QTest::addColumn<QVariant>("optionItem_optionValue");
+    QTest::addColumn<QVariant>("optionValue");
+    QTest::addColumn<bool>("isValueDouble");
+    QTest::addColumn<QString>("optionItem_optionText");
+    QTest::addColumn<QString>("optionText");
+    QTest::addColumn<int>("optionItem_optionId");
+    QTest::addColumn<int>("optionId");
+    QTest::addColumn<int>("optionItem_error");
+    QTest::addColumn<int>("error");
 
-    QVERIFY( containKey (items,"Lim_Iteration") );
-    QCOMPARE( getValue(items,"Lim_Iteration").toInt(),  QVariant("100").toInt() );
+    QTest::newRow("* This is comment line")
+            << items.at(0)->disabled <<  true
+            << items.at(0)->key      << "* This is comment line"
+            << items.at(0)->value    << QVariant("")   << false
+            << items.at(0)->text     << ""
+            << items.at(0)->optionId << -1
+            << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("DF_Method 1")
+            << items.at(1)->disabled <<  false
+            << items.at(1)->key      << "DF_Method"
+            << items.at(1)->value    << QVariant("1")  << false
+            << items.at(1)->text     << ""
+            << items.at(1)->optionId << 64
+            << static_cast<int>(items.at(1)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("Lim_Iteration=100")
+            << items.at(2)->disabled <<  false
+            << items.at(2)->key      << "Lim_Iteration"
+            << items.at(2)->value    << QVariant("100") << false
+            << items.at(2)->text     << ""
+            << items.at(2)->optionId << 25
+            << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("Lim_Iteration 100")
+            << items.at(3)->disabled <<  false
+            << items.at(3)->key      << "Lim_Iteration"
+            << items.at(3)->value    << QVariant("100") << false
+            << items.at(3)->text     << ""
+            << items.at(3)->optionId << 25
+            << static_cast<int>(items.at(3)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("Flg_Hessian 1")
+            << items.at(4)->disabled <<  false
+            << items.at(4)->key      << "Flg_Hessian"
+            << items.at(4)->value    << QVariant("1")  << false
+            << items.at(4)->text     << ""
+            << items.at(4)->optionId << 279
+            << static_cast<int>(items.at(4)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("cooptfile \"C:/Users/Dude/coopt.file\"")
+            << items.at(5)->disabled <<  false
+            << items.at(5)->key      << "cooptfile"
+            << items.at(5)->value    << QVariant("\"C:/Users/Dude/coopt.file\"") << false
+            << items.at(5)->text     << ""
+            << items.at(5)->optionId << 296
+            << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("Tol_Bound=5.E-9 ; Bound filter tolerance for solution values close to a bound.")
+            << items.at(6)->disabled <<  false
+            << items.at(6)->key      << "Tol_Bound"
+            << items.at(6)->value    << QVariant("5.E-9")  << true
+            << items.at(6)->text     << "Bound filter tolerance for solution values close to a bound."
+            << items.at(6)->optionId << 222
+            << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("HEAPLIMIT 1e20  # Maximum Heap size in MB allowed")
+            << items.at(7)->disabled <<  false
+            << items.at(7)->key      << "HEAPLIMIT"
+            << items.at(7)->value    << QVariant("1e20")   << true
+            << items.at(7)->text     << "Maximum Heap size in MB allowed"
+            << items.at(7)->optionId << 297
+            << static_cast<int>(items.at(7)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("Lim_Variable  1e+03 ")
+            << items.at(8)->disabled <<  false
+            << items.at(8)->key      << "Lim_Variable"
+            << items.at(8)->value    << QVariant("1e+03")   << true
+            << items.at(8)->text     << ""
+            << items.at(8)->optionId << 175
+            << static_cast<int>(items.at(8)->error)    << static_cast<int>(Value_Out_Of_Range);
+}
 
-    QVERIFY( containKey (items,"Flg_Hessian") );
-    QCOMPARE( getValue(items,"Flg_Hessian").toInt(),  QVariant("1").toInt() );
+void TestConopt4Option::testReadOptionFile()
+{
+    QFETCH(bool, optionItem_disabledFlag);
+    QFETCH(bool, disabledFlag);
+    QFETCH(QString, optionItem_optionKey);
+    QFETCH(QString, optionKey);
+    QFETCH(QVariant, optionItem_optionValue);
+    QFETCH(QVariant, optionValue);
+    QFETCH(bool, isValueDouble);
+    QFETCH(QString, optionItem_optionText);
+    QFETCH(QString, optionText);
+    QFETCH(int, optionItem_optionId);
+    QFETCH(int, optionId);
+    QFETCH(int, optionItem_error);
+    QFETCH(int, error);
 
-    QVERIFY( containKey (items,"Tol_Bound") );
-    QCOMPARE( getValue(items,"Tol_Bound").toDouble(), QVariant("5.E-9").toDouble() );
-
-    QVERIFY( containKey (items,"HEAPLIMIT") );
-    QCOMPARE( getValue(items,"HEAPLIMIT").toDouble(), QVariant("1e20").toDouble() );
-
-    QVERIFY( containKey (items,"cooptfile") );
-    QCOMPARE( getValue(items,"cooptfile").toString(), QVariant("C:/Users/Dude/coopt.file").toString() );
+    QCOMPARE( optionItem_disabledFlag, disabledFlag );
+    QCOMPARE( optionItem_optionKey.compare(optionKey, Qt::CaseInsensitive), 0 );
+    if (isValueDouble) {
+        QCOMPARE( optionItem_optionValue.toDouble(), optionValue.toDouble() );
+    } else {
+        QCOMPARE( optionItem_optionValue, optionValue );
+    }
+    QCOMPARE( optionItem_optionText.compare(optionText, Qt::CaseInsensitive), 0 );
+    QCOMPARE( optionItem_optionId, optionId );
+    QCOMPARE( optionItem_error, error );
 }
 
 void TestConopt4Option::testNonExistReadOptionFile()
