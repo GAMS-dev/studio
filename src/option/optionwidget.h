@@ -81,7 +81,6 @@ public slots:
     void showOptionContextMenu(const QPoint &pos);
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
-//    void loadCommandLineOption(const QString &location);
     void loadCommandLineOption(const QStringList &history);
     void disableOptionEditor();
 
@@ -107,7 +106,6 @@ private:
 
     MainWindow* main;
 
-//    CommandLineHistory* mCommandLineHistory;
     CommandLineTokenizer* mGamsOptionTokenizer;
 };
 

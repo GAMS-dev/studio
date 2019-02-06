@@ -102,7 +102,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 OptionWidget::~OptionWidget()
 {
     delete ui;
-//    delete mCommandLineHistory;
     delete mGamsOptionTokenizer;
 }
 
@@ -113,16 +112,22 @@ QString OptionWidget::on_runAction(RunActionState state)
     if (!commandLineStr.endsWith(" "))
         commandLineStr.append(" ");
 
-    // TODO check key duplication
-    if (state == RunActionState::RunWithGDXCreation) {
+    bool gdxParam = commandLineStr.contains(QRegularExpression("gdx[= ]", QRegularExpression::CaseInsensitiveOption));
+    bool actParam = commandLineStr.contains("ACTION=C",Qt::CaseInsensitive);
+
+    if (state == RunActionState::RunWithGDXCreation && !gdxParam) {
        commandLineStr.append("GDX=default");
        ui->gamsRunToolButton->setDefaultAction( actionRun_with_GDX_Creation );
-    } else if (state == RunActionState::Compile) {
+
+    } else if (state == RunActionState::Compile && !actParam) {
         commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile );
+
     } else if (state == RunActionState::CompileWithGDXCreation) {
-        commandLineStr.append("ACTION=C GDX=default");
+        if (!gdxParam) commandLineStr.append("GDX=default ");
+        if (!actParam) commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile_with_GDX_Creation );
+
     } else {
         ui->gamsRunToolButton->setDefaultAction( actionRun );
     }
