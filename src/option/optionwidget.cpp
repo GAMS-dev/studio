@@ -153,7 +153,7 @@ bool OptionWidget::isOptionDefinitionChecked()
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
-    if (mExtendedEditor->isHidden())
+    if (mExtendedEditor && mExtendedEditor->isHidden())
         return;
 
     emit optionTableModelChanged(commandLineStr);
@@ -247,7 +247,7 @@ void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 
     ui->gamsOptionWidget->setEnabled(isRunnable && !isRunning);
     ui->gamsOptionCommandLine->lineEdit()->setReadOnly(isRunning);
-    ui->gamsOptionCommandLine->lineEdit()->setEnabled(isRunnable);
+    ui->gamsOptionCommandLine->lineEdit()->setEnabled(isRunnable && (!mExtendedEditor || mExtendedEditor->isHidden()));
 }
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
