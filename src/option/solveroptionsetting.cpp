@@ -30,8 +30,8 @@ SolverOptionSetting::SolverOptionSetting(QString eolchars, QWidget *parent) :
     mEOLChars(eolchars)
 {
     ui->setupUi(this);
+    ui->eolCommentWidget->setVisible(!eolchars.isEmpty());
     ui->addEOLCommentCheckBox->setVisible(!eolchars.isEmpty());
-    ui->readwriteGroupBox->setVisible(!eolchars.isEmpty());
     if (!eolchars.isEmpty()) {
         for(int i=0; i<eolchars.size(); i++)
            ui->eolCommentCharComboBox->addItem(eolchars.at(i));
@@ -39,8 +39,11 @@ SolverOptionSetting::SolverOptionSetting(QString eolchars, QWidget *parent) :
     } else {
         mDefaultEOLChar = QChar();
     }
+    mDefaultSeparatorChar = ' ';
     connect(ui->eolCommentCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
         [=](int index){ emit EOLCharChanged(ui->eolCommentCharComboBox->itemText(index).at(0)); });
+    connect(ui->separatorCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+        [=](int index){ emit separatorCharChanged(ui->separatorCharComboBox->itemText(index).at(0)); });
 }
 
 SolverOptionSetting::~SolverOptionSetting()
@@ -48,7 +51,12 @@ SolverOptionSetting::~SolverOptionSetting()
     delete ui;
 }
 
-QChar SolverOptionSetting::getDefaultEOLCharacter()
+QChar SolverOptionSetting::getDefaultSeparatorCharacter() const
+{
+    return mDefaultSeparatorChar;
+}
+
+QChar SolverOptionSetting::getDefaultEOLCharacter() const
 {
     return mDefaultEOLChar;
 }

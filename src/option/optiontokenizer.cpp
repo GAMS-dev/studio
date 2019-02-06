@@ -489,11 +489,10 @@ void OptionTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactiva
 
 QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
 {
-    // TODO (JP) this method should be awared of separator between option key and value
-    QString separator = " ";
     QString key = item->key.simplified();
     QString value = item->value.toString();
     QString text = item->text;
+    QChar separator = (value.simplified().isEmpty() ? ' ' : mSeparatorChar);
 
     if (item->disabled) {
         if (key.startsWith("*") && key.mid(1).simplified().isEmpty())
@@ -518,7 +517,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
         }
     }
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
-       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text).simplified();
+       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(separator).arg(text).simplified();
     else
        return QString("%1%2%3").arg(key).arg(separator).arg(value).simplified();
 }
@@ -673,6 +672,11 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
 void OptionTokenizer::on_EOLCommentChar_changed(const QChar ch)
 {
     mEOLCommentChar = ch;
+}
+
+void OptionTokenizer::on_separatorChar_changed(const QChar ch)
+{
+    mSeparatorChar = ch;
 }
 
 OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)

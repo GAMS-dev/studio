@@ -38,12 +38,14 @@ public:
     explicit SolverOptionSetting(QString eolchars, QWidget *parent = nullptr);
     ~SolverOptionSetting();
 
-    QChar getDefaultEOLCharacter();
+    QChar getDefaultEOLCharacter() const;
+    QChar getDefaultSeparatorCharacter() const;
 
 signals:
     void addCommentAboveChanged(int checkState);
     void addOptionDescriptionAsComment(int checkState);
     void EOLCharChanged(QChar ch);
+    void separatorCharChanged(QChar ch);
 
 private slots:
     void on_addCommentAboveCheckBox_stateChanged(int checkState);
@@ -53,6 +55,7 @@ private:
     Ui::SolverOptionSetting *ui;
     QString mEOLChars;
     QChar mDefaultEOLChar;
+    QChar mDefaultSeparatorChar;
 };
 
 }

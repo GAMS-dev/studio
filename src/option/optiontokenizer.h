@@ -87,12 +87,14 @@ public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
     void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
     void on_EOLCommentChar_changed(const QChar ch);
+    void on_separatorChar_changed(const QChar ch);
 
 private:
     Option* mOption = nullptr;
     optHandle_t mOPTHandle;
     bool mOPTAvailable = false;
     QChar mEOLCommentChar = QChar();
+    QChar mSeparatorChar = QChar(' ');
 
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
