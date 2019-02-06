@@ -517,7 +517,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
         }
     }
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
-       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(separator).arg(text).simplified();
+       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text).simplified();
     else
        return QString("%1%2%3").arg(key).arg(separator).arg(value).simplified();
 }
