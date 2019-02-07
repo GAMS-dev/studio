@@ -88,8 +88,8 @@ public slots:
     void on_saveAsButton_clicked(bool checked = false);
     void on_openAsTextButton_clicked(bool checked = false);
 
-   void on_addCommentAbove_stateChanged(int checkState);
-   void on_addEOLCommentCheckBox_stateChanged(int checkState);
+   void on_addCommentAboveChanged(int checkState);
+   void on_addEOLCommentChanged(int checkState);
 
 private slots:
     void showOptionDefinition();

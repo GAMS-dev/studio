@@ -155,10 +155,10 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
 
-    connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, this, &SolverOptionWidget::on_addEOLCommentCheckBox_stateChanged);
+    connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, this, &SolverOptionWidget::on_addEOLCommentChanged);
     connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, mOptionTableModel, &SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged);
 
-    connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAbove_stateChanged);
+    connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAboveChanged);
     connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
     connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);
 
@@ -555,12 +555,12 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
     emit main->projectRepo()->openFile(fileMeta, true, runGroup, -1, true);
 }
 
-void SolverOptionWidget::on_addCommentAbove_stateChanged(int checkState)
+void SolverOptionWidget::on_addCommentAboveChanged(int checkState)
 {
     addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
-void SolverOptionWidget::on_addEOLCommentCheckBox_stateChanged(int checkState)
+void SolverOptionWidget::on_addEOLCommentChanged(int checkState)
 {
      addEOLComment = (Qt::CheckState(checkState) == Qt::Checked);
 }
