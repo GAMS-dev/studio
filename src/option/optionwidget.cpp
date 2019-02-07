@@ -173,7 +173,7 @@ void OptionWidget::checkOptionDefinition(bool checked)
     toggleOptionDefinition(checked);
 }
 
-bool OptionWidget::isOptionDefinitionChecked()
+bool OptionWidget::isOptionDefinitionChecked() const
 {
     return ui->gamsOptionEditorButton->isChecked();
 }
@@ -506,7 +506,7 @@ OptionTokenizer *OptionWidget::getOptionTokenizer() const
     return mOptionTokenizer;
 }
 
-bool OptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget)
+bool OptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget) const
 {
     return (focusWidget==ui->gamsOptionTableView || focusWidget==ui->gamsOptionTreeView || focusWidget==ui->gamsOptionCommandLine);
 }

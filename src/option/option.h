@@ -165,7 +165,7 @@ public:
     OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;
     QString getOptionTypeName(int type) const;
-    QString getOptionKey(const QString &option);
+    QString getOptionKey(const QString &option) const;
 
     bool available() const;
 

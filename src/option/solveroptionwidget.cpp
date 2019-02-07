@@ -716,7 +716,7 @@ bool SolverOptionWidget::saveAs(const QString &location)
     return success;
 }
 
-bool SolverOptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget)
+bool SolverOptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget) const
 {
     return (focusWidget==ui->solverOptionTableView || focusWidget==ui->solverOptionTreeView);
 }

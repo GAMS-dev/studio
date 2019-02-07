@@ -59,10 +59,10 @@ public:
     void on_stopAction();
 
     void checkOptionDefinition(bool checked);
-    bool isOptionDefinitionChecked();
+    bool isOptionDefinitionChecked() const;
 
     OptionTokenizer *getOptionTokenizer() const;
-    bool isAnOptionWidgetFocused(QWidget* focusWidget);
+    bool isAnOptionWidgetFocused(QWidget* focusWidget) const;
     QString getSelectedOptionName(QWidget* widget) const;
 
     QString getCurrentCommandLineData() const;

@@ -380,7 +380,7 @@ QString Option::getOptionTypeName(int type) const
     return mOptionTypeNameMap[type];
 }
 
-QString Option::getOptionKey(const QString &option)
+QString Option::getOptionKey(const QString &option) const
 {
     QRegExp regexp("^([-/]+)");
     int pos = regexp.indexIn(option);
