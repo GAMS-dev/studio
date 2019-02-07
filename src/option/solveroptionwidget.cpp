@@ -395,6 +395,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
+    bool firstTime = (ui->solverOptionTableView->model()->rowCount()==0);
     if (addCommentAbove) { // insert comment description row
         int indexRow = index.row();
         int parentIndexRow = parentIndex.row();
@@ -455,6 +456,10 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
     int lastRow = ui->solverOptionTableView->model()->rowCount()-1;
     int firstRow = (addCommentAbove ? lastRow-2 : lastRow);
+    if (addCommentAbove && firstTime) {
+        firstRow = 0;
+        lastRow = 2;
+    }
     mOptionTableModel->on_updateSolverOptionItem( ui->solverOptionTableView->model()->index(firstRow, lastColumn),
                                                   ui->solverOptionTableView->model()->index(lastRow, lastColumn),
                                                   {Qt::EditRole});
