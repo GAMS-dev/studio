@@ -2341,6 +2341,11 @@ void MainWindow::on_actionSearch_triggered()
                refViewer->selectSearchField();
                return;
            }
+           if (fc->file()->kind() == FileKind::Opt) {
+               option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(mRecent.editor());
+               solverOptionEditor->selectSearchField();
+               return;
+           }
        }
 
        // e.g. needed for KDE to raise the search dialog when minimized

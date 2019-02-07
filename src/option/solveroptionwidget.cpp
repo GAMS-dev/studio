@@ -678,6 +678,11 @@ bool SolverOptionWidget::isViewCompact() const
     return ui->compactViewCheckBox->isChecked();
 }
 
+void SolverOptionWidget::selectSearchField() const
+{
+    ui->solverOptionSearch->setFocus();
+}
+
 void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 {
     updateTableColumnSpan();

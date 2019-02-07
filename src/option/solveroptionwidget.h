@@ -63,6 +63,8 @@ public:
 
     bool isViewCompact() const;
 
+    void selectSearchField() const;
+
 signals:
     void modificationChanged(bool modifiedState);
     void itemCountChanged(int newItemCount);
