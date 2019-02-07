@@ -105,6 +105,11 @@ OptionWidget::~OptionWidget()
     delete mGamsOptionTokenizer;
 }
 
+void OptionWidget::runDefaultAction()
+{
+    ui->gamsRunToolButton->defaultAction()->trigger();
+}
+
 QString OptionWidget::on_runAction(RunActionState state)
 {
     QString commandLineStr =  ui->gamsOptionCommandLine->getOptionString();

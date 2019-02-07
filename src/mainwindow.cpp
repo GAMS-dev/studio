@@ -1469,7 +1469,7 @@ bool MainWindow::isActiveTabRunnable()
     return false;
 }
 
-bool MainWindow::isRecentGroupInRunningState()
+bool MainWindow::isRecentGroupRunning()
 {
     if (!mRecent.group) return false;
     ProjectRunGroupNode *runGroup = mRecent.group->assignedRunGroup();
@@ -1878,7 +1878,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
 void MainWindow::updateRunState()
 {
-    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());
+    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
 #ifdef QWEBENGINE
@@ -1915,8 +1915,8 @@ void MainWindow::commandLineHelpTriggered()
 
 void MainWindow::optionRunChanged()
 {
-    if (isActiveTabRunnable() && !isRecentGroupInRunningState())
-        on_actionRun_triggered();
+    if (isActiveTabRunnable() && !isRecentGroupRunning())
+        mGamsOptionWidget->runDefaultAction();
 }
 
 void MainWindow::openInitialFiles()

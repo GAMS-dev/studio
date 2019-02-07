@@ -67,6 +67,7 @@ public:
     QString getCurrentCommandLineData() const;
     void focus();
 
+    void runDefaultAction();
 signals:
     void optionEditorDisabled();
     void optionLoaded(const QString &location);

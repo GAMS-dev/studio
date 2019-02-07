@@ -303,7 +303,7 @@ private:
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
     bool isActiveTabRunnable();
-    bool isRecentGroupInRunningState();
+    bool isRecentGroupRunning();
     void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
