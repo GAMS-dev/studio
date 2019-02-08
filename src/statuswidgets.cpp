@@ -18,7 +18,6 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mStatusBar->addPermanentWidget(mEditLines);
     mEditLines->setMinimumWidth(mEditLines->height()*2);
     mEditLines->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    mEditLines->setAutoFillBackground(true);
 
     mEditPosAnsSel = new QLabel(" 0 / 0 ");
     mStatusBar->addPermanentWidget(mEditPosAnsSel);

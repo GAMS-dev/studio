@@ -231,6 +231,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("writeLog", writeLog());
     mUserSettings->setValue("nrLogBackups", nrLogBackups());
     mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
+    mUserSettings->setValue("editableMaxSizeMB", editableMaxSizeMB());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -338,6 +339,7 @@ void StudioSettings::loadUserSettings()
     setWriteLog(mUserSettings->value("writeLog", true).toBool());
     setNrLogBackups(mUserSettings->value("nrLogBackups", 3).toInt());
     setAutoCloseBraces(mUserSettings->value("autoCloseBraces", true).toBool());
+    setEditableMaxSizeMB(mUserSettings->value("editableMaxSizeMB", 10).toInt());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -399,6 +401,16 @@ bool StudioSettings::autoCloseBraces() const
 void StudioSettings::setAutoCloseBraces(bool autoCloseBraces)
 {
     mAutoCloseBraces = autoCloseBraces;
+}
+
+int StudioSettings::editableMaxSizeMB() const
+{
+    return mEditableMaxSizeMB;
+}
+
+void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
+{
+    mEditableMaxSizeMB = editableMaxSizeMB;
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

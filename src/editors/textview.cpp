@@ -79,7 +79,7 @@ void TextView::loadFile(const QString &fileName, int codecMib)
     mMapper.setCodec(codecMib == -1 ? QTextCodec::codecForMib(codecMib) : QTextCodec::codecForLocale());
     mMapper.openFile(fileName);
     updateVScrollZone();
-    int count = (mMapper.lineCount() < 0) ? mTopBufferLines*3 : mMapper.lineCount();
+    int count = (lineCount() < 0) ? mTopBufferLines*3 : lineCount();
     mMapper.setMappingSizes(count);
     ChangeKeeper x(mDocChanging);
     mEdit->setPlainText(mMapper.lines(0, count));
@@ -332,13 +332,13 @@ void TextView::init()
 
 void TextView::updateVScrollZone()
 {
-    int lineCount = mMapper.lineCount();
-    if (lineCount < 0) { // estimated lines count
-        verticalScrollBar()->setMinimum(qMin(lineCount+mVisibleLines-1, 0));
+    int count = mMapper.lineCount();
+    if (count < 0) { // estimated lines count
+        verticalScrollBar()->setMinimum(qMin(count+mVisibleLines-1, 0));
         verticalScrollBar()->setMaximum(0);
     } else { // known lines count
         verticalScrollBar()->setMinimum(0);
-        verticalScrollBar()->setMaximum(qMax(lineCount-mVisibleLines+1, 0));
+        verticalScrollBar()->setMaximum(qMax(count-mVisibleLines+1, 0));
     }
     syncVScroll();
 }
@@ -349,7 +349,7 @@ void TextView::syncVScroll()
     if (mMapper.absTopLine() >= 0) { // current line is known
         verticalScrollBar()->setValue(verticalScrollBar()->minimum() + mMapper.absTopLine() + mMapper.visibleOffset());
     } else { // current line is estimated
-        qreal factor= qreal(qAbs(mMapper.absTopLine()) + mMapper.visibleOffset()) / qAbs(mMapper.lineCount());
+        qreal factor= qreal(qAbs(mMapper.absTopLine()) + mMapper.visibleOffset()) / qAbs(lineCount());
         verticalScrollBar()->setValue(qRound(verticalScrollBar()->minimum() - verticalScrollBar()->minimum() * factor));
     }
     mEdit->blockSignals(false);

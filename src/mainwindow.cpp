@@ -1026,7 +1026,13 @@ void MainWindow::activeTabChanged(int index)
         } else if (TextView* tv = ViewHelper::toTextView(editWidget)) {
             ui->menuEncoding->setEnabled(true);
             ui->menuconvert_to->setEnabled(false);
-            mStatusWidgets->setLineCount(tv->lineCount());
+            try {
+                mStatusWidgets->setLineCount(tv->lineCount());
+            } catch (Exception &e) {
+
+                closeFileEditors(fileRepo()->fileMeta(tv)->id());
+                return;
+            }
         } else if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(editWidget)) {
             ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);

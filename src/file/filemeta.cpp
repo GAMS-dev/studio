@@ -397,12 +397,21 @@ void FileMeta::load(int codecMib)
         }
         return;
     }
+
+
+    QFile file(location());
+    qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
+    if (file.exists() && file.size() > maxSize) {
+        SysLogLocator::systemLog()->append("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
+                                           + " MB exeeded by " + location());
+        EXCEPT() << ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
+                     + " MB exeeded by " + location());
+//        return;
+    }
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
         linkDocument(doc);
     }
-
-    QFile file(location());
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
@@ -431,7 +440,9 @@ void FileMeta::load(int codecMib)
         }
         file.close();
         document()->setModified(false);
+        return;
     }
+    return;
 }
 
 void FileMeta::save()

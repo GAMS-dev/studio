@@ -197,7 +197,7 @@ TextMapper::Chunk *TextMapper::getChunk(int chunkNr) const
 
 TextMapper::Chunk* TextMapper::loadChunk(int chunkNr) const
 {
-    qint64 chunkStart = chunkNr * mChunkSize;
+    qint64 chunkStart = qint64(chunkNr) * mChunkSize;
     if (chunkStart < 0 || chunkStart >= size()) return nullptr;
 
     // map file
@@ -285,9 +285,6 @@ bool TextMapper::setTopOffset(qint64 byteNr)
         mTopLine.localLine = i;
     }
     mTopLine.absStart = chunk->start + chunk->lineBytes.at(mTopLine.localLine);
-    if (mTopLine.absStart != lastTl) {
-        mChanges.setFlag(All);
-    }
     return true;
 }
 
@@ -357,7 +354,6 @@ bool TextMapper::setVisibleTopLine(int lineNr)
     tl = qBound(0, lineNr - mBufferedLineCount/3, qAbs(lineCount())-mBufferedLineCount);
     setTopLine(tl);
     mVisibleTopLine = lineNr - absTopLine();
-    if (mChanges < Buffer) mChanges.setFlag(Scroll);
     return true;
 }
 
@@ -446,13 +442,6 @@ void TextMapper::scrollToPosition()
     moveVisibleTopLine(-5);
 }
 
-TextMapper::Changes TextMapper::popChanges()
-{
-    Changes res = mChanges;
-    mChanges = Nothing;
-    return res;
-}
-
 int TextMapper::absTopLine() const
 {
     Chunk *chunk = getChunk(mTopLine.chunkNr);
@@ -468,10 +457,15 @@ int TextMapper::absTopLine() const
 
 int TextMapper::lineCount() const
 {
+    qint64 count = 0;
     if (mLastChunkWithLineNr == chunkCount()-1) {
-        return mChunkLineNrs.last().lineOffset + mChunkLineNrs.last().lineCount;  // counted
+        count = mChunkLineNrs.last().lineOffset + mChunkLineNrs.last().lineCount;  // counted
+    } else {
+        count = -qint64(size() / mBytesPerLine) - 1; // estimated
     }
-    return -int(size() / mBytesPerLine) - 1; // estimated
+    if (count >= std::numeric_limits<int>::max() || count <= std::numeric_limits<int>::min())
+        EXCEPT() << "File too large " << mFile.fileName();
+    return int(count);
 }
 
 int TextMapper::knownLineNrs() const
@@ -887,6 +881,12 @@ bool TextMapper::peekChunksForLineNrs(int chunkCount)
     for (int i = 1; i <= chunkCount; ++i) {
         chunk = loadChunk(known + i);
         if (!chunk) break;
+    }
+    if (mLastChunkWithLineNr >= this->chunkCount()-1) {
+        DEB() << "chunkCount: " << this->chunkCount()
+              << " size " << size()
+              << " chunkSize " << mChunkSize;
+        DEB() << "x";
     }
     return mLastChunkWithLineNr < this->chunkCount()-1;
 }

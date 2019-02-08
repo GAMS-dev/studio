@@ -42,10 +42,6 @@ namespace studio {
 class TextMapper: public QObject
 {
     Q_OBJECT
-public:
-    enum Change { Nothing, Selection=1, Scroll=2, Buffer=4, All=7 };
-    typedef QFlags<Change> Changes;
-
 private:
 
     struct Chunk {  // a mapped part of a file
@@ -110,7 +106,6 @@ public:
     int moveVisibleTopLine(int lineDelta);
     void scrollToPosition();
 
-    Changes popChanges(); // TODO (JM) deprecated!
     int topChunk() const; // TODO (JM) deprecated!
 
     int visibleOffset() const;
@@ -172,7 +167,6 @@ private:
     CursorPosition mAnchor;
     CursorPosition mPosition;
     int mFindChunk = 0;
-    Changes mChanges = Nothing;
 
     QTextCodec *mCodec = nullptr;
     int mMaxChunks = 5;
