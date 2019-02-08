@@ -49,8 +49,6 @@ signals:
     void getSourcePath(QString& source);
     void openLogFor(ProjectAbstractNode* node, bool createMissing);
     void renameGroup(ProjectGroupNode* group);
-    void createSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile);
-    void newSolverOptionFile(ProjectGroupNode* group, const QString &solverOptionDefinitionFile, const QString &optionFile);
     void openFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void selectAll();
     void expandAll();
@@ -66,13 +64,14 @@ private slots:
     void onSelectAll();
     void onExpandAll();
     void onCollapseAll();
+    void onAddNewSolverOptionFile(const QString &solverName);
 
-    void onCreateSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile);
 private:
     void onOpenFileLoc();
     void onOpenFile();
     void onOpenFileAsText();
     void onOpenLog();
+    void addNewFile(const QString &filePath);
 
 private:
     QVector<ProjectAbstractNode*> mNodes;

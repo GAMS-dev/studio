@@ -161,7 +161,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->logTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::logTabContextMenuRequested);
 
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
-    connect(&mProjectContextMenu, &ProjectContextMenu::newSolverOptionFile, this, &MainWindow::createSolverOptionFile);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -1290,15 +1289,6 @@ void MainWindow::processFileEvents()
 void MainWindow::appendSystemLog(const QString &text)
 {
     mSyslog->append(text, LogMsgType::Info);
-}
-
-void MainWindow::createSolverOptionFile(ProjectGroupNode* group, const QString &solverOptionDefinitionFile, const QString &optionFile)
-{
-    qDebug() << solverOptionDefinitionFile << ", create : " << optionFile;
-
-    // TODO (JP)
-     mProjectRepo.findOrCreateFileNode(optionFile, group);
-     openFilePath(QFileInfo(optionFile).absoluteFilePath(), true);
 }
 
 void MainWindow::postGamsRun(NodeId origin)

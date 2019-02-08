@@ -84,12 +84,11 @@ ProjectContextMenu::ProjectContextMenu()
         if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
             continue;
         QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
-        connect(createSolverOption, &QAction::triggered, [=] { createSolverOptionFile(solvername, filename); });
+        connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername); });
 
         mAvailableSolvers << solvername;
         mSolverOptionActions.insert(++solverOptActionBaseIndex, createSolverOption);
     }
-    connect(this, &ProjectContextMenu::createSolverOptionFile, this, &ProjectContextMenu::onCreateSolverOptionFile );
 
     mActions.insert(actSep5, addSeparator());
     mActions.insert(actSelectAll, addAction("Select &all", this, &ProjectContextMenu::onSelectAll));
@@ -238,23 +237,7 @@ void ProjectContextMenu::onAddNewFile()
     if (fi.suffix().isEmpty())
         filePath += ".gms";
 
-    QFile file(filePath);
-    if (!file.exists()) { // create
-        file.open(QIODevice::WriteOnly);
-        file.close();
-    } else { // replace old
-        file.resize(0);
-    }
-    QVector<ProjectGroupNode*> groups;
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
-    }
-    for (ProjectGroupNode *group: groups) {
-        emit addExistingFile(group, filePath);
-    }
+    addNewFile(filePath);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
@@ -283,7 +266,7 @@ void ProjectContextMenu::onRenameGroup()
     if (group) emit renameGroup(group);
 }
 
-void ProjectContextMenu::onCreateSolverOptionFile(const QString &solverName, const QString &solverOptionDefinitionFile)
+void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
     QString sourcePath = "";
     emit getSourcePath(sourcePath);
@@ -298,19 +281,10 @@ void ProjectContextMenu::onCreateSolverOptionFile(const QString &solverName, con
     if (filePath.isEmpty()) return;
 
     QFileInfo fi(filePath);
-//    if (fi.suffix().isEmpty())
-//        filePath += ".gms";
+    if (fi.suffix().isEmpty())
+        filePath += ".opt";
 
-    QFile file(filePath);
-    if (!file.exists()) { // create
-        file.open(QIODevice::WriteOnly);
-        file.close();
-    } else { // replace old
-        file.resize(0);
-    }
-    ProjectGroupNode *group = mNodes.first()->toGroup();
-    if (!group) group = mNodes.first()->parentNode();
-    emit newSolverOptionFile(group, solverOptionDefinitionFile, filePath);
+    addNewFile(filePath);
 }
 
 void ProjectContextMenu::onOpenFileLoc()
@@ -359,6 +333,27 @@ void ProjectContextMenu::onOpenFileAsText()
 void ProjectContextMenu::onOpenLog()
 {
     if (mNodes.first()) emit openLogFor(mNodes.first(), true);
+}
+
+void ProjectContextMenu::addNewFile(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.exists()) { // create
+        file.open(QIODevice::WriteOnly);
+        file.close();
+    } else { // replace old
+        file.resize(0);
+    }
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (!groups.contains(group))
+            groups << group;
+    }
+    for (ProjectGroupNode *group: groups) {
+        emit addExistingFile(group, filePath);
+    }
 }
 
 void ProjectContextMenu::onSelectAll()
