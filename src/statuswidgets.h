@@ -17,17 +17,17 @@ enum class EditMode {Readonly, Insert, Overwrite};
 class AmountLabel: public QLabel
 {
     Q_OBJECT
-    int amount = 0;
+    qreal mLoadAmount = 1.0;
 public:
     AmountLabel(QWidget *parent) : QLabel(parent) {}
     explicit AmountLabel(QWidget *parent=nullptr, Qt::WindowFlags f=Qt::WindowFlags())
         : QLabel(parent, f) {}
     explicit AmountLabel(const QString &text, QWidget *parent=nullptr, Qt::WindowFlags f=Qt::WindowFlags())
         : QLabel(text, parent, f) {}
-    int getAmount() const { return amount; }
-    void setAmount(int value) { amount = value; }
+    qreal getAmount() const { return mLoadAmount; }
+    void setAmount(qreal value) { mLoadAmount = value; repaint(); }
 protected:
-//    void paintEvent(QPaintEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 };
 
 class StatusWidgets : public QObject
@@ -49,8 +49,10 @@ private:
     QLabel* mEditEncode = nullptr;
     QLabel* mEditPosAnsSel = nullptr;
     QLabel* mEditLines = nullptr;
-    QLabel* mFileName = nullptr;
+    AmountLabel* mFileName = nullptr;
     QLabel* mProcessInfo = nullptr;
+    qreal mLoadAmount = 1.0;
+
 };
 
 } // namespace Studio

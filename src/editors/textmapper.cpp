@@ -882,12 +882,6 @@ bool TextMapper::peekChunksForLineNrs(int chunkCount)
         chunk = loadChunk(known + i);
         if (!chunk) break;
     }
-    if (mLastChunkWithLineNr >= this->chunkCount()-1) {
-        DEB() << "chunkCount: " << this->chunkCount()
-              << " size " << size()
-              << " chunkSize " << mChunkSize;
-        DEB() << "x";
-    }
     return mLastChunkWithLineNr < this->chunkCount()-1;
 }
 

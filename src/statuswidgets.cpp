@@ -5,6 +5,7 @@
 #include <QTextCodec>
 #include <logger.h>
 #include <QPainter>
+#include <QPaintEvent>
 #include <QStyle>
 #include <QLayout>
 #include <QStyleOption>
@@ -14,12 +15,12 @@ namespace studio {
 
 StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(parent->statusBar())
 {
-    mEditLines = new QLabel("0 lines ");
+    mEditLines = new QLabel("0 lines");
     mStatusBar->addPermanentWidget(mEditLines);
     mEditLines->setMinimumWidth(mEditLines->height()*2);
     mEditLines->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-    mEditPosAnsSel = new QLabel(" 0 / 0 ");
+    mEditPosAnsSel = new QLabel("0 / 0");
     mStatusBar->addPermanentWidget(mEditPosAnsSel);
     mEditPosAnsSel->setMinimumWidth(mEditPosAnsSel->height()*2);
     mEditPosAnsSel->setAlignment(Qt::AlignCenter);
@@ -33,7 +34,7 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mStatusBar->addPermanentWidget(mEditEncode);
     mEditEncode->setMinimumWidth(mEditEncode->height()*3);
 
-    mFileName = new QLabel("Filename");
+    mFileName = new AmountLabel("Filename");
     mStatusBar->addWidget(mFileName, 1);
     mFileName->setAutoFillBackground(true);
 }
@@ -41,6 +42,8 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
 void StatusWidgets::setFileName(const QString &fileName)
 {
     mFileName->setText(fileName);
+    mFileName->setAmount(1.0);
+    mLoadAmount = 1.0;
 }
 
 void StatusWidgets::setEncoding(int encodingMib)
@@ -56,28 +59,15 @@ void StatusWidgets::setEncoding(int encodingMib)
 void StatusWidgets::setLineCount(int lines)
 {
     if (lines < 0) {
-        mEditLines->setText(QString("~%1 lines ").arg(-lines));
+        mEditLines->setText(QString("~%1 lines").arg(-lines));
     } else {
-        mEditLines->setText(QString("%1 lines ").arg(lines));
+        mEditLines->setText(QString("%1 lines").arg(lines));
     }
 }
 
 void StatusWidgets::setLoadAmount(qreal amount)
 {
-    QLabel *la = mFileName;
-    QPalette pal = la->palette();
-    QPixmap pix(la->size());
-    pix.fill(Qt::transparent);
-    QPainter p(&pix);
-    p.setBrush(QColor(100,150,200, 100));
-    p.setPen(Qt::NoPen);
-    int x = qRound(la->width() * qBound(0.0 ,amount, 1.0));
-    if (amount < 1.0)
-        p.drawRect(QRect(0, 0, x, la->height()));
-//    p.drawRect(QRect(x, 0, la->width()-x, la->height()));
-    pal.setBrush(QPalette::Background, QBrush(pix));
-    la->setPalette(pal);
-    la->repaint();
+    mFileName->setAmount(amount);
 }
 
 void StatusWidgets::setEditMode(EditMode mode)
@@ -106,26 +96,21 @@ void StatusWidgets::setPosAndAnchor(QPoint pos, QPoint anchor)
     mEditPosAnsSel->setText(posText);
 }
 
-//void AmountLabel::paintEvent(QPaintEvent *event)
-//{
-//    QLabel::paintEvent(event);
-//    QStyleOption opt;
-//    opt.initFrom(this);
-//    QBrush
-//    opt.
-
-//    QStyle *style = QWidget::style();
-//    QPainter painter(this);
-//    drawFrame(&painter);
-//    QRect cr = contentsRect();
-//    cr.adjust(margin(), margin(), -margin(), -margin());
-//    int align = QStyle::visualAlignment(layoutDirection(), alignment());
-//    QRectF lr = d->layoutRect().toAlignedRect();
-//}
-
-
-
-
+void AmountLabel::paintEvent(QPaintEvent *event)
+{
+    QLabel::paintEvent(event);
+    if (mLoadAmount < 1.0) {
+        QPainter p(this);
+        p.save();
+        p.setBrush(QColor(255,120,0, 220));
+        p.setPen(Qt::NoPen);
+        int x = qRound((width() - 1) * qBound(0.0 ,mLoadAmount, 1.0));
+        p.drawRect(QRect(0, 0, x, 2/*height()-1*/));
+        p.setBrush(QColor(0,0,0));
+        p.drawRect(QRect(0, 2, x, 1/*height()-1*/));
+        p.restore();
+    }
+}
 
 } // namespace Studio
 } // namespace gams
