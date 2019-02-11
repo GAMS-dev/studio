@@ -36,7 +36,6 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
 
     mFileName = new AmountLabel("Filename");
     mStatusBar->addWidget(mFileName, 1);
-    mFileName->setAutoFillBackground(true);
 }
 
 void StatusWidgets::setFileName(const QString &fileName)
