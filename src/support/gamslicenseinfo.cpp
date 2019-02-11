@@ -33,6 +33,9 @@ GamsLicenseInfo::GamsLicenseInfo()
 {
     auto logger = SysLogLocator::systemLog();
 
+    cfgSetExitIndicator(0); // switch of exit() call
+    cfgSetErrorCallback(GamsLicenseInfo::errorCallback);
+
     char msg[GMS_SSSIZE];
     if (!cfgCreateD(&mCFG,
                     CommonPaths::systemDir().toStdString().c_str(),
@@ -44,6 +47,10 @@ GamsLicenseInfo::GamsLicenseInfo()
         cfgGetMsg(mCFG, msg);
         logger->append(msg, LogMsgType::Error);
     }
+
+    palSetExitIndicator(0); // switch of exit() call
+    palSetErrorCallback(GamsLicenseInfo::errorCallback);
+
     if (!palCreateD(&mPAL,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
@@ -55,6 +62,7 @@ GamsLicenseInfo::GamsLicenseInfo()
                          msg,
                          &rc))
         logger->append(msg, LogMsgType::Error);
+
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
@@ -141,6 +149,14 @@ char* GamsLicenseInfo::solverCodes(int solverId) const
     char msg[GMS_SSSIZE];
     char *codes = cfgAlgCode(mCFG, solverId, msg);
     return codes;
+}
+
+int GamsLicenseInfo::errorCallback(int count, const char *message)
+{
+    Q_UNUSED(count);
+    auto logger = SysLogLocator::systemLog();
+    logger->append(message, LogMsgType::Error);
+    return 0;
 }
 
 }

@@ -57,6 +57,8 @@ public:
 private:
     char* solverCodes(int solverId) const;
 
+    static int errorCallback(int count, const char *message);
+
 private:
     cfgHandle_t mCFG;
     palHandle_t mPAL;
