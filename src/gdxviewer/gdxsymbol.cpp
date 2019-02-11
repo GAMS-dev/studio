@@ -119,7 +119,7 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
                     if (var.isValid() && var.canConvert<QFont>())
                         fnt = qvariant_cast<QFont>(var);
                     fnt.setBold(true);
-                    int labelWidth = QFontMetrics(fnt).width(label)*1.1;
+                    int labelWidth = QFontMetrics(fnt).width(label)*1.3;
                     totalWidth += labelWidth;
                     tvSectionWidth->replace(i, qMax(tvSectionWidth->at(i), labelWidth));
                 }
