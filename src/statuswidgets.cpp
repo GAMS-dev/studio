@@ -104,9 +104,7 @@ void AmountLabel::paintEvent(QPaintEvent *event)
         p.setBrush(QColor(255,120,0, 220));
         p.setPen(Qt::NoPen);
         int x = qRound((width() - 1) * qBound(0.0 ,mLoadAmount, 1.0));
-        p.drawRect(QRect(0, 0, x, 2/*height()-1*/));
-        p.setBrush(QColor(0,0,0));
-        p.drawRect(QRect(0, 2, x, 1/*height()-1*/));
+        p.drawRect(QRect(0, 0, x, 3));
         p.restore();
     }
 }
