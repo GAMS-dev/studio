@@ -18,9 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslicenseinfo.h"
-#include "commonpaths.h"
 #include "locators/abstractsystemlogger.h"
 #include "locators/sysloglocator.h"
+#include "commonpaths.h"
 #include "cfgmcc.h"
 #include "palmcc.h"
 #include "gclgms.h"
