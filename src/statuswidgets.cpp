@@ -57,10 +57,12 @@ void StatusWidgets::setEncoding(int encodingMib)
 
 void StatusWidgets::setLineCount(int lines)
 {
-    if (lines < 0) {
+    if (lines < -1) {
         mEditLines->setText(QString("~%1 lines").arg(-lines));
-    } else {
+    } else if (lines >= 0) {
         mEditLines->setText(QString("%1 lines").arg(lines));
+    } else {
+        mEditLines->setText("            ");
     }
 }
 
