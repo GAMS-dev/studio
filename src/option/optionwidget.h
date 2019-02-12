@@ -68,8 +68,8 @@ public:
     void focus();
 
     void runDefaultAction();
+
 signals:
-    void optionEditorDisabled();
     void optionLoaded(const QString &location);
     void optionTableModelChanged(const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
@@ -83,7 +83,6 @@ public slots:
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QStringList &history);
-    void disableOptionEditor();
 
 private slots:
     void toggleExtendedOptionEdit(bool checked);

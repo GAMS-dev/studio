@@ -96,7 +96,11 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
 
-    connect(this, &OptionWidget::optionEditorDisabled, this, &OptionWidget::disableOptionEditor);
+    mExtendedEditor = new QDockWidget("GAMS Arguments", this);
+    mExtendedEditor->setObjectName("gamsArguments");
+    mExtendedEditor->setWidget(ui->gamsOptionWidget);
+    main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
+    mExtendedEditor->setVisible(false);
 }
 
 OptionWidget::~OptionWidget()
@@ -163,8 +167,7 @@ bool OptionWidget::isOptionDefinitionChecked()
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
-    if (mExtendedEditor && mExtendedEditor->isHidden())
-        return;
+    if (mExtendedEditor->isHidden()) return;
 
     emit optionTableModelChanged(commandLineStr);
 }
@@ -256,8 +259,8 @@ void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
     setInterruptActionsEnabled(isRunnable && isRunning);
 
     ui->gamsOptionWidget->setEnabled(isRunnable && !isRunning);
-    ui->gamsOptionCommandLine->lineEdit()->setReadOnly(isRunning);
-    ui->gamsOptionCommandLine->lineEdit()->setEnabled(isRunnable && (!mExtendedEditor || mExtendedEditor->isHidden()));
+    ui->gamsOptionCommandLine->lineEdit()->setReadOnly(isRunning || !mExtendedEditor->isHidden());
+    ui->gamsOptionCommandLine->setEnabled(isRunnable && mExtendedEditor->isHidden());
 }
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
@@ -294,38 +297,20 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
     ui->gamsOptionCommandLine->setCurrentIndex(0);
 }
 
-void OptionWidget::disableOptionEditor()
+void OptionWidget::toggleExtendedOptionEdit(bool extended)
 {
-    ui->gamsOptionCommandLine->setCurrentIndex(-1);
-    ui->gamsOptionCommandLine->setEnabled(false);
-    ui->gamsOptionWidget->setEnabled(false);
-
-    setRunActionsEnabled(false);
-    setInterruptActionsEnabled(false);
-}
-
-void OptionWidget::toggleExtendedOptionEdit(bool checked)
-{
-    ui->gamsOptionEditorButton->setChecked(checked);
-    if (checked) {
+    ui->gamsOptionEditorButton->setChecked(extended);
+    if (extended) {
         ui->gamsOptionEditorButton->setIcon( QIcon(":/img/hide") );
         ui->gamsOptionEditorButton->setToolTip( "Hide Command Line Parameters Editor"  );
 
-        if (!mExtendedEditor) {
-            mExtendedEditor = new QDockWidget("GAMS Arguments", this);
-            mExtendedEditor->setObjectName("gamsArguments");
-            mExtendedEditor->setWidget(ui->gamsOptionWidget);
-            main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
-        }
-
         emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
-
     } else {
         ui->gamsOptionEditorButton->setIcon( QIcon(":/img/show") );
         ui->gamsOptionEditorButton->setToolTip( "Show Command Line Parameters Editor"  );
     }
 
-    if (mExtendedEditor) mExtendedEditor->setVisible(checked);
+    mExtendedEditor->setVisible(extended);
     main->updateRunState();
 }
 
