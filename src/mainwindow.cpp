@@ -245,24 +245,8 @@ void MainWindow::initToolBar()
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
+    ui->toolBar->insertWidget(ui->actionSettings, mGamsOptionWidget);
     ui->toolBar->setIconSize(QSize(16, 16));
-
-    ui->toolBar->addAction(ui->actionNew);
-    ui->toolBar->addAction(ui->actionOpen);
-    ui->toolBar->addAction(ui->actionSave);
-    ui->toolBar->addSeparator();
-    ui->toolBar->addAction(ui->actionUndo);
-    ui->toolBar->addAction(ui->actionRedo);
-    ui->toolBar->addSeparator();
-//    leave these out to have a cleaner look:
-//    ui->toolBar->addAction(ui->actionCopy);
-//    ui->toolBar->addAction(ui->actionCut);
-//    ui->toolBar->addAction(ui->actionPaste);
-//    ui->toolBar->addSeparator();
-    ui->toolBar->addWidget(mGamsOptionWidget);
-    ui->toolBar->addSeparator();
-    ui->toolBar->addAction(ui->actionSettings);
-    ui->toolBar->addAction(ui->actionGAMS_Library);
 }
 
 void MainWindow::initAutoSave()
@@ -388,11 +372,6 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 void MainWindow::on_actionHelp_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockHelpView, checked);
-}
-
-void MainWindow::checkOptionDefinition(bool checked)
-{
-    mGamsOptionWidget->checkOptionDefinition(checked);
 }
 
 bool MainWindow::isOptionDefinitionChecked()

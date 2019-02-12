@@ -419,6 +419,13 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNew"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
+   <addaction name="separator"/>
+   <addaction name="actionSettings"/>
+   <addaction name="separator"/>
+   <addaction name="actionGAMS_Library"/>
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -568,7 +575,7 @@
   <action name="actionGAMS_Library">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/database</normaloff>:/img/database</iconset>
+     <normaloff>:/img/database_bw</normaloff>:/img/database_bw</iconset>
    </property>
    <property name="text">
     <string>&amp;Model Library Explorer</string>

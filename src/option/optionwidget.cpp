@@ -17,6 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 #include <QMessageBox>
+#include <QShortcut>
 
 #include "optionwidget.h"
 #include "ui_optionwidget.h"
@@ -152,11 +153,6 @@ void OptionWidget::on_interruptAction()
 void OptionWidget::on_stopAction()
 {
     ui->gamsInterruptToolButton->setDefaultAction( actionStop );
-}
-
-void OptionWidget::checkOptionDefinition(bool checked)
-{
-    toggleExtendedOptionEdit(checked);
 }
 
 bool OptionWidget::isOptionDefinitionChecked()

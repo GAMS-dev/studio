@@ -270,7 +270,6 @@ void StudioSettings::loadViewStates(MainWindow *main)
     main->setOutputViewVisibility(mAppSettings->value("outputView", false).toBool());
     main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
     main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
-    main->checkOptionDefinition(mAppSettings->value("optionEditor", false).toBool());
     main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
 
     mAppSettings->endGroup();

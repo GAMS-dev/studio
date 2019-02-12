@@ -57,7 +57,6 @@ public:
     void on_interruptAction();
     void on_stopAction();
 
-    void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
 
     CommandLineTokenizer *getGamsOptionTokenizer() const;
@@ -85,7 +84,7 @@ public slots:
     void loadCommandLineOption(const QStringList &history);
 
 private slots:
-    void toggleExtendedOptionEdit(bool checked);
+    void toggleExtendedOptionEdit(bool extended);
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX);

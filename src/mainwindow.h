@@ -113,7 +113,6 @@ public:
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
-    void checkOptionDefinition(bool checked);
     bool isOptionDefinitionChecked();
     FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();

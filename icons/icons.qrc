@@ -11,6 +11,7 @@
         <file alias="copy">copy.svg</file>
         <file alias="cut">cut.svg</file>
         <file alias="database">database.svg</file>
+        <file alias="database_bw">database_bw.svg</file>
         <file alias="delete">remove.svg</file>
         <file alias="delete-all">trash.svg</file>
         <file alias="envelope">envelope.svg</file>
