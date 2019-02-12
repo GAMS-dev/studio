@@ -37,6 +37,7 @@ namespace support {
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
     c4uSetExitIndicator(0); // switch of exit() call
+    c4uSetScreenIndicator(0);
     c4uSetErrorCallback(CheckForUpdateWrapper::errorCallback);
 
     char buffer[GMS_SSSIZE];

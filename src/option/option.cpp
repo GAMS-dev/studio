@@ -331,6 +331,7 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
     optHandle_t mOPTHandle;
 
     optSetExitIndicator(0); // switch of exit() call
+    optSetScreenIndicator(0);
     optSetErrorCallback(Option::errorCallback);
 
     char msg[GMS_SSSIZE];

@@ -34,6 +34,7 @@ GamsLicenseInfo::GamsLicenseInfo()
     auto logger = SysLogLocator::systemLog();
 
     cfgSetExitIndicator(0); // switch of exit() call
+    cfgSetScreenIndicator(0);
     cfgSetErrorCallback(GamsLicenseInfo::errorCallback);
 
     char msg[GMS_SSSIZE];
@@ -49,6 +50,7 @@ GamsLicenseInfo::GamsLicenseInfo()
     }
 
     palSetExitIndicator(0); // switch of exit() call
+    palSetScreenIndicator(0);
     palSetErrorCallback(GamsLicenseInfo::errorCallback);
 
     if (!palCreateD(&mPAL,

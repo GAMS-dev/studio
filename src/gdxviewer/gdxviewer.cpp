@@ -52,6 +52,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 
     mGdxMutex = new QMutex();
     gdxSetExitIndicator(0); // switch of exit() call
+    gdxSetScreenIndicator(0);
     gdxSetErrorCallback(GdxViewer::errorCallback);
     char msg[GMS_SSSIZE];
     if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
