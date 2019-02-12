@@ -181,6 +181,7 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *ref);;"
                                                        "Option files (*.opt *.op*);;"
+                                                       "Reference files (*.ref);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"),
                                                     nullptr,
