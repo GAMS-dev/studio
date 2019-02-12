@@ -313,6 +313,7 @@ void OptionWidget::toggleExtendedOptionEdit(bool checked)
 
         if (!mExtendedEditor) {
             mExtendedEditor = new QDockWidget("GAMS Arguments", this);
+            mExtendedEditor->setObjectName("gamsArguments");
             mExtendedEditor->setWidget(ui->gamsOptionWidget);
             main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
         }
