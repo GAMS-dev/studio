@@ -68,9 +68,10 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     ui->solverOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->solverOptionTableView));
     ui->solverOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
+                       | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
-    ui->solverOptionTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->solverOptionTableView->setSelectionBehavior(QAbstractItemView::SelectItems);
     ui->solverOptionTableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->solverOptionTableView->setAutoScroll(true);
     ui->solverOptionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -86,7 +87,8 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
 //    ui->solverOptionTableView->setColumnHidden(2, true); //false);
 
-    connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_toggleRowHeader);
+    ui->solverOptionTableView->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectRow);
     connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
     connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
 
@@ -199,6 +201,7 @@ bool SolverOptionWidget::isModified() const
 void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 {
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
 
     QMenu menu(this);
     QAction* commentAction = menu.addAction("Toggle comment/option selection");
@@ -212,24 +215,28 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QAction* deleteAction = menu.addAction(QIcon(":/img/delete-all"), "remove Selection");
     menu.addSeparator();
 
+    QAction* selectOption = menu.addAction("Select Option");
     QAction* selectAll = menu.addAction("Select All", ui->solverOptionTableView, &QTableView::selectAll);
 
-    bool thereIsASelection = (selection.count() > 0);
+    bool thereIsARowSelection = (selection.count() > 0);
+    bool thereIsAnIndexSelection = indexSelection.count();
+    bool isEverySelectionARow = (thereIsARowSelection && (indexSelection.count() / ui->solverOptionTableView->model()->columnCount() == selection.count()));
     bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
 
-    commentAction->setVisible( thereIsASelection && !isViewCompact() );
+    commentAction->setVisible( thereIsARowSelection && !isViewCompact() );
 
-    insertOptionAction->setVisible( thereIsASelection || !thereIsARow || !isViewCompact() );
-    insertCommentAction->setVisible( (thereIsASelection || !thereIsARow) && !isViewCompact() );
+    insertOptionAction->setVisible( thereIsARowSelection || !thereIsARow ); //|| !isViewCompact() );
+    insertCommentAction->setVisible( (thereIsARowSelection || !thereIsARow) && !isViewCompact() );
 
-    deleteAction->setVisible( thereIsASelection );
+    deleteAction->setVisible( isEverySelectionARow );
 
-    moveUpAction->setVisible(  thereIsASelection && !isViewCompact() && (selection.first().row() > 0) );
-    moveDownAction->setVisible( thereIsASelection && !isViewCompact() && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+    moveUpAction->setVisible(  thereIsARowSelection && !isViewCompact() && (selection.first().row() > 0) );
+    moveDownAction->setVisible( thereIsARowSelection && !isViewCompact() && (selection.last().row() < mOptionTableModel->rowCount()-1) );
 
+    selectOption->setVisible( thereIsAnIndexSelection );
     selectAll->setVisible( thereIsARow );
 
-    if (thereIsASelection) {
+    if (thereIsARowSelection) {
         // move up and down actions are disabled when selection are not contiguous
         QList<SolverOptionItem*> items = mOptionTableModel->getCurrentListOfOptionItems();
         QModelIndex index = selection.at(0);
@@ -276,7 +283,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             setModified(modified);
         }
     } else if (action == insertCommentAction ) {
-        if (thereIsASelection)  {
+        if (thereIsARowSelection)  {
             QModelIndex index = selection.at(0);
             ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
             ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
@@ -295,7 +302,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         setModified(modified);
         emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
     } else if (action == insertOptionAction) {
-              if (thereIsASelection)  {
+              if (thereIsARowSelection)  {
                  QModelIndex index = selection.at(0);
                  ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
                  ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
@@ -314,7 +321,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
               setModified(modified);
               emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
     } else if (action == moveUpAction) {
-        if (thereIsASelection) {
+        if (thereIsARowSelection) {
             QModelIndex index = selection.at(0);
             ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
                                                          QModelIndex(), index.row()-1);
@@ -322,7 +329,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             modified = true;
         }
     } else if (action == moveDownAction) {
-        if (thereIsASelection) {
+        if (thereIsARowSelection) {
             QModelIndex index = selection.at(0);
             mOptionTableModel->moveRows(QModelIndex(), index.row(), selection.count(),
                                         QModelIndex(), index.row()+selection.count()+1);
@@ -330,7 +337,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             modified = true;
         }
     } else if (action == deleteAction) {
-         if (thereIsASelection) {
+         if (thereIsARowSelection) {
             QModelIndex index = selection.at(0);
             QModelIndex removeTableIndex = mOptionTableModel->index(index.row(), 0);
             QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
@@ -341,6 +348,10 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             setModified(true);
             emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
         }
+    } else if (action == selectOption) {
+              for(int i=0; i<indexSelection.count(); ++i) {
+                 on_selectRow( indexSelection.at(i).row() );
+              }
     }
 }
 
@@ -494,6 +505,18 @@ void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
         mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
         setModified(false);
     }
+}
+
+void SolverOptionWidget::on_selectRow(int logicalIndex)
+{
+    if (ui->solverOptionTableView->model()->rowCount() <= 0)
+        return;
+
+    QItemSelectionModel *selectionModel = ui->solverOptionTableView->selectionModel();
+    QModelIndex topLeft = ui->solverOptionTableView->model()->index(logicalIndex, 0, QModelIndex());
+    QModelIndex  bottomRight = ui->solverOptionTableView->model()->index(logicalIndex, 3, QModelIndex());
+    QItemSelection selection( topLeft, bottomRight);
+    selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 }
 
 void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)

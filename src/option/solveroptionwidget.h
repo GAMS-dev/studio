@@ -81,6 +81,7 @@ public slots:
     bool saveOptionFile(const QString &location);
 
     void on_reloadSolverOptionFile(QTextCodec* codec);
+    void on_selectRow(int logicalIndex);
     void on_toggleRowHeader(int logicalIndex);
 
     void on_compactViewCheckBox_stateChanged(int checkState);
