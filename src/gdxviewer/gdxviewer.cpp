@@ -22,6 +22,7 @@
 #include "gdxsymbol.h"
 #include "gdxsymboltable.h"
 #include "gdxsymbolview.h"
+#include "common.h"
 #include "exception.h"
 #include "locators/abstractsystemlogger.h"
 #include "locators/sysloglocator.h"
@@ -305,6 +306,7 @@ int GdxViewer::errorCallback(int count, const char *message)
 {
     Q_UNUSED(count);
     auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
     logger->append(message, LogMsgType::Error);
     return 0;
 }

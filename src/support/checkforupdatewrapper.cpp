@@ -21,6 +21,7 @@
 #include "locators/abstractsystemlogger.h"
 #include "locators/sysloglocator.h"
 #include "commonpaths.h"
+#include "common.h"
 #include "gclgms.h"
 #include "c4umcc.h"
 
@@ -172,6 +173,7 @@ int CheckForUpdateWrapper::errorCallback(int count, const char *message)
 {
     Q_UNUSED(count);
     auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
     logger->append(message, LogMsgType::Error);
     return 0;
 }
