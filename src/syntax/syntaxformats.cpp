@@ -294,29 +294,5 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, bool &has
     return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
 }
 
-SyntaxString::SyntaxString(QChar delimiter)
-     : SyntaxAbstract(SyntaxState::String), mDelimiter(delimiter)
-{}
-
-SyntaxBlock SyntaxString::find(SyntaxState entryState, const QString &line, int index)
-{
-    Q_UNUSED(entryState)
-    int start = index;
-    while (isWhitechar(line, start)) start++;
-    if (start < line.length()-1 && line.at(start) == mDelimiter) {
-        return SyntaxBlock(this, start, start+1, SyntaxStateShift::shift);
-    }
-    return SyntaxBlock(this);
-}
-
-SyntaxBlock SyntaxString::validTail(const QString &line, int index, bool &hasContent)
-{
-    int end = line.indexOf(mDelimiter, index);
-    hasContent = false;
-    if (end < 0) return SyntaxBlock(this, index, line.length()-1, true, SyntaxStateShift::out);
-    hasContent = end < line.length();
-    return SyntaxBlock(this, index, end, SyntaxStateShift::out);
-}
-
 } // namespace studio
 } // namespace gams
