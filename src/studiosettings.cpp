@@ -105,7 +105,6 @@ void StudioSettings::resetViewSettings()
     mAppSettings->setValue("projectView", true);
     mAppSettings->setValue("outputView", true);
     mAppSettings->setValue("helpView", false);
-    mAppSettings->setValue("optionView", true);
     mAppSettings->setValue("optionEditor", false);
     mAppSettings->endGroup();
 
@@ -151,9 +150,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->beginGroup("viewMenu");
     mAppSettings->setValue("projectView", main->projectViewVisibility());
     mAppSettings->setValue("outputView", main->outputViewVisibility());
+    mAppSettings->setValue("gamsArguments", main->gamsOptionWidget()->isEditorExtended());
     mAppSettings->setValue("helpView", main->helpViewVisibility());
-    mAppSettings->setValue("optionView", main->optionEditorVisibility());
-    mAppSettings->setValue("optionEditor", main->isOptionDefinitionChecked());
     mAppSettings->setValue("encodingMIBs", main->encodingMIBsString());
 
     mAppSettings->endGroup();
@@ -268,8 +266,8 @@ void StudioSettings::loadViewStates(MainWindow *main)
     mAppSettings->beginGroup("viewMenu");
     main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
     main->setOutputViewVisibility(mAppSettings->value("outputView", false).toBool());
+    main->setExtendedEditorVisibility(mAppSettings->value("gamsArguments", false).toBool());
     main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
-    main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
     main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
 
     mAppSettings->endGroup();

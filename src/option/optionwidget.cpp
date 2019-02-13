@@ -46,8 +46,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     setInterruptActionGroup(aInterrupt, actionStop);
 
     ui->gamsOptionWidget->hide();
-    connect(ui->gamsOptionEditorButton, &QAbstractButton::clicked, this, &OptionWidget::toggleExtendedOptionEdit);
-    connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::commandLineHelpTriggered);
 
     connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged, main, &MainWindow::optionRunChanged);
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged, ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
@@ -155,11 +153,6 @@ void OptionWidget::on_stopAction()
     ui->gamsInterruptToolButton->setDefaultAction( actionStop );
 }
 
-bool OptionWidget::isOptionDefinitionChecked()
-{
-    return ui->gamsOptionEditorButton->isChecked();
-}
-
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
@@ -251,12 +244,12 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
 void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 {
-    setRunActionsEnabled(isRunnable & !isRunning);
-    setInterruptActionsEnabled(isRunnable && isRunning);
+    bool activate = isRunnable && !isRunning;
+    setRunActionsEnabled(activate);
+    setInterruptActionsEnabled(activate);
 
-    ui->gamsOptionWidget->setEnabled(isRunnable && !isRunning);
-    ui->gamsOptionCommandLine->lineEdit()->setReadOnly(isRunning || !mExtendedEditor->isHidden());
-    ui->gamsOptionCommandLine->setEnabled(isRunnable && mExtendedEditor->isHidden());
+    ui->gamsOptionWidget->setEnabled(activate);
+    ui->gamsOptionCommandLine->setEnabled(activate && !isEditorExtended());
 }
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
@@ -282,7 +275,6 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
 void OptionWidget::loadCommandLineOption(const QStringList &history)
 {
     ui->gamsOptionCommandLine->clear();
-    ui->gamsOptionCommandLine->setEnabled(true);
     if (history.isEmpty()) {
         ui->gamsOptionCommandLine->setCurrentIndex(0);
         return;
@@ -293,21 +285,16 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
     ui->gamsOptionCommandLine->setCurrentIndex(0);
 }
 
-void OptionWidget::toggleExtendedOptionEdit(bool extended)
+void OptionWidget::setEditorExtended(bool extended)
 {
-    ui->gamsOptionEditorButton->setChecked(extended);
-    if (extended) {
-        ui->gamsOptionEditorButton->setIcon( QIcon(":/img/hide") );
-        ui->gamsOptionEditorButton->setToolTip( "Hide Command Line Parameters Editor"  );
-
-        emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
-    } else {
-        ui->gamsOptionEditorButton->setIcon( QIcon(":/img/show") );
-        ui->gamsOptionEditorButton->setToolTip( "Show Command Line Parameters Editor"  );
-    }
-
     mExtendedEditor->setVisible(extended);
     main->updateRunState();
+    ui->gamsOptionCommandLine->setEnabled(!extended);
+}
+
+bool OptionWidget::isEditorExtended()
+{
+    return mExtendedEditor->isVisible();
 }
 
 void OptionWidget::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX)

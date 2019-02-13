@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -401,6 +401,12 @@
    <widget class="QWidget" name="dockHelpViewContents"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -409,6 +415,12 @@
    </property>
    <property name="allowedAreas">
     <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -422,10 +434,9 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
-   <addaction name="separator"/>
    <addaction name="actionSettings"/>
-   <addaction name="separator"/>
    <addaction name="actionGAMS_Library"/>
+   <addaction name="actionToggle_Extended_Option_Editor"/>
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -1035,6 +1046,30 @@
    </property>
    <property name="shortcutVisibleInContextMenu">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionToggle_Extended_Option_Editor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/show</normaloff>:/img/show</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle Extended Option Editor</string>
+   </property>
+   <property name="toolTip">
+    <string>Ctrl+Alt+L</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+L</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
    </property>
   </action>
  </widget>

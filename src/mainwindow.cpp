@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtConcurrent>
-#include <QShortcut>
 #include <QtWidgets>
 
 #include "mainwindow.h"
@@ -245,8 +244,7 @@ void MainWindow::initToolBar()
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
-    ui->toolBar->insertWidget(ui->actionSettings, mGamsOptionWidget);
-    ui->toolBar->setIconSize(QSize(16, 16));
+    ui->toolBar->insertWidget(ui->actionToggle_Extended_Option_Editor, mGamsOptionWidget);
 }
 
 void MainWindow::initAutoSave()
@@ -324,7 +322,7 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
-    ui->actionOption_View->setChecked(visibility);
+    mGamsOptionWidget->setEditorExtended(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -351,7 +349,7 @@ bool MainWindow::projectViewVisibility()
 
 bool MainWindow::optionEditorVisibility()
 {
-    return ui->actionOption_View->isChecked();
+    return mGamsOptionWidget->isEditorExtended();
 }
 
 bool MainWindow::helpViewVisibility()
@@ -372,11 +370,6 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
 void MainWindow::on_actionHelp_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockHelpView, checked);
-}
-
-bool MainWindow::isOptionDefinitionChecked()
-{
-    return mGamsOptionWidget->isOptionDefinitionChecked();
 }
 
 FileMetaRepo *MainWindow::fileRepo()
@@ -1881,17 +1874,6 @@ void MainWindow::setMainGms(ProjectFileNode *node)
     }
 }
 
-void MainWindow::commandLineHelpTriggered()
-{
-#ifdef QWEBENGINE
-    mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
-    if (ui->dockHelpView->isHidden())
-        ui->dockHelpView->show();
-    if (tabifiedDockWidgets(ui->dockHelpView).count())
-        ui->dockHelpView->raise();
-#endif
-}
-
 void MainWindow::optionRunChanged()
 {
     if (isActiveTabRunnable() && !isRecentGroupRunning())
@@ -2712,6 +2694,24 @@ void MainWindow::on_actionSelect_encodings_triggered()
     se.exec();
     setEncodingMIBs(se.selectedMibs());
     mSettings->saveSettings(this);
+}
+
+void MainWindow::setExtendedEditorVisibility(bool visible)
+{
+    ui->actionToggle_Extended_Option_Editor->setChecked(visible);
+}
+
+void MainWindow::on_actionToggle_Extended_Option_Editor_toggled(bool checked)
+{
+    if (checked) {
+        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/hide"));
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Hide Command Line Parameters Editor");
+    } else {
+        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/show") );
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Show Command Line Parameters Editor");
+    }
+
+    mGamsOptionWidget->setEditorExtended(checked);
 }
 
 QWidget *RecentData::editor() const

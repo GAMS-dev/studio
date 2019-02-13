@@ -57,8 +57,6 @@ public:
     void on_interruptAction();
     void on_stopAction();
 
-    bool isOptionDefinitionChecked();
-
     CommandLineTokenizer *getGamsOptionTokenizer() const;
     bool isAnOptionWidgetFocused(QWidget* focusWidget);
     QString getSelectedOptionName(QWidget* widget) const;
@@ -67,6 +65,9 @@ public:
     void focus();
 
     void runDefaultAction();
+
+    void setEditorExtended(bool extended);
+    bool isEditorExtended();
 
 signals:
     void optionLoaded(const QString &location);
@@ -82,9 +83,6 @@ public slots:
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QStringList &history);
-
-private slots:
-    void toggleExtendedOptionEdit(bool extended);
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX);
