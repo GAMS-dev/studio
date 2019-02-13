@@ -19,6 +19,7 @@
  */
 #include "syntaxidentifier.h"
 #include "exception.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -146,8 +147,8 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxState state) : SyntaxAbstract(state)
     mDelimiter = '/';
     switch (state) {
     case SyntaxState::IdentifierAssignment:
-        mEmptyLineStates << SyntaxState::IdentifierAssignmentEnd;
-        mSubStates << SyntaxState::IdentifierAssignmentEnd;
+        mSubStates << SyntaxState::IdentifierAssignmentEnd << SyntaxState::AssignmentLabel;
+        mEmptyLineStates = mSubStates;
         break;
     case SyntaxState::IdentifierAssignmentEnd:
         mSubStates << SyntaxState::Comma;
@@ -162,36 +163,130 @@ SyntaxBlock SyntaxIdentAssign::find(SyntaxState entryState, const QString &line,
 {
     Q_UNUSED(entryState)
     int start = index;
+    bool inside = (state() != SyntaxState::IdentifierAssignmentEnd
+                   && (entryState == SyntaxState::AssignmentLabel
+                       || entryState == SyntaxState::AssignmentValue));
+    QChar delim = inside ? ',' : mDelimiter;
     while (isWhitechar(line, start))
         ++start;
-    if (start < line.length() && line.at(start) == mDelimiter)
-        return SyntaxBlock(this, index, start+1, SyntaxStateShift::shift);
+    if (start < line.length() && line.at(start) == delim)
+        return SyntaxBlock(this, start, start+1, SyntaxStateShift::shift);
     return SyntaxBlock(this);
 }
 
 SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, bool &hasContent)
 {
-    int end = index;
-    if (state() == SyntaxState::IdentifierAssignmentEnd || state() == SyntaxState::IdentifierTableAssignmentRow) {
-        hasContent = false;
-        while (isWhitechar(line, end)) end++;
-        return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
-    }
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    end = line.indexOf(mDelimiter, start);
-    QStringList quotes {"\'\"[" , "\'\"]"};
-    for (int i = 0; i < 3; ++i) {
-        int qStart = line.indexOf(quotes.at(0).at(i), start);
-        if (qStart < end) {
-            int qEnd = line.indexOf(quotes.at(1).at(i), qStart+1);
-            if (qEnd > end) end = line.indexOf(mDelimiter, qEnd);
-        }
-    }
-    if (end < 0) end = line.length();
+    int end = (line.length() > start) ? start+1 : start;
+    while (isWhitechar(line, end) || (line.length() > end && line.at(end) == ',')) end++;
     hasContent = (end > start);
-    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+    return SyntaxBlock(this, start, end, SyntaxStateShift::shift);
+}
+
+AssignmentLabel::AssignmentLabel()
+     : SyntaxAbstract(SyntaxState::AssignmentLabel)
+{
+    mSubStates << SyntaxState::IdentifierAssignmentEnd << SyntaxState::IdentifierAssignment
+               << SyntaxState::AssignmentLabel << SyntaxState::AssignmentValue ;
+}
+
+SyntaxBlock AssignmentLabel::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState)
+    int start = index;
+    while (isWhitechar(line, start)) start++;
+    if (start >= line.size()) return SyntaxBlock(this);
+    if (entryState == SyntaxState::AssignmentLabel && index != 0) {
+        return SyntaxBlock(this);
+    }
+
+    // get delimiters
+    QString delim("\"\'");
+    QString special("/, .:");
+    int end = start;
+    int pos = start;
+    while (pos < line.length()) {
+        end = pos;
+        // we are at the first non-white-char
+        if (int quoteKind = delim.indexOf(line.at(pos))+1) {
+            // find matching quote
+            end = line.indexOf(delim.at(quoteKind-1), pos+1);
+            if (end < 0)
+                return SyntaxBlock(this, start, pos+1, SyntaxStateShift::in, true);
+            pos = end+1;
+        } else {
+            while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
+        }
+        ++end;
+        // if no dot or colon follows, finish
+        while (isWhitechar(line,pos)) ++pos;
+        if (pos < line.length() && special.indexOf(line.at(pos)) < 3) break;
+        ++pos;
+        while (isWhitechar(line,pos)) ++pos;
+        end = pos;
+    }
+
+    if (end > start) {
+        return SyntaxBlock(this, start, end, SyntaxStateShift::shift);
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, bool &hasContent)
+{
+    Q_UNUSED(line);
+    Q_UNUSED(index);
+    Q_UNUSED(hasContent);
+    return SyntaxBlock();
+}
+
+AssignmentValue::AssignmentValue()
+    : SyntaxAbstract(SyntaxState::AssignmentValue)
+{
+    mSubStates << SyntaxState::IdentifierAssignment << SyntaxState::IdentifierAssignmentEnd;
+}
+
+SyntaxBlock AssignmentValue::find(SyntaxState entryState, const QString &line, int index)
+{
+    Q_UNUSED(entryState)
+    int start = index+1;
+    while (isWhitechar(line, start)) start++;
+    if (start >= line.size()) return SyntaxBlock(this);
+
+    // get delimiters
+    QString delim("\"\'[");
+    QString special("/,");
+    int end = start;
+    int pos = start;
+    // we are at the first non-white-char
+    if (int quoteKind = delim.indexOf(line.at(pos))+1) {
+        // find matching quote
+        QChar ch = quoteKind==3 ? ']' : delim.at(quoteKind-1);
+        end = line.indexOf(ch, pos+1);
+        if (end < 0)
+            return SyntaxBlock(this, start, pos+1, SyntaxStateShift::out, true);
+        pos = end+1;
+    } else {
+        while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
+    }
+    if (end+1 < line.length()) ++end;
+    // if no dot follows, finish
+    while (isWhitechar(line,pos)) ++pos;
+
+    if (end > start) {
+        return SyntaxBlock(this, start, end, SyntaxStateShift::shift);
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock AssignmentValue::validTail(const QString &line, int index, bool &hasContent)
+{
+    Q_UNUSED(line);
+    Q_UNUSED(index);
+    Q_UNUSED(hasContent);
+    return SyntaxBlock();
 }
 
 SyntaxTableAssign::SyntaxTableAssign(SyntaxState state) : SyntaxAbstract(state)
