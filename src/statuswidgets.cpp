@@ -35,14 +35,15 @@ StatusWidgets::StatusWidgets(QMainWindow *parent) : QObject(parent), mStatusBar(
     mEditEncode->setMinimumWidth(mEditEncode->height()*3);
 
     mFileName = new AmountLabel("Filename");
+    mFileName->setLoadingText("(counting)");
     mStatusBar->addWidget(mFileName, 1);
 }
 
 void StatusWidgets::setFileName(const QString &fileName)
 {
-    mFileName->setText(fileName);
     mFileName->setAmount(1.0);
     mLoadAmount = 1.0;
+    mFileName->setBaseText(fileName);
 }
 
 void StatusWidgets::setEncoding(int encodingMib)
@@ -95,6 +96,34 @@ void StatusWidgets::setPosAndAnchor(QPoint pos, QPoint anchor)
         }
     }
     mEditPosAnsSel->setText(posText);
+}
+
+void StatusWidgets::setLoadingText(const QString &loadingText)
+{
+    mFileName->setLoadingText(loadingText);
+}
+
+void AmountLabel::setAmount(qreal value)
+{
+    if ((value < 1.0) != (mLoadAmount < 1.0)) {
+        mLoadAmount = value;
+        setText(mBaseText + ((mLoadAmount < 1.0) ? " "+mLoadingText : ""));
+    } else {
+        mLoadAmount = value;
+        repaint();
+    }
+}
+
+void AmountLabel::setBaseText(const QString &text)
+{
+    mBaseText = text;
+    setText(mBaseText + ((mLoadAmount < 1.0) ? " "+mLoadingText : ""));
+}
+
+void AmountLabel::setLoadingText(const QString &loadingText)
+{
+    mLoadingText = loadingText;
+    setText(mBaseText + ((mLoadAmount < 1.0) ? " "+mLoadingText : ""));
 }
 
 void AmountLabel::paintEvent(QPaintEvent *event)

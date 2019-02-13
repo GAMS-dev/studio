@@ -190,8 +190,10 @@ void TextView::peekMoreLines()
     val = (val.isValid() && val.canConvert(QMetaType::Int)) ? ((val.toInt()+1) % 10) : 0;
     mPeekTimer.setProperty("val", val);
     emit loadAmountChanged(mMapper.knownLineNrs());
-    if (val.toInt() == 0 || mMapper.knownLineNrs() == lineCount())
+    if (val.toInt() == 0 || mMapper.knownLineNrs() == lineCount()) {
         emit blockCountChanged(lineCount());
+        updatePosAndAnchor();
+    }
 }
 
 void TextView::outerScrollAction(int action)
