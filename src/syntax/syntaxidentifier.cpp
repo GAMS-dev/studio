@@ -271,12 +271,11 @@ SyntaxBlock AssignmentValue::find(SyntaxState entryState, const QString &line, i
     } else {
         while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
     }
-    if (end+1 < line.length()) ++end;
-    // if no dot follows, finish
-    while (isWhitechar(line,pos)) ++pos;
+    end = pos;
+//    while (isWhitechar(line, pos)) ++pos;
 
     if (end > start) {
-        return SyntaxBlock(this, start, end, SyntaxStateShift::shift);
+        return SyntaxBlock(this, start, end, SyntaxStateShift::skip);
     }
     return SyntaxBlock(this);
 }

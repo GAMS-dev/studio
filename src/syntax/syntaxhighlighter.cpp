@@ -35,17 +35,18 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
-        {SyntaxDiBdy, QColor(Qt::darkBlue)},
+        {SyntaxDiBdy, QColor(Qt::darkBlue).lighter(170)},
         {SyntaxComnt, QColor(80, 145, 75)},
-        {SyntaxTitle, QColor(Qt::darkBlue)},
-        {SyntaxKeywd, QColor(Qt::darkBlue)},
-        {SyntaxDeclr, QColor(Qt::darkBlue)},
+        {SyntaxTitle, QColor(Qt::darkBlue).lighter(140)},
+        {SyntaxKeywd, QColor(Qt::darkBlue).lighter(140)},
+        {SyntaxDeclr, QColor(Qt::darkBlue).lighter(140)},
         {SyntaxIdent, QColor(Qt::black)},
-        {SyntaxDescr, QColor(Qt::darkBlue).lighter(120)},
-        {SyntaxAssgn, QColor(Qt::darkGreen).darker(130)},
-        {SyntaxAsLab, QColor(Qt::darkGreen).lighter(110)},
-        {SyntaxAsVal, QColor(Qt::darkBlue).lighter(120)},
-        {SyntaxTabHd, QColor(Qt::darkGreen).darker(145)},
+        {SyntaxDescr, QColor(Qt::darkBlue).lighter(170)},
+        {SyntaxAssgn, QColor(Qt::darkGreen).darker(140)},
+        {SyntaxAsLab, QColor(Qt::darkGreen).darker(110)},
+//        {SyntaxAsVal, QColor(Qt::darkCyan).darker(150)},
+        {SyntaxAsVal, QColor(0, 80, 120)},
+        {SyntaxTabHd, QColor(Qt::darkGreen).darker(140)},
         {SyntaxEmbed, QColor(200, 70, 0)},
     };
     // To visualize one format: add color index at start e.g. initState(1, new SyntaxReservedBody());
@@ -257,8 +258,8 @@ void SyntaxHighlighter::addState(SyntaxAbstract* syntax, CodeIndex ci)
 }
 
 QColor backColor(int index) {
-    static QList<QColor> debColor {Qt::yellow, Qt::cyan, QColor(Qt::blue).lighter(170),
-                                  QColor(Qt::green).lighter()};
+    static QList<QColor> debColor { QColor(Qt::yellow).darker(105), QColor(Qt::cyan).lighter(170),
+                                    QColor(Qt::blue).lighter(180), QColor(Qt::green).lighter(170) };
     index = (qAbs(index)-1) % debColor.size();
     return debColor.at(index);
 }
