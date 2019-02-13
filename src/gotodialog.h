@@ -38,9 +38,6 @@ public:
     ~GoToDialog();
     int lineNumber() const;
 
-public slots:
-    void setMaxLines(int maxLines);
-
 private slots:
     void on_goToButton_clicked();
 

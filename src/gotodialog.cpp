@@ -37,8 +37,6 @@ GoToDialog::GoToDialog(QWidget *parent, int maxLines, bool wait)
     ui->lineEdit->setPlaceholderText(QString::number(maxLines));
     int min = parent->fontMetrics().width(QString::number(maxLines)+"0");
     ui->lineEdit->setMinimumWidth(min);
-    ui->maxLines->setVisible(false);
-    ui->label_2->setVisible(false);
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
@@ -50,35 +48,6 @@ GoToDialog::~GoToDialog()
 int GoToDialog::lineNumber() const
 {
     return mLineNumber;
-}
-
-void GoToDialog::setMaxLines(int maxLines)
-{
-    if (!ui->maxLines->isVisible()) {
-        ui->maxLines->setVisible(true);
-        ui->label_2->setVisible(true);
-        ui->lineEdit->setPlaceholderText(QString());
-    }
-    mMaxLines = qAbs(maxLines);
-    qreal amount = qreal(mMaxLines) / qreal(mLineNumber);
-
-    QLabel *la = ui->maxLines;
-    la->setText(QString::number(mMaxLines));
-    QPalette pal = la->palette();
-    QPixmap pix(la->size());
-    pix.fill(Qt::transparent);
-    QPainter p(&pix);
-    p.setBrush(QColor(100,150,200, 100));
-    p.setPen(Qt::NoPen);
-    int x = qRound(la->width() * qBound(0.0 ,amount, 1.0));
-    if (amount < 1.0)
-        p.drawRect(QRect(0, 0, x, la->height()));
-    pal.setBrush(QPalette::Background, QBrush(pix));
-    la->setPalette(pal);
-    la->repaint();
-
-    if (!mWait && mLineNumber <= mMaxLines)
-        accept();
 }
 
 void GoToDialog::on_goToButton_clicked()

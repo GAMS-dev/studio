@@ -2469,9 +2469,7 @@ void MainWindow::on_actionGo_To_triggered()
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
     int maxLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
     GoToDialog dialog(this, maxLines, bool(tv));
-    if (tv) connect(tv, &TextView::loadAmountChanged, &dialog, &GoToDialog::setMaxLines);
     int result = dialog.exec();
-    if (tv) disconnect(tv, &TextView::loadAmountChanged, &dialog, &GoToDialog::setMaxLines);
     if (QDialog::Rejected == result)
         return;
     if (codeEdit)

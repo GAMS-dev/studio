@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>166</width>
-    <height>46</height>
+    <width>207</width>
+    <height>37</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Go to line</string>
@@ -16,39 +22,8 @@
   <property name="whatsThis">
    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tool helps you find the line number you're looking for.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" columnstretch="5,1">
-   <property name="leftMargin">
-    <number>4</number>
-   </property>
-   <property name="topMargin">
-    <number>4</number>
-   </property>
-   <property name="rightMargin">
-    <number>4</number>
-   </property>
-   <property name="bottomMargin">
-    <number>4</number>
-   </property>
-   <property name="verticalSpacing">
-    <number>2</number>
-   </property>
-   <item row="0" column="1">
-    <widget class="QPushButton" name="goToButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Go</string>
-     </property>
-     <property name="autoDefault">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
     <widget class="QLineEdit" name="lineEdit">
      <property name="layoutDirection">
       <enum>Qt::RightToLeft</enum>
@@ -61,35 +36,18 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="maxLines">
-     <property name="autoFillBackground">
-      <bool>true</bool>
-     </property>
+   <item>
+    <widget class="QPushButton" name="goToButton">
      <property name="text">
-      <string>100</string>
+      <string>Go</string>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>max</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
+     <property name="autoDefault">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
- <tabstops>
-  <tabstop>lineEdit</tabstop>
-  <tabstop>goToButton</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>
