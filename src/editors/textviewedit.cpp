@@ -32,7 +32,7 @@ namespace studio {
 TextViewEdit::TextViewEdit(TextMapper &mapper, QWidget *parent)
     : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings())
 {
-    setReadOnly(true);
+    setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -149,6 +149,8 @@ int TextViewEdit::effectiveBlockNr(const int &localBlockNr) const
 
 void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
+    if (!mSettings->highlightCurrentLine()) return;
+
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
