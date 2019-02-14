@@ -55,8 +55,23 @@ void CommonPaths::setSystemDir(const QString &sysdir)
         const QString subPath = QString(QDir::separator()).append("..");
 #ifdef __APPLE__
         gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
-        if (!QDir(gamsPath).exists())
-            gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_NEXT_SHORT "/sysdir";
+        if (!QDir(gamsPath).exists()) {
+            QDir applications("/Applications");
+            QRegExp regex("^GAMS(\\d\\d).(\\d)$");
+            for (auto dir : applications.entryList({"GAMS*"}, QDir::Dirs)) {
+               if (!regex.exactMatch(dir))
+                   continue;
+               if (regex.cap(1).toInt() > GAMS_DISTRIB_MAJOR) {
+                   gamsPath = "/Applications/" + dir + "/sysdir";
+                   break;
+               }
+               if (regex.cap(1).toInt() == GAMS_DISTRIB_MAJOR &&
+                   regex.cap(1).toInt() >= GAMS_DISTRIB_MINOR) {
+                   gamsPath = "/Applications/" + dir + "/sysdir";
+                   break;
+               }
+            }
+        }
 #elif __unix__
         QFileInfo fileInfo(qgetenv("APPIMAGE"));
         gamsPath = fileInfo.absoluteDir().path().append(subPath);
