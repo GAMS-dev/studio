@@ -20,6 +20,7 @@
 #ifndef SOLVEROPTIONWIDGET_H
 #define SOLVEROPTIONWIDGET_H
 
+#include <QMenu>
 #include <QWidget>
 
 #include "common.h"
@@ -96,6 +97,12 @@ private slots:
     void showOptionDefinition();
     void copyDefinitionToClipboard(int column);
 
+    void toggleCommentOption();
+    void selectAnOption();
+    void insertOption();
+    void insertComment();
+    void deleteOption();
+
 private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
@@ -107,14 +114,17 @@ private:
 
     QTextCodec* mCodec;
     SolverOptionTableModel* mOptionTableModel;
+    QMenu mContextMenu;
 
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
 
+    void addActions();
     void updateEditActions(bool modified);
     void updateTableColumnSpan();
 
     MainWindow* getMainWindow();
+
 };
 
 
