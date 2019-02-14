@@ -37,12 +37,12 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     setViewportMargins(0,0,0,0);
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     setFocusPolicy(Qt::NoFocus);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mEdit = new TextViewEdit(mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
     QVBoxLayout *lay = new QVBoxLayout(this);
     setLayout(lay);
     lay->addWidget(mEdit);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
@@ -331,7 +331,7 @@ void TextView::handleSelectionChange()
 
 void TextView::init()
 {
-    layout()->setContentsMargins(0,0,verticalScrollBar()->width(),0);
+    layout()->setContentsMargins(0, 0, verticalScrollBar()->isVisible() ? verticalScrollBar()->width() : 0, 0);
     mEdit->setFocus();
     mInit = false;
 }
