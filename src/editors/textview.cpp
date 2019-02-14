@@ -187,12 +187,12 @@ void TextView::peekMoreLines()
     // peek and keep timer alive if not done
     if (mMapper.peekChunksForLineNrs(4)) mPeekTimer.start(50);
     QVariant val = mPeekTimer.property("val");
-    val = (val.isValid() && val.canConvert(QMetaType::Int)) ? ((val.toInt()+1) % 10) : 0;
+    val = (val.isValid() && val.canConvert(QMetaType::Int)) ? ((val.toInt()+1) % 5) : 0;
     mPeekTimer.setProperty("val", val);
     emit loadAmountChanged(mMapper.knownLineNrs());
     if (val.toInt() == 0 || mMapper.knownLineNrs() == lineCount()) {
         emit blockCountChanged(lineCount());
-        updatePosAndAnchor();
+        emit selectionChanged();
     }
 }
 
