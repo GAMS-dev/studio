@@ -668,7 +668,6 @@ void MainWindow::showTabsMenu()
 
 void MainWindow::focusCmdLine()
 {
-    setOptionEditorVisibility(true);
     mGamsOptionWidget->focus();
 }
 
