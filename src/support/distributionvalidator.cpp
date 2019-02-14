@@ -69,21 +69,24 @@ void DistributionValidator::checkCompatibility()
         emit newError(error);
         return;
     }
-    else if (about.contains(GAMS_DISTRIB_VERSION_SHORT)) {
-        return;
-    }
-    else if (about.contains(GAMS_DISTRIB_VERSION_NEXT_SHORT)) {
-        return;
-    }
 
-    QRegExp regex(".*GAMS Release\\s+:\\s+(\\d\\d\\.\\d).*");
+    QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about) && regex.captureCount() == 1) {
-        QString error = QString("Found incompatible GAMS %1 but GAMS %2 or %3 was expected.")
+        auto version = regex.cap(regex.captureCount()).split('.');
+        auto minVersion = QString(GAMS_DISTRIB_VERSION_SHORT).split('.');
+        if (version.at(0).toInt() > minVersion.at(0).toInt())
+            return;
+        if (version.at(0).toInt() == minVersion.at(0).toInt() &&
+            version.at(1).toInt() >= minVersion.at(1).toInt())
+            return;
+        QString error = QString("Found incompatible GAMS %1 but GAMS %2 or higher was expected. Please upgrade your GAMS.")
                 .arg(regex.cap(regex.captureCount()))
-                .arg(GAMS_DISTRIB_VERSION_SHORT).arg(GAMS_DISTRIB_VERSION_NEXT_SHORT);
+                .arg(GAMS_DISTRIB_VERSION_SHORT);
         emit newError(error);
-    } else
+    }
+    else {
         emit newError("Could not validate GAMS Distribution version.");
+    }
 }
 
 }
