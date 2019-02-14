@@ -1337,7 +1337,7 @@ void CodeEdit::setAllowBlockEdit(bool allow)
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    bool hasMarks = marks()->hasVisibleMarks();
+    bool hasMarks = marks() && marks()->hasVisibleMarks();
     if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::marksChanged);
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
