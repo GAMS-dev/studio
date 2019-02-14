@@ -41,6 +41,7 @@ public:
     explicit TextView(QWidget *parent = nullptr);
     void loadFile(const QString &fileName, int codecMib);
     void closeFile();
+    void reopenFile();
     qint64 fileSize() const;
     int lineCount() const;
     int knownLines() const;

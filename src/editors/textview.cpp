@@ -92,6 +92,11 @@ void TextView::closeFile()
     mMapper.closeAndReset();
 }
 
+void TextView::reopenFile()
+{
+    mMapper.reopenFile();
+}
+
 qint64 TextView::fileSize() const
 {
     return mMapper.size();

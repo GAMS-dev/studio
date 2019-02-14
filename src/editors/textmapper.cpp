@@ -83,6 +83,14 @@ bool TextMapper::openFile(const QString &fileName)
     return false;
 }
 
+void TextMapper::reopenFile()
+{
+    QString fileName = mFile.fileName();
+    if (!size() && !fileName.isEmpty()) {
+        openFile(fileName);
+    }
+}
+
 bool TextMapper::updateMaxTop() // to be updated on change of size or mBufferedLineCount
 {
     if (!mFile.isOpen()) return false;
@@ -830,7 +838,7 @@ QPoint TextMapper::convertPosLocal(const CursorPosition &pos) const
 
 QPoint TextMapper::convertPos(const CursorPosition &pos) const
 {
-    if (pos.chunkNr < 0) return QPoint(-1,0);
+    if (pos.chunkNr < 0) return QPoint(0,0);
     const ChunkLines &cl = mChunkLineNrs.at(pos.chunkNr);
     int line = 0;
     if (cl.lineOffset < 0) {

@@ -93,6 +93,7 @@ public:
     void setCodec(QTextCodec *codec);
 
     bool openFile(const QString &fileName);
+    void reopenFile();
     void closeAndReset();
     qint64 size() const { return mSize; }
     QString delimiter() { return mDelimiter; }

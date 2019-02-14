@@ -1288,14 +1288,19 @@ void MainWindow::postGamsRun(NodeId origin)
     if(groupNode && runMeta->exists(true)) {
         QString lstFile = groupNode->specialFile(FileKind::Lst);
         bool doFocus = groupNode == mRecent.group;
-
-        if (mSettings->jumpToError())
-            groupNode->jumpToFirstError(doFocus);
-
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+
+        for (QWidget *edit: lstNode->file()->editors()) {
+            if (TextView* tv = ViewHelper::toTextView(edit)) {
+                tv->reopenFile();
+            }
+        }
 
         if (mSettings->openLst())
             openFileNode(lstNode);
+
+        if (mSettings->jumpToError())
+            groupNode->jumpToFirstError(doFocus);
     }
     if (groupNode && groupNode->hasLogNode())
         groupNode->logNode()->logDone();
