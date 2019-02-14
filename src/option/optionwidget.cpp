@@ -287,6 +287,7 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
 
 void OptionWidget::setEditorExtended(bool extended)
 {
+    if (extended) emit optionTableModelChanged(ui->gamsOptionCommandLine->currentText());
     mExtendedEditor->setVisible(extended);
     main->updateRunState();
     ui->gamsOptionCommandLine->setEnabled(!extended);

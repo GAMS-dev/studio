@@ -1060,7 +1060,7 @@
     <string>Toggle Extended Option Editor</string>
    </property>
    <property name="toolTip">
-    <string>Ctrl+Alt+L</string>
+    <string>Opens extended option editor</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+L</string>
