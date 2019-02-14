@@ -66,7 +66,7 @@ void CommonPaths::setSystemDir(const QString &sysdir)
                    break;
                }
                if (regex.cap(1).toInt() == GAMS_DISTRIB_MAJOR &&
-                   regex.cap(1).toInt() >= GAMS_DISTRIB_MINOR) {
+                   regex.cap(2).toInt() >= GAMS_DISTRIB_MINOR) {
                    gamsPath = "/Applications/" + dir + "/sysdir";
                    break;
                }
