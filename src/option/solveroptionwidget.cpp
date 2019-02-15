@@ -87,7 +87,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTableView->resizeColumnToContents(1);
 //    ui->solverOptionTableView->resizeColumnToContents(2);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
-//    ui->solverOptionTableView->setColumnHidden(2, true); //false);
+    ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true); //false);
 
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->solverOptionTableView->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -147,7 +147,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionTreeView->setExpandsOnDoubleClick(false);
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
-//    ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
+    ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
     connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
     connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
 
