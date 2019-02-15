@@ -102,6 +102,8 @@ private slots:
     void insertOption();
     void insertComment();
     void deleteOption();
+    void moveOptionUp();
+    void moveOptionDown();
 
 private:
     Ui::SolverOptionWidget *ui;
