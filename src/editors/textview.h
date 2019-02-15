@@ -76,6 +76,7 @@ private slots:
     void editScrollChanged();
     void peekMoreLines();
     void outerScrollAction(int action);
+    void horizontalScrollAction(int action);
     void adjustOuterScrollAction();
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
@@ -115,6 +116,7 @@ private:
     int mVisibleLines = 0;
     const int mDocChanging = 0;
     bool mInit = true;
+    int mHScrollValue = 0;
 
     TextMapper mMapper;
     TextViewEdit *mEdit;

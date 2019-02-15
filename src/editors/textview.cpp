@@ -45,6 +45,8 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
+
+    connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
     connect(mEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextView::editScrollChanged);
     connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
@@ -218,6 +220,12 @@ void TextView::outerScrollAction(int action)
     }
 }
 
+void TextView::horizontalScrollAction(int action)
+{
+    Q_UNUSED(action)
+    mHScrollValue = mEdit->horizontalScrollBar()->sliderPosition();
+}
+
 void TextView::adjustOuterScrollAction()
 {
     switch (mActiveScrollAction) {
@@ -371,7 +379,6 @@ void TextView::topLineMoved()
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
-        int hScroll = mEdit->horizontalScrollBar()->value();
         mEdit->setPlainText(mMapper.lines(0, 3*mTopBufferLines));
         updatePosAndAnchor();
         mEdit->blockSignals(true);
@@ -381,7 +388,8 @@ void TextView::topLineMoved()
         updateVScrollZone();
         mEdit->updateExtraSelections();
         mEdit->protectWordUnderCursor(false);
-        mEdit->horizontalScrollBar()->setValue(hScroll);
+        mEdit->horizontalScrollBar()->setValue(mHScrollValue);
+        mEdit->horizontalScrollBar()->setValue(mHScrollValue);  // workaround: isn't set correctly on the first time
     }
 }
 
