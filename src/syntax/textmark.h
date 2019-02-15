@@ -39,11 +39,12 @@ public:
 
     FileId fileId() const;
     NodeId groupId() const;
-    void jumpToRefMark(bool focus = true);
-    void jumpToMark(bool focus = true);
+    void jumpToRefMark(bool focus = true, bool ignoreColumn = false);
+    void jumpToMark(bool focus = true, bool ignoreColumn = false);
     void setRefMark(TextMark* refMark);
     void unsetRefMark(TextMark* refMark);
     TextMark *refMark() const;
+    QVector<TextMark *> backRefs(FileId fileId) const;
 
     inline bool isErrorRef() { return (mReference && mReference->type() == error); }
     QColor color();

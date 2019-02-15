@@ -143,12 +143,14 @@ void TextMarkRepo::clear()
     mBookmarkedFiles.clear();
 }
 
-void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
+void TextMarkRepo::jumpTo(TextMark *mark, bool focus, bool ignoreColumn)
 {
     FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
     mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findRunGroup(mark->groupId()));
 
-    if (fm) fm->jumpTo(mark->groupId(), focus, mark->line(), mark->blockEnd());
+    if (fm) {
+        fm->jumpTo(mark->groupId(), focus, mark->line(), ignoreColumn ? 0 : mark->blockEnd());
+    }
 }
 
 void TextMarkRepo::rehighlight(FileId fileId, int line)

@@ -483,13 +483,19 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     if (!runnableGms()) return false;
     QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
+
     if (textMark) {
+
         if (SettingsLocator::settings()->openLst()) {
             textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);
         } else {
             if (lstNode && !lstNode->file()->editors().isEmpty()) textMark->jumpToRefMark(false);
             textMark->jumpToMark(focus);
+        }
+        QVector<TextMark*> backRef = textMark->backRefs(logNode()->file()->id());
+        for (TextMark* logMark: backRef) {
+            if (logMark) logMark->jumpToMark(false, true);
         }
         return true;
     }

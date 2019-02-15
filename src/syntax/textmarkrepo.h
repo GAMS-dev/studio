@@ -39,7 +39,7 @@ public:
 
     FileMetaRepo *fileRepo() const { return mFileRepo; }
     void clear();
-    void jumpTo(TextMark *mark, bool focus = false);
+    void jumpTo(TextMark *mark, bool focus = false, bool ignoreColumn = false);
     void rehighlight(FileId fileId, int line);
     FileKind fileKind(FileId fileId);
     QList<TextMark *> marks(FileId fileId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;

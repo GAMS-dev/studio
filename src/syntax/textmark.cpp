@@ -44,6 +44,16 @@ TextMark *TextMark::refMark() const
     return mReference;
 }
 
+QVector<TextMark *> TextMark::backRefs(FileId fileId) const
+{
+    if (!fileId.isValid()) return mBackRefs;
+    QVector<TextMark *> res;
+    for (TextMark* mark: mBackRefs) {
+        if (mark->fileId() == fileId) res << mark;
+    }
+    return res;
+}
+
 TextMark::~TextMark()
 {
     clearBackRefs();
@@ -56,17 +66,17 @@ void TextMark::setPosition(int line, int column, int size)
     mColumn = (size<0) ? column-mSize : column;
 }
 
-void TextMark::jumpToRefMark(bool focus)
+void TextMark::jumpToRefMark(bool focus, bool ignoreColumn)
 {
     if (mReference)
-        mReference->jumpToMark(focus);
+        mReference->jumpToMark(focus, ignoreColumn);
     else
         DEB() << "No TextMark reference to jump to";
 }
 
-void TextMark::jumpToMark(bool focus)
+void TextMark::jumpToMark(bool focus, bool ignoreColumn)
 {
-    mMarkRepo->jumpTo(this, focus);
+    mMarkRepo->jumpTo(this, focus, ignoreColumn);
 }
 
 void TextMark::setRefMark(TextMark* refMark)
