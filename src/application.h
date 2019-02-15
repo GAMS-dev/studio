@@ -21,7 +21,7 @@
 #define APPLICATION_H
 
 #include "commandlineparser.h"
-#include "distributionvalidator.h"
+#include "support/distributionvalidator.h"
 #include "mainwindow.h"
 
 #include <memory>
@@ -45,13 +45,6 @@ public:
     MainWindow* mainWindow() const;
 
     bool notify(QObject *object, QEvent *event) override;
-
-    //
-    // \brief Open associated files, like <c>gms</c>.
-    // \remark This is for Windows and Linux only. See <c>event(QEvent*)</c> for macos.
-    //
-    // JM: moved to MainWindow. Reason: must be called while event-loop is running
-//    void openAssociatedFiles();
 
     ///
     /// \brief Show a <c>QMessageBox::critical</c> message.
@@ -89,6 +82,8 @@ public slots:
     ///
     void receiveFileArguments();
 
+    void logError(const QString &message);
+
 protected:
     ///
     /// \brief Reimplemented QObject::event function.
@@ -109,7 +104,7 @@ private:
 private:
     std::unique_ptr<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
-    DistributionValidator mDistribValidator;
+    support::DistributionValidator mDistribValidator;
     QString mServerName;
     QLocalServer mServer;
 };

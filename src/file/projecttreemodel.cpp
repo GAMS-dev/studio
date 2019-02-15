@@ -140,6 +140,16 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::ToolTipRole:
         return mProjectRepo->node(ind)->tooltip();
 
+    case Qt::UserRole: {
+        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
+        if (node) return node->location();
+        break;
+    }
+    case Qt::UserRole+1: {
+        ProjectAbstractNode *node = mProjectRepo->node(ind);
+        if (node) return int(node->id());
+        break;
+    }
     default:
         break;
     }
@@ -207,14 +217,16 @@ void ProjectTreeModel::setDebugMode(bool debug)
 
 bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    Q_UNUSED(role);
     if (!index.isValid()) return false;
     ProjectAbstractNode *node = mProjectRepo->node(index);
     if (!node) return false;
-    ProjectGroupNode *group = node->toGroup();
-    if (!group) return false;
-    group->setName(value.toString());
-    emit dataChanged(index, index);
+    if (role == Qt::EditRole) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) return false;
+        group->setName(value.toString());
+        dataChanged(index, index);
+        sortChildNodes(group->parentNode());
+    }
     return true;
 }
 
@@ -225,7 +237,10 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
     ProjectAbstractNode *node = mProjectRepo->node(index);
     if (!node) return flags;
     ProjectGroupNode *group = node->toGroup();
-    if (group) flags.setFlag(Qt::ItemIsEditable);
+    if (group) {
+        flags.setFlag(Qt::ItemIsEditable);
+        flags.setFlag(Qt::ItemIsDropEnabled);
+    } else flags.setFlag(Qt::ItemIsDragEnabled);
     return flags;
 }
 
@@ -233,9 +248,9 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
 {
     QModelIndex parMi = index(parent);
     if (!parMi.isValid()) return false;
+    if (child->parentNode() == parent) return false;
     beginInsertRows(parMi, row, row);
     child->setParentNode(parent);
-//    updateIndex(parMi, row, 1);
     endInsertRows();
     return true;
 }
@@ -250,9 +265,9 @@ bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
         if (mDebug) DEB() << "removing NodeId " << child->id();
     }
     QModelIndex parMi = index(child->parentNode());
+    if (!parMi.isValid()) return false;
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);
-//    updateIndex(parMi, mi.row(), -1);
     endRemoveRows();
     return true;
 }
@@ -276,6 +291,33 @@ QModelIndex ProjectTreeModel::index(const NodeId id) const
         }
     }
     return QModelIndex();
+}
+
+bool lessThan(ProjectAbstractNode*n1, ProjectAbstractNode*n2)
+{
+    bool isGroup1 = n1->toGroup();
+    if (isGroup1 != bool(n2->toGroup())) return isGroup1;
+    int cmp = n1->name().compare(n2->name(), Qt::CaseInsensitive);
+    if (cmp != 0) return cmp < 0;
+    cmp = isGroup1 ? n1->toGroup()->location().compare(n2->toGroup()->location(), Qt::CaseInsensitive)
+                   : n1->toFile()->location().compare(n2->toFile()->location(), Qt::CaseInsensitive);
+    return cmp < 0;
+}
+
+void ProjectTreeModel::sortChildNodes(ProjectGroupNode *group)
+{
+    QList<ProjectAbstractNode*> order = group->childNodes();
+    std::sort(order.begin(), order.end(), lessThan);
+    for (int i = 0; i < order.size(); ++i) {
+        QModelIndex parMi = index(group);
+        QModelIndex mi = index(order.at(i));
+        if (mi.isValid() && mi.row() != i) {
+            int row = mi.row();
+            beginMoveRows(parMi, row, row, parMi, i);
+            group->moveChildNode(row, i);
+            endMoveRows();
+        }
+    }
 }
 
 bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const
@@ -312,6 +354,18 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
     return false;
 }
 
+QModelIndex ProjectTreeModel::findGroup(QModelIndex ind)
+{
+    if (ind.isValid()) {
+        ProjectAbstractNode *node = mProjectRepo->node(ind);
+        if (!node) return ind;
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        ind = index(group);
+    }
+    return ind;
+}
+
 bool ProjectTreeModel::isSelected(const QModelIndex& ind) const
 {
     return ind.isValid() && mSelected.contains(nodeId(ind));
@@ -330,11 +384,15 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
                                                               : nodeId(selected.indexes().first())
                                          : mSelected.first();
     ProjectAbstractNode *first = mProjectRepo->node(firstId);
+    mAddGroups.clear();
     int selKind = !first ? 0 : first->toGroup() ? 1 : 2;
     for (const QModelIndex &ind: selected.indexes()) {
         NodeId id = nodeId(ind);
         ProjectAbstractNode *node = mProjectRepo->node(id);
         int nodeKind = !node ? 0 : node->toGroup() ? 1 : 2;
+        if (nodeKind == 1 && selKind == 2) {
+            mAddGroups << ind;
+        }
         if (id.isValid() && !mSelected.contains(id) && (!selKind || nodeKind == selKind)) {
             mSelected << id;
             dataChanged(ind, ind);
@@ -355,10 +413,25 @@ QVector<NodeId> ProjectTreeModel::selectedIds() const
     return mSelected;
 }
 
+QMap<int, QVariant> ProjectTreeModel::itemData(const QModelIndex &index) const
+{
+    QMap<int, QVariant> res = QAbstractItemModel::itemData(index);
+    res.insert(Qt::UserRole, data(index, Qt::UserRole));
+    res.insert(Qt::UserRole+1, data(index, Qt::UserRole+1));
+    return res;
+}
+
 const QVector<QModelIndex> ProjectTreeModel::popDeclined()
 {
     QVector<QModelIndex> res = mDeclined;
     mDeclined.clear();
+    return res;
+}
+
+const QVector<QModelIndex> ProjectTreeModel::popAddGroups()
+{
+    QVector<QModelIndex> res = mAddGroups;
+    mAddGroups.clear();
     return res;
 }
 

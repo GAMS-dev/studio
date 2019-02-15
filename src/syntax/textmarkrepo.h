@@ -28,18 +28,21 @@ public:
     explicit TextMarkRepo(FileMetaRepo* fileRepo, ProjectRepo *projectRepo, QObject *parent = nullptr);
     ~TextMarkRepo() override;
 
-    void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
-    void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>());
+    void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1);
+    void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1);
     TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);
     TextMark* createMark(const FileId fileId, const NodeId groupId, TextMark::Type type, int value, int line, int column, int size = 0);
+    bool hasBookmarks(FileId fileId);
+    TextMark* findBookmark(FileId fileId, NodeId groupId, int currentLine, bool back);
+    void removeBookmarks();
     QTextDocument* document(FileId fileId) const;
 
     FileMetaRepo *fileRepo() const { return mFileRepo; }
     void clear();
-    void jumpTo(TextMark *mark, bool focus = false);
+    void jumpTo(TextMark *mark, bool focus = false, bool ignoreColumn = false);
     void rehighlight(FileId fileId, int line);
     FileKind fileKind(FileId fileId);
-    QList<TextMark *> marks(FileId nodeId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
+    QList<TextMark *> marks(FileId fileId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
     const LineMarks *marks(FileId fileId);
     void shiftMarks(FileId fileId, int firstLine, int lineShift);
 
@@ -50,11 +53,12 @@ private:
     FileMetaRepo* mFileRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, LineMarks*> mMarks;
+    QVector<FileId> mBookmarkedFiles;
     bool mDebug = false;
 
 private:
     FileId ensureFileId(QString location);
-    void removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types);
+    void removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr);
 
 };
 

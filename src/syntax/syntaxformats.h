@@ -39,6 +39,7 @@ enum class SyntaxState {
     CommentBlock,
     CommentEndline,
     CommentInline,
+    String,
 
     Semicolon,
     Comma,
@@ -51,6 +52,8 @@ enum class SyntaxState {
     IdentifierDescription1,         // description started with single quote '
     IdentifierDescription2,         // description started with double quote "
     IdentifierAssignment,
+    AssignmentLabel,
+    AssignmentValue,
     IdentifierAssignmentEnd,        // after assignment to keep declaration-level
 
     IdentifierTable,

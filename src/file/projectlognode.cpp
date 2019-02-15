@@ -39,7 +39,7 @@ namespace gams {
 namespace studio {
 
 ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
-    : ProjectFileNode(fileMeta, nullptr, NodeType::log)
+    : ProjectFileNode(fileMeta, NodeType::log)
 {
     if (!runGroup) EXCEPT() << "The runGroup must not be null.";
     mRunGroup = runGroup;
@@ -243,10 +243,11 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
     if (line.isEmpty()) return QString("");
     TextMark* errMark = nullptr;
     bool errFound = false;
+    bool isRuntimeError = false;
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
-    bool isGamsLine = line.startsWith("*** ");
+//    bool isGamsLine = true; // line.startsWith("*** ");
     if (line.startsWith("*** Error ")) {
         bool ok = false;
         posA = 9;
@@ -260,17 +261,22 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
 
         QString fName;
         int lineNr;
-        int size = -1;
+        int size;
         int colStart = 0;
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
-            isValidError = true;
+            isValidError = false;
+            isRuntimeError = true;
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
             // TODO(JM) review for the case the file is in a sub-directory
             fName = mRunGroup->location() + '/' + mLastSourceFile;
+            if (posB+2 < line.length()) {
+                int subLen = (line.contains('[') ? line.indexOf('['): line.length()) - (posB+2);
+                mCurrentErrorHint.text = line.mid(posB+2, subLen);
+            }
             lineNr = errNr-1;
-            size = -1;
+            size = 0;
             colStart = -1;
         } else {
             lstColStart = -1;
@@ -291,6 +297,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.col = line.indexOf(" ")+1;
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
+                DEB() << fName;
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
                 mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
                                                            mCurrentErrorHint.lstLine, lineNr, colStart, size);
@@ -302,7 +309,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         }
     }
     if (line.startsWith("--- ")) {
-        isGamsLine = true;
+//        isGamsLine = true;
         int fEnd = line.indexOf('(');
         if (fEnd >= 0) {
             int nrEnd = line.indexOf(')', fEnd);
@@ -318,7 +325,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
 
         if (posB+5 < line.length()) {
             TextMark::Type tmType = errFound ? TextMark::link : TextMark::target;
-            if (isGamsLine && line.midRef(posB+1,4) == "LST:") {
+            if (line.midRef(posB+1,4) == "LST:") {
+                if (isRuntimeError) tmType = TextMark::error;
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
                 posB++;
@@ -333,8 +341,6 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                         mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->specialFile(FileKind::Lst), mRunGroup);
                         if (!mLstNode) {
                             errFound = false;
-                            SysLogLocator::systemLog()->appendLog("Could not find lst-file to generate TextMark for."
-                                                                  "Did you overwrite default GAMS parameters?", LogMsgType::Error);
                             continue;
                         }
                     }
@@ -349,7 +355,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 }
                 marks << mark;
 
-            } else if (isGamsLine && (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:")) {
+            } else if (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:") {
                 LinkData mark;
                 QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
                 int lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
@@ -368,10 +374,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                     state = Outside;
                 marks << mark;
 
-            } else if (isGamsLine && line.midRef(posB+1,4) == "TIT:") {
+            } else if (line.midRef(posB+1,4) == "TIT:") {
                 return QString();
             } else {
-                // no GAMS line: restore missing braces
+                // no link reference: restore missing braces
                 result += '['+capture(line, posA, posB, 1, ']')+']';
                 posB++;
             }

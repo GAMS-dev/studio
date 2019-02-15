@@ -91,6 +91,9 @@ public:
 
     ProjectFileNode* findFileNode(QWidget *editWidget) const;
 
+    ProjectAbstractNode* next(ProjectAbstractNode* node);
+    ProjectAbstractNode* previous(ProjectAbstractNode* node);
+
     /// Get the <c>ProjectLogNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectLogNode</c>.
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
@@ -116,14 +119,19 @@ public:
             , QString explicitName = QString());
     ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup = nullptr, QString explicitName = QString());
     QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
-    QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId) const;
-    void editorActivated(QWidget *edit);
+    QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId = FileId()) const;
+    QVector<GamsProcess*> listProcesses();
+    void editorActivated(QWidget *edit, bool select);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);
     void saveNodeAs(ProjectFileNode* node, const QString &target);
+    void closeGroup(ProjectGroupNode* group);
+    void closeNode(ProjectFileNode* node);
+    void purgeGroup(ProjectGroupNode *group);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
+    QIcon runAnimateIcon() const;
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -132,16 +140,20 @@ signals:
     void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     void changed();
     void deselect(const QVector<QModelIndex> &declined);
+    void select(const QVector<QModelIndex> &selected);
     void closeFileEditors(FileId fileId);
 
 public slots:
+    void gamsProcessStateChange(ProjectGroupNode* group);
     void fileChanged(FileId fileId);
     void nodeChanged(NodeId nodeId);
-    void closeGroup(ProjectGroupNode* group);
-    void closeNode(ProjectFileNode* node);
-    void purgeGroup(ProjectGroupNode *group);
+    void closeNodeById(NodeId nodeId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void lstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
+    void stepRunAnimation();
+    void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act,
+                   QList<QModelIndex> &newSelection);
+    void renameGroup(ProjectGroupNode *group);
 
 private:
     friend class ProjectRunGroupNode;
@@ -156,6 +168,7 @@ private:
     }
     bool parseGdxHeader(QString location);
 
+
 private:
     FileId mNextId;
     ProjectTreeView* mTreeView = nullptr;
@@ -164,6 +177,10 @@ private:
     QVector<ProjectAbstractNode*> mActiveStack;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
+    QVector<ProjectRunGroupNode*> mRunnigGroups;
+    QTimer mRunAnimateTimer;
+    QVector<QIcon> mRunIcons;
+    int mRunAnimateIndex = 0;
     bool mDebugMode = false;
 };
 

@@ -31,6 +31,8 @@
 #include "resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
+#include "maintabcontextmenu.h"
+#include "logtabcontextmenu.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -52,6 +54,7 @@ class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
+
 
 struct RecentData {
 
@@ -76,6 +79,9 @@ struct HistoryData {
 
 class MainWindow : public QMainWindow
 {
+    friend MainTabContextMenu;
+    friend LogTabContextMenu;
+
     Q_OBJECT
 
 public:
@@ -129,6 +135,7 @@ public:
     void setForeground();
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
+    void ensureInScreen();
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
@@ -172,11 +179,13 @@ private slots:
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
     void storeTree();
-    void projectDeselect(const QVector<QModelIndex> &declined);
+    void cloneBookmarkMenu(QMenu *menu);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
+    void mainTabContextMenuRequested(const QPoint& pos);
+    void logTabContextMenuRequested(const QPoint& pos);
     void setProjectNodeExpanded(const QModelIndex &mi, bool expanded);
     void isProjectNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void closeHelpView();
@@ -212,7 +221,8 @@ private slots:
     void on_actionGAMS_Library_triggered();
     // About
     void on_actionHelp_triggered();
-    void on_actionAbout_triggered();
+    void on_actionAbout_Studio_triggered();
+    void on_actionAbout_GAMS_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
     // View
@@ -236,6 +246,8 @@ private slots:
     void on_actionPaste_triggered();
     void on_actionCopy_triggered();
     void on_actionSelect_All_triggered();
+    void on_collapseAll();
+    void on_expandAll();
     void on_actionCut_triggered();
     void on_actionSet_to_Uppercase_triggered();
     void on_actionSet_to_Lowercase_triggered();
@@ -260,8 +272,11 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
-    void renameGroup(ProjectGroupNode *group);
 
+    void on_actionToggleBookmark_triggered();
+    void on_actionNextBookmark_triggered();
+    void on_actionPreviousBookmark_triggered();
+    void on_actionRemoveBookmarks_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -272,6 +287,9 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
+    int logTabCount();
+    int currentLogTab();
+    QTabWidget* mainTabs();
 
 private:
     void initTabs();
@@ -280,6 +298,7 @@ private:
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
     void addToOpenedFiles(QString filePath);
+    bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 
     void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
@@ -292,7 +311,6 @@ private:
     void updateEditorLineWrapping();
     void analyzeCommandLine(GamsProcess *process, const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
-    QString studioInfo();
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
@@ -321,6 +339,9 @@ private:
     StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
+    MainTabContextMenu mMainTabContextMenu;
+    LogTabContextMenu mLogTabContextMenu;
+
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     int mExternFileEventChoice = -1;
@@ -332,7 +353,6 @@ private:
     int mTimerID;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
-
 };
 
 }

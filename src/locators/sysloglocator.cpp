@@ -19,7 +19,6 @@
  */
 #include "sysloglocator.h"
 #include "defaultsystemlogger.h"
-#include <QDebug>
 
 namespace gams {
 namespace studio {

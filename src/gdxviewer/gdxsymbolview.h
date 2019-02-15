@@ -22,6 +22,9 @@
 
 #include <QFrame>
 #include <QMenu>
+#include <QVector>
+#include <QAction>
+#include <QCheckBox>
 
 namespace gams {
 namespace studio {
@@ -44,6 +47,7 @@ public:
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym);
     void copySelectionToClipboard(QString separator);
+    void toggleColumnHidden(int valCol);
 
 public slots:
     void enableControls();
@@ -60,6 +64,14 @@ private:
     GdxSymbol *mSym = nullptr;
     QByteArray mInitialHeaderState;
     QMenu mContextMenu;
+
+    void showListView();
+    void showTableView();
+    void toggleView();
+
+    void selectAll();
+
+    QVector<QCheckBox *> mShowValColActions;
 };
 
 

@@ -29,15 +29,15 @@
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextCodec>
+#include <QDir>
 
 namespace gams {
 namespace studio {
 
-ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, ProjectGroupNode* group, NodeType type)
+ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, NodeType type)
     : ProjectAbstractNode(fileMeta?fileMeta->name():"[NULL]", type), mFileMeta(fileMeta)
 {
     if (!mFileMeta) EXCEPT() << "The assigned FileMeta must not be null.";
-    if (group) setParentNode(group);
 }
 
 ProjectFileNode::~ProjectFileNode()
@@ -53,6 +53,7 @@ QIcon ProjectFileNode::icon()
 {
     ProjectGroupNode* par = parentNode();
     while (par && !par->toRunGroup()) par = par->parentNode();
+    if (!par) return QIcon();
     QString runMark = par->toRunGroup()->specialFile(FileKind::Gms) == location() ? "-run" : "";
     if (file()->kind() == FileKind::Gms)
         return QIcon(":/img/gams-w"+runMark);
@@ -106,7 +107,7 @@ QString ProjectFileNode::location() const
 
 QString ProjectFileNode::tooltip()
 {
-    QString tip = location();
+    QString tip = QDir::toNativeSeparators(location());
     if (!file()->exists(true)) tip += "\n--missing--";
     if (!debugMode())
         return tip;
@@ -133,72 +134,72 @@ NodeId ProjectFileNode::runGroupId() const
     return NodeId();
 }
 
-void ProjectFileNode::enhanceMarksFromLst()
-{
-    if (file()->kind() != FileKind::Lst) return;
-    if (!file()->exists(true)) return;
-    if (!file()->isOpen()) {
-        file()->load(file()->codecMib());
-    }
-    // TODO(JM) Perform a large-file-test if this should have an own thread
-    const LineMarks* marks = textMarkRepo()->marks(file()->id());
-    //                     0     1 2       3 4                    5               6           7       8
-    //                            (    $nr               |        nr+description      |  descr.   |  any  )
-    QRegularExpression rex("\\*{4}((\\s+)\\$(([0-9,]+).*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
-    QList<int> lines = marks->uniqueKeys();
-    for (int lineNr: lines) {
-        QTextBlock block = document()->findBlockByNumber(lineNr).next();
-        QList<TextMark*> currentMarks = marks->values(lineNr);
-        bool hasErr = false;
-        for (TextMark *mark: currentMarks) {
-            if (mark->groupId() != runGroupId()) continue;
-            if (mark->isErrorRef()) hasErr = true;
-            int size = mark->size();
-            if (size <= 0) {
-                size = block.text().indexOf('$');
-                if (size > 0) mark->setSize(size+1);
-            }
-        }
-        if (!hasErr) continue;
-        QList<int> errNrs;
-        QList<int> errTextNr;
-        QStringList errNrsDeb;
-        QStringList errText;
-        while (block.isValid()) {
-            QRegularExpressionMatch match = rex.match(block.text());
-            if (!match.hasMatch()) break;
-            if (match.capturedLength(4)) { // first line with error numbers and indent
-                int ind = 0;
-                QString line(match.captured(3));
-                QRegularExpression xpNr("[^0-9]*([0-9]+)");
-                do {
-                    QRegularExpressionMatch nrMatch = xpNr.match(line, ind);
-                    if (!nrMatch.hasMatch()) break;
-                    errNrsDeb << nrMatch.captured(1);
-                    errNrs << nrMatch.captured(1).toInt();
-                    ind = nrMatch.capturedEnd(1);
-                } while (true);
-            } else if (match.capturedLength(5)) { // line with error number and description
-                errText << match.captured(5)+"\t"+match.captured(6);
-                errTextNr << match.captured(5).toInt();
-            } else if (match.capturedLength(7)) { // indented follow-up line for error description
-                errText << "\t"+match.captured(7);
-                errTextNr << (errTextNr.isEmpty() ? -1 : errTextNr.last());
-            } else if (match.capturedLength(8)) { // non-indented line for additional error description
-                errText << match.captured(8);
-                errTextNr << (errTextNr.isEmpty() ? -1 : errTextNr.last());
-            }
-            block = block.next();
-        }
-        QStringList orderedErrText;
-        for (int nr = 0; nr < errNrs.size(); ++nr) {
-            for (int errLn = 0; errLn < errTextNr.size(); ++errLn) {
-                if (errTextNr.at(errLn) == errNrs.at(nr)) orderedErrText << errText.at(errLn);
-            }
-        }
-        assignedRunGroup()->setLstErrorText(lineNr, orderedErrText.join("\n"));
-    }
-}
+//void ProjectFileNode::enhanceMarksFromLst()
+//{
+//    if (file()->kind() != FileKind::Lst) return;
+//    if (!file()->exists(true)) return;
+//    if (!file()->isOpen()) {
+//        file()->load(file()->codecMib());
+//    }
+//    // TODO(JM) Perform a large-file-test if this should have an own thread
+//    const LineMarks* marks = textMarkRepo()->marks(file()->id());
+//    //                     0     1 2       3 4                    5               6           7       8
+//    //                            (    $nr               |        nr+description      |  descr.   |  any  )
+//    QRegularExpression rex("\\*{4}((\\s+)\\$(([0-9,]+).*)|\\s{1,3}([0-9]{1,3})\\s+(.*)|\\s\\s+(.*)|\\s(.*))");
+//    QList<int> lines = marks->uniqueKeys();
+//    for (int lineNr: lines) {
+//        QTextBlock block = document()->findBlockByNumber(lineNr).next();
+//        QList<TextMark*> currentMarks = marks->values(lineNr);
+//        bool hasErr = false;
+//        for (TextMark *mark: currentMarks) {
+//            if (mark->groupId() != runGroupId()) continue;
+//            if (mark->isErrorRef()) hasErr = true;
+//            int size = mark->size();
+//            if (size <= 0) {
+//                size = block.text().indexOf('$');
+//                if (size > 0) mark->setSize(size+1);
+//            }
+//        }
+//        if (!hasErr) continue;
+//        QList<int> errNrs;
+//        QList<int> errTextNr;
+//        QStringList errNrsDeb;
+//        QStringList errText;
+//        while (block.isValid()) {
+//            QRegularExpressionMatch match = rex.match(block.text());
+//            if (!match.hasMatch()) break;
+//            if (match.capturedLength(4)) { // first line with error numbers and indent
+//                int ind = 0;
+//                QString line(match.captured(3));
+//                QRegularExpression xpNr("[^0-9]*([0-9]+)");
+//                do {
+//                    QRegularExpressionMatch nrMatch = xpNr.match(line, ind);
+//                    if (!nrMatch.hasMatch()) break;
+//                    errNrsDeb << nrMatch.captured(1);
+//                    errNrs << nrMatch.captured(1).toInt();
+//                    ind = nrMatch.capturedEnd(1);
+//                } while (true);
+//            } else if (match.capturedLength(5)) { // line with error number and description
+//                errText << match.captured(5)+"\t"+match.captured(6);
+//                errTextNr << match.captured(5).toInt();
+//            } else if (match.capturedLength(7)) { // indented follow-up line for error description
+//                errText << "\t"+match.captured(7);
+//                errTextNr << (errTextNr.isEmpty() ? -1 : errTextNr.last());
+//            } else if (match.capturedLength(8)) { // non-indented line for additional error description
+//                errText << match.captured(8);
+//                errTextNr << (errTextNr.isEmpty() ? -1 : errTextNr.last());
+//            }
+//            block = block.next();
+//        }
+//        QStringList orderedErrText;
+//        for (int nr = 0; nr < errNrs.size(); ++nr) {
+//            for (int errLn = 0; errLn < errTextNr.size(); ++errLn) {
+//                if (errTextNr.at(errLn) == errNrs.at(nr)) orderedErrText << errText.at(errLn);
+//            }
+//        }
+//        assignedRunGroup()->setLstErrorText(lineNr, orderedErrText.join("\n"));
+//    }
+//}
 
 } // namespace studio
 } // namespace gams

@@ -64,10 +64,10 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    checkforupdatewrapper.cpp \
+    support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
-    distributionvalidator.cpp \
+    support/distributionvalidator.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
     file/fileevent.cpp \
@@ -93,6 +93,7 @@ SOURCES += \
     gdxviewer/gdxsymboltable.cpp \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
+    gdxviewer/nestedheaderview.cpp \
     keys.cpp \
     locators/searchlocator.cpp \
     logger.cpp \
@@ -143,7 +144,7 @@ SOURCES += \
     syntax/systemloghighlighter.cpp \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
-    updatedialog.cpp \
+    support/updatedialog.cpp \
     welcomepage.cpp \
     wplabel.cpp \
     gotodialog.cpp \
@@ -153,21 +154,26 @@ SOURCES += \
     encodingsdialog.cpp \
     editors/codeedit.cpp \
     tabdialog.cpp \
-    locators/settingslocator.cpp \
-    locators/sysloglocator.cpp \
-    locators/defaultsystemlogger.cpp \
-    editors/viewhelper.cpp \
-    editors/editorhelper.cpp
+    locators/settingslocator.cpp        \
+    locators/sysloglocator.cpp          \
+    locators/defaultsystemlogger.cpp    \
+    support/aboutgamsdialog.cpp         \
+    support/gamslicenseinfo.cpp         \
+    support/solvertablemodel.cpp        \
+    editors/viewhelper.cpp              \
+    editors/editorhelper.cpp \
+    maintabcontextmenu.cpp \
+    logtabcontextmenu.cpp
 
 HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    checkforupdatewrapper.h \
+    support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \
-    distributionvalidator.h \
+    support/distributionvalidator.h \
     exception.h \
     file.h \
     file/dynamicfile.h \
@@ -194,6 +200,7 @@ HEADERS += \
     gdxviewer/gdxsymboltable.h \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
+    gdxviewer/nestedheaderview.h \
     keys.h \
     locators/searchlocator.h \
     logger.h \
@@ -246,7 +253,7 @@ HEADERS += \
     syntax/systemloghighlighter.h \
     syntax/textmark.h \
     syntax/textmarkrepo.h \
-    updatedialog.h \
+    support/updatedialog.h \
     version.h \
     welcomepage.h \
     wplabel.h \
@@ -260,9 +267,14 @@ HEADERS += \
     locators/settingslocator.h \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
-    locators/defaultsystemlogger.h \
-    editors/viewhelper.h \
-    editors/editorhelper.h
+    locators/defaultsystemlogger.h  \
+    support/aboutgamsdialog.h       \
+    support/gamslicenseinfo.h       \
+    support/solvertablemodel.h      \
+    editors/viewhelper.h            \
+    editors/editorhelper.h \
+    maintabcontextmenu.h \
+    logtabcontextmenu.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -277,11 +289,12 @@ FORMS += \
     resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
-    updatedialog.ui \
+    support/updatedialog.ui \
     welcomepage.ui \
     gotodialog.ui \
     encodingsdialog.ui \
-    tabdialog.ui
+    tabdialog.ui \
+    support/aboutgamsdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

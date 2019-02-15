@@ -18,16 +18,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "defaultsystemlogger.h"
-#include <QDebug>
 
 namespace gams {
 namespace studio {
 
-void DefaultSystemLogger::appendLog(const QString &msg, LogMsgType type)
+void DefaultSystemLogger::append(const QString &msg, LogMsgType type)
 {
     Q_UNUSED(msg);
     Q_UNUSED(type);
-    qDebug() << "NO SYSTEM LOGGER SET, USING DUMMY";
 }
 
 }

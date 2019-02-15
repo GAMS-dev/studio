@@ -52,6 +52,10 @@ private slots:
     void testAbsolutePathNullStr();
     void testAbsolutePathExisting();
     void testAbsolutePathNotExisting();
+
+    void testConfigFile();
+
+    void testLicenseFile();
 };
 
 #endif // TESTCOMMONPATHS_H

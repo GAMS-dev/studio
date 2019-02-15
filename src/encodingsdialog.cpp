@@ -34,6 +34,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
     QList<int> mibs = QTextCodec::availableMibs();
     std::sort(mibs.begin(), mibs.end());
     ui->tableWidget->setRowCount(mibs.count());
+    ui->tableWidget->setWordWrap(false);
 
     int row = 0;
     QFont boldFont = font();
@@ -55,7 +56,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
 
         ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" "+QString(codec->aliases().join(", "))+" "));
         ui->tableWidget->setVerticalHeaderItem(row, new QTableWidgetItem());
-        ui->tableWidget->setRowHeight(row, ui->tableWidget->fontMetrics().height()*1.3);
+        ui->tableWidget->setRowHeight(row, int(ui->tableWidget->fontMetrics().height()*1.4));
         row++;
     }
     ui->tableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);

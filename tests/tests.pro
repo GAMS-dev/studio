@@ -20,6 +20,8 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += testcommonpaths \
-           testeditors \
-           testservicelocators
+SUBDIRS += testcommonpaths              \
+           testservicelocators          \
+           testgamslicenseinfo          \
+           testcheckforupdatewrapper    \
+           testeditors

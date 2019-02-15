@@ -70,17 +70,15 @@ public:
     bool isAutoReload() const;
     void resetTempReloadState();
 
-    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, QList<int> codecMibs = QList<int>());
+    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
     void editToTop(QWidget* edit);
-    void removeEditor(QWidget* edit, bool suppressCloseSignal = false);
+    void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib);
-    void load(QList<int> codecMibs = QList<int>());
     void save();
-    void saveAs(const QString &location);
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
@@ -91,6 +89,7 @@ public:
     void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
+    void setLocation(const QString &location);
 
 public slots:
     void reload();
@@ -100,7 +99,6 @@ signals:
     void changed(FileId fileId);
     void documentOpened();
     void documentClosed();
-    void openFile(FileMeta* fileMeta, bool focus = true, FileId runId = -1, int codecMib = -1);
 
 private slots:
     void modificationChanged(bool modiState);
@@ -126,7 +124,6 @@ private:
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();
-    void setLocation(const QString &location);
 
 private:
     FileId mId;

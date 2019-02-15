@@ -104,7 +104,7 @@ void ProjectAbstractNode::setParentNode(ProjectGroupNode* parent)
     if (parent != mParent) {
         if (mParent) mParent->removeChild(this);
         mParent = parent;
-        if (mParent) mParent->insertChild(this);
+        if (mParent) mParent->appendChild(this);
     }
 }
 
@@ -184,7 +184,7 @@ void ProjectAbstractNode::setActive()
 
 bool ProjectAbstractNode::debugMode() const
 {
-    return projectRepo()->debugMode();
+    return projectRepo() ? projectRepo()->debugMode() : false;
 }
 
 

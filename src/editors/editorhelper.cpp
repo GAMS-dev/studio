@@ -25,21 +25,21 @@ namespace studio {
 void EditorHelper::nextWord(int offset,int &pos, const QString &text)
 {
     if (text.length() == 0) {
+        // short line
         pos++;
         return;
-    }
-    if (pos+offset < text.length()) {
-        ++pos;
+    } else if (pos+offset < text.length()) {
+        // navigating in a line
         if (pos + offset > text.length()) return;
-        bool last = false;
+        bool stop = false;
 
         while (++pos + offset < text.length()) {
-            last = (pos + offset > 0) && text.at(pos + offset - 1).isSpace();
-            if (!text.at(pos + offset).isLetterOrNumber() && !last) {
-                return;
-            }
+            // stop if last char is not letter or number
+            stop = (pos + offset > 0) && !text.at(pos + offset - 1).isLetterOrNumber();
+            if (text.at(pos + offset).isLetterOrNumber() && stop) return;
         }
     } else {
+        // reached end of line
         pos++;
     }
 }
@@ -56,7 +56,7 @@ void EditorHelper::prevWord(int offset, int &pos, const QString &text)
         bool last = false;
 
         while (--pos + offset > 0) {
-            last = text.at(pos + offset + 1).isSpace();
+            last = !text.at(pos + offset + 1).isLetterOrNumber();
             if (!text.at(pos+offset).isLetterOrNumber() && !last) {
                 ++pos;
                 return;

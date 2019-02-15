@@ -26,6 +26,7 @@ class QString;
 
 namespace gams {
 namespace studio {
+namespace support {
 
 class DistributionValidator
     : public QThread
@@ -36,6 +37,9 @@ public:
     DistributionValidator(QObject *parent = Q_NULLPTR);
 
     void run() override;
+
+signals:
+    void newError(const QString&);
 
 private:
     ///
@@ -50,6 +54,7 @@ private:
     void checkCompatibility();
 };
 
+}
 }
 }
 

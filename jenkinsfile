@@ -7,7 +7,7 @@ def artifactVersion() {
 }
 
 pipeline {
-    agent any
+    agent none
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '20', daysToKeepStr: '5'))
@@ -16,9 +16,10 @@ pipeline {
 
     stages {
         stage('Build') {
-            steps {
-                parallel linux: {
-                    node('master') {
+            parallel {
+                stage ('linux') {
+                    agent { label 'master' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh '''
@@ -26,9 +27,10 @@ pipeline {
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
-                },
-                windowsX86: {
-                    node('windowsX86') {
+                }
+                stage ('windowsX86') {
+                    agent { label 'windowsX86' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
@@ -42,9 +44,10 @@ pipeline {
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
-                },
-                windowsX64: {
-                    node('windowsX64') {
+                }
+                stage ('windowsX64') {
+                    agent { label 'windowsX64' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
@@ -58,9 +61,10 @@ pipeline {
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
-                },
-                macos: {
-                    node('macos') {
+                }
+                stage ('macos') {
+                    agent { label 'macos' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh 'qmake gams-studio.pro CONFIG+=release && make -j3'
@@ -70,9 +74,10 @@ pipeline {
             }
         }
         stage('Test') {
-            steps {
-                parallel linux: {
-                    node('master') {
+            parallel {
+                stage ('linux') {
+                    agent { label 'master' }
+                    steps {
                         sh '''
                             mkdir reports
                             cd tests/bin
@@ -80,32 +85,46 @@ pipeline {
                                 xvfb-run -a ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
                         '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
-                },
-                windowsX86: {
-                    node('windowsX86') {
-                        bat '''
-                            echo off
-                            mkdir reports
-                            cd tests/bin
-                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
-                        '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
                     }
-                },
-                windowsX64: {
-                    node('windowsX64') {
+                }
+                stage ('windowsX86') {
+                    agent { label 'windowsX86' }
+                    steps {
                         bat '''
                             mkdir reports
                             cd tests/bin
                             for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
-                },
-                macos: {
-                    node('macos') {
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
+                    }
+                }
+                stage ('windowsX64') {
+                    agent { label 'windowsX64' }
+                    steps {
+                        bat '''
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
+                        '''
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
+                    }
+                }
+                stage ('macos') {
+                    agent { label 'macos' }
+                    steps {
                         sh '''
                             mkdir reports
                             cd tests/bin
@@ -113,18 +132,20 @@ pipeline {
                                 ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
                         '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
                     }
                 }
             }
         }
         stage('Pack') {
-            steps {
-                parallel linux: {
-                    node('master') {
-                        sh '''
-                            curl --remote-name --location https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-                        '''
+            parallel {
+                stage ('linux') {
+                    agent { label 'master' }
+                    steps {
                         sh '''
                             # create folder structure
                             mkdir -p appdir/usr/bin
@@ -140,9 +161,7 @@ pipeline {
                             mkdir -p appdir/usr/plugins/imageformats
                             cp /opt/Qt/5.11.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
 
-                            chmod +x linuxdeployqt-continuous-x86_64.AppImage
-                            ./linuxdeployqt-continuous-x86_64.AppImage --version
-                            ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
+                            linuxdeployqt-5-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
                         '''
                         script {
                             def versionData = artifactVersion()
@@ -155,9 +174,10 @@ pipeline {
                             }
                         }
                     }
-                },
-                windowsX86: {
-                    node('windowsX86') {
+                }
+                stage ('windowsX86') {
+                    agent { label 'windowsX86' }
+                    steps {
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                             withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
@@ -178,9 +198,10 @@ pipeline {
                             }
                         }
                     }
-                },
-                windowsX64: {
-                    node('windowsX64') {
+                }
+                stage ('windowsX64') {
+                    agent { label 'windowsX64' }
+                    steps {
                         bat 'windeployqt --release --compiler-runtime --force src\\bin\\studio.exe'
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                         withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
@@ -201,9 +222,10 @@ pipeline {
                             }
                         }
                     }
-                },
-                macos: {
-                    node('macos') {
+                }
+                stage ('macos') {
+                    agent { label 'macos' }
+                    steps {
                         fileOperations([folderRenameOperation(destination: 'src/bin/GAMS Studio.app', source: 'src/bin/studio.app')])
                         withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
                             sh '''

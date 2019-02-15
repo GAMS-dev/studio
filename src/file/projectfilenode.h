@@ -66,14 +66,14 @@ public:
     QString tooltip() override;
     virtual NodeId runGroupId() const;
 //    QTextCodec *codec() const;
-    void enhanceMarksFromLst();
+//    void enhanceMarksFromLst();
 
 protected:
     friend class ProjectLogNode;
     friend class ProjectRepo;
     friend class FileMeta;
 
-    ProjectFileNode(FileMeta* fileMeta, ProjectGroupNode *group = nullptr, NodeType type = NodeType::file);
+    ProjectFileNode(FileMeta* fileMeta, NodeType type = NodeType::file);
     void setParentNode(ProjectGroupNode *parent) override;
     void replaceFile(FileMeta* fileMeta);
 

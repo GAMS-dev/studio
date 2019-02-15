@@ -24,6 +24,7 @@
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
 #include "logger.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
@@ -47,6 +48,33 @@ void AbstractEdit::setOverwriteMode(bool overwrite)
 bool AbstractEdit::overwriteMode() const
 {
     return QPlainTextEdit::overwriteMode();
+}
+
+void AbstractEdit::sendToggleBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit toggleBookmark(fi, gi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+    }
+}
+
+void AbstractEdit::sendJumpToNextBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit jumpToNextBookmark(false, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    }
+}
+
+void AbstractEdit::sendJumpToPrevBookmark()
+{
+    FileId fi = fileId();
+    NodeId gi = groupId();
+    if (fi.isValid() && gi.isValid()) {
+        emit jumpToNextBookmark(true, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    }
 }
 
 QMimeData* AbstractEdit::createMimeDataFromSelection() const
@@ -75,6 +103,11 @@ const LineMarks* AbstractEdit::marks() const
     return mMarks;
 }
 
+int AbstractEdit::effectiveBlockNr(const int &localBlockNr) const
+{
+    return localBlockNr;
+}
+
 void AbstractEdit::showToolTip(const QList<TextMark*> marks)
 {
     if (marks.size() > 0) {
@@ -82,6 +115,7 @@ void AbstractEdit::showToolTip(const QList<TextMark*> marks)
                 //(marks.first()->textCursor());
         cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, marks.first()->column());
         QPoint pos = cursorRect(cursor).bottomLeft();
+        if (pos.x() < 10) pos.setX(10);
         QStringList tips;
         emit requestLstTexts(groupId(), marks, tips);
         QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
@@ -183,7 +217,8 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
     mMarksAtMouse.clear();
     int col = cursor.positionInBlock();
     for (TextMark* mark: marks) {
-        if ((!mark->groupId().isValid() || mark->groupId() == groupId()) && mark->inColumn(col))
+        if ((!mark->groupId().isValid() || mark->groupId() == groupId())
+                && (mark->inColumn(col) || e->x() < 0))
             mMarksAtMouse << mark;
     }
     if (!mMarksAtMouse.isEmpty() && (isReadOnly() || e->x() < 0))

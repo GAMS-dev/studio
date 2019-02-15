@@ -1,16 +1,17 @@
 pipeline {
-    agent any
+    agent none
 
     options {
-        buildDiscarder(logRotator(numToKeepStr: '20', daysToKeepStr: '5'))
+        buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
         disableConcurrentBuilds()
     }
 
     stages {
         stage('Build') {
-            steps {
-                parallel linux: {
-                    node('master') {
+            parallel {
+                stage ('linux') {
+                    agent { label 'master' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh '''
@@ -18,9 +19,10 @@ pipeline {
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
-                },
-                windowsX86: {
-                    node('windowsX86') {
+                }
+                stage ('windowsX86') {
+                    agent { label 'windowsX86' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
@@ -34,9 +36,10 @@ pipeline {
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
-                },
-                windowsX64: {
-                    node('windowsX64') {
+                }
+                stage ('windowsX64') {
+                    agent { label 'windowsX64' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         bat '''
@@ -50,9 +53,10 @@ pipeline {
                         '''
                         warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
                     }
-                },
-                macos: {
-                    node('macos') {
+                }
+                stage ('macos') {
+                    agent { label 'macos' }
+                    steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
                         sh 'qmake gams-studio.pro CONFIG+=release && make -j3'
@@ -62,9 +66,10 @@ pipeline {
             }
         }
         stage('Test') {
-            steps {
-                parallel linux: {
-                    node('master') {
+            parallel {
+                stage ('linux') {
+                    agent { label 'master' }
+                    steps {
                         sh '''
                             mkdir reports
                             cd tests/bin
@@ -72,32 +77,46 @@ pipeline {
                                 xvfb-run -a ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
                         '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
-                },
-                windowsX86: {
-                    node('windowsX86') {
-                        bat '''
-                            echo off
-                            mkdir reports
-                            cd tests/bin
-                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
-                        '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
                     }
-                },
-                windowsX64: {
-                    node('windowsX64') {
+                }
+                stage ('windowsX86') {
+                    agent { label 'windowsX86' }
+                    steps {
                         bat '''
                             mkdir reports
                             cd tests/bin
                             for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
                     }
-                },
-                macos: {
-                    node('macos') {
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
+                    }
+                }
+                stage ('windowsX64') {
+                    agent { label 'windowsX64' }
+                    steps {
+                        bat '''
+                            mkdir reports
+                            cd tests/bin
+                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
+                        '''
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
+                    }
+                }
+                stage ('macos') {
+                    agent { label 'macos' }
+                    steps {
                         sh '''
                             mkdir reports
                             cd tests/bin
@@ -105,7 +124,11 @@ pipeline {
                                 ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
                         '''
-                        junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                        }
                     }
                 }
             }

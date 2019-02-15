@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>UpdateDialog</class>
- <widget class="QDialog" name="UpdateDialog">
+ <class>gams::studio::support::UpdateDialog</class>
+ <widget class="QDialog" name="gams::studio::support::UpdateDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -38,7 +38,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>UpdateDialog</receiver>
+   <receiver>gams::studio::support::UpdateDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -54,7 +54,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>UpdateDialog</receiver>
+   <receiver>gams::studio::support::UpdateDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

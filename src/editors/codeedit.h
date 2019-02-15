@@ -141,7 +141,6 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
-    void marksChanged() override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -157,6 +156,9 @@ public slots:
     void copySelection();
     void pasteClipboard();
     void updateExtraSelections();
+
+protected slots:
+    void marksChanged() override;
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -222,13 +224,14 @@ private:
         void setColumn(int column);
         void setOverwriteMode(bool overwrite);
         bool overwriteMode() const;
+        void setSize(int size);
 
     private:
         CodeEdit* mEdit;
         int mStartLine = 0;
         int mCurrentLine = 0;
         int mColumn = 0;
-        int mSize = 0;
+        const int mSize = 0;
         bool mBlinkStateHidden = false;
         CharType mLastCharType = CharType::None;
         QList<QTextEdit::ExtraSelection> mSelections;
@@ -252,7 +255,7 @@ private:
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
-
+    int mIconCols = 0;
     const QString mOpening = "([{'\"";
     const QString mClosing = ")]}'\"";
 };
