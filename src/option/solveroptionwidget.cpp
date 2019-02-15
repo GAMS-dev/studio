@@ -206,11 +206,12 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 {
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-
-    bool thereIsARowSelection = (selection.count() > 0);
     bool thereIsAnIndexSelection = indexSelection.count();
-    bool isEverySelectionARow = (thereIsARowSelection && (indexSelection.count() / ui->solverOptionTableView->model()->columnCount() == selection.count()));
+
     bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
+    bool thereIsARowSelection = thereIsARow && isThereARowSelection();
+    bool everySelectionIsARow = thereIsARow && (indexSelection.count() % ui->solverOptionTableView->model()->columnCount() == 0);
+    bool viewIsCompact = isViewCompact();
 
     QMenu menu(this);
     QAction* commentAction = nullptr;
@@ -221,30 +222,30 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             action->setVisible( thereIsAnIndexSelection );
             menu.addAction(action);
         } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setVisible( thereIsARow );
+            action->setVisible( thereIsAnIndexSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionToggle_comment")==0) {
-            action->setVisible( thereIsARowSelection && !isViewCompact() );
+            action->setVisible( everySelectionIsARow && thereIsARowSelection && !viewIsCompact );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionInsert_option")==0) {
-            action->setVisible( thereIsARowSelection || !thereIsARow ); //|| !isViewCompact() );
+            action->setVisible( ( !thereIsARow || everySelectionIsARow ) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
             commentAction = action;
-            action->setVisible( (thereIsARowSelection || !thereIsARow) && !isViewCompact() );
+            action->setVisible( everySelectionIsARow && (thereIsARowSelection || !thereIsARow) && !viewIsCompact );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
-            action->setVisible( isEverySelectionARow );
+            action->setVisible( everySelectionIsARow );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            action->setVisible( thereIsARowSelection && !isViewCompact() && (selection.first().row() > 0) );
+            action->setVisible( everySelectionIsARow && thereIsARowSelection && !viewIsCompact && (selection.first().row() > 0) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setVisible( thereIsARowSelection && !isViewCompact() && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            action->setVisible( everySelectionIsARow & thereIsARowSelection && !viewIsCompact && (selection.last().row() < mOptionTableModel->rowCount()-1) );
             menu.addAction(action);
         }
     }
@@ -602,11 +603,11 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
 
 void SolverOptionWidget::toggleCommentOption()
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    if (selection.count() <= 0 || isViewCompact())
+    if (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
         return;
 
     bool modified = false;
+    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     for(int i=0; i<selection.count(); ++i) {
         on_toggleRowHeader( selection.at(i).row() );
         modified = true;
@@ -619,6 +620,7 @@ void SolverOptionWidget::toggleCommentOption()
 void SolverOptionWidget::selectAnOption()
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+
     for(int i=0; i<indexSelection.count(); ++i) {
        on_selectRow( indexSelection.at(i).row() );
     }
@@ -626,14 +628,16 @@ void SolverOptionWidget::selectAnOption()
 
 void SolverOptionWidget::insertOption()
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();   
-    if (selection.count() > 0) {
-       QModelIndex index = selection.at(0);
-       ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
-       ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
+    if  (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow())
+        return;
+
+    if (isThereARowSelection() > 0) {
+        QModelIndex index = ui->solverOptionTableView->selectionModel()->selectedRows().at(0);
+        ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
+        ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
                                                         Qt::CheckState(Qt::Unchecked),
                                                         Qt::CheckStateRole );
-       ui->solverOptionTableView->selectRow(index.row());
+        ui->solverOptionTableView->selectRow(index.row());
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
         ui->solverOptionTableView->model()->setHeaderData(ui->solverOptionTableView->model()->rowCount()-1, Qt::Vertical,
@@ -648,9 +652,11 @@ void SolverOptionWidget::insertOption()
 
 void SolverOptionWidget::insertComment()
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    if (selection.count() > 0) {
-        QModelIndex index = selection.at(0);
+    if  (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
+        return;
+
+    if (isThereARowSelection()) {
+        QModelIndex index = ui->solverOptionTableView->selectionModel()->selectedRows().at(0);
         ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
         ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
                                                           Qt::CheckState(Qt::PartiallyChecked),
@@ -671,12 +677,10 @@ void SolverOptionWidget::insertComment()
 void SolverOptionWidget::deleteOption()
 {
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    bool isEverySelectionARow = ((selection.count() > 0) && (indexSelection.count() / ui->solverOptionTableView->model()->columnCount() == selection.count()));
-    if (!isEverySelectionARow )
+    if  (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
         return;
 
-    if (selection.count() > 0) {
+    if (isThereARowSelection()) {
        QModelIndex index = selection.at(0);
        QModelIndex removeTableIndex = mOptionTableModel->index(index.row(), 0);
        QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
@@ -691,35 +695,34 @@ void SolverOptionWidget::deleteOption()
 
 void SolverOptionWidget::moveOptionUp()
 {
+   if  (!isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
+       return;
+
    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+   QModelIndex index = selection.at(0);
+   if (index.row() == 0)
+       return;
 
-   if (selection.count() > 0 && !isViewCompact()) {
-       QModelIndex index = selection.at(0);
-       if (index.row() == 0)
-           return;
-
-       ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
+    ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
                                                     QModelIndex(), index.row()-1);
-       updateTableColumnSpan();
-       setModified(true);
-   }
-   return;
-}
+    updateTableColumnSpan();
+    setModified(true);
+ }
 
 void SolverOptionWidget::moveOptionDown()
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    if (selection.count() > 0 && !isViewCompact()) {
-        QModelIndex index = selection.at(0);
-        if (index.row()+1 == ui->solverOptionTableView->model()->rowCount())
-            return;
+    if  (isViewCompact() && !isThereARow() && !isThereARowSelection() && !isEverySelectionARow())
+        return;
 
-        mOptionTableModel->moveRows(QModelIndex(), index.row(), selection.count(),
+    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    QModelIndex index = selection.at(0);
+    if (index.row()+1 == ui->solverOptionTableView->model()->rowCount())
+       return;
+
+    mOptionTableModel->moveRows(QModelIndex(), index.row(), selection.count(),
                                     QModelIndex(), index.row()+selection.count()+1);
-        updateTableColumnSpan();
-        setModified(true);
-    }
-    return;
+    updateTableColumnSpan();
+    setModified(true);
 }
 
 void SolverOptionWidget::addActions()
@@ -798,6 +801,17 @@ void SolverOptionWidget::updateTableColumnSpan()
     }
 }
 
+bool SolverOptionWidget::isThereARow() const
+{
+    return (ui->solverOptionTableView->model()->rowCount() > 0);
+}
+
+bool SolverOptionWidget::isThereARowSelection() const
+{
+    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    return (selection.count() > 0);
+}
+
 MainWindow *SolverOptionWidget::getMainWindow()
 {
     for(QWidget *widget : qApp->topLevelWidgets())
@@ -819,6 +833,14 @@ int SolverOptionWidget::getItemCount() const
 bool SolverOptionWidget::isViewCompact() const
 {
     return ui->compactViewCheckBox->isChecked();
+}
+
+bool SolverOptionWidget::isEverySelectionARow() const
+{
+    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+
+    return ((selection.count() > 0) && (indexSelection.count() % ui->solverOptionTableView->model()->columnCount() == 0));
 }
 
 void SolverOptionWidget::selectSearchField() const

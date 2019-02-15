@@ -125,6 +125,10 @@ private:
     void updateEditActions(bool modified);
     void updateTableColumnSpan();
 
+    bool isThereARow() const;
+    bool isThereARowSelection() const;
+    bool isEverySelectionARow() const;
+
     MainWindow* getMainWindow();
 
 };
