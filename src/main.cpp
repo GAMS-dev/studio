@@ -28,9 +28,11 @@ using gams::studio::Application;
 int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication::setApplicationVersion(STUDIO_VERSION);
     QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+
+    // if we manage do get real highDPI icons into the system this may help (currently it scales up lo-res icons)
+//    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     Application app(argc, argv);
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);

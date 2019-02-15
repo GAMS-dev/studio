@@ -478,17 +478,22 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
     return process && mGamsProcess.get() == process;
 }
 
-void ProjectRunGroupNode::jumpToFirstError(bool focus)
+bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
 {
-    if (!runnableGms()) return;
+    if (!runnableGms()) return false;
     QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
     if (textMark) {
-        if (SettingsLocator::settings()->openLst())
+        if (SettingsLocator::settings()->openLst()) {
+            textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);
-        else
+        } else {
+            if (lstNode && !lstNode->file()->editors().isEmpty()) textMark->jumpToRefMark(false);
             textMark->jumpToMark(focus);
+        }
+        return true;
     }
+    return false;
 }
 
 void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &result)

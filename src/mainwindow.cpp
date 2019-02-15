@@ -1274,16 +1274,18 @@ void MainWindow::postGamsRun(NodeId origin)
         return;
     }
     if(groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->specialFile(FileKind::Lst);
         bool doFocus = groupNode == mRecent.group;
 
-        if (mSettings->jumpToError())
-            groupNode->jumpToFirstError(doFocus);
-
+        QString lstFile = groupNode->specialFile(FileKind::Lst);
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
 
-        if (mSettings->openLst())
+        bool alreadyJumped = false;
+        if (mSettings->jumpToError())
+            alreadyJumped = groupNode->jumpToFirstError(doFocus, lstNode);
+
+        if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
+
     }
     if (groupNode && groupNode->hasLogNode())
         groupNode->logNode()->logDone();
