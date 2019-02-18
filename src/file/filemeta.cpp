@@ -573,7 +573,8 @@ void FileMeta::marksChanged(QSet<int> lines)
 {
     QMutexLocker mx(&mDirtyLinesMutex);
     mDirtyLines.unite(lines);
-    if (!mDirtyLinesUpdater.isActive()) mDirtyLinesUpdater.start(500);
+    if (lines.isEmpty()) mDirtyLinesUpdater.start(0);
+    else if (!mDirtyLinesUpdater.isActive()) mDirtyLinesUpdater.start(500);
 }
 
 void FileMeta::reloadDelayed()

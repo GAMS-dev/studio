@@ -93,7 +93,10 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
     if (mark->type() == TextMark::bookmark && !mBookmarkedFiles.contains(fileId))
         mBookmarkedFiles << fileId;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
-    if (fm) fm->marksChanged(QSet<int>() << line);
+    if (fm) {
+        if (type == TextMark::bookmark) fm->marksChanged();
+        else fm->marksChanged(QSet<int>() << line);
+    }
     return mark;
 }
 
