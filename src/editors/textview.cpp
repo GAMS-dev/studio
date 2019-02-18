@@ -425,9 +425,9 @@ void TextView::updateExtraSelections()
     mEdit->updateExtraSelections();
 }
 
-void TextView::marksChanged()
+void TextView::marksChanged(const QSet<int> dirtyLines)
 {
-    mEdit->marksChanged();
+    mEdit->marksChanged(dirtyLines);
 }
 
 

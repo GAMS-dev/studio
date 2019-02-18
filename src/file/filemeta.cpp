@@ -47,9 +47,11 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForLocale();
     setLocation(location);
-    mTempAutoReloadTimer.setSingleShot(true);
+    mTempAutoReloadTimer.setSingleShot(true); // only for measurement
     mReloadTimer.setSingleShot(true);
     connect(&mReloadTimer, &QTimer::timeout, this, &FileMeta::reload);
+    mDirtyLinesUpdater.setSingleShot(true);
+    connect(&mDirtyLinesUpdater, &QTimer::timeout, this, &FileMeta::updateMarks);
 }
 
 void FileMeta::setLocation(const QString &location)
@@ -268,6 +270,37 @@ void FileMeta::blockCountChanged(int newBlockCount)
         mFileRepo->textMarkRepo()->shiftMarks(id(), mChangedLine+1, newBlockCount-mLineCount);
         mLineCount = newBlockCount;
     }
+}
+
+void FileMeta::updateMarks()
+{
+    QMutexLocker mx(&mDirtyLinesMutex);
+
+    // update changed editors
+    for (QWidget *w: mEditors) {
+        AbstractEdit *edit = nullptr;
+        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w)) {
+            edit = ed;
+            ed->marksChanged(mDirtyLines);
+        }
+        if (TextView * tv = ViewHelper::toTextView(w)) {
+            edit = tv->edit();
+            tv->marksChanged(mDirtyLines);
+        }
+        if (edit && mHighlighter) {
+            if (mDirtyLines.size() > 5) {
+                mHighlighter->rehighlight();
+            } else {
+                QList<int> sortedLines(mDirtyLines.toList());
+                std::sort(sortedLines.begin(), sortedLines.end());
+                for (const int &line: sortedLines) {
+                    QTextBlock block = edit->document()->findBlockByNumber(line);
+                    mHighlighter->rehighlightBlock(block);
+                }
+            }
+        }
+    }
+    mDirtyLines.clear();
 }
 
 void FileMeta::reload()
@@ -536,20 +569,11 @@ ErrorHighlighter *FileMeta::highlighter() const
     return mHighlighter;
 }
 
-void FileMeta::marksChanged(QSet<NodeId> groups)
+void FileMeta::marksChanged(QSet<int> lines)
 {
-    // update changed editors
-    for (QWidget *w: mEditors) {
-        AbstractEdit * ed = ViewHelper::toAbstractEdit(w);
-        if (ed && (groups.isEmpty() || groups.contains(ed->groupId()))) {
-            ed->marksChanged();
-        }
-        TextView * tv = ViewHelper::toTextView(w);
-        if (tv && (groups.isEmpty() || groups.contains(tv->groupId()))) {
-            tv->marksChanged();
-        }
-    }
-    if (mHighlighter) mHighlighter->rehighlight();
+    QMutexLocker mx(&mDirtyLinesMutex);
+    mDirtyLines.unite(lines);
+    if (!mDirtyLinesUpdater.isActive()) mDirtyLinesUpdater.start(500);
 }
 
 void FileMeta::reloadDelayed()

@@ -55,7 +55,7 @@ signals:
     void cloneBookmarkMenu(QMenu *menu);
 
 protected slots:
-    virtual void marksChanged();
+    virtual void marksChanged(const QSet<int> dirtyLines = QSet<int>());
 
 protected:
     friend class FileMeta;

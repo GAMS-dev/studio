@@ -171,10 +171,10 @@ public slots:
     void updateExtraSelections();
 
 protected slots:
-    void marksChanged() override;
+    void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
 
 private slots:
-    void updateLineNumberAreaWidth(int newBlockCount);
+    void updateLineNumberAreaWidth(/*int newBlockCount*/);
     void recalcExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
@@ -201,6 +201,7 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
+    virtual int topVisibleLine();
 
 protected:
     class BlockEdit
@@ -270,6 +271,7 @@ private:
     const QString mOpening = "([{'\"";
     const QString mClosing = ")]}'\"";
     bool mAllowBlockEdit = true;
+    int mLnAreaWidth = 0;
 };
 
 class LineNumberArea : public QWidget

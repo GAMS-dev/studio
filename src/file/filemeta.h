@@ -88,7 +88,7 @@ public:
     void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     ErrorHighlighter* highlighter() const;
-    void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
+    void marksChanged(QSet<int> lines = QSet<int>());
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
     void setLocation(const QString &location);
@@ -106,6 +106,7 @@ private slots:
     void modificationChanged(bool modiState);
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
+    void updateMarks();
 
 private:
     struct Data {
@@ -143,6 +144,9 @@ private:
     bool mLoading = false;
     QTimer mTempAutoReloadTimer;
     QTimer mReloadTimer;
+    QTimer mDirtyLinesUpdater;
+    QSet<int> mDirtyLines;
+    QMutex mDirtyLinesMutex;
 };
 
 } // namespace studio

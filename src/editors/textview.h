@@ -83,7 +83,7 @@ private slots:
     void updatePosAndAnchor();
 
 protected slots:
-    void marksChanged();
+    void marksChanged(const QSet<int> dirtyLines = QSet<int>());
 
 protected:
     friend class FileMeta;

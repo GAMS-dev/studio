@@ -67,6 +67,9 @@ protected:
 //    }
 
 private:
+    int topVisibleLine() override;
+
+private:
     TextMapper &mMapper;
     StudioSettings *mSettings;
     qint64 mTopByte = 0;

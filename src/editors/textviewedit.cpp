@@ -196,5 +196,10 @@ void TextViewEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     } while (!item.isNull());
 }
 
+int TextViewEdit::topVisibleLine()
+{
+    return mMapper.absTopLine() + mMapper.visibleOffset();
+}
+
 } // namespace studio
 } // namespace gams

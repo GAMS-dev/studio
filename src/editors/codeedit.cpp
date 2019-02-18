@@ -98,13 +98,12 @@ LineNumberArea* CodeEdit::lineNumberArea()
     return mLineNumberArea;
 }
 
-void CodeEdit::updateLineNumberAreaWidth(int /* newBlockCount */)
+void CodeEdit::updateLineNumberAreaWidth()
 {
-    static int laWidth = 0;
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
-    if (viewportMargins().left() != laWidth) {
+    if (viewportMargins().left() != mLnAreaWidth) {
         mLineNumberArea->repaint();
-        laWidth = viewportMargins().left();
+        mLnAreaWidth = viewportMargins().left();
     }
 }
 
@@ -115,22 +114,23 @@ void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
     } else {
         int top = rect.y();
         int bottom = top + rect.height();
-        QTextBlock b = firstVisibleBlock();
-        while (b.isValid() && b.isVisible()) {
-            QRect blockBounds = blockBoundingGeometry(b).translated(contentOffset()).toAlignedRect();
-            if (top > blockBounds.top() && top < blockBounds.bottom())
-                top = blockBounds.top();
-            if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
-                bottom = blockBounds.bottom()-1;
-            if (blockBounds.bottom() >= rect.bottom())
-                break;
-            b = b.next();
-        }
+        // TODO(JM) major performance issue on calling :blockBoundingGeometry()
+//        QTextBlock b = firstVisibleBlock();
+//        while (b.isValid() && b.isVisible()) {
+//            QRect blockBounds = blockBoundingGeometry(b).translated(contentOffset()).toAlignedRect();
+//            if (top > blockBounds.top() && top < blockBounds.bottom())
+//                top = blockBounds.top();
+//            if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
+//                bottom = blockBounds.bottom()-1;
+//            if (blockBounds.bottom() >= rect.bottom())
+//                break;
+//            b = b.next();
+//        }
         mLineNumberArea->update(0, top, mLineNumberArea->width(), bottom-top);
     }
 
     if (rect.contains(viewport()->rect()))
-        updateLineNumberAreaWidth(0);
+        updateLineNumberAreaWidth();
 }
 
 void CodeEdit::blockEditBlink()
@@ -287,7 +287,7 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
 
     QRect cr = contentsRect();
     mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
-    updateLineNumberAreaWidth(0);
+    updateLineNumberAreaWidth();
     updateExtraSelections();
 }
 
@@ -486,6 +486,12 @@ bool CodeEdit::allowClosing(int chIndex)
     return allowAutoClose && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
+int CodeEdit::topVisibleLine()
+{
+    QTextBlock block = firstVisibleBlock();
+    return block.isValid() ? block.blockNumber() : 0;
+}
+
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 {
     // return pressed: ignore here
@@ -672,11 +678,23 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     delete menu;
 }
 
-void CodeEdit::marksChanged()
+void CodeEdit::marksChanged(const QSet<int> dirtyLines)
 {
-    AbstractEdit::marksChanged();
-    updateLineNumberAreaWidth(0);
-    mLineNumberArea->repaint();
+    AbstractEdit::marksChanged(dirtyLines);
+    bool doPaint = dirtyLines.isEmpty() || dirtyLines.size() > 5;
+    if (!doPaint) {
+        int firstLine = topVisibleLine();
+        for (const int &line: dirtyLines) {
+            if (line >= firstLine && line <= firstLine+100) {
+                doPaint = true;
+                break;
+            }
+        }
+    }
+    if (doPaint) {
+        updateLineNumberAreaWidth();
+        mLineNumberArea->repaint();
+    }
 }
 
 void CodeEdit::dragEnterEvent(QDragEnterEvent* e)
@@ -909,7 +927,7 @@ void CodeEdit::startBlockEdit(int blockNr, int colNr)
     mBlockEdit = new BlockEdit(this, blockNr, colNr);
     mBlockEdit->setOverwriteMode(overwrite);
     mBlockEdit->startCursorTimer();
-    updateLineNumberAreaWidth(0);
+    updateLineNumberAreaWidth();
 }
 
 void CodeEdit::endBlockEdit(bool adjustCursor)
@@ -1338,7 +1356,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     bool hasMarks = marks() && marks()->hasVisibleMarks();
-    if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::marksChanged);
+    if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
