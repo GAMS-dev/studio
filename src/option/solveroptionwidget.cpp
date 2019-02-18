@@ -682,8 +682,8 @@ void SolverOptionWidget::deleteOption()
 
 void SolverOptionWidget::moveOptionUp()
 {
-   if  (!isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
-       return;
+    if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
+        return;
 
    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
    QModelIndex index = selection.at(0);
@@ -698,7 +698,7 @@ void SolverOptionWidget::moveOptionUp()
 
 void SolverOptionWidget::moveOptionDown()
 {
-    if  (isViewCompact() && !isThereARow() && !isThereARowSelection() && !isEverySelectionARow())
+    if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
