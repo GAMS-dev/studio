@@ -244,7 +244,12 @@ void MainWindow::initToolBar()
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
+
+    // this needs to be done here because the widget cannot be inserted between separators from ui file
+    ui->toolBar->insertSeparator(ui->actionSettings);
+    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
     ui->toolBar->insertWidget(ui->actionToggle_Extended_Option_Editor, mGamsOptionWidget);
+    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
 }
 
 void MainWindow::initAutoSave()
