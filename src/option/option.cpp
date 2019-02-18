@@ -330,6 +330,10 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
         return false;
     optHandle_t mOPTHandle;
 
+    optSetExitIndicator(0); // switch of exit() call
+    optSetScreenIndicator(0);
+    optSetErrorCallback(Option::errorCallback);
+
     char msg[GMS_SSSIZE];
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
@@ -477,6 +481,15 @@ bool Option::readDefinition(const QString &systemPath, const QString &optionFile
         return false;
      }
 
+}
+
+int Option::errorCallback(int count, const char *message)
+{
+    Q_UNUSED(count);
+    auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
+    logger->append(message, LogMsgType::Error);
+    return 0;
 }
 
 } // namespace studio
