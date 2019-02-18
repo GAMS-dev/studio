@@ -214,7 +214,6 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     bool viewIsCompact = isViewCompact();
 
     QMenu menu(this);
-    QAction* commentAction = nullptr;
     QAction* moveUpAction = nullptr;
     QAction* moveDownAction = nullptr;
     for(QAction* action : this->actions()) {
@@ -233,7 +232,6 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             action->setVisible( ( !thereIsARow || everySelectionIsARow ) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
-            commentAction = action;
             action->setVisible( everySelectionIsARow && (thereIsARowSelection || !thereIsARow) && !viewIsCompact );
             menu.addAction(action);
             menu.addSeparator();
@@ -274,17 +272,6 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
            if (moveDownAction)
                moveDownAction->setVisible(false);
         }
-        // toggle comment action is disabled when all checkstates of section are not the same
-        index = selection.at(0);
-        bool checkState = items.at(index.row())->disabled;
-        for (i=1; i<selection.count(); ++i) {
-            index = selection.at(i);
-            if (checkState != items.at(index.row())->disabled) {
-                break;
-            }
-        }
-        if (commentAction && (i != selection.count()))
-            commentAction->setVisible(false);
     }
 
     menu.exec(ui->solverOptionTableView->viewport()->mapToGlobal(pos));
