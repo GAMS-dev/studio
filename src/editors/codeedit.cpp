@@ -732,14 +732,13 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     QTextCursor anchor = cursor;
     anchor.setPosition(anchor.anchor());
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.isValid()) break;
+
         cursor.setPosition(block.position());
         if (hasComment)
             cursor.deleteChar();
         else
             cursor.insertText("*");
-
-        if (!block.isValid())
-            break;
     }
     cursor.setPosition(anchor.position());
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
@@ -1296,7 +1295,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    bool hasMarks = marks()->hasVisibleMarks();
+    bool hasMarks = marks() && marks()->hasVisibleMarks();
     if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::marksChanged);
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();

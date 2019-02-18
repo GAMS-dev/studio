@@ -1309,16 +1309,18 @@ void MainWindow::postGamsRun(NodeId origin)
         return;
     }
     if(groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->specialFile(FileKind::Lst);
         bool doFocus = groupNode == mRecent.group;
 
-        if (mSettings->jumpToError())
-            groupNode->jumpToFirstError(doFocus);
-
+        QString lstFile = groupNode->specialFile(FileKind::Lst);
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
 
-        if (mSettings->openLst())
+        bool alreadyJumped = false;
+        if (mSettings->jumpToError())
+            alreadyJumped = groupNode->jumpToFirstError(doFocus, lstNode);
+
+        if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
+
     }
     if (groupNode && groupNode->hasLogNode())
         groupNode->logNode()->logDone();
@@ -2044,6 +2046,19 @@ void MainWindow::storeTree()
 void MainWindow::cloneBookmarkMenu(QMenu *menu)
 {
     menu->addAction(ui->actionToggleBookmark);
+}
+
+void MainWindow::ensureInScreen()
+{
+    QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
+    QRect appGeo = geometry();
+    if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
+    if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
+    if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
+    if (appGeo.y() < screenGeo.y()) appGeo.moveTop(screenGeo.y());
+    if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
+    if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
+    if (appGeo != geometry()) setGeometry(appGeo);
 }
 
 void MainWindow::raiseEdit(QWidget *widget)

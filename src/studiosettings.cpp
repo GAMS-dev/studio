@@ -255,6 +255,7 @@ void StudioSettings::loadViewStates(MainWindow *main)
     main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
     main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     main->restoreState(mAppSettings->value("windowState").toByteArray());
+    main->ensureInScreen();
 
     setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
     setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
