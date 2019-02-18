@@ -100,6 +100,14 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     mExtendedEditor->setWidget(ui->gamsOptionWidget);
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
     mExtendedEditor->setVisible(false);
+
+#ifdef __APPLE__
+    ui->verticalLayout->setContentsMargins(2,2,2,0);
+#else
+    ui->verticalLayout->setContentsMargins(2,0,2,2);
+#endif
+
+
 }
 
 OptionWidget::~OptionWidget()
