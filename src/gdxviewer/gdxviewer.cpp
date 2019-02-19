@@ -22,7 +22,10 @@
 #include "gdxsymbol.h"
 #include "gdxsymboltable.h"
 #include "gdxsymbolview.h"
+#include "common.h"
 #include "exception.h"
+#include "locators/abstractsystemlogger.h"
+#include "locators/sysloglocator.h"
 
 #include <QMutex>
 #include <QtConcurrent>
@@ -49,6 +52,9 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     ui->tvSymbols->setPalette(palette);
 
     mGdxMutex = new QMutex();
+    gdxSetExitIndicator(0); // switch of exit() call
+    gdxSetScreenIndicator(0);
+    gdxSetErrorCallback(GdxViewer::errorCallback);
     char msg[GMS_SSSIZE];
     if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
         EXCEPT() << "Could not load GDX library: " << msg;
@@ -288,6 +294,15 @@ void GdxViewer::toggleSearchColumns(bool checked)
         mSymbolTableProxyModel->setFilterKeyColumn(-1);
     else
         mSymbolTableProxyModel->setFilterKeyColumn(1);
+}
+
+int GdxViewer::errorCallback(int count, const char *message)
+{
+    Q_UNUSED(count);
+    auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
+    logger->append(message, LogMsgType::Error);
+    return 0;
 }
 
 } // namespace gdxviewer

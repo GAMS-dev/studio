@@ -68,6 +68,8 @@ private:
     bool init();
     void free();
 
+    static int errorCallback(int count, const char *message);
+
 private:
     Ui::GdxViewer *ui;
 

@@ -23,6 +23,7 @@ TEMPLATE = app
 include(../tests.pri)
 
 INCLUDEPATH += $$SRCPATH            \
+               $$SRCPATH/locators   \
                $$SRCPATH/support
 
 HEADERS +=                          \
@@ -30,6 +31,8 @@ HEADERS +=                          \
 
 SOURCES +=                                      \
     testcheckforupdatewrapper.cpp               \
+    $$SRCPATH/locators/defaultsystemlogger.cpp  \
+    $$SRCPATH/locators/sysloglocator.cpp        \
     $$SRCPATH/support/checkforupdatewrapper.cpp \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/exception.cpp

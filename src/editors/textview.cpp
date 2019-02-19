@@ -52,8 +52,6 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::cursorPositionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
-//    connect(mEdit, &AbstractEdit::toggleBookmark, this, &TextView::toggleBookmark);
-//    connect(mEdit, &AbstractEdit::jumpToNextBookmark, this, &TextView::jumpToNextBookmark);
     connect(mEdit, &TextViewEdit::searchFindNextPressed, this, &TextView::searchFindNextPressed);
     connect(mEdit, &TextViewEdit::searchFindPrevPressed, this, &TextView::searchFindPrevPressed);
 
@@ -75,23 +73,23 @@ int TextView::lineCount() const
     return mMapper.lineCount();
 }
 
-void TextView::loadFile(const QString &fileName, int codecMib)
+void TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 {
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
     mMapper.setCodec(codecMib == -1 ? QTextCodec::codecForMib(codecMib) : QTextCodec::codecForLocale());
-    mMapper.openFile(fileName);
+    mMapper.openFile(fileName, initAnchor);
     updateVScrollZone();
     int count = (lineCount() < 0) ? mTopBufferLines*3 : lineCount();
     mMapper.setMappingSizes(count);
-    ChangeKeeper x(mDocChanging);
-    mEdit->setPlainText(mMapper.lines(0, count));
-    mEdit->setTextCursor(QTextCursor(mEdit->document()));
+    if (initAnchor)
+        mMapper.setVisibleTopLine(0);
+    topLineMoved();
     mPeekTimer.start(100);
 }
 
 void TextView::closeFile()
 {
-    mMapper.closeAndReset();
+    mMapper.closeAndReset(false);
 }
 
 void TextView::reopenFile()

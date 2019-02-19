@@ -296,7 +296,7 @@ void FileMeta::updateMarks()
 
 void FileMeta::reload()
 {
-    load(mCodec->mibEnum());
+    load(mCodec->mibEnum(), false);
 }
 
 void FileMeta::addEditor(QWidget *edit)
@@ -386,7 +386,7 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
     return mEditors.contains(edit);
 }
 
-void FileMeta::load(int codecMib)
+void FileMeta::load(int codecMib, bool init)
 {
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
@@ -404,8 +404,8 @@ void FileMeta::load(int codecMib)
     }
     if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         for (QWidget *wid: mEditors) {
-            TextView *tView = ViewHelper::toTextView(wid);
-            if (tView) tView->loadFile(location(), codecMib);
+            if (TextView *tView = ViewHelper::toTextView(wid))
+                tView->loadFile(location(), codecMib, init);
             if (kind() == FileKind::Lst) {
                 lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
                 if (lxi) lxi->loadLxi();

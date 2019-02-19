@@ -35,7 +35,7 @@ TextMapper::TextMapper(QObject *parent): QObject(parent)
     mTimer.setInterval(200);
     mTimer.setSingleShot(true);
     connect(&mTimer, &QTimer::timeout, this, &TextMapper::closeFile);
-    closeAndReset();
+    closeAndReset(true);
 }
 
 TextMapper::~TextMapper()
@@ -55,10 +55,10 @@ void TextMapper::setCodec(QTextCodec *codec)
     mCodec = codec;
 }
 
-bool TextMapper::openFile(const QString &fileName)
+bool TextMapper::openFile(const QString &fileName, bool initAnchor)
 {
     if (!fileName.isEmpty()) {
-        closeAndReset();
+        closeAndReset(initAnchor);
         mFile.setFileName(fileName);
         if (!mFile.open(QFile::ReadOnly)) {
             DEB() << "Could not open file " << fileName;
@@ -73,9 +73,10 @@ bool TextMapper::openFile(const QString &fileName)
         }
         Chunk *chunk = getChunk(0);
         if (chunk && chunk->isValid()) {
-            mTopLine.lineCount = chunk->lineCount();
-            mTopLine.localLine = 0;
-            setPosRelative(0,0);
+            if (initAnchor) {
+                mTopLine.lineCount = chunk->lineCount();
+                mTopLine.localLine = 0;
+            }
             updateMaxTop();
             return true;
         }
@@ -87,7 +88,7 @@ void TextMapper::reopenFile()
 {
     QString fileName = mFile.fileName();
     if (!size() && !fileName.isEmpty()) {
-        openFile(fileName);
+        openFile(fileName, false);
     }
 }
 
@@ -118,7 +119,7 @@ bool TextMapper::updateMaxTop() // to be updated on change of size or mBufferedL
     return true;
 }
 
-void TextMapper::closeAndReset()
+void TextMapper::closeAndReset(bool initAnchor)
 {
     closeFile();
     for (Chunk *block: mChunks) {
@@ -132,6 +133,8 @@ void TextMapper::closeAndReset()
     mChunkLineNrs.squeeze();
     mDelimiter.clear();
     mSize = 0;
+    if (initAnchor)
+        setPosAbsolute(nullptr, 0, 0);
 }
 
 

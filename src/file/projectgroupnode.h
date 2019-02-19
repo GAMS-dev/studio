@@ -104,7 +104,7 @@ public:
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
     GamsProcess *gamsProcess() const;
-    void jumpToFirstError(bool focus);
+    bool jumpToFirstError(bool focus, ProjectFileNode *lstNode);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);

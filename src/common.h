@@ -25,6 +25,7 @@
 namespace gams {
 namespace studio {
 
+const QString InvalidGAMS = "The GAMS system you use is not compatible with your version of GAMS Studio. Please use GAMS " GAMS_DISTRIB_VERSION_SHORT " or higher.";
 
 template <typename PHANTOM_TYPE>
 class PhantomInt

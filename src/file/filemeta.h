@@ -79,7 +79,7 @@ public:
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
-    void load(int codecMib);
+    void load(int codecMib, bool init = true);
     void save();
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());

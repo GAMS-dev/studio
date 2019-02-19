@@ -39,7 +39,7 @@ class TextView : public QAbstractScrollArea
     Q_OBJECT
 public:
     explicit TextView(QWidget *parent = nullptr);
-    void loadFile(const QString &fileName, int codecMib);
+    void loadFile(const QString &fileName, int codecMib, bool initAnchor);
     void closeFile();
     void reopenFile();
     qint64 fileSize() const;
@@ -65,9 +65,6 @@ signals:
     void selectionChanged();
     void searchFindNextPressed();
     void searchFindPrevPressed();
-//    void toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine);
-//    void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
-//    void cursorPositionChanged();
 
 public slots:
     void updateExtraSelections();

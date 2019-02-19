@@ -92,9 +92,9 @@ public:
     QTextCodec *codec() const;
     void setCodec(QTextCodec *codec);
 
-    bool openFile(const QString &fileName);
+    bool openFile(const QString &fileName, bool initAnchor);
     void reopenFile();
-    void closeAndReset();
+    void closeAndReset(bool initAnchor);
     qint64 size() const { return mSize; }
     QString delimiter() { return mDelimiter; }
     bool peekChunksForLineNrs(int chunkCount);
