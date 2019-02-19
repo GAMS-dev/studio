@@ -288,16 +288,7 @@ void FileMeta::updateMarks()
             tv->marksChanged(mDirtyLines);
         }
         if (edit && mHighlighter) {
-            if (mDirtyLines.size() > 5) {
-                mHighlighter->rehighlight();
-            } else {
-                QList<int> sortedLines(mDirtyLines.toList());
-                std::sort(sortedLines.begin(), sortedLines.end());
-                for (const int &line: sortedLines) {
-                    QTextBlock block = edit->document()->findBlockByNumber(line);
-                    mHighlighter->rehighlightBlock(block);
-                }
-            }
+            mHighlighter->rehighlight();
         }
     }
     mDirtyLines.clear();

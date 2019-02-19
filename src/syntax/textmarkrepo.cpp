@@ -94,8 +94,10 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
         mBookmarkedFiles << fileId;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
     if (fm) {
-        if (type == TextMark::bookmark) fm->marksChanged();
-        else fm->marksChanged(QSet<int>() << line);
+        fm->marksChanged();
+        // TODO(JM) add list of changed lines
+//        if (type == TextMark::bookmark) fm->marksChanged();
+//        else fm->marksChanged(QSet<int>() << line);
     }
     return mark;
 }
@@ -197,15 +199,15 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
 {
     LineMarks *marks = mMarks.value(fileId);
     if (!marks->size() || !lineShift) return;
-    QSet<int> changedLines;
-    changedLines.reserve(marks->size()*2);
+//    QSet<int> changedLines;
+//    changedLines.reserve(marks->size()*2);
     QMutableMapIterator<int, TextMark*> it(*marks);
     QVector<TextMark*> parked;
     if (lineShift < 0) {
         while (it.hasNext()) {
             it.next();
             if (it.key() < firstLine) continue;
-            changedLines << it.value()->line() << (it.value()->line()+lineShift);
+//            changedLines << it.value()->line() << (it.value()->line()+lineShift);
             parked << it.value();
             it.remove();
         }
@@ -214,7 +216,7 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
         while (it.hasPrevious()) {
             it.previous();
             if (it.key() < firstLine) break;
-            changedLines << it.value()->line() << (it.value()->line()+lineShift);
+//            changedLines << it.value()->line() << (it.value()->line()+lineShift);
             parked << it.value();
             it.remove();
         }
@@ -224,7 +226,9 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
         marks->insert(mark->line(), mark);
     }
     FileMeta *fm = mFileRepo->fileMeta(fileId);
-    if (fm) fm->marksChanged(changedLines);
+    if (fm) fm->marksChanged();
+    // TODO(JM) add list of changed lines
+//    if (fm) fm->marksChanged(changedLines);
 }
 
 void TextMarkRepo::setDebugMode(bool debug)
