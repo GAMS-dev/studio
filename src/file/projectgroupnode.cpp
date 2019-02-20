@@ -257,12 +257,34 @@ ProjectLogNode *ProjectRunGroupNode::logNode()
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
         QFileInfo fi = !specialFile(FileKind::Gms).isEmpty()
-                       ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+"."+suffix);
+                       ? specialFile(FileKind::Gms) : QFileInfo(specialFile(FileKind::Dir)+"/"+name()+"."+suffix);
         QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
     }
     return mLogNode;
+}
+
+///
+/// \brief ProjectGroupNode::setLogLocation sets the location of the log. Filename can be determined automatically from path.
+/// \param path
+///
+void ProjectRunGroupNode::setLogLocation(const QString& path)
+{
+    QFileInfo log(path);
+    QString fullPath;
+
+    fullPath = log.filePath();
+    if (log.isDir()) {
+
+        if (!fullPath.endsWith(QDir::separator()))
+            fullPath.append(QDir::separator());
+
+        QFileInfo filename(mLogNode->file()->location());
+        fullPath.append(filename.completeBaseName() + "." + FileType::from(FileKind::Log).defaultSuffix());
+    }
+
+    mLogNode->file()->setLocation(fullPath);
 }
 
 FileMeta* ProjectRunGroupNode::runnableGms() const
@@ -567,7 +589,7 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
             fullPath += ".ref";
             break;
         case FileKind::Dir:
-            // nothing to do here
+            setLogLocation(fullPath);
             break;
         default:
             qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";

@@ -92,13 +92,8 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
 {
     StudioSettings* settings = SettingsLocator::settings();
 
-    if (!mLogFile && settings->writeLog()) {
-        QFileInfo fi(mFileMeta->location());
-        QString path = mRunGroup->specialFile(FileKind::Dir);
-        path.append(fi.fileName());
-
-        mLogFile = new DynamicFile(path, settings->nrLogBackups(), this);
-    }
+    if (!mLogFile && settings->writeLog())
+        mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
 
     if (!document())
         EXCEPT() << "no log-document to add process data";
