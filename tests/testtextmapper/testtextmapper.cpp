@@ -71,7 +71,7 @@ void TestTextMapper::init()
     mMapper = new TextMapper();
     mMapper->setCodec(QTextCodec::codecForName("utf-8"));
     mMapper->setMappingSizes(100, 1024*16, 512);
-    QVERIFY2(mMapper->openFile(QDir(QDir::tempPath()).absoluteFilePath(testFileName)),
+    QVERIFY2(mMapper->openFile(QDir(QDir::tempPath()).absoluteFilePath(testFileName), true),
              "TextMapper: Error on opening test file.");
 }
 
