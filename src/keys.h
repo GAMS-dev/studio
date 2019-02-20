@@ -37,6 +37,8 @@ enum class Hotkey {
     Paste = 12,
     Undo = 13,
     Redo = 14,
+    MoveViewLineUp = 15,
+    MoveViewLineDown = 16,
     MoveCharGroupRight = 21,
     MoveCharGroupLeft = 22,
     SelectCharGroupRight = 23,

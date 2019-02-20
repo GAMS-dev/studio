@@ -150,7 +150,13 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
 
 void AbstractEdit::keyPressEvent(QKeyEvent *e)
 {
-    QPlainTextEdit::keyPressEvent(e);
+    if (e == Hotkey::MoveViewLineUp) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()-1);
+    } else if (e == Hotkey::MoveViewLineDown) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()+1);
+    } else {
+        QPlainTextEdit::keyPressEvent(e);
+    }
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (e->modifiers() & Qt::ControlModifier) {
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
