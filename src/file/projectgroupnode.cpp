@@ -374,13 +374,14 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
                 || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            path = cleanPath(item.value, "");
+            path = item.value;
             gamsArgs[item.key] = item.value;
         }
     }
 
     QFileInfo fi(gmsLocation);
     if (path.isEmpty()) path = fi.path();
+    setSpecialFile(FileKind::Dir, path);
 
     // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
@@ -458,13 +459,17 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
 
     QString ret = "";
+
+    path.remove("\"");
+    QDir dir(path);
+    if (dir.isRelative()) {
+        path = location() + QDir::separator() + path;
+    }
+
     file.remove("\"");                        // remove quotes from filename
     file = file.trimmed();
-    path.remove("\"");
-
     if (file.isEmpty() || QFileInfo(file).isRelative()) {
         ret = path;
-
         if (! ret.endsWith(QDir::separator()))
             ret += QDir::separator();
     }
@@ -533,7 +538,7 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
             if (runNode)
                 node->file()->setCodec(runNode->codec());
         } else {
-            SysLogLocator::systemLog()->append("Could not create " + loc, LogMsgType::Error);
+            SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
         }
     }
 }
@@ -556,10 +561,13 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
             fullPath += ".gdx";
             break;
         case FileKind::Lst:
-            // no! gams does not add lst extension. unlike .ref or .gdx
+            // gams does not add lst extension. unlike .ref or .gdx
             break;
         case FileKind::Ref:
             fullPath += ".ref";
+            break;
+        case FileKind::Dir:
+            // nothing to do here
             break;
         default:
             qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";
