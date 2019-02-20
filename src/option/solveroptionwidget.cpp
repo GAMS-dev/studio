@@ -685,13 +685,20 @@ void SolverOptionWidget::moveOptionUp()
     if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-   QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-   QModelIndex index = selection.at(0);
-   if (index.row() == 0)
-       return;
+    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    if  (selection.first().row() <= 0)
+        return;
 
-    ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
-                                                    QModelIndex(), index.row()-1);
+    QModelIndexList idxSelection = QModelIndexList(selection);
+    std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
+
+    for(int i=0; i<idxSelection.size(); i++) {
+        QModelIndex idx = idxSelection.at(i);
+        ui->solverOptionTableView->model()->moveRows(QModelIndex(), idx.row(), 1,
+                                                         QModelIndex(), idx.row()-1);
+    }
+//    ui->solverOptionTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
+//                                                 QModelIndex(), index.row()-1);
     updateTableColumnSpan();
     setModified(true);
  }
@@ -702,12 +709,19 @@ void SolverOptionWidget::moveOptionDown()
         return;
 
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    QModelIndex index = selection.at(0);
-    if (index.row()+1 == ui->solverOptionTableView->model()->rowCount())
-       return;
+    if  (selection.last().row() >= mOptionTableModel->rowCount()-1)
+        return;
 
-    mOptionTableModel->moveRows(QModelIndex(), index.row(), selection.count(),
-                                    QModelIndex(), index.row()+selection.count()+1);
+    QModelIndexList idxSelection = QModelIndexList(selection);
+    std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() > b.row(); });
+
+    for(int i=0; i<idxSelection.size(); i++) {
+        QModelIndex idx = idxSelection.at(i);
+        mOptionTableModel->moveRows(QModelIndex(), idx.row(), 1,
+                                    QModelIndex(), idx.row()+2);
+    }
+//    mOptionTableModel->moveRows(QModelIndex(), index.row(), selection.count(),
+//                                QModelIndex(), index.row()+selection.count()+1);
     updateTableColumnSpan();
     setModified(true);
 }
