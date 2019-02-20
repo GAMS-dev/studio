@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QStandardPaths>
+#include <QTextCodec>
 
 #include "commonpaths.h"
 #include "testminosoption.h"
@@ -355,7 +356,7 @@ void TestMINOSOption::testInvalidOption()
     QCOMPARE( optionTokenizer->getOption()->isValid(optionName), nameValid );
 }
 
-void TestMINOSOption::testReadOptionFile()
+void TestMINOSOption::testReadOptionFile_data()
 {
     // given
     QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op2"));
@@ -380,41 +381,138 @@ void TestMINOSOption::testReadOptionFile()
 
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op2");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
-    QCOMPARE( items.size(), 10 );
+    QCOMPARE( items.size(), 13 );
 
-    QVERIFY( containKey (items,"print level") );
-    QCOMPARE( getValue(items,"print level").toInt(),  QVariant("1").toInt() );
+    QTest::addColumn<bool>("optionItem_disabledFlag");
+    QTest::addColumn<bool>("disabledFlag");
+    QTest::addColumn<QString>("optionItem_optionKey");
+    QTest::addColumn<QString>("optionKey");
+    QTest::addColumn<QVariant>("optionItem_optionValue");
+    QTest::addColumn<QVariant>("optionValue");
+    QTest::addColumn<QString>("optionItem_optionText");
+    QTest::addColumn<QString>("optionText");
+    QTest::addColumn<int>("optionItem_optionId");
+    QTest::addColumn<int>("optionId");
+    QTest::addColumn<int>("optionItem_error");
+    QTest::addColumn<int>("error");
 
-    QVERIFY( containKey (items,"hessian dimension") );
-    QCOMPARE( getValue(items,"hessian dimension").toInt(),  QVariant("8").toInt() );
+    // comments
+    QTest::newRow("* this is a comment line")  << items.at(1)->disabled <<  true
+                           << items.at(1)->key      << "* this is a comment line"
+                           << items.at(1)->value    << QVariant("")
+                           << items.at(1)->text     << ""
+                           << items.at(1)->optionId << -1
+                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("[empty line1]")  << items.at(2)->disabled <<  true
+                           << items.at(2)->key      << ""
+                           << items.at(2)->value    << QVariant("")
+                           << items.at(2)->text     << ""
+                           << items.at(2)->optionId << -1
+                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"crash option") );
-    QCOMPARE( getValue(items,"crash option").toInt(),  QVariant("2").toInt() );
+    QTest::newRow("[empty line2]")  << items.at(12)->disabled <<  true
+                           << items.at(12)->key      << ""
+                           << items.at(12)->value    << QVariant("")
+                           << items.at(12)->text     << ""
+                           << items.at(12)->optionId << -1
+                           << static_cast<int>(items.at(12)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"major damping parameter") );
-    QCOMPARE( getValue(items,"major damping parameter").toDouble(), QVariant("4.2").toDouble() );
+    // valid options
+    QTest::newRow("print level 1")  << items.at(0)->disabled <<  false
+                           << items.at(0)->key      << "print level"
+                           << items.at(0)->value    << QVariant("1")
+                           << items.at(0)->text     << ""
+                           << items.at(0)->optionId << 6
+                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"radius of convergence") );
-    QCOMPARE( getValue(items,"radius of convergence").toDouble(), QVariant("0.1").toDouble() );
+    QTest::newRow("hessian dimension=8")  << items.at(3)->disabled <<  false
+                           << items.at(3)->key      << "hessian dimension"
+                           << items.at(3)->value    << QVariant("8")
+                           << items.at(3)->text     << ""
+                           << items.at(3)->optionId << 23
+                           << static_cast<int>(items.at(3)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"lagrangian") );
-    QCOMPARE( getValue(items,"lagrangian").toString(), QVariant("YES").toString() );
+    QTest::newRow("crash option 2")  << items.at(4)->disabled <<  false
+                           << items.at(4)->key      << "crash option"
+                           << items.at(4)->value    << QVariant("2")
+                           << items.at(4)->text     << ""
+                           << items.at(4)->optionId << 32
+                           << static_cast<int>(items.at(4)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"start assigned nonlinears") );
-    QCOMPARE( getValue(items,"start assigned nonlinears").toString(), QVariant("BASIC").toString() );
+    QTest::newRow("major damping parameter 4.2")  << items.at(5)->disabled <<  false
+                           << items.at(5)->key      << "major damping parameter"
+                           << items.at(5)->value    << QVariant("4.2")
+                           << items.at(5)->text     << ""
+                           << items.at(5)->optionId << 39
+                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"scale nonlinear variables") );
-    QCOMPARE( getValue(items,"scale nonlinear variables").toString(), QVariant("").toString() );
+    QTest::newRow("radius of convergence = 0.1")  << items.at(6)->disabled <<  false
+                           << items.at(6)->key      << "radius of convergence"
+                           << items.at(6)->value    << QVariant("0.1")
+                           << items.at(6)->text     << ""
+                           << items.at(6)->optionId << 44
+                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"scale print") );
-    QCOMPARE( getValue(items,"scale print").toString(), QVariant("").toString() );
+    QTest::newRow("lagrangian YES      * Default value (recommended) ")  << items.at(7)->disabled <<  false
+                           << items.at(7)->key      << "lagrangian"
+                           << items.at(7)->value    << QVariant("YES")
+                           << items.at(7)->text     << "Default value (recommended)"
+                           << items.at(7)->optionId << 35
+                           << static_cast<int>(items.at(7)->error)    << static_cast<int>(No_Error);
 
-    QVERIFY( containKey (items,"secret") );
-    QCOMPARE( getValue(items,"secret").toString(),
-              QVariant("strlist - back door for secret or undocumented MINOS options").toString() );
+    QTest::newRow("start assigned nonlinears BASIC")  << items.at(8)->disabled <<  false
+                           << items.at(8)->key      << "start assigned nonlinears"
+                           << items.at(8)->value    << QVariant("BASIC")
+                           << items.at(8)->text     << ""
+                           << items.at(8)->optionId << 51
+                           << static_cast<int>(items.at(8)->error)    << static_cast<int>(No_Error);
+
+    QTest::newRow("scale nonlinear variables  * No value")  << items.at(9)->disabled <<  false
+                           << items.at(9)->key      << "scale nonlinear variables"
+                           << items.at(9)->value    << QVariant("")
+                           << items.at(9)->text     << "No value"
+                           << items.at(9)->optionId << 49
+                           << static_cast<int>(items.at(9)->error)    << static_cast<int>(No_Error);
+
+    QTest::newRow("scale print")  << items.at(10)->disabled <<  false
+                           << items.at(10)->key      << "scale print"
+                           << items.at(10)->value    << QVariant("")
+                           << items.at(10)->text     << ""
+                           << items.at(10)->optionId << 7
+                           << static_cast<int>(items.at(10)->error)    << static_cast<int>(No_Error);
+
+    QTest::newRow("secret strlist - back door for secret or undocumented MINOS options")  << items.at(11)->disabled <<  false
+                           << items.at(11)->key      << "secret"
+                           << items.at(11)->value    << QVariant("strlist - back door for secret or undocumented MINOS options")
+                           << items.at(11)->text     << ""
+                           << items.at(11)->optionId << 59
+                           << static_cast<int>(items.at(11)->error)    << static_cast<int>(No_Error);
+}
+
+void TestMINOSOption::testReadOptionFile()
+{
+    QFETCH(bool, optionItem_disabledFlag);
+    QFETCH(bool, disabledFlag);
+    QFETCH(QString, optionItem_optionKey);
+    QFETCH(QString, optionKey);
+    QFETCH(QVariant, optionItem_optionValue);
+    QFETCH(QVariant, optionValue);
+    QFETCH(QString, optionItem_optionText);
+    QFETCH(QString, optionText);
+    QFETCH(int, optionItem_optionId);
+    QFETCH(int, optionId);
+    QFETCH(int, optionItem_error);
+    QFETCH(int, error);
+
+    QCOMPARE( optionItem_disabledFlag, disabledFlag );
+    QCOMPARE( optionItem_optionKey, optionKey );
+    QCOMPARE( optionItem_optionValue, optionValue );
+    QCOMPARE( optionItem_optionText, optionText );
+    QCOMPARE( optionItem_optionId, optionId );
+    QCOMPARE( optionItem_error, error );
 }
 
 void TestMINOSOption::testNonExistReadOptionFile()
