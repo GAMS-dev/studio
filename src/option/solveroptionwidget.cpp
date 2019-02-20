@@ -435,8 +435,8 @@ void SolverOptionWidget::on_selectRow(int logicalIndex)
         return;
 
     QItemSelectionModel *selectionModel = ui->solverOptionTableView->selectionModel();
-    QModelIndex topLeft = ui->solverOptionTableView->model()->index(logicalIndex, 0, QModelIndex());
-    QModelIndex  bottomRight = ui->solverOptionTableView->model()->index(logicalIndex, 3, QModelIndex());
+    QModelIndex topLeft = ui->solverOptionTableView->model()->index(logicalIndex, SolverOptionTableModel::COLUMN_OPTION_KEY, QModelIndex());
+    QModelIndex  bottomRight = ui->solverOptionTableView->model()->index(logicalIndex, mOptionTableModel->getColumnEntryNumber(), QModelIndex());
     QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 }
