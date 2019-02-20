@@ -579,10 +579,10 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 case optDataInteger: {  // 1
                      qDebug() << QString("%1: %2: dInt %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      QString iv = QString::number(ivalue);
-                     value = getValueFromStr(text, itype, n, iv);
+                     value = getValueFromStr(text, itype, ioptsubtype, n, iv);
                      if (value.simplified().isEmpty() && iopttype == optTypeBoolean) {
                          iv = (ivalue == 0) ? "no" : "yes";
-                         value = getValueFromStr(text, itype, n, iv);
+                         value = getValueFromStr(text, itype, ioptsubtype, n, iv);
                      }
                      valueRead = true;
                      break;
@@ -596,7 +596,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 case optDataString: {  // 3
                      qDebug() << QString("%1: %2: dString %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      QString sv = QString(svalue);
-                     value = getValueFromStr(text, itype, n, sv);
+                     value = getValueFromStr(text, itype, ioptsubtype, n, sv);
                      valueRead = true;
                      break;
                 }
@@ -608,7 +608,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                          strList << QString::fromLatin1(svalue);
                      }
                      QString sv = QString(svalue);
-                     value = getValueFromStr(text, itype, n, sv);
+                     value = getValueFromStr(text, itype, ioptsubtype, n, sv);
                      valueRead = true;
                      break;
                 }
@@ -864,10 +864,10 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                case optDataInteger: {  // 1
                    qDebug() << QString("%1: %2: dInt %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    QString iv = QString::number(ivalue);
-                   definedValue = getValueFromStr(str, itype, n, iv);
+                   definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
                    if (definedValue.simplified().isEmpty() && iopttype == optTypeBoolean) {
                        iv = (ivalue == 0) ? "no" : "yes";
-                       definedValue = getValueFromStr(str, itype, n, iv);
+                       definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
                    }
                    valueRead = true;
                    break;
@@ -881,7 +881,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                case optDataString: {  // 3
                    qDebug() << QString("%1: %2: dString %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    QString sv = QString(svalue);
-                   definedValue = getValueFromStr(str, itype, n, sv);
+                   definedValue = getValueFromStr(str, itype, ioptsubtype, n, sv);
                    valueRead = true;
                    break;
                }
@@ -894,7 +894,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    }
                    // TODO (JP)
                    QString sv = QString(svalue);
-                   definedValue = getValueFromStr(str, itype, n, sv);
+                   definedValue = getValueFromStr(str, itype, ioptsubtype, n, sv);
                    valueRead = true;
                    break;
                }
@@ -1001,9 +1001,12 @@ QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QStrin
         return value;
 }
 
-QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, const QString &hintKey, const QString &hintValue)
+QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, const int ioptsubtype, const QString &hintKey, const QString &hintValue)
 {
+
     if (hintValue.isEmpty()) {
+        if (itype==optDataString && ioptsubtype == optsubNoValue)
+            return hintValue;
        QString key = getKeyFromStr(line, hintKey);
        QString value = line.mid( key.length() ).simplified();
        if (value.startsWith('='))
