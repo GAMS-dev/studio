@@ -173,7 +173,7 @@ ProjectAbstractNode *ProjectRepo::previous(ProjectAbstractNode *node)
     } else {
         return node->parentNode();
     }
-    ProjectGroupNode *group = group = node->toGroup();
+    ProjectGroupNode *group = node->toGroup();
     while (group && group->childCount()) {
         node = group->childNode(group->childCount()-1);
         group = node->toGroup();
