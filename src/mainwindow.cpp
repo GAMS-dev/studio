@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtConcurrent>
-#include <QShortcut>
 #include <QtWidgets>
 
 #include "mainwindow.h"
@@ -76,12 +75,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    // Timers
     mFileTimer.setSingleShot(true);
     mFileTimer.setInterval(100);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
+
+    // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
@@ -94,10 +96,13 @@ MainWindow::MainWindow(QWidget *parent)
         ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
     }
 
+    // Status Bar
     QFont font = ui->statusBar->font();
     font.setPointSizeF(font.pointSizeF()*0.9);
     ui->statusBar->setFont(font);
     mStatusWidgets = new StatusWidgets(this);
+
+    // Project View Setup
     int iconSize = fontInfo().pixelSize()*2-1;
     ui->projectView->setModel(mProjectRepo.treeModel());
     ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
@@ -121,12 +126,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockHelpView->hide();
 #endif
 
-    mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
-                                         ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                                         ui->actionInterrupt, ui->actionStop,
-                                         this);
-    ui->dockOptionEditor->setWidget(mGamsOptionWidget);
-    ui->dockOptionEditor->show();
+    initToolBar();
 
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
@@ -162,7 +162,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
-    connect(ui->dockOptionEditor, &QDockWidget::visibilityChanged, this, &MainWindow::optionViewVisibiltyChanged);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -240,6 +239,25 @@ void MainWindow::initTabs()
 
 }
 
+void MainWindow::initToolBar()
+{
+    mGamsOptionWidget = new OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
+                                         ui->actionCompile, ui->actionCompile_with_GDX_Creation,
+                                         ui->actionInterrupt, ui->actionStop,
+                                         this);
+
+    // this needs to be done here because the widget cannot be inserted between separators from ui file
+    ui->toolBar->insertSeparator(ui->actionSettings);
+    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
+    ui->toolBar->insertWidget(ui->actionToggle_Extended_Option_Editor, mGamsOptionWidget);
+    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
+}
+
+void MainWindow::initAutoSave()
+{
+    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
+}
+
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
@@ -310,8 +328,7 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
-    ui->actionOption_View->setChecked(visibility);
-    ui->dockOptionEditor->setVisible(visibility);
+    mGamsOptionWidget->setEditorExtended(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -338,7 +355,7 @@ bool MainWindow::projectViewVisibility()
 
 bool MainWindow::optionEditorVisibility()
 {
-    return ui->actionOption_View->isChecked();
+    return mGamsOptionWidget->isEditorExtended();
 }
 
 bool MainWindow::helpViewVisibility()
@@ -356,25 +373,9 @@ void MainWindow::on_actionProject_View_triggered(bool checked)
     dockWidgetShow(ui->dockProjectView, checked);
 }
 
-void MainWindow::on_actionOption_View_triggered(bool checked)
-{
-    dockWidgetShow(ui->dockOptionEditor, checked);
-    if(!checked) ui->dockOptionEditor->setFloating(false);
-}
-
 void MainWindow::on_actionHelp_View_triggered(bool checked)
 {
     dockWidgetShow(ui->dockHelpView, checked);
-}
-
-void MainWindow::checkOptionDefinition(bool checked)
-{
-    mGamsOptionWidget->checkOptionDefinition(checked);
-}
-
-bool MainWindow::isOptionDefinitionChecked()
-{
-    return mGamsOptionWidget->isOptionDefinitionChecked();
 }
 
 FileMetaRepo *MainWindow::fileRepo()
@@ -642,11 +643,6 @@ void MainWindow::projectViewVisibiltyChanged(bool visibility)
     ui->actionProject_View->setChecked(visibility || tabifiedDockWidgets(ui->dockProjectView).count());
 }
 
-void MainWindow::optionViewVisibiltyChanged(bool visibility)
-{
-    ui->actionOption_View->setChecked(visibility || tabifiedDockWidgets(ui->dockOptionEditor).count());
-}
-
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
     ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
@@ -678,7 +674,6 @@ void MainWindow::showTabsMenu()
 
 void MainWindow::focusCmdLine()
 {
-    setOptionEditorVisibility(true);
     mGamsOptionWidget->focus();
 }
 
@@ -1467,7 +1462,7 @@ bool MainWindow::isActiveTabRunnable()
     return false;
 }
 
-bool MainWindow::isRecentGroupInRunningState()
+bool MainWindow::isRecentGroupRunning()
 {
     if (!mRecent.group) return false;
     ProjectRunGroupNode *runGroup = mRecent.group->assignedRunGroup();
@@ -1881,7 +1876,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
 void MainWindow::updateRunState()
 {
-    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupInRunningState());
+    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
 #ifdef QWEBENGINE
@@ -1905,21 +1900,10 @@ void MainWindow::setMainGms(ProjectFileNode *node)
     }
 }
 
-void MainWindow::commandLineHelpTriggered()
-{
-#ifdef QWEBENGINE
-    mHelpWidget->on_helpContentRequested(HelpWidget::GAMSCALL_CHAPTER, "");
-    if (ui->dockHelpView->isHidden())
-        ui->dockHelpView->show();
-    if (tabifiedDockWidgets(ui->dockHelpView).count())
-        ui->dockHelpView->raise();
-#endif
-}
-
 void MainWindow::optionRunChanged()
 {
-    if (isActiveTabRunnable() && !isRecentGroupInRunningState())
-        on_actionRun_triggered();
+    if (isActiveTabRunnable() && !isRecentGroupRunning())
+        mGamsOptionWidget->runDefaultAction();
 }
 
 void MainWindow::openInitialFiles()
@@ -2438,11 +2422,6 @@ bool MainWindow::readTabs(const QJsonObject &json)
     return true;
 }
 
-void MainWindow::initAutoSave()
-{
-    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
-}
-
 void MainWindow::writeTabs(QJsonObject &json) const
 {
     QJsonArray tabArray;
@@ -2773,6 +2752,24 @@ void MainWindow::on_actionSelect_encodings_triggered()
     mSettings->saveSettings(this);
 }
 
+void MainWindow::setExtendedEditorVisibility(bool visible)
+{
+    ui->actionToggle_Extended_Option_Editor->setChecked(visible);
+}
+
+void MainWindow::on_actionToggle_Extended_Option_Editor_toggled(bool checked)
+{
+    if (checked) {
+        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/hide"));
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Hide Command Line Parameters Editor");
+    } else {
+        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/show") );
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Show Command Line Parameters Editor");
+    }
+
+    mGamsOptionWidget->setEditorExtended(checked);
+}
+
 QWidget *RecentData::editor() const
 {
     return mEditor;
@@ -2841,16 +2838,13 @@ void MainWindow::resetViews()
             dock->setVisible(false);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
-        } else if (dock == ui->dockOptionEditor) {
-            addDockWidget(Qt::TopDockWidgetArea, dock);
         }
     }
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
 {
-    mGamsOptionWidget->resize( size );
-    this->resizeDocks({ui->dockOptionEditor}, {size.height()}, Qt::Vertical);
+    mGamsOptionWidget->resize(size);
 }
 
 void MainWindow::setForeground()
@@ -2953,4 +2947,3 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 
 }
 }
-

@@ -76,6 +76,7 @@ bool AddOptionHeaderView::isAddOptionCoordinate(QPoint p)
 
 void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int logicalIndex) const
 {
+    if (!painter->isActive()) return;
     painter->save();
     QHeaderView::paintSection(painter, rect, logicalIndex);
     painter->restore();
