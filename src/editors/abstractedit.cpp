@@ -154,6 +154,10 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         verticalScrollBar()->setValue(verticalScrollBar()->value()-1);
     } else if (e == Hotkey::MoveViewLineDown) {
         verticalScrollBar()->setValue(verticalScrollBar()->value()+1);
+    } else if (e == Hotkey::MoveViewPageUp) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()-verticalScrollBar()->pageStep());
+    } else if (e == Hotkey::MoveViewPageDown) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()+verticalScrollBar()->pageStep());
     } else {
         QPlainTextEdit::keyPressEvent(e);
     }

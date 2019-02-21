@@ -39,6 +39,8 @@ enum class Hotkey {
     Redo = 14,
     MoveViewLineUp = 15,
     MoveViewLineDown = 16,
+    MoveViewPageUp = 17,
+    MoveViewPageDown = 18,
     MoveCharGroupRight = 21,
     MoveCharGroupLeft = 22,
     SelectCharGroupRight = 23,
