@@ -133,7 +133,7 @@ FileKind TextMark::refFileKind()
 
 QIcon TextMark::icon()
 {
-    switch (mType) { // TODO(JM) hold ref to TextMark instead of icon
+    switch (mType) {
     case error:
         return QIcon(":/img/exclam-circle-r");
     case link:

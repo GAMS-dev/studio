@@ -246,8 +246,9 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
     mMarksAtMouse.first()->jumpToRefMark();
 }
 
-void AbstractEdit::marksChanged()
+void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 {
+    Q_UNUSED(dirtyLines);
     cachedLineMarks(-1);
 }
 

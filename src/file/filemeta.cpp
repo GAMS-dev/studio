@@ -47,9 +47,11 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForLocale();
     setLocation(location);
-    mTempAutoReloadTimer.setSingleShot(true);
+    mTempAutoReloadTimer.setSingleShot(true); // only for measurement
     mReloadTimer.setSingleShot(true);
     connect(&mReloadTimer, &QTimer::timeout, this, &FileMeta::reload);
+    mDirtyLinesUpdater.setSingleShot(true);
+    connect(&mDirtyLinesUpdater, &QTimer::timeout, this, &FileMeta::updateMarks);
 }
 
 void FileMeta::setLocation(const QString &location)
@@ -270,9 +272,31 @@ void FileMeta::blockCountChanged(int newBlockCount)
     }
 }
 
+void FileMeta::updateMarks()
+{
+    QMutexLocker mx(&mDirtyLinesMutex);
+
+    // update changed editors
+    for (QWidget *w: mEditors) {
+        AbstractEdit *edit = nullptr;
+        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w)) {
+            edit = ed;
+            ed->marksChanged(mDirtyLines);
+        }
+        if (TextView * tv = ViewHelper::toTextView(w)) {
+            edit = tv->edit();
+            tv->marksChanged(mDirtyLines);
+        }
+        if (edit && mHighlighter) {
+            mHighlighter->rehighlight();
+        }
+    }
+    mDirtyLines.clear();
+}
+
 void FileMeta::reload()
 {
-    load(mCodec->mibEnum());
+    load(mCodec->mibEnum(), false);
 }
 
 void FileMeta::addEditor(QWidget *edit)
@@ -288,27 +312,32 @@ void FileMeta::addEditor(QWidget *edit)
     mEditors.prepend(edit);
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
-    AbstractEdit* ptEdit = ViewHelper::toAbstractEdit(edit);
+    AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
 
-    if (ptEdit) {
+    if (aEdit) {
         if (!mDocument)
-            linkDocument(ptEdit->document());
+            linkDocument(aEdit->document());
         else
-            ptEdit->setDocument(mDocument);
-        connect(ptEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
-        connect(ptEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
-        connect(ptEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+            aEdit->setDocument(mDocument);
+        connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
+        connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         if (scEdit) {
             connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
         }
-        if (!ptEdit->viewport()->hasMouseTracking()) {
-            ptEdit->viewport()->setMouseTracking(true);
+        if (!aEdit->viewport()->hasMouseTracking()) {
+            aEdit->viewport()->setMouseTracking(true);
         }
     }
+    if (TextView* tv = ViewHelper::toTextView(edit)) {
+        connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+    }
     if (mEditors.size() == 1) emit documentOpened();
-    if (ptEdit)
-        ptEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+    if (aEdit)
+        aEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
 void FileMeta::editToTop(QWidget *edit)
@@ -326,8 +355,6 @@ void FileMeta::removeEditor(QWidget *edit)
     mEditors.removeAt(i);
 
     if (aEdit) {
-        aEdit->viewport()->removeEventFilter(this);
-        aEdit->removeEventFilter(this);
         QTextDocument *doc = new QTextDocument(aEdit);
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc)); // w/o layout the setDocument() fails
         aEdit->setDocument(doc);
@@ -338,6 +365,12 @@ void FileMeta::removeEditor(QWidget *edit)
                 unlinkAndFreeDocument();
             }
         }
+        disconnect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+    }
+    if (TextView* tv = ViewHelper::toTextView(edit)) {
+        disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
+        disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
 
     if (mEditors.isEmpty()) {
@@ -353,16 +386,29 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
     return mEditors.contains(edit);
 }
 
-void FileMeta::load(int codecMib)
+void FileMeta::load(int codecMib, bool init)
 {
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
 
+    mData = Data(location());
+    // TODO(JM) Later, this method should be moved to the new DataWidget
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
                 mCodec = QTextCodec::codecForMib(codecMib);
                 gdxViewer->reload(mCodec);
+            }
+        }
+        return;
+    }
+    if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
+        for (QWidget *wid: mEditors) {
+            if (TextView *tView = ViewHelper::toTextView(wid))
+                tView->loadFile(location(), codecMib, init);
+            if (kind() == FileKind::Lst) {
+                lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
+                if (lxi) lxi->loadLxi();
             }
         }
         return;
@@ -375,18 +421,21 @@ void FileMeta::load(int codecMib)
         }
         return;
     }
-    if (kind() == FileKind::Lst) {
-        for (QWidget *wid : mEditors) {
-            lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
-            if (lxi) lxi->loadLxi();
-        }
+
+
+    QFile file(location());
+    qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
+    if (file.exists() && file.size() > maxSize) {
+        SysLogLocator::systemLog()->append("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
+                                           + " MB exeeded by " + location());
+        EXCEPT() << ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
+                     + " MB exeeded by " + location());
+//        return;
     }
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
         linkDocument(doc);
     }
-
-    QFile file(location());
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
             EXCEPT() << "Error opening file " << location();
@@ -414,9 +463,10 @@ void FileMeta::load(int codecMib)
             SysLogLocator::systemLog()->append("System doesn't contain codec for MIB " + QString::number(codecMib), LogMsgType::Info);
         }
         file.close();
-        mData = Data(location());
         document()->setModified(false);
+        return;
     }
+    return;
 }
 
 void FileMeta::save()
@@ -469,8 +519,8 @@ FileDifferences FileMeta::compare(QString fileName)
 void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
 {
     emit mFileRepo->openFile(this, groupId, focus, codecMib());
-
-    AbstractEdit* edit = mEditors.size() ? ViewHelper::toAbstractEdit(mEditors.first()) : nullptr;
+    if (!mEditors.size()) return;
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
         QTextCursor tc = QTextCursor(block);
@@ -482,6 +532,10 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
         int mv = int(line - lines/2);
         if (qAbs(mv) > lines/3)
             edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
+        return;
+    }
+    if (TextView *tv = ViewHelper::toTextView(mEditors.first())) {
+        tv->jumpTo(line, column);
     }
 }
 
@@ -506,16 +560,12 @@ ErrorHighlighter *FileMeta::highlighter() const
     return mHighlighter;
 }
 
-void FileMeta::marksChanged(QSet<NodeId> groups)
+void FileMeta::marksChanged(QSet<int> lines)
 {
-    // update changed editors
-    for (QWidget *w: mEditors) {
-        AbstractEdit * ed = ViewHelper::toAbstractEdit(w);
-        if (ed && (groups.isEmpty() || groups.contains(ed->groupId()))) {
-            ed->marksChanged();
-        }
-    }
-    if (mHighlighter) mHighlighter->rehighlight();
+    QMutexLocker mx(&mDirtyLinesMutex);
+    mDirtyLines.unite(lines);
+    if (lines.isEmpty()) mDirtyLinesUpdater.start(0);
+    else if (!mDirtyLinesUpdater.isActive()) mDirtyLinesUpdater.start(500);
 }
 
 void FileMeta::reloadDelayed()
@@ -609,6 +659,18 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
+    } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
+        TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
+        res = tView;
+//        tView->loadFile(location());
+//        QTimer::singleShot(1, tView, &PagingTextView::reorganize);
+        if (kind() == FileKind::Lst) {
+            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
+        }
+        if (kind() == FileKind::Log || kind() == FileKind::Lst || kind() == FileKind::TxtRO) {
+//            tView->setReadOnly(true);
+//            tView->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+        }
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
@@ -616,19 +678,17 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit = ViewHelper::initEditorType(new ProcessLogEdit(tabWidget));
         } else {
             codeEdit  = new CodeEdit(tabWidget);
-            edit = (kind() == FileKind::TxtRO || kind() == FileKind::Txt)
-                    ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
-                    : ViewHelper::initEditorType(codeEdit);
+            edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
+                                             : ViewHelper::initEditorType(codeEdit);
         }
         edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
-
         res = edit;
-        if (kind() == FileKind::Lst) {
-            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(codeEdit, location(), tabWidget));
-        }
-        if (kind() == FileKind::Log || kind() == FileKind::Lst || kind() == FileKind::TxtRO) {
+//        if (kind() == FileKind::Lst) {
+//            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(codeEdit, location(), tabWidget));
+//        }
+        if (kind() == FileKind::Log || /*kind() == FileKind::Lst ||*/ kind() == FileKind::TxtRO) {
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }
@@ -639,7 +699,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
     addEditor(res);
-    if (mEditors.size() == 1 && ViewHelper::toAbstractEdit(res) && kind() != FileKind::Log)
+    if (mEditors.size() == 1 && kind() != FileKind::Log && (ViewHelper::toAbstractEdit(res) || ViewHelper::toTextView(res)))
         load(codecMib);
     return res;
 }

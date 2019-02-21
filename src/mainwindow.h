@@ -136,6 +136,7 @@ public:
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
     void ensureInScreen();
+    void resetLoadAmount();
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
@@ -150,6 +151,7 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
+    void updateLoadAmount();
     void runGmsFile(ProjectFileNode *node);
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);

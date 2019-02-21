@@ -62,6 +62,7 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
     if (!remainingBookmarks) mBookmarkedFiles.removeAll(fileId);
     if (groups.isEmpty()) return;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
+    // TODO(JM) gather dirtyLines
     if (fm) fm->marksChanged();
 }
 
@@ -92,7 +93,12 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
     if (mark->type() == TextMark::bookmark && !mBookmarkedFiles.contains(fileId))
         mBookmarkedFiles << fileId;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
-    if (fm) fm->marksChanged();
+    if (fm) {
+        fm->marksChanged();
+        // TODO(JM) add list of changed lines
+//        if (type == TextMark::bookmark) fm->marksChanged();
+//        else fm->marksChanged(QSet<int>() << line);
+    }
     return mark;
 }
 
@@ -185,8 +191,9 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
 
 const LineMarks *TextMarkRepo::marks(FileId fileId)
 {
-    if (!mMarks.contains(fileId))
+    if (!mMarks.contains(fileId)) {
         mMarks.insert(fileId, new LineMarks());
+    }
     return mMarks.value(fileId, nullptr);
 }
 
@@ -194,12 +201,15 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
 {
     LineMarks *marks = mMarks.value(fileId);
     if (!marks->size() || !lineShift) return;
+//    QSet<int> changedLines;
+//    changedLines.reserve(marks->size()*2);
     QMutableMapIterator<int, TextMark*> it(*marks);
     QVector<TextMark*> parked;
     if (lineShift < 0) {
         while (it.hasNext()) {
             it.next();
             if (it.key() < firstLine) continue;
+//            changedLines << it.value()->line() << (it.value()->line()+lineShift);
             parked << it.value();
             it.remove();
         }
@@ -208,6 +218,7 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
         while (it.hasPrevious()) {
             it.previous();
             if (it.key() < firstLine) break;
+//            changedLines << it.value()->line() << (it.value()->line()+lineShift);
             parked << it.value();
             it.remove();
         }
@@ -218,6 +229,8 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
     }
     FileMeta *fm = mFileRepo->fileMeta(fileId);
     if (fm) fm->marksChanged();
+    // TODO(JM) add list of changed lines
+//    if (fm) fm->marksChanged(changedLines);
 }
 
 void TextMarkRepo::setDebugMode(bool debug)

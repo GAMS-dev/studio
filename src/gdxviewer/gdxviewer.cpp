@@ -296,12 +296,6 @@ void GdxViewer::toggleSearchColumns(bool checked)
         mSymbolTableProxyModel->setFilterKeyColumn(1);
 }
 
-void GdxViewer::reportIoError(int errNr, QString message)
-{
-    // TODO(JM) An exception contains information about it's source line -> it should be thrown where it occurs
-    EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
-}
-
 int GdxViewer::errorCallback(int count, const char *message)
 {
     Q_UNUSED(count);

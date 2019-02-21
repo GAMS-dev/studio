@@ -172,7 +172,6 @@ QWidgetList FileMetaRepo::editors() const
 void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
     if (fileMeta->location().isEmpty()) return;
-
     mWatcher.removePath(fileMeta->location());
     mMissList.removeAll(fileMeta->location());
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
@@ -239,11 +238,6 @@ void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecM
     ProjectRunGroupNode* runGroup = mProjectRepo->findRunGroup(groupId);
     emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
 }
-
-//void FileMetaRepo::dirChanged(const QString &path)
-//{
-//    // TODO(JM) stack dir-name to check after timeout if it's deleted or contents has changed
-//}
 
 void FileMetaRepo::fileChanged(const QString &path)
 {

@@ -17,51 +17,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
-#define GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
+#ifndef TESTTEXTMAPPER_H
+#define TESTTEXTMAPPER_H
 
-#include <QWidget>
-#include <QModelIndex>
+#include "editors/textmapper.h"
+#include <QtTest/QTest>
 
-namespace gams {
-namespace studio {
+using gams::studio::TextMapper;
 
-class TextView;
-class ProjectRunGroupNode;
-
-namespace lxiviewer {
-
-namespace Ui {
-class LxiViewer;
-}
-
-class LxiViewer : public QWidget
+class TestTextMapper : public QObject
 {
     Q_OBJECT
 
-public:
-    explicit LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent);
-    ~LxiViewer();
-
-    TextView *textView() const;
-
-public slots:
-    void loadLxi();
-//    void loadLstFile(ProjectRunGroupNode *group);
-
 private slots:
-    void jumpToTreeItem();
-    void jumpToLine(const QModelIndex &modelIndex);
+    void initTestCase();
+    void cleanupTestCase();
+    void init();
+    void cleanup();
+
+    void testFile();
+    void testReadChunk0();
+    void testReadChunk1();
+    void testMoveBackAChunk();
+    void testFetchBeyondChunk();
+    void testReadLines();
+    void testUpdateLineCounting();
+    void testPeekChunkLineNrs();
+    void testLineNrEstimation();
+    void testPosAndAnchor();
 
 private:
-    Ui::LxiViewer *ui;
-    TextView* mTextView;
-    QString mLstFile;
-    QString mLxiFile;
+    TextMapper *mMapper;
 };
 
-
-} // namespace lxiviewer
-} // namespace studio
-} // namespace gams
-#endif // GAMS_STUDIO_LXIVIEWER_LXIVIEWER_H
+#endif // TESTTEXTMAPPER_H

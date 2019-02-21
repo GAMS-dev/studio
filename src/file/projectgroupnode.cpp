@@ -493,10 +493,9 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
             if (lstNode && !lstNode->file()->editors().isEmpty()) textMark->jumpToRefMark(false);
             textMark->jumpToMark(focus);
         }
+        // jump to first error in LOG
         QVector<TextMark*> backRef = textMark->backRefs(logNode()->file()->id());
-        for (TextMark* logMark: backRef) {
-            if (logMark) logMark->jumpToMark(false, true);
-        }
+        if (backRef.size()) backRef.at(0)->jumpToMark(false, true);
         return true;
     }
     return false;
@@ -709,7 +708,6 @@ void ProjectGroupNode::checkFlags()
 void ProjectGroupNode::updateRunState(const QProcess::ProcessState& state)
 {
     Q_UNUSED(state)
-    // TODO(JM) visualize if a state is running
 }
 
 TextMarkRepo *ProjectGroupNode::marks(const QString& fileName)
@@ -731,7 +729,6 @@ void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
         if (file) {
             file->removeTextMarks(tmTypes);
         } else {
-            // TODO(JM) move file binding to FileMetaRepo
             it.value()->removeTextMarks(tmTypes);
         }
     }
@@ -739,7 +736,6 @@ void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
 
 void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
-    // TODO(JM) move file binding to FileMetaRepo
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 

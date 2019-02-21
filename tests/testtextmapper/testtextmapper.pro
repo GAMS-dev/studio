@@ -18,10 +18,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths \
-           testeditors \
-           testservicelocators \
-           testcheckforupdatewrapper \
-           testtextmapper
+include(../tests.pri)
+
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/editors
+
+HEADERS += \
+    testtextmapper.h \
+    $$SRCPATH/editors/textmapper.h
+
+SOURCES += \
+    testtextmapper.cpp \
+    $$SRCPATH/editors/textmapper.cpp \
+    $$SRCPATH/exception.cpp \
+    $$SRCPATH/logger.cpp

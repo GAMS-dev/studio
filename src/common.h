@@ -20,8 +20,6 @@
 
 #ifndef COMMON_H
 #define COMMON_H
-#include <qhashfunctions.h>
-
 #include <QHashFunctions>
 
 namespace gams {
@@ -97,9 +95,10 @@ enum struct EditorType {
     log = 2,
     syslog = 3,
     txt = 4,
-    lxiLst = 5,
-    gdx = 6,
-    ref = 7,
+    txtRo = 5,
+    lxiLst = 6,
+    gdx = 7,
+    ref = 8,
 };
 
 }

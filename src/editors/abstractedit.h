@@ -55,7 +55,7 @@ signals:
     void cloneBookmarkMenu(QMenu *menu);
 
 protected slots:
-    virtual void marksChanged();
+    virtual void marksChanged(const QSet<int> dirtyLines = QSet<int>());
 
 protected:
     friend class FileMeta;
@@ -82,8 +82,8 @@ protected:
         NodeId group = property("groupId").toInt(&ok);
         return ok ? group : NodeId();
     }
-    void setMarks(const LineMarks *marks);
-    const LineMarks* marks() const;
+    virtual void setMarks(const LineMarks *marks);
+    virtual const LineMarks* marks() const;
     virtual int effectiveBlockNr(const int &localBlockNr) const;
 
 private:

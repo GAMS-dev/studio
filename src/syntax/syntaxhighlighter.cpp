@@ -115,7 +115,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
         if (stack) extendSearch = false;
 
-        // TODO(JM) For states redefined with directives:
+        // HOWTO(JM) For states redefined with directives:
         //   - add new Syntax to mStates
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
