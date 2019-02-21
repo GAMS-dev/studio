@@ -63,11 +63,12 @@ private slots:
     void toggleSearchColumns(bool checked);
 
 private:
-    void reportIoError(int errNr, QString message);
     void loadSymbol(GdxSymbol* selectedSymbol);
     void copySelectionToClipboard();
     bool init();
     void free();
+
+    static int errorCallback(int count, const char *message);
 
 private:
     Ui::GdxViewer *ui;

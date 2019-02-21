@@ -25,6 +25,10 @@ void ViewHelper::setFileId(QWidget *widget, FileId id)
         if (ed != widget)
             ed->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
     }
+    if (TextView *tv = toTextView(widget)) {
+        // if there is an inner edit: set the property additionally
+        tv->edit()->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
+    }
 }
 
 NodeId ViewHelper::groupId(QWidget *widget)
@@ -41,6 +45,10 @@ void ViewHelper::setGroupId(QWidget *widget, NodeId id)
         // if there is an inner edit: set the property additionally
         if (ed != widget)
             ed->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
+    }
+    if (TextView *tv = toTextView(widget)) {
+        // if there is an inner edit: set the property additionally
+        tv->edit()->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
     }
 }
 

@@ -150,7 +150,17 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
 
 void AbstractEdit::keyPressEvent(QKeyEvent *e)
 {
-    QPlainTextEdit::keyPressEvent(e);
+    if (e == Hotkey::MoveViewLineUp) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()-1);
+    } else if (e == Hotkey::MoveViewLineDown) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()+1);
+    } else if (e == Hotkey::MoveViewPageUp) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()-verticalScrollBar()->pageStep());
+    } else if (e == Hotkey::MoveViewPageDown) {
+        verticalScrollBar()->setValue(verticalScrollBar()->value()+verticalScrollBar()->pageStep());
+    } else {
+        QPlainTextEdit::keyPressEvent(e);
+    }
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (e->modifiers() & Qt::ControlModifier) {
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
@@ -236,8 +246,9 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
     mMarksAtMouse.first()->jumpToRefMark();
 }
 
-void AbstractEdit::marksChanged()
+void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 {
+    Q_UNUSED(dirtyLines);
     cachedLineMarks(-1);
 }
 

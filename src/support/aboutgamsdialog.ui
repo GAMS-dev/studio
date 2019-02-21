@@ -30,7 +30,7 @@
      </property>
      <widget class="QWidget" name="LicenseInfo">
       <attribute name="title">
-       <string>License Informations</string>
+       <string>License Information</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>

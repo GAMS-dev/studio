@@ -21,17 +21,22 @@
 #include "ui_gotodialog.h"
 
 #include <QIntValidator>
+#include <QPainter>
 
 namespace gams {
 namespace studio {
 
-GoToDialog::GoToDialog(QWidget *parent)
+GoToDialog::GoToDialog(QWidget *parent, int maxLines, bool wait)
     : QDialog(parent),
-      ui(new Ui::GoToDialog)
+      ui(new Ui::GoToDialog),
+      mMaxLines(qAbs(maxLines)),
+      mWait(wait)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
-    ui->lineEdit->setValidator(new QIntValidator(0, 1000000, this));
+    ui->lineEdit->setPlaceholderText(QString::number(maxLines));
+    int min = parent->fontMetrics().width(QString::number(maxLines)+"0");
+    ui->lineEdit->setMinimumWidth(min);
     connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
 }
 
@@ -47,8 +52,12 @@ int GoToDialog::lineNumber() const
 
 void GoToDialog::on_goToButton_clicked()
 {
-    mLineNumber =(ui->lineEdit->text().toInt())-1;
-    accept();
+    mLineNumber = (ui->lineEdit->text().toInt())-1;
+    if (!mWait && mLineNumber > mMaxLines)
+        ui->lineEdit->setText(QString::number(mMaxLines));
+    if (mLineNumber <= mMaxLines)
+        accept();
+    mWait = false;
 }
 
 }

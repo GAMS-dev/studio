@@ -35,49 +35,54 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
-        {SyntaxDiBdy, QColor(Qt::darkBlue)},
+        {SyntaxDiBdy, QColor(Qt::darkBlue).lighter(170)},
         {SyntaxComnt, QColor(80, 145, 75)},
-        {SyntaxTitle, QColor(Qt::darkBlue)},
-        {SyntaxKeywd, QColor(Qt::darkBlue)},
-        {SyntaxDeclr, QColor(Qt::darkBlue)},
+        {SyntaxTitle, QColor(Qt::darkBlue).lighter(140)},
+        {SyntaxKeywd, QColor(Qt::darkBlue).lighter(140)},
+        {SyntaxDeclr, QColor(Qt::darkBlue).lighter(140)},
         {SyntaxIdent, QColor(Qt::black)},
-        {SyntaxDescr, QColor(Qt::darkBlue).lighter(120)},
-        {SyntaxAssgn, QColor(Qt::darkGreen).darker(130)},
-        {SyntaxTabHd, QColor(Qt::darkGreen).darker(145)},
+        {SyntaxDescr, QColor(Qt::darkBlue).lighter(170)},
+        {SyntaxAssgn, QColor(Qt::darkGreen).darker(140)},
+        {SyntaxAsLab, QColor(Qt::darkGreen).darker(110)},
+//        {SyntaxAsVal, QColor(Qt::darkCyan).darker(150)},
+        {SyntaxAsVal, QColor(0, 80, 120)},
+        {SyntaxTabHd, QColor(Qt::darkGreen).darker(140)},
         {SyntaxEmbed, QColor(200, 70, 0)},
     };
     // To visualize one format: add color index at start e.g. initState(1, new SyntaxReservedBody());
     initState(new SyntaxStandard(), Qt::red);
     initState(new SyntaxDirective(), cl.value(SyntaxDirex));
     initState(new SyntaxDirectiveBody(SyntaxState::DirectiveBody), cl.value(SyntaxDiBdy));
-    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), cl.value(SyntaxComnt), true);
-    initState(new SyntaxDirectiveBody(SyntaxState::Title), cl.value(SyntaxTitle), true, true);
-    initState(new SyntaxCommentLine(), cl.value(SyntaxComnt), true);
-    initState(new SyntaxCommentBlock(), cl.value(SyntaxComnt), true);
+    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), cl.value(SyntaxComnt), fItalic);
+    initState(new SyntaxDirectiveBody(SyntaxState::Title), cl.value(SyntaxTitle), fBoldItalic);
+    initState(new SyntaxCommentLine(), cl.value(SyntaxComnt), fItalic);
+    initState(new SyntaxCommentBlock(), cl.value(SyntaxComnt), fItalic);
 
     initState(new SyntaxDelimiter(SyntaxState::Semicolon));
     initState(new SyntaxDelimiter(SyntaxState::Comma));
-    initState(new SyntaxReserved(), cl.value(SyntaxKeywd), false, true);
+    initState(new SyntaxReserved(), cl.value(SyntaxKeywd), fBold);
     initState(new SyntaxReservedBody());
-    initState(new SyntaxEmbedded(SyntaxState::Embedded), cl.value(SyntaxKeywd), false, true);
-    initState(new SyntaxEmbedded(SyntaxState::EmbeddedEnd), cl.value(SyntaxKeywd), false, true);
-    initState(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed));
-    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), cl.value(SyntaxDeclr), false, true);
-    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), cl.value(SyntaxDeclr), false, true);
-    initState(new SyntaxDeclaration(), cl.value(SyntaxDeclr), false, true);
-    initState(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), false, true);
+    initState(new SyntaxEmbedded(SyntaxState::Embedded), cl.value(SyntaxKeywd), fBold);
+    initState(new SyntaxEmbedded(SyntaxState::EmbeddedEnd), cl.value(SyntaxKeywd), fBold);
+    initState(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed), fNormal);
+    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), cl.value(SyntaxDeclr), fBold);
+    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), cl.value(SyntaxDeclr), fBold);
+    initState(new SyntaxDeclaration(), cl.value(SyntaxDeclr), fBold);
+    initState(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), fBold);
 
     initState(new SyntaxIdentifier(SyntaxState::Identifier));
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), cl.value(SyntaxDescr));
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), cl.value(SyntaxDescr));
     initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), cl.value(SyntaxAssgn));
+    initState(new AssignmentLabel(), cl.value(SyntaxAsLab));
+    initState(new AssignmentValue(), cl.value(SyntaxAsVal));
     initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), cl.value(SyntaxAssgn));
 
     initState(new SyntaxIdentifier(SyntaxState::IdentifierTable));
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), cl.value(SyntaxDescr));
     initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), cl.value(SyntaxDescr));
 
-    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), false, true);
+    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), fBold);
     initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentRow), cl.value(SyntaxAssgn));
 
 }
@@ -110,7 +115,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
         if (stack) extendSearch = false;
 
-        // TODO(JM) For states redefined with directives:
+        // HOWTO(JM) For states redefined with directives:
         //   - add new Syntax to mStates
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
@@ -219,9 +224,11 @@ const QVector<SyntaxState> validparenthesesSyntax = {
 };
 
 const QString validparentheses("{[(}])/");
+const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
 
 void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesesPos> &parentheses)
 {
+    bool inBlock = false;
     if (!validparenthesesSyntax.contains(state)) return;
     for (int i = start; i < start+len; ++i) {
         int kind = validparentheses.indexOf(text.at(i));
@@ -233,6 +240,14 @@ void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len,
         } else if (kind >= 0) {
             parentheses << ParenthesesPos(text.at(i), i);
         }
+        int blockKind = specialBlocks.indexOf(text.at(i));
+        if (!inBlock && blockKind >= 0 && blockKind < specialBlocks.length()/2) {
+            int iEnd = text.indexOf(specialBlocks.at(blockKind + specialBlocks.length()/2), i+1);
+            i = (iEnd > 0) ? iEnd-1 : text.length()-1;
+            inBlock = true;
+        } else {
+            inBlock = false;
+        }
     }
 }
 
@@ -243,27 +258,27 @@ void SyntaxHighlighter::addState(SyntaxAbstract* syntax, CodeIndex ci)
 }
 
 QColor backColor(int index) {
-    static QList<QColor> debColor {Qt::yellow, Qt::cyan, QColor(Qt::blue).lighter(170),
-                                  QColor(Qt::green).lighter()};
+    static QList<QColor> debColor { QColor(Qt::yellow).darker(105), QColor(Qt::cyan).lighter(170),
+                                    QColor(Qt::blue).lighter(180), QColor(Qt::green).lighter(170) };
     index = (qAbs(index)-1) % debColor.size();
     return debColor.at(index);
 }
 
-void SyntaxHighlighter::initState(int debug, SyntaxAbstract *syntax, QColor color, bool bold, bool italic)
-{
-    initState(syntax, color, bold, italic, debug);
-}
-
-void SyntaxHighlighter::initState(SyntaxAbstract *syntax, QColor color, bool italic, bool bold, int debug)
+void SyntaxHighlighter::initState(int debug, SyntaxAbstract *syntax, QColor color, FontModifier fMod)
 {
     if (debug) syntax->charFormat().setBackground(backColor(debug));
 
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     if (color.isValid()) syntax->charFormat().setForeground(color);
-    if (italic) syntax->charFormat().setFontItalic(true);
-    if (bold) syntax->charFormat().setFontWeight(QFont::Bold);
+    if (fMod & fItalic) syntax->charFormat().setFontItalic(true);
+    if (fMod & fBold) syntax->charFormat().setFontWeight(QFont::Bold);
     mStates << syntax;
     addCode(mStates.length()-1, 0);
+}
+
+void SyntaxHighlighter::initState(SyntaxAbstract *syntax, QColor color, FontModifier fMod)
+{
+    initState(false, syntax, color, fMod);
 }
 
 int SyntaxHighlighter::addCode(StateIndex si, CodeIndex ci)

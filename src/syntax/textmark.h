@@ -39,11 +39,12 @@ public:
 
     FileId fileId() const;
     NodeId groupId() const;
-    void jumpToRefMark(bool focus = true);
-    void jumpToMark(bool focus = true);
+    void jumpToRefMark(bool focus = true, bool ignoreColumn = false);
+    void jumpToMark(bool focus = true, bool ignoreColumn = false);
     void setRefMark(TextMark* refMark);
     void unsetRefMark(TextMark* refMark);
     TextMark *refMark() const;
+    QVector<TextMark *> backRefs(FileId fileId) const;
 
     inline bool isErrorRef() { return (mReference && mReference->type() == error); }
     QColor color();
@@ -95,7 +96,6 @@ private:
     FileId mFileId;
     NodeId mGroupId;
     TextMarkRepo* mMarkRepo = nullptr;
-//    int mPosition = -1;
     Type mType = none;
     int mLine = -1;
     int mColumn = 0;
@@ -103,10 +103,7 @@ private:
     int mValue = -1;
     int mSpread = 0;
     TextMark* mReference = nullptr;
-//    TextMarkData* mRefData = nullptr;
     QVector<TextMark*> mBackRefs;
-
-    // TODO(JM) maybe later we want to link the mark to the QTextBlock
     BlockData* mBlockData = nullptr;
 };
 

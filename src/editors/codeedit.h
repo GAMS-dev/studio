@@ -104,7 +104,7 @@ public:
     ~CodeEdit() override;
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
-    int lineNumberAreaWidth();
+    virtual int lineNumberAreaWidth();
     int iconSize();
     LineNumberArea* lineNumberArea();
 
@@ -130,6 +130,8 @@ public:
     void convertToLower();
     void convertToUpper();
     EditorType type() override;
+    QString wordUnderCursor() const;
+    virtual bool hasSelection() const;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -141,6 +143,16 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+    virtual QString lineNrText(int blockNr);
+    virtual bool showLineNr() const;
+    void setAllowBlockEdit(bool allow);
+    virtual void recalcWordUnderCursor();
+    void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
+    virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
+    virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
+    bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
+    virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
+    QTimer &wordDelayTimer() { return mWordDelay; }
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -153,15 +165,16 @@ signals:
 public slots:
     void clearSelection();
     void cutSelection();
-    void copySelection();
-    void pasteClipboard();
+    virtual void copySelection();
+    virtual void selectAllText();
+    virtual void pasteClipboard();
     void updateExtraSelections();
 
 protected slots:
-    void marksChanged() override;
+    void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
 
 private slots:
-    void updateLineNumberAreaWidth(int newBlockCount);
+    void updateLineNumberAreaWidth(/*int newBlockCount*/);
     void recalcExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
@@ -174,11 +187,6 @@ private:
 
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
-    void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
-    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
-    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
-    bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
-    void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit(bool adjustCursor = true);
@@ -193,8 +201,9 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
+    virtual int topVisibleLine();
 
-private:
+protected:
     class BlockEdit
     {
     public:
@@ -238,6 +247,9 @@ private:
         bool mOverwrite = false;
     };
 
+protected:
+    BlockEdit* blockEdit() {return mBlockEdit;}
+
 private:
     LineNumberArea *mLineNumberArea;
     int mCurrentCol;
@@ -258,6 +270,8 @@ private:
     int mIconCols = 0;
     const QString mOpening = "([{'\"";
     const QString mClosing = ")]}'\"";
+    bool mAllowBlockEdit = true;
+    int mLnAreaWidth = 0;
 };
 
 class LineNumberArea : public QWidget

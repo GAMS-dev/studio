@@ -133,6 +133,7 @@ public:
     void convertLowerUpper(bool toUpper);
     void ensureInScreen();
     void setExtendedEditorVisibility(bool visible);
+    void resetLoadAmount();
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
@@ -147,6 +148,7 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
+    void updateLoadAmount();
     void runGmsFile(ProjectFileNode *node);
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
@@ -173,7 +175,7 @@ private slots:
     void closeFileEditors(const FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
+    void changeToLog(ProjectAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
 

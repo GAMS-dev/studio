@@ -22,17 +22,15 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH += $$SRCPATH            \
-               $$SRCPATH/locators   \
-               $$SRCPATH/support
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/editors
 
-HEADERS +=                          \
-    testcheckforupdatewrapper.h
+HEADERS += \
+    testtextmapper.h \
+    $$SRCPATH/editors/textmapper.h
 
-SOURCES +=                                      \
-    testcheckforupdatewrapper.cpp               \
-    $$SRCPATH/locators/defaultsystemlogger.cpp  \
-    $$SRCPATH/locators/sysloglocator.cpp        \
-    $$SRCPATH/support/checkforupdatewrapper.cpp \
-    $$SRCPATH/commonpaths.cpp                   \
-    $$SRCPATH/exception.cpp
+SOURCES += \
+    testtextmapper.cpp \
+    $$SRCPATH/editors/textmapper.cpp \
+    $$SRCPATH/exception.cpp \
+    $$SRCPATH/logger.cpp

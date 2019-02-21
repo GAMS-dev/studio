@@ -17,55 +17,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSLICENSEINFO_H
-#define GAMSLICENSEINFO_H
+#ifndef TESTTEXTMAPPER_H
+#define TESTTEXTMAPPER_H
 
-#include <QMap>
-#include <QString>
+#include "editors/textmapper.h"
+#include <QtTest/QTest>
 
-struct cfgRec;
-typedef struct cfgRec *cfgHandle_t;
+using gams::studio::TextMapper;
 
-struct palRec;
-typedef struct palRec *palHandle_t;
-
-namespace gams {
-namespace studio {
-namespace support {
-
-class GamsLicenseInfo
+class TestTextMapper : public QObject
 {
-public:
-    GamsLicenseInfo();
-    ~GamsLicenseInfo();
+    Q_OBJECT
 
-    int solvers() const;
+private slots:
+    void initTestCase();
+    void cleanupTestCase();
+    void init();
+    void cleanup();
 
-    int solverId(const QString &name);
-
-    QString solverName(int id) const;
-    QMap<int, QString> solverNames();
-
-    QMap<int, int> solverIndices();
-
-    QMap<int, QString> modelTypeNames();
-
-    bool solverCapability(int solver, int modelType) const;
-
-    QString solverLicense(int solverId) const;
-
-private:
-    char* solverCodes(int solverId) const;
-
-    static int errorCallback(int count, const char *message);
+    void testFile();
+    void testReadChunk0();
+    void testReadChunk1();
+    void testMoveBackAChunk();
+    void testFetchBeyondChunk();
+    void testReadLines();
+    void testUpdateLineCounting();
+    void testPeekChunkLineNrs();
+    void testLineNrEstimation();
+    void testPosAndAnchor();
 
 private:
-    cfgHandle_t mCFG;
-    palHandle_t mPAL;
+    TextMapper *mMapper;
 };
 
-}
-}
-}
-
-#endif // GAMSLICENSEINFO_H
+#endif // TESTTEXTMAPPER_H

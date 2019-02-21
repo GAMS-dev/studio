@@ -46,7 +46,6 @@ ProjectFileNode::~ProjectFileNode()
 void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
 {
     ProjectAbstractNode::setParentNode(parent);
-    // TODO(JM) setRunId in FileMeta
 }
 
 QIcon ProjectFileNode::icon()

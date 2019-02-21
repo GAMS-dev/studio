@@ -104,6 +104,22 @@ void Keys::reset()
     *seq << QKeySequence("Shift+Ctrl+Z");
     setHotkey(Hotkey::Redo, seq);
 
+    seq = new KeySeqList("MoveViewLineUp","Move the view one line up");
+    *seq << QKeySequence("Ctrl+Up");
+    setHotkey(Hotkey::MoveViewLineUp, seq);
+
+    seq = new KeySeqList("MoveViewLineDown","Move the view one line down");
+    *seq << QKeySequence("Ctrl+Down");
+    setHotkey(Hotkey::MoveViewLineDown, seq);
+
+    seq = new KeySeqList("MoveViewPageUp","Move the view one page up");
+    *seq << QKeySequence("Ctrl+PgUp");
+    setHotkey(Hotkey::MoveViewPageUp, seq);
+
+    seq = new KeySeqList("MoveViewPageDown","Move the view one page down");
+    *seq << QKeySequence("Ctrl+PgDown");
+    setHotkey(Hotkey::MoveViewPageDown, seq);
+
     seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
     *seq << QKeySequence("Ctrl+Right");
     setHotkey(Hotkey::MoveCharGroupRight, seq);

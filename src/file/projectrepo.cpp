@@ -173,7 +173,7 @@ ProjectAbstractNode *ProjectRepo::previous(ProjectAbstractNode *node)
     } else {
         return node->parentNode();
     }
-    ProjectGroupNode *group = group = node->toGroup();
+    ProjectGroupNode *group = node->toGroup();
     while (group && group->childCount()) {
         node = group->childNode(group->childCount()-1);
         group = node->toGroup();
@@ -747,30 +747,6 @@ void ProjectRepo::setDebugMode(bool debug)
     mFileRepo->setDebugMode(debug);
     mTextMarkRepo->setDebugMode(debug);
 }
-
-//void ProjectRepo::dump(ProjectAbstractNode *fc, int lv)
-//{
-//    if (!fc) return;
-
-//    qDebug() << QString("  ").repeated(lv) + "+ " + fc->location() + "  (" + fc->name() + ")";
-//    ProjectGroupNode *gc = qobject_cast<ProjectGroupNode*>(fc);
-//    if (!gc) return;
-//    for (int i=0 ; i < gc->childCount() ; i++) {
-//        ProjectAbstractNode *child = gc->childNode(i);
-//        dump(child, lv+1);
-//    }
-//}
-
-// TODO(JM) move implementation to AbstractEdit
-//void ProjectRepo::updateLinkDisplay(AbstractEdit *editUnderCursor)
-//{
-//    if (editUnderCursor) {
-//        ProjectFileNode *fc = fileNode(editUnderCursor);
-//        bool ctrl = QApplication::queryKeyboardModifiers() & Qt::ControlModifier;
-//        bool  isLink = fc->mouseOverLink();
-//        editUnderCursor->viewport()->setCursor(ctrl&&isLink ? Qt::PointingHandCursor : Qt::ArrowCursor);
-//    }
-//}
 
 } // namespace studio
 } // namespace gams

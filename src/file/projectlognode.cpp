@@ -88,12 +88,6 @@ void ProjectLogNode::logDone()
     }
 }
 
-//void ProjectLogNode::setParentNode(ProjectGroupNode* parent)
-//{
-//    Q_UNUSED(parent);
-//    EXCEPT() << "The ProjectLogNode is assigned only at construction time";
-//}
-
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
     StudioSettings* settings = SettingsLocator::settings();
@@ -297,7 +291,6 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.col = line.indexOf(" ")+1;
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
-                DEB() << fName;
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
                 mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
                                                            mCurrentErrorHint.lstLine, lineNr, colStart, size);

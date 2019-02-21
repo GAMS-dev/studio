@@ -109,8 +109,8 @@ void SearchDialog::on_btn_FindAll_clicked()
     updateMatchAmount(mCachedResults.size());
     mMain->showResults(mCachedResults);
 
-    CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit);
-    if (ce) ce->updateExtraSelections();
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
+    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
 }
 
 QList<Result> SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
@@ -274,9 +274,9 @@ void SearchDialog::updateSearchResults()
     setSearchStatus(SearchStatus::Searching);
     QApplication::sendPostedEvents();
     mCachedResults.clear();
-    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
     mCachedResults.setSearchTerm(createRegex().pattern());
     mCachedResults.useRegex(regex());
+    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
     mHasChanged = false;
 }
 
@@ -284,7 +284,9 @@ void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
-    if (mHasChanged) updateSearchResults();
+    // only cache when we have changes or are not searching a large file
+    if (mHasChanged && !ViewHelper::toTextView(mMain->recent()->editor()))
+        updateSearchResults();
 
     selectNextMatch(direction);
 }
@@ -343,6 +345,27 @@ void SearchDialog::returnPressed() {
     }
 }
 
+void SearchDialog::searchResume()
+{
+    if (mSplitSeachView && mSplitSeachView == ViewHelper::toTextView(mMain->recent()->editor())) {
+        bool found = mSplitSeachView->findText(mSplitSearchRegEx, mSplitSearchFlags, mSplitSearchContinue);
+        if (found) {
+            setSearchStatus(SearchStatus::Clear);
+//            matchPos = tv->position();
+        }
+        if (mSplitSearchContinue) {
+            setSearchStatus(SearchStatus::Searching);
+            QTimer::singleShot(50, this, &SearchDialog::searchResume);
+        } else {
+            if (!found)
+                setSearchStatus(SearchStatus::NoResults);
+            mSplitSeachView = nullptr;
+            mSplitSearchRegEx = QRegularExpression();
+        }
+    }
+
+}
+
 void SearchDialog::closeEvent(QCloseEvent *e) {
     setSearchStatus(SearchStatus::Clear);
     QDialog::closeEvent(e);
@@ -387,46 +410,57 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 
 void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 {
-    QTextCursor matchSelection;
+    QPoint matchPos;
     QRegularExpression searchRegex = createRegex();
 
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
-
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
-    matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
-    if (mCachedResults.size() > 0) { // has any matches at all
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        QTextCursor matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
-        if (matchSelection.isNull()) { // empty selection == reached end of document
+        if (mCachedResults.size() > 0) { // has any matches at all
 
-            QTextCursor tc(edit->document()); // set to top
-            if (direction == SearchDirection::Backward)
-                tc.movePosition(QTextCursor::End); // move to bottom
+            if (matchSelection.isNull()) { // empty selection == reached end of document
+
+                QTextCursor tc(edit->document()); // set to top
+                if (direction == SearchDirection::Backward)
+                    tc.movePosition(QTextCursor::End); // move to bottom
+                edit->setTextCursor(tc);
+
+                // try once more to start over
+                if (!second) selectNextMatch(direction, true);
+                else setSearchStatus(SearchStatus::NoResults);
+
+            } else { // found next match
+                edit->jumpTo(matchSelection);
+                edit->setTextCursor(matchSelection);
+                matchPos.setY(matchSelection.blockNumber()+1);
+                matchPos.setX(matchSelection.columnNumber() - matchSelection.selectedText().length());
+            }
+        } else { // search had no matches so do nothing
+            setSearchStatus(SearchStatus::NoResults);
+            QTextCursor tc = edit->textCursor();
+            tc.clearSelection();
             edit->setTextCursor(tc);
-
-            // try once more to start over
-            if (!second) selectNextMatch(direction, true);
-            else setSearchStatus(SearchStatus::NoResults);
-
-        } else { // found next match
-            edit->jumpTo(matchSelection);
-            edit->setTextCursor(matchSelection);
+            return;
         }
-    } else { // search had no matches so do nothing
-        setSearchStatus(SearchStatus::NoResults);
-        QTextCursor tc = edit->textCursor();
-        tc.clearSelection();
-        edit->setTextCursor(tc);
-        return;
+    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        mSplitSeachView = tv;
+        mSplitSearchRegEx = searchRegex;
+        mSplitSearchFlags = flags;
+        mSplitSearchContinue = false;
+        setSearchStatus(SearchStatus::Searching);
+        searchResume();
+//        bool found = tv->findText(searchRegex, flags);
     }
 
     // set match and counter
     int count = 0;
     for (Result match: mCachedResults.resultList()) {
-        if (match.lineNr() == matchSelection.blockNumber()+1
-                && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
+        if (match.lineNr() == matchPos.y()
+                && match.colNr() == matchPos.x()) {
             updateMatchAmount(mCachedResults.size(), count+1);
             break;
         } else {
@@ -452,12 +486,13 @@ void SearchDialog::on_cb_caseSens_stateChanged(int)
 
 void SearchDialog::updateReplaceActionAvailability()
 {
-    AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    bool isSourceCode = (ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
-                         || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt);
+    bool activateSearch = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
+                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt
+                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst
+                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txtRo;
 
-    bool activateSearch = isSourceCode || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst;
-    bool activateReplace = (isSourceCode && !edit->isReadOnly());
+    AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+    bool activateReplace = (edit && !edit->isReadOnly());
 
     // replace actions (!readonly):
     ui->txt_replace->setEnabled(activateReplace);
@@ -495,25 +530,29 @@ void SearchDialog::clearResults()
     setSearchStatus(SearchStatus::Clear);
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    if (!edit) return;
-
-    QTextCursor tc = edit->textCursor();
-    tc.clearSelection();
-    edit->setTextCursor(tc);
+    if (edit) {
+        QTextCursor tc = edit->textCursor();
+        tc.clearSelection();
+        edit->setTextCursor(tc);
+    }
     mCachedResults.clear();
 
-    CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit);
-    if (ce) ce->updateExtraSelections();
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
+    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
 }
 
 void SearchDialog::setSearchStatus(SearchStatus status)
 {
     switch (status) {
     case SearchStatus::Searching:
-        ui->lbl_nrResults->setText("Searching...");
+        ui->lbl_nrResults->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        if (ui->lbl_nrResults->text() == QString("Searching...")) ui->lbl_nrResults->setText("Searching.");
+        else if (ui->lbl_nrResults->text() == QString("Searching.")) ui->lbl_nrResults->setText("Searching..");
+        else ui->lbl_nrResults->setText("Searching...");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     case SearchStatus::NoResults:
+        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("No results.");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
@@ -550,16 +589,27 @@ void SearchDialog::insertHistory()
 void SearchDialog::autofillSearchField()
 {
     QWidget *widget = mMain->recent()->editor();
-    AbstractEdit *edit = ViewHelper::toAbstractEdit(widget);
     ProjectAbstractNode *fsc = mMain->projectRepo()->findFileNode(widget);
-    if (!fsc || !edit) return;
+    if (!fsc) return;
 
-    if (edit->textCursor().hasSelection()) {
-        ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
-        ui->combo_search->setCurrentIndex(0);
-    } else {
-        ui->combo_search->setEditText(ui->combo_search->itemText(0));
-        mFirstReturn = false;
+    if (AbstractEdit *edit = ViewHelper::toAbstractEdit(widget)) {
+        if (edit->textCursor().hasSelection()) {
+            ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
+            ui->combo_search->setCurrentIndex(0);
+        } else {
+            ui->combo_search->setEditText(ui->combo_search->itemText(0));
+            mFirstReturn = false;
+        }
+    }
+
+    if (TextView *tv = ViewHelper::toTextView(widget)) {
+        if (tv->hasSelection()) {
+            ui->combo_search->insertItem(-1, tv->selectedText());
+            ui->combo_search->setCurrentIndex(0);
+        } else {
+            ui->combo_search->setEditText(ui->combo_search->itemText(0));
+            mFirstReturn = false;
+        }
     }
 
     ui->combo_search->setFocus();
@@ -631,7 +681,7 @@ SearchResultList* SearchDialog::cachedResults()
     return &mCachedResults;
 }
 
-void SearchDialog::setActiveEditWidget(AbstractEdit *edit)
+void SearchDialog::setActiveEditWidget(QWidget *edit)
 {
     mActiveEdit = edit;
 }

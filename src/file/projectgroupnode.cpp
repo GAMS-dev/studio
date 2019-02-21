@@ -478,17 +478,27 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
     return process && mGamsProcess.get() == process;
 }
 
-void ProjectRunGroupNode::jumpToFirstError(bool focus)
+bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
 {
-    if (!runnableGms()) return;
+    if (!runnableGms()) return false;
     QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
+
     if (textMark) {
-        if (SettingsLocator::settings()->openLst())
+
+        if (SettingsLocator::settings()->openLst()) {
+            textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);
-        else
+        } else {
+            if (lstNode && !lstNode->file()->editors().isEmpty()) textMark->jumpToRefMark(false);
             textMark->jumpToMark(focus);
+        }
+        // jump to first error in LOG
+        QVector<TextMark*> backRef = textMark->backRefs(logNode()->file()->id());
+        if (backRef.size()) backRef.at(0)->jumpToMark(false, true);
+        return true;
     }
+    return false;
 }
 
 void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &result)
@@ -697,7 +707,6 @@ void ProjectGroupNode::checkFlags()
 void ProjectGroupNode::updateRunState(const QProcess::ProcessState& state)
 {
     Q_UNUSED(state)
-    // TODO(JM) visualize if a state is running
 }
 
 TextMarkRepo *ProjectGroupNode::marks(const QString& fileName)
@@ -719,7 +728,6 @@ void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
         if (file) {
             file->removeTextMarks(tmTypes);
         } else {
-            // TODO(JM) move file binding to FileMetaRepo
             it.value()->removeTextMarks(tmTypes);
         }
     }
@@ -727,7 +735,6 @@ void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
 
 void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
 {
-    // TODO(JM) move file binding to FileMetaRepo
     mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
 }
 

@@ -136,6 +136,9 @@ public:
     QMap<QString, OptionDefinition> getOption() const;
 
 private:
+    static int errorCallback(int count, const char *message);
+
+private:
     QMap<QString, OptionDefinition> mOption;
     QMap<QString, QString> mSynonymMap;
     QMap<int, QString> mOptionTypeNameMap;
