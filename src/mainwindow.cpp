@@ -1956,7 +1956,7 @@ void MainWindow::on_actionStop_triggered()
     QtConcurrent::run(process, &GamsProcess::stop);
 }
 
-void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
+void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool createMissing)
 {
     bool moveToEnd = false;
     ProjectLogNode* logNode = mProjectRepo.logNode(node);
@@ -1975,7 +1975,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool createMissing)
     if (logNode->file()->isOpen()) {
         ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
-            setOutputViewVisibility(true);
+            if (openOutput) setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
@@ -2102,7 +2102,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
         ProjectFileNode* fileNode = mProjectRepo.findFileNode(edit);
-        changeToLog(fileNode);
+        changeToLog(fileNode, false, false);
         mRecent.setEditor(tabWidget->currentWidget(), this);
         mRecent.editFileId = fileMeta->id();
         mRecent.path = fileMeta->location();
@@ -2259,7 +2259,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
         mRecent.group = fc->parentNode();
         updateRunState();
     }
-    changeToLog(fc);
+    changeToLog(fc, false, false);
 
     CodeEdit* ce = ViewHelper::toCodeEdit(edit);
     if (ce) ce->updateExtraSelections();

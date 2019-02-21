@@ -46,7 +46,7 @@ signals:
     void closeFile(ProjectFileNode* fc);
     void addExistingFile(ProjectGroupNode* group, const QString& file);
     void getSourcePath(QString& source);
-    void openLogFor(ProjectAbstractNode* node, bool createMissing);
+    void openLogFor(ProjectAbstractNode* node, bool openOutput, bool createMissing);
     void renameGroup(ProjectGroupNode* group);
     void selectAll();
     void expandAll();

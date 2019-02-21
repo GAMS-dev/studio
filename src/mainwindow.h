@@ -177,7 +177,7 @@ private slots:
     void closeFileEditors(const FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
+    void changeToLog(ProjectAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
 
