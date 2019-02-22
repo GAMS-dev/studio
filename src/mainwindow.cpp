@@ -1310,7 +1310,7 @@ void MainWindow::postGamsRun(NodeId origin)
     // add all created files to project explorer
     groupNode->addNodesForSpecialFiles();
 
-    DEB() << "RUNmsec: " << QTime::currentTime().msecsSinceStartOfDay() - mTestTimer.msecsSinceStartOfDay();
+//    DEB() << "RUNmsec: " << QTime::currentTime().msecsSinceStartOfDay() - mTestTimer.msecsSinceStartOfDay();
 }
 
 void MainWindow::postGamsLibRun()
@@ -1763,7 +1763,7 @@ OptionWidget *MainWindow::gamsOptionWidget() const
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
-    mTestTimer = QTime::currentTime();
+//    mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (!runGroup) {

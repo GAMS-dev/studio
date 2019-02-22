@@ -314,7 +314,7 @@ private:
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
 
 private:
-    QTime mTestTimer;
+//    QTime mTestTimer;
     Ui::MainWindow *ui;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;

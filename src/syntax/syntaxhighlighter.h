@@ -20,7 +20,9 @@
 #ifndef SYNTAXHIGHLIGHTER_H
 #define SYNTAXHIGHLIGHTER_H
 
-#include "errorhighlighter.h"
+#include <QSyntaxHighlighter>
+#include "syntaxformats.h"
+#include "textmarkrepo.h"
 
 namespace gams {
 namespace studio {
