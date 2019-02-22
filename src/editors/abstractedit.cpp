@@ -186,24 +186,6 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
     }
 }
 
-QList<TextMark*> AbstractEdit::cachedLineMarks(int lineNr)
-{
-    if (lineNr < 0) {
-        mCacheMarks.clear();
-        mCacheLine = -1;
-        return mCacheMarks;
-    }
-    if (mCacheLine != lineNr || mCacheGroup != groupId()) {
-        mCacheMarks.clear();
-        mCacheLine = lineNr;
-        mCacheGroup = groupId();
-        for (TextMark* mark: mMarks->values(mCacheLine)) {
-            if (mark->groupId() == mCacheGroup) mCacheMarks << mark;
-        }
-    }
-    return mCacheMarks;
-}
-
 const QList<TextMark *> &AbstractEdit::marksAtMouse() const
 {
     return mMarksAtMouse;
@@ -223,7 +205,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         return;
     }
     QTextCursor cursor = cursorForPosition(e->pos());
-    QList<TextMark*> marks = cachedLineMarks(cursor.blockNumber());
+    QList<TextMark*> marks = mMarks->values(effectiveBlockNr(cursor.blockNumber()));
     mMarksAtMouse.clear();
     int col = cursor.positionInBlock();
     for (TextMark* mark: marks) {
@@ -249,7 +231,6 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 {
     Q_UNUSED(dirtyLines);
-    cachedLineMarks(-1);
 }
 
 

@@ -70,7 +70,6 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
-    QList<TextMark *> cachedLineMarks(int lineNr);
     const QList<TextMark*> &marksAtMouse() const;
     inline FileId fileId() {
         bool ok;
@@ -91,9 +90,6 @@ private:
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;
-    QList<TextMark*> mCacheMarks;
-    int mCacheLine = -1;
-    NodeId mCacheGroup;
 };
 
 }
