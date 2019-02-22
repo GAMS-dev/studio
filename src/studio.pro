@@ -280,8 +280,7 @@ HEADERS += \
     support/gamslicenseinfo.h       \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
-    logtabcontextmenu.h \
-    support/solvertablemodel.h
+    logtabcontextmenu.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
