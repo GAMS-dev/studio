@@ -150,7 +150,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             selection.cursor = textCursor();
             int start = m->size() < 0 ? ( m->blockStart() < m->size() ? 0 : m->blockEnd() )
                                       : m->blockStart();
-            int siz = m->size() < 0 ? block.length() : m->size();
+            int siz = m->size() ? (m->size() < 0 ? block.length() : m->size()+1) : m->size();
             DEB() << "line " << line << " [" << m->blockStart() << "/" << m->blockEnd() << "]   calc[" << start << "/" << siz << "]";
             selection.cursor.setPosition(block.position() + start);
             selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, siz);

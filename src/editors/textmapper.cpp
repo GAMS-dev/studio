@@ -40,9 +40,7 @@ TextMapper::TextMapper(QObject *parent): QObject(parent)
 
 TextMapper::~TextMapper()
 {
-    if (mFile.isOpen()) {
-        mFile.close();
-    }
+    closeFile();
 }
 
 QTextCodec *TextMapper::codec() const
@@ -121,12 +119,12 @@ bool TextMapper::updateMaxTop() // to be updated on change of size or mBufferedL
 
 void TextMapper::closeAndReset(bool initAnchor)
 {
-    closeFile();
+    mTimer.stop();
     for (Chunk *block: mChunks) {
         mFile.unmap(block->map);
     }
-    mFile.close();
     mChunks.clear();
+    closeFile();
     mLastChunkWithLineNr = -1;
     mBytesPerLine = 20.0;
     mChunkLineNrs.clear();
@@ -313,8 +311,8 @@ bool TextMapper::setTopLine(int lineNr)
 void TextMapper::closeFile()
 {
     QMutexLocker locker(&mMutex);
-    if (mFile.isOpen()) mFile.close();
     mTimer.stop();
+    if (mFile.isOpen()) mFile.close();
 }
 
 bool TextMapper::setVisibleTopLine(double region)
