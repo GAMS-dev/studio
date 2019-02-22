@@ -699,8 +699,18 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
     addEditor(res);
-    if (mEditors.size() == 1 && kind() != FileKind::Log && (ViewHelper::toAbstractEdit(res) || ViewHelper::toTextView(res)))
-        load(codecMib);
+    if (mEditors.size() == 1 && kind() != FileKind::Log && (ViewHelper::toAbstractEdit(res) || ViewHelper::toTextView(res))) {
+        try {
+            load(codecMib);
+        } catch (Exception &e) {
+            Q_UNUSED(e)
+            if (mEditors.size() > 0) {
+                tabWidget->removeTab(tabWidget->currentIndex()+1);
+                removeEditor(mEditors.first());
+            }
+            e.raise();
+        }
+    }
     return res;
 }
 
