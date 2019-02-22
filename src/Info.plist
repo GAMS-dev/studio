@@ -10,7 +10,6 @@
                 <key>CFBundleTypeExtensions</key>
                 <array>
                     <string>gms</string>
-                    <string>gdx</string>
                 </array>
                 <key>CFBundleTypeIconFile</key>
                 <string>studio.icns</string>
