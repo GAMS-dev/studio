@@ -46,7 +46,7 @@ enum ColorEnum {
     SyntaxEmbed,
 };
 
-class SyntaxHighlighter : public ErrorHighlighter
+class SyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
@@ -54,6 +54,9 @@ public:
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);
+
+public slots:
+    void syntaxState(int position, int &intState);
 
 private:
     SyntaxAbstract *getSyntax(SyntaxState state) const;
@@ -80,6 +83,9 @@ private:
     int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext);
     QString codeDeb(int code);
 
+private:
+    int mPositionForSyntaxState = -1;
+    int mLastSyntaxState = 0;
     States mStates;
     Codes mCodes;
     // TODO(JM) process events after a couple of ms

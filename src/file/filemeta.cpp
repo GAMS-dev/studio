@@ -160,11 +160,9 @@ void FileMeta::linkDocument(QTextDocument *doc)
         mHighlighter = new SyntaxHighlighter(mDocument);
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
-    } else if (kind() != FileKind::Gdx) {
-        mHighlighter = new ErrorHighlighter(mDocument);
     }
-    if (mHighlighter)
-        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+//    if (mHighlighter)
+//        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
 void FileMeta::unlinkAndFreeDocument()
@@ -324,7 +322,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         if (scEdit) {
-            connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+            connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &SyntaxHighlighter::syntaxState);
         }
         if (!aEdit->viewport()->hasMouseTracking()) {
             aEdit->viewport()->setMouseTracking(true);
@@ -377,7 +375,7 @@ void FileMeta::removeEditor(QWidget *edit)
         mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
     }
     if (scEdit && mHighlighter) {
-        disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+        disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &SyntaxHighlighter::syntaxState);
     }
 }
 
@@ -555,7 +553,7 @@ void FileMeta::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
     }
 }
 
-ErrorHighlighter *FileMeta::highlighter() const
+SyntaxHighlighter *FileMeta::highlighter() const
 {
     return mHighlighter;
 }
