@@ -405,8 +405,8 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     if (path.isEmpty()) path = fi.path();
     setSpecialFile(FileKind::Dir, path);
 
-    // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
+    // set default lst name to revert deleted o parameter values
     setSpecialFile(FileKind::Lst, cleanPath(path, fi.baseName() + ".lst"));
 
     bool defaultOverride = false;
@@ -418,7 +418,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         value = value.replace('\\', QDir::separator());
 
         // regex to remove dots at the end of a filename
-        QRegularExpression notDotAsEnding("(\\.+)[\"\\\\ ]*$");
+        QRegularExpression notDotAsEnding("[\\w\\d](\\.)[\"\\\\ ]*$");
         QRegularExpressionMatch match = notDotAsEnding.match(value);
         if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
 
