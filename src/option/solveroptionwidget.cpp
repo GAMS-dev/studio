@@ -526,11 +526,15 @@ void SolverOptionWidget::showOptionDefinition()
     if (ui->solverOptionTableView->model()->rowCount() <= 0)
         return;
 
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    if (indexSelection.count() <= 0)
+        return;
+
     ui->solverOptionTreeView->selectionModel()->clearSelection();
+    selectAnOption();
 
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     if (selection.count() > 0) {
-
         for (int i=0; i<selection.count(); i++) {
             QModelIndex index = selection.at(i);
             if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
