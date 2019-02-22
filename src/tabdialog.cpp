@@ -1,10 +1,13 @@
 #include "tabdialog.h"
 #include "ui_tabdialog.h"
 #include "logger.h"
+#include "editors/viewhelper.h"
+
 #include <QTimer>
 #include <QScrollBar>
 #include <QKeyEvent>
-#include <editors/viewhelper.h>
+#include <QSortFilterProxyModel>
+#include <QTabWidget>
 
 namespace gams {
 namespace studio {
@@ -32,8 +35,6 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &TabDialog::setFilter);
     connect(ui->lineEdit, &QLineEdit::returnPressed, this, &TabDialog::returnPressed);
-
-//    mFilterModel->setFilterFixedString("");
 }
 
 TabDialog::~TabDialog()
