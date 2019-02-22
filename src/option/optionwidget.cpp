@@ -99,6 +99,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     mExtendedEditor->setObjectName("gamsArguments");
     mExtendedEditor->setWidget(ui->gamsOptionWidget);
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
+    connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility);
     mExtendedEditor->setVisible(false);
 
 #ifdef __APPLE__
