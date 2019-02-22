@@ -23,6 +23,7 @@
 #include <QPlainTextEdit>
 #include "common.h"
 #include "syntax/textmarkrepo.h"
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -54,6 +55,9 @@ signals:
     void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
 
+public slots:
+    virtual void updateExtraSelections();
+
 protected slots:
     virtual void marksChanged(const QSet<int> dirtyLines = QSet<int>());
 
@@ -84,12 +88,19 @@ protected:
     virtual void setMarks(const LineMarks *marks);
     virtual const LineMarks* marks() const;
     virtual int effectiveBlockNr(const int &localBlockNr) const;
+    virtual int topVisibleLine();
+    virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
+    virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
 
 private:
     const LineMarks* mMarks = nullptr;
     QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;
+    QTimer mSelUpdater;
+
+private slots:
+    void internalExtraSelUpdate();
 };
 
 }

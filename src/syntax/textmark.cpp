@@ -149,10 +149,7 @@ QIcon TextMark::icon()
     return QIcon();
 }
 
-inline TextMark::Type TextMark::refType() const
-{
-    return (mReference) ? mReference->type() : none;
-}
+
 
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {

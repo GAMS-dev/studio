@@ -31,7 +31,7 @@ namespace gams {
 namespace studio {
 
 ErrorHighlighter::ErrorHighlighter(QTextDocument *doc)
-    : QSyntaxHighlighter(doc)
+    : QSyntaxHighlighter(doc), mMarks(new LineMarks())
 {
 }
 
@@ -83,7 +83,7 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
     end = marksEnd;
 
     for (TextMark* mark: markList) {
-        if (mark->blockStart() >= end || mark->blockEnd() < start)
+        if (mark->blockStart() >= end || mark->blockEnd() < start || true)
             continue;
         QTextCharFormat combinedFormat(charFormat);
         marksStart = qMax(mark->blockStart(), start);
@@ -107,11 +107,6 @@ void ErrorHighlighter::setCombiFormat(int start, int len, const QTextCharFormat 
             combinedFormat.setAnchorName(QString::number(mark->line()));
             setFormat(marksStart, marksEnd-marksStart, combinedFormat);
         }
-        // JM: Now matches are displayed via extraSelections in CodeEdit
-//        if (mark->type() == TextMark::match) {
-//            combinedFormat.setBackground(mark->color());
-//            setFormat(marksStart, marksEnd - marksStart, combinedFormat);
-//        }
     }
 }
 
