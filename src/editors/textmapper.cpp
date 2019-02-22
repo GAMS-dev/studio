@@ -471,7 +471,7 @@ int TextMapper::lineCount() const
     } else {
         count = -qint64(size() / mBytesPerLine) - 1; // estimated
     }
-    if (count >= std::numeric_limits<int>::max() || count <= std::numeric_limits<int>::min())
+    if (count >= std::numeric_limits<int>::max() || count <= std::numeric_limits<int>::min()) // TEST: || count > 500)
         EXCEPT() << "File too large " << mFile.fileName();
     return int(count);
 }

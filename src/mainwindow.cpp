@@ -1025,11 +1025,12 @@ void MainWindow::activeTabChanged(int index)
             try {
                 mStatusWidgets->setLineCount(tv->lineCount());
             } catch (Exception &e) {
-                Q_UNUSED(e)
-                closeFileEditors(fileRepo()->fileMeta(tv)->id());
-                return;
+//                QMessageBox::warning(this, "Exception", e.what());
+                if (fileRepo()->fileMeta(tv))
+                    closeFileEditors(fileRepo()->fileMeta(tv)->id());
+                e.raise();
             }
-        } else if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(editWidget)) {
+        } else if (ViewHelper::toGdxViewer(editWidget)) {
             ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
             node->file()->reload();
@@ -1263,6 +1264,12 @@ void MainWindow::processFileEvents()
 void MainWindow::appendSystemLog(const QString &text)
 {
     mSyslog->append(text, LogMsgType::Info);
+}
+
+void MainWindow::showErrorMessage(QString text)
+{
+    QMessageBox::critical(this, tr("error"), text);
+    mSyslog->append(text, LogMsgType::Error);
 }
 
 void MainWindow::postGamsRun(NodeId origin)
@@ -2063,7 +2070,12 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
             }
         }
-        edit = fileMeta->createEdit(tabWidget, runGroup, codecMib);
+        try {
+            edit = fileMeta->createEdit(tabWidget, runGroup, codecMib);
+        } catch (Exception &e) {
+            showErrorMessage(e.what());
+            return;
+        }
         if (!edit) {
             DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
             return;

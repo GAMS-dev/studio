@@ -154,6 +154,7 @@ public slots:
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
+    void showErrorMessage(QString text);
     void optionRunChanged();
 
 
