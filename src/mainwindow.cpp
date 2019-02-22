@@ -1005,7 +1005,7 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
 
-    loadCommandLineOptions(oldTab, mProjectRepo.findFileNode(editWidget));
+    loadCommandLineOptions(oldTab, node);
     updateRunState();
 
     if (node) {
@@ -2278,10 +2278,8 @@ void MainWindow::on_mainTab_currentChanged(int index)
         mProjectRepo.editorActivated(edit, focusWidget() != ui->projectView);
     }
     ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
-    if (fc) {
-        mRecent.setEditor(edit, this);
-        mRecent.editFileId = fc->file()->id();
-    }
+    if (fc) mRecent.editFileId = fc->file()->id();
+
     if (fc && mRecent.group != fc->parentNode()) {
         mRecent.group = fc->parentNode();
         updateRunState();
