@@ -84,12 +84,17 @@ void TabDialog::resizeToContent()
 
 void TabDialog::keyPressEvent(QKeyEvent *e)
 {
-    if (e->key() == Qt::Key_Down)
-        ui->listView->setCurrentIndex(mFilterModel->index(ui->listView->currentIndex().row()+1, 0));
-    else if (e->key() == Qt::Key_Up)
-        ui->listView->setCurrentIndex(mFilterModel->index(ui->listView->currentIndex().row()-1, 0));
-    else
+    if (e->key() == Qt::Key_Down) {
+        int pos = ui->listView->currentIndex().row()+1;
+        if (pos >= ui->listView->model()->rowCount()) pos = 0;
+        ui->listView->setCurrentIndex(mFilterModel->index(pos, 0));
+    } else if (e->key() == Qt::Key_Up) {
+        int pos = ui->listView->currentIndex().row()-1;
+        if (pos < 0) pos = ui->listView->model()->rowCount()-1;
+        ui->listView->setCurrentIndex(mFilterModel->index(pos, 0));
+    } else {
         QDialog::keyPressEvent(e);
+    }
 }
 
 void TabDialog::setFilter(const QString &filter)
