@@ -1025,7 +1025,7 @@ void MainWindow::activeTabChanged(int index)
             try {
                 mStatusWidgets->setLineCount(tv->lineCount());
             } catch (Exception &e) {
-
+                Q_UNUSED(e)
                 closeFileEditors(fileRepo()->fileMeta(tv)->id());
                 return;
             }

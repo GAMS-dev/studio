@@ -286,7 +286,6 @@ bool TextMapper::setTopOffset(qint64 byteNr)
     if (!chunk) return false;
 
     int localByteNr = int(byteNr - chunk->start);
-    qint64 lastTl = mTopLine.absStart;
     mTopLine.chunkNr = chunk->nr;
     mTopLine.lineCount = chunk->lineCount();
     mTopLine.localLine = 0;
