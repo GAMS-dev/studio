@@ -158,6 +158,8 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
              return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key);
           case Deprecated_Option:
               return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key);
+          case UserDefined_Error:
+              return QString("Invalid option key or value or comment defined").arg(mOptionItem.at(row)->text);
           default:
              break;
           }
