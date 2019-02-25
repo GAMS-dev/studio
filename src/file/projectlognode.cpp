@@ -90,6 +90,7 @@ void ProjectLogNode::logDone()
 
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
+    static int lineCount = 0;
     StudioSettings* settings = SettingsLocator::settings();
     if (!mLogFile && settings->writeLog()) mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
@@ -197,6 +198,10 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         document()->setModified(false);
         mConceal = match.captured() == "\r";
         from = match.capturedEnd();
+    }
+    if (++lineCount > 50) {
+        lineCount = 0;
+        mFileMeta->topEditor()->repaint();
     }
 }
 
