@@ -353,6 +353,7 @@ void FileMeta::removeEditor(QWidget *edit)
     mEditors.removeAt(i);
 
     if (aEdit) {
+        aEdit->setMarks(nullptr);
         QTextDocument *doc = new QTextDocument(aEdit);
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc)); // w/o layout the setDocument() fails
         aEdit->setDocument(doc);

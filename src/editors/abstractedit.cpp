@@ -148,6 +148,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
         for (const TextMark* m: lm) {
             QTextEdit::ExtraSelection selection;
             selection.cursor = textCursor();
+            if (m->blockStart() < 0) continue;
             int start = m->size() < 0 ? ( m->blockStart() < m->size() ? 0 : m->blockEnd() )
                                       : m->blockStart();
             int siz = m->size() ? (m->size() < 0 ? block.length() : m->size()+1) : m->size();
