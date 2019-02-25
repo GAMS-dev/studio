@@ -24,11 +24,13 @@
 #include "../file.h"
 #include "../exception.h"
 #include "searchresultlist.h"
+#include "searchworker.h"
 #include "locators/settingslocator.h"
 #include "editors/viewhelper.h"
 
 #include <QMessageBox>
 #include <QTextDocumentFragment>
+#include <QThread>
 
 namespace gams {
 namespace studio {
@@ -113,6 +115,13 @@ void SearchDialog::on_btn_FindAll_clicked()
     if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
 }
 
+void SearchDialog::handleResult(SearchResultList* results)
+{
+    qDebug() /*rogo: delete*/ << QTime::currentTime() << "handle" << results->size() << "results";
+    updateMatchAmount(results->size());
+    mMain->showResults(*results);
+}
+
 QList<Result> SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
 {
     QList<Result> res;
@@ -171,34 +180,23 @@ QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
     SearchResultList matches;
 
     // when a file has unsaved changes a different search strategy is used.
-    if (fm->isModified())
+    if (fm->isModified()) {
         findInDoc(regexp, fm, &matches);
-    else
-        findOnDisk(regexp, fm, &matches);
+
+    } else {
+        SearchWorker* sw = new SearchWorker(regexp, fm);
+        sw->moveToThread(&mThread);
+
+        connect(&mThread, &QThread::finished, sw, &QObject::deleteLater);
+        connect(this, &SearchDialog::startSearch, sw, &SearchWorker::search);
+        connect(sw, &SearchWorker::resultReady, this, &SearchDialog::handleResult);
+        connect(sw, &SearchWorker::update, this, &SearchDialog::handleResult);
+
+        mThread.start();
+        emit startSearch();
+    }
 
     return matches.resultList();
-}
-
-void SearchDialog::findOnDisk(QRegularExpression searchRegex, FileMeta* fm, SearchResultList* matches)
-{
-    int lineCounter = 0;
-    QFile file(fm->location());
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream in(&file);
-        while (!in.atEnd()) { // read file
-            lineCounter++;
-            QString line = in.readLine();
-
-            QRegularExpressionMatch match;
-            QRegularExpressionMatchIterator i = searchRegex.globalMatch(line);
-            while (i.hasNext()) {
-                match = i.next();
-                matches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
-                                   file.fileName(), line.trimmed());
-            }
-        }
-        file.close();
-    }
 }
 
 void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, SearchResultList* matches)

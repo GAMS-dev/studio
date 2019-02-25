@@ -90,6 +90,7 @@ public slots:
     void on_searchNext();
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
+    void handleResult(SearchResultList* results);
 
 protected slots:
     void returnPressed();
@@ -107,6 +108,9 @@ private slots:
     void on_cb_caseSens_stateChanged(int);
     void on_cb_wholeWords_stateChanged(int arg1);
     void on_cb_regex_stateChanged(int arg1);
+
+signals:
+    void startSearch();
 
 protected:
     void showEvent(QShowEvent *event);
@@ -157,6 +161,7 @@ private:
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
+    QThread mThread;
 };
 
 }
