@@ -43,6 +43,7 @@ public:
 public slots:
     void addProcessData(const QByteArray &data);
     void setJumpToLogEnd(bool state);
+    void repaint();
 
 protected:
     friend class ProjectRepo;
@@ -56,7 +57,6 @@ protected:
         int size = 1;
     };
     QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
-
 
 private:
     ProjectRunGroupNode *mRunGroup = nullptr;
@@ -75,6 +75,8 @@ private:
     bool mConceal = false;
     QString mLastSourceFile;
     DynamicFile *mLogFile = nullptr;
+    int mRepaintCount = -1;
+    QVector<QTextCharFormat> mFormat;
 };
 
 } // namespace studio

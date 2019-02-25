@@ -85,6 +85,18 @@ void ProcessLogEdit::contextMenuEvent(QContextMenuEvent *e)
     delete menu;
 }
 
+void ProcessLogEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
+{
+    Q_UNUSED(selections);
+    return;
+}
+
+//void ProcessLogEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
+//{
+//    Q_UNUSED(selections);
+//    return;
+//}
+
 AbstractEdit::EditorType ProcessLogEdit::type()
 {
     return EditorType::ProcessLog;

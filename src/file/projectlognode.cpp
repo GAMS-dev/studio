@@ -44,6 +44,16 @@ ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup
     if (!runGroup) EXCEPT() << "The runGroup must not be null.";
     mRunGroup = runGroup;
     runGroup->setLogNode(this);
+    QTextCharFormat errFmt;
+    errFmt.setForeground(QColor(180,0,0));
+    errFmt.setUnderlineColor(Qt::red);
+    errFmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+    mFormat << errFmt;
+    QTextCharFormat lnkFmt;
+    lnkFmt.setForeground(QColor(10,20,255));
+    lnkFmt.setUnderlineColor(QColor(10,20,255));
+    lnkFmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    mFormat << lnkFmt;
 }
 
 ProjectLogNode::~ProjectLogNode()
@@ -86,11 +96,11 @@ void ProjectLogNode::logDone()
         delete mLogFile;
         mLogFile = nullptr;
     }
+    mRepaintCount = -1;
 }
 
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
-    static int lineCount = 0;
     StudioSettings* settings = SettingsLocator::settings();
     if (!mLogFile && settings->writeLog()) mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
     // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
@@ -169,6 +179,10 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         if (!newLine.isNull())  {
             int lineNr = document()->blockCount()-1;
             cursor.insertText(newLine+"\n");
+//            QTextBlock block = cursor.block().previous();
+//            QVector<QTextLayout::FormatRange> ranges;
+//            cursor.insertText("\n");
+
             if (mLogFile) mLogFile->appendLine(newLine);
             int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
             for (LinkData mark: marks) {
@@ -179,10 +193,24 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
                     if (mark.textMark->fileKind() == FileKind::Lst)
                         mLastLstLink = mark.textMark;
                     mark.textMark->rehighlight();
+//                    if (mark.size > 0) {
+//                        QTextLayout::FormatRange range;
+//                        range.start = mark.col;
+//                        range.length = mark.size;
+//                        if (mark.textMark->type() == TextMark::error) {
+//                            range.format = mFormat.at(0);
+//                        } else {
+//                            range.format = mFormat.at(1);
+//                        }
+//                        ranges << range;
+//                    }
                 }
-                tm->rehighlight();
+//                tm->rehighlight();
                 size = -1;
             }
+//            if (!ranges.isEmpty()) {
+//                block.layout()->setFormats(ranges);
+//            }
         }
 
         int i = 0;
@@ -199,9 +227,9 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         mConceal = match.captured() == "\r";
         from = match.capturedEnd();
     }
-    if (++lineCount > 50) {
-        lineCount = 0;
-        mFileMeta->topEditor()->repaint();
+    if (mRepaintCount >= 0 && ++mRepaintCount > 200) {
+        mRepaintCount = 0;
+        repaint();
     }
 }
 
@@ -285,6 +313,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
             size = capture(line, posA, posB, 1, ']').toInt()-1;
             posB++;
+            if (mRepaintCount < 0) mRepaintCount = 0;
         }
         {
             QFileInfo fi(fName);
@@ -390,6 +419,14 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
 void ProjectLogNode::setJumpToLogEnd(bool state)
 {
     mJumpToLogEnd = state;
+}
+
+void ProjectLogNode::repaint()
+{
+    ProcessLogEdit *ed = ViewHelper::toLogEdit(mFileMeta->topEditor());
+    if (ed) {
+        ed->viewport()->repaint();
+    }
 }
 
 ProjectFileNode *ProjectLogNode::lstNode() const
