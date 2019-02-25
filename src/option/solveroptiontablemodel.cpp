@@ -169,7 +169,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             return QVariant::fromValue(QColor(Qt::gray));
         } else {
             switch(mOptionItem.at(row)->error) {
-            case Unknown_Error:
+            case UserDefined_Error:
             case Invalid_Key:
             case Incorrect_Value_Type:
             case Value_Out_Of_Range:

@@ -620,25 +620,27 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                     eolComment = getEOLCommentFromStr(text, key, value);
                 }
                 if (valueRead) {
-                   item->optionId = i;
-                   item->key = key;
-                   item->value = value;
-                   item->text = eolComment;
-                   item->error = (errorType == No_Error || errorType == Deprecated_Option) ? errorType : Value_Out_Of_Range;
-                   item->disabled = false;
+                    int commentCharIndex = getEOLCommentCharIndex(text);
+                    item->optionId = i;
+                    item->key = key;
+                    item->value = value;
+                    item->text = (errorType != No_Error && commentCharIndex >= 0) ? text.mid(commentCharIndex+1).simplified() :  eolComment;
+                    item->error = (errorType == No_Error || errorType == Deprecated_Option) ? errorType : Value_Out_Of_Range;
+                    item->disabled = false;
 
-                   mOption->setModified(QString::fromLatin1(name), true);
-                   break;
+                    mOption->setModified(QString::fromLatin1(name), true);
+                    break;
                }
            }
         }
         if (!valueRead)  { // indicator option or error
-           item->optionId = -1;
-           item->key = text;
-           item->value = "";
-           item->text = "";
-           item->error = errorType;
-           item->disabled = false;
+            int commentCharIndex = getEOLCommentCharIndex(text);  qDebug() << "idx=" << commentCharIndex << ":" << text;
+            item->optionId = -1;
+            item->key = (commentCharIndex<0) ? text : text.mid(0, commentCharIndex).simplified();
+            item->value = "";
+            item->text = (commentCharIndex<0) ? "" : text.mid(commentCharIndex+1).simplified();
+            item->error = errorType;
+            item->disabled = false;
        }
     }
 
@@ -708,7 +710,7 @@ OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
         }
         case optMsgUserError: {
             logger()->append(QString::fromLatin1(svalue), LogMsgType::Warning);
-            type = Unknown_Error; break;
+            type = UserDefined_Error; break;
         }
 //        case optMsgTooManyMsgs: { type = Unknown_Error; break; }
         default: break;
@@ -769,8 +771,8 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
             continue;
         case optMsgInputEcho :
         case optMsgHelp:
-            if (messageType != Unknown_Error) {
-                messageType = Unknown_Error;
+            if (messageType != UserDefined_Error) {
+                messageType = UserDefined_Error;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Info);
             }
             break;
@@ -799,8 +801,9 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
             }
             break;
         case optMsgUserError:
-            if (messageType != Invalid_Key) {
-               messageType = Invalid_Key;
+            if (messageType != UserDefined_Error) {
+                qDebug() << "messageType=" << messageType;
+               messageType = UserDefined_Error;  //Invalid_Key;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
             break;
@@ -1067,6 +1070,20 @@ QString OptionTokenizer::getQuotedStringValue(const QString &line, const QString
     }
 
     return  line.mid( startValuePosition, size );
+}
+
+int OptionTokenizer::getEOLCommentCharIndex(const QString &text)
+{
+    int commentCharIndex = -1;
+    if (mOption->isEOLCharDefined()) {
+        for(QChar ch :mOption->getEOLChars()) {
+            if (text.contains(ch)) {
+                commentCharIndex = text.indexOf(ch);
+                break;
+            }
+        }
+    }
+    return commentCharIndex;
 }
 
 QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QTextCodec* codec)

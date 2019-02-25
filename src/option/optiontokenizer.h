@@ -113,6 +113,7 @@ private:
     QString getValueFromStr(const QString &line, const int itype, const int ioptsubtype, const QString &hintKey, const QString &hintValue);
     QString getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue);
     QString getQuotedStringValue(const QString &line, const QString &value);
+    int getEOLCommentCharIndex(const QString &text);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);

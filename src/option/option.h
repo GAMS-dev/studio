@@ -36,7 +36,7 @@ enum OptionErrorType {
     Value_Out_Of_Range,   // 3
     Deprecated_Option,    // 4
     Override_Option,      // 5
-    Unknown_Error         // 6
+    UserDefined_Error     // 6
 };
 
 struct OptionItem {

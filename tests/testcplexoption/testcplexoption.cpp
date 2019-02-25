@@ -658,14 +658,22 @@ void TestCPLEXOption::testReadOptionFile_data()
     out << "epgap  w0.00001 ! 2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"  << endl;  // eol comment
     out << "epgap  1E-5!3MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"     << endl;  // eol comment
     out << "neteprhs 1e-003  ! feasibility tolerance for the network simplex method " << endl; // eol comment
+
+    out << "varsel 1  asd" << endl;
+    out << "barqcpepcomp   !convergence tolerance for the barrier optimizer for QCPs" << endl;
+    out << "non-exist-option 0" << endl;
+    out << "another-non-exist-option" << endl;
+    out << "epint ;" << endl;
+    out << "record !" << endl;
+
     outputFile.close();
 
-    // when
+    //
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
-    QCOMPARE( items.size(), 35 );
+    QCOMPARE( items.size(), 41 );
 
     QTest::addColumn<bool>("optionItem_disabledFlag");
     QTest::addColumn<bool>("disabledFlag");
@@ -818,7 +826,7 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(21)->value    << QVariant("")
                            << items.at(21)->text     << ""
                            << items.at(21)->optionId << -1
-                           << static_cast<int>(items.at(21)->error)    << static_cast<int>(Invalid_Key);
+                           << static_cast<int>(items.at(21)->error)    << static_cast<int>(UserDefined_Error);
     QTest::newRow("siftitlim abc")     // integer incorrectvalue
                            << items.at(22)->disabled <<  false
                            << items.at(22)->key      << "siftitlim abc"
@@ -853,7 +861,7 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(27)->value    << QVariant("")
                            << items.at(27)->text     << ""
                            << items.at(27)->optionId << -1
-                           << static_cast<int>(items.at(27)->error)    << static_cast<int>(Invalid_Key);
+                           << static_cast<int>(items.at(27)->error)    << static_cast<int>(UserDefined_Error);
 
     // with End Of Line Comments
     QTest::newRow("advind 2 ! this sets the option to two")
@@ -893,9 +901,9 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << static_cast<int>(items.at(31)->error)    << static_cast<int>(No_Error);
     QTest::newRow("epgap  w0.00001 ! 2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)")
                            << items.at(32)->disabled <<  false
-                           << items.at(32)->key      << "epgap  w0.00001 ! 2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"
+                           << items.at(32)->key      << "epgap w0.00001"
                            << items.at(32)->value    << QVariant("")
-                           << items.at(32)->text     << ""
+                           << items.at(32)->text     << "2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"
                            << items.at(32)->optionId << -1
                            << static_cast<int>(items.at(32)->error)    << static_cast<int>(Incorrect_Value_Type);
     QTest::newRow("epgap  1E-5!3MIP solve criteria to optimal (default is GAMS OptCA/OptCR)")
@@ -905,7 +913,6 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(33)->text     << "3MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"
                            << items.at(33)->optionId << 65
                            << static_cast<int>(items.at(33)->error)    << static_cast<int>(No_Error);
-
     QTest::newRow("neteprhs 1e-003  ! feasibility tolerance for the network simplex method ")
             << items.at(34)->disabled <<  false
             << items.at(34)->key      << "neteprhs"
@@ -914,6 +921,54 @@ void TestCPLEXOption::testReadOptionFile_data()
             << items.at(34)->optionId << 120
             << static_cast<int>(items.at(34)->error)    << static_cast<int>(No_Error);
 
+    // test negative control flows
+    QTest::newRow("varsel 1  asd")
+            << items.at(35)->disabled <<  false
+            << items.at(35)->key      << "varsel 1  asd"
+            << items.at(35)->value    << QVariant("")
+            << items.at(35)->text     << ""
+            << items.at(35)->optionId << -1
+            << static_cast<int>(items.at(35)->error)    << static_cast<int>(Incorrect_Value_Type);
+
+    QTest::newRow("barqcpepcomp   !convergence tolerance for the barrier optimizer for QCPs")
+            << items.at(36)->disabled <<  false
+            << items.at(36)->key      << "barqcpepcomp"
+            << items.at(36)->value    << QVariant("")
+            << items.at(36)->text     << "convergence tolerance for the barrier optimizer for QCPs"
+            << items.at(36)->optionId << -1
+            << static_cast<int>(items.at(36)->error)    << static_cast<int>(UserDefined_Error);
+
+    QTest::newRow("non-exist-option 0")
+            << items.at(37)->disabled <<  false
+            << items.at(37)->key      << "non-exist-option 0"
+            << items.at(37)->value    << QVariant("")
+            << items.at(37)->text     << ""
+            << items.at(37)->optionId << -1
+            << static_cast<int>(items.at(37)->error)    << static_cast<int>(UserDefined_Error);
+
+    QTest::newRow("another-non-exist-option")
+            << items.at(38)->disabled <<  false
+            << items.at(38)->key      << "another-non-exist-option"
+            << items.at(38)->value    << QVariant("")
+            << items.at(38)->text     << ""
+            << items.at(38)->optionId << -1
+            << static_cast<int>(items.at(38)->error)    << static_cast<int>(UserDefined_Error);
+
+    QTest::newRow("epint ;")   // incorrect EOL comment char
+            << items.at(39)->disabled <<  false
+            << items.at(39)->key      << "epint ;"
+            << items.at(39)->value    << QVariant("")
+            << items.at(39)->text     << ""
+            << items.at(39)->optionId << -1
+            << static_cast<int>(items.at(39)->error)    << static_cast<int>(Incorrect_Value_Type);
+
+    QTest::newRow("record !")   // incorrect EOL comment char
+            << items.at(40)->disabled <<  false
+            << items.at(40)->key      << "record"
+            << items.at(40)->value    << QVariant("")
+            << items.at(40)->text     << ""
+            << items.at(40)->optionId << -1
+            << static_cast<int>(items.at(40)->error)    << static_cast<int>(UserDefined_Error);
 }
 
 void TestCPLEXOption::testReadOptionFile()
