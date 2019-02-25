@@ -462,10 +462,8 @@ void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
     bool isViewCompact = (Qt::CheckState(checkState) == Qt::Checked);
     if (isViewCompact) {
         ui->solverOptionTableView->hideColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
-        ui->solverOptionTableView->hideColumn(mOptionTableModel->getColumnEntryNumber());
     } else {
         ui->solverOptionTableView->showColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
-        ui->solverOptionTableView->showColumn(mOptionTableModel->getColumnEntryNumber());
     }
     for(int i = 0; i < mOptionTableModel->rowCount(); ++i) {
        if (mOptionTableModel->headerData(i, Qt::Vertical, Qt::CheckStateRole).toUInt()==Qt::PartiallyChecked) {
