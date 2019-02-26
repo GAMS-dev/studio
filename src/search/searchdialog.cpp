@@ -108,18 +108,31 @@ void SearchDialog::on_btn_FindAll_clicked()
     default:
         break;
     }
-    updateMatchAmount(mCachedResults.size());
-    mMain->showResults(mCachedResults);
 
     if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
     if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
 }
 
+void SearchDialog::intermediateUpdate(SearchResultList* results)
+{
+    int size = results->size();
+
+    setSearchStatus(SearchStatus::Searching);
+    if (size) mMain->showResults(*results);
+
+    QApplication::processEvents();
+}
+
 void SearchDialog::handleResult(SearchResultList* results)
 {
-    qDebug() /*rogo: delete*/ << QTime::currentTime() << "handle" << results->size() << "results";
-    updateMatchAmount(results->size());
-    mMain->showResults(*results);
+    int size = results->size();
+
+    if (size) {
+        updateMatchAmount(size);
+        mMain->showResults(*results);
+    } else {
+        setSearchStatus(SearchStatus::NoResults);
+    }
 }
 
 QList<Result> SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
@@ -190,7 +203,7 @@ QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
         connect(&mThread, &QThread::finished, sw, &QObject::deleteLater);
         connect(this, &SearchDialog::startSearch, sw, &SearchWorker::search);
         connect(sw, &SearchWorker::resultReady, this, &SearchDialog::handleResult);
-        connect(sw, &SearchWorker::update, this, &SearchDialog::handleResult);
+        connect(sw, &SearchWorker::update, this, &SearchDialog::intermediateUpdate);
 
         mThread.start();
         emit startSearch();
@@ -349,7 +362,6 @@ void SearchDialog::searchResume()
         bool found = mSplitSeachView->findText(mSplitSearchRegEx, mSplitSearchFlags, mSplitSearchContinue);
         if (found) {
             setSearchStatus(SearchStatus::Clear);
-//            matchPos = tv->position();
         }
         if (mSplitSearchContinue) {
             setSearchStatus(SearchStatus::Searching);

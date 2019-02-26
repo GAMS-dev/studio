@@ -91,6 +91,7 @@ public slots:
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void handleResult(SearchResultList* results);
+    void intermediateUpdate(SearchResultList* results);
 
 protected slots:
     void returnPressed();

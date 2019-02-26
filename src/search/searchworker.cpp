@@ -58,7 +58,7 @@ void SearchWorker::search()
                                    file.fileName(), line.trimmed());
             }
 
-            if (lineCounter % 100 == 0)
+            if (lineCounter % 10000 == 0)
                 emit update(mMatches);
 
             // bailout: too many results
