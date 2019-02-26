@@ -602,7 +602,7 @@ QTextDocument *FileMeta::document() const
 
 int FileMeta::codecMib() const
 {
-    return mCodec ? mCodec->mibEnum() : -1;
+    return mCodec ? mCodec->mibEnum() : QTextCodec::codecForLocale()->mibEnum();
 }
 
 void FileMeta::setCodecMib(int mib)
@@ -614,8 +614,8 @@ void FileMeta::setCodecMib(int mib)
     }
     if (document() && !isReadOnly() && codec != mCodec) {
         document()->setModified();
-        setCodec(codec);
     }
+    setCodec(codec);
 }
 
 QTextCodec *FileMeta::codec() const
@@ -651,6 +651,7 @@ bool FileMeta::isOpen() const
 QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib)
 {
     QWidget* res = nullptr;
+    if (codecMib == -1) codecMib = FileMeta::codecMib();
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gdx) {

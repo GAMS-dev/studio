@@ -2071,6 +2071,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
         try {
+            if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, runGroup, codecMib);
         } catch (Exception &e) {
             showErrorMessage(e.what());
@@ -2408,9 +2409,8 @@ bool MainWindow::readTabs(const QJsonObject &json)
             QJsonObject tabObject = tabArray[i].toObject();
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
-                int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, true, mib);
+                    openFilePath(location, true);
                     mOpenTabsList << location;
                 }
                 QApplication::processEvents(QEventLoop::AllEvents, 1);
@@ -2442,7 +2442,6 @@ void MainWindow::writeTabs(QJsonObject &json) const
         if (!fm) continue;
         QJsonObject tabObject;
         tabObject["location"] = fm->location();
-        tabObject["codecMib"] = fm->codecMib();
         // TODO(JM) store current tab index
         tabArray.append(tabObject);
     }
