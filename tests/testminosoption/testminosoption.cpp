@@ -377,6 +377,10 @@ void TestMINOSOption::testReadOptionFile_data()
     out << "scale print" << endl;
     out << "secret strlist - back door for secret or undocumented MINOS options" << endl;
     out << "" << endl;
+    out << "unbounded step size * ub" << endl;
+    out << "unbounded_step_size 1.2345" << endl;
+    out << "scale option 2 ! Scale linear + nonlinear variables" << endl;
+    out << "start_assigned_nonlinears ELIGIBLE_FOR_CRASH" << endl;
     outputFile.close();
 
     // when
@@ -384,7 +388,7 @@ void TestMINOSOption::testReadOptionFile_data()
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
-    QCOMPARE( items.size(), 13 );
+    QCOMPARE( items.size(), 17 );
 
     QTest::addColumn<bool>("optionItem_disabledFlag");
     QTest::addColumn<bool>("disabledFlag");
@@ -490,6 +494,41 @@ void TestMINOSOption::testReadOptionFile_data()
                            << items.at(11)->text     << ""
                            << items.at(11)->optionId << 59
                            << static_cast<int>(items.at(11)->error)    << static_cast<int>(No_Error);
+
+    QTest::newRow("unbounded step size * ub")
+                           << items.at(13)->disabled <<  false
+                           << items.at(13)->key      << "unbounded step size"
+                           << items.at(13)->value    << QVariant("")
+                           << items.at(13)->text     << "ub"
+                           << items.at(13)->optionId << -1
+                           << static_cast<int>(items.at(13)->error)    << static_cast<int>(UserDefined_Error);
+
+    // incorrect Option Key
+    QTest::newRow("unbounded_step_size 1.2345")
+                           << items.at(14)->disabled <<  false
+                           << items.at(14)->key      << "unbounded_step_size 1.2345"
+                           << items.at(14)->value    << QVariant("")
+                           << items.at(14)->text     << ""
+                           << items.at(14)->optionId << -1
+                           << static_cast<int>(items.at(14)->error)    << static_cast<int>(UserDefined_Error);
+
+    // incorrect EOL Comment Character
+    QTest::newRow("scale option 2 ! Scale linear + nonlinear variables")
+                           << items.at(15)->disabled <<  false
+                           << items.at(15)->key      << "scale option 2 ! Scale linear + nonlinear variables"
+                           << items.at(15)->value    << QVariant("")
+                           << items.at(15)->text     << ""
+                           << items.at(15)->optionId << -1
+                           << static_cast<int>(items.at(15)->error)    << static_cast<int>(Incorrect_Value_Type);
+
+    QTest::newRow("start_assigned_nonlinears ELIGIBLE_FOR_CRASH")
+                           << items.at(16)->disabled <<  false
+                           << items.at(16)->key      << "start_assigned_nonlinears ELIGIBLE_FOR_CRASH"
+                           << items.at(16)->value    << QVariant("")
+                           << items.at(16)->text     << ""
+                           << items.at(16)->optionId << -1
+                           << static_cast<int>(items.at(16)->error)    << static_cast<int>(UserDefined_Error);
+
 }
 
 void TestMINOSOption::testReadOptionFile()

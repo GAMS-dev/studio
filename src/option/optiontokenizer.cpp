@@ -634,7 +634,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
            }
         }
         if (!valueRead)  { // indicator option or error
-            int commentCharIndex = getEOLCommentCharIndex(text);  qDebug() << "idx=" << commentCharIndex << ":" << text;
+            int commentCharIndex = getEOLCommentCharIndex(text);
             item->optionId = -1;
             item->key = (commentCharIndex<0) ? text : text.mid(0, commentCharIndex).simplified();
             item->value = "";
