@@ -80,37 +80,45 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 
 void SearchDialog::on_btn_FindAll_clicked()
 {
-    clearResults();
+    if (!mSearching) {
+        mSearching = true;
+        ui->btn_FindAll->setText("Abort");
+        clearResults();
 
-    mCachedResults.clear();
-    mCachedResults.setSearchTerm(createRegex().pattern());
-    mCachedResults.useRegex(regex());
+        mCachedResults.clear();
+        mCachedResults.setSearchTerm(createRegex().pattern());
+        mCachedResults.useRegex(regex());
 
-    insertHistory();
+        insertHistory();
 
-    setSearchStatus(SearchStatus::Searching);
-    QApplication::sendPostedEvents();
+        setSearchStatus(SearchStatus::Searching);
+        QApplication::sendPostedEvents();
 
-    switch (ui->combo_scope->currentIndex()) {
-    case SearchScope::ThisFile:
-        if (mMain->recent()->editor())
-            mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
-        break;
-    case SearchScope::ThisGroup:
-        mCachedResults.addResultList(findInGroup());
-        break;
-    case SearchScope::OpenTabs:
-        mCachedResults.addResultList(findInOpenFiles());
-        break;
-    case SearchScope::AllFiles:
-        mCachedResults.addResultList(findInAllFiles());
-        break;
-    default:
-        break;
+        switch (ui->combo_scope->currentIndex()) {
+        case SearchScope::ThisFile:
+            if (mMain->recent()->editor())
+                mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
+            break;
+        case SearchScope::ThisGroup:
+            mCachedResults.addResultList(findInGroup());
+            break;
+        case SearchScope::OpenTabs:
+            mCachedResults.addResultList(findInOpenFiles());
+            break;
+        case SearchScope::AllFiles:
+            mCachedResults.addResultList(findInAllFiles());
+            break;
+        default:
+            break;
+        }
+
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
+        if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
+    } else {
+        mSearching = false;
+        ui->btn_FindAll->setText("Find All");
+        mThread.requestInterruption();
     }
-
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
-    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
 }
 
 void SearchDialog::intermediateUpdate(SearchResultList* results)
@@ -119,12 +127,13 @@ void SearchDialog::intermediateUpdate(SearchResultList* results)
 
     setSearchStatus(SearchStatus::Searching);
     if (size) mMain->showResults(*results);
-
-    QApplication::processEvents();
 }
 
 void SearchDialog::handleResult(SearchResultList* results)
 {
+    mSearching = false;
+    ui->btn_FindAll->setText("Find All");
+
     int size = results->size();
 
     if (size) {
@@ -200,10 +209,10 @@ QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
         SearchWorker* sw = new SearchWorker(regexp, fm);
         sw->moveToThread(&mThread);
 
-        connect(&mThread, &QThread::finished, sw, &QObject::deleteLater);
-        connect(this, &SearchDialog::startSearch, sw, &SearchWorker::search);
-        connect(sw, &SearchWorker::resultReady, this, &SearchDialog::handleResult);
-        connect(sw, &SearchWorker::update, this, &SearchDialog::intermediateUpdate);
+        connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
+        connect(this, &SearchDialog::startSearch, sw, &SearchWorker::search, Qt::UniqueConnection);
+        connect(sw, &SearchWorker::resultReady, this, &SearchDialog::handleResult, Qt::UniqueConnection);
+        connect(sw, &SearchWorker::update, this, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
 
         mThread.start();
         emit startSearch();

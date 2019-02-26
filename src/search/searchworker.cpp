@@ -35,7 +35,7 @@ SearchWorker::SearchWorker(QRegularExpression regex, FileMeta* fm)
 
 SearchWorker::~SearchWorker()
 {
-    delete mMatches;
+//    delete mMatches;
 }
 
 void SearchWorker::search()
@@ -45,9 +45,10 @@ void SearchWorker::search()
     if (file.open(QIODevice::ReadOnly)) {
         QTextStream in(&file);
         while (!in.atEnd()) { // read file
-            if (abortSignal) break;
-
             lineCounter++;
+
+            if (lineCounter % 1000 == 0 && thread()->isInterruptionRequested()) break;
+
             QString line = in.readLine();
 
             QRegularExpressionMatch match;
@@ -58,24 +59,22 @@ void SearchWorker::search()
                                    file.fileName(), line.trimmed());
             }
 
-            if (lineCounter % 10000 == 0)
-                emit update(mMatches);
+            // abort: too many results
+            if (mMatches->size() > 9999) break;
 
-            // bailout: too many results
-            if (mMatches->size() > 9999)
-                break;
+            // update periodically
+            if (lineCounter % 10000 == 0) {
+                emit update(mMatches);
+            }
+
 
         }
         file.close();
     }
     emit resultReady(mMatches);
-}
 
-void SearchWorker::abortSearch()
-{
-    abortSignal = true;
+    thread()->quit();
 }
-
 
 }
 }

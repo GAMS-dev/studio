@@ -40,11 +40,7 @@ signals:
     void update(SearchResultList* intermediateResult);
     void resultReady(SearchResultList* result);
 
-public slots:
-    void abortSearch();
-
 private:
-    bool abortSignal = false;
     QRegularExpression mRegex;
     FileMeta* mFm;
     SearchResultList* mMatches;
