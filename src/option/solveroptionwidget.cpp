@@ -218,6 +218,11 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     bool thereIsARowSelection = thereIsARow && isThereARowSelection();
     bool everySelectionIsARow = thereIsARow && (indexSelection.count() % ui->solverOptionTableView->model()->columnCount() == 0);
     bool viewIsCompact = isViewCompact();
+    if (viewIsCompact) {
+        for(QAction* action : this->actions())
+            action->setVisible( !viewIsCompact );
+        return;
+    }
 
     QMenu menu(this);
     QAction* moveUpAction = nullptr;
@@ -231,14 +236,14 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionToggle_comment")==0) {
-            action->setVisible( everySelectionIsARow && thereIsARowSelection && !viewIsCompact );
+            action->setVisible( everySelectionIsARow && thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionInsert_option")==0) {
             action->setVisible( ( !thereIsARow || everySelectionIsARow ) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
-            action->setVisible( everySelectionIsARow && (thereIsARowSelection || !thereIsARow) && !viewIsCompact );
+            action->setVisible( everySelectionIsARow && (thereIsARowSelection) && !viewIsCompact );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
@@ -246,10 +251,10 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            action->setVisible( everySelectionIsARow && thereIsARowSelection && !viewIsCompact && (selection.first().row() > 0) );
+            action->setVisible( everySelectionIsARow && thereIsARowSelection && (selection.first().row() > 0) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setVisible( everySelectionIsARow & thereIsARowSelection && !viewIsCompact && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            action->setVisible( everySelectionIsARow & thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
             menu.addAction(action);
         }
     }
@@ -598,7 +603,7 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
 
 void SolverOptionWidget::toggleCommentOption()
 {
-    if (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
+    if ( isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()) )
         return;
 
     bool modified = false;
@@ -614,6 +619,9 @@ void SolverOptionWidget::toggleCommentOption()
 
 void SolverOptionWidget::selectAnOption()
 {
+    if  (isViewCompact())
+        return;
+
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
 
     for(int i=0; i<indexSelection.count(); ++i) {
@@ -623,7 +631,7 @@ void SolverOptionWidget::selectAnOption()
 
 void SolverOptionWidget::insertOption()
 {
-    if  (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow())
+    if  ( isViewCompact() || (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow()) )
         return;
 
     if (isThereARowSelection() > 0) {
@@ -647,7 +655,7 @@ void SolverOptionWidget::insertOption()
 
 void SolverOptionWidget::insertComment()
 {
-    if  (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
+    if  ( isViewCompact() || (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow() ) )
         return;
 
     if (isThereARowSelection()) {
