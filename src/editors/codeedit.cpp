@@ -1799,18 +1799,6 @@ void BlockData::setParentheses(const QVector<ParenthesesPos> &parentheses)
     mparentheses = parentheses;
 }
 
-void BlockData::addTextMark(TextMark *mark)
-{
-    if (mMarks.contains(mark)) return;
-    mMarks << mark;
-    mark->setBlockData(this);
-}
-
-void BlockData::removeTextMark(TextMark *mark)
-{
-    mMarks.removeAll(mark);
-}
-
 void LineNumberArea::mousePressEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();

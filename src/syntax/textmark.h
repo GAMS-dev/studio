@@ -54,7 +54,6 @@ public:
     void setValue(int value);
 
     void clearBackRefs();
-    void setBlockData(BlockData* blockData);
 
     QIcon icon();
     inline Type type() const {return mType;}

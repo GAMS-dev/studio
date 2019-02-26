@@ -74,15 +74,12 @@ public:
     BlockData() { mparentheses.reserve(10);}
     ~BlockData() {}
     QChar charForPos(int relPos);
-    bool isEmpty() {return mparentheses.isEmpty() && mMarks.isEmpty();}
+    bool isEmpty() {return mparentheses.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const QVector<ParenthesesPos> &parentheses);
-    void addTextMark(TextMark* mark);
-    void removeTextMark(TextMark* mark);
 private:
     // if extending the data remember to enhance isEmpty()
     QVector<ParenthesesPos> mparentheses;
-    QVector<TextMark*> mMarks;
 };
 
 struct BlockEditPos
