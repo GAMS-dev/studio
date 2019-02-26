@@ -2352,7 +2352,6 @@ void MainWindow::showResults(SearchResultList &results)
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
 
     ui->dockLogView->show();
-    searchDialog()->resultsView()->resizeColumnsToContent();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 

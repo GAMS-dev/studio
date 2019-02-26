@@ -41,8 +41,9 @@ ResultsView::~ResultsView()
 
 void ResultsView::resizeColumnsToContent()
 {
-    ui->tableView->resizeColumnsToContents();
-    ui->tableView->resizeRowsToContents();
+    ui->tableView->resizeColumnToContents(0);
+    ui->tableView->resizeColumnToContents(1);
+    ui->tableView->resizeRowToContents(0);
 }
 
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)

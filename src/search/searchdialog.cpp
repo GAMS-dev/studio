@@ -139,6 +139,7 @@ void SearchDialog::handleResult(SearchResultList* results)
     if (size) {
         updateMatchAmount(size);
         mMain->showResults(*results);
+        resultsView()->resizeColumnsToContent();
     } else {
         setSearchStatus(SearchStatus::NoResults);
     }
