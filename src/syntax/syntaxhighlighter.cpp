@@ -221,6 +221,7 @@ const QVector<SyntaxState> validparenthesesSyntax = {
     SyntaxState::IdentifierTableAssignmentRow,
     SyntaxState::Reserved,
     SyntaxState::ReservedBody,
+    SyntaxState::EmbeddedBody,
 };
 
 const QString validparentheses("{[(}])/");
