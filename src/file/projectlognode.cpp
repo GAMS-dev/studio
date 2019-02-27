@@ -222,10 +222,10 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         document()->setModified(false);
         mConceal = match.captured() == "\r";
         from = match.capturedEnd();
-    }
-    if (mRepaintCount >= 0 && ++mRepaintCount > 200) {
-        mRepaintCount = 0;
-        repaint();
+        if (mRepaintCount >= 0 && ++mRepaintCount > 200) {
+            mRepaintCount = 0;
+            repaint();
+        }
     }
 }
 
