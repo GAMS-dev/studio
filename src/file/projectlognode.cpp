@@ -39,11 +39,21 @@ namespace gams {
 namespace studio {
 
 ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
-    : ProjectFileNode(fileMeta, nullptr, NodeType::log)
+    : ProjectFileNode(fileMeta, NodeType::log)
 {
     if (!runGroup) EXCEPT() << "The runGroup must not be null.";
     mRunGroup = runGroup;
     runGroup->setLogNode(this);
+    QTextCharFormat errFmt;
+    errFmt.setForeground(QColor(180,0,0));
+    errFmt.setUnderlineColor(Qt::red);
+    errFmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+    mFormat << errFmt;
+    QTextCharFormat lnkFmt;
+    lnkFmt.setForeground(QColor(10,20,255));
+    lnkFmt.setUnderlineColor(QColor(10,20,255));
+    lnkFmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    mFormat << lnkFmt;
 }
 
 ProjectLogNode::~ProjectLogNode()
@@ -82,24 +92,20 @@ void ProjectLogNode::markOld()
 void ProjectLogNode::logDone()
 {
     if (mLogFile) {
-        // TODO(JM) rename .log~ to .log
         delete mLogFile;
         mLogFile = nullptr;
     }
+    mRepaintCount = -1;
+    mErrorCount = 0;
 }
-
-//void ProjectLogNode::setParentNode(ProjectGroupNode* parent)
-//{
-//    Q_UNUSED(parent);
-//    EXCEPT() << "The ProjectLogNode is assigned only at construction time";
-//}
 
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
     StudioSettings* settings = SettingsLocator::settings();
-    if (!mLogFile && settings->writeLog()) mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
-    // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
-    //          PS (PageSize), PC (PageContr), PW (PageWidth)
+
+    if (!mLogFile && settings->writeLog())
+        mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
+
     if (!document())
         EXCEPT() << "no log-document to add process data";
     QTextCodec::ConverterState convState;
@@ -116,16 +122,17 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
     QRegularExpressionMatch match;
     QRegularExpression rEx("(\\r\\n?|\\n)");
     int from = 0;
-    mLineBuffer.append(data);
-    int lstLine = -1;
+    mLineBuffer.append(text);
     while (true) {
+        bool createErrors = true; // (mErrorCount < 50);
         if (mLineBuffer.indexOf(rEx, from, &match) < 0) {
             mLineBuffer.remove(0, from);
             break;
         }
         QString line = mLineBuffer.mid(from, match.capturedStart());
-        QList<LinkData> marks;
-        QString newLine = extractLinks(line, state, marks);
+        QVector<LinkData> marks;
+        bool hasError = false;
+        QString newLine = extractLinks(line, state, marks, createErrors, hasError);
         // store count of followup lines
         if (mLastLstLink && state == ProjectFileNode::Inside) {
             mLastLstLink->incSpread();
@@ -139,7 +146,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
             assignedRunGroup()->setLstErrorText(mCurrentErrorHint.lstLine, lstErr);
         }
         if (state == ProjectFileNode::FollowupError) {
-            newLine = extractLinks(line, state, marks);
+            newLine = extractLinks(line, state, marks, createErrors, hasError);
         }
         QList<int> scrollVal;
         QList<QTextCursor> cursors;
@@ -175,18 +182,30 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
             int lineNr = document()->blockCount()-1;
             cursor.insertText(newLine+"\n");
             if (mLogFile) mLogFile->appendLine(newLine);
-            int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
-            for (LinkData mark: marks) {
-                TextMark* tm = textMarkRepo()->createMark(file()->id(), runGroupId(), TextMark::link
-                                                          , lstLine, lineNr, mark.col, size);
-                if (mark.textMark) {
-                    tm->setRefMark(mark.textMark);
-                    if (mark.textMark->fileKind() == FileKind::Lst)
-                        mLastLstLink = mark.textMark;
-                    mark.textMark->rehighlight();
+
+            if (hasError) {
+//                if (!createErrors) {
+//                    LinksCache lc;
+//                    lc.line = lineNr;
+//                    lc.text = line;
+//                }
+                ++mErrorCount;
+            }
+
+            if (marks.size() && createErrors) {
+                int size = marks.length()==0 ? 0 : newLine.length()-marks.first().col;
+                for (LinkData mark: marks) {
+                    if (mark.textMark->type() == TextMark::error) ++mErrorCount;
+                    TextMark* tm = textMarkRepo()->createMark(file()->id(), runGroupId(), TextMark::link
+                                                              , -1, lineNr, mark.col, size);
+                    if (mark.textMark) {
+                        tm->setRefMark(mark.textMark);
+                        if (mark.textMark->fileKind() == FileKind::Lst)
+                            mLastLstLink = mark.textMark;
+                        mark.textMark->rehighlight();
+                    }
+                    size = -1;
                 }
-                tm->rehighlight();
-                size = -1;
             }
         }
 
@@ -204,6 +223,10 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
         mConceal = match.captured() == "\r";
         from = match.capturedEnd();
     }
+    if (mRepaintCount >= 0 && ++mRepaintCount > 200) {
+        mRepaintCount = 0;
+        repaint();
+    }
 }
 
 inline QStringRef capture(const QString &line, int &a, int &b, const int offset, const QChar ch)
@@ -216,7 +239,7 @@ inline QStringRef capture(const QString &line, int &a, int &b, const int offset,
 
 
 QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::ExtractionState &state
-                                     , QList<ProjectLogNode::LinkData> &marks)
+                                     , QVector<ProjectLogNode::LinkData> &marks, bool createMarks, bool &hasError)
 {
     if (mInErrorDescription) {
         if (line.startsWith("***") || line.startsWith("---")) {
@@ -243,10 +266,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
     if (line.isEmpty()) return QString("");
     TextMark* errMark = nullptr;
     bool errFound = false;
+    bool isRuntimeError = false;
     int lstColStart = 4;
     int posA = 0;
     int posB = 0;
-//    bool isGamsLine = true; // line.startsWith("*** ");
     if (line.startsWith("*** Error ")) {
         bool ok = false;
         posA = 9;
@@ -264,7 +287,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         int colStart = 0;
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
-            isValidError = true;
+            isValidError = false;
+            isRuntimeError = true;
             mCurrentErrorHint.errNr = 0;
             result = capture(line, posA, posB, 0, ':').toString();
             // TODO(JM) review for the case the file is in a sub-directory
@@ -284,6 +308,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
             size = capture(line, posA, posB, 1, ']').toInt()-1;
             posB++;
+            if (mRepaintCount < 0) mRepaintCount = 0;
         }
         {
             QFileInfo fi(fName);
@@ -296,8 +321,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             mark.size = result.length() - mark.col;
             if (!fName.isEmpty()) {
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
-                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
-                                                           mCurrentErrorHint.lstLine, lineNr, colStart, size);
+                hasError = true;
+                if (createMarks)
+                    mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), TextMark::error,
+                                                               mCurrentErrorHint.lstLine, lineNr, colStart, size);
             }
             errMark = mark.textMark;
             marks << mark;
@@ -323,6 +350,10 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
         if (posB+5 < line.length()) {
             TextMark::Type tmType = errFound ? TextMark::link : TextMark::target;
             if (line.midRef(posB+1,4) == "LST:") {
+                if (isRuntimeError) {
+                    tmType = TextMark::error;
+                    hasError = true;
+                }
                 int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
                 mCurrentErrorHint.lstLine = lineNr;
                 posB++;
@@ -341,8 +372,9 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                         }
                     }
                 }
-                mark.textMark = textMarkRepo()->createMark(mLstNode->file()->id(), runGroupId(), tmType
-                                                           , mCurrentErrorHint.lstLine, lineNr, 0, 0);
+                if (createMarks)
+                    mark.textMark = textMarkRepo()->createMark(mLstNode->file()->id(), runGroupId(), tmType
+                                                               , mCurrentErrorHint.lstLine, lineNr, 0, 0);
                 errFound = false;
                 if (errMark) {
                     errMark->setValue(mCurrentErrorHint.lstLine);
@@ -362,8 +394,9 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                 mark.size = result.length() - mark.col - 1;
 
                 FileMeta *file = fileRepo()->findOrCreateFileMeta(fName);
-                mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), tmType
-                                                           , mCurrentErrorHint.lstLine, lineNr, 0, col);
+                if (createMarks)
+                    mark.textMark = textMarkRepo()->createMark(file->id(), runGroupId(), tmType
+                                                               , mCurrentErrorHint.lstLine, lineNr, 0, col);
                 if (mRunGroup->findFile(file))
                     errFound = false;
                 else
@@ -390,6 +423,14 @@ void ProjectLogNode::setJumpToLogEnd(bool state)
     mJumpToLogEnd = state;
 }
 
+void ProjectLogNode::repaint()
+{
+    ProcessLogEdit *ed = ViewHelper::toLogEdit(mFileMeta->topEditor());
+    if (ed) {
+        ed->viewport()->repaint();
+    }
+}
+
 ProjectFileNode *ProjectLogNode::lstNode() const
 {
     return mLstNode;
@@ -411,46 +452,6 @@ ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
 {
     return mRunGroup;
 }
-
-
-/*
-
-TextMark*ProjectLogNode::firstErrorMark()
-{
-    if (!mMarks) return nullptr;
-    return mMarks->firstErrorMark();
-}
-
-QTextDocument* ProjectLogNode::document() const
-{
-    return document();
-}
-
-void ProjectLogNode::addEditor(QWidget* edit)
-{
-    if (!edit) return;
-
-    if (editorList().contains(edit)) {
-        editorList().move(editorList().indexOf(edit), 0);
-        return;
-    }
-    LogEditor* logEdit = toLogEdit(edit);
-    if (!logEdit) return;
-    logEdit->setDocument(document());
-    ProjectFileNode::addEditor(edit);
-}
-
-void ProjectLogNode::removeEditor(QWidget* edit)
-{
-    if (!edit) return;
-    if (!editorList().contains(edit)) return;
-
-    editorList().append(nullptr);
-    ProjectFileNode::removeEditor(edit);
-    editorList().removeLast();
-}
-
-*/
 
 } // namespace studio
 } // namespace gams

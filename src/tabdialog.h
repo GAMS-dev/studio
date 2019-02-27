@@ -2,9 +2,10 @@
 #define GAMS_STUDIO_TABDIALOG_H
 
 #include <QDialog>
-#include <QTabWidget>
 #include <QAbstractListModel>
-#include <QSortFilterProxyModel>
+
+class QTabWidget;
+class QSortFilterProxyModel;
 
 namespace Ui {
 class TabDialog;
@@ -16,6 +17,7 @@ namespace studio {
 class TabListModel : public QAbstractListModel
 {
     Q_OBJECT
+
 public:
     TabListModel(QTabWidget *tabs);
     virtual ~TabListModel() override;
@@ -24,26 +26,30 @@ public:
     QTabWidget *tabs() { return mTabs; }
 
 private:
-    QTabWidget *mTabs = nullptr;
+    QString nameAppendix(const QModelIndex &index) const;
 
 private:
-    QString nameAppendix(const QModelIndex &index) const;
+    QTabWidget *mTabs = nullptr;
 };
 
 class TabDialog : public QDialog
 {
     Q_OBJECT
+
 public:
     explicit TabDialog(QTabWidget *tabs, QWidget *parent = nullptr);
     ~TabDialog() override;
+
 protected:
     void showEvent(QShowEvent *e) override;
     void resizeToContent();
     void keyPressEvent(QKeyEvent *e) override;
+
 private slots:
     void setFilter(const QString &filter);
     void returnPressed();
     void selectTab(const QModelIndex &index);
+
 private:
     Ui::TabDialog *ui;
     TabListModel *mTabModel;

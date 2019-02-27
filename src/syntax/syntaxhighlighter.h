@@ -20,7 +20,9 @@
 #ifndef SYNTAXHIGHLIGHTER_H
 #define SYNTAXHIGHLIGHTER_H
 
-#include "errorhighlighter.h"
+#include <QSyntaxHighlighter>
+#include "syntaxformats.h"
+#include "textmarkrepo.h"
 
 namespace gams {
 namespace studio {
@@ -39,12 +41,14 @@ enum ColorEnum {
     SyntaxIdent,
     SyntaxKeywd,
     SyntaxDescr,
+    SyntaxAsLab,
+    SyntaxAsVal,
     SyntaxAssgn,
     SyntaxTabHd,
     SyntaxEmbed,
 };
 
-class SyntaxHighlighter : public ErrorHighlighter
+class SyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
@@ -53,12 +57,17 @@ public:
 
     void highlightBlock(const QString &text);
 
+public slots:
+    void syntaxState(int position, int &intState);
+
 private:
     SyntaxAbstract *getSyntax(SyntaxState state) const;
     int getStateIdx(SyntaxState state) const;
     void scanParentheses(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesesPos> &parentheses);
 
 private:
+    enum FontModifier {fNormal, fBold, fItalic, fBoldItalic};
+    Q_DECLARE_FLAGS(FontModifiers, FontModifier)
     typedef int StateIndex;
     typedef int CodeIndex;
     typedef QPair<StateIndex, CodeIndex> StateCode;
@@ -69,13 +78,16 @@ private:
     /// \param syntax The syntax to be added to the stack
     /// \param ci The index in mStates of the previous syntax
     void addState(SyntaxAbstract* syntax, CodeIndex ci = 0);
-    void initState(int debug, SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false);
-    void initState(SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false, int debug = 0);
+    void initState(int debug, SyntaxAbstract* syntax, QColor color = QColor(), FontModifier fMod = fNormal);
+    void initState(SyntaxAbstract* syntax, QColor color = QColor(), FontModifier fMod = fNormal);
 
     int addCode(StateIndex si, CodeIndex ci);
     int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext);
     QString codeDeb(int code);
 
+private:
+    int mPositionForSyntaxState = -1;
+    int mLastSyntaxState = 0;
     States mStates;
     Codes mCodes;
     // TODO(JM) process events after a couple of ms

@@ -53,6 +53,22 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
+class AssignmentLabel: public SyntaxAbstract
+{
+public:
+    AssignmentLabel();
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class AssignmentValue: public SyntaxAbstract
+{
+public:
+    AssignmentValue();
+    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
 class SyntaxTableAssign : public SyntaxAbstract
 {
 public:

@@ -58,14 +58,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     if (!node) EXCEPT() << "File not found: " << item.filepath();
 
     // jump to line
-    QTextCursor tc(node->document());
-    if (item.colNr() <= 0)
-        tc.setPosition(node->document()->findBlockByNumber(item.lineNr() - 1).position());
-    else
-        tc.setPosition(node->document()->findBlockByNumber(item.lineNr() - 1).position()
-                       + item.colNr());
-
-    node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, item.colNr());
+    node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, qMax(item.colNr(), 0));
 }
 
 SearchResultList* ResultsView::resultList()

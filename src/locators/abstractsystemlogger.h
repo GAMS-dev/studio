@@ -21,7 +21,6 @@
 #define ABSTRACTSYSTEMLOGGER_H
 
 #include <QString>
-
 namespace gams {
 namespace studio {
 

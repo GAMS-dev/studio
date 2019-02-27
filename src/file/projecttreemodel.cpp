@@ -224,8 +224,9 @@ bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, 
         ProjectGroupNode *group = node->toGroup();
         if (!group) return false;
         group->setName(value.toString());
+        dataChanged(index, index);
+        sortChildNodes(group->parentNode());
     }
-    emit dataChanged(index, index);
     return true;
 }
 
@@ -247,9 +248,9 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
 {
     QModelIndex parMi = index(parent);
     if (!parMi.isValid()) return false;
+    if (child->parentNode() == parent) return false;
     beginInsertRows(parMi, row, row);
     child->setParentNode(parent);
-//    updateIndex(parMi, row, 1);
     endInsertRows();
     return true;
 }
@@ -264,9 +265,9 @@ bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
         if (mDebug) DEB() << "removing NodeId " << child->id();
     }
     QModelIndex parMi = index(child->parentNode());
+    if (!parMi.isValid()) return false;
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);
-//    updateIndex(parMi, mi.row(), -1);
     endRemoveRows();
     return true;
 }
@@ -290,6 +291,33 @@ QModelIndex ProjectTreeModel::index(const NodeId id) const
         }
     }
     return QModelIndex();
+}
+
+bool lessThan(ProjectAbstractNode*n1, ProjectAbstractNode*n2)
+{
+    bool isGroup1 = n1->toGroup();
+    if (isGroup1 != bool(n2->toGroup())) return isGroup1;
+    int cmp = n1->name().compare(n2->name(), Qt::CaseInsensitive);
+    if (cmp != 0) return cmp < 0;
+    cmp = isGroup1 ? n1->toGroup()->location().compare(n2->toGroup()->location(), Qt::CaseInsensitive)
+                   : n1->toFile()->location().compare(n2->toFile()->location(), Qt::CaseInsensitive);
+    return cmp < 0;
+}
+
+void ProjectTreeModel::sortChildNodes(ProjectGroupNode *group)
+{
+    QList<ProjectAbstractNode*> order = group->childNodes();
+    std::sort(order.begin(), order.end(), lessThan);
+    for (int i = 0; i < order.size(); ++i) {
+        QModelIndex parMi = index(group);
+        QModelIndex mi = index(order.at(i));
+        if (mi.isValid() && mi.row() != i) {
+            int row = mi.row();
+            beginMoveRows(parMi, row, row, parMi, i);
+            group->moveChildNode(row, i);
+            endMoveRows();
+        }
+    }
 }
 
 bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const

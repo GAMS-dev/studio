@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -182,9 +182,18 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="menuBookmarks">
+     <property name="title">
+      <string>Bookmarks</string>
+     </property>
+     <addaction name="actionToggleBookmark"/>
+     <addaction name="actionPreviousBookmark"/>
+     <addaction name="actionNextBookmark"/>
+     <addaction name="separator"/>
+     <addaction name="actionRemoveBookmarks"/>
+    </widget>
     <addaction name="actionProject_View"/>
     <addaction name="actionOutput_View"/>
-    <addaction name="actionOption_View"/>
     <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_System_Log"/>
@@ -197,6 +206,7 @@
     <addaction name="actionNextTab"/>
     <addaction name="actionPreviousTab"/>
     <addaction name="separator"/>
+    <addaction name="menuBookmarks"/>
     <addaction name="actionReset_Views"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -381,15 +391,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockOptionEditor">
-   <property name="windowTitle">
-    <string>Option</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>4</number>
-   </attribute>
-   <widget class="QWidget" name="dockOptionEditorContents"/>
-  </widget>
   <widget class="QDockWidget" name="dockHelpView">
    <property name="windowTitle">
     <string>Help</string>
@@ -398,6 +399,44 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockHelpViewContents"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNew"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionSettings"/>
+   <addaction name="actionGAMS_Library"/>
+   <addaction name="actionToggle_Extended_Option_Editor"/>
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -462,6 +501,10 @@
    </property>
   </action>
   <action name="actionNew">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/file</normaloff>:/img/file</iconset>
+   </property>
    <property name="text">
     <string>&amp;New...</string>
    </property>
@@ -470,6 +513,10 @@
    </property>
   </action>
   <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/folder-open-bw</normaloff>:/img/folder-open-bw</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -478,6 +525,10 @@
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/save</normaloff>:/img/save</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -533,6 +584,10 @@
    </property>
   </action>
   <action name="actionGAMS_Library">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/database_bw</normaloff>:/img/database_bw</iconset>
+   </property>
    <property name="text">
     <string>&amp;Model Library Explorer</string>
    </property>
@@ -583,6 +638,10 @@
    </property>
   </action>
   <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/cogs</normaloff>:/img/cogs</iconset>
+   </property>
    <property name="text">
     <string>Settings</string>
    </property>
@@ -639,6 +698,10 @@
    </property>
   </action>
   <action name="actionCopy">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/copy</normaloff>:/img/copy</iconset>
+   </property>
    <property name="text">
     <string>&amp;Copy</string>
    </property>
@@ -650,6 +713,10 @@
    </property>
   </action>
   <action name="actionPaste">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/paste</normaloff>:/img/paste</iconset>
+   </property>
    <property name="text">
     <string>&amp;Paste</string>
    </property>
@@ -658,6 +725,10 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/undo</normaloff>:/img/undo</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -666,6 +737,10 @@
    </property>
   </action>
   <action name="actionRedo">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/redo</normaloff>:/img/redo</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -682,6 +757,10 @@
    </property>
   </action>
   <action name="actionCut">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/cut</normaloff>:/img/cut</iconset>
+   </property>
    <property name="text">
     <string>&amp;Cut</string>
    </property>
@@ -834,26 +913,6 @@
     <enum>QAction::HighPriority</enum>
    </property>
   </action>
-  <action name="actionReset_Views">
-   <property name="text">
-    <string>Reset Views to default</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+F2</string>
-   </property>
-   <property name="visible">
-    <bool>true</bool>
-   </property>
-   <property name="iconVisibleInMenu">
-    <bool>false</bool>
-   </property>
-   <property name="shortcutVisibleInContextMenu">
-    <bool>true</bool>
-   </property>
-   <property name="priority">
-    <enum>QAction::HighPriority</enum>
-   </property>
-  </action>
   <action name="actionInterrupt">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
@@ -923,6 +982,94 @@
    </property>
    <property name="menuRole">
     <enum>QAction::ApplicationSpecificRole</enum>
+   </property>
+  </action>
+  <action name="actionToggleBookmark">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/bookmark</normaloff>:/img/bookmark</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle Bookmark</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggles bookmark for the current line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionNextBookmark">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/forward</normaloff>:/img/forward</iconset>
+   </property>
+   <property name="text">
+    <string>Next Bookmark</string>
+   </property>
+   <property name="toolTip">
+    <string>Jumps to the next bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+.</string>
+   </property>
+  </action>
+  <action name="actionPreviousBookmark">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/backward</normaloff>:/img/backward</iconset>
+   </property>
+   <property name="text">
+    <string>Previous Bookmark</string>
+   </property>
+   <property name="toolTip">
+    <string>Jumps to the previous bookmark</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="actionRemoveBookmarks">
+   <property name="text">
+    <string>Remove Bookmarks</string>
+   </property>
+   <property name="toolTip">
+    <string>Removes all Bookmarks</string>
+   </property>
+  </action>
+  <action name="actionReset_Views">
+   <property name="text">
+    <string>Reset views</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F2</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionToggle_Extended_Option_Editor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/show</normaloff>:/img/show</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle Extended Option Editor</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens extended option editor</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+L</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
    </property>
   </action>
  </widget>

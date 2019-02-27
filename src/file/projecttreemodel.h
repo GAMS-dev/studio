@@ -31,6 +31,7 @@ class ProjectRepo;
 
 class ProjectTreeModel : public QAbstractItemModel
 {
+    Q_OBJECT
 public:
     explicit ProjectTreeModel(ProjectRepo *parent, ProjectGroupNode* root);
 
@@ -50,6 +51,7 @@ public:
     QModelIndex current() {return index(mCurrent);}
     QVector<NodeId> selectedIds() const;
     QMap<int, QVariant> itemData(const QModelIndex &index) const;
+    void sortChildNodes(ProjectGroupNode *group);
 
 protected:
     friend class ProjectRepo;
@@ -75,6 +77,7 @@ protected:
     const QVector<QModelIndex> popAddGroups();
 
     void update(const QModelIndex& ind = QModelIndex());
+
 
 private:
     ProjectRepo *mProjectRepo;

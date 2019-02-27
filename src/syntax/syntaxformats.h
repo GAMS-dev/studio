@@ -52,6 +52,8 @@ enum class SyntaxState {
     IdentifierDescription1,         // description started with single quote '
     IdentifierDescription2,         // description started with double quote "
     IdentifierAssignment,
+    AssignmentLabel,
+    AssignmentValue,
     IdentifierAssignmentEnd,        // after assignment to keep declaration-level
 
     IdentifierTable,
@@ -213,15 +215,6 @@ class SyntaxDelimiter: public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxDelimiter(SyntaxState state);
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
-};
-
-class SyntaxString: public SyntaxAbstract
-{
-    QChar mDelimiter;
-public:
-    SyntaxString(QChar delimiter = '\'');
     SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };

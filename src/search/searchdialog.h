@@ -64,6 +64,7 @@ public:
     bool caseSens();
     bool wholeWords();
     QString searchTerm();
+    QRegularExpression createRegex();
 
     int selectedScope();
     void setSelectedScope(int index);
@@ -78,7 +79,7 @@ public:
     void invalidateCache();
 
     SearchResultList* cachedResults();
-    void setActiveEditWidget(AbstractEdit *edit);
+    void setActiveEditWidget(QWidget *edit);
 
     ResultsView *resultsView() const;
     void setResultsView(ResultsView *resultsView);
@@ -92,6 +93,7 @@ public slots:
 
 protected slots:
     void returnPressed();
+    void searchResume();
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -124,7 +126,6 @@ private:
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
     void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
-    QRegularExpression createRegex();
 
     enum SearchScope {
         ThisFile = 0,
@@ -148,9 +149,13 @@ private:
     QTextCursor mLastSelection;   // last selection, as starting point for find next
     ResultsView *mResultsView = nullptr;
     SearchResultList mCachedResults;
-    AbstractEdit *mActiveEdit = nullptr;
+    QWidget *mActiveEdit = nullptr;
     bool mHasChanged = false;
     bool mFirstReturn = false;
+    TextView *mSplitSeachView = nullptr;
+    QRegularExpression mSplitSearchRegEx;
+    QTextDocument::FindFlags mSplitSearchFlags;
+    bool mSplitSearchContinue = false;
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
 };
 

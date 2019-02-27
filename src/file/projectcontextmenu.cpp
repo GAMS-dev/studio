@@ -220,7 +220,7 @@ void ProjectContextMenu::onOpenFileLoc()
 
 void ProjectContextMenu::onOpenLog()
 {
-    if (mNodes.first()) emit openLogFor(mNodes.first(), true);
+    if (mNodes.first()) emit openLogFor(mNodes.first(), true, true);
 }
 
 void ProjectContextMenu::onSelectAll()

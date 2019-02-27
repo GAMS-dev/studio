@@ -91,6 +91,9 @@ public:
 
     ProjectFileNode* findFileNode(QWidget *editWidget) const;
 
+    ProjectAbstractNode* next(ProjectAbstractNode* node);
+    ProjectAbstractNode* previous(ProjectAbstractNode* node);
+
     /// Get the <c>ProjectLogNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectLogNode</c>.
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
@@ -150,6 +153,7 @@ public slots:
     void stepRunAnimation();
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);
+    void renameGroup(ProjectGroupNode *group);
 
 private:
     friend class ProjectRunGroupNode;

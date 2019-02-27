@@ -104,6 +104,22 @@ void Keys::reset()
     *seq << QKeySequence("Shift+Ctrl+Z");
     setHotkey(Hotkey::Redo, seq);
 
+    seq = new KeySeqList("MoveViewLineUp","Move the view one line up");
+    *seq << QKeySequence("Ctrl+Up");
+    setHotkey(Hotkey::MoveViewLineUp, seq);
+
+    seq = new KeySeqList("MoveViewLineDown","Move the view one line down");
+    *seq << QKeySequence("Ctrl+Down");
+    setHotkey(Hotkey::MoveViewLineDown, seq);
+
+    seq = new KeySeqList("MoveViewPageUp","Move the view one page up");
+    *seq << QKeySequence("Ctrl+PgUp");
+    setHotkey(Hotkey::MoveViewPageUp, seq);
+
+    seq = new KeySeqList("MoveViewPageDown","Move the view one page down");
+    *seq << QKeySequence("Ctrl+PgDown");
+    setHotkey(Hotkey::MoveViewPageDown, seq);
+
     seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
     *seq << QKeySequence("Ctrl+Right");
     setHotkey(Hotkey::MoveCharGroupRight, seq);
@@ -119,6 +135,18 @@ void Keys::reset()
     seq = new KeySeqList("SelectCharGroupLeft","Select to the previous char-group");
     *seq << QKeySequence("Shift+Ctrl+Left");
     setHotkey(Hotkey::SelectCharGroupLeft, seq);
+
+//    seq = new KeySeqList("BookmarkToggle","Set or erase bookmark of the current line");
+//    *seq << QKeySequence("Ctrl+M") << QKeySequence("Meta+M");
+//    setHotkey(Hotkey::BookmarkToggle, seq);
+
+//    seq = new KeySeqList("BookmarkNext","Move to the next stored bookmark");
+//    *seq << QKeySequence("Ctrl+.") << QKeySequence("Meta+.");
+//    setHotkey(Hotkey::BookmarkNext, seq);
+
+//    seq = new KeySeqList("BookmarkPrev","Move to the previous stored bookmark");
+//    *seq << QKeySequence("Ctrl+,") << QKeySequence("Meta+,");
+//    setHotkey(Hotkey::BookmarkPrev, seq);
 
     seq = new KeySeqList("Shift+Alt+Up","start block edit");
     *seq << QKeySequence("Shift+Alt+Down") << QKeySequence("Shift+Alt+Left") << QKeySequence("Shift+Alt+Right");

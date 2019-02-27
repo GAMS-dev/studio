@@ -105,7 +105,6 @@ void StudioSettings::resetViewSettings()
     mAppSettings->setValue("projectView", true);
     mAppSettings->setValue("outputView", true);
     mAppSettings->setValue("helpView", false);
-    mAppSettings->setValue("optionView", true);
     mAppSettings->setValue("optionEditor", false);
     mAppSettings->endGroup();
 
@@ -151,9 +150,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->beginGroup("viewMenu");
     mAppSettings->setValue("projectView", main->projectViewVisibility());
     mAppSettings->setValue("outputView", main->outputViewVisibility());
+    mAppSettings->setValue("gamsArguments", main->gamsOptionWidget()->isEditorExtended());
     mAppSettings->setValue("helpView", main->helpViewVisibility());
-    mAppSettings->setValue("optionView", main->optionEditorVisibility());
-    mAppSettings->setValue("optionEditor", main->isOptionDefinitionChecked());
     mAppSettings->setValue("encodingMIBs", main->encodingMIBsString());
 
     mAppSettings->endGroup();
@@ -231,6 +229,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("writeLog", writeLog());
     mUserSettings->setValue("nrLogBackups", nrLogBackups());
     mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
+    mUserSettings->setValue("editableMaxSizeMB", editableMaxSizeMB());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -255,6 +254,7 @@ void StudioSettings::loadViewStates(MainWindow *main)
     main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
     main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
     main->restoreState(mAppSettings->value("windowState").toByteArray());
+    main->ensureInScreen();
 
     setSearchUseRegex(mAppSettings->value("searchRegex", false).toBool());
     setSearchCaseSens(mAppSettings->value("searchCaseSens", false).toBool());
@@ -267,9 +267,8 @@ void StudioSettings::loadViewStates(MainWindow *main)
     mAppSettings->beginGroup("viewMenu");
     main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
     main->setOutputViewVisibility(mAppSettings->value("outputView", false).toBool());
+    main->setExtendedEditorVisibility(mAppSettings->value("gamsArguments", false).toBool());
     main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
-    main->setOptionEditorVisibility(mAppSettings->value("optionView", true).toBool());
-    main->checkOptionDefinition(mAppSettings->value("optionEditor", false).toBool());
     main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
 
     mAppSettings->endGroup();
@@ -337,6 +336,7 @@ void StudioSettings::loadUserSettings()
     setWriteLog(mUserSettings->value("writeLog", true).toBool());
     setNrLogBackups(mUserSettings->value("nrLogBackups", 3).toInt());
     setAutoCloseBraces(mUserSettings->value("autoCloseBraces", true).toBool());
+    setEditableMaxSizeMB(mUserSettings->value("editableMaxSizeMB", 10).toInt());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -398,6 +398,16 @@ bool StudioSettings::autoCloseBraces() const
 void StudioSettings::setAutoCloseBraces(bool autoCloseBraces)
 {
     mAutoCloseBraces = autoCloseBraces;
+}
+
+int StudioSettings::editableMaxSizeMB() const
+{
+    return mEditableMaxSizeMB;
+}
+
+void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
+{
+    mEditableMaxSizeMB = editableMaxSizeMB;
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

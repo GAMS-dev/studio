@@ -48,7 +48,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(this, &CodeEdit::blockCountChanged, this, &CodeEdit::updateLineNumberAreaWidth);
-    connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateLineNumberArea);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEdit::updateExtraSelections);
@@ -75,7 +75,7 @@ int CodeEdit::lineNumberAreaWidth()
 
     int space = 0;
 
-    if (mSettings->showLineNr())
+    if (showLineNr())
         space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 
     if (marks() && marks()->hasVisibleMarks()) {
@@ -98,9 +98,13 @@ LineNumberArea* CodeEdit::lineNumberArea()
     return mLineNumberArea;
 }
 
-void CodeEdit::updateLineNumberAreaWidth(int /* newBlockCount */)
+void CodeEdit::updateLineNumberAreaWidth()
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+    if (viewportMargins().left() != mLnAreaWidth) {
+        mLineNumberArea->repaint();
+        mLnAreaWidth = viewportMargins().left();
+    }
 }
 
 void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
@@ -110,22 +114,23 @@ void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
     } else {
         int top = rect.y();
         int bottom = top + rect.height();
-        QTextBlock b = firstVisibleBlock();
-        while (b.isValid() && b.isVisible()) {
-            QRect blockBounds = blockBoundingGeometry(b).translated(contentOffset()).toAlignedRect();
-            if (top > blockBounds.top() && top < blockBounds.bottom())
-                top = blockBounds.top();
-            if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
-                bottom = blockBounds.bottom()-1;
-            if (blockBounds.bottom() >= rect.bottom())
-                break;
-            b = b.next();
-        }
+        // TODO(JM) major performance issue on calling :blockBoundingGeometry()
+//        QTextBlock b = firstVisibleBlock();
+//        while (b.isValid() && b.isVisible()) {
+//            QRect blockBounds = blockBoundingGeometry(b).translated(contentOffset()).toAlignedRect();
+//            if (top > blockBounds.top() && top < blockBounds.bottom())
+//                top = blockBounds.top();
+//            if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
+//                bottom = blockBounds.bottom()-1;
+//            if (blockBounds.bottom() >= rect.bottom())
+//                break;
+//            b = b.next();
+//        }
         mLineNumberArea->update(0, top, mLineNumberArea->width(), bottom-top);
     }
 
     if (rect.contains(viewport()->rect()))
-        updateLineNumberAreaWidth(0);
+        updateLineNumberAreaWidth();
 }
 
 void CodeEdit::blockEditBlink()
@@ -208,10 +213,20 @@ void CodeEdit::updateBlockEditPos()
 //    debugUndoStack(mBlockEditPos, document()->availableUndoSteps()-1);
     BlockEditPos * bPos = mBlockEditPos.at(document()->availableUndoSteps()-1);
     if (mBlockEdit) endBlockEdit();
-    if (bPos && !mBlockEdit) {
+    if (bPos && !mBlockEdit && mAllowBlockEdit) {
         startBlockEdit(bPos->startLine, bPos->column);
         mBlockEdit->selectTo(bPos->currentLine, bPos->column);
     }
+}
+
+QString CodeEdit::wordUnderCursor() const
+{
+    return mWordUnderCursor;
+}
+
+bool CodeEdit::hasSelection() const
+{
+    return textCursor().hasSelection();
 }
 
 void CodeEdit::clearSelection()
@@ -243,12 +258,17 @@ void CodeEdit::copySelection()
     }
 }
 
+void CodeEdit::selectAllText()
+{
+    selectAll();
+}
+
 void CodeEdit::pasteClipboard()
 {
     bool isBlock;
     QStringList texts = clipboard(&isBlock);
     if (!mBlockEdit) {
-        if (isBlock) {
+        if (isBlock && mAllowBlockEdit) {
             QTextCursor c = textCursor();
             if (c.hasSelection()) c.removeSelectedText();
             startBlockEdit(c.blockNumber(), c.columnNumber());
@@ -267,13 +287,13 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
 
     QRect cr = contentsRect();
     mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
-    updateLineNumberAreaWidth(0);
+    updateLineNumberAreaWidth();
     updateExtraSelections();
 }
 
 void CodeEdit::keyPressEvent(QKeyEvent* e)
 {
-    if (!mBlockEdit && e == Hotkey::BlockEditStart) {
+    if (!mBlockEdit && mAllowBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
         anc.setPosition(c.anchor());
@@ -533,10 +553,10 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
 void CodeEdit::mousePressEvent(QMouseEvent* e)
 {
     mSmartType = false; // exit on mouse navigation
-    this->setContextMenuPolicy(Qt::DefaultContextMenu);
-    if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))
-        this->setContextMenuPolicy(Qt::PreventContextMenu);
-    if (e->modifiers() & Qt::AltModifier) {
+    setContextMenuPolicy(Qt::DefaultContextMenu);
+    if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
+        setContextMenuPolicy(Qt::PreventContextMenu);
+    if (e->modifiers() & Qt::AltModifier && mAllowBlockEdit) {
         QTextCursor cursor = cursorForPosition(e->pos());
         QTextCursor anchor = textCursor();
         anchor.setPosition(anchor.anchor());
@@ -607,8 +627,12 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     QAction *lastAct = nullptr;
     for (int i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
-        if (act->objectName() == "select-all" && mBlockEdit) {
-            act->setEnabled(false);
+        if (act->objectName() == "select-all") {
+            if (mBlockEdit) act->setEnabled(false);
+            menu->removeAction(act);
+            act->disconnect();
+            connect(act, &QAction::triggered, this, &CodeEdit::selectAllText);
+            menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-paste" && act->isEnabled()) {
             menu->removeAction(act);
             act->disconnect();
@@ -642,15 +666,29 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         QList<QAction*> ret;
         emit requestAdvancedActions(&ret);
         submenu->addActions(ret);
+        emit cloneBookmarkMenu(menu);
     }
     menu->exec(e->globalPos());
     delete menu;
 }
 
-void CodeEdit::marksChanged()
+void CodeEdit::marksChanged(const QSet<int> dirtyLines)
 {
-    AbstractEdit::marksChanged();
-    updateLineNumberAreaWidth(0);
+    AbstractEdit::marksChanged(dirtyLines);
+    bool doPaint = dirtyLines.isEmpty() || dirtyLines.size() > 5;
+    if (!doPaint) {
+        int firstLine = topVisibleLine();
+        for (const int &line: dirtyLines) {
+            if (line >= firstLine && line <= firstLine+100) {
+                doPaint = true;
+                break;
+            }
+        }
+    }
+    if (doPaint) {
+        updateLineNumberAreaWidth();
+        mLineNumberArea->repaint();
+    }
 }
 
 void CodeEdit::dragEnterEvent(QDragEnterEvent* e)
@@ -725,14 +763,13 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     QTextCursor anchor = cursor;
     anchor.setPosition(anchor.anchor());
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.isValid()) break;
+
         cursor.setPosition(block.position());
         if (hasComment)
             cursor.deleteChar();
         else
             cursor.insertText("*");
-
-        if (!block.isValid())
-            break;
     }
     cursor.setPosition(anchor.position());
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
@@ -877,13 +914,14 @@ int CodeEdit::indent(int size, int fromLine, int toLine)
 
 void CodeEdit::startBlockEdit(int blockNr, int colNr)
 {
+    if (!mAllowBlockEdit) return;
     if (mBlockEdit) endBlockEdit();
     bool overwrite = overwriteMode();
     if (overwrite) setOverwriteMode(false);
     mBlockEdit = new BlockEdit(this, blockNr, colNr);
     mBlockEdit->setOverwriteMode(overwrite);
     mBlockEdit->startCursorTimer();
-    updateLineNumberAreaWidth(0);
+    updateLineNumberAreaWidth();
 }
 
 void CodeEdit::endBlockEdit(bool adjustCursor)
@@ -1119,24 +1157,28 @@ inline int CodeEdit::assignmentKind(int p)
     return 0;
 }
 
+void CodeEdit::recalcWordUnderCursor()
+{
+    mWordUnderCursor = "";
+    QTextEdit::ExtraSelection selection;
+    selection.cursor = textCursor();
+    QString text = selection.cursor.block().text();
+    int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
+    int from = findAlphaNum(text, start, true);
+    int to = findAlphaNum(text, from, false);
+    if (from >= 0 && from <= to) {
+        if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
+            mWordUnderCursor = text.mid(from, to-from+1);
+    }
+}
+
 void CodeEdit::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
     mParenthesesMatch = ParenthesesMatch();
     if (!mBlockEdit) {
         extraSelCurrentLine(selections);
-
-        mWordUnderCursor = "";
-        QTextEdit::ExtraSelection selection;
-        selection.cursor = textCursor();
-        QString text = selection.cursor.block().text();
-        int start = qMin(selection.cursor.position(), selection.cursor.anchor()) - selection.cursor.block().position();
-        int from = findAlphaNum(text, start, true);
-        int to = findAlphaNum(text, from, false);
-        if (from >= 0 && from <= to) {
-            if (!textCursor().hasSelection() || text.mid(from, to-from+1) == textCursor().selectedText())
-                mWordUnderCursor = text.mid(from, to-from+1);
-        }
+        recalcWordUnderCursor();
         mParenthesesDelay.start(100);
         int wordDelay = 10;
         if (mSettings->wordUnderCursor()) wordDelay = 500;
@@ -1162,21 +1204,24 @@ void CodeEdit::updateExtraSelections()
         regexp.setPattern("\\b" + regexp.pattern() + "\\b");           // only match whole selection
 
         QRegularExpressionMatch match = regexp.match(selectedText);
+        bool skipWordTimer = (sender() == &mParenthesesDelay
+                              || sender() == this->verticalScrollBar()
+                              || sender() == nullptr);
 
-        //   (  not caused by parenthiesis matching                               )  OR has selection
-        if ((((!extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || textCursor().hasSelection())
-              // ( depending on settings: no selection necessary OR has selection )
-              && (mSettings->wordUnderCursor() || textCursor().hasSelection())
-              // (      wait for timer            OR            user scrolled             )
-              && ((sender() == &mParenthesesDelay || sender() == this->verticalScrollBar())
-              //  OR (     always select          )
-                  || mSettings->wordUnderCursor())))
-                // AND deactivate when navigation search results
-                && match.captured(0).isEmpty())
+        //    (  not caused by parenthiesis matching                               ) OR has selection
+        if ( (( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || hasSelection())
+               // ( depending on settings: no selection necessary OR has selection )
+               && (mSettings->wordUnderCursor() || hasSelection())
+               // (  depending on settings: no selection necessary skip word-timer )
+               && (mSettings->wordUnderCursor() || skipWordTimer))
+             // AND deactivate when navigation search results
+             && match.captured(0).isEmpty()) {
             extraSelCurrentWord(selections);
+        }
     }
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
+    extraSelMarks(selections);
     setExtraSelections(selections);
 }
 
@@ -1185,19 +1230,6 @@ void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
     if (mBlockEdit) {
         selections.append(mBlockEdit->extraSelections());
     }
-}
-
-void CodeEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
-{
-    if (!mSettings->highlightCurrentLine()) return;
-
-    QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
-    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = textCursor();
-    selection.cursor.movePosition(QTextCursor::StartOfBlock);
-    selection.cursor.clearSelection();
-    selections.append(selection);
 }
 
 void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
@@ -1286,11 +1318,27 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
+QString CodeEdit::lineNrText(int blockNr)
+{
+    return QString::number(blockNr);
+}
+
+bool CodeEdit::showLineNr() const
+{
+    return mSettings->showLineNr();
+}
+
+void CodeEdit::setAllowBlockEdit(bool allow)
+{
+    mAllowBlockEdit = allow;
+    if (mBlockEdit) endBlockEdit();
+}
+
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    bool hasMarks = marks()->hasVisibleMarks();
-    if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::marksChanged);
+    bool hasMarks = marks() && marks()->hasVisibleMarks();
+    if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -1312,19 +1360,20 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 markRect.setHeight(bottom-top);
                 painter.fillRect(markRect, QColor(225,255,235));
             }
-            QString number = QString::number(blockNumber + 1);
-            QFont f = font();
-            f.setBold(mark);
-            painter.setFont(f);
-            painter.setPen(mark ? Qt::black : Qt::gray);
-            int realtop = top; // (top+bottom-fontMetrics().height())/2;
 
-            if(mSettings->showLineNr())
+            if(showLineNr()) {
+                QString number = lineNrText(blockNumber + 1);
+                QFont f = font();
+                f.setBold(mark);
+                painter.setFont(f);
+                painter.setPen(mark ? Qt::black : Qt::gray);
+                int realtop = top; // (top+bottom-fontMetrics().height())/2;
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+            }
 
-            if (hasMarks && marks()->contains(blockNumber)) {
+            if (hasMarks && marks()->contains(effectiveBlockNr(blockNumber))) {
                 int iTop = (2+top+bottom-iconSize())/2;
-                painter.drawPixmap(1, iTop, marks()->value(blockNumber)->icon().pixmap(QSize(iconSize(),iconSize())));
+                painter.drawPixmap(1, iTop, marks()->value(effectiveBlockNr(blockNumber))->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 
@@ -1510,7 +1559,6 @@ void CodeEdit::BlockEdit::stopCursorTimer()
 
 void CodeEdit::BlockEdit::refreshCursors()
 {
-    // TODO(JM) generate drawCursor-event for every line
     mBlinkStateHidden = !mBlinkStateHidden;
     mEdit->viewport()->update(mEdit->viewport()->visibleRegion());
 }
@@ -1636,7 +1684,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     if (mEdit->isReadOnly()) return;
     if (texts.isEmpty()) texts << "";
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
-    bool newUndoBlock = texts.count()>1 || mLastCharType!=charType || texts.at(0).length()>1;
+    bool newUndoBlock = texts.count() > 1 || mLastCharType != charType || texts.at(0).length() != 1;
     // append empty lines if needed
     int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
     if (missingLines > 0) {
@@ -1731,18 +1779,6 @@ QVector<ParenthesesPos> BlockData::parentheses() const
 void BlockData::setParentheses(const QVector<ParenthesesPos> &parentheses)
 {
     mparentheses = parentheses;
-}
-
-void BlockData::addTextMark(TextMark *mark)
-{
-    if (mMarks.contains(mark)) return;
-    mMarks << mark;
-    mark->setBlockData(this);
-}
-
-void BlockData::removeTextMark(TextMark *mark)
-{
-    mMarks.removeAll(mark);
 }
 
 void LineNumberArea::mousePressEvent(QMouseEvent *event)
