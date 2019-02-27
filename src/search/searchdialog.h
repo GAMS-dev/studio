@@ -84,13 +84,13 @@ public:
     ResultsView *resultsView() const;
     void setResultsView(ResultsView *resultsView);
 
-    void updateSearchResults();
+    void updateSearchCache();
 
 public slots:
     void on_searchNext();
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
-    void handleResult(SearchResultList* results);
+    void finalUpdate(SearchResultList* results);
     void intermediateUpdate(SearchResultList* results);
 
 protected slots:
@@ -119,19 +119,6 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
-    void simpleReplaceAll();
-    QList<Result> findInFile(FileMeta* fm, bool skipFilters = false);
-    QList<Result> findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
-    QList<Result> findInGroup();
-    QList<Result> findInOpenFiles();
-    QList<Result> findInAllFiles();
-    void updateMatchAmount(int hits, int current = 0);
-    void selectNextMatch(SearchDirection direction, bool second = false);
-    void insertHistory();
-    void searchParameterChanged();
-    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
-    void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
-
     enum SearchScope {
         ThisFile = 0,
         ThisGroup= 1,
@@ -144,8 +131,23 @@ private:
         NoResults = 1,
         Clear = 2
     };
-
+    void simpleReplaceAll();
+    QList<Result> findInFile(FileMeta* fm, bool skipFilters = false);
+    QList<Result> findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
+    QList<Result> findInGroup();
+    QList<Result> findInOpenFiles();
+    QList<Result> findInAllFiles();
+    void updateMatchAmount(int hits, int current = 0);
+    void selectNextMatch(SearchDirection direction, bool second = false);
+    void insertHistory();
+    void searchParameterChanged();
+    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
+    void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
+    void updateEditHighlighting();
+    void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);
+
+
 
 private:
     Ui::SearchDialog *ui;
@@ -153,11 +155,11 @@ private:
     QTextCursor mSelection;       // selected with find
     QTextCursor mLastSelection;   // last selection, as starting point for find next
     ResultsView *mResultsView = nullptr;
-    SearchResultList mCachedResults;
+    SearchResultList *mCachedResults = nullptr;
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = false;
     bool mFirstReturn = false;
-    TextView *mSplitSeachView = nullptr;
+    TextView *mSplitSearchView = nullptr;
     QRegularExpression mSplitSearchRegEx;
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;

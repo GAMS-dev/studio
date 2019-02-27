@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -50,6 +50,8 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     ui->combo_search->setAutoCompletion(false);
     adjustSize();
 
+    mCachedResults = new SearchResultList();
+
     connect(ui->combo_search->lineEdit(), &QLineEdit::returnPressed, this, &SearchDialog::returnPressed);
 }
 
@@ -81,16 +83,15 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearching) {
-
         if (createRegex().pattern().isEmpty()) return;
 
-        mSearching = true;
-        ui->btn_FindAll->setText("Abort");
+
+        setSearchOngoing(true);
         clearResults();
 
-        mCachedResults.clear();
-        mCachedResults.setSearchTerm(createRegex().pattern());
-        mCachedResults.useRegex(regex());
+        mCachedResults->clear();
+        mCachedResults->setSearchTerm(createRegex().pattern());
+        mCachedResults->useRegex(regex());
 
         insertHistory();
 
@@ -99,26 +100,24 @@ void SearchDialog::on_btn_FindAll_clicked()
         switch (ui->combo_scope->currentIndex()) {
         case SearchScope::ThisFile:
             if (mMain->recent()->editor())
-                mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
+                mCachedResults->addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
             break;
         case SearchScope::ThisGroup:
-            mCachedResults.addResultList(findInGroup());
+            mCachedResults->addResultList(findInGroup());
             break;
         case SearchScope::OpenTabs:
-            mCachedResults.addResultList(findInOpenFiles());
+            mCachedResults->addResultList(findInOpenFiles());
             break;
         case SearchScope::AllFiles:
-            mCachedResults.addResultList(findInAllFiles());
+            mCachedResults->addResultList(findInAllFiles());
             break;
         default:
             break;
         }
 
-        if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
-        if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
+        updateEditHighlighting();
     } else {
-        mSearching = false;
-        ui->btn_FindAll->setText("Find All");
+        setSearchOngoing(false);
         mThread.requestInterruption();
     }
 }
@@ -127,18 +126,36 @@ void SearchDialog::intermediateUpdate(SearchResultList* results)
 {
     setSearchStatus(SearchStatus::Searching);
     mMain->showResults(*results);
+
+    delete mCachedResults;
+    mCachedResults = results;
 }
 
-void SearchDialog::handleResult(SearchResultList* results)
+void SearchDialog::setSearchOngoing(bool searching)
 {
-    mSearching = false;
-    ui->btn_FindAll->setText("Find All");
+    mSearching = searching;
+
+    if (searching) {
+        ui->btn_FindAll->setText("Abort");
+    } else {
+        ui->btn_FindAll->setText("Find All");
+    }
+}
+
+void SearchDialog::finalUpdate(SearchResultList* results)
+{
+    setSearchOngoing(false);
 
     int size = results->size();
 
     updateMatchAmount(size);
     mMain->showResults(*results);
     resultsView()->resizeColumnsToContent();
+
+    delete mCachedResults;
+    mCachedResults = results;
+
+    updateEditHighlighting();
 
     if (!size) setSearchStatus(SearchStatus::NoResults);
 }
@@ -209,8 +226,8 @@ QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
 
         connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
         connect(this, &SearchDialog::startSearch, sw, &SearchWorker::search, Qt::UniqueConnection);
-        connect(sw, &SearchWorker::resultReady, this, &SearchDialog::handleResult, Qt::UniqueConnection);
         connect(sw, &SearchWorker::update, this, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
+        connect(sw, &SearchWorker::resultReady, this, &SearchDialog::finalUpdate, Qt::UniqueConnection);
 
         mThread.start();
         emit startSearch();
@@ -287,14 +304,14 @@ void SearchDialog::simpleReplaceAll()
     }
 }
 
-void SearchDialog::updateSearchResults()
+void SearchDialog::updateSearchCache()
 {
     setSearchStatus(SearchStatus::Searching);
     QApplication::sendPostedEvents();
-    mCachedResults.clear();
-    mCachedResults.setSearchTerm(createRegex().pattern());
-    mCachedResults.useRegex(regex());
-    mCachedResults.addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
+    mCachedResults->clear();
+    mCachedResults->setSearchTerm(createRegex().pattern());
+    mCachedResults->useRegex(regex());
+    mCachedResults->addResultList(findInFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true));
     mHasChanged = false;
 }
 
@@ -302,9 +319,10 @@ void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
+    setSearchOngoing(true);
     // only cache when we have changes or are not searching a large file
     if (mHasChanged && !ViewHelper::toTextView(mMain->recent()->editor()))
-        updateSearchResults();
+        updateSearchCache();
 
     selectNextMatch(direction);
 }
@@ -365,8 +383,8 @@ void SearchDialog::returnPressed() {
 
 void SearchDialog::searchResume()
 {
-    if (mSplitSeachView && mSplitSeachView == ViewHelper::toTextView(mMain->recent()->editor())) {
-        bool found = mSplitSeachView->findText(mSplitSearchRegEx, mSplitSearchFlags, mSplitSearchContinue);
+    if (mSplitSearchView && mSplitSearchView == ViewHelper::toTextView(mMain->recent()->editor())) {
+        bool found = mSplitSearchView->findText(createRegex(), mSplitSearchFlags, mSplitSearchContinue);
         if (found) {
             setSearchStatus(SearchStatus::Clear);
         }
@@ -376,11 +394,10 @@ void SearchDialog::searchResume()
         } else {
             if (!found)
                 setSearchStatus(SearchStatus::NoResults);
-            mSplitSeachView = nullptr;
-            mSplitSearchRegEx = QRegularExpression();
+            mSplitSearchView = nullptr;
         }
     }
-
+    setSearchOngoing(false);
 }
 
 void SearchDialog::closeEvent(QCloseEvent *e) {
@@ -437,7 +454,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
         QTextCursor matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
-        if (mCachedResults.size() > 0) { // has any matches at all
+//        if (mCachedResults->size() > 0) { // has any matches at all
 
             if (matchSelection.isNull()) { // empty selection == reached end of document
 
@@ -456,34 +473,33 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
                 matchPos.setY(matchSelection.blockNumber()+1);
                 matchPos.setX(matchSelection.columnNumber() - matchSelection.selectedText().length());
             }
-        } else { // search had no matches so do nothing
-            setSearchStatus(SearchStatus::NoResults);
-            QTextCursor tc = edit->textCursor();
-            tc.clearSelection();
-            edit->setTextCursor(tc);
-            return;
-        }
+//        } else { // search had no matches so do nothing
+//            setSearchStatus(SearchStatus::NoResults);
+//            QTextCursor tc = edit->textCursor();
+//            tc.clearSelection();
+//            edit->setTextCursor(tc);
+//            return;
+//        }
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-        mSplitSeachView = tv;
-        mSplitSearchRegEx = searchRegex;
+        mSplitSearchView = tv;
         mSplitSearchFlags = flags;
         mSplitSearchContinue = false;
         setSearchStatus(SearchStatus::Searching);
         searchResume();
-//        bool found = tv->findText(searchRegex, flags);
     }
 
     // set match and counter
     int count = 0;
-    for (Result match: mCachedResults.resultList()) {
+    for (Result match: mCachedResults->resultList()) {
         if (match.lineNr() == matchPos.y()
                 && match.colNr() == matchPos.x()) {
-            updateMatchAmount(mCachedResults.size(), count+1);
+            updateMatchAmount(mCachedResults->size(), count+1);
             break;
         } else {
             count++;
         }
     }
+    setSearchOngoing(false);
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
@@ -540,6 +556,12 @@ void SearchDialog::clearSearch()
     mMain->closeResultsPage();
 }
 
+void SearchDialog::updateEditHighlighting()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
+    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
+}
+
 void SearchDialog::clearResults()
 {
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
@@ -552,10 +574,8 @@ void SearchDialog::clearResults()
         tc.clearSelection();
         edit->setTextCursor(tc);
     }
-    mCachedResults.clear();
-
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
-    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
+    mCachedResults->clear();
+    updateEditHighlighting();
 }
 
 void SearchDialog::setSearchStatus(SearchStatus status)
@@ -696,7 +716,7 @@ void SearchDialog::setSelectedScope(int index)
 
 SearchResultList* SearchDialog::cachedResults()
 {
-    return &mCachedResults;
+    return mCachedResults;
 }
 
 void SearchDialog::setActiveEditWidget(QWidget *edit)
