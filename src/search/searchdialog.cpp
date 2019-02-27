@@ -81,6 +81,9 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearching) {
+
+        if (createRegex().pattern().isEmpty()) return;
+
         mSearching = true;
         ui->btn_FindAll->setText("Abort");
         clearResults();
@@ -92,7 +95,6 @@ void SearchDialog::on_btn_FindAll_clicked()
         insertHistory();
 
         setSearchStatus(SearchStatus::Searching);
-        QApplication::sendPostedEvents();
 
         switch (ui->combo_scope->currentIndex()) {
         case SearchScope::ThisFile:
@@ -123,10 +125,8 @@ void SearchDialog::on_btn_FindAll_clicked()
 
 void SearchDialog::intermediateUpdate(SearchResultList* results)
 {
-    int size = results->size();
-
     setSearchStatus(SearchStatus::Searching);
-    if (size) mMain->showResults(*results);
+    mMain->showResults(*results);
 }
 
 void SearchDialog::handleResult(SearchResultList* results)
@@ -136,13 +136,11 @@ void SearchDialog::handleResult(SearchResultList* results)
 
     int size = results->size();
 
-    if (size) {
-        updateMatchAmount(size);
-        mMain->showResults(*results);
-        resultsView()->resizeColumnsToContent();
-    } else {
-        setSearchStatus(SearchStatus::NoResults);
-    }
+    updateMatchAmount(size);
+    mMain->showResults(*results);
+    resultsView()->resizeColumnsToContent();
+
+    if (!size) setSearchStatus(SearchStatus::NoResults);
 }
 
 QList<Result> SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
@@ -196,9 +194,8 @@ QList<Result> SearchDialog::findInFile(FileMeta* fm, bool skipFilters)
         }
     }
 
-    QString searchTerm = ui->combo_search->currentText();
-    if (searchTerm.isEmpty()) return QList<Result>();
 
+    QString searchTerm = ui->combo_search->currentText();
     QRegularExpression regexp = createRegex();
     SearchResultList matches;
 
@@ -565,9 +562,9 @@ void SearchDialog::setSearchStatus(SearchStatus status)
 {
     switch (status) {
     case SearchStatus::Searching:
-        ui->lbl_nrResults->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        if (ui->lbl_nrResults->text() == QString("Searching...")) ui->lbl_nrResults->setText("Searching.");
-        else if (ui->lbl_nrResults->text() == QString("Searching.")) ui->lbl_nrResults->setText("Searching..");
+        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
+        if (ui->lbl_nrResults->text() == QString("Searching...")) ui->lbl_nrResults->setText("Searching.  ");
+        else if (ui->lbl_nrResults->text() == QString("Searching.  ")) ui->lbl_nrResults->setText("Searching.. ");
         else ui->lbl_nrResults->setText("Searching...");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
@@ -577,6 +574,7 @@ void SearchDialog::setSearchStatus(SearchStatus status)
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     case SearchStatus::Clear:
+        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("");
         ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
         break;
