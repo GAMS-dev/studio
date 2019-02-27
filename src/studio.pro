@@ -136,7 +136,6 @@ SOURCES += \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
-    syntax/errorhighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -246,7 +245,6 @@ HEADERS += \
     statuswidgets.h \
     studiosettings.h \
     syntax.h \
-    syntax/errorhighlighter.h \
     syntax/syntaxdata.h \
     syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \

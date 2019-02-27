@@ -48,7 +48,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(this, &CodeEdit::blockCountChanged, this, &CodeEdit::updateLineNumberAreaWidth);
-    connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateLineNumberArea);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEdit::updateExtraSelections);
@@ -484,12 +484,6 @@ bool CodeEdit::allowClosing(int chIndex)
 
     // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
     return allowAutoClose && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
-}
-
-int CodeEdit::topVisibleLine()
-{
-    QTextBlock block = firstVisibleBlock();
-    return block.isValid() ? block.blockNumber() : 0;
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
@@ -1227,6 +1221,7 @@ void CodeEdit::updateExtraSelections()
     }
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
+    extraSelMarks(selections);
     setExtraSelections(selections);
 }
 
@@ -1235,19 +1230,6 @@ void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
     if (mBlockEdit) {
         selections.append(mBlockEdit->extraSelections());
     }
-}
-
-void CodeEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
-{
-    if (!mSettings->highlightCurrentLine()) return;
-
-    QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
-    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = textCursor();
-    selection.cursor.movePosition(QTextCursor::StartOfBlock);
-    selection.cursor.clearSelection();
-    selections.append(selection);
 }
 
 void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)

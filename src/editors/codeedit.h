@@ -145,7 +145,6 @@ protected:
     void setAllowBlockEdit(bool allow);
     virtual void recalcWordUnderCursor();
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
-    virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
@@ -165,7 +164,7 @@ public slots:
     virtual void copySelection();
     virtual void selectAllText();
     virtual void pasteClipboard();
-    void updateExtraSelections();
+    void updateExtraSelections() override;
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
@@ -198,7 +197,6 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
-    virtual int topVisibleLine();
 
 protected:
     class BlockEdit

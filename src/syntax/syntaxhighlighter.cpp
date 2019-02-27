@@ -31,7 +31,7 @@ namespace gams {
 namespace studio {
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
-    : ErrorHighlighter(doc)
+    : QSyntaxHighlighter(doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
@@ -97,8 +97,6 @@ SyntaxHighlighter::~SyntaxHighlighter()
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
-    QList<TextMark*> markList = marks()->values(currentBlock().blockNumber());
-    setCombiFormat(0, text.length(), QTextCharFormat(), markList);
     int code = previousBlockState();
     if (code < 0) code = 0;
     int index = 0;
@@ -134,7 +132,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (!nextBlock.isValid()) {
             if (!tailBlock.isValid()) {
                 // no valid characters found, mark error
-                setCombiFormat(index, text.length() - index, syntax->charFormatError(), markList);
                 index = text.length();
                 code = getCode(code, SyntaxStateShift::reset, stateCode.first, stateCode.first);
                 continue;
@@ -146,7 +143,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->state() != SyntaxState::Standard) {
-                        setCombiFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat(), markList);
+                        setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
                         scanParentheses(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->state(), parPosList);
                     }
                     code = getCode(code, tailBlock.shift, getStateIdx(tailBlock.syntax->state()), getStateIdx(tailBlock.next));
@@ -155,9 +152,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
 
         if (nextBlock.error && nextBlock.length() > 0) {
-            setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError(), markList);
+            setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError());
         } else if (nextBlock.syntax->state() != SyntaxState::Standard) {
-            setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
+            setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
             if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
         }
         scanParentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->state(), parPosList);
@@ -189,6 +186,15 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }
+}
+
+void SyntaxHighlighter::syntaxState(int position, int &intState)
+{
+    mPositionForSyntaxState = position;
+    mLastSyntaxState = 0;
+    rehighlightBlock(document()->findBlock(position));
+    intState = mLastSyntaxState;
+    mLastSyntaxState = 0;
 }
 
 SyntaxAbstract*SyntaxHighlighter::getSyntax(SyntaxState state) const
