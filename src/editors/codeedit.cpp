@@ -1066,9 +1066,11 @@ void CodeEdit::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
 
 ParenthesesMatch CodeEdit::matchParentheses()
 {
-    static QString parentheses("{[(/}])\\");
+    static QString parentheses("{[(/E}])\\e");
+    static int pSplit = parentheses.length()/2;
     QTextBlock block = textCursor().block();
     if (!block.userData()) return ParenthesesMatch();
+//    int state = block.userState();
     QVector<ParenthesesPos> parList = static_cast<BlockData*>(block.userData())->parentheses();
     int pos = textCursor().positionInBlock();
     int start = -1;
@@ -1081,12 +1083,12 @@ ParenthesesMatch CodeEdit::matchParentheses()
     if (start < 0) return ParenthesesMatch();
     // prepare matching search
     int ci = parentheses.indexOf(parList.at(start).character);
-    bool back = ci > 3;
-    ci = ci % 4;
+    bool back = ci >= pSplit;
+    ci = ci % pSplit;
     bool inPar = back ^ (parList.at(start).relPos != pos);
     ParenthesesMatch result(block.position() + parList.at(start).relPos);
-    QStringRef parEnter = parentheses.midRef(back ? 4 : 0, 4);
-    QStringRef parLeave = parentheses.midRef(back ? 0 : 4, 4);
+    QStringRef parEnter = parentheses.midRef(back ? pSplit : 0, pSplit);
+    QStringRef parLeave = parentheses.midRef(back ? 0 : pSplit, pSplit);
     QVector<QChar> parStack;
     parStack << parLeave.at(ci);
     int pi = start;
@@ -1112,6 +1114,7 @@ ParenthesesMatch CodeEdit::matchParentheses()
             if (parList.at(pi).character == parStack.last()) {
                 parStack.removeLast();
                 if (parStack.isEmpty()) {
+                    if (parentheses.at(ci) == 'E') return ParenthesesMatch(); // only mark embedded on mismatch
                     result.valid = true;
                     result.match = block.position() + parList.at(pi).relPos;
                     result.inOutMatch = result.match + (inPar^back ? 0 : 1);

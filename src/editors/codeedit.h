@@ -71,7 +71,7 @@ struct ParenthesesPos
 class BlockData : public QTextBlockUserData
 {
 public:
-    BlockData() { mparentheses.reserve(10);}
+    BlockData() {}
     ~BlockData() {}
     QChar charForPos(int relPos);
     bool isEmpty() {return mparentheses.isEmpty();}
