@@ -774,7 +774,7 @@ void SolverOptionWidget::addActions()
 
     QAction* insertCommentAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Comment", [this]() { insertComment(); });
     insertCommentAction->setObjectName("actionInsert_comment");
-    insertCommentAction->setShortcut( tr("Alt+Insert") );
+    insertCommentAction->setShortcut( tr("Ctrl+Alt+Insert") );
     insertCommentAction->setShortcutVisibleInContextMenu(true);
     insertCommentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(insertCommentAction);
