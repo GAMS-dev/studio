@@ -82,6 +82,7 @@ enum struct FileKind {
     Log,
     Gdx,
     Ref,
+    Dir
 };
 
 inline unsigned int qHash(FileKind key, unsigned int seed)

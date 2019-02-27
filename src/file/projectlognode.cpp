@@ -102,9 +102,10 @@ void ProjectLogNode::logDone()
 void ProjectLogNode::addProcessData(const QByteArray &data)
 {
     StudioSettings* settings = SettingsLocator::settings();
-    if (!mLogFile && settings->writeLog()) mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
-    // TODO(JM) while creating refs to lst-file some parameters may influence the correct row-in-lst:
-    //          PS (PageSize), PC (PageContr), PW (PageWidth)
+
+    if (!mLogFile && settings->writeLog())
+        mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
+
     if (!document())
         EXCEPT() << "no log-document to add process data";
     QTextCodec::ConverterState convState;
@@ -451,46 +452,6 @@ ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
 {
     return mRunGroup;
 }
-
-
-/*
-
-TextMark*ProjectLogNode::firstErrorMark()
-{
-    if (!mMarks) return nullptr;
-    return mMarks->firstErrorMark();
-}
-
-QTextDocument* ProjectLogNode::document() const
-{
-    return document();
-}
-
-void ProjectLogNode::addEditor(QWidget* edit)
-{
-    if (!edit) return;
-
-    if (editorList().contains(edit)) {
-        editorList().move(editorList().indexOf(edit), 0);
-        return;
-    }
-    LogEditor* logEdit = toLogEdit(edit);
-    if (!logEdit) return;
-    logEdit->setDocument(document());
-    ProjectFileNode::addEditor(edit);
-}
-
-void ProjectLogNode::removeEditor(QWidget* edit)
-{
-    if (!edit) return;
-    if (!editorList().contains(edit)) return;
-
-    editorList().append(nullptr);
-    ProjectFileNode::removeEditor(edit);
-    editorList().removeLast();
-}
-
-*/
 
 } // namespace studio
 } // namespace gams
