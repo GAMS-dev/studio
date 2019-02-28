@@ -83,6 +83,10 @@ public:
 
     QChar getEOLCommentChar() const;
 
+   static QString keyGeneratedStr;
+   static QString valueGeneratedStr;
+   static QString commentGeneratedStr;
+
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
     void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
@@ -114,6 +118,7 @@ private:
     QString getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue);
     QString getQuotedStringValue(const QString &line, const QString &value);
     int getEOLCommentCharIndex(const QString &text);
+    bool isOptionTextGenerated(const QString &text);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);

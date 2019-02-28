@@ -37,6 +37,10 @@ namespace option {
 
 AbstractSystemLogger* OptionTokenizer::mNullLogger = new DefaultSystemLogger;
 
+QString OptionTokenizer::keyGeneratedStr = QString("[KEY]");
+QString OptionTokenizer::valueGeneratedStr = QString("[VALUE]");
+QString OptionTokenizer::commentGeneratedStr = QString("[COMMENT]");
+
 OptionTokenizer::OptionTokenizer(const QString &optionFileName)
 {
     // option definition
@@ -366,9 +370,9 @@ QString OptionTokenizer::normalize(const QList<OptionItem> &items)
     for (OptionItem item : items) {
 
         if ( item.key.isEmpty() )
-            item.key = "[KEY]";
+            item.key = keyGeneratedStr;
         if ( item.value.isEmpty() )
-            item.value = "[VALUE]";
+            item.value = valueGeneratedStr;
 
         if ( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
             strList.append(item.key+"="+item.value);
@@ -635,9 +639,10 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         }
         if (!valueRead)  { // indicator option or error
             int commentCharIndex = getEOLCommentCharIndex(text);
+            bool isTextGenerated = isOptionTextGenerated(text);
             item->optionId = -1;
-            item->key = (commentCharIndex<0) ? text : text.mid(0, commentCharIndex).simplified();
-            item->value = "";
+            item->key =  ( isTextGenerated ? keyGeneratedStr : ((commentCharIndex<0) ? text : text.mid(0, commentCharIndex).simplified()) );
+            item->value = ( isTextGenerated ? valueGeneratedStr : "" );
             item->text = (commentCharIndex<0) ? "" : text.mid(commentCharIndex+1).simplified();
             item->error = errorType;
             item->disabled = false;
@@ -1086,6 +1091,25 @@ int OptionTokenizer::getEOLCommentCharIndex(const QString &text)
     return commentCharIndex;
 }
 
+bool OptionTokenizer::isOptionTextGenerated(const QString &text)
+{
+    QString key = keyGeneratedStr;
+    QString value = valueGeneratedStr;
+    if (!text.startsWith(key))
+        return false;
+
+    QStringRef valueRef(&text, key.size(), text.size());
+    if (valueRef.startsWith("=") || valueRef.startsWith(" "))
+        valueRef = QStringRef(&text, key.size()+1, text.size());
+
+    if (!valueRef.startsWith(valueGeneratedStr))
+        return false;
+
+    valueRef = QStringRef(&text, key.size()+1+value.size(), text.size());
+
+    return true;
+}
+
 QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QTextCodec* codec)
 {
     QList<SolverOptionItem *> items;
@@ -1364,8 +1388,8 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
         QString key = item->key;
         QString value = item->value.toString();
         QString text = item->text;
-        QString str = QString("%1 %2 %3").arg(key).arg(value).arg(text);
-        qDebug() << "validating[" << str << "]";
+//        QString str = QString("%1 %2 %3").arg(key).arg(value).arg(text);
+//        qDebug() << "validating[" << str << "]";
         updateOptionItem(key, value, text, item);
     }
 }
