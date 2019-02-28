@@ -212,6 +212,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 {
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    bool thereIsCurrentIndex = ui->solverOptionTableView->selectionModel()->currentIndex().isValid();
     bool thereIsAnIndexSelection = indexSelection.count();
 
     bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
@@ -229,7 +230,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QAction* moveDownAction = nullptr;
     for(QAction* action : this->actions()) {
         if (action->objectName().compare("actionSelect_option")==0) {
-            action->setVisible( thereIsAnIndexSelection );
+            action->setVisible( thereIsAnIndexSelection || thereIsCurrentIndex );
             menu.addAction(action);
         } else if (action->objectName().compare("actionSelect_all")==0) {
             action->setVisible( thereIsAnIndexSelection );
@@ -243,11 +244,11 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             action->setVisible( ( !thereIsARow || everySelectionIsARow ) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
-            action->setVisible( everySelectionIsARow && (thereIsARowSelection) && !viewIsCompact );
+            action->setVisible( ( !thereIsARow || everySelectionIsARow ) );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
-            action->setVisible( everySelectionIsARow );
+            action->setVisible( isThereARowSelection() && everySelectionIsARow );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
@@ -623,9 +624,15 @@ void SolverOptionWidget::selectAnOption()
         return;
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    if (indexSelection.empty())
+        indexSelection <<  ui->solverOptionTableView->selectionModel()->currentIndex();
 
+    QList<int> rowIndex;
     for(int i=0; i<indexSelection.count(); ++i) {
-       on_selectRow( indexSelection.at(i).row() );
+        if (!rowIndex.contains(i)) {
+            rowIndex << i;
+            on_selectRow( indexSelection.at(i).row() );
+        }
     }
 }
 
@@ -679,6 +686,7 @@ void SolverOptionWidget::insertOption()
     updateTableColumnSpan();
     setModified(true);
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
+
 }
 
 void SolverOptionWidget::insertComment()
@@ -726,20 +734,20 @@ void SolverOptionWidget::insertComment()
 
 void SolverOptionWidget::deleteOption()
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    if  (!isThereARow() && !isThereARowSelection() && !isEverySelectionARow() && isViewCompact())
+    if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
-    if (isThereARowSelection()) {
-       QModelIndex index = selection.at(0);
-       QModelIndex removeTableIndex = mOptionTableModel->index(index.row(), 0);
-       QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
+    if (isThereARowSelection() && isEverySelectionARow()) {
+        QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+        QModelIndex index = selection.at(0);
+        QModelIndex removeTableIndex = mOptionTableModel->index(index.row(), 0);
+        QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
 
-       ui->solverOptionTableView->model()->removeRows(index.row(), selection.count(), QModelIndex());
-       mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
-       updateTableColumnSpan();
-       setModified(true);
-       emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
+        ui->solverOptionTableView->model()->removeRows(index.row(), selection.count(), QModelIndex());
+        mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
+        updateTableColumnSpan();
+        setModified(true);
+        emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
     }
 }
 
