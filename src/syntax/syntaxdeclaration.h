@@ -68,12 +68,12 @@ class SyntaxKeywordBase: public SyntaxAbstract
 {
 public:
     ~SyntaxKeywordBase() override;
-    SyntaxKeywordBase(SyntaxState state) : SyntaxAbstract(state) {}
+    SyntaxKeywordBase(SyntaxKind kind) : SyntaxAbstract(kind) {}
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 
 protected:
-    int findEnd(SyntaxState state, const QString& line, int index);
-    QHash<SyntaxState, DictList*> mKeywords;
+    int findEnd(SyntaxKind kind, const QString& line, int index);
+    QHash<SyntaxKind, DictList*> mKeywords;
 
 private:
     inline QStringList swapStringCase(QStringList list);
@@ -83,14 +83,14 @@ class SyntaxDeclaration: public SyntaxKeywordBase
 {
 public:
     SyntaxDeclaration();
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index);
 };
 
 class SyntaxPreDeclaration: public SyntaxKeywordBase
 {
 public:
-    SyntaxPreDeclaration(SyntaxState state);
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index);
+    SyntaxPreDeclaration(SyntaxKind kind);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index);
 };
 
 
@@ -98,40 +98,40 @@ class SyntaxDeclarationTable: public SyntaxKeywordBase
 {
 public:
     SyntaxDeclarationTable();
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
 };
 
 class SyntaxReserved: public SyntaxKeywordBase
 {
 public:
     SyntaxReserved();
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
 };
 
 class SyntaxReservedBody: public SyntaxAbstract
 {
 public:
     SyntaxReservedBody();
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxEmbedded: public SyntaxKeywordBase
 {
 public:
-    SyntaxEmbedded(SyntaxState state);
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxEmbedded(SyntaxKind kind);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
 };
 
 class SyntaxEmbeddedBody: public SyntaxAbstract
 {
 public:
     SyntaxEmbeddedBody();
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
-constexpr inline uint qHash(SyntaxState key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+constexpr inline uint qHash(SyntaxKind key, uint seed = 0) noexcept { return uint(key) ^ seed; }
 
 } // namespace studio
 } // namespace gans

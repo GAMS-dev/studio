@@ -1031,7 +1031,7 @@ AbstractEdit::EditorType CodeEdit::type()
     return EditorType::CodeEdit;
 }
 
-void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intState)
+void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intKind)
 {
     QString text = cursor.block().text();
     int start = cursor.positionInBlock();
@@ -1040,12 +1040,12 @@ void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intState)
     if (from >= 0 && from <= to) {
         word = text.mid(from, to-from+1);
         start = from + cursor.block().position();
-        emit requestSyntaxState(start+1, intState);
+        emit requestSyntaxKind(start+1, intKind);
 //        cursor.setPosition(start+1);
 //        intState = cursor.charFormat().property(QTextFormat::UserProperty).toInt();
     } else {
         word = "";
-        intState = 0;
+        intKind = 0;
     }
 }
 
@@ -1150,13 +1150,13 @@ bool CodeEdit::overwriteMode() const
 
 inline int CodeEdit::assignmentKind(int p)
 {
-    int preState = 0;
-    int postState = 0;
-    emit requestSyntaxState(p-1, preState);
-    emit requestSyntaxState(p+1, postState);
-    if (postState == static_cast<int>(SyntaxState::IdentifierAssignment)) return 1;
-    if (preState == static_cast<int>(SyntaxState::IdentifierAssignment)) return -1;
-    if (preState == static_cast<int>(SyntaxState::IdentifierAssignmentEnd)) return -1;
+    int preKind = 0;
+    int postKind = 0;
+    emit requestSyntaxKind(p-1, preKind);
+    emit requestSyntaxKind(p+1, postKind);
+    if (postKind == static_cast<int>(SyntaxKind::IdentifierAssignment)) return 1;
+    if (preKind == static_cast<int>(SyntaxKind::IdentifierAssignment)) return -1;
+    if (preKind == static_cast<int>(SyntaxKind::IdentifierAssignmentEnd)) return -1;
     return 0;
 }
 

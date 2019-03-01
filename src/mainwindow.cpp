@@ -1369,12 +1369,12 @@ void MainWindow::on_actionHelp_triggered()
         CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
         if (ce) {
             QString word;
-            int istate = 0;
-            ce->wordInfo(ce->textCursor(), word, istate);
+            int iKind = 0;
+            ce->wordInfo(ce->textCursor(), word, iKind);
 
-            if (istate == static_cast<int>(SyntaxState::Title)) {
+            if (iKind == static_cast<int>(SyntaxKind::Title)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-            } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+            } else if (iKind == static_cast<int>(SyntaxKind::Directive)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
             } else {
                 mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
