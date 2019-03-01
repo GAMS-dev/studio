@@ -79,7 +79,6 @@ protected:
 
 private:
     FileMeta* mFileMeta;
-    ErrorHighlighter* mSyntaxHighlighter = nullptr;
 };
 
 } // namespace studio

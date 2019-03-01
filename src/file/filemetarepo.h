@@ -67,7 +67,6 @@ public slots:
     void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
 
 private slots:
-//    void dirChanged(const QString& path);
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();

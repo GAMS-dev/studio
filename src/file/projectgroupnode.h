@@ -133,6 +133,7 @@ private:
 
 private:
     QString cleanPath(QString path, QString file);
+    void setLogLocation(const QString& path);
 };
 
 

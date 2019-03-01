@@ -20,13 +20,12 @@
 
 #ifndef COMMON_H
 #define COMMON_H
-#include <qhashfunctions.h>
-
 #include <QHashFunctions>
 
 namespace gams {
 namespace studio {
 
+const QString InvalidGAMS = "The GAMS system you use is not compatible with your version of GAMS Studio. Please use GAMS " GAMS_DISTRIB_VERSION_SHORT " or higher.";
 
 template <typename PHANTOM_TYPE>
 class PhantomInt
@@ -83,6 +82,7 @@ enum struct FileKind {
     Log,
     Gdx,
     Ref,
+    Dir
 };
 
 inline unsigned int qHash(FileKind key, unsigned int seed)
@@ -96,9 +96,10 @@ enum struct EditorType {
     log = 2,
     syslog = 3,
     txt = 4,
-    lxiLst = 5,
-    gdx = 6,
-    ref = 7,
+    txtRo = 5,
+    lxiLst = 6,
+    gdx = 7,
+    ref = 8,
 };
 
 }

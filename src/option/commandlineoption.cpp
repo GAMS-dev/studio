@@ -24,23 +24,17 @@
 namespace gams {
 namespace studio {
 
-CommandLineOption::CommandLineOption(QWidget *parent) :
-    CommandLineOption(true, parent)
+CommandLineOption::CommandLineOption(QWidget* parent) :
+    QComboBox(parent)
 {
-}
-
-CommandLineOption::CommandLineOption(bool validateFlag, QWidget* parent) :
-    QComboBox(parent), mValidated(validateFlag)
-{
-    this->setDisabled(true);
-    this->setEditable(true);
-    this->setCurrentIndex(-1);
-    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    this->setInsertPolicy(QComboBox::InsertAtTop);
-    this->lineEdit()->setClearButtonEnabled(true);
-    this->mCurrentContext = "";
-    this->mCurrentOption = "";
-    this->mCurrentIndex = -1;
+    setDisabled(true);
+    setEditable(true);
+    setCurrentIndex(-1);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    setInsertPolicy(QComboBox::InsertAtTop);
+    lineEdit()->setClearButtonEnabled(true);
+    mOptionString = "";
+    mCurrentIndex = -1;
 }
 
 CommandLineOption::~CommandLineOption()
@@ -49,20 +43,14 @@ CommandLineOption::~CommandLineOption()
 
 void CommandLineOption::validateChangedOption(const QString &text)
 {
-    mCurrentOption = text.simplified();
-
+    mOptionString = text.simplified();
     this->lineEdit()->setToolTip("");
-//  also allow empty option to be validated
-//    if (mCurrentOption.isEmpty())
-//        return;
-
-    if (mValidated)
-       emit commandLineOptionChanged(this->lineEdit(), text);
+    emit commandLineOptionChanged(this->lineEdit(), text);
 }
 
-QString CommandLineOption::getCurrentOption() const
+QString CommandLineOption::getOptionString() const
 {
-    return mCurrentOption;
+    return mOptionString;
 }
 
 void CommandLineOption::keyPressEvent(QKeyEvent *event)
@@ -73,30 +61,9 @@ void CommandLineOption::keyPressEvent(QKeyEvent *event)
     }
 }
 
-QString CommandLineOption::getCurrentContext() const
-{
-    return mCurrentContext;
-}
-
-void CommandLineOption::setCurrentContext(const QString &currentContext)
-{
-    mCurrentContext = currentContext;
-}
-
 void CommandLineOption::resetCurrentValue()
 {
-    mCurrentContext = "";
-    mCurrentOption = "";
-}
-
-bool CommandLineOption::isValidated() const
-{
-    return mValidated;
-}
-
-void CommandLineOption::validated(bool value)
-{
-    mValidated = value;
+    mOptionString = "";
 }
 
 } // namespace studio

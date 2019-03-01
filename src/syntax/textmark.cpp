@@ -99,15 +99,6 @@ void TextMark::clearBackRefs()
         backRef->unsetRefMark(this);
     }
     mBackRefs.clear();
-    if (mBlockData) mBlockData->removeTextMark(this);
-    mBlockData = nullptr;
-}
-
-void TextMark::setBlockData(BlockData *blockData)
-{
-    // recent value of mBlockData is commonly invalid
-    mBlockData = blockData;
-    if (mBlockData) mBlockData->addTextMark(this);
 }
 
 QColor TextMark::color()
@@ -133,7 +124,7 @@ FileKind TextMark::refFileKind()
 
 QIcon TextMark::icon()
 {
-    switch (mType) { // TODO(JM) hold ref to TextMark instead of icon
+    switch (mType) {
     case error:
         return QIcon(":/img/exclam-circle-r");
     case link:
@@ -149,10 +140,7 @@ QIcon TextMark::icon()
     return QIcon();
 }
 
-inline TextMark::Type TextMark::refType() const
-{
-    return (mReference) ? mReference->type() : none;
-}
+
 
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {

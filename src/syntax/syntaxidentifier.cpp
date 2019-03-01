@@ -24,45 +24,45 @@
 namespace gams {
 namespace studio {
 
-SyntaxIdentifier::SyntaxIdentifier(SyntaxState state) : SyntaxAbstract(state)
+SyntaxIdentifier::SyntaxIdentifier(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     mRex = QRegularExpression("[;\"\'/]");
 
-    // sub-states to check for all types
-    mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
-               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    // sub-kinds to check for all types
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
 
-    switch (state) {
-    case SyntaxState::Identifier:
-        mSubStates << SyntaxState::Comma
-                   << SyntaxState::IdentifierDescription1
-                   << SyntaxState::IdentifierDescription2
-                   << SyntaxState::IdentifierAssignment;
-        mEmptyLineStates << mSubStates
-                         << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
-                         << SyntaxState::Declaration << SyntaxState::DeclarationTable;
+    switch (kind) {
+    case SyntaxKind::Identifier:
+        mSubKinds << SyntaxKind::Comma
+                   << SyntaxKind::IdentifierDescription1
+                   << SyntaxKind::IdentifierDescription2
+                   << SyntaxKind::IdentifierAssignment;
+        mEmptyLineKinds << mSubKinds
+                         << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
+                         << SyntaxKind::Declaration << SyntaxKind::DeclarationTable;
         break;
-    case SyntaxState::IdentifierTable:
-        mSubStates << SyntaxState::IdentifierTableDescription1
-                   << SyntaxState::IdentifierTableDescription2
-                   << SyntaxState::IdentifierTableAssignmentHead;
-        mEmptyLineStates << mSubStates
-                         << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
-                         << SyntaxState::Declaration << SyntaxState::DeclarationTable;
+    case SyntaxKind::IdentifierTable:
+        mSubKinds << SyntaxKind::IdentifierTableDescription1
+                   << SyntaxKind::IdentifierTableDescription2
+                   << SyntaxKind::IdentifierTableAssignmentHead;
+        mEmptyLineKinds << mSubKinds
+                         << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
+                         << SyntaxKind::Declaration << SyntaxKind::DeclarationTable;
         break;
     default:
-        FATAL() << "invalid SyntaxState to initialize SyntaxIdentifier: " << syntaxStateName(state);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentifier: " << syntaxKindName(kind);
     }
 }
 
-SyntaxBlock SyntaxIdentifier::find(SyntaxState entryState, const QString& line, int index)
+SyntaxBlock SyntaxIdentifier::find(SyntaxKind entryKind, const QString& line, int index)
 {
-    Q_UNUSED(entryState);
+    Q_UNUSED(entryKind);
     int start = index;
     while (isWhitechar(line, start))
         ++start;
     if (start<line.length() && !mRex.match(line.midRef(start,1)).hasMatch())
-        return SyntaxBlock(this, start, start+1, SyntaxStateShift::shift);
+        return SyntaxBlock(this, start, start+1, SyntaxShift::shift);
     return SyntaxBlock(this);
 }
 
@@ -74,49 +74,49 @@ SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index, bool &ha
     int end = line.indexOf(mRex, index);
     if (end < 0) end = line.length();
     hasContent = start < end;
-    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
-SyntaxIdentDescript::SyntaxIdentDescript(SyntaxState state) : SyntaxAbstract(state)
+SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     QHash<int, QChar> delims {
-        {static_cast<int>(SyntaxState::IdentifierDescription1), '\''},
-        {static_cast<int>(SyntaxState::IdentifierDescription2), '\"'},
-        {static_cast<int>(SyntaxState::IdentifierTableDescription1), '\''},
-        {static_cast<int>(SyntaxState::IdentifierTableDescription2), '\"'},
+        {static_cast<int>(SyntaxKind::IdentifierDescription1), '\''},
+        {static_cast<int>(SyntaxKind::IdentifierDescription2), '\"'},
+        {static_cast<int>(SyntaxKind::IdentifierTableDescription1), '\''},
+        {static_cast<int>(SyntaxKind::IdentifierTableDescription2), '\"'},
     };
-    mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
-               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
-    mEmptyLineStates = mSubStates;
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
+    mEmptyLineKinds = mSubKinds;
 
-    switch (state) {
-    case SyntaxState::IdentifierDescription1:
-    case SyntaxState::IdentifierDescription2:
-        mEmptyLineStates << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
-                         << SyntaxState::Declaration << SyntaxState::DeclarationTable
-                         << SyntaxState::Comma << SyntaxState::IdentifierAssignment << SyntaxState::Identifier;
-        mSubStates << SyntaxState::Comma << SyntaxState::IdentifierAssignment;
+    switch (kind) {
+    case SyntaxKind::IdentifierDescription1:
+    case SyntaxKind::IdentifierDescription2:
+        mEmptyLineKinds << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
+                         << SyntaxKind::Declaration << SyntaxKind::DeclarationTable
+                         << SyntaxKind::Comma << SyntaxKind::IdentifierAssignment << SyntaxKind::Identifier;
+        mSubKinds << SyntaxKind::Comma << SyntaxKind::IdentifierAssignment;
         mTable = false;
         break;
-    case SyntaxState::IdentifierTableDescription1:
-    case SyntaxState::IdentifierTableDescription2:
-        mEmptyLineStates << SyntaxState::DeclarationSetType << SyntaxState::DeclarationVariableType
-                         << SyntaxState::Declaration << SyntaxState::DeclarationTable
-                         << SyntaxState::IdentifierTableAssignmentHead;
-        mSubStates << SyntaxState::IdentifierTableAssignmentHead;
+    case SyntaxKind::IdentifierTableDescription1:
+    case SyntaxKind::IdentifierTableDescription2:
+        mEmptyLineKinds << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
+                         << SyntaxKind::Declaration << SyntaxKind::DeclarationTable
+                         << SyntaxKind::IdentifierTableAssignmentHead;
+        mSubKinds << SyntaxKind::IdentifierTableAssignmentHead;
         mTable = true;
         break;
     default:
-        FATAL() << "invalid SyntaxState to initialize SyntaxIdentDescript: " << syntaxStateName(state);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentDescript: " << syntaxKindName(kind);
     }
-    if (!delims.contains(static_cast<int>(state)))
-        FATAL() << "missing delimiter for state " << syntaxStateName(state);
-    mDelimiter = delims.value(static_cast<int>(state));
+    if (!delims.contains(static_cast<int>(kind)))
+        FATAL() << "missing delimiter for syntax-kind " << syntaxKindName(kind);
+    mDelimiter = delims.value(static_cast<int>(kind));
 }
 
-SyntaxBlock SyntaxIdentDescript::find(SyntaxState entryState, const QString &line, int index)
+SyntaxBlock SyntaxIdentDescript::find(SyntaxKind entryKind, const QString &line, int index)
 {
-    bool skip = mTable ? (entryState != SyntaxState::IdentifierTable) : (entryState != SyntaxState::Identifier);
+    bool skip = mTable ? (entryKind != SyntaxKind::IdentifierTable) : (entryKind != SyntaxKind::Identifier);
     if (skip) SyntaxBlock(this);
 
     int start = index;
@@ -125,7 +125,7 @@ SyntaxBlock SyntaxIdentDescript::find(SyntaxState entryState, const QString &lin
     if (start < line.length() && line.at(start) == mDelimiter) {
         int end = line.indexOf(mDelimiter, start+1);
         if (end > start)
-            return SyntaxBlock(this, index, end+1, SyntaxStateShift::shift);
+            return SyntaxBlock(this, index, end+1, SyntaxShift::shift);
     }
     return SyntaxBlock(this);
 }
@@ -136,41 +136,41 @@ SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, bool 
     while (isWhitechar(line, end))
         ++end;
     hasContent = false;
-    return SyntaxBlock(this, index, end, SyntaxStateShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
-SyntaxIdentAssign::SyntaxIdentAssign(SyntaxState state) : SyntaxAbstract(state)
+SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
 {
-    mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
-               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
 
     mDelimiter = '/';
-    switch (state) {
-    case SyntaxState::IdentifierAssignment:
-        mSubStates << SyntaxState::IdentifierAssignmentEnd << SyntaxState::AssignmentLabel;
-        mEmptyLineStates = mSubStates;
+    switch (kind) {
+    case SyntaxKind::IdentifierAssignment:
+        mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::AssignmentLabel;
+        mEmptyLineKinds = mSubKinds;
         break;
-    case SyntaxState::IdentifierAssignmentEnd:
-        mSubStates << SyntaxState::Comma;
-        mEmptyLineStates = mSubStates << SyntaxState::Identifier;
+    case SyntaxKind::IdentifierAssignmentEnd:
+        mSubKinds << SyntaxKind::Comma;
+        mEmptyLineKinds = mSubKinds << SyntaxKind::Identifier;
         break;
     default:
-        FATAL() << "invalid SyntaxState to initialize SyntaxIdentAssign: " << syntaxStateName(state);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentAssign: " << syntaxKindName(kind);
     }
 }
 
-SyntaxBlock SyntaxIdentAssign::find(SyntaxState entryState, const QString &line, int index)
+SyntaxBlock SyntaxIdentAssign::find(SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryState)
+    Q_UNUSED(entryKind)
     int start = index;
-    bool inside = (state() != SyntaxState::IdentifierAssignmentEnd
-                   && (entryState == SyntaxState::AssignmentLabel
-                       || entryState == SyntaxState::AssignmentValue));
+    bool inside = (kind() != SyntaxKind::IdentifierAssignmentEnd
+                   && (entryKind == SyntaxKind::AssignmentLabel
+                       || entryKind == SyntaxKind::AssignmentValue));
     QChar delim = inside ? ',' : mDelimiter;
     while (isWhitechar(line, start))
         ++start;
     if (start < line.length() && line.at(start) == delim)
-        return SyntaxBlock(this, start, start+1, SyntaxStateShift::shift);
+        return SyntaxBlock(this, start, start+1, SyntaxShift::shift);
     return SyntaxBlock(this);
 }
 
@@ -182,23 +182,23 @@ SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, bool &h
     int end = (line.length() > start) ? start+1 : start;
     while (isWhitechar(line, end) || (line.length() > end && line.at(end) == ',')) end++;
     hasContent = (end > start);
-    return SyntaxBlock(this, start, end, SyntaxStateShift::shift);
+    return SyntaxBlock(this, start, end, SyntaxShift::shift);
 }
 
 AssignmentLabel::AssignmentLabel()
-     : SyntaxAbstract(SyntaxState::AssignmentLabel)
+     : SyntaxAbstract(SyntaxKind::AssignmentLabel)
 {
-    mSubStates << SyntaxState::IdentifierAssignmentEnd << SyntaxState::IdentifierAssignment
-               << SyntaxState::AssignmentLabel << SyntaxState::AssignmentValue ;
+    mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
+               << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
 }
 
-SyntaxBlock AssignmentLabel::find(SyntaxState entryState, const QString &line, int index)
+SyntaxBlock AssignmentLabel::find(SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryState)
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start)) start++;
     if (start >= line.size()) return SyntaxBlock(this);
-    if (entryState == SyntaxState::AssignmentLabel && index != 0) {
+    if (entryKind == SyntaxKind::AssignmentLabel && index != 0) {
         return SyntaxBlock(this);
     }
 
@@ -214,7 +214,7 @@ SyntaxBlock AssignmentLabel::find(SyntaxState entryState, const QString &line, i
             // find matching quote
             end = line.indexOf(delim.at(quoteKind-1), pos+1);
             if (end < 0)
-                return SyntaxBlock(this, start, pos+1, SyntaxStateShift::in, true);
+                return SyntaxBlock(this, start, pos+1, SyntaxShift::in, true);
             pos = end+1;
         } else {
             while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
@@ -229,7 +229,7 @@ SyntaxBlock AssignmentLabel::find(SyntaxState entryState, const QString &line, i
     }
 
     if (end > start) {
-        return SyntaxBlock(this, start, end, SyntaxStateShift::shift);
+        return SyntaxBlock(this, start, end, SyntaxShift::shift);
     }
     return SyntaxBlock(this);
 }
@@ -243,14 +243,14 @@ SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, bool &has
 }
 
 AssignmentValue::AssignmentValue()
-    : SyntaxAbstract(SyntaxState::AssignmentValue)
+    : SyntaxAbstract(SyntaxKind::AssignmentValue)
 {
-    mSubStates << SyntaxState::IdentifierAssignment << SyntaxState::IdentifierAssignmentEnd;
+    mSubKinds << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
 }
 
-SyntaxBlock AssignmentValue::find(SyntaxState entryState, const QString &line, int index)
+SyntaxBlock AssignmentValue::find(SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryState)
+    Q_UNUSED(entryKind)
     int start = index+1;
     while (isWhitechar(line, start)) start++;
     if (start >= line.size()) return SyntaxBlock(this);
@@ -266,7 +266,7 @@ SyntaxBlock AssignmentValue::find(SyntaxState entryState, const QString &line, i
         QChar ch = quoteKind==3 ? ']' : delim.at(quoteKind-1);
         end = line.indexOf(ch, pos+1);
         if (end < 0)
-            return SyntaxBlock(this, start, pos+1, SyntaxStateShift::out, true);
+            return SyntaxBlock(this, start, pos+1, SyntaxShift::out, true);
         pos = end+1;
     } else {
         while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
@@ -275,7 +275,7 @@ SyntaxBlock AssignmentValue::find(SyntaxState entryState, const QString &line, i
 //    while (isWhitechar(line, pos)) ++pos;
 
     if (end > start) {
-        return SyntaxBlock(this, start, end, SyntaxStateShift::skip);
+        return SyntaxBlock(this, start, end, SyntaxShift::skip);
     }
     return SyntaxBlock(this);
 }
@@ -288,28 +288,28 @@ SyntaxBlock AssignmentValue::validTail(const QString &line, int index, bool &has
     return SyntaxBlock();
 }
 
-SyntaxTableAssign::SyntaxTableAssign(SyntaxState state) : SyntaxAbstract(state)
+SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
 {
-    mSubStates << SyntaxState::Semicolon << SyntaxState::Directive << SyntaxState::CommentLine
-               << SyntaxState::CommentEndline << SyntaxState::CommentInline;
-    switch (state) {
-    case SyntaxState::IdentifierTableAssignmentHead:
-        mSubStates << SyntaxState::IdentifierTableAssignmentRow;
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
+    switch (kind) {
+    case SyntaxKind::IdentifierTableAssignmentHead:
+        mSubKinds << SyntaxKind::IdentifierTableAssignmentRow;
         break;
-    case SyntaxState::IdentifierTableAssignmentRow:
-        mSubStates << SyntaxState::IdentifierTableAssignmentHead;
+    case SyntaxKind::IdentifierTableAssignmentRow:
+        mSubKinds << SyntaxKind::IdentifierTableAssignmentHead;
         break;
     default:
-        FATAL() << "invalid SyntaxState to initialize SyntaxTableAssign: " << syntaxStateName(state);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxTableAssign: " << syntaxKindName(kind);
     }
 }
 
-SyntaxBlock SyntaxTableAssign::find(SyntaxState entryState, const QString &line, int index)
+SyntaxBlock SyntaxTableAssign::find(SyntaxKind entryKind, const QString &line, int index)
 {
     if (index > 0) return SyntaxBlock(this);
 
-    if (state() == SyntaxState::IdentifierTableAssignmentHead
-            && entryState == SyntaxState::IdentifierTableAssignmentRow) {
+    if (kind() == SyntaxKind::IdentifierTableAssignmentHead
+            && entryKind == SyntaxKind::IdentifierTableAssignmentRow) {
         int start = index;
         while (isWhitechar(line, start))
             ++start;
@@ -318,8 +318,8 @@ SyntaxBlock SyntaxTableAssign::find(SyntaxState entryState, const QString &line,
     }
     int end = line.indexOf(';', index);
     if (end < 0)
-        return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
-    return SyntaxBlock(this, index, end, SyntaxStateShift::out);
+        return SyntaxBlock(this, index, line.length(), SyntaxShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxShift::out);
 }
 
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, bool &hasContent)
@@ -327,8 +327,8 @@ SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, bool &h
     Q_UNUSED(hasContent)
     int end = line.indexOf(';', index);
     if (end < 0)
-        return SyntaxBlock(this, index, line.length(), SyntaxStateShift::shift);
-    return SyntaxBlock(this, index, end, SyntaxStateShift::out);
+        return SyntaxBlock(this, index, line.length(), SyntaxShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxShift::out);
 }
 
 } // namespace studio
