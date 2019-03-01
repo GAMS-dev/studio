@@ -255,7 +255,7 @@ void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 {
     bool activate = isRunnable && !isRunning;
     setRunActionsEnabled(activate);
-    setInterruptActionsEnabled(activate);
+    setInterruptActionsEnabled(isRunnable && isRunning);
 
     ui->gamsOptionWidget->setEnabled(activate);
     ui->gamsOptionCommandLine->setEnabled(activate && !isEditorExtended());
