@@ -269,11 +269,10 @@ LineMarks::LineMarks() : QMultiMap<int, TextMark *>()
 
 bool LineMarks::hasVisibleMarks() const
 {
-    //TODO(JM) take iterator instead of values()
-    QList<TextMark*> tm = values();
-    for (TextMark* t : tm) {
-        if ((t->type() == TextMark::link) || (t->type() == TextMark::error)
-                || (t->type() == TextMark::bookmark))
+    QMultiMap<int, TextMark*>::const_iterator it;
+    for (it = begin() ; it != end() ; ++it) {
+        if ((it.value()->type() == TextMark::link) || (it.value()->type() == TextMark::error)
+                || (it.value()->type() == TextMark::bookmark))
             return true;
     }
     return false;
