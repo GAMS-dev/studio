@@ -117,7 +117,7 @@ public:
     void removeLine();
     void commentLine();
     int minIndentCount(int fromLine = -1, int toLine = -1);
-    void wordInfo(QTextCursor cursor, QString &word, int &intState);
+    void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
     ParenthesesMatch matchParentheses();
     void setOverwriteMode(bool overwrite) override;
@@ -153,7 +153,7 @@ protected:
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
     void requestMarksEmpty(bool* marksEmpty);
-    void requestSyntaxState(int position, int &intState);
+    void requestSyntaxKind(int position, int &intKind);
     void searchFindNextPressed();
     void searchFindPrevPressed();
     void requestAdvancedActions(QList<QAction*>* actions);
