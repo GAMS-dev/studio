@@ -1901,7 +1901,9 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     }
     process->setGroupId(runGroup->id());
     process->setWorkingDir(workDir);
+
     process->execute();
+    ui->toolBar->repaint();
 
     connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
