@@ -57,6 +57,7 @@ SearchDialog::SearchDialog(MainWindow *parent) :
 
 SearchDialog::~SearchDialog()
 {
+    delete mCachedResults;
     delete ui;
 }
 
@@ -84,7 +85,6 @@ void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearching) {
         if (createRegex().pattern().isEmpty()) return;
-
 
         setSearchOngoing(true);
         clearResults();
@@ -125,21 +125,13 @@ void SearchDialog::on_btn_FindAll_clicked()
 void SearchDialog::intermediateUpdate(SearchResultList* results)
 {
     setSearchStatus(SearchStatus::Searching);
-    mMain->showResults(*results);
 
-    delete mCachedResults;
-    mCachedResults = results;
-}
-
-void SearchDialog::setSearchOngoing(bool searching)
-{
-    mSearching = searching;
-
-    if (searching) {
-        ui->btn_FindAll->setText("Abort");
-    } else {
-        ui->btn_FindAll->setText("Find All");
+    if (mCachedResults != results) {
+        delete mCachedResults;
+        mCachedResults = results;
     }
+
+    mMain->showResults(*mCachedResults);
 }
 
 void SearchDialog::finalUpdate(SearchResultList* results)
@@ -152,12 +144,25 @@ void SearchDialog::finalUpdate(SearchResultList* results)
     mMain->showResults(*results);
     resultsView()->resizeColumnsToContent();
 
-    delete mCachedResults;
-    mCachedResults = results;
+    if (mCachedResults != results) {
+        delete mCachedResults;
+        mCachedResults = results;
+    }
 
     updateEditHighlighting();
 
     if (!size) setSearchStatus(SearchStatus::NoResults);
+}
+
+void SearchDialog::setSearchOngoing(bool searching)
+{
+    mSearching = searching;
+
+    if (searching) {
+        ui->btn_FindAll->setText("Abort");
+    } else {
+        ui->btn_FindAll->setText("Find All");
+    }
 }
 
 QList<Result> SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
@@ -454,33 +459,26 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
         QTextCursor matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
-//        if (mCachedResults->size() > 0) { // has any matches at all
+        if (matchSelection.isNull()) { // empty selection == reached end of document
 
-            if (matchSelection.isNull()) { // empty selection == reached end of document
+            QTextCursor tc(edit->document()); // set to top
+            if (direction == SearchDirection::Backward)
+                tc.movePosition(QTextCursor::End); // move to bottom
+            edit->setTextCursor(tc);
 
-                QTextCursor tc(edit->document()); // set to top
-                if (direction == SearchDirection::Backward)
-                    tc.movePosition(QTextCursor::End); // move to bottom
-                edit->setTextCursor(tc);
+            // try once more to start over
+            if (!second) selectNextMatch(direction, true);
+            else setSearchStatus(SearchStatus::NoResults);
 
-                // try once more to start over
-                if (!second) selectNextMatch(direction, true);
-                else setSearchStatus(SearchStatus::NoResults);
-
-            } else { // found next match
-                edit->jumpTo(matchSelection);
-                edit->setTextCursor(matchSelection);
-                matchPos.setY(matchSelection.blockNumber()+1);
-                matchPos.setX(matchSelection.columnNumber() - matchSelection.selectedText().length());
-            }
-//        } else { // search had no matches so do nothing
-//            setSearchStatus(SearchStatus::NoResults);
-//            QTextCursor tc = edit->textCursor();
-//            tc.clearSelection();
-//            edit->setTextCursor(tc);
-//            return;
-//        }
+        } else { // found next match
+            edit->jumpTo(matchSelection);
+            edit->setTextCursor(matchSelection);
+            matchPos.setY(matchSelection.blockNumber()+1);
+            matchPos.setX(matchSelection.columnNumber() - matchSelection.selectedText().length());
+        }
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        mMain->closeResultsPage();
+
         mSplitSearchView = tv;
         mSplitSearchFlags = flags;
         mSplitSearchContinue = false;

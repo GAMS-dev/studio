@@ -31,11 +31,11 @@ SearchWorker::SearchWorker(QRegularExpression regex, FileMeta* fm)
     : mRegex(regex), mFm(fm)
 {
     mMatches = new SearchResultList;
+    mMatches->setSearchTerm(regex.pattern());
 }
 
 SearchWorker::~SearchWorker()
 {
-//    delete mMatches;
 }
 
 void SearchWorker::search()

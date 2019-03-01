@@ -39,6 +39,7 @@ SearchResultList::SearchResultList(const QString &searchTerm, QObject *parent) :
      QAbstractTableModel(parent), mSearchTerm(searchTerm)
 {
     useRegex(false); // set default
+    mResultHash.empty();
 }
 
 SearchResultList::~SearchResultList()
