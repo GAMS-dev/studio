@@ -67,8 +67,8 @@ private slots:
     void testHiddenOption_data();
     void testHiddenOption();
 
-//    void testDeprecatedOption_data();
-//    void testDeprecatedOption();
+    void testDeprecatedOption_data();
+    void testDeprecatedOption();
 
     void testOptionGroup_data();
     void testOptionGroup();

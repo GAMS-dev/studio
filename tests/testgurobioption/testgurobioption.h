@@ -49,6 +49,9 @@ private slots:
     void testOptionIntegerType_data();
     void testOptionIntegerType();
 
+    void testDeprecatedOption_data();
+    void testDeprecatedOption();
+
     void testOptionGroup_data();
     void testOptionGroup();
 

@@ -276,6 +276,44 @@ void TestGUROBIOption::testOptionIntegerType()
     QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
 }
 
+void TestGUROBIOption::testDeprecatedOption_data()
+{
+    QTest::addColumn<QString>("deprecatedOption");
+    QTest::addColumn<bool>("isASynonym");
+    QTest::addColumn<QString>("optionType");
+    QTest::addColumn<QString>("optionDescription");
+
+    QTest::newRow("lpmethod")          << "lpmethod"          << true << "enumint" << "Algorithm used to solve continuous models";
+    QTest::newRow("rootmethod")        << "rootmethod"        << true << "enumint" << "Algorithm used to solve continuous models";
+    QTest::newRow("concurrentmipjobs") << "concurrentmipjobs" << true << "integer" << "Distributed concurrent MIP job count";
+    QTest::newRow("dumpsolution")      << "dumpsolution"      << true << "string"  << "Controls export of alternate MIP solutions";
+}
+
+void TestGUROBIOption::testDeprecatedOption()
+{
+    QFETCH(QString, deprecatedOption);
+    QFETCH(bool, isASynonym);
+    QFETCH(QString, optionType);
+    QFETCH(QString, optionDescription);
+
+    if (isASynonym) {
+       QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+       QVERIFY( optionTokenizer->getOption()->isASynonym(deprecatedOption) );
+
+       QString optionName = optionTokenizer->getOption()->getNameFromSynonym(deprecatedOption);
+       QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
+       QCOMPARE( optionTokenizer->getOption()->getDescription(optionName).toLower(), optionDescription.trimmed().toLower());
+       QVERIFY( !optionTokenizer->getOption()->isDeprecated(optionName) );
+    } else {
+        QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+        QVERIFY( !optionTokenizer->getOption()->isASynonym(deprecatedOption) );
+        QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
+        QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(deprecatedOption)), optionType );
+        QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
+    }
+
+}
+
 void TestGUROBIOption::testOptionGroup_data()
 {
     QTest::addColumn<QString>("optionName");

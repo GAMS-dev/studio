@@ -337,10 +337,10 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             columnData.append("");
             columnData.append("Immediate");
             break;
-        default:
-            columnData.append("");
-            columnData.append("");
-            break;
+//        default:
+//            columnData.append("");
+//            columnData.append("");
+//            break;
         }
         columnData.append(optdef.description);
         columnData.append(optdef.number);

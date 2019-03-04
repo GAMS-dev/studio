@@ -392,7 +392,6 @@ void TestCPLEXOption::testOptionSynonym_data()
 }
 
 
-
 void TestCPLEXOption::testOptionSynonym()
 {
     QFETCH(QString, optionSynonym);
@@ -431,46 +430,46 @@ void TestCPLEXOption::testHiddenOption()
     QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
 }
 
-//void TestCPLEXOption::testDeprecatedOption_data()
-//{
-//    QTest::addColumn<QString>("deprecatedOption");
-//    QTest::addColumn<bool>("isASynonym");
-//    QTest::addColumn<QString>("optionType");
-//    QTest::addColumn<QString>("optionDescription");
+void TestCPLEXOption::testDeprecatedOption_data()
+{
+    QTest::addColumn<QString>("deprecatedOption");
+    QTest::addColumn<bool>("isASynonym");
+    QTest::addColumn<QString>("optionType");
+    QTest::addColumn<QString>("optionDescription");
 
-//    QTest::newRow("crossoveralg") << "crossoveralg" << false << "enumstr" << "use parameter barcrossalg to select crossover algorithm";
-//    QTest::newRow("lpalg")        << "lpalg"        << false << "enumstr" << "use parameter lpmethod to specify algorithm used for LP problems";
+    QTest::newRow("crossoveralg") << "crossoveralg" << false << "enumstr" << "use parameter barcrossalg to select crossover algorithm";
+    QTest::newRow("lpalg")        << "lpalg"        << false << "enumstr" << "use parameter lpmethod to specify algorithm used for LP problems";
+    QTest::newRow("polishtime")  << "polishtime"    << false << "double"  << "time spent polishing a solution" ;
 
-//    QTest::newRow("writepremps") << "writepremps"   << true  << "string"  << "produce a Cplex LP/MPS/SAV file of the presolved problem";
+    QTest::newRow("writepremps") << "writepremps"   << true  << "string"  << "produce a Cplex LP/MPS/SAV file of the presolved problem";
+    QTest::newRow("dgradient")   << "dgradient"     << true  << "enumint"  << "dual simplex pricing";
+    QTest::newRow("backtracking") << "backtracking" << true   << "double"  << "backtracking limit";
+}
 
-//    QTest::newRow("polishtime")  << "polishtime"    << false << "double"  << "time spent polishing a solution" ;
 
-//}
+void TestCPLEXOption::testDeprecatedOption()
+{
+    QFETCH(QString, deprecatedOption);
+    QFETCH(bool, isASynonym);
+    QFETCH(QString, optionType);
+    QFETCH(QString, optionDescription);
 
-//void TestCPLEXOption::testDeprecatedOption()
-//{
-//    QFETCH(QString, deprecatedOption);
-//    QFETCH(bool, isASynonym);
-//    QFETCH(QString, optionType);
-//    QFETCH(QString, optionDescription);
+    if (isASynonym) {
+       QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+       QVERIFY( optionTokenizer->getOption()->isASynonym(deprecatedOption) );
 
-//    if (isASynonym) {
-//       QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
-//       QVERIFY( optionTokenizer->getOption()->isASynonym(deprecatedOption) );
-
-//       QString optionName = optionTokenizer->getOption()->getNameFromSynonym(deprecatedOption);
-//       QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
-//       QCOMPARE( optionTokenizer->getOption()->getDescription(optionName).toLower(), optionDescription.trimmed().toLower());
-//       QVERIFY( !optionTokenizer->getOption()->isDeprecated(optionName) );
-//    } else {
-//        QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
-//        QVERIFY( !optionTokenizer->getOption()->isASynonym(deprecatedOption) );
-//        QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
-//        QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(deprecatedOption)), optionType );
-//        QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
-//    }
-
-//}
+       QString optionName = optionTokenizer->getOption()->getNameFromSynonym(deprecatedOption);
+       QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
+       QCOMPARE( optionTokenizer->getOption()->getDescription(optionName).toLower(), optionDescription.trimmed().toLower());
+       QVERIFY( !optionTokenizer->getOption()->isDeprecated(optionName) );
+    } else {
+        QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+        QVERIFY( !optionTokenizer->getOption()->isASynonym(deprecatedOption) );
+        QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
+        QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(deprecatedOption)), optionType );
+        QCOMPARE( optionTokenizer->getOption()->getDescription(deprecatedOption).toLower(), optionDescription.trimmed().toLower());
+    }
+}
 
 void TestCPLEXOption::testOptionGroup_data()
 {

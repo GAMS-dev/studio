@@ -505,8 +505,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                                   QString::fromLatin1(descript));
              opt.groupNumber = group;
 
-// TODO (JP)
-//             opt.deprecated = optIsDeprecated(mOPTHandle, name);
+             opt.deprecated = optIsDeprecated(mOPTHandle, name);
              opt.valid = (helpContextNr != 0);
              if (synonym.contains(nameStr)) {
                  QMap<QString, QString>::const_iterator it = synonym.find(nameStr);
