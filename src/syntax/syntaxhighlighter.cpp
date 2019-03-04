@@ -146,7 +146,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->kind() != SyntaxKind::Standard) {
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
-                        scanParentheses(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->kind(), parPosList);
+                        scanParentheses(text, tailBlock.start, tailBlock.length(), syntax->kind(),
+                                        tailBlock.syntax->kind(), tailBlock.next, parPosList);
                     }
                     code = getCode(code, tailBlock.shift, getKindIdx(tailBlock.syntax->kind()), getKindIdx(tailBlock.next));
                 }
@@ -159,15 +160,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) extendSearch = true;
         }
-        if (nextBlock.syntax->kind() == SyntaxKind::Embedded ||
-                (nextBlock.syntax->kind() == SyntaxKind::Directive && nextBlock.next == SyntaxKind::EmbeddedBody)) {
-            parPosList << ParenthesesPos('E', nextBlock.start);
-        } else if (nextBlock.syntax->kind() == SyntaxKind::EmbeddedEnd ||
-                   (syntax->kind() == SyntaxKind::EmbeddedBody && nextBlock.syntax->kind() == SyntaxKind::Directive)) {
-            parPosList << ParenthesesPos('e', nextBlock.start);
-        } else {
-            scanParentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->kind(), parPosList);
-        }
+        scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),
+                        nextBlock.syntax->kind(), nextBlock.next, parPosList);
 
         DEB() << nextBlock.start << "  " << syntaxKindName(syntax->kind())
                                  << " -> " << syntaxKindName(nextBlock.syntax->kind())
@@ -248,9 +242,16 @@ const QVector<SyntaxKind> validParenthesesSyntax = {
 const QString validParentheses("{[(}])/");
 const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
 
-void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxKind kind,  QVector<ParenthesesPos> &parentheses)
+void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind, SyntaxKind postKind,  QVector<ParenthesesPos> &parentheses)
 {
     bool inBlock = false;
+    if (kind == SyntaxKind::Embedded || (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody)) {
+        parentheses << ParenthesesPos('E', start);
+        return;
+    } else if (kind == SyntaxKind::EmbeddedEnd || (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive)) {
+        parentheses << ParenthesesPos('e', start);
+        return;
+    }
     if (!validParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
         int iPara = validParentheses.indexOf(text.at(i));
