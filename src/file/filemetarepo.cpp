@@ -92,31 +92,31 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
     }
 }
 
-void FileMetaRepo::toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine)
+void FileMetaRepo::toggleBookmark(FileId fileId, int lineNr, int posInLine)
 {
-    if (mTextMarkRepo->marks(fileId, lineNr, groupId, TextMark::bookmark).isEmpty()) {
+    if (mTextMarkRepo->marks(fileId, lineNr, -1, TextMark::bookmark, 1).isEmpty()) {
         // add bookmark
-        mTextMarkRepo->createMark(fileId, groupId, TextMark::bookmark, -1, lineNr, posInLine);
+        mTextMarkRepo->createMark(fileId, TextMark::bookmark, lineNr, posInLine);
     } else {
         // remove bookmark
-        mTextMarkRepo->removeMarks(fileId, groupId, QSet<TextMark::Type>() << TextMark::bookmark, lineNr);
+        mTextMarkRepo->removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark, lineNr);
     }
 }
 
-void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr)
+void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, int refLineNr)
 {
     TextMark *bookmark = nullptr;
     if (mTextMarkRepo->hasBookmarks(refFileId)) {
-        bookmark = mTextMarkRepo->findBookmark(refFileId, refGroupId, refLineNr, back);
+        bookmark = mTextMarkRepo->findBookmark(refFileId, refLineNr, back);
     }
     FileMeta *fm = fileMeta(refFileId);
-    ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm, mProjectRepo->asGroup(refGroupId)) : nullptr;
+    ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm) : nullptr;
     ProjectAbstractNode * node = startNode;
     while (!bookmark && startNode) {
         node = back ? mProjectRepo->previous(node) : mProjectRepo->next(node);
         FileId fileId = node->toFile() ? node->toFile()->file()->id() : FileId();
         if (fileId.isValid() && mTextMarkRepo->hasBookmarks(fileId)) {
-            bookmark = mTextMarkRepo->findBookmark(fileId, node->parentNode()->id(), -1, back);
+            bookmark = mTextMarkRepo->findBookmark(fileId, -1, back);
         }
         if (node == startNode) break;
     }

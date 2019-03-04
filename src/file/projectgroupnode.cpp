@@ -512,7 +512,6 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
 
     if (textMark) {
-
         if (SettingsLocator::settings()->openLst()) {
             textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);

@@ -57,27 +57,24 @@ bool AbstractEdit::overwriteMode() const
 void AbstractEdit::sendToggleBookmark()
 {
     FileId fi = fileId();
-    NodeId gi = groupId();
-    if (fi.isValid() && gi.isValid()) {
-        emit toggleBookmark(fi, gi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+    if (fi.isValid()) {
+        emit toggleBookmark(fi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
     }
 }
 
 void AbstractEdit::sendJumpToNextBookmark()
 {
     FileId fi = fileId();
-    NodeId gi = groupId();
-    if (fi.isValid() && gi.isValid()) {
-        emit jumpToNextBookmark(false, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    if (fi.isValid()) {
+        emit jumpToNextBookmark(false, fi, effectiveBlockNr(textCursor().blockNumber()));
     }
 }
 
 void AbstractEdit::sendJumpToPrevBookmark()
 {
     FileId fi = fileId();
-    NodeId gi = groupId();
-    if (fi.isValid() && gi.isValid()) {
-        emit jumpToNextBookmark(true, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    if (fi.isValid()) {
+        emit jumpToNextBookmark(true, fi, effectiveBlockNr(textCursor().blockNumber()));
     }
 }
 
