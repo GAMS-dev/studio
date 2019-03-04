@@ -100,6 +100,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     parPosList.reserve(20);
     int code = previousBlockState();
     if (code < 0) code = 0;
+    DEB() << '\n' << text;
     int index = 0;
     QTextBlock textBlock = currentBlock();
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
@@ -158,7 +159,19 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) extendSearch = true;
         }
-        scanParentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->kind(), parPosList);
+        if (nextBlock.syntax->kind() == SyntaxKind::Embedded ||
+                (nextBlock.syntax->kind() == SyntaxKind::Directive && nextBlock.next == SyntaxKind::EmbeddedBody)) {
+            parPosList << ParenthesesPos('E', nextBlock.start);
+        } else if (nextBlock.syntax->kind() == SyntaxKind::EmbeddedEnd ||
+                   (syntax->kind() == SyntaxKind::EmbeddedBody && nextBlock.syntax->kind() == SyntaxKind::Directive)) {
+            parPosList << ParenthesesPos('e', nextBlock.start);
+        } else {
+            scanParentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->kind(), parPosList);
+        }
+
+        DEB() << nextBlock.start << "  " << syntaxKindName(syntax->kind())
+                                 << " -> " << syntaxKindName(nextBlock.syntax->kind())
+                                 << " -> " << syntaxKindName(nextBlock.next);
         index = nextBlock.end;
 
         code = getCode(code, nextBlock.shift, getKindIdx(nextBlock.syntax->kind()), getKindIdx(nextBlock.next));
@@ -238,14 +251,6 @@ const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
 void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxKind kind,  QVector<ParenthesesPos> &parentheses)
 {
     bool inBlock = false;
-    if (kind == SyntaxKind::Embedded) {
-        parentheses << ParenthesesPos('E', start);
-        return;
-    }
-    if (kind == SyntaxKind::EmbeddedEnd) {
-        parentheses << ParenthesesPos('e', start);
-        return;
-    }
     if (!validParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
         int iPara = validParentheses.indexOf(text.at(i));
