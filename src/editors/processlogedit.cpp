@@ -29,7 +29,7 @@ ProcessLogEdit::ProcessLogEdit(QWidget *parent)
 {
     setTextInteractionFlags(Qt::TextSelectableByMouse);
     connect(this, &ProcessLogEdit::textChanged, this, &ProcessLogEdit::updateExtraSelections);
-    connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &ProcessLogEdit::updateExtraSelections);
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &ProcessLogEdit::updateExtraSelections);
 }
 
 void ProcessLogEdit::mouseDoubleClickEvent(QMouseEvent *event)
