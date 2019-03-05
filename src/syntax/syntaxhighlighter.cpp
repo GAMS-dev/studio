@@ -100,7 +100,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     parPosList.reserve(20);
     int code = previousBlockState();
     if (code < 0) code = 0;
-    DEB() << '\n' << text;
+//    DEB() << '\n' << text;
     int index = 0;
     QTextBlock textBlock = currentBlock();
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
@@ -163,9 +163,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),
                         nextBlock.syntax->kind(), nextBlock.next, parPosList);
 
-        DEB() << nextBlock.start << "  " << syntaxKindName(syntax->kind())
-                                 << " -> " << syntaxKindName(nextBlock.syntax->kind())
-                                 << " -> " << syntaxKindName(nextBlock.next);
+//        DEB() << nextBlock.start << "  " << syntaxKindName(syntax->kind())
+//                                 << " -> " << syntaxKindName(nextBlock.syntax->kind())
+//                                 << " -> " << syntaxKindName(nextBlock.next);
         index = nextBlock.end;
 
         code = getCode(code, nextBlock.shift, getKindIdx(nextBlock.syntax->kind()), getKindIdx(nextBlock.next));
@@ -190,11 +190,13 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             textBlock.setUserData(blockData);
     }
     KindCode kindCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
+//    int oldState = currentBlockState();
     if (mKinds.at(kindCode.first)->kind() != SyntaxKind::Standard) {
         setCurrentBlockState(code);
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }
+//    DEB() << oldState << " -> " << currentBlockState();
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind)
