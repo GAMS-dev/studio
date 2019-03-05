@@ -281,12 +281,12 @@ void SearchDialog::simpleReplaceAll()
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
-        clearResults();
         edit->textCursor().beginEditBlock();
         for (QTextCursor tc: hits) {
             tc.insertText(replaceTerm);
         }
         edit->textCursor().endEditBlock();
+        clearResults();
         invalidateCache();
     }
 }
@@ -544,9 +544,9 @@ void SearchDialog::updateEditHighlighting()
 
 void SearchDialog::clearResults()
 {
+    setSearchStatus(SearchStatus::Clear);
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
-    setSearchStatus(SearchStatus::Clear);
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (edit) {
