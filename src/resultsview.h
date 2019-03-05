@@ -39,7 +39,7 @@ class ResultsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit ResultsView(SearchResultList &resultList, MainWindow *parent = nullptr);
+    explicit ResultsView(SearchResultList* resultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
 
@@ -51,7 +51,7 @@ private slots:
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList mResultList;
+    SearchResultList* mResultList;
     int searchTermLength = 0;
 };
 

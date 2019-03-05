@@ -27,11 +27,10 @@
 namespace gams {
 namespace studio {
 
-SearchWorker::SearchWorker(QRegularExpression regex, FileMeta* fm)
-    : mRegex(regex), mFm(fm)
+SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, FileMeta* fm, SearchResultList* list)
+    : mMutex(mutex), mRegex(regex), mFm(fm)
 {
-    mMatches = new SearchResultList;
-    mMatches->setSearchTerm(regex.pattern());
+    mMatches = list;
 }
 
 SearchWorker::~SearchWorker()
@@ -40,6 +39,7 @@ SearchWorker::~SearchWorker()
 
 void SearchWorker::search()
 {
+    QMutexLocker m(&mMutex);
     int lineCounter = 0;
     QFile file(mFm->location());
     if (file.open(QIODevice::ReadOnly)) {
@@ -64,14 +64,14 @@ void SearchWorker::search()
 
             // update periodically
             if (lineCounter % 15000 == 0) {
-                emit update(mMatches);
+                emit update();
             }
 
 
         }
         file.close();
     }
-    emit resultReady(mMatches);
+    emit resultReady();
 
     thread()->quit();
 }

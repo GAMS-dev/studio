@@ -2343,13 +2343,16 @@ void MainWindow::on_actionSearch_triggered()
     }
 }
 
-void MainWindow::showResults(SearchResultList &results)
+void MainWindow::showResults(SearchResultList* results)
 {
+    qDebug() /*rogo: delete*/ << QTime::currentTime() << "showing results";
     ResultsView* resultsView = searchDialog()->resultsView();
     int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
 
+    // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));
-    QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
+
+    QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results->size()) + ")");
 
     ui->dockLogView->show();
 

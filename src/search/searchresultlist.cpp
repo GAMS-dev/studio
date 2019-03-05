@@ -62,14 +62,6 @@ void SearchResultList::addResult(int lineNr, int colNr, int length, QString file
     mResultHash[fileLoc].append(r);
 }
 
-void SearchResultList::addResultList(QList<Result> resList)
-{
-    for (Result r : resList) {
-        mResultHash[r.filepath()].append(r);
-        mSize++;
-    }
-}
-
 QList<Result> SearchResultList::filteredResultList(QString fileLocation)
 {
     return mResultHash[fileLocation];

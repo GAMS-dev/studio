@@ -20,6 +20,7 @@
 #ifndef SEARCHWORKER_H
 #define SEARCHWORKER_H
 
+#include <QMutex>
 #include <QObject>
 #include <QRegularExpression>
 
@@ -32,15 +33,16 @@ class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(QRegularExpression regex, FileMeta* fm);
+    SearchWorker(QMutex& mutex, QRegularExpression regex, FileMeta* fm, gams::studio::SearchResultList* list);
     ~SearchWorker();
     void search();
 
 signals:
-    void update(SearchResultList* intermediateResult);
-    void resultReady(SearchResultList* result);
+    void update();
+    void resultReady();
 
 private:
+    QMutex& mMutex;
     QRegularExpression mRegex;
     FileMeta* mFm;
     SearchResultList* mMatches;

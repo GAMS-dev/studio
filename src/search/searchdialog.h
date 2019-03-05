@@ -90,8 +90,8 @@ public slots:
     void on_searchNext();
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
-    void finalUpdate(SearchResultList* results);
-    void intermediateUpdate(SearchResultList* results);
+    void finalUpdate();
+    void intermediateUpdate();
 
 protected slots:
     void returnPressed();
@@ -132,11 +132,11 @@ private:
         Clear = 2
     };
     void simpleReplaceAll();
-    QList<Result> findInFile(FileMeta* fm, bool skipFilters = false);
-    QList<Result> findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
-    QList<Result> findInGroup();
-    QList<Result> findInOpenFiles();
-    QList<Result> findInAllFiles();
+    void findInFile(QMutex& mutex, SearchResultList* list, FileMeta* fm, bool skipFilters = false);
+    void findInFiles(QMutex& mutex, SearchResultList* list, QList<FileMeta *> fml, bool skipFilters = false);
+    void findInGroup(QMutex& mutex, SearchResultList* list);
+    void findInOpenFiles(QMutex& mutex, SearchResultList* list);
+    void findInAllFiles(QMutex& mutex, SearchResultList* list);
     void updateMatchAmount(int hits, int current = 0);
     void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
@@ -166,6 +166,7 @@ private:
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
     QThread mThread;
     bool mSearching;
+    QMutex mMutex;
 };
 
 }

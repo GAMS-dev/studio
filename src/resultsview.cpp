@@ -26,12 +26,13 @@
 namespace gams {
 namespace studio {
 
-ResultsView::ResultsView(SearchResultList &resultList, MainWindow *parent) :
-    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList)
+ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
+    QWidget(parent), ui(new Ui::ResultsView), mMain(parent)
 {
     ui->setupUi(this);
-    ui->tableView->setModel(&mResultList);
-    searchTermLength = resultList.searchTerm().length();
+    mResultList = resultList;
+    ui->tableView->setModel(mResultList);
+    searchTermLength = resultList->searchTerm().length();
 }
 
 ResultsView::~ResultsView()
@@ -48,7 +49,7 @@ void ResultsView::resizeColumnsToContent()
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
     int selectedRow = index.row();
-    Result item = mResultList.at(selectedRow);
+    Result item = mResultList->at(selectedRow);
 
     // open so we have a document of the file
     if (QFileInfo(item.filepath()).exists())
@@ -63,7 +64,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 
 SearchResultList* ResultsView::resultList()
 {
-    return &mResultList;
+    return mResultList;
 }
 
 }
