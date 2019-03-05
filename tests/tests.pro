@@ -24,4 +24,5 @@ SUBDIRS += testcommonpaths \
            testeditors \
            testservicelocators \
            testcheckforupdatewrapper \
-           testtextmapper
+           testtextmapper \
+           testblockcode

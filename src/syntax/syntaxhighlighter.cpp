@@ -98,9 +98,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
     parPosList.reserve(20);
-    int code = previousBlockState();
-    if (code < 0) code = 0;
-    DEB() << '\n' << text;
+    BlockCode code = previousBlockState();
+    if (!code.isValid()) code = 0;
     int index = 0;
     QTextBlock textBlock = currentBlock();
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
@@ -108,7 +107,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     bool extendSearch = true;
 
     while (index < text.length()) {
-        KindCode kindCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
+        KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
         SyntaxAbstract* syntax = mKinds.at(kindCode.first);
         bool stack = true;
          // detect end of valid trailing characters for current syntax
@@ -162,10 +161,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
         scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),
                         nextBlock.syntax->kind(), nextBlock.next, parPosList);
-
-        DEB() << nextBlock.start << "  " << syntaxKindName(syntax->kind())
-                                 << " -> " << syntaxKindName(nextBlock.syntax->kind())
-                                 << " -> " << syntaxKindName(nextBlock.next);
         index = nextBlock.end;
 
         code = getCode(code, nextBlock.shift, getKindIdx(nextBlock.syntax->kind()), getKindIdx(nextBlock.next));
@@ -189,9 +184,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         else
             textBlock.setUserData(blockData);
     }
-    KindCode kindCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
+    KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
     if (mKinds.at(kindCode.first)->kind() != SyntaxKind::Standard) {
-        setCurrentBlockState(code);
+        setCurrentBlockState(code.code());
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }
@@ -317,33 +312,41 @@ int SyntaxHighlighter::addCode(KindIndex si, CodeIndex ci)
     return mCodes.length()-1;
 }
 
-int SyntaxHighlighter::getCode(CodeIndex code, SyntaxShift shift, KindIndex kind, KindIndex kindNext)
+BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest)
 {
-    if (code < 0) code = 0;
-    if (shift == SyntaxShift::skip)
+    if (!code.isValid()) code = 0; // default to syntax gams-standard
+    if (nest) {
+        code.setDepth(code.depth() + nest);
+        if (code.depth() > 0) return code;
+    }
+    if (shift == SyntaxShift::skip) {
         return code;
-    if (shift == SyntaxShift::out)
-        return mCodes.at(code).second;
-    if (shift == SyntaxShift::in)
-        return addCode(kindNext, code);
-    if (shift == SyntaxShift::shift)
-        return addCode(kind, mCodes.at(code).second);
+    } else if (shift == SyntaxShift::out) {
+        code.setKind(mCodes.at(code.kind()).second);
+        return code;
+    } else if (shift == SyntaxShift::in) {
+        code.setKind(addCode(kindNext, code.kind()));
+        return code;
+    } else if (shift == SyntaxShift::shift) {
+        code.setKind(addCode(kind, mCodes.at(code.kind()).second));
+        return code;
+    }
 
-    while (mKinds.at(mCodes.at(code).first)->kind() != SyntaxKind::Standard) {
-        code = mCodes.at(code).second;
+    while (mKinds.at(mCodes.at(code.kind()).first)->kind() != SyntaxKind::Standard) {
+        code.setKind(mCodes.at(code.kind()).second);
     }
     return code;
 }
 
-QString SyntaxHighlighter::codeDeb(int code)
-{
-    QString res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind());
-    while (code) {
-        code = mCodes.at(code).second;
-        res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind()) + ", " + res;
-    }
-    return res;
-}
+//QString SyntaxHighlighter::codeDeb(int code)
+//{
+//    QString res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind());
+//    while (code) {
+//        code = mCodes.at(code).second;
+//        res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind()) + ", " + res;
+//    }
+//    return res;
+//}
 
 
 } // namespace studio
