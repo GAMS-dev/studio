@@ -162,6 +162,7 @@ void SearchDialog::setSearchOngoing(bool searching)
 ///
 void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFilters)
 {
+    QList<FileMeta*> files;
     QList<FileMeta*> modified; // need to be treated differently
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
@@ -170,15 +171,14 @@ void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFi
         if (!skipFilters) { // filter files by pattern and scope
             if ((ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)
                     || fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Log || fm->kind() == FileKind::Ref) {
-                fml.removeOne(fm);
-                continue;
+                // skip
+            } else {
+                files << fm;
             }
         }
 
-        if (fm->isModified()) {
-            modified.append(fm);
-            fml.removeOne(fm);
-        }
+        if (fm->isModified())
+            modified << fm;
     }
 
     // non-parallel first
@@ -186,7 +186,7 @@ void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFi
         findInDoc(createRegex(), fm);
 
     // search file thread
-    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), fml, mCachedResults);
+    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), files, mCachedResults);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
