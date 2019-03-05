@@ -33,9 +33,9 @@ class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(QMutex& mutex, QRegularExpression regex, FileMeta* fm, gams::studio::SearchResultList* list);
+    SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list);
     ~SearchWorker();
-    void search();
+    void findInFiles();
 
 signals:
     void update();
@@ -44,7 +44,7 @@ signals:
 private:
     QMutex& mMutex;
     QRegularExpression mRegex;
-    FileMeta* mFm;
+    QList<FileMeta*> mFiles;
     SearchResultList* mMatches;
 };
 

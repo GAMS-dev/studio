@@ -27,8 +27,8 @@
 namespace gams {
 namespace studio {
 
-SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, FileMeta* fm, SearchResultList* list)
-    : mMutex(mutex), mRegex(regex), mFm(fm)
+SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list)
+    : mMutex(mutex), mRegex(regex), mFiles(fml)
 {
     mMatches = list;
 }
@@ -37,42 +37,43 @@ SearchWorker::~SearchWorker()
 {
 }
 
-void SearchWorker::search()
+void SearchWorker::findInFiles()
 {
     QMutexLocker m(&mMutex);
-    int lineCounter = 0;
-    QFile file(mFm->location());
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream in(&file);
-        while (!in.atEnd()) { // read file
-            lineCounter++;
+    QList<Result> res;
+    for (FileMeta* fm : mFiles) {
+        int lineCounter = 0;
+        QFile file(fm->location());
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            while (!in.atEnd()) { // read file
+                lineCounter++;
 
-            if (lineCounter % 1000 == 0 && thread()->isInterruptionRequested()) break;
+                if (lineCounter % 1000 == 0 && thread()->isInterruptionRequested()) break;
 
-            QString line = in.readLine();
+                QString line = in.readLine();
 
-            QRegularExpressionMatch match;
-            QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
-            while (i.hasNext()) {
-                match = i.next();
-                mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
-                                   file.fileName(), line.trimmed());
+                QRegularExpressionMatch match;
+                QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
+                while (i.hasNext()) {
+                    match = i.next();
+                    mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
+                                       file.fileName(), line.trimmed());
+                }
+
+                // abort: too many results
+                if (mMatches->size() > 49999) break;
+
+                // update periodically
+                if (lineCounter % 15000 == 0) {
+                    emit update();
+                }
             }
-
-            // abort: too many results
-            if (mMatches->size() > 49999) break;
-
-            // update periodically
-            if (lineCounter % 15000 == 0) {
-                emit update();
-            }
-
-
+            file.close();
         }
-        file.close();
+        emit update();
     }
     emit resultReady();
-
     thread()->quit();
 }
 

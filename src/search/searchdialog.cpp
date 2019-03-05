@@ -88,11 +88,9 @@ void SearchDialog::on_btn_FindAll_clicked()
         setSearchOngoing(true);
         clearResults();
 
-        mMutex.lock();
         mCachedResults->clear();
         mCachedResults->setSearchTerm(createRegex().pattern());
         mCachedResults->useRegex(regex());
-        mMutex.unlock();
 
         insertHistory();
 
@@ -101,16 +99,16 @@ void SearchDialog::on_btn_FindAll_clicked()
         switch (ui->combo_scope->currentIndex()) {
         case SearchScope::ThisFile:
             if (mMain->recent()->editor())
-                findInFile(mMutex, mCachedResults, mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
+                findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
             break;
         case SearchScope::ThisGroup:
-            findInGroup(mMutex, mCachedResults);
+            findInGroup(mMutex);
             break;
         case SearchScope::OpenTabs:
-            findInOpenFiles(mMutex, mCachedResults);
+            findInOpenFiles(mMutex);
             break;
         case SearchScope::AllFiles:
-            findInAllFiles(mMutex, mCachedResults);
+            findInAllFiles(mMutex);
             break;
         default:
             break;
@@ -126,7 +124,8 @@ void SearchDialog::on_btn_FindAll_clicked()
 void SearchDialog::intermediateUpdate()
 {
     setSearchStatus(SearchStatus::Searching);
-    mMain->showResults(mCachedResults);
+    if (!resultsView() || resultsView()->resultList()->size() < mCachedResults->size())
+        mMain->showResults(mCachedResults);
 }
 
 void SearchDialog::finalUpdate()
@@ -134,12 +133,11 @@ void SearchDialog::finalUpdate()
     setSearchOngoing(false);
 
     int size = mCachedResults->size();
-
     updateMatchAmount(size);
-    mMutex.lock();
+
     mMain->showResults(mCachedResults);
     resultsView()->resizeColumnsToContent();
-    mMutex.unlock();
+
     updateEditHighlighting();
 
     if (!size) setSearchStatus(SearchStatus::NoResults);
@@ -156,26 +154,63 @@ void SearchDialog::setSearchOngoing(bool searching)
     }
 }
 
-void SearchDialog::findInFiles(QMutex& mMutex, SearchResultList* list, QList<FileMeta*> fml, bool skipFilters)
+///
+/// \brief SearchDialog::findInFiles starts a search in files. distinguishes between (non-)modified files.
+/// \param mMutex for parallelisation
+/// \param fml list of files to search
+/// \param skipFilters enable for result caching (find next/prev)
+///
+void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFilters)
 {
-    QList<Result> res;
-    for (FileMeta* fm : fml)
-        findInFile(mMutex, list, fm, skipFilters);
+    QList<FileMeta*> modified; // need to be treated differently
+    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
+    fileFilter.setPatternSyntax(QRegExp::Wildcard);
+
+    for(FileMeta* fm : fml) {
+        if (!skipFilters) { // filter files by pattern and scope
+            if ((ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)
+                    || fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Log || fm->kind() == FileKind::Ref) {
+                fml.removeOne(fm);
+                continue;
+            }
+        }
+
+        if (fm->isModified()) {
+            modified.append(fm);
+            fml.removeOne(fm);
+        }
+    }
+
+    // non-parallel first
+    for (FileMeta* fm : modified)
+        findInDoc(createRegex(), fm);
+
+    // search file thread
+    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), fml, mCachedResults);
+    sw->moveToThread(&mThread);
+
+    connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
+    connect(this, &SearchDialog::startSearch, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
+    connect(sw, &SearchWorker::update, this, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
+    connect(sw, &SearchWorker::resultReady, this, &SearchDialog::finalUpdate, Qt::UniqueConnection);
+
+    mThread.start();
+    emit startSearch();
 }
 
-void SearchDialog::findInAllFiles(QMutex& mMutex, SearchResultList* list)
+void SearchDialog::findInAllFiles(QMutex& mMutex)
 {
     QList<FileMeta*> files = mMain->fileRepo()->fileMetas();
-    findInFiles(mMutex, list, files);
+    findInFiles(mMutex, files);
 }
 
-void SearchDialog::findInOpenFiles(QMutex& mMutex, SearchResultList* list)
+void SearchDialog::findInOpenFiles(QMutex& mMutex)
 {
     QList<FileMeta*> files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
-    findInFiles(mMutex, list, files);
+    findInFiles(mMutex, files);
 }
 
-void SearchDialog::findInGroup(QMutex& mMutex, SearchResultList* list)
+void SearchDialog::findInGroup(QMutex& mMutex)
 {
     ProjectFileNode* fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     ProjectGroupNode* group = (fc ? fc->parentNode() : nullptr);
@@ -185,46 +220,10 @@ void SearchDialog::findInGroup(QMutex& mMutex, SearchResultList* list)
         if (!files.contains(fn->file()))
             files.append(fn->file());
     }
-    findInFiles(mMutex, list, files);
+    findInFiles(mMutex, files);
 }
 
-void SearchDialog::findInFile(QMutex& mMutex, SearchResultList* list, FileMeta* fm, bool skipFilters)
-{
-    if (!fm) return ;
-
-    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
-    fileFilter.setPatternSyntax(QRegExp::Wildcard);
-    if (!skipFilters) {
-        if (((ui->combo_scope->currentIndex() != SearchScope::ThisFile) && (fileFilter.indexIn(fm->location()) == -1))
-                || (fm->kind() == FileKind::Gdx) || (fm->kind() == FileKind::Log)|| (fm->kind() == FileKind::Ref)) {
-            return; // dont search here, return empty
-        }
-    }
-
-    QString searchTerm = ui->combo_search->currentText();
-    QRegularExpression regexp = createRegex();
-
-    // when a file has unsaved changes a different search strategy is used.
-    if (fm->isModified()) {
-        findInDoc(regexp, fm, list);
-        setSearchOngoing(false);
-        // TODO(rogo): handle update of non-threaded or convert to threaded...
-//        mMain->showResults(list);
-    } else {
-        SearchWorker* sw = new SearchWorker(mMutex, regexp, fm, mCachedResults);
-        sw->moveToThread(&mThread);
-
-        connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
-        connect(this, &SearchDialog::startSearch, sw, &SearchWorker::search, Qt::UniqueConnection);
-        connect(sw, &SearchWorker::update, this, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
-        connect(sw, &SearchWorker::resultReady, this, &SearchDialog::finalUpdate, Qt::UniqueConnection);
-
-        mThread.start();
-        emit startSearch();
-    }
-}
-
-void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, SearchResultList* matches)
+void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
 {
     QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
@@ -235,8 +234,8 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, Searc
         else break;
 
         if (!item.isNull()) {
-            matches->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
-                              item.selectedText().length(), fm->location(), item.block().text().trimmed());
+            mCachedResults->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
+                                      item.selectedText().length(), fm->location(), item.block().text().trimmed());
         }
     } while (!item.isNull());
 }
@@ -299,7 +298,7 @@ void SearchDialog::updateSearchCache()
     mCachedResults->clear();
     mCachedResults->setSearchTerm(createRegex().pattern());
     mCachedResults->useRegex(regex());
-    findInFile(mMutex, mCachedResults, mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
+    findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
 
     mHasChanged = false;
 }
@@ -535,7 +534,6 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
 
     clearResults();
-    mMain->closeResultsPage();
 }
 
 void SearchDialog::updateEditHighlighting()
@@ -558,6 +556,7 @@ void SearchDialog::clearResults()
     }
     mCachedResults->clear();
     updateEditHighlighting();
+    mMain->closeResultsPage();
 }
 
 void SearchDialog::setSearchStatus(SearchStatus status)

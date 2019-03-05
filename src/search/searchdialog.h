@@ -132,17 +132,16 @@ private:
         Clear = 2
     };
     void simpleReplaceAll();
-    void findInFile(QMutex& mutex, SearchResultList* list, FileMeta* fm, bool skipFilters = false);
-    void findInFiles(QMutex& mutex, SearchResultList* list, QList<FileMeta *> fml, bool skipFilters = false);
-    void findInGroup(QMutex& mutex, SearchResultList* list);
-    void findInOpenFiles(QMutex& mutex, SearchResultList* list);
-    void findInAllFiles(QMutex& mutex, SearchResultList* list);
+    void findInFiles(QMutex& mutex, QList<FileMeta *> fml, bool skipFilters = false);
+    void findInGroup(QMutex& mutex);
+    void findInOpenFiles(QMutex& mutex);
+    void findInAllFiles(QMutex& mutex);
     void updateMatchAmount(int hits, int current = 0);
     void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
-    void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
+    void findInDoc(QRegularExpression searchRegex, FileMeta *fm);
     void updateEditHighlighting();
     void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);

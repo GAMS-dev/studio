@@ -2345,7 +2345,6 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList* results)
 {
-    qDebug() /*rogo: delete*/ << QTime::currentTime() << "showing results";
     ResultsView* resultsView = searchDialog()->resultsView();
     int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
 
