@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QMap>
 
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -77,7 +78,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Enabled;
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
-            int rowWidth = static_cast<GdxSymbol*>(model())->getTvSectionWidth()->at(i);
+            int rowWidth = static_cast<TableViewModel*>(model())->getTvSectionWidth()->at(i);
 
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
@@ -213,7 +214,7 @@ int NestedHeaderView::pointToDimension(QPoint p)
     if (orientation() == Qt::Vertical) {
         int totWidth = 0;
         for(int i=0; i<dim(); i++) {
-            totWidth += static_cast<GdxSymbol*>(model())->getTvSectionWidth()->at(i);
+            totWidth += static_cast<TableViewModel*>(model())->getTvSectionWidth()->at(i);
             if (p.x() < totWidth)
                 return i;
         }
@@ -237,16 +238,13 @@ void NestedHeaderView::bindScrollMechanism()
         connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(this->orientation(), 0, 2); });
 }
 
-GdxSymbol *NestedHeaderView::sym() const
+TableViewModel *NestedHeaderView::sym() const
 {
-    return static_cast<GdxSymbol*>(model());
+    return static_cast<TableViewModel*>(model());
 }
 
 QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
-    //TODO: remove these two lines as soon as two separate models for list and table view have been implemented
-    if (!sym()->tableView())
-        return QSize();
     if (orientation() == Qt::Vertical) {
         QSize s(0,sectionSize(logicalIndex));
         QStringList labels = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();

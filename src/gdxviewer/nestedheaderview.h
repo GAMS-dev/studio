@@ -1,7 +1,7 @@
 #ifndef NESTEDHEADERVIEW_H
 #define NESTEDHEADERVIEW_H
 
-#include "gdxsymbol.h"
+#include "tableviewmodel.h"
 
 #include <QHeaderView>
 #include <QPainter>
@@ -33,7 +33,7 @@ private:
     int pointToDimension(QPoint p);
     void bindScrollMechanism();
 
-    GdxSymbol* sym() const;
+    TableViewModel* sym() const;
     int dim() const;
     QPoint mMousePos = QPoint(-1,-1);
     QPoint mDragStartPosition;

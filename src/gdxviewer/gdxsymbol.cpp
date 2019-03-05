@@ -53,13 +53,6 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     mSpecValSortVal.push_back(-std::numeric_limits<double>::max()); // GMS_SV_MINF
     mSpecValSortVal.push_back(4.94066E-324); // GMS_SV_EPS
     mSpecValSortVal.push_back(0);  //TODO: Acronyms
-
-    mTvColDim = 1;
-    for(int i=0; i<mDim; i++)
-        mTvDimOrder << i;
-
-    tvLabelWidth = new QMap<QString, int>();
-    tvSectionWidth = new QVector<int>();
 }
 
 GdxSymbol::~GdxSymbol()
@@ -70,176 +63,93 @@ GdxSymbol::~GdxSymbol()
         if(a)
             delete[] a;
     }
-    if (tvSectionWidth)
-        delete tvSectionWidth;
-    if (tvLabelWidth)
-        delete tvLabelWidth;
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (mTableView) {
-        if (role == Qt::DisplayRole) {
-            QStringList header;
-            if (orientation == Qt::Horizontal) {
-                if (mType == GMS_DT_VAR || mType == GMS_DT_EQU) {
-                    for (int i=0; i<mTvColHeaders[section].size()-1; i++ ) {
-                        uint uel = mTvColHeaders[section][i];
-                        header << mGdxSymbolTable->uel2Label(uel);
-                    }
-                    switch(mTvColHeaders[section].last()) {
-                    case GMS_VAL_LEVEL: header << "Level"; break;
-                    case GMS_VAL_MARGINAL: header << "Marginal"; break;
-                    case GMS_VAL_LOWER: header << "Lower"; break;
-                    case GMS_VAL_UPPER: header << "Upper"; break;
-                    case GMS_VAL_SCALE: header << "Scale"; break;
-                    }
-                }
-                else {
-                    for (uint uel: mTvColHeaders[section])
-                        header << mGdxSymbolTable->uel2Label(uel);
-                }
-            }
-            else {
-                for (uint uel: mTvRowHeaders[section])
-                    header << mGdxSymbolTable->uel2Label(uel);
-            }
-            return header;
-        }
-        else if (role == Qt::SizeHintRole && orientation == Qt::Vertical) {
-            int totalWidth = 0;
-            for (int i=0; i<mDim-mTvColDim; i++) {
-                int width;
-                QString label = mGdxSymbolTable->uel2Label(mTvRowHeaders[section][i]);
-                if (tvLabelWidth->contains(label))
-                    width = tvLabelWidth->value(label);
-                else {
-                    QVariant var = headerData(section, orientation, Qt::FontRole);
-                    QFont fnt;
-                    if (var.isValid() && var.canConvert<QFont>())
-                        fnt = qvariant_cast<QFont>(var);
-                    fnt.setBold(true);
-                    int labelWidth = QFontMetrics(fnt).width(label)*1.3;
-                    totalWidth += labelWidth;
-                    tvSectionWidth->replace(i, qMax(tvSectionWidth->at(i), labelWidth));
-                }
-            }
-            return totalWidth;
-        }
-    } else {
-        if (role == Qt::DisplayRole) {
-            if (orientation == Qt::Horizontal) {
-                if (section < mDim)
-                    return mDomains.at(section);
-                else {
-                    if (mType == GMS_DT_SET)
-                        return "Text";
-                    else if (mType == GMS_DT_PAR)
-                        return "Value";
-                    else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
-                        switch(section-mDim) {
-                        case GMS_VAL_LEVEL: return "Level";
-                        case GMS_VAL_MARGINAL: return "Marginal";
-                        case GMS_VAL_LOWER: return "Lower";
-                        case GMS_VAL_UPPER: return "Upper";
-                        case GMS_VAL_SCALE: return "Scale";
-                        }
-                }
-            }
-        }
-        else if (role == Qt::ToolTipRole) {
-            QString description("<html><head/><body>");
-
+    if (role == Qt::DisplayRole) {
+        if (orientation == Qt::Horizontal) {
             if (section < mDim)
-                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the labels in the column in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p><p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
-            else if (section >= mDim) {
+                return mDomains.at(section);
+            else {
                 if (mType == GMS_DT_SET)
-                    description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the explanatory text in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
-                else
-                    description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the numeric values using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
+                    return "Text";
+                else if (mType == GMS_DT_PAR)
+                    return "Value";
+                else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+                    switch(section-mDim) {
+                    case GMS_VAL_LEVEL: return "Level";
+                    case GMS_VAL_MARGINAL: return "Marginal";
+                    case GMS_VAL_LOWER: return "Lower";
+                    case GMS_VAL_UPPER: return "Upper";
+                    case GMS_VAL_SCALE: return "Scale";
+                    }
             }
-            description += "<p><span style=\" font-weight:600;\">Rearrange columns: </span>Drag-and-drop can be used for changing the order of columns</p>";
-            description += "</body></html>";
-            return description;
         }
+    }
+    else if (role == Qt::ToolTipRole) {
+        QString description("<html><head/><body>");
+
+        if (section < mDim)
+            description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the labels in the column in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p><p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
+        else if (section >= mDim) {
+            if (mType == GMS_DT_SET)
+                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the explanatory text in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
+            else
+                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the numeric values using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
+        }
+        description += "<p><span style=\" font-weight:600;\">Rearrange columns: </span>Drag-and-drop can be used for changing the order of columns</p>";
+        description += "</body></html>";
+        return description;
     }
     return QVariant();
 }
 
 int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
-    if (mTableView)
-        return mTvRowHeaders.size();
-    else {
-        if (parent.isValid())
-            return 0;
-        return mFilterRecCount;
-    }
+    if (parent.isValid())
+        return 0;
+    return mFilterRecCount;
 }
 
 int GdxSymbol::columnCount(const QModelIndex &parent) const
 {
-    if (mTableView)
-        return mTvColHeaders.size();
-    else {
-        if (parent.isValid())
-            return 0;
-        if (mType == GMS_DT_PAR || mType == GMS_DT_SET )
-            return mDim + 1;
-        else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
-            return mDim + 5;
-    }
+    if (parent.isValid())
+        return 0;
+    if (mType == GMS_DT_PAR || mType == GMS_DT_SET )
+        return mDim + 1;
+    else if (mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+        return mDim + 5;
     return 0;
 }
 
 QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 {
-    if (mTableView) {
-        if (!index.isValid())
-            return QVariant();
-        else if (role == Qt::DisplayRole) {
-            QVector<uint> keys = mTvRowHeaders[index.row()] + mTvColHeaders[index.column()];
-            if (mTvKeysToValIdx.contains(keys)) {
-                double val = mValues[mTvKeysToValIdx[keys]];
-                if (mType == GMS_DT_SET)
-                    return mGdxSymbolTable->getElementText((int) val);
-                else
-                    return formatValue(val);
-            } else
-                return QVariant();
-        }
-        else if (role == Qt::TextAlignmentRole) {
-            return QVariant(Qt::AlignRight | Qt::AlignVCenter);
-        }
+    if (!index.isValid())
         return QVariant();
-    } else {
 
-        if (!index.isValid())
-            return QVariant();
-
-        else if (role == Qt::DisplayRole) {
-            int row = mRecSortIdx[mRecFilterIdx[index.row()]];
-            if (index.column() < mDim)
-                return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
-            else {
-                double val = 0.0;
-                if (mType <= GMS_DT_PAR) // Set, Parameter
-                    val = mValues[row];
-                else // Variable, Equation
-                    val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
-                if (mType == GMS_DT_SET)
-                    return mGdxSymbolTable->getElementText((int) val);
-                else
-                    return formatValue(val);
-            }
+    else if (role == Qt::DisplayRole) {
+        int row = mRecSortIdx[mRecFilterIdx[index.row()]];
+        if (index.column() < mDim)
+            return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
+        else {
+            double val = 0.0;
+            if (mType <= GMS_DT_PAR) // Set, Parameter
+                val = mValues[row];
+            else // Variable, Equation
+                val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
+            if (mType == GMS_DT_SET)
+                return mGdxSymbolTable->getElementText((int) val);
+            else
+                return formatValue(val);
         }
-        else if (role == Qt::TextAlignmentRole) {
-            if (index.column() >= mDim) {
-                if (mType == GMS_DT_PAR || mType == GMS_DT_VAR ||  mType == GMS_DT_EQU)
-                    return QVariant(Qt::AlignRight | Qt::AlignVCenter);
-                else
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-            }
+    }
+    else if (role == Qt::TextAlignmentRole) {
+        if (index.column() >= mDim) {
+            if (mType == GMS_DT_PAR || mType == GMS_DT_VAR ||  mType == GMS_DT_EQU)
+                return QVariant(Qt::AlignRight | Qt::AlignVCenter);
+            else
+                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
     }
     return QVariant();
@@ -366,32 +276,6 @@ void GdxSymbol::calcDefaultColumns()
     }
 }
 
-void GdxSymbol::calcDefaultColumnsTableView()
-{
-    mDefaultColumnTableView.clear();
-    mDefaultColumnTableView.resize(columnCount());
-    if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)
-        return; // symbols other than variable and equation do not have default values
-    double defVal;
-    for(int col=0; col<columnCount(); col++) {
-        if (mType == GMS_DT_VAR)
-            defVal = gmsDefRecVar[mSubType][col%GMS_VAL_MAX];
-        else // mType == GMS_DT_EQU
-            defVal = gmsDefRecEqu[mSubType][col%GMS_VAL_MAX];
-        for(int row=0; row<rowCount(); row++) {
-            QVector<uint> keys = mTvRowHeaders[row] + mTvColHeaders[col];
-            double val = defVal;
-            if (mTvKeysToValIdx.contains(keys))
-                val = mValues[mTvKeysToValIdx[keys]];
-            if(defVal != val) {
-                mDefaultColumnTableView[col] = false;
-                break;
-            }
-            mDefaultColumnTableView[col] = true;
-        }
-    }
-}
-
 //TODO(CW): refactoring for better performance
 void GdxSymbol::calcUelsInColumn()
 {
@@ -485,132 +369,6 @@ QVariant GdxSymbol::formatValue(double val) const
     return QVariant();
 }
 
-void GdxSymbol::initTableView(int nrColDim, QVector<int> dimOrder)
-{
-    if (dimOrder.isEmpty()) {
-        for(int i=0; i<mDim; i++)
-            dimOrder << i;
-    }
-
-    mTvColDim = nrColDim;
-    mTvDimOrder = dimOrder;
-    QSet<QVector<uint>> seenColHeaders;
-    QSet<QVector<uint>> seenRowHeaders;
-
-    mTvRowHeaders.clear();
-    mTvColHeaders.clear();
-    mTvKeysToValIdx.clear();
-    QVector<uint> lastRowHeader(mDim-mTvColDim);
-    for (int i=0; i<lastRowHeader.size(); i++)
-        lastRowHeader[i] = 0;
-    QVector<uint> lastColHeader(mTvColDim);
-    for (int i=0; i<lastColHeader.size(); i++)
-        lastColHeader[i] = 0;
-    int r;
-    for (int rec=0; rec<mFilterRecCount; rec++) {
-        r = mRecSortIdx[mRecFilterIdx[rec]];
-        int keyIdx = r*mDim;
-        QVector<uint> rowHeader;
-        QVector<uint> colHeader;
-
-        for(int i=0; i<mDim-mTvColDim; i++)
-            rowHeader.push_back(mKeys[keyIdx+mTvDimOrder[i]]);
-        for(int i=mDim-mTvColDim; i<mDim; i++)
-            colHeader.push_back(mKeys[keyIdx+mTvDimOrder[i]]);
-
-        if (mType == GMS_DT_VAR || mType == GMS_DT_EQU) {
-            colHeader.push_back(0);
-            for (int valIdx=0; valIdx<GMS_VAL_MAX; valIdx++) {
-                colHeader.pop_back();
-                colHeader.push_back(valIdx);
-
-                QVector<uint> keys = rowHeader + colHeader;
-                mTvKeysToValIdx[keys] = r*GMS_VAL_MAX + valIdx;
-
-                if (rowHeader != lastRowHeader) {
-                    if (!seenRowHeaders.contains(rowHeader)) {
-                        seenRowHeaders.insert(rowHeader);
-                        mTvRowHeaders.push_back(rowHeader);
-                    }
-                    lastRowHeader = rowHeader;
-                }
-                if (colHeader != lastColHeader) {
-                    if (!seenColHeaders.contains(colHeader)) {
-                        seenColHeaders.insert(colHeader);
-                        mTvColHeaders.push_back(colHeader);
-                    }
-                    lastColHeader = colHeader;
-                }
-            }
-        } else {
-            QVector<uint> keys = rowHeader + colHeader;
-            mTvKeysToValIdx[keys] = r;
-
-            if (rowHeader != lastRowHeader) {
-                if (!seenRowHeaders.contains(rowHeader)) {
-                    seenRowHeaders.insert(rowHeader);
-                    mTvRowHeaders.push_back(rowHeader);
-                    lastRowHeader = rowHeader;
-                }
-            }
-            if (colHeader != lastColHeader) {
-                if (!seenColHeaders.contains(colHeader)) {
-                    seenColHeaders.insert(colHeader);
-                    mTvColHeaders.push_back(colHeader);
-                    lastColHeader = colHeader;
-                }
-            }
-        }
-    }
-    //sort the headers
-    std::stable_sort(mTvRowHeaders.begin(), mTvRowHeaders.end());
-    std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
-
-    calcDefaultColumnsTableView();
-
-    tvSectionWidth->clear();
-    tvSectionWidth->resize(mDim-mTvColDim);
-}
-
-QVector<int> *GdxSymbol::getTvSectionWidth() const
-{
-    return tvSectionWidth;
-}
-
-QVector<int> GdxSymbol::tvDimOrder() const
-{
-    return mTvDimOrder;
-}
-
-QVector<bool> GdxSymbol::defaultColumnTableView() const
-{
-    return mDefaultColumnTableView;
-}
-
-bool GdxSymbol::tableView() const
-{
-    return mTableView;
-}
-
-int GdxSymbol::tvColDim() const
-{
-    return mTvColDim;
-}
-
-void GdxSymbol::setTableView(bool tableView, int colDim, QVector<int> tvDims)
-{
-    beginResetModel();
-    mTableView = tableView;
-    if (mTableView) {
-        if (colDim!=-1) {
-            mTvColDim = colDim;
-            mTvDimOrder = tvDims;
-        }
-        initTableView(mTvColDim, mTvDimOrder);
-    }
-    endResetModel();
-}
-
 std::vector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
@@ -653,17 +411,10 @@ void GdxSymbol::resetSortFilter()
 
 bool GdxSymbol::isAllDefault(int valColIdx)
 {
-    if (tableView()) {
-        if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
-            return mDefaultColumnTableView[valColIdx];
-        else
-            return false;
-    } else {
-        if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
-            return mDefaultColumn[valColIdx];
-        else
-            return false;
-    }
+    if(mType == GMS_DT_VAR || mType == GMS_DT_EQU)
+        return mDefaultColumn[valColIdx];
+    else
+        return false;
 }
 
 int GdxSymbol::subType() const

@@ -163,7 +163,8 @@ SOURCES += \
     editors/viewhelper.cpp              \
     editors/editorhelper.cpp \
     maintabcontextmenu.cpp \
-    logtabcontextmenu.cpp
+    logtabcontextmenu.cpp \
+    gdxviewer/tableviewmodel.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -274,7 +275,8 @@ HEADERS += \
     editors/viewhelper.h            \
     editors/editorhelper.h \
     maintabcontextmenu.h \
-    logtabcontextmenu.h
+    logtabcontextmenu.h \
+    gdxviewer/tableviewmodel.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

@@ -25,6 +25,7 @@
 #include <QVector>
 #include <QAction>
 #include <QCheckBox>
+#include "gdxsymboltable.h"
 
 namespace gams {
 namespace studio {
@@ -45,7 +46,7 @@ public:
     ~GdxSymbolView();
 
     GdxSymbol *sym() const;
-    void setSym(GdxSymbol *sym);
+    void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable);
     void copySelectionToClipboard(QString separator);
     void toggleColumnHidden(int valCol);
 
@@ -72,6 +73,8 @@ private:
     void selectAll();
 
     QVector<QCheckBox *> mShowValColActions;
+
+    bool mTableView = false;
 };
 
 

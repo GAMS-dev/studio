@@ -23,9 +23,11 @@
 #include "gdxsymbol.h"
 #include "columnfilter.h"
 #include "nestedheaderview.h"
+#include "tableviewmodel.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -81,6 +83,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 
+    ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
+    ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
+
     //mSym->setTvTableView(ui->tvTableView);
 }
 
@@ -104,7 +109,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
     if (mSym->type() != GMS_DT_VAR && mSym->type() != GMS_DT_EQU)
         return;
     if (mSym) {
-        if (mSym->tableView()) {
+        if (mTableView) {
             ui->tvTableView->setUpdatesEnabled(false);
             if (checked) {
                 for (int col=0; col<mSym->columnCount(); col++) {
@@ -167,15 +172,13 @@ GdxSymbol *GdxSymbolView::sym() const
     return mSym;
 }
 
-void GdxSymbolView::setSym(GdxSymbol *sym)
+void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
 {
     mSym = sym;
     if (mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tvListView->setModel(mSym);
-    ui->tvTableView->setModel(mSym);
-    ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
-    ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
+    ui->tvTableView->setModel(new TableViewModel(mSym, symbolTable));
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
         QVector<QString> valColNames;
@@ -205,7 +208,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     // row -> column -> QModelIndex
     QMap<int, QMap<int, QString>> sortedSelection;
     QTableView *tv;
-    if (mSym->tableView())
+    if (mTableView)
         tv = ui->tvTableView;
     else
         tv = ui->tvListView;
@@ -259,7 +262,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
 
 void GdxSymbolView::toggleColumnHidden(int valCol)
 {
-    if (mSym->tableView()) {
+    if (mTableView) {
         for (int i=0; i<mSym->rowCount(); i++) {
             ui->tvTableView->setColumnHidden(i, !mShowValColActions[i%GMS_DT_MAX]);
         }
@@ -272,7 +275,7 @@ void GdxSymbolView::toggleColumnHidden(int valCol)
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
-    if (mSym->tableView())
+    if (mTableView)
         mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvTableView->verticalHeader()->width(), ui->tvTableView->horizontalHeader()->height()));
     else
         mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
@@ -280,15 +283,14 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::showListView()
 {
+    mTableView = false;
     ui->pbResetSortFilter->setEnabled(true);
-    mSym->setTableView(false);
 
     ui->tvTableView->hide();
 
-
     // This is required in order to avoid a bug with the horizontal scrollbar (see 843)
-    ui->tvListView->setModel(nullptr);
-    ui->tvListView->setModel(mSym);
+    //ui->tvListView->setModel(nullptr);
+    //ui->tvListView->setModel(mSym);
 
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
@@ -296,9 +298,11 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
+    qDebug() << "show table view 1";
     ui->pbResetSortFilter->setEnabled(false);
-    mSym->setTableView(true);
+    //mSym->setTableView(true);
 
+    static_cast<TableViewModel*>(ui->tvTableView->model())->setTableView(true);
     ui->pbToggleView->setText("List View");
 
     //NestedHeaderView *hvV = new NestedHeaderView(Qt::Vertical);
@@ -306,12 +310,18 @@ void GdxSymbolView::showTableView()
     //ui->tvTableView->setVerticalHeader(hvV);
     //ui->tvTableView->setHorizontalHeader(hvH);
     ui->tvListView->hide();
+    qDebug() << "show table view 2";
     ui->tvTableView->show();
+
+    qDebug() << "show table view 3";
+    mTableView = true;
+    qDebug() << "show table view 4";
 }
 
 void GdxSymbolView::toggleView()
 {
-    if (mSym->tableView())
+    qDebug() << "toggleView";
+    if (mTableView)
         showListView();
     else
         showTableView();
@@ -320,7 +330,7 @@ void GdxSymbolView::toggleView()
 
 void GdxSymbolView::selectAll()
 {
-    if (mSym->tableView())
+    if (mTableView)
         ui->tvTableView->selectAll();
     else
         ui->tvListView->selectAll();
