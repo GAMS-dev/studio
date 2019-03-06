@@ -239,7 +239,7 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         verticalScrollBar()->setValue(verticalScrollBar()->value()+verticalScrollBar()->pageStep());
     } else {
         QPlainTextEdit::keyPressEvent(e);
-        if ((e->key() & 0x11111110) == 0x10000010)
+        if ((e->key() & 0x11111110) == 0x01000010)
             emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
     }
     Qt::CursorShape shape = Qt::IBeamCursor;
