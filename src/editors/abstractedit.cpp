@@ -264,6 +264,14 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
     QPlainTextEdit::mousePressEvent(e);
     if (!mMarksAtMouse.isEmpty()) {
         mClickPos = e->pos();
+    } else if (e->button() == Qt::RightButton) {
+        QTextCursor currentTC = textCursor();
+        QTextCursor mouseTC = cursorForPosition(e->pos());
+        if (currentTC.hasSelection()
+                && (mouseTC.position() > qMin(currentTC.position(), currentTC.anchor())
+                    && mouseTC.position() < qMax(currentTC.position(), currentTC.anchor())))
+                return;
+        setTextCursor(mouseTC);
     }
 }
 
