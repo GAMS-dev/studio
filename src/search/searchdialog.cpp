@@ -171,14 +171,14 @@ void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFi
         if (!skipFilters) { // filter files by pattern and scope
             if ((ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)
                     || fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Log || fm->kind() == FileKind::Ref) {
-                // skip
-            } else {
-                files << fm;
+                continue;
             }
         }
 
         if (fm->isModified())
             modified << fm;
+        else
+            files << fm;
     }
 
     // non-parallel first
