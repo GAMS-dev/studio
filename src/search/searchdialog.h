@@ -132,7 +132,7 @@ private:
         Clear = 2
     };
     void simpleReplaceAll();
-    void findInFiles(QMutex& mutex, QList<FileMeta *> fml, bool skipFilters = false);
+    void findInFiles(QMutex& mutex, QList<FileMeta *> fml, bool skipFilters = false, bool updates = true);
     void findInGroup(QMutex& mutex);
     void findInOpenFiles(QMutex& mutex);
     void findInAllFiles(QMutex& mutex);

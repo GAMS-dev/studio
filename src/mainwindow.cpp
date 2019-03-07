@@ -2345,8 +2345,7 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::showResults(SearchResultList* results)
 {
-    ResultsView* resultsView = searchDialog()->resultsView();
-    int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
+    int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
     // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));

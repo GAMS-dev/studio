@@ -33,7 +33,7 @@ class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list);
+    SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list, bool updates = true);
     ~SearchWorker();
     void findInFiles();
 
@@ -46,6 +46,7 @@ private:
     QRegularExpression mRegex;
     QList<FileMeta*> mFiles;
     SearchResultList* mMatches;
+    bool mUpdates;
 };
 
 }

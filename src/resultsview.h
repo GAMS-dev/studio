@@ -42,7 +42,6 @@ public:
     explicit ResultsView(SearchResultList* resultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
-
     SearchResultList* resultList();
 
 private slots:

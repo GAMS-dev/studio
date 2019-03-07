@@ -124,21 +124,17 @@ void SearchDialog::on_btn_FindAll_clicked()
 void SearchDialog::intermediateUpdate()
 {
     setSearchStatus(SearchStatus::Searching);
-    if (!resultsView() || resultsView()->resultList()->size() < mCachedResults->size())
-        mMain->showResults(mCachedResults);
 }
 
 void SearchDialog::finalUpdate()
 {
     setSearchOngoing(false);
+    mMain->showResults(mCachedResults);
 
     int size = mCachedResults->size();
     updateMatchAmount(size);
-
-    mMain->showResults(mCachedResults);
-    resultsView()->resizeColumnsToContent();
-
     updateEditHighlighting();
+    resultsView()->resizeColumnsToContent();
 
     if (!size) setSearchStatus(SearchStatus::NoResults);
 }
@@ -160,7 +156,7 @@ void SearchDialog::setSearchOngoing(bool searching)
 /// \param fml list of files to search
 /// \param skipFilters enable for result caching (find next/prev)
 ///
-void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFilters)
+void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFilters, bool updates)
 {
     QList<FileMeta*> files;
     QList<FileMeta*> modified; // need to be treated differently
@@ -186,7 +182,7 @@ void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFi
         findInDoc(createRegex(), fm);
 
     // search file thread
-    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), files, mCachedResults);
+    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), files, mCachedResults, updates);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -298,7 +294,7 @@ void SearchDialog::updateSearchCache()
     mCachedResults->clear();
     mCachedResults->setSearchTerm(createRegex().pattern());
     mCachedResults->useRegex(regex());
-    findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
+    findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true, false);
 
     mHasChanged = false;
 }
