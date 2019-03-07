@@ -26,6 +26,7 @@
 #include <QAction>
 #include <QCheckBox>
 #include "gdxsymboltable.h"
+#include "tableviewmodel.h"
 
 namespace gams {
 namespace studio {
@@ -63,6 +64,7 @@ private slots:
 private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
+    TableViewModel* mTvModel = nullptr;
     QByteArray mInitialHeaderState;
     QMenu mContextMenu;
 

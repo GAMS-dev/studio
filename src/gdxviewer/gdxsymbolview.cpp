@@ -112,15 +112,15 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
         if (mTableView) {
             ui->tvTableView->setUpdatesEnabled(false);
             if (checked) {
-                for (int col=0; col<mSym->columnCount(); col++) {
-                    if (mSym->isAllDefault(col) || !mShowValColActions[col%GMS_DT_MAX]->isChecked())
+                for (int col=0; col<mTvModel->columnCount(); col++) {
+                    if (mTvModel->isAllDefault(col) || !mShowValColActions[col%GMS_DT_MAX]->isChecked())
                         ui->tvTableView->setColumnHidden(col, true);
                     else
                         ui->tvTableView->setColumnHidden(col, false);
                 }
             }
             else {
-                for (int col=0; col<mSym->columnCount(); col++)
+                for (int col=0; col<mTvModel->columnCount(); col++)
                     ui->tvTableView->setColumnHidden(col, !mShowValColActions[col%GMS_DT_MAX]->isChecked());
             }
             ui->tvTableView->setUpdatesEnabled(true);
@@ -178,7 +178,8 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
     if (mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tvListView->setModel(mSym);
-    ui->tvTableView->setModel(new TableViewModel(mSym, symbolTable));
+    mTvModel = new TableViewModel(mSym, symbolTable);
+    ui->tvTableView->setModel(mTvModel);
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
         QVector<QString> valColNames;
@@ -262,14 +263,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
 
 void GdxSymbolView::toggleColumnHidden(int valCol)
 {
-    if (mTableView) {
-        for (int i=0; i<mSym->rowCount(); i++) {
-            ui->tvTableView->setColumnHidden(i, !mShowValColActions[i%GMS_DT_MAX]);
-        }
-    } else
-        ui->tvListView->setColumnHidden(valCol+mSym->dim(), !mShowValColActions[valCol]);
     toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
-
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
