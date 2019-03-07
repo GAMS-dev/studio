@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QMap>
 
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -31,7 +32,11 @@ void NestedHeaderView::setModel(QAbstractItemModel *model)
 
 int NestedHeaderView::dim() const
 {
-    if (orientation() == Qt::Vertical)
+    if (orientation() == Qt::Vertical && sym()->needDummyRow())
+        return 1;
+    else if (orientation() == Qt::Horizontal && sym()->needDummyColumn())
+        return 1;
+    else if (orientation() == Qt::Vertical)
         return sym()->dim() - sym()->tvColDim();
     else {
         int d = sym()->tvColDim();
@@ -131,6 +136,11 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
     QHeaderView::mouseMoveEvent(event);
     mMousePos = event->pos();
     if ((event->buttons() & Qt::LeftButton) && (mMousePos - mDragStartPosition).manhattanLength() > QApplication::startDragDistance()) {
+        // do not allow to drag a dummy row/column
+        if (orientation() == Qt::Vertical && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyRow())
+            return;
+        if (orientation() == Qt::Horizontal && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyColumn())
+            return;
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
         if (orientation() == Qt::Vertical)
@@ -185,6 +195,9 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
         event->accept();
         return;
     }
+
+    if (orientation() == Qt::Horizontal && sym()->needDummyColumn())
+        dimIdxEnd--;
 
     int newColDim = sym()->tvColDim();
     if (orientationStart != orientationEnd) {

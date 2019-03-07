@@ -1,4 +1,6 @@
-#include "tableviewmodel.h"
+﻿#include "tableviewmodel.h"
+
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -25,10 +27,12 @@ TableViewModel::~TableViewModel()
 
 QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role == Qt::DisplayRole) {
+    if (role == Qt::DisplayRole) {        
         QStringList header;
         if (orientation == Qt::Horizontal) {
-            if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
+            if (mNeedDummyColumn)
+                header << " ";
+            else if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
                 for (int i=0; i<mTvColHeaders[section].size()-1; i++ ) {
                     uint uel = mTvColHeaders[section][i];
                     header << mGdxSymbolTable->uel2Label(uel);
@@ -47,13 +51,18 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
             }
         }
         else {
-            for (uint uel: mTvRowHeaders[section]) {
-                header << mGdxSymbolTable->uel2Label(uel);
+            if (mNeedDummyRow)
+                header << " ";
+            else {
+                for (uint uel: mTvRowHeaders[section])
+                    header << mGdxSymbolTable->uel2Label(uel);
             }
         }
         return header;
     }
     else if (role == Qt::SizeHintRole && orientation == Qt::Vertical) {
+        if (mNeedDummyRow)
+            return 10;
         int totalWidth = 0;
         for (int i=0; i<mSym->mDim-mTvColDim; i++) {
             int width;
@@ -80,6 +89,8 @@ int TableViewModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
+    if (mNeedDummyRow)
+        return 1;
     return mTvRowHeaders.size();
 }
 
@@ -87,6 +98,8 @@ int TableViewModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
+    if (mNeedDummyColumn)
+        return 1;
     return mTvColHeaders.size();
 }
 
@@ -96,7 +109,13 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     else if (role == Qt::DisplayRole) {
-        QVector<uint> keys = mTvRowHeaders[index.row()] + mTvColHeaders[index.column()];
+        QVector<uint> keys;
+        if (mNeedDummyRow)
+            keys = mTvColHeaders[index.column()];
+        else if (mNeedDummyColumn)
+            keys = mTvRowHeaders[index.row()];
+        else
+            keys = mTvRowHeaders[index.row()] + mTvColHeaders[index.column()];
         if (mTvKeysToValIdx.contains(keys)) {
             double val = mSym->mValues[mTvKeysToValIdx[keys]];
             if (mSym->mType == GMS_DT_SET)
@@ -224,6 +243,29 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
 
     tvSectionWidth->clear();
     tvSectionWidth->resize(mSym->mDim-mTvColDim);
+
+    if (tvSectionWidth->isEmpty()) {
+        tvSectionWidth->push_back(10);
+    }
+
+    if (mTvRowHeaders.isEmpty())
+        mNeedDummyRow = true;
+    else
+        mNeedDummyRow = false;
+    if (mTvColHeaders.isEmpty())
+        mNeedDummyColumn = true;
+    else
+        mNeedDummyColumn = false;
+}
+
+bool TableViewModel::needDummyColumn() const
+{
+    return mNeedDummyColumn;
+}
+
+bool TableViewModel::needDummyRow() const
+{
+    return mNeedDummyRow;
 }
 
 QVector<int> *TableViewModel::getTvSectionWidth() const

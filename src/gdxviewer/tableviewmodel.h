@@ -43,6 +43,10 @@ public:
 
     bool isAllDefault(int valColIdx);
 
+    bool needDummyRow() const;
+
+    bool needDummyColumn() const;
+
 private:
     void calcDefaultColumnsTableView();
     void initTableView(int nrColDim, QVector<int> dimOrder);
@@ -60,6 +64,9 @@ private:
 
     QVector<int>* tvSectionWidth = nullptr;
     QMap<QString, int>* tvLabelWidth = nullptr;
+
+    bool mNeedDummyRow = false;
+    bool mNeedDummyColumn = false;
 };
 
 } // namespace gdxviewer

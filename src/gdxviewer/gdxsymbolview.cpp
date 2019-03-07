@@ -300,22 +300,19 @@ void GdxSymbolView::showTableView()
 {
     qDebug() << "show table view 1";
     ui->pbResetSortFilter->setEnabled(false);
-    //mSym->setTableView(true);
 
     static_cast<TableViewModel*>(ui->tvTableView->model())->setTableView(true);
     ui->pbToggleView->setText("List View");
 
-    //NestedHeaderView *hvV = new NestedHeaderView(Qt::Vertical);
-    //NestedHeaderView *hvH = new NestedHeaderView(Qt::Horizontal);
-    //ui->tvTableView->setVerticalHeader(hvV);
-    //ui->tvTableView->setHorizontalHeader(hvH);
     ui->tvListView->hide();
-    qDebug() << "show table view 2";
     ui->tvTableView->show();
 
-    qDebug() << "show table view 3";
+    QAbstractItemModel* model = ui->tvTableView->model();
+    ui->tvTableView->setModel(nullptr);
+    ui->tvTableView->setModel(model);
+
+
     mTableView = true;
-    qDebug() << "show table view 4";
 }
 
 void GdxSymbolView::toggleView()
