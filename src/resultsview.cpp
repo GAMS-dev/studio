@@ -33,6 +33,8 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
     mResultList = resultList;
     ui->tableView->setModel(mResultList);
     searchTermLength = resultList->searchTerm().length();
+    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
 }
 
 ResultsView::~ResultsView()
@@ -44,7 +46,6 @@ void ResultsView::resizeColumnsToContent()
 {
     ui->tableView->resizeColumnToContents(0);
     ui->tableView->resizeColumnToContents(1);
-    ui->tableView->resizeRowsToContents();
 }
 
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
