@@ -48,16 +48,22 @@ enum class SyntaxKind {
     DeclarationTable,
 
     Identifier,
-    IdentifierDescription1,         // description started with single quote '
-    IdentifierDescription2,         // description started with double quote "
+    IdentifierDim1,                 // dimension started with '('
+    IdentifierDim2,                 // dimension started with '['
+    IdentifierDimEnd1,              // dimension started with '(' must end with ')'
+    IdentifierDimEnd2,              // dimension started with '[' must end with ']'
+    IdentifierDescription,
     IdentifierAssignment,
     AssignmentLabel,
     AssignmentValue,
     IdentifierAssignmentEnd,        // after assignment to keep declaration-level
 
     IdentifierTable,
-    IdentifierTableDescription1,
-    IdentifierTableDescription2,
+    IdentifierTableDim1,
+    IdentifierTableDim2,
+    IdentifierTableDimEnd1,
+    IdentifierTableDimEnd2,
+    IdentifierTableDescription,
     IdentifierTableAssignmentHead,
     IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
 
@@ -128,6 +134,7 @@ public:
     virtual SyntaxTransitions nextKinds(bool emptyLine = false);
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
+    virtual int maxNesting() { return 0; }
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
     int intSyntaxType() { return static_cast<int>(kind()); }
     static int stateToInt(SyntaxKind _state);

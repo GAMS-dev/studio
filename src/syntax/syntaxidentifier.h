@@ -27,16 +27,38 @@ namespace studio {
 
 class SyntaxIdentifier : public SyntaxAbstract
 {
-    QRegularExpression mRex;
 public:
     SyntaxIdentifier(SyntaxKind kind);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+private:
+    int identChar(const QChar &c) const;
+};
+
+class SyntaxIdentifierDim : public SyntaxAbstract
+{
+    QChar mDelimiterIn;
+    QChar mDelimiterOut;
+    bool mTable;
+public:
+    SyntaxIdentifierDim(SyntaxKind kind);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    int maxNesting() override { return 1; }
+};
+
+class SyntaxIdentifierDimEnd : public SyntaxAbstract
+{
+    QChar mDelimiter;
+    bool mTable;
+public:
+    SyntaxIdentifierDimEnd(SyntaxKind kind);
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxIdentDescript : public SyntaxAbstract
 {
-    QChar mDelimiter;
     bool mTable;
 public:
     SyntaxIdentDescript(SyntaxKind kind);
