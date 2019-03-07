@@ -95,7 +95,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
 
-    mExtendedEditor = new QDockWidget("GAMS Arguments", this);
+    mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
     mExtendedEditor->setWidget(ui->gamsOptionWidget);
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);

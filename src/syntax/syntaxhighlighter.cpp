@@ -185,11 +185,13 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             textBlock.setUserData(blockData);
     }
     KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
+//    int oldState = currentBlockState();
     if (mKinds.at(kindCode.first)->kind() != SyntaxKind::Standard) {
         setCurrentBlockState(code.code());
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }
+//    DEB() << oldState << " -> " << currentBlockState();
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind)

@@ -285,9 +285,6 @@ void FileMeta::updateMarks()
             edit = tv->edit();
             tv->marksChanged(mDirtyLines);
         }
-        if (edit && mHighlighter) {
-            mHighlighter->rehighlight();
-        }
     }
     mDirtyLines.clear();
 }

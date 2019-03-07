@@ -98,7 +98,11 @@ void AbstractEdit::updateGroupId()
 
 void AbstractEdit::updateExtraSelections()
 {
+//    TRACE();
     mSelUpdater.start();
+//    QList<QTextEdit::ExtraSelection> selections;
+//    extraSelMarks(selections);
+//    setExtraSelections(selections);
 }
 
 void AbstractEdit::setMarks(const LineMarks *marks)
@@ -235,6 +239,8 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         verticalScrollBar()->setValue(verticalScrollBar()->value()+verticalScrollBar()->pageStep());
     } else {
         QPlainTextEdit::keyPressEvent(e);
+        if ((e->key() & 0x11111110) == 0x01000010)
+            emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
     }
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (e->modifiers() & Qt::ControlModifier) {
@@ -258,6 +264,14 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
     QPlainTextEdit::mousePressEvent(e);
     if (!mMarksAtMouse.isEmpty()) {
         mClickPos = e->pos();
+    } else if (e->button() == Qt::RightButton) {
+        QTextCursor currentTC = textCursor();
+        QTextCursor mouseTC = cursorForPosition(e->pos());
+        if (currentTC.hasSelection()
+                && (mouseTC.position() > qMin(currentTC.position(), currentTC.anchor())
+                    && mouseTC.position() < qMax(currentTC.position(), currentTC.anchor())))
+                return;
+        setTextCursor(mouseTC);
     }
 }
 

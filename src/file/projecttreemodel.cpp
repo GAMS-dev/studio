@@ -171,7 +171,6 @@ bool ProjectTreeModel::removeRows(int row, int count, const QModelIndex& parent)
     Q_UNUSED(row);
     Q_UNUSED(count);
     Q_UNUSED(parent);
-    DEB() << "FileTreeModel::removeRows is unsupported, please use FileTreeModel::removeChild";
     return false;
 }
 

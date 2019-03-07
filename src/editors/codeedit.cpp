@@ -572,9 +572,21 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             emit cursorPositionChanged();
         }
     } else {
-        if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
-            endBlockEdit(false);
-        AbstractEdit::mousePressEvent(e);
+        if (mBlockEdit) {
+            if (e->modifiers() || e->buttons() != Qt::RightButton)
+                endBlockEdit(false);
+            else if (e->button() == Qt::RightButton) {
+                QTextCursor mouseTC = cursorForPosition(e->pos());
+                if (mouseTC.blockNumber() < qMin(mBlockEdit->startLine(), mBlockEdit->currentLine())
+                        || mouseTC.blockNumber() > qMax(mBlockEdit->startLine(), mBlockEdit->currentLine())) {
+                    endBlockEdit(false);
+                    setTextCursor(mouseTC);
+                }
+            } else {
+                AbstractEdit::mousePressEvent(e);
+            }
+        } else
+            AbstractEdit::mousePressEvent(e);
     }
 }
 
