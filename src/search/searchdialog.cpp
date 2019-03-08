@@ -638,6 +638,14 @@ void SearchDialog::updateMatchAmount(int hits, int current)
             ui->lbl_nrResults->setText(QString::number(hits) + " match");
         else
             ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+
+        if (hits > 49000) {
+            ui->lbl_nrResults->setText("50000+ matches");
+            ui->lbl_nrResults->setToolTip("Search is limited to 50000 matches.");
+        } else {
+            ui->lbl_nrResults->setToolTip("");
+        }
+
     } else {
         ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(hits) + " matches");
     }
