@@ -7,8 +7,6 @@
 #include <QApplication>
 #include <QMap>
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -140,6 +138,9 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
         if (orientation() == Qt::Vertical && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyRow())
             return;
         if (orientation() == Qt::Horizontal && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyColumn())
+            return;
+        //do not allow to drag the value column (lavel, marginal,...) of variables and equations
+        if (orientation() == Qt::Horizontal && (sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && pointToDimension(mDragStartPosition)==dim()-1)
             return;
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
