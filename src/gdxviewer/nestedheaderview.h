@@ -32,6 +32,7 @@ protected:
 private:
     int pointToDimension(QPoint p);
     void bindScrollMechanism();
+    void decideAcceptDragEvent(QDragMoveEvent* event);
 
     TableViewModel* sym() const;
     int dim() const;

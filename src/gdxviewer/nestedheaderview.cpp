@@ -160,8 +160,8 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
 
 void NestedHeaderView::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasFormat("GDXDRAGDROP/COL") || event->mimeData()->hasFormat("GDXDRAGDROP/ROW"))
-        event->acceptProposedAction();
+    decideAcceptDragEvent(event);
+    event->acceptProposedAction();
 }
 
 void NestedHeaderView::dragMoveEvent(QDragMoveEvent *event)
@@ -172,6 +172,20 @@ void NestedHeaderView::dragMoveEvent(QDragMoveEvent *event)
         dimIdxEnd += sym()->dim()-sym()->tvColDim();
     if (orientation() == Qt::Horizontal)
         dimIdxEnd = dimIdxEnd - sym()->dim() + dim();
+    decideAcceptDragEvent(event);
+}
+
+void NestedHeaderView::decideAcceptDragEvent(QDragMoveEvent *event)
+{
+    if (event->mimeData()->hasFormat("GDXDRAGDROP/COL") || event->mimeData()->hasFormat("GDXDRAGDROP/ROW")) {
+        // do not accept drag event on value columns of variables and equations (level, marginal, ...)
+        if (orientation() == Qt::Horizontal && (sym()->type() == GMS_DT_VAR || sym()->type() == GMS_DT_EQU) && pointToDimension(event->pos())+1 == dim()) {
+            event->ignore();
+        }
+        else
+            event->acceptProposedAction();
+    } else
+        event->ignore();
 }
 
 void NestedHeaderView::dropEvent(QDropEvent *event)

@@ -146,7 +146,13 @@ void TableViewModel::calcDefaultColumnsTableView()
         else // mType == GMS_DT_EQU
             defVal = gmsDefRecEqu[mSym->mSubType][col%GMS_VAL_MAX];
         for(int row=0; row<rowCount(); row++) {
-            QVector<uint> keys = mTvRowHeaders[row] + mTvColHeaders[col];
+            QVector<uint> keys;
+            if (mNeedDummyRow)
+                keys = mTvColHeaders[col];
+            else if (mNeedDummyColumn)
+                keys = mTvRowHeaders[row];
+            else
+                keys = mTvRowHeaders[row] + mTvColHeaders[col];
             double val = defVal;
             if (mTvKeysToValIdx.contains(keys))
                 val = mSym->mValues[mTvKeysToValIdx[keys]];
