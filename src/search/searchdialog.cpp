@@ -233,6 +233,7 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
             mCachedResults->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
                                       item.selectedText().length(), fm->location(), item.block().text().trimmed());
         }
+        if (mCachedResults->size() > 49000) break;
     } while (!item.isNull());
 }
 
