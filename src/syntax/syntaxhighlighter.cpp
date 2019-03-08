@@ -71,16 +71,22 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), fBold);
 
     initKind(new SyntaxIdentifier(SyntaxKind::Identifier));
-    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription1), cl.value(SyntaxDescr));
-    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription2), cl.value(SyntaxDescr));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2));
+    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription), cl.value(SyntaxDescr));
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), cl.value(SyntaxAssgn));
     initKind(new AssignmentLabel(), cl.value(SyntaxAsLab));
     initKind(new AssignmentValue(), cl.value(SyntaxAsVal));
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), cl.value(SyntaxAssgn));
 
     initKind(new SyntaxIdentifier(SyntaxKind::IdentifierTable));
-    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierTableDescription1), cl.value(SyntaxDescr));
-    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierTableDescription2), cl.value(SyntaxDescr));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim1));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim2));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd1));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd2));
+    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierTableDescription), cl.value(SyntaxDescr));
 
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), fBold);
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), cl.value(SyntaxAssgn));
