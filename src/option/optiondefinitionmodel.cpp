@@ -266,6 +266,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
 
     for(auto it = option->getOption().cbegin(); it != option->getOption().cend(); ++it)  {
         OptionDefinition optdef =  it.value();
+
         if ((optdef.deprecated) || (!optdef.valid))
             continue;
         if (mOptionGroup > 0 && mOptionGroup != optdef.groupNumber)
@@ -273,8 +274,6 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
 
         QList<QVariant> columnData;
 
-        QString optionStr = optdef.name
-                              + (optdef.synonym.isEmpty() ? "" : QString("[%1]").arg(optdef.synonym));
         columnData.append(optdef.name);
         columnData.append(optdef.synonym);
         switch(optdef.dataType) {

@@ -184,6 +184,7 @@ private:
 
     QString mEOLChars;
     QMap<QString, OptionDefinition> mOption;
+    QStringList mDeprecatedSynonym;
     QMap<QString, QString> mSynonymMap;
     QMap<int, QString> mOptionTypeNameMap;
     QMap<int, OptionGroup> mOptionGroup;

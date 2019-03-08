@@ -109,6 +109,8 @@ bool Option::isDeprecated(const QString &optionName) const
 {
     if (mOption.contains(optionName.toUpper())) {
         return mOption[optionName.toUpper()].deprecated;
+    } else if (mDeprecatedSynonym.contains(optionName.toUpper())) {
+        return true;
     }
 
     return false;
@@ -442,7 +444,6 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
     optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
     if (msg[0] != '\0') {
         SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
-        qDebug() << QString("ERROR: ").arg(msg);
         optFree(&mOPTHandle);
         return false;
     }
@@ -454,7 +455,9 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
          char syn[GMS_SSSIZE];
          for (int i = 1; i <= optSynonymCount(mOPTHandle); ++i) {
              optGetSynonym(mOPTHandle, i, syn, name);
-             synonym.insertMulti(QString::fromLatin1(name).toUpper(), QString::fromLatin1(syn).toUpper());
+             synonym.insertMulti(QString::fromLatin1(name), QString::fromLatin1(syn));
+             if (optIsDeprecated(mOPTHandle, syn))
+                mDeprecatedSynonym << QString::fromLatin1(syn).toUpper();
          }
 
          for (int i=1; i <= optGroupCount(mOPTHandle); ++i) {
@@ -497,7 +500,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
              optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
              optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
-             QString nameStr = QString::fromLatin1(name).toUpper();
+             QString nameStr = QString::fromLatin1(name);
              OptionDefinition opt(i, QString::fromLatin1(name),
                                   static_cast<optDataType>(itype),
                                   static_cast<optOptionType>(iopttype),
@@ -507,14 +510,21 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 
              opt.deprecated = optIsDeprecated(mOPTHandle, name);
              opt.valid = (helpContextNr != 0);
+             QStringList synonymList;
              if (synonym.contains(nameStr)) {
                  QMap<QString, QString>::const_iterator it = synonym.find(nameStr);
                  while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
-                       opt.synonym = it.value();
+                       if (!isDeprecated(it.value()))
+                          synonymList << it.value();
                        mSynonymMap.insertMulti(it.value(), it.key());
                        ++it;
                  }
+
              }
+             if (!synonymList.isEmpty())
+                 opt.synonym = synonymList.join(",");
+             else
+                 opt.synonym = "";
 
              char optTypeName[GMS_SSSIZE];
              optGetTypeName(mOPTHandle, opt.type, optTypeName);
