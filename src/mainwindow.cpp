@@ -2878,6 +2878,8 @@ void MainWindow::resetViews()
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         }
     }
+    mGamsOptionWidget->setEditorExtended(false);
+    addDockWidget(Qt::TopDockWidgetArea, mGamsOptionWidget->extendedEditor());
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
