@@ -2350,7 +2350,11 @@ void MainWindow::showResults(SearchResultList* results)
     // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));
 
-    QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results->size()) + ")");
+    QString nr;
+    if (results->size() > 49999) nr = "50000+";
+    else nr = QString::number(results->size());
+
+    QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
 
     ui->dockLogView->show();
 
