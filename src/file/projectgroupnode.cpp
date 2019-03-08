@@ -434,12 +434,12 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
-            if (value == "default") value = fi.baseName() + ".gdx";
+            if (value == "default") value = "\"" + fi.baseName() + ".gdx\"";
             setSpecialFile(FileKind::Gdx, cleanPath(path, value));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
-            if (value == "default") value = fi.baseName() + ".ref";
+            if (value == "default") value = "\"" + fi.baseName() + ".ref\"";
             setSpecialFile(FileKind::Ref, cleanPath(path, value));
         }
 
