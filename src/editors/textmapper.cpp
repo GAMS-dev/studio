@@ -82,12 +82,13 @@ bool TextMapper::openFile(const QString &fileName, bool initAnchor)
     return false;
 }
 
-void TextMapper::reopenFile()
+bool TextMapper::reopenFile()
 {
     QString fileName = mFile.fileName();
     if (!size() && !fileName.isEmpty()) {
-        openFile(fileName, false);
+        return openFile(fileName, false);
     }
+    return size();
 }
 
 bool TextMapper::updateMaxTop() // to be updated on change of size or mBufferedLineCount
@@ -191,10 +192,7 @@ TextMapper::Chunk *TextMapper::getChunk(int chunkNr) const
             delete delChunk;
         }
         Chunk *newChunk = loadChunk(chunkNr);
-        if (!newChunk) {
-            DEB() << "can't find chunk nr: " << chunkNr << "   (max is " << chunkCount() << ")";
-            return nullptr;
-        }
+        if (!newChunk) return nullptr;
         mChunks << newChunk;
 
     } else if (foundIndex < mChunks.size()-1) {
@@ -301,6 +299,7 @@ bool TextMapper::setTopLine(int lineNr)
     int chunkNr = findChunk(lineNr);
     if (chunkNr >= 0) {
         Chunk* chunk = getChunk(chunkNr);
+        if (!chunk) return false;
         int byte = chunk->lineBytes.at(lineNr - mChunkLineNrs.at(chunkNr).lineOffset);
         setTopOffset(chunk->start + byte);
         return true;
@@ -335,6 +334,7 @@ bool TextMapper::setVisibleTopLine(double region)
     int bufferTopLine = line - mBufferedLineCount/3;
     while (bufferTopLine < 0 && chunk->nr > 0) {
         chunk = getChunk(chunk->nr-1);
+        if (!chunk) return false;
         bufferTopLine += chunk->lineCount();
     }
     if (bufferTopLine < 0) {
@@ -402,6 +402,7 @@ int TextMapper::moveVisibleTopLine(int lineDelta)
             } else {
                 // continue with previous chunk
                 chunk = getChunk(chunk->nr - 1);
+                if (!chunk) return 0;
                 mTopLine.chunkNr = chunk->nr;
                 mTopLine.lineCount = chunk->lineCount();
                 mTopLine.localLine = mTopLine.lineCount;
@@ -433,6 +434,7 @@ int TextMapper::moveVisibleTopLine(int lineDelta)
         } else if (chunk->nr < chunkCount()-1) {
             // switch to next chunk
             chunk = getChunk(chunk->nr + 1);
+            if (!chunk) return 0;
             mTopLine.chunkNr = chunk->nr;
             mTopLine.lineCount = chunk->lineCount();
             mTopLine.localLine = 0;
@@ -453,7 +455,7 @@ void TextMapper::scrollToPosition()
 int TextMapper::absTopLine() const
 {
     Chunk *chunk = getChunk(mTopLine.chunkNr);
-    if (!chunk) return -1;
+    if (!chunk) return 0;
     const ChunkLines &topCL = mChunkLineNrs.at(chunk->nr);
     if (topCL.lineOffset < 0) {
         qint64 absPos = topCL.linesStartPos + chunk->lineBytes.at(mTopLine.localLine);
@@ -711,6 +713,7 @@ TextMapper::Chunk* TextMapper::chunkForLine(int absLine, int *lineInChunk) const
             ++chunkNr;
     }
     Chunk *res = getChunk(chunkNr);
+    if (!res) return nullptr;
     if (lineInChunk) {
         int posInChunk = int(pos - res->start);
         *lineInChunk = 0;
