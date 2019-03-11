@@ -34,7 +34,7 @@ namespace syntax {
 
 Q_NAMESPACE
 
-enum struct SyntaxKind {
+enum class SyntaxKind {
     Standard,
     Directive,
     DirectiveBody,                  // text following the Directive
@@ -87,7 +87,7 @@ Q_ENUM_NS(SyntaxKind);
 
 QString syntaxKindName(syntax::SyntaxKind kind);
 
-enum struct SyntaxShift {
+enum class SyntaxShift {
     shift,      ///> shifts from the previous kind to the current kind
     skip,       ///> skips the current kind
     in,         ///> stacks the nextKind on top

@@ -221,7 +221,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //    DEB() << oldState << " -> " << currentBlockState();
 }
 
-void SyntaxHighlighter::SyntaxKind(int position, int &intKind)
+void SyntaxHighlighter::syntaxKind(int position, int &intKind)
 {
     mPositionForSyntaxKind = position;
     mLastSyntaxKind = 0;

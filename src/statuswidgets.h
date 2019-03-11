@@ -38,7 +38,7 @@ class StatusWidgets : public QObject
 {
     Q_OBJECT
 public:
-    enum struct EditMode {Readonly, Insert, Overwrite};
+    enum class EditMode {Readonly, Insert, Overwrite};
     Q_ENUM(EditMode)
 
 public:

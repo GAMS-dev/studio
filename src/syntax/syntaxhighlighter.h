@@ -78,7 +78,7 @@ public:
     void highlightBlock(const QString &text);
 
 public slots:
-    void SyntaxKind(int position, int &intKind);
+    void syntaxKind(int position, int &intKind);
 
 private:
     SyntaxAbstract *getSyntax(syntax::SyntaxKind kind) const;

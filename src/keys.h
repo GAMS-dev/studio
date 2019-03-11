@@ -28,7 +28,7 @@
 namespace gams {
 namespace studio {
 
-enum struct Hotkey {
+enum class Hotkey {
     // when key-setup can be persisted ensure the assignments won't change any more
 
     NewLine = 1,
