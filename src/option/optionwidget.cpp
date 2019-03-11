@@ -98,6 +98,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
     mExtendedEditor->setWidget(ui->gamsOptionWidget);
+    mExtendedEditor->setFeatures(QDockWidget::NoDockWidgetFeatures);
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
     connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility);
     mExtendedEditor->setVisible(false);
