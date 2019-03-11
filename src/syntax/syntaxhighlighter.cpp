@@ -71,11 +71,11 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDeclaration(), cl.value(SyntaxDeclr), fBold);
     initKind(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), fBold);
 
-    initKind(1,new SyntaxIdentifier(SyntaxKind::Identifier));
-    initKind(2,new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1));
-    initKind(2,new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2));
-    initKind(3,new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1));
-    initKind(3,new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2));
+    initKind(new SyntaxIdentifier(SyntaxKind::Identifier));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2));
     initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription), cl.value(SyntaxDescr));
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), cl.value(SyntaxAssgn));
     initKind(new AssignmentLabel(), cl.value(SyntaxAsLab));
