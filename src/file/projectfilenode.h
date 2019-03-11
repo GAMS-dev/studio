@@ -48,6 +48,7 @@ public:
         Exiting,
         FollowupError,
     };
+    Q_ENUM(ExtractionState)
 
     ~ProjectFileNode() override;
 

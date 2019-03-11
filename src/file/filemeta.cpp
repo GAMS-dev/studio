@@ -502,7 +502,7 @@ void FileMeta::renameToBackup()
 
 }
 
-FileDifferences FileMeta::compare(QString fileName)
+FileMeta::FileDifferences FileMeta::compare(QString fileName)
 {
     FileDifferences res;
     Data other(fileName.isEmpty() ? location() : fileName);
@@ -727,7 +727,7 @@ FileMeta::Data::Data(QString location, FileType *knownType)
     }
 }
 
-FileDifferences FileMeta::Data::compare(FileMeta::Data other)
+FileMeta::FileDifferences FileMeta::Data::compare(FileMeta::Data other)
 {
     FileDifferences res;
     if (!other.exist) res.setFlag(FdMissing);

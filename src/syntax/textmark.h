@@ -36,6 +36,7 @@ class TextMark
 {
 public:
     enum Type {none, error, link, target, bookmark, all};
+    Q_ENUM(Type)
 
     FileId fileId() const;
     NodeId groupId() const;

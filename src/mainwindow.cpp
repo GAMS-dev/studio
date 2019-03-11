@@ -709,9 +709,10 @@ void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
-        mStatusWidgets->setEditMode(EditMode::Readonly);
+        mStatusWidgets->setEditMode(StatusWidgets::EditMode::Readonly);
     } else {
-        mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
+        mStatusWidgets->setEditMode(edit->overwriteMode() ? StatusWidgets::EditMode::Overwrite
+                                                          : StatusWidgets::EditMode::Insert);
     }
 }
 

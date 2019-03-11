@@ -31,6 +31,22 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
+enum ColorEnum {
+    SyntaxDirex,
+    SyntaxDiBdy,
+    SyntaxComnt,
+    SyntaxTitle,
+    SyntaxDeclr,
+    SyntaxIdent,
+    SyntaxKeywd,
+    SyntaxDescr,
+    SyntaxAsLab,
+    SyntaxAsVal,
+    SyntaxAssgn,
+    SyntaxTabHd,
+    SyntaxEmbed,
+};
+
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     : QSyntaxHighlighter(doc)
 {

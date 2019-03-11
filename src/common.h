@@ -111,6 +111,15 @@ enum struct EditorType {
 };
 Q_ENUM_NS(EditorType)
 
+enum struct FileEventKind {
+    invalid,
+    changed,
+    closed,
+    created,
+    changedExtern,
+    removedExtern,  // removed-event is delayed to improve recognition of moved- or rewritten-events
+};
+Q_ENUM_NS(FileEventKind)
 
 template <typename T>
 typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type

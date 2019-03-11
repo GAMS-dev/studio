@@ -976,7 +976,7 @@ QStringList CodeEdit::clipboard(bool *isBlock)
     return texts;
 }
 
-CharType CodeEdit::charType(QChar c)
+CodeEdit::CharType CodeEdit::charType(QChar c)
 {
     switch (c.category()) {
     case QChar::Number_DecimalDigit:

@@ -36,22 +36,6 @@ class ProjectFileNode;
 class TextMarkList;
 //class TextMark;
 
-enum ColorEnum {
-    SyntaxDirex,
-    SyntaxDiBdy,
-    SyntaxComnt,
-    SyntaxTitle,
-    SyntaxDeclr,
-    SyntaxIdent,
-    SyntaxKeywd,
-    SyntaxDescr,
-    SyntaxAsLab,
-    SyntaxAsVal,
-    SyntaxAssgn,
-    SyntaxTabHd,
-    SyntaxEmbed,
-};
-
 ///
 ///
 ///
