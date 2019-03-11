@@ -32,9 +32,9 @@ namespace studio {
 
 namespace syntax {
 
-//Q_NAMESPACE
+Q_NAMESPACE
 
-enum struct SyntaxKind {
+enum class SyntaxKind {
     Standard,
     Directive,
     DirectiveBody,                  // text following the Directive
@@ -81,29 +81,20 @@ enum struct SyntaxKind {
 
     KindCount
 };
-//Q_ENUM_NS(SyntaxKind);
-
-//template <typename T>
-//typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
-//operator<<(QTextStream &dbg, T enumValue)
-//{
-//    const QMetaObject *mo = qt_getEnumMetaObject(enumValue);
-//    int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
-//    return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
-//}
+Q_ENUM_NS(SyntaxKind);
 
 //inline QTextStream &operator <<(QTextStream &steam, syntax::SyntaxKind key) noexcept { return steam << QVariant::fromValue(key).toString(); }
 
 QString syntaxKindName(syntax::SyntaxKind kind);
 
-enum struct SyntaxShift {
+enum class SyntaxShift {
     shift,      ///> shifts from the previous kind to the current kind
     skip,       ///> skips the current kind
     in,         ///> stacks the nextKind on top
     out,        ///> steps out of the kind (unstacks current kind)
     reset,      ///> steps out of the whole stack until SyntaxKind::Standard is reached
 };
-//Q_ENUM_NS(SyntaxShift);
+Q_ENUM_NS(SyntaxShift);
 
 struct SyntaxTransition
 {

@@ -276,15 +276,10 @@ void FileMeta::updateMarks()
 
     // update changed editors
     for (QWidget *w: mEditors) {
-        AbstractEdit *edit = nullptr;
-        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w)) {
-            edit = ed;
+        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w))
             ed->marksChanged(mDirtyLines);
-        }
-        if (TextView * tv = ViewHelper::toTextView(w)) {
-            edit = tv->edit();
+        if (TextView * tv = ViewHelper::toTextView(w))
             tv->marksChanged(mDirtyLines);
-        }
     }
     mDirtyLines.clear();
 }
@@ -319,7 +314,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         if (scEdit) {
-            connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::SyntaxKind);
+            connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
         }
         if (!aEdit->viewport()->hasMouseTracking()) {
             aEdit->viewport()->setMouseTracking(true);
@@ -373,7 +368,7 @@ void FileMeta::removeEditor(QWidget *edit)
         mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
     }
     if (scEdit && mHighlighter) {
-        disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::SyntaxKind);
+        disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
     }
 }
 

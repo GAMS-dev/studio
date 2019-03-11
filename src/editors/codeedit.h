@@ -85,7 +85,7 @@ class CodeEdit : public AbstractEdit
     Q_OBJECT
 
 public:
-    enum struct CharType {
+    enum class CharType {
         None,
         Ctrl,
         Seperator,

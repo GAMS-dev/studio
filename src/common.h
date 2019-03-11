@@ -23,7 +23,6 @@
 #include <QHashFunctions>
 #include <QObject>
 #include <QTextStream>
-#include <QDebug>
 #include <QMetaEnum>
 
 namespace gams {
@@ -62,20 +61,24 @@ typedef PhantomInt<PiFileId> FileId;
 typedef PhantomInt<PiNodeId> NodeId;
 typedef PhantomInt<PiTextMarkId> TextMarkId;
 
-enum struct NameModifier {
+Q_NAMESPACE
+
+enum class NameModifier {
     raw,
     editState
 };
+Q_ENUM_NS(NameModifier)
 
-enum struct NodeType {
+enum class NodeType {
     root,
     group,
     runGroup,
     file,
     log
 };
+Q_ENUM_NS(NodeType)
 
-enum struct FileKind {
+enum class FileKind {
     None,
     Gsp,
     Gms,
@@ -88,13 +91,14 @@ enum struct FileKind {
     Ref,
     Dir
 };
+Q_ENUM_NS(FileKind)
 
 inline unsigned int qHash(FileKind key, unsigned int seed)
 {
     return ::qHash(static_cast<unsigned int>(key), seed);
 }
 
-enum struct EditorType {
+enum class EditorType {
     undefined = 0,
     source = 1,
     log = 2,
@@ -105,8 +109,9 @@ enum struct EditorType {
     gdx = 7,
     ref = 8,
 };
+Q_ENUM_NS(EditorType)
 
-enum struct FileEventKind {
+enum class FileEventKind {
     invalid,
     changed,
     closed,
@@ -114,12 +119,7 @@ enum struct FileEventKind {
     changedExtern,
     removedExtern,  // removed-event is delayed to improve recognition of moved- or rewritten-events
 };
-
-Q_NAMESPACE
-//
-// //  insert enum here (remark: 'enum struct'  or  'enum class' isn't working)
-//
-//Q_ENUM_NS(FileEventKind)
+Q_ENUM_NS(FileEventKind)
 
 template <typename T>
 typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
