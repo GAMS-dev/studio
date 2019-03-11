@@ -1372,9 +1372,9 @@ void MainWindow::on_actionHelp_triggered()
             int iKind = 0;
             ce->wordInfo(ce->textCursor(), word, iKind);
 
-            if (iKind == static_cast<int>(SyntaxKind::Title)) {
+            if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-            } else if (iKind == static_cast<int>(SyntaxKind::Directive)) {
+            } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
             } else {
                 mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);

@@ -21,6 +21,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 #include <QHashFunctions>
+#include <QObject>
+#include <QTextStream>
+#include <QMetaEnum>
 
 namespace gams {
 namespace studio {
@@ -58,10 +61,13 @@ typedef PhantomInt<PiFileId> FileId;
 typedef PhantomInt<PiNodeId> NodeId;
 typedef PhantomInt<PiTextMarkId> TextMarkId;
 
+Q_NAMESPACE
+
 enum struct NameModifier {
     raw,
     editState
 };
+Q_ENUM_NS(NameModifier)
 
 enum struct NodeType {
     root,
@@ -70,6 +76,7 @@ enum struct NodeType {
     file,
     log
 };
+Q_ENUM_NS(NodeType)
 
 enum struct FileKind {
     None,
@@ -84,6 +91,7 @@ enum struct FileKind {
     Ref,
     Dir
 };
+Q_ENUM_NS(FileKind)
 
 inline unsigned int qHash(FileKind key, unsigned int seed)
 {
@@ -101,6 +109,17 @@ enum struct EditorType {
     gdx = 7,
     ref = 8,
 };
+Q_ENUM_NS(EditorType)
+
+
+template <typename T>
+typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
+operator<<(QTextStream &dbg, T enumValue)
+{
+    const QMetaObject *mo = qt_getEnumMetaObject(enumValue);
+    int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
+    return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
+}
 
 }
 }

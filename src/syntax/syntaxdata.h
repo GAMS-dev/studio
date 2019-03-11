@@ -29,6 +29,7 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
 
 class SyntaxData
 {
@@ -391,6 +392,8 @@ public:
 
 };
 
+
+} // namespace syntax
 }
 }
 

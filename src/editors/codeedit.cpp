@@ -1166,9 +1166,9 @@ inline int CodeEdit::assignmentKind(int p)
     int postKind = 0;
     emit requestSyntaxKind(p-1, preKind);
     emit requestSyntaxKind(p+1, postKind);
-    if (postKind == static_cast<int>(SyntaxKind::IdentifierAssignment)) return 1;
-    if (preKind == static_cast<int>(SyntaxKind::IdentifierAssignment)) return -1;
-    if (preKind == static_cast<int>(SyntaxKind::IdentifierAssignmentEnd)) return -1;
+    if (postKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return 1;
+    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return -1;
+    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignmentEnd)) return -1;
     return 0;
 }
 

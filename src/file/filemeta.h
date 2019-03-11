@@ -87,7 +87,7 @@ public:
     void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0);
     void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
-    SyntaxHighlighter *highlighter() const;
+    syntax::SyntaxHighlighter *highlighter() const;
     void marksChanged(QSet<int> lines = QSet<int>());
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
@@ -138,7 +138,7 @@ private:
     QWidgetList mEditors;
     QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;
-    SyntaxHighlighter* mHighlighter = nullptr;
+    syntax::SyntaxHighlighter* mHighlighter = nullptr;
     int mLineCount = 0;
     int mChangedLine = 0;
     bool mLoading = false;
