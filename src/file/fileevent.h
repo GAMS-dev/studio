@@ -28,15 +28,6 @@ namespace gams {
 namespace studio {
 
 class FileEvent;
-enum class FileEventKind {
-    invalid,
-    changed,
-    closed,
-    created,
-    changedExtern,
-    removedExtern,  // removed-event is delayed to improve recognition of moved- or rewritten-events
-};
-
 
 struct FileEventData
 {

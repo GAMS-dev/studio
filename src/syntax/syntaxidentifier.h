@@ -24,12 +24,13 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
 
 class SyntaxIdentifier : public SyntaxAbstract
 {
 public:
-    SyntaxIdentifier(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxIdentifier(syntax::SyntaxKind kind);
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     int identChar(const QChar &c) const;
@@ -41,8 +42,8 @@ class SyntaxIdentifierDim : public SyntaxAbstract
     QChar mDelimiterOut;
     bool mTable;
 public:
-    SyntaxIdentifierDim(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxIdentifierDim(syntax::SyntaxKind kind);
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
     int maxNesting() override { return 1; }
 };
@@ -52,8 +53,8 @@ class SyntaxIdentifierDimEnd : public SyntaxAbstract
     QChar mDelimiter;
     bool mTable;
 public:
-    SyntaxIdentifierDimEnd(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxIdentifierDimEnd(syntax::SyntaxKind kind);
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -61,8 +62,8 @@ class SyntaxIdentDescript : public SyntaxAbstract
 {
     bool mTable;
 public:
-    SyntaxIdentDescript(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxIdentDescript(syntax::SyntaxKind kind);
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -70,8 +71,8 @@ class SyntaxIdentAssign : public SyntaxAbstract
 {
     QChar mDelimiter;
 public:
-    SyntaxIdentAssign(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxIdentAssign(syntax::SyntaxKind kind);
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -79,7 +80,7 @@ class AssignmentLabel: public SyntaxAbstract
 {
 public:
     AssignmentLabel();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -87,18 +88,20 @@ class AssignmentValue: public SyntaxAbstract
 {
 public:
     AssignmentValue();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxTableAssign : public SyntaxAbstract
 {
 public:
-    SyntaxTableAssign(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxTableAssign(syntax::SyntaxKind kind);
+    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
+
+} // namespace syntax
 } // namespace studio
 } // namespace gams
 

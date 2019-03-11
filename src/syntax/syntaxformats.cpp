@@ -24,9 +24,14 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
 
-QString syntaxKindName(SyntaxKind kind)
+QString syntaxKindName(syntax::SyntaxKind kind)
 {
+//    QString res = QVariant::fromValue(kind).toString();
+//    if (!res.isEmpty()) return res+"_auto";
+
+
     static const QHash<int, QString> syntaxKindName {
         {static_cast<int>(SyntaxKind::Standard), "Standard"},
         {static_cast<int>(SyntaxKind::Directive), "Directive"},
@@ -92,16 +97,16 @@ QTextCharFormat SyntaxAbstract::charFormatError()
     return errorFormat;
 }
 
-int SyntaxAbstract::stateToInt(SyntaxKind _state)
+int SyntaxAbstract::stateToInt(syntax::SyntaxKind _state)
 {
     return static_cast<int>(_state);
 }
 
-SyntaxKind SyntaxAbstract::intToState(int intState)
+syntax::SyntaxKind SyntaxAbstract::intToState(int intState)
 {
     int i = intState - QTextFormat::UserObject;
     if (i >= 0 && i < static_cast<int>(SyntaxKind::KindCount))
-        return static_cast<SyntaxKind>(intState);
+        return static_cast<syntax::SyntaxKind>(intState);
     else
         return SyntaxKind::Standard;
 }
@@ -121,9 +126,9 @@ SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
                << SyntaxKind::Standard;
 }
 
-SyntaxBlock SyntaxStandard::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxStandard::find(syntax::SyntaxKind entryKind, const QString& line, int index)
 {
-    static QVector<SyntaxKind> invalidEntries {SyntaxKind::Declaration, SyntaxKind::DeclarationSetType,
+    static QVector<syntax::SyntaxKind> invalidEntries {SyntaxKind::Declaration, SyntaxKind::DeclarationSetType,
                 SyntaxKind::DeclarationTable, SyntaxKind::DeclarationVariableType};
     Q_UNUSED(entryKind);
     bool error = invalidEntries.contains(entryKind);
@@ -176,7 +181,7 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mSpecialKinds.insert(QString("hidden").toLower(), SyntaxKind::DirectiveComment);
 }
 
-SyntaxBlock SyntaxDirective::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxDirective::find(syntax::SyntaxKind entryKind, const QString& line, int index)
 {
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
@@ -191,7 +196,7 @@ SyntaxBlock SyntaxDirective::find(SyntaxKind entryKind, const QString& line, int
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     }
-    SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
+    syntax::SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
         bool atEnd = match.capturedEnd(0) >= line.length()-1;
         SyntaxShift shift = (atEnd && next != SyntaxKind::CommentBlock) ? SyntaxShift::out : SyntaxShift::in;
@@ -210,13 +215,13 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, bool &has
 }
 
 
-SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxDirectiveBody::SyntaxDirectiveBody(syntax::SyntaxKind kind) : SyntaxAbstract(kind)
 {
     if (kind != SyntaxKind::DirectiveBody && kind != SyntaxKind::DirectiveComment && kind != SyntaxKind::Title)
-        FATAL() << "invalid SyntaxKind to initialize SyntaxDirectiveBody: " << syntaxKindName(kind);
+        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxDirectiveBody: " << syntaxKindName(kind);
 }
 
-SyntaxBlock SyntaxDirectiveBody::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxDirectiveBody::find(syntax::SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind);
     return SyntaxBlock(this, index, line.length(), SyntaxShift::out);
@@ -235,7 +240,7 @@ SyntaxCommentLine::SyntaxCommentLine(QChar commentChar)
     : SyntaxAbstract(SyntaxKind::CommentLine), mCommentChar(commentChar)
 { }
 
-SyntaxBlock SyntaxCommentLine::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxCommentLine::find(syntax::SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind)
     if (entryKind == SyntaxKind::CommentLine || (index==0 && line.startsWith(mCommentChar)))
@@ -257,7 +262,7 @@ SyntaxCommentBlock::SyntaxCommentBlock() : SyntaxAbstract(SyntaxKind::CommentBlo
     mSubKinds << SyntaxKind::Directive;
 }
 
-SyntaxBlock SyntaxCommentBlock::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxCommentBlock::find(syntax::SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind)
     return SyntaxBlock(this, index, line.length());
@@ -271,7 +276,7 @@ SyntaxBlock SyntaxCommentBlock::validTail(const QString &line, int index, bool &
     return SyntaxBlock(this, index, line.length(), SyntaxShift::shift);
 }
 
-SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
+SyntaxDelimiter::SyntaxDelimiter(syntax::SyntaxKind kind)
     : SyntaxAbstract(kind)
 {
     if (kind == SyntaxKind::Semicolon) {
@@ -279,10 +284,10 @@ SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
     } else if (kind == SyntaxKind::Comma) {
         mDelimiter = ',';
         mSubKinds << SyntaxKind::Identifier;
-    } else FATAL() << "invalid SyntaxKind to initialize SyntaxDelimiter: " << syntaxKindName(kind);
+    } else FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxDelimiter: " << syntaxKindName(kind);
 }
 
-SyntaxBlock SyntaxDelimiter::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxDelimiter::find(syntax::SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int end = index;
@@ -305,5 +310,6 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, bool &has
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
+} // namespace syntax
 } // namespace studio
 } // namespace gams

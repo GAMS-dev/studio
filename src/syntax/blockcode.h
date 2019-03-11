@@ -5,6 +5,7 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
 
 class BlockCode
 {
@@ -39,7 +40,8 @@ public:
 };
 
 
+} // namespace syntax
+} // namespace studio
+} // namespace gans
 
-}
-}
 #endif // BLOCKCODE_H

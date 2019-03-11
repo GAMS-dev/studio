@@ -28,24 +28,11 @@
 namespace gams {
 namespace studio {
 
-class ProjectFileNode;
 struct ParenthesesPos;
 
-enum ColorEnum {
-    SyntaxDirex,
-    SyntaxDiBdy,
-    SyntaxComnt,
-    SyntaxTitle,
-    SyntaxDeclr,
-    SyntaxIdent,
-    SyntaxKeywd,
-    SyntaxDescr,
-    SyntaxAsLab,
-    SyntaxAsVal,
-    SyntaxAssgn,
-    SyntaxTabHd,
-    SyntaxEmbed,
-};
+namespace syntax {
+
+class ProjectFileNode;
 
 class SyntaxHighlighter : public QSyntaxHighlighter
 {
@@ -57,12 +44,12 @@ public:
     void highlightBlock(const QString &text);
 
 public slots:
-    void syntaxKind(int position, int &intKind);
+    void SyntaxKind(int position, int &intKind);
 
 private:
-    SyntaxAbstract *getSyntax(SyntaxKind kind) const;
-    int getKindIdx(SyntaxKind kind) const;
-    void scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind,SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
+    SyntaxAbstract *getSyntax(syntax::SyntaxKind kind) const;
+    int getKindIdx(syntax::SyntaxKind kind) const;
+    void scanParentheses(const QString &text, int start, int len, syntax::SyntaxKind preKind, syntax::SyntaxKind kind,syntax::SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
 
 private:
     enum FontModifier {fNormal, fBold, fItalic, fBoldItalic};
@@ -93,6 +80,7 @@ private:
     // http://enki-editor.org/2014/08/22/Syntax_highlighting.html
 };
 
+} // namespace syntax
 } // namespace studio
 } // namespace gams
 

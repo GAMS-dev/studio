@@ -709,9 +709,10 @@ void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
-        mStatusWidgets->setEditMode(EditMode::Readonly);
+        mStatusWidgets->setEditMode(StatusWidgets::EditMode::Readonly);
     } else {
-        mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
+        mStatusWidgets->setEditMode(edit->overwriteMode() ? StatusWidgets::EditMode::Overwrite
+                                                          : StatusWidgets::EditMode::Insert);
     }
 }
 
@@ -1372,9 +1373,9 @@ void MainWindow::on_actionHelp_triggered()
             int iKind = 0;
             ce->wordInfo(ce->textCursor(), word, iKind);
 
-            if (iKind == static_cast<int>(SyntaxKind::Title)) {
+            if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-            } else if (iKind == static_cast<int>(SyntaxKind::Directive)) {
+            } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
             } else {
                 mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
@@ -2878,6 +2879,8 @@ void MainWindow::resetViews()
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         }
     }
+    mGamsOptionWidget->setEditorExtended(false);
+    addDockWidget(Qt::TopDockWidgetArea, mGamsOptionWidget->extendedEditor());
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)

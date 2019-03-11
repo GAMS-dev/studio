@@ -360,6 +360,11 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
     ui->gamsInterruptToolButton->menu()->setEnabled(enable);
 }
 
+QDockWidget* OptionWidget::extendedEditor() const
+{
+    return mExtendedEditor;
+}
+
 CommandLineTokenizer *OptionWidget::getGamsOptionTokenizer() const
 {
     return mGamsOptionTokenizer;

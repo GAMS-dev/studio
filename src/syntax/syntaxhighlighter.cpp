@@ -29,6 +29,23 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
+
+enum ColorEnum {
+    SyntaxDirex,
+    SyntaxDiBdy,
+    SyntaxComnt,
+    SyntaxTitle,
+    SyntaxDeclr,
+    SyntaxIdent,
+    SyntaxKeywd,
+    SyntaxDescr,
+    SyntaxAsLab,
+    SyntaxAsVal,
+    SyntaxAssgn,
+    SyntaxTabHd,
+    SyntaxEmbed,
+};
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     : QSyntaxHighlighter(doc)
@@ -110,7 +127,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     QTextBlock textBlock = currentBlock();
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
-    bool extendSearch = true;
+    bool emptyLineKinds = true;
 
     while (index < text.length()) {
         KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
@@ -118,14 +135,14 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         bool stack = true;
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
-        if (stack) extendSearch = false;
+        if (stack) emptyLineKinds = false;
 
         // HOWTO(JM) For kinds redefined with directives:
         //   - add new Syntax to mKinds
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
         SyntaxBlock nextBlock;
-        for (SyntaxKind nextKind: syntax->nextKinds(extendSearch)) {
+        for (syntax::SyntaxKind nextKind: syntax->nextKinds(emptyLineKinds)) {
             SyntaxAbstract* testSyntax = getSyntax(nextKind);
             if (testSyntax) {
                 SyntaxBlock testBlock = testSyntax->find(syntax->kind(), text, index);
@@ -145,7 +162,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             }
             nextBlock = tailBlock;
         } else {
-            extendSearch = false;
+            emptyLineKinds = false;
             if (tailBlock.isValid()) {
                 if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
                 if (tailBlock.isValid()) {
@@ -163,7 +180,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError());
         } else if (nextBlock.syntax->kind() != SyntaxKind::Standard) {
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
-            if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) extendSearch = true;
+            if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),
                         nextBlock.syntax->kind(), nextBlock.next, parPosList);
@@ -200,7 +217,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //    DEB() << oldState << " -> " << currentBlockState();
 }
 
-void SyntaxHighlighter::syntaxKind(int position, int &intKind)
+void SyntaxHighlighter::SyntaxKind(int position, int &intKind)
 {
     mPositionForSyntaxKind = position;
     mLastSyntaxKind = 0;
@@ -209,7 +226,7 @@ void SyntaxHighlighter::syntaxKind(int position, int &intKind)
     mLastSyntaxKind = 0;
 }
 
-SyntaxAbstract*SyntaxHighlighter::getSyntax(SyntaxKind kind) const
+SyntaxAbstract*SyntaxHighlighter::getSyntax(syntax::SyntaxKind kind) const
 {
     int i = mKinds.length();
     while (i > 0) {
@@ -219,7 +236,7 @@ SyntaxAbstract*SyntaxHighlighter::getSyntax(SyntaxKind kind) const
     return nullptr;
 }
 
-int SyntaxHighlighter::getKindIdx(SyntaxKind kind) const
+int SyntaxHighlighter::getKindIdx(syntax::SyntaxKind kind) const
 {
     int i = mKinds.length();
     while (i > 0) {
@@ -229,7 +246,7 @@ int SyntaxHighlighter::getKindIdx(SyntaxKind kind) const
     return -1;
 }
 
-const QVector<SyntaxKind> validParenthesesSyntax = {
+const QVector<syntax::SyntaxKind> validParenthesesSyntax = {
     SyntaxKind::Standard,
     SyntaxKind::Identifier,
     SyntaxKind::IdentifierTable,
@@ -245,7 +262,7 @@ const QVector<SyntaxKind> validParenthesesSyntax = {
 const QString validParentheses("{[(}])/");
 const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
 
-void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind, SyntaxKind postKind,  QVector<ParenthesesPos> &parentheses)
+void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, syntax::SyntaxKind preKind, syntax::SyntaxKind kind, syntax::SyntaxKind postKind,  QVector<ParenthesesPos> &parentheses)
 {
     bool inBlock = false;
     if (kind == SyntaxKind::Embedded || (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody)) {
@@ -357,5 +374,6 @@ BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, KindInde
 //}
 
 
+} // namespace syntax
 } // namespace studio
 } // namespace gams

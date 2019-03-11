@@ -267,8 +267,8 @@ void FileMetaRepo::reviewRemoved()
         if (!file) continue;
         mProjectRepo->fileChanged(file->id());
         if (watch(file)) {
-            FileDifferences diff = file->compare();
-            if (diff.testFlag(FdMissing)) {
+            FileMeta::FileDifferences diff = file->compare();
+            if (diff.testFlag(FileMeta::FdMissing)) {
                 FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {

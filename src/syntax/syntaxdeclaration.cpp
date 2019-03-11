@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
 
 bool cmpStr(const QPair<QString, QString>& lhs,const QPair<QString, QString>& rhs)
 {
@@ -45,7 +46,7 @@ DictList::DictList(QList<QPair<QString, QString> > list) : mEntries(QVector<Dict
 SyntaxKeywordBase::~SyntaxKeywordBase()
 {
     while (!mKeywords.isEmpty())
-        delete mKeywords.take(mKeywords.keys().first());
+        delete mKeywords.take(int(mKeywords.keys().first()));
 }
 
 SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, bool &hasContent)
@@ -69,12 +70,12 @@ QStringList SyntaxKeywordBase::swapStringCase(QStringList list)
     return res;
 }
 
-int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index)
+int SyntaxKeywordBase::findEnd(syntax::SyntaxKind kind, const QString& line, int index)
 {
     int iKey = 0;
     int iChar = 0;
     while (true) {
-        const DictEntry *dEntry = &mKeywords.value(kind)->at(iKey);
+        const DictEntry *dEntry = &mKeywords.value(int(kind))->at(iKey);
         if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index))) {
             if (dEntry->length() > iChar) return -1;
             return iChar+index; // reached an valid end
@@ -84,9 +85,9 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index)
         } else {
             // different character  at iChar: switch to next keyword
             iKey++;
-            if (iKey >= mKeywords.value(kind)->count()) break; // no more keywords
+            if (iKey >= mKeywords.value(int(kind))->count()) break; // no more keywords
             // next keyword starts with less equal characters than already matched
-            if (mKeywords.value(kind)->equalToPrevious(iKey) < iChar) break;
+            if (mKeywords.value(int(kind))->equalToPrevious(iKey) < iChar) break;
         }
     }
     return -1;
@@ -97,18 +98,18 @@ SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxKind::Declarati
 {
     QList<QPair<QString, QString>> list;
     list = SyntaxData::declaration();
-    mKeywords.insert(kind(), new DictList(list));
+    mKeywords.insert(int(kind()), new DictList(list));
 
     list = QList<QPair<QString, QString>> {{"Set", ""}, {"Sets", ""}};
-    mKeywords.insert(SyntaxKind::DeclarationSetType, new DictList(list));
+    mKeywords.insert(int(SyntaxKind::DeclarationSetType), new DictList(list));
 
     list = QList<QPair<QString, QString>> {{"Variable", ""}, {"Variables", ""}};
-    mKeywords.insert(SyntaxKind::DeclarationVariableType, new DictList(list));
+    mKeywords.insert(int(SyntaxKind::DeclarationVariableType), new DictList(list));
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
                << SyntaxKind::CommentInline << SyntaxKind::DeclarationTable << SyntaxKind::Identifier;
 }
 
-SyntaxBlock SyntaxDeclaration::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxDeclaration::find(syntax::SyntaxKind entryKind, const QString& line, int index)
 {
     int start = index;
     int end = -1;
@@ -135,29 +136,29 @@ SyntaxBlock SyntaxDeclaration::find(SyntaxKind entryKind, const QString& line, i
     return SyntaxBlock(this);
 }
 
-SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxKind kind) : SyntaxKeywordBase(kind)
+SyntaxPreDeclaration::SyntaxPreDeclaration(syntax::SyntaxKind kind) : SyntaxKeywordBase(kind)
 {
     QList<QPair<QString, QString>> list;
     switch (kind) {
     case SyntaxKind::DeclarationSetType:
         list = SyntaxData::declaration4Set();
-        mKeywords.insert(kind, new DictList(list));
+        mKeywords.insert(int(kind), new DictList(list));
         mSubKinds << SyntaxKind::Declaration;
         break;
     case SyntaxKind::DeclarationVariableType:
         list = SyntaxData::declaration4Var();
-        mKeywords.insert(kind, new DictList(list));
+        mKeywords.insert(int(kind), new DictList(list));
         mSubKinds << SyntaxKind::Declaration;
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxDeclaration";
+        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxDeclaration";
     }
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
                << SyntaxKind::CommentInline;
 
 }
 
-SyntaxBlock SyntaxPreDeclaration::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxPreDeclaration::find(syntax::SyntaxKind entryKind, const QString &line, int index)
 {
     int start = index;
     int end = -1;
@@ -179,12 +180,12 @@ SyntaxDeclarationTable::SyntaxDeclarationTable() : SyntaxKeywordBase(SyntaxKind:
 {
     QList<QPair<QString, QString>> list;
     list = SyntaxData::declarationTable();
-    mKeywords.insert(kind(), new DictList(list));
+    mKeywords.insert(int(kind()), new DictList(list));
     mSubKinds << SyntaxKind::IdentifierTable << SyntaxKind::Directive
                << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
 }
 
-SyntaxBlock SyntaxDeclarationTable::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxDeclarationTable::find(syntax::SyntaxKind entryKind, const QString &line, int index)
 {
     int start = index;
     int end = -1;
@@ -204,14 +205,14 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxKind::Reserved)
 {
     QList<QPair<QString, QString>> list;
     list = SyntaxData::reserved();
-    mKeywords.insert(kind(), new DictList(list));
+    mKeywords.insert(int(kind()), new DictList(list));
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Embedded << SyntaxKind::Reserved
                << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
                << SyntaxKind::Directive << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
                << SyntaxKind::DeclarationVariableType << SyntaxKind::DeclarationTable << SyntaxKind::ReservedBody;
 }
 
-SyntaxBlock SyntaxReserved::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxReserved::find(syntax::SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;
@@ -231,7 +232,7 @@ SyntaxReservedBody::SyntaxReservedBody() : SyntaxAbstract(SyntaxKind::ReservedBo
                << SyntaxKind::DeclarationVariableType << SyntaxKind::DeclarationTable;
 }
 
-SyntaxBlock SyntaxReservedBody::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxReservedBody::find(syntax::SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int end = line.length();
@@ -260,7 +261,7 @@ SyntaxBlock SyntaxReservedBody::validTail(const QString &line, int index, bool &
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
-SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind) : SyntaxKeywordBase(kind)
+SyntaxEmbedded::SyntaxEmbedded(syntax::SyntaxKind kind) : SyntaxKeywordBase(kind)
 {
     QList<QPair<QString, QString>> list;
     if (kind == SyntaxKind::Embedded) {
@@ -269,10 +270,10 @@ SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind) : SyntaxKeywordBase(kind)
     } else {
         list = SyntaxData::embeddedEnd();
     }
-    mKeywords.insert(kind, new DictList(list));
+    mKeywords.insert(int(kind), new DictList(list));
 }
 
-SyntaxBlock SyntaxEmbedded::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxEmbedded::find(syntax::SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;
@@ -292,7 +293,7 @@ SyntaxEmbeddedBody::SyntaxEmbeddedBody() : SyntaxAbstract(SyntaxKind::EmbeddedBo
     mSubKinds << SyntaxKind::EmbeddedEnd << SyntaxKind::Directive;
 }
 
-SyntaxBlock SyntaxEmbeddedBody::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxEmbeddedBody::find(syntax::SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     return SyntaxBlock(this, index, line.length());
@@ -305,5 +306,6 @@ SyntaxBlock SyntaxEmbeddedBody::validTail(const QString &line, int index, bool &
 }
 
 
+} // namespace syntax
 } // namespace studio
 } // namespace gans
