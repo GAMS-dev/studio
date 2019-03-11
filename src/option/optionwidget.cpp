@@ -99,6 +99,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     mExtendedEditor->setObjectName("gamsArguments");
     mExtendedEditor->setWidget(ui->gamsOptionWidget);
     mExtendedEditor->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    mExtendedEditor->setTitleBarWidget(new QWidget(this));
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
     connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility);
     mExtendedEditor->setVisible(false);
@@ -108,8 +109,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 #else
     ui->verticalLayout->setContentsMargins(2,0,2,2);
 #endif
-
-
 }
 
 OptionWidget::~OptionWidget()
