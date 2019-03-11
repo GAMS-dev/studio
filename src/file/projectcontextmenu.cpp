@@ -85,7 +85,7 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
 
     QString file;
     if (fileNode && fileNode->assignedRunGroup()) {
-        file = fileNode->assignedRunGroup()->specialFile(FileKind::Gms);
+        file = fileNode->assignedRunGroup()->parameter("gms");
         isRunnable = fileNode->location() == file;
     }
 

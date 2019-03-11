@@ -95,11 +95,11 @@ public:
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
 
-    QString specialFile(const FileKind& kind) const;
-    bool hasSpecialFile(const FileKind& kind) const;
+    QString parameter(const QString& kind) const;
+    bool hasParameter(const QString& kind) const;
     void addNodesForSpecialFiles();
-    void setSpecialFile(const FileKind& kind, const QString& path);
-    void clearSpecialFiles();
+    void setParameter(const QString& kind, const QString& path);
+    void clearParameters();
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
@@ -129,7 +129,7 @@ private:
     ProjectLogNode* mLogNode = nullptr;
     QHash<int, QString> mLstErrorTexts;
     QStringList mRunParametersHistory;
-    QHash<FileKind, QString> mSpecialFiles;
+    QHash<QString, QString> mParameterHash;
 
 private:
     QString cleanPath(QString path, QString file);

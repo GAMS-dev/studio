@@ -197,9 +197,9 @@ QStringList FileMeta::suffix() const
     return mData.type->suffix();
 }
 
-void FileMeta::setKind(FileKind fk)
+void FileMeta::setKind(const QString &suffix)
 {
-    mData.type = &FileType::from(fk);
+    mData.type = &FileType::from(suffix);
 }
 
 FileKind FileMeta::kind() const
