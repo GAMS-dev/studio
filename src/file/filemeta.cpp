@@ -276,15 +276,10 @@ void FileMeta::updateMarks()
 
     // update changed editors
     for (QWidget *w: mEditors) {
-        AbstractEdit *edit = nullptr;
-        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w)) {
-            edit = ed;
+        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w))
             ed->marksChanged(mDirtyLines);
-        }
-        if (TextView * tv = ViewHelper::toTextView(w)) {
-            edit = tv->edit();
+        if (TextView * tv = ViewHelper::toTextView(w))
             tv->marksChanged(mDirtyLines);
-        }
     }
     mDirtyLines.clear();
 }
