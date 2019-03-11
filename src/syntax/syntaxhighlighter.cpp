@@ -168,6 +168,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->kind() != SyntaxKind::Standard) {
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
+//                        if (tailBlock.syntax)
+//                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " " << tailBlock.syntax->kind();
                         scanParentheses(text, tailBlock.start, tailBlock.length(), syntax->kind(),
                                         tailBlock.syntax->kind(), tailBlock.next, parPosList);
                     }
@@ -180,6 +182,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError());
         } else if (nextBlock.syntax->kind() != SyntaxKind::Standard) {
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
+//            if (nextBlock.syntax)
+//                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_') << " " << nextBlock.syntax->kind();
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),

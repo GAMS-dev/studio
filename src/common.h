@@ -23,6 +23,7 @@
 #include <QHashFunctions>
 #include <QObject>
 #include <QTextStream>
+#include <QDebug>
 #include <QMetaEnum>
 
 namespace gams {
@@ -61,13 +62,10 @@ typedef PhantomInt<PiFileId> FileId;
 typedef PhantomInt<PiNodeId> NodeId;
 typedef PhantomInt<PiTextMarkId> TextMarkId;
 
-Q_NAMESPACE
-
 enum struct NameModifier {
     raw,
     editState
 };
-Q_ENUM_NS(NameModifier)
 
 enum struct NodeType {
     root,
@@ -76,7 +74,6 @@ enum struct NodeType {
     file,
     log
 };
-Q_ENUM_NS(NodeType)
 
 enum struct FileKind {
     None,
@@ -91,7 +88,6 @@ enum struct FileKind {
     Ref,
     Dir
 };
-Q_ENUM_NS(FileKind)
 
 inline unsigned int qHash(FileKind key, unsigned int seed)
 {
@@ -109,7 +105,6 @@ enum struct EditorType {
     gdx = 7,
     ref = 8,
 };
-Q_ENUM_NS(EditorType)
 
 enum struct FileEventKind {
     invalid,
@@ -119,7 +114,12 @@ enum struct FileEventKind {
     changedExtern,
     removedExtern,  // removed-event is delayed to improve recognition of moved- or rewritten-events
 };
-Q_ENUM_NS(FileEventKind)
+
+Q_NAMESPACE
+//
+// //  insert enum here (remark: 'enum struct'  or  'enum class' isn't working)
+//
+//Q_ENUM_NS(FileEventKind)
 
 template <typename T>
 typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
