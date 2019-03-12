@@ -159,7 +159,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
           case Deprecated_Option:
               return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key);
           case UserDefined_Error:
-              return QString("Invalid option key or value or comment defined").arg(mOptionItem.at(row)->text);
+              return QString("Invalid option key or value or comment defined");
           default:
              break;
           }
