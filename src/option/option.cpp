@@ -500,7 +500,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
              optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
              optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
-             QString nameStr = QString::fromLatin1(name);
+             QString nameStr = QString::fromLatin1(name).toUpper();
              OptionDefinition opt(i, QString::fromLatin1(name),
                                   static_cast<optDataType>(itype),
                                   static_cast<optOptionType>(iopttype),
