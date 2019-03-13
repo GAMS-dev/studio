@@ -375,10 +375,11 @@ SyntaxBlock AssignmentLabel::find(SyntaxKind entryKind, const QString &line, int
 
 SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, bool &hasContent)
 {
-    Q_UNUSED(line);
-    Q_UNUSED(index);
-    Q_UNUSED(hasContent);
-    return SyntaxBlock();
+    int start = index;
+    while (isWhitechar(line, start))
+        ++start;
+    hasContent = false;
+    return SyntaxBlock(this, index, start, SyntaxShift::shift);
 }
 
 AssignmentValue::AssignmentValue()
@@ -423,10 +424,11 @@ SyntaxBlock AssignmentValue::find(SyntaxKind entryKind, const QString &line, int
 
 SyntaxBlock AssignmentValue::validTail(const QString &line, int index, bool &hasContent)
 {
-    Q_UNUSED(line);
-    Q_UNUSED(index);
-    Q_UNUSED(hasContent);
-    return SyntaxBlock();
+    int start = index;
+    while (isWhitechar(line, start))
+        ++start;
+    hasContent = false;
+    return SyntaxBlock(this, index, start, SyntaxShift::shift);
 }
 
 SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
