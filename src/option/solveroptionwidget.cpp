@@ -180,10 +180,6 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
 
     setModified(false);
-
-    // shortcuts
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F1), this, SLOT(showOptionDefinition()));
-
 }
 
 SolverOptionWidget::~SolverOptionWidget()
@@ -255,7 +251,11 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             action->setVisible( everySelectionIsARow && thereIsARowSelection && (selection.first().row() > 0) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setVisible( everySelectionIsARow & thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            action->setVisible( everySelectionIsARow && thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionShowDefinition_option")==0) {
+            action->setVisible( everySelectionIsARow && thereIsARowSelection  );
             menu.addAction(action);
         }
     }
@@ -854,6 +854,13 @@ void SolverOptionWidget::addActions()
     moveDownAction->setShortcutVisibleInContextMenu(true);
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(moveDownAction);
+
+    QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
+    showDefinitionAction->setObjectName("actionShowDefinition_option");
+    showDefinitionAction->setShortcut( tr("Ctrl+F1") );
+    showDefinitionAction->setShortcutVisibleInContextMenu(true);
+    showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(showDefinitionAction);
 }
 
 void SolverOptionWidget::updateEditActions(bool modified)
