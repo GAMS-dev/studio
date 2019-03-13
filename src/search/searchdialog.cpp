@@ -133,7 +133,7 @@ void SearchDialog::finalUpdate()
     resultsView()->resizeColumnsToContent();
 
     if (!mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
-    else updateMatchAmount();
+    else updateFindNextLabel(QTextCursor());
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
@@ -418,9 +418,31 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
     searchParameterChanged();
 }
 
+void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
+{
+    if (matchSelection.isNull()) {
+        AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+        if (edit)
+            matchSelection = edit->textCursor();
+        else return;
+    }
+
+    int count = 0;
+    for (Result match: mCachedResults->resultList()) {
+        if (match.lineNr() == matchSelection.blockNumber()+1
+                && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
+            updateMatchAmount(count+1);
+            return;
+        } else {
+            count++;
+        }
+    }
+    updateMatchAmount();
+}
+
 void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 {
-    QPoint matchPos;
+    QTextCursor matchSelection;
     QRegularExpression searchRegex = createRegex();
 
     setSearchStatus(SearchStatus::Searching);
@@ -430,7 +452,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
 
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        QTextCursor matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
+        matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
 
         if (matchSelection.isNull()) { // empty selection == reached end of document
 
@@ -446,8 +468,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
         } else { // found next match
             edit->jumpTo(matchSelection);
             edit->setTextCursor(matchSelection);
-            matchPos.setY(matchSelection.blockNumber()+1);
-            matchPos.setX(matchSelection.columnNumber() - matchSelection.selectedText().length());
         }
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
         mMain->closeResultsPage();
@@ -459,17 +479,9 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     }
 
     // set match and counter
-    int count = 0;
-    for (Result match: mCachedResults->resultList()) {
-        if (match.lineNr() == matchPos.y()
-                && match.colNr() == matchPos.x()) {
-            updateMatchAmount(count+1);
-            break;
-        } else {
-            count++;
-        }
-    }
     setSearchOngoing(false);
+    setSearchStatus(SearchStatus::Clear);
+    updateFindNextLabel(matchSelection);
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)

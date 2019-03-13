@@ -163,6 +163,7 @@ private:
     QThread mThread;
     bool mSearching = false;
     QMutex mMutex;
+    void updateFindNextLabel(QTextCursor matchSelection);
 };
 
 }
