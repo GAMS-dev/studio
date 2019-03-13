@@ -94,8 +94,6 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         insertHistory();
 
-        setSearchStatus(SearchStatus::Searching);
-
         switch (ui->combo_scope->currentIndex()) {
         case SearchScope::ThisFile:
             if (mMain->recent()->editor())
@@ -123,21 +121,19 @@ void SearchDialog::on_btn_FindAll_clicked()
 
 void SearchDialog::intermediateUpdate()
 {
-    qDebug() /*TODO(rogo)*/ << QTime::currentTime() << "SearchDialog::intermediateUpdate()";
     setSearchStatus(SearchStatus::Searching);
 }
 
 void SearchDialog::finalUpdate()
 {
-    qDebug() /*TODO(rogo)*/ << QTime::currentTime() << "SearchDialog::finalUpdate()";
     setSearchOngoing(false);
     mMain->showResults(mCachedResults);
 
-    updateMatchAmount();
     updateEditHighlighting();
     resultsView()->resizeColumnsToContent();
 
     if (!mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
+    else updateMatchAmount();
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
@@ -291,7 +287,6 @@ void SearchDialog::simpleReplaceAll()
 
 void SearchDialog::updateSearchCache()
 {
-    setSearchStatus(SearchStatus::Searching);
     QApplication::sendPostedEvents();
     mCachedResults->clear();
     mCachedResults->setSearchTerm(createRegex().pattern());
@@ -386,11 +381,6 @@ void SearchDialog::searchResume()
     setSearchOngoing(false);
 }
 
-void SearchDialog::closeEvent(QCloseEvent *e) {
-    setSearchStatus(SearchStatus::Clear);
-    QDialog::closeEvent(e);
-}
-
 void SearchDialog::on_combo_scope_currentIndexChanged(int index)
 {
     ui->combo_filePattern->setEnabled(index != SearchScope::ThisFile);
@@ -433,6 +423,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     QPoint matchPos;
     QRegularExpression searchRegex = createRegex();
 
+    setSearchStatus(SearchStatus::Searching);
+
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
     QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
@@ -463,7 +455,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
         mSplitSearchView = tv;
         mSplitSearchFlags = flags;
         mSplitSearchContinue = false;
-        setSearchStatus(SearchStatus::Searching);
         searchResume();
     }
 
@@ -559,7 +550,6 @@ void SearchDialog::clearResults()
 
 void SearchDialog::setSearchStatus(SearchStatus status)
 {
-    qDebug() /*TODO(rogo)*/ << QTime::currentTime() << "setting search status" << status;
     switch (status) {
     case SearchStatus::Searching:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
