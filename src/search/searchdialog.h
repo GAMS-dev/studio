@@ -136,7 +136,7 @@ private:
     void findInGroup(QMutex& mutex);
     void findInOpenFiles(QMutex& mutex);
     void findInAllFiles(QMutex& mutex);
-    void updateMatchAmount(int hits, int current = 0);
+    void updateMatchAmount(int current = 0);
     void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
     void searchParameterChanged();
@@ -146,8 +146,6 @@ private:
     void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);
 
-
-
 private:
     Ui::SearchDialog *ui;
     MainWindow *mMain;
@@ -156,7 +154,7 @@ private:
     ResultsView *mResultsView = nullptr;
     SearchResultList *mCachedResults = nullptr;
     QWidget *mActiveEdit = nullptr;
-    bool mHasChanged = false;
+    bool mHasChanged = true;
     bool mFirstReturn = false;
     TextView *mSplitSearchView = nullptr;
     QRegularExpression mSplitSearchRegEx;

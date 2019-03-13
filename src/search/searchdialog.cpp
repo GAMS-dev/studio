@@ -123,20 +123,21 @@ void SearchDialog::on_btn_FindAll_clicked()
 
 void SearchDialog::intermediateUpdate()
 {
+    qDebug() /*TODO(rogo)*/ << QTime::currentTime() << "SearchDialog::intermediateUpdate()";
     setSearchStatus(SearchStatus::Searching);
 }
 
 void SearchDialog::finalUpdate()
 {
+    qDebug() /*TODO(rogo)*/ << QTime::currentTime() << "SearchDialog::finalUpdate()";
     setSearchOngoing(false);
     mMain->showResults(mCachedResults);
 
-    int size = mCachedResults->size();
-    updateMatchAmount(size);
+    updateMatchAmount();
     updateEditHighlighting();
     resultsView()->resizeColumnsToContent();
 
-    if (!size) setSearchStatus(SearchStatus::NoResults);
+    if (!mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
@@ -471,7 +472,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
     for (Result match: mCachedResults->resultList()) {
         if (match.lineNr() == matchPos.y()
                 && match.colNr() == matchPos.x()) {
-            updateMatchAmount(mCachedResults->size(), count+1);
+            updateMatchAmount(count+1);
             break;
         } else {
             count++;
@@ -558,6 +559,7 @@ void SearchDialog::clearResults()
 
 void SearchDialog::setSearchStatus(SearchStatus status)
 {
+    qDebug() /*TODO(rogo)*/ << QTime::currentTime() << "setting search status" << status;
     switch (status) {
     case SearchStatus::Searching:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
@@ -631,15 +633,15 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->setFocus();
 }
 
-void SearchDialog::updateMatchAmount(int hits, int current)
+void SearchDialog::updateMatchAmount(int current)
 {
     if (current == 0) {
-        if (hits == 1)
-            ui->lbl_nrResults->setText(QString::number(hits) + " match");
+        if (mCachedResults->size() == 1)
+            ui->lbl_nrResults->setText(QString::number(mCachedResults->size()) + " match");
         else
-            ui->lbl_nrResults->setText(QString::number(hits) + " matches");
+            ui->lbl_nrResults->setText(QString::number(mCachedResults->size()) + " matches");
 
-        if (hits > 49999) {
+        if (mCachedResults->size() > 49999) {
             ui->lbl_nrResults->setText("50000+ matches");
             ui->lbl_nrResults->setToolTip("Search is limited to 50000 matches.");
         } else {
@@ -647,7 +649,7 @@ void SearchDialog::updateMatchAmount(int hits, int current)
         }
 
     } else {
-        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(hits) + " matches");
+        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(mCachedResults->size()) + " matches");
     }
 
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
