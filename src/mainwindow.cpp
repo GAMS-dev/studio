@@ -1435,6 +1435,10 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
+    bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
+    if (isResults)
+        mSearchDialog->clearResults();
+
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
@@ -1443,8 +1447,8 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         AbstractEdit* ed = ViewHelper::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
 
-        // dont remove syslog
-        if (edit != mSyslog)
+        // dont remove syslog and dont delete resultsView
+        if (!(edit == mSyslog || isResults))
             edit->deleteLater();
     }
 }
