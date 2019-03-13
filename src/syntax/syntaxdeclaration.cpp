@@ -206,7 +206,7 @@ SyntaxReserved::SyntaxReserved() : SyntaxKeywordBase(SyntaxKind::Reserved)
     QList<QPair<QString, QString>> list;
     list = SyntaxData::reserved();
     mKeywords.insert(int(kind()), new DictList(list));
-    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Embedded << SyntaxKind::Reserved
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::String << SyntaxKind::Embedded << SyntaxKind::Reserved
                << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
                << SyntaxKind::Directive << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
                << SyntaxKind::DeclarationVariableType << SyntaxKind::DeclarationTable << SyntaxKind::Formula;

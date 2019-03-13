@@ -385,7 +385,8 @@ SyntaxBlock SyntaxString::find(SyntaxKind entryKind, const QString &line, int in
     int end = start;
     if (start < line.length() && (line.at(start) == '\'' || line.at(start) == '"')) {
         while (++end < line.length() && line.at(end) != line.at(start)) ;
-        if (line.at(end) == line.at(start)) return SyntaxBlock(this, start, end+1, SyntaxShift::skip);
+        if (end < line.length() && line.at(end) == line.at(start))
+            return SyntaxBlock(this, start, end+1, SyntaxShift::skip);
     }
     return SyntaxBlock(this);
 }
