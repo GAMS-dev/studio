@@ -71,7 +71,8 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     };
     // To visualize one format: add color index at start e.g. initKind(1, new SyntaxReservedBody());
     initKind(new SyntaxStandard(), Qt::red);
-    initKind(new SyntaxDirective(), cl.value(SyntaxDirex));
+    SyntaxDirective *syntaxDirective = new SyntaxDirective();
+    initKind(syntaxDirective, cl.value(SyntaxDirex));
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody), cl.value(SyntaxDiBdy));
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), cl.value(SyntaxComnt), fItalic);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title), cl.value(SyntaxTitle), fBoldItalic);
@@ -80,6 +81,9 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxString(), cl.value(SyntaxStrin));
     initKind(new SyntaxCommentLine(), cl.value(SyntaxComnt), fItalic);
     initKind(new SyntaxCommentBlock(), cl.value(SyntaxComnt), fItalic);
+    SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
+    initKind(syntaxCommentEndline, cl.value(SyntaxComnt), fItalic);
+    syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
 
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
     initKind(new SyntaxDelimiter(SyntaxKind::Comma));

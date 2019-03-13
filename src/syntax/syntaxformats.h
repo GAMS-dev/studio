@@ -184,6 +184,7 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
+class SyntaxCommentEndline;
 /// \brief Defines the syntax for a directive.
 class SyntaxDirective : public SyntaxAbstract
 {
@@ -191,11 +192,13 @@ public:
     SyntaxDirective(QChar directiveChar = '$');
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
     QHash<QString, SyntaxKind> mSpecialKinds;
+    SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
 };
 
 
@@ -217,6 +220,17 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QChar mCommentChar;
+};
+
+ /// \brief Defines the syntax for a single comment line.
+class SyntaxCommentEndline: public SyntaxAbstract
+{
+    QString mCommentChars;
+public:
+    SyntaxCommentEndline(QString commentChars = "!!");
+    void setCommentChars(QString commentChars);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 /// \brief Defines the syntax for a multi-line comment block.

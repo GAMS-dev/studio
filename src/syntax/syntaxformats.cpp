@@ -29,57 +29,6 @@ namespace syntax {
 QString syntaxKindName(SyntaxKind kind)
 {
     return QVariant::fromValue(kind).toString();
-//    if (!res.isEmpty()) return res+"_auto";
-
-
-//    static const QHash<int, QString> syntaxKindName {
-//        {static_cast<int>(SyntaxKind::Standard), "Standard"},
-//        {static_cast<int>(SyntaxKind::Directive), "Directive"},
-//        {static_cast<int>(SyntaxKind::DirectiveBody), "DirectiveBody"},
-//        {static_cast<int>(SyntaxKind::DirectiveComment), "DirectiveComment"},
-//        {static_cast<int>(SyntaxKind::Title), "Title"},
-
-//        {static_cast<int>(SyntaxKind::CommentLine), "CommentLine"},
-//        {static_cast<int>(SyntaxKind::CommentBlock), "CommentBlock"},
-//        {static_cast<int>(SyntaxKind::CommentEndline), "CommentEndline"},
-//        {static_cast<int>(SyntaxKind::CommentInline), "CommentInline"},
-
-//        {static_cast<int>(SyntaxKind::Semicolon), "Semicolon"},
-//        {static_cast<int>(SyntaxKind::Comma), "Comma"},
-//        {static_cast<int>(SyntaxKind::DeclarationSetType), "DeclarationSetType"},
-//        {static_cast<int>(SyntaxKind::DeclarationVariableType), "DeclarationVariableType"},
-//        {static_cast<int>(SyntaxKind::Declaration), "Declaration"},
-//        {static_cast<int>(SyntaxKind::DeclarationTable), "DeclarationTable"},
-
-//        {static_cast<int>(SyntaxKind::Identifier), "Identifier"},
-//        {static_cast<int>(SyntaxKind::IdentifierDim1), "IdentifierDim1"},
-//        {static_cast<int>(SyntaxKind::IdentifierDim2), "IdentifierDim2"},
-//        {static_cast<int>(SyntaxKind::IdentifierDimEnd1), "IdentifierDimEnd1"},
-//        {static_cast<int>(SyntaxKind::IdentifierDimEnd2), "IdentifierDimEnd2"},
-//        {static_cast<int>(SyntaxKind::IdentifierDescription), "IdentifierDescription"},
-//        {static_cast<int>(SyntaxKind::IdentifierAssignment), "IdentifierAssignment"},
-//        {static_cast<int>(SyntaxKind::AssignmentLabel), "AssignmentLabel"},
-//        {static_cast<int>(SyntaxKind::AssignmentValue), "AssignmentValue"},
-//        {static_cast<int>(SyntaxKind::IdentifierAssignmentEnd), "IdentifierAssignmentEnd"},
-
-//        {static_cast<int>(SyntaxKind::IdentifierTable), "IdentifierTable"},
-//        {static_cast<int>(SyntaxKind::IdentifierTableDim1), "IdentifierTableDim1"},
-//        {static_cast<int>(SyntaxKind::IdentifierTableDim2), "IdentifierTableDim2"},
-//        {static_cast<int>(SyntaxKind::IdentifierTableDimEnd1), "IdentifierTableDimEnd1"},
-//        {static_cast<int>(SyntaxKind::IdentifierTableDimEnd2), "IdentifierTableDimEnd2"},
-//        {static_cast<int>(SyntaxKind::IdentifierTableDescription), "IdentifierTableDescription1"},
-//        {static_cast<int>(SyntaxKind::IdentifierTableAssignmentHead), "IdentifierTableAssignment"},
-//        {static_cast<int>(SyntaxKind::IdentifierTableAssignmentRow), "IdentifierTableAssignmentEnd"},
-
-//        {static_cast<int>(SyntaxKind::Embedded), "Embedded"},
-//        {static_cast<int>(SyntaxKind::EmbeddedBody), "EmbeddedBody"},
-//        {static_cast<int>(SyntaxKind::EmbeddedEnd), "EmbeddedEnd"},
-//        {static_cast<int>(SyntaxKind::Reserved), "Reserved"},
-//        {static_cast<int>(SyntaxKind::ReservedBody), "ReservedBody"},
-
-//        {static_cast<int>(SyntaxKind::KindCount), "KindCount"},
-//    };
-//    return syntaxKindName.value(static_cast<int>(kind), QString("--unassigned(%1)--").arg(static_cast<int>(kind)));
 }
 
 
@@ -194,6 +143,14 @@ SyntaxBlock SyntaxDirective::find(SyntaxKind entryKind, const QString& line, int
                 || match.captured(2).compare("offembeddedcode", Qt::CaseInsensitive) == 0)
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
+    } else if (mSyntaxCommentEndline) {
+        if ( match.captured(2).startsWith("oneolcom")) {
+            mSyntaxCommentEndline->setCommentChars("!!");
+         } else if (match.captured(2).startsWith("eolcom")) {
+            int i = match.capturedEnd(2);
+            while (isWhitechar(line,i)) ++i;
+            if (i+2 <= line.length()) mSyntaxCommentEndline->setCommentChars(line.mid(i,2));
+        }
     }
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
@@ -279,6 +236,7 @@ SyntaxBlock SyntaxCommentBlock::validTail(const QString &line, int index, bool &
 SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
     : SyntaxAbstract(kind)
 {
+    mSubKinds << SyntaxKind::CommentEndline;
     if (kind == SyntaxKind::Semicolon) {
         mDelimiter = ';';
     } else if (kind == SyntaxKind::Comma) {
@@ -424,6 +382,37 @@ SyntaxBlock SyntaxAssign::find(gams::studio::syntax::SyntaxKind entryKind, const
 }
 
 SyntaxBlock SyntaxAssign::validTail(const QString &line, int index, bool &hasContent)
+{
+    Q_UNUSED(line)
+    Q_UNUSED(index)
+    Q_UNUSED(hasContent)
+    return SyntaxBlock(this);
+}
+
+SyntaxCommentEndline::SyntaxCommentEndline(QString commentChars)
+    : SyntaxAbstract(SyntaxKind::CommentEndline)
+{
+    setCommentChars(commentChars);
+}
+
+void SyntaxCommentEndline::setCommentChars(QString commentChars)
+{
+    if (commentChars.length() == 2)
+        mCommentChars = commentChars;
+}
+
+SyntaxBlock SyntaxCommentEndline::find(gams::studio::syntax::SyntaxKind entryKind, const QString &line, int index)
+{
+    Q_UNUSED(entryKind)
+    int start = index;
+    while (isWhitechar(line, start))
+        ++start;
+    if (start+2 < line.length() && line.at(start) == mCommentChars.at(0) && line.at(start+1) == mCommentChars.at(1))
+        return SyntaxBlock(this, start, line.length(), SyntaxShift::skip);
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock SyntaxCommentEndline::validTail(const QString &line, int index, bool &hasContent)
 {
     Q_UNUSED(line)
     Q_UNUSED(index)
