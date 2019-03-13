@@ -90,10 +90,10 @@ Q_ENUM_NS(SyntaxKind);
 QString syntaxKindName(SyntaxKind kind);
 
 enum class SyntaxShift {
-    shift,      ///> shifts from the previous kind to the current kind
-    skip,       ///> skips the current kind
-    in,         ///> stacks the nextKind on top
-    out,        ///> steps out of the kind (unstacks current kind)
+    shift,      ///> replace current-top-kind by this
+    skip,       ///> skips this kind (keep current-top-kind)
+    in,         ///> stacks the nextKind on top of current-top-kind
+    out,        ///> steps out of the kind (unstacks current-top-kind)
     reset,      ///> steps out of the whole stack until SyntaxKind::Standard is reached
 };
 Q_ENUM_NS(SyntaxShift);

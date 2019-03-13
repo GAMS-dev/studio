@@ -164,7 +164,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
     switch (kind) {
     case SyntaxKind::IdentifierDimEnd1:
     case SyntaxKind::IdentifierDimEnd2:
-        mSubKinds << SyntaxKind::Comma
+        mSubKinds << SyntaxKind::Comma << SyntaxKind::Semicolon
                   << SyntaxKind::IdentifierAssignment;
         mEmptyLineKinds << mSubKinds
                         << SyntaxKind::Identifier
@@ -212,16 +212,16 @@ SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, bo
 
 SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
 {
-    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
-               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
+    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+              << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mEmptyLineKinds = mSubKinds;
 
     switch (kind) {
     case SyntaxKind::IdentifierDescription:
         mEmptyLineKinds << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
                          << SyntaxKind::Declaration << SyntaxKind::DeclarationTable
-                         << SyntaxKind::Comma << SyntaxKind::IdentifierAssignment << SyntaxKind::Identifier;
-        mSubKinds << SyntaxKind::Comma << SyntaxKind::IdentifierAssignment;
+                         << SyntaxKind::IdentifierAssignment << SyntaxKind::Identifier;
+        mSubKinds << SyntaxKind::Comma << SyntaxKind::Semicolon << SyntaxKind::IdentifierAssignment;
         mTable = false;
         break;
     case SyntaxKind::IdentifierTableDescription:
@@ -325,8 +325,10 @@ SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, bool &h
 AssignmentLabel::AssignmentLabel()
      : SyntaxAbstract(SyntaxKind::AssignmentLabel)
 {
+    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+              << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
-               << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
+              << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
 }
 
 SyntaxBlock AssignmentLabel::find(SyntaxKind entryKind, const QString &line, int index)
@@ -382,6 +384,8 @@ SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, bool &has
 AssignmentValue::AssignmentValue()
     : SyntaxAbstract(SyntaxKind::AssignmentValue)
 {
+    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+              << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
 }
 

@@ -150,7 +150,6 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
 {
     mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
 
-    // TODO(JM) parse source file: src\gamscmex\gmsdco.gms or better create a lib that can be called to get the list
     QList<QPair<QString, QString>> data = SyntaxData::directives();
     QStringList blockEndingDirectives;
     blockEndingDirectives << "offText" << "pauseEmbeddedCode" << "endEmbeddedCode" << "offEmbeddedCode";
@@ -198,8 +197,8 @@ SyntaxBlock SyntaxDirective::find(SyntaxKind entryKind, const QString& line, int
     }
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
-        bool atEnd = match.capturedEnd(0) >= line.length()-1;
-        SyntaxShift shift = (atEnd && next != SyntaxKind::CommentBlock) ? SyntaxShift::out : SyntaxShift::in;
+        bool atEnd = match.capturedEnd(0) >= line.length();
+        SyntaxShift shift = (atEnd && next != SyntaxKind::CommentBlock) ? SyntaxShift::skip : SyntaxShift::in;
         return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
     } else {
         return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next, true);
@@ -211,7 +210,8 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, bool &has
     int end = index;
     while (isWhitechar(line, end)) end++;
     hasContent = false;
-    return SyntaxBlock(this, index, end, SyntaxShift::shift);
+    SyntaxShift shift = (line.length() == end) ? SyntaxShift::skip : SyntaxShift::in;
+    return SyntaxBlock(this, index, end, shift);
 }
 
 
@@ -224,7 +224,7 @@ SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
 SyntaxBlock SyntaxDirectiveBody::find(SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind);
-    return SyntaxBlock(this, index, line.length(), SyntaxShift::out);
+    return SyntaxBlock(this, index, line.length(), SyntaxShift::skip);
 }
 
 SyntaxBlock SyntaxDirectiveBody::validTail(const QString &line, int index, bool &hasContent)
