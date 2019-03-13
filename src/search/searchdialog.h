@@ -164,7 +164,7 @@ private:
     bool mSplitSearchContinue = false;
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
     QThread mThread;
-    bool mSearching;
+    bool mSearching = false;
     QMutex mMutex;
 };
 
