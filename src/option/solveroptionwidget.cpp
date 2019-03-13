@@ -467,8 +467,10 @@ void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
 {
     bool isViewCompact = (Qt::CheckState(checkState) == Qt::Checked);
     if (isViewCompact) {
+        mOptionTokenizer->logger()->append(QString("Compact View is activated, comments are hidden and only edit action is allowed"), LogMsgType::Info);
         ui->solverOptionTableView->hideColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
     } else {
+        mOptionTokenizer->logger()->append(QString("Compact View is deactivated, comments are now visible and all actions are allowed"), LogMsgType::Info);
         ui->solverOptionTableView->showColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
     }
     for(int i = 0; i < mOptionTableModel->rowCount(); ++i) {
