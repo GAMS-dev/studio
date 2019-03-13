@@ -61,6 +61,8 @@ QIcon ProjectFileNode::icon()
         return QIcon(":/img/database");
     if (file()->kind() == FileKind::Ref)
         return QIcon(":/img/ref-file");
+    if (file()->kind() == FileKind::Opt)
+        return QIcon(":/img/option-file");
     return QIcon(":/img/file-alt"+runMark);
 }
 
