@@ -25,7 +25,7 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-SyntaxIdentifier::SyntaxIdentifier(syntax::SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentifier::SyntaxIdentifier(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     // sub-kinds to check for all types
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
@@ -53,7 +53,7 @@ SyntaxIdentifier::SyntaxIdentifier(syntax::SyntaxKind kind) : SyntaxAbstract(kin
         mSubKinds << SyntaxKind::IdentifierTableDescription;  // must not exist in emptyLineKinds
         break;
     default:
-        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxIdentifier: " << syntaxKindName(kind);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentifier: " << syntaxKindName(kind);
     }
 }
 
@@ -64,7 +64,7 @@ int SyntaxIdentifier::identChar(const QChar &c) const
     return 0;                                                       // no valid identifier letter
 }
 
-SyntaxBlock SyntaxIdentifier::find(syntax::SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxIdentifier::find(SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;
@@ -88,7 +88,7 @@ SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index, bool &ha
     return SyntaxBlock(this, index, start, SyntaxShift::shift);
 }
 
-SyntaxIdentifierDim::SyntaxIdentifierDim(syntax::SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentifierDim::SyntaxIdentifierDim(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     QHash<int, QChar> delims {
         {static_cast<int>(SyntaxKind::IdentifierDim1), '('},
@@ -116,7 +116,7 @@ SyntaxIdentifierDim::SyntaxIdentifierDim(syntax::SyntaxKind kind) : SyntaxAbstra
         mTable = true;
         break;
     default:
-        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxIdentifier: " << syntaxKindName(kind);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentifier: " << syntaxKindName(kind);
     }
     if (!delims.contains(static_cast<int>(kind)))
         FATAL() << "missing delimiter for syntax-kind " << syntaxKindName(kind);
@@ -124,7 +124,7 @@ SyntaxIdentifierDim::SyntaxIdentifierDim(syntax::SyntaxKind kind) : SyntaxAbstra
     mDelimiterOut = (mDelimiterIn == '(') ? ')' : ']';
 }
 
-SyntaxBlock SyntaxIdentifierDim::find(syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentifierDim::find(SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -149,7 +149,7 @@ SyntaxBlock SyntaxIdentifierDim::validTail(const QString &line, int index, bool 
     return SyntaxBlock(this, index, end+1, SyntaxShift::shift);
 }
 
-SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(syntax::SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     QHash<int, QChar> delims {
         {static_cast<int>(SyntaxKind::IdentifierDimEnd1), ')'},
@@ -183,14 +183,14 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(syntax::SyntaxKind kind) : Syntax
         mTable = true;
         break;
     default:
-        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxIdentifierDimEnd: " << syntaxKindName(kind);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentifierDimEnd: " << syntaxKindName(kind);
     }
     if (!delims.contains(static_cast<int>(kind)))
         FATAL() << "missing delimiter for syntax-kind " << syntaxKindName(kind);
     mDelimiter = delims.value(static_cast<int>(kind));
 }
 
-SyntaxBlock SyntaxIdentifierDimEnd::find(syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentifierDimEnd::find(SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;
@@ -210,7 +210,7 @@ SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, bo
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
-SyntaxIdentDescript::SyntaxIdentDescript(syntax::SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -232,11 +232,11 @@ SyntaxIdentDescript::SyntaxIdentDescript(syntax::SyntaxKind kind) : SyntaxAbstra
         mTable = true;
         break;
     default:
-        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxIdentDescript: " << syntaxKindName(kind);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentDescript: " << syntaxKindName(kind);
     }
 }
 
-SyntaxBlock SyntaxIdentDescript::find(syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentDescript::find(SyntaxKind entryKind, const QString &line, int index)
 {
     if (index == 0) return SyntaxBlock(this);
     if (mTable) {
@@ -278,7 +278,7 @@ SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, bool 
     return SyntaxBlock(this);
 }
 
-SyntaxIdentAssign::SyntaxIdentAssign(syntax::SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -294,11 +294,11 @@ SyntaxIdentAssign::SyntaxIdentAssign(syntax::SyntaxKind kind) : SyntaxAbstract(k
         mEmptyLineKinds = mSubKinds << SyntaxKind::Identifier;
         break;
     default:
-        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxIdentAssign: " << syntaxKindName(kind);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentAssign: " << syntaxKindName(kind);
     }
 }
 
-SyntaxBlock SyntaxIdentAssign::find(syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentAssign::find(SyntaxKind entryKind, const QString &line, int index)
 {
     int start = index;
     bool inside = (kind() != SyntaxKind::IdentifierAssignmentEnd
@@ -330,7 +330,7 @@ AssignmentLabel::AssignmentLabel()
                << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
 }
 
-SyntaxBlock AssignmentLabel::find(syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock AssignmentLabel::find(SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -386,7 +386,7 @@ AssignmentValue::AssignmentValue()
     mSubKinds << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
 }
 
-SyntaxBlock AssignmentValue::find(syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock AssignmentValue::find(SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index+1;
@@ -426,7 +426,7 @@ SyntaxBlock AssignmentValue::validTail(const QString &line, int index, bool &has
     return SyntaxBlock();
 }
 
-SyntaxTableAssign::SyntaxTableAssign(syntax::SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -438,11 +438,11 @@ SyntaxTableAssign::SyntaxTableAssign(syntax::SyntaxKind kind) : SyntaxAbstract(k
         mSubKinds << SyntaxKind::IdentifierTableAssignmentHead;
         break;
     default:
-        FATAL() << "invalid syntax::SyntaxKind to initialize SyntaxTableAssign: " << syntaxKindName(kind);
+        FATAL() << "invalid SyntaxKind to initialize SyntaxTableAssign: " << syntaxKindName(kind);
     }
 }
 
-SyntaxBlock SyntaxTableAssign::find(syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxTableAssign::find(SyntaxKind entryKind, const QString &line, int index)
 {
     if (index > 0) return SyntaxBlock(this);
 

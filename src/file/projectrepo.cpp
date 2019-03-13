@@ -486,7 +486,6 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
         mTreeModel->insertChild(fileGroup->childCount(), fileGroup, file);
         mTreeModel->sortChildNodes(fileGroup);
     }
-//    DEB() << "FILE " << file->location() << " KIND_" << file->file()->kind();
     connect(fileGroup, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
 }

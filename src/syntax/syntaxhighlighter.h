@@ -47,9 +47,9 @@ public slots:
     void syntaxKind(int position, int &intKind);
 
 private:
-    SyntaxAbstract *getSyntax(syntax::SyntaxKind kind) const;
-    int getKindIdx(syntax::SyntaxKind kind) const;
-    void scanParentheses(const QString &text, int start, int len, syntax::SyntaxKind preKind, syntax::SyntaxKind kind,syntax::SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
+    SyntaxAbstract *getSyntax(SyntaxKind kind) const;
+    int getKindIdx(SyntaxKind kind) const;
+    void scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind,SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
 
 private:
     enum FontModifier {fNormal, fBold, fItalic, fBoldItalic};
