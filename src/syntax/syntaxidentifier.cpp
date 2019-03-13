@@ -261,8 +261,7 @@ SyntaxBlock SyntaxIdentDescript::find(SyntaxKind entryKind, const QString &line,
     int end = start;
     int lastNonWhite = start;
     while (++end < line.length()) {
-        if (line.at(end) == '/') break;
-        if (line.at(end) == delim) return SyntaxBlock(this, start, end+1, SyntaxShift::shift);
+        if (line.at(end) == delim) return SyntaxBlock(this, start, end+(delim=='/'?0:1), SyntaxShift::shift);
         if (delim == '/' && line.at(end) == ';') break;
         if (!isWhitechar(line, end)) lastNonWhite = end;
     }
