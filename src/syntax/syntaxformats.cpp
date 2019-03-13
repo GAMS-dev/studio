@@ -344,10 +344,14 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, const QString &line,
         ++start;
     if (start >= line.length()) return SyntaxBlock(this);
     int prev = 0;
-    bool skipWord = (canBreak(line.at(start), prev) == 2);
+
     int end = start;
+    int chKind = canBreak(line.at(end), prev);
+    bool skipWord = (chKind == 2);
+    if (chKind == 1) --end;
+
     while (++end < line.length()) {
-        int chKind = canBreak(line.at(end), prev);
+        chKind = canBreak(line.at(end), prev);
         if (chKind == 1) break;
         if (chKind != 2) skipWord = false;
         else if (!skipWord) break;
