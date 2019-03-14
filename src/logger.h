@@ -129,28 +129,9 @@ private:
 } // namespace studio
 } // namespace gams
 
-#ifdef QT_DEBUG
-#    define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
-#    define PEEKTIME() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC) << Logger::indent() << _GamsTimeTracer_.timeString()
-#    define TRACE() gams::studio::Tracer _GamsTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
-#    define DEB() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
-//#  ifdef __GNUC__
-// //#    define TRACE() gams::studio::Tracer  _GamsTracer_(__PRETTY_FUNCTION__)
-//#    define TRACETIME() gams::studio::TimeTracer  _GamsTracer_(__FUNCTION__)
-//#    define TRACE() gams::studio::Tracer  _GamsTracer_(__FUNCTION__)
-//#    define DEB() gams::studio::Logger() << Logger::indent()
-//#  else
-//#    define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(__FUNCSIG__)
-//#    define PEEKTIME() gams::studio::Logger() << Logger::indent() << _GamsTimeTracer_.timeString()
-//#    define TRACE() gams::studio::Tracer _GamsTracer_(__FUNCSIG__)
-//#    define DEB() gams::studio::Logger() << Logger::indent()
-//#  endif
-
-#else
-#    define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
-#    define PEEKTIME() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC) << Logger::indent() << _GamsTimeTracer_.timeString()
-#    define TRACE() gams::studio::Tracer _GamsTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
-#    define DEB() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
-#endif
+#define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
+#define PEEKTIME() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC) << Logger::indent() << _GamsTimeTracer_.timeString()
+#define TRACE() gams::studio::Tracer _GamsTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
+#define DEB() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
 
 #endif // LOGGER_H
