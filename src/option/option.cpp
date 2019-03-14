@@ -500,7 +500,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
              optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
              optGetValuesNr(mOPTHandle, i, name, &ivalue, &dvalue, svalue);
 
-             QString nameStr = QString::fromLatin1(name).toUpper();
+             QString nameStr = QString::fromLatin1(name);
              OptionDefinition opt(i, QString::fromLatin1(name),
                                   static_cast<optDataType>(itype),
                                   static_cast<optOptionType>(iopttype),
@@ -516,7 +516,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                  while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
                        if (!isDeprecated(it.value()))
                           synonymList << it.value();
-                       mSynonymMap.insertMulti(it.value(), it.key());
+                       mSynonymMap.insertMulti(it.value().toUpper(), it.key());
                        ++it;
                  }
 
@@ -596,7 +596,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                           break;
                   }
              }
-             mOption[nameStr] = opt;
+             mOption[nameStr.toUpper()] = opt;
          }
          optFree(&mOPTHandle);
          return true;
