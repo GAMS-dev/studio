@@ -419,6 +419,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
     QFileInfo fi(gmsLocation);
     if (path.isEmpty()) path = fi.path();
+    else if (QDir(path).isRelative()) path = fi.path() + QDir::separator() + path;
     setLogLocation(path);
 
     clearParameters();
