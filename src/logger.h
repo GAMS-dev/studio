@@ -35,7 +35,7 @@ namespace studio {
 class Logger
 {
 public:
-    Logger();
+    Logger(const char *file, int line, const char *func);
     virtual ~Logger();
 
     Logger& operator<<(const QRect& value) {
@@ -64,6 +64,9 @@ public:
     static const QString& indent();
 
 protected:
+    const char *mFile;
+    int mLine;
+    const char *mFunc;
     QString mBuffer;
     QTextStream *mStream = nullptr;
 private:
@@ -74,19 +77,21 @@ private:
 class Tracer: public Logger
 {
 public:
-    Tracer(QString functionName = QString()): mFunctionName(functionName) {
-        QRegularExpression regex("[^\\_]*\\_\\_cdecl ([^\\(]+)"); // (\\_\\_ccdecl )([^\\(])+
-        QRegularExpressionMatch match = regex.match(functionName);
-        if (match.hasMatch())
-            mFunctionName = match.captured(1)+"(...)";
+    Tracer(const char *file, int line, const char *func): Logger(file, line, func) {
+        mFunctionName = func;
+        int a = qMax(0, mFunctionName.indexOf(" __cdecl "));
+        a = qMax(0, mFunctionName.indexOf("gams::studio::", a+9));
+        if (a > 0) a += 14;
+        int b = mFunctionName.indexOf('(', a);
+        if (a > 0 && a < b) mFunctionName = mFunctionName.mid(a, b-a)+"(..)";
         if (!mFunctionName.isEmpty())
-            qDebug().noquote() << indent() << "IN " << mFunctionName;
+            QMessageLogger(mFile, mLine, "").debug().noquote().nospace() << indent() << "IN  "  << mFunctionName;
         incDepth();
     }
     ~Tracer() {
         decDepth();
         if (!mFunctionName.isEmpty())
-            qDebug().noquote() << indent() << "OUT" << mFunctionName;
+            QMessageLogger(mFile, mLine, "").debug().noquote().nospace() << indent() << "OUT " << mFunctionName;
     }
 private:
     QString mFunctionName;
@@ -95,20 +100,22 @@ private:
 class TimeTracer: public Logger
 {
 public:
-    TimeTracer(QString functionName = QString()): mFunctionName(functionName) {
+    TimeTracer(const char *file, int line, const char *func): Logger(file, line, func) {
         mSec = QDateTime::currentMSecsSinceEpoch();
-        QRegularExpression regex("[^\\_]*\\_\\_cdecl ([^\\(]+)"); // (\\_\\_ccdecl )([^\\(])+
-        QRegularExpressionMatch match = regex.match(functionName);
-        if (match.hasMatch())
-            mFunctionName = match.captured(1)+"(...)";
+        mFunctionName = func;
+        int a = qMax(0, mFunctionName.indexOf(" __cdecl "));
+        a = qMax(0, mFunctionName.indexOf("gams::studio::", a+9));
+        if (a > 0) a += 14;
+        int b = mFunctionName.indexOf('(', a);
+        if (a > 0 && a < b) mFunctionName = mFunctionName.mid(a, b-a)+"(..)";
         if (!mFunctionName.isEmpty())
-            qDebug().noquote() << indent() << "IN " << mFunctionName;
+            QMessageLogger(mFile, mLine, "").debug().noquote().nospace() << indent() << "IN  " << mFunctionName;
         incDepth();
     }
     ~TimeTracer() {
         decDepth();
         if (!mFunctionName.isEmpty())
-            qDebug().noquote() << indent() << "OUT " << timeString() << " " << mFunctionName;
+            *this << "OUT " << timeString() << " " << mFunctionName;
     }
     QString timeString() {
         qint64 elapsed = QDateTime::currentMSecsSinceEpoch() - mSec;
@@ -122,22 +129,9 @@ private:
 } // namespace studio
 } // namespace gams
 
-#ifdef QT_DEBUG
-#  ifdef __GNUC__
-//#    define TRACE() gams::studio::Tracer  _GamsTracer_(__PRETTY_FUNCTION__)
-#    define TRACETIME() gams::studio::TimeTracer  _GamsTracer_(__FUNCTION__)
-#    define TRACE() gams::studio::Tracer  _GamsTracer_(__FUNCTION__)
-#    define DEB() gams::studio::Logger() << Logger::indent()
-#  else
-#    define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(__FUNCSIG__)
-#    define PEEKTIME() gams::studio::Logger() << Logger::indent() << _GamsTimeTracer_.timeString()
-#    define TRACE() gams::studio::Tracer _GamsTracer_(__FUNCSIG__)
-#    define DEB() gams::studio::Logger() << Logger::indent()
-#  endif
-#else
-#  define TRACETIME() gams::studio::TimeTracer _GamsTracer_()
-#  define TRACE() gams::studio::Tracer _GamsTracer_()
-#  define DEB()  gams::studio::Logger() << Logger::indent()
-#endif
+#define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
+#define PEEKTIME() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC) << Logger::indent() << _GamsTimeTracer_.timeString()
+#define TRACE() gams::studio::Tracer _GamsTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
+#define DEB() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
 
 #endif // LOGGER_H

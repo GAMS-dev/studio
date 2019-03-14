@@ -280,8 +280,8 @@ SyntaxFormula::SyntaxFormula() : SyntaxAbstract(SyntaxKind::Formula)
               << SyntaxKind::Formula;
 }
 
-int SyntaxFormula::canBreak(QChar ch, int &prev) {
-
+int SyntaxFormula::canBreak(QChar ch, int &prev)
+{
     // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
     // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
     static QVector<QChar> cList = {'"', '$', '\'', '.', ';', '='};  // other breaking kind
