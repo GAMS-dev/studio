@@ -1462,6 +1462,10 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
+    bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
+    if (isResults)
+        mSearchDialog->clearResults();
+
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
@@ -1470,8 +1474,8 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         AbstractEdit* ed = ViewHelper::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
 
-        // dont remove syslog
-        if (edit != mSyslog)
+        // dont remove syslog and dont delete resultsView
+        if (!(edit == mSyslog || isResults))
             edit->deleteLater();
     }
 }
@@ -2374,16 +2378,20 @@ void MainWindow::on_actionSearch_triggered()
     }
 }
 
-void MainWindow::showResults(SearchResultList &results)
+void MainWindow::showResults(SearchResultList* results)
 {
-    ResultsView* resultsView = searchDialog()->resultsView();
-    int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
+    int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
+    // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));
-    QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
+
+    QString nr;
+    if (results->size() > 49999) nr = "50000+";
+    else nr = QString::number(results->size());
+
+    QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
 
     ui->dockLogView->show();
-    searchDialog()->resultsView()->resizeColumnsToContent();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 

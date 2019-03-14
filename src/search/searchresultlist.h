@@ -37,7 +37,6 @@ public:
     QList<Result> resultList() const;
     QMultiHash<QString, QList<Result> > resultHash() const;
     void addResult(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
-    void addResultList(QList<Result> resList);
     QList<Result> filteredResultList(QString fileLocation);
     QString searchTerm() const;
     void setSearchTerm(const QString &searchTerm);

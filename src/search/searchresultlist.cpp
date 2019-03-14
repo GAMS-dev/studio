@@ -39,6 +39,7 @@ SearchResultList::SearchResultList(const QString &searchTerm, QObject *parent) :
      QAbstractTableModel(parent), mSearchTerm(searchTerm)
 {
     useRegex(false); // set default
+    mResultHash.empty();
 }
 
 SearchResultList::~SearchResultList()
@@ -59,14 +60,6 @@ void SearchResultList::addResult(int lineNr, int colNr, int length, QString file
     Result r = Result(lineNr, colNr, length, fileLoc, context);
     mSize++;
     mResultHash[fileLoc].append(r);
-}
-
-void SearchResultList::addResultList(QList<Result> resList)
-{
-    for (Result r : resList) {
-        mResultHash[r.filepath()].append(r);
-        mSize++;
-    }
 }
 
 QList<Result> SearchResultList::filteredResultList(QString fileLocation)
