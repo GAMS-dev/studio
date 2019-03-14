@@ -22,13 +22,17 @@ TEMPLATE = app
 include(../tests.pri)
 
 INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/file \
                $$SRCPATH/option
 
 HEADERS += \
     testoptionapi.h \
-    $$SRCPATH/option/option.h
+    $$SRCPATH/common.h \
+    $$SRCPATH/file/filetype.h
+
 
 SOURCES += \
     testoptionapi.cpp \
     $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/file/filetype.cpp \
     $$SRCPATH/exception.cpp

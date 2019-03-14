@@ -32,6 +32,9 @@ class TestOptionAPI : public QObject
 private slots:
     void initTestCase();
 
+    void testOptFileSuffix_data();
+    void testOptFileSuffix();
+
     void testEOLChars();
 
     void testReadFromStr_data();

@@ -20,10 +20,14 @@
 #include <QStandardPaths>
 #include <QtMath>
 
+#include "common.h"
 #include "commonpaths.h"
 #include "testoptionapi.h"
+#include "file/filetype.h"
 
 using gams::studio::CommonPaths;
+using gams::studio::FileType;
+using gams::studio::FileKind;
 
 void TestOptionAPI::initTestCase()
 {
@@ -46,6 +50,67 @@ void TestOptionAPI::initTestCase()
     } else {
         optdefRead = true;
     }
+}
+
+void TestOptionAPI::testOptFileSuffix_data()
+{
+    QTest::addColumn<QString>("suffix");
+    QTest::addColumn<bool>("valid");
+
+    QTest::newRow("opt")   << "opt"    << true ;
+    QTest::newRow("op2")   << "op2"    << true ;
+    QTest::newRow("OP2")   << "OP2"    << true ;
+    QTest::newRow("op9")   << "op9"    << true ;
+    QTest::newRow("Op9")   << "Op9"    << true ;
+    QTest::newRow("o10")   << "o10"    << true ;
+    QTest::newRow("101")   << "101"    << true ;
+    QTest::newRow("1222")  << "1222"   << true ;
+    QTest::newRow("98765") << "98765"  << true ;
+
+    QTest::newRow("Opt")   << "Opt"    << true ;
+    QTest::newRow("OPt")   << "OPt"    << true ;
+    QTest::newRow("opT")   << "opT"    << true ;
+    QTest::newRow("OPT")   << "OPT"    << true ;
+
+    QTest::newRow("opt9")   << "opt9"   << false ;
+    QTest::newRow("opt99")  << "op99"   << false ;
+
+    QTest::newRow("op0")    << "op0"    << false ;
+    QTest::newRow("op1")    << "op1"    << false ;
+    QTest::newRow("op10")   << "op10"   << false ;
+    QTest::newRow("op99")   << "op99"   << false ;
+    QTest::newRow("op123")  << "op123"   << false ;
+
+    QTest::newRow("o1")     << "o1"     << false ;
+    QTest::newRow("o02")    << "o02"    << false ;
+    QTest::newRow("o123")   << "o123"   << false ;
+    QTest::newRow("ox10")   << "ox10"   << false ;
+
+    QTest::newRow("012")    << "012"    << false ;
+    QTest::newRow("23")     << "23"     << false ;
+    QTest::newRow("1p2")    << "1p2"    << false ;
+    QTest::newRow("12t34")  << "12t34"  << false ;
+    QTest::newRow("2pt")    << "2pt"    << false ;
+
+    QTest::newRow("gsp")    << "gsp"    << false ;
+    QTest::newRow("pro")    << "pro"    << false ;
+    QTest::newRow("gms")    << "gms"    << false ;
+    QTest::newRow("inc")    << "inc"    << false ;
+    QTest::newRow("txt")    << "txt"    << false ;
+    QTest::newRow("log")    << "log"    << false ;
+    QTest::newRow("lst")    << "lst"    << false ;
+    QTest::newRow("lxi")    << "lxi"    << false ;
+    QTest::newRow("gdx")    << "gdx"    << false ;
+    QTest::newRow("ref")    << "ref"    << false ;
+    QTest::newRow("~log")   << "~log"   << false ;
+}
+
+void TestOptionAPI::testOptFileSuffix()
+{
+    QFETCH(QString, suffix);
+    QFETCH(bool, valid);
+
+    QCOMPARE(valid, FileKind::Opt == FileType::from(suffix).kind());
 }
 
 void TestOptionAPI::testEOLChars()

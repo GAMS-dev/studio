@@ -17,6 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+
 #include "filetype.h"
 #include "exception.h"
 
@@ -93,11 +96,13 @@ FileType &FileType::from(QString suffix)
         if (ft->mSuffix.contains(suffix, Qt::CaseInsensitive))
             return *ft;
     }
-    if (suffix.startsWith("op")) { // special case for solver option file
-        QRegExp rx = QRegExp("(op)([t2-9]|[1-9][0-9]+)");
-        if (rx.exactMatch(suffix))
-            return FileType::from(FileKind::Opt);
-    }
+
+    QString pattern("[oO][pP][2-9]|[oO][1-9]\\d|[1-9]\\d\\d+");
+    QRegularExpression rx("\\A(?:" + pattern + ")\\z" );
+    QRegularExpressionMatch match = rx.match(suffix, 0, QRegularExpression::NormalMatch);
+    if (match.hasMatch())
+        return FileType::from(FileKind::Opt);
+
     return *mNone;
 }
 
