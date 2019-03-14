@@ -32,8 +32,7 @@ namespace studio {
 ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectGroupNode* root)
     : QAbstractItemModel(parent), mProjectRepo(parent), mRoot(root)
 {
-    if (!mProjectRepo)
-        FATAL() << "nullptr not allowed. The FileTreeModel needs a valid FileRepository.";
+    Q_ASSERT_X(mProjectRepo, "ProjectTreeModel constructor", "The FileTreeModel needs a valid FileRepository");
 }
 
 QModelIndex ProjectTreeModel::index(const ProjectAbstractNode *entry) const

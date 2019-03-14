@@ -1402,7 +1402,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 CodeEdit::BlockEdit::BlockEdit(CodeEdit* edit, int blockNr, int colNr)
     : mEdit(edit)
 {
-    if (!edit) FATAL() << "BlockEdit needs a valid editor";
+    Q_ASSERT_X(edit, "BlockEdit constructor", "BlockEdit needs a valid editor");
     mStartLine = blockNr;
     mCurrentLine = blockNr;
     mColumn = colNr;
