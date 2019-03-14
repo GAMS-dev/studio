@@ -64,15 +64,17 @@ SyntaxKind SyntaxAbstract::intToState(int intState)
 SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
 {
     mSubKinds << SyntaxKind::Semicolon
-               << SyntaxKind::CommentLine
-               << SyntaxKind::Declaration
-               << SyntaxKind::DeclarationSetType
-               << SyntaxKind::DeclarationVariableType
-               << SyntaxKind::DeclarationTable
-               << SyntaxKind::Directive
-               << SyntaxKind::Reserved
-               << SyntaxKind::Embedded
-               << SyntaxKind::Formula;
+              << SyntaxKind::CommentLine
+              << SyntaxKind::CommentEndline
+              << SyntaxKind::CommentInline
+              << SyntaxKind::Declaration
+              << SyntaxKind::DeclarationSetType
+              << SyntaxKind::DeclarationVariableType
+              << SyntaxKind::DeclarationTable
+              << SyntaxKind::Directive
+              << SyntaxKind::Reserved
+              << SyntaxKind::Embedded
+              << SyntaxKind::Formula;
 }
 
 SyntaxBlock SyntaxStandard::find(SyntaxKind entryKind, const QString& line, int index)
