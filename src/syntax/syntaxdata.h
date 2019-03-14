@@ -305,7 +305,7 @@ public:
             {"repeat", ""},
             {"smax", ""},
             {"smin", ""},
-            {"solve", ""},
+//            {"solve", ""},
             {"sum", ""},
             {"system", ""},
             {"then", ""},
@@ -379,6 +379,30 @@ public:
             {"Sets", ""},
             {"Variable", ""},
             {"Variables", ""},
+        };
+        return list;
+    }
+
+    static QList<QPair<QString, QString>> modelType() {
+        QList<QPair<QString, QString>> list = {
+            {"LP", "Linear Program"},
+            {"NLP", "Nonlinear Program"},
+            {"QCP", "Quadratically Constrained Program"},
+            {"DNLP", "Discontinuous Nonlinear Program"},
+            {"MIP", "Mixed Integer Program"},
+            {"RMIP", "Relaxed Mixed Integer Program"},
+            {"RMINLP", "Relaxed Mixed Integer Nonlinear Program"},
+            {"MINLP", "Mixed Integer Nonlinear Program"},
+            {"MIQCP", "Mixed Integer Quadratically Constrained Program"},
+            {"RMIQCP", "Relaxed Mixed Integer Quadratically Constrained Program"},
+            {"MCP", "Mixed Complementarity Program"},
+            {"CNS", "Constrained Nonlinear System"},
+            {"MPEC", "Mathematical Programs with Equilibrium Constraints"},
+            {"RMPEC", "Relaxed Mathematical Program with Equilibrium Constraints"},
+            {"EMP", "Extended Mathematical Program"},
+            {"MPSGE", "Extended Mathematical Program"},
+            {"min", "minimize"},
+            {"max", "maximize"},
         };
         return list;
     }

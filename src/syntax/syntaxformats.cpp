@@ -72,6 +72,7 @@ SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
               << SyntaxKind::DeclarationVariableType
               << SyntaxKind::DeclarationTable
               << SyntaxKind::Directive
+              << SyntaxKind::Solve
               << SyntaxKind::Reserved
               << SyntaxKind::Embedded
               << SyntaxKind::Formula;
@@ -270,14 +271,23 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, bool &has
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
-SyntaxFormula::SyntaxFormula() : SyntaxAbstract(SyntaxKind::Formula)
+SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
 {
-    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Reserved
+    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Reserved
               << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
               << SyntaxKind::String << SyntaxKind::Directive << SyntaxKind::Assignment
               << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
-              << SyntaxKind::DeclarationVariableType << SyntaxKind::DeclarationTable
-              << SyntaxKind::Formula;
+              << SyntaxKind::DeclarationVariableType << SyntaxKind::DeclarationTable;
+    switch (kind) {
+    case SyntaxKind::Formula:
+        mSubKinds << SyntaxKind::Formula;
+        break;
+    case SyntaxKind::SolveBody:
+        mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
+        break;
+    default:
+        Q_ASSERT_X(false, "SyntaxSolveBody", ("Invalid SyntaxKind:"+syntaxKindName(kind)).toLatin1());
+    }
 }
 
 int SyntaxFormula::canBreak(QChar ch, int &prev) {
