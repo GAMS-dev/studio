@@ -84,6 +84,7 @@ void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearching) {
         if (createRegex().pattern().isEmpty()) return;
+        mShowResults = true;
 
         setSearchOngoing(true);
         clearResults();
@@ -127,10 +128,12 @@ void SearchDialog::intermediateUpdate()
 void SearchDialog::finalUpdate()
 {
     setSearchOngoing(false);
-    mMain->showResults(mCachedResults);
+    if (mShowResults) {
+        mMain->showResults(mCachedResults);
+        resultsView()->resizeColumnsToContent();
+    }
 
     updateEditHighlighting();
-    resultsView()->resizeColumnsToContent();
 
     if (!mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
     else updateFindNextLabel(QTextCursor());
@@ -153,7 +156,7 @@ void SearchDialog::setSearchOngoing(bool searching)
 /// \param fml list of files to search
 /// \param skipFilters enable for result caching (find next/prev)
 ///
-void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFilters, bool updates)
+void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFilters)
 {
     QList<FileMeta*> files;
     QList<FileMeta*> modified; // need to be treated differently
@@ -179,7 +182,7 @@ void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFi
         findInDoc(createRegex(), fm);
 
     // search file thread
-    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), files, mCachedResults, updates);
+    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), files, mCachedResults);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -291,7 +294,7 @@ void SearchDialog::updateSearchCache()
     mCachedResults->clear();
     mCachedResults->setSearchTerm(createRegex().pattern());
     mCachedResults->useRegex(regex());
-    findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true, false);
+    findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
 
     mHasChanged = false;
 }
@@ -300,6 +303,7 @@ void SearchDialog::findNext(SearchDirection direction)
 {
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
+    mShowResults = false;
     setSearchOngoing(true);
     // only cache when we have changes or are not searching a large file
     if (mHasChanged && !ViewHelper::toTextView(mMain->recent()->editor()))

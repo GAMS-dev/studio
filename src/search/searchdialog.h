@@ -131,7 +131,7 @@ private:
         Clear = 2
     };
     void simpleReplaceAll();
-    void findInFiles(QMutex& mutex, QList<FileMeta *> fml, bool skipFilters = false, bool updates = true);
+    void findInFiles(QMutex& mutex, QList<FileMeta *> fml, bool skipFilters = false);
     void findInGroup(QMutex& mutex);
     void findInOpenFiles(QMutex& mutex);
     void findInAllFiles(QMutex& mutex);
@@ -159,6 +159,7 @@ private:
     QRegularExpression mSplitSearchRegEx;
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;
+    bool mShowResults = true;
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
     QThread mThread;
     bool mSearching = false;

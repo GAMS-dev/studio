@@ -27,8 +27,8 @@
 namespace gams {
 namespace studio {
 
-SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list, bool updates)
-    : mMutex(mutex), mRegex(regex), mFiles(fml), mUpdates(updates)
+SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list)
+    : mMutex(mutex), mRegex(regex), mFiles(fml)
 {
     mMatches = list;
 }
@@ -71,9 +71,9 @@ void SearchWorker::findInFiles()
             }
             file.close();
         }
-        if (mUpdates) emit update();
+        emit update();
     }
-    if (mUpdates) emit resultReady();
+    emit resultReady();
     thread()->quit();
 }
 
