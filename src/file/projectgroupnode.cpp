@@ -391,19 +391,35 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
     // find directory changes first
     QString path = "";
+    QString cdir = "";
+    QString wdir = "";
     for (OptionItem item : itemList) {
         if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0) {
+            cdir = item.value;
+            gamsArgs[item.key] = item.value;
+        }
+
+        if (QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            path = item.value;
+            wdir = item.value;
             gamsArgs[item.key] = item.value;
         }
     }
 
+    if (!cdir.isEmpty()) path = cdir;
+
+    // wdir replaces cdir for output files
+    // if wdir is relative, it is appended to cdir
+    if (!wdir.isEmpty()) {
+        if (!cdir.isEmpty() && QDir(wdir).isRelative())
+            path += QDir::separator() + wdir;
+        else path = wdir;
+    }
+
     QFileInfo fi(gmsLocation);
     if (path.isEmpty()) path = fi.path();
-    setParameter("wdir", path);
+    setLogLocation(path);
 
     clearParameters();
     // set default lst name to revert deleted o parameter values
@@ -581,13 +597,11 @@ void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
         if (kind == "gdx")
             fullPath += ".gdx";
         else if (kind == "lst")
-        { /* do notging */ } // gams does not add lst extension. unlike .ref or .gdx
+        { /* do nothing */ } // gams does not add lst extension. unlike .ref or .gdx
         else if (kind == "ref")
             fullPath += ".ref";
-        else if (kind == "wdir")
-            setLogLocation(fullPath);
         else
-            qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";
+            qDebug() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
     }
 
     mParameterHash.insert(kind, fullPath);
