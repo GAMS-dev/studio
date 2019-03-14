@@ -424,11 +424,16 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 
 void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
 {
+    setSearchOngoing(false);
+
     if (matchSelection.isNull()) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-        if (edit)
+        if (edit) {
             matchSelection = edit->textCursor();
-        else return;
+        } else {
+            updateMatchAmount();
+            return;
+        }
     }
 
     int count = 0;
