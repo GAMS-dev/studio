@@ -394,7 +394,7 @@ public:
 
 
 } // namespace syntax
-}
-}
+} // namespace studio
+} // namespace gans
 
 #endif // SYNTAXDATA_H

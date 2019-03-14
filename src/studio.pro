@@ -278,7 +278,8 @@ HEADERS += \
     support/gamslicenseinfo.h       \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
-    logtabcontextmenu.h
+    logtabcontextmenu.h \
+    syntax/blockcode.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

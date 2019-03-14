@@ -63,13 +63,13 @@ typedef PhantomInt<PiTextMarkId> TextMarkId;
 
 Q_NAMESPACE
 
-enum struct NameModifier {
+enum class NameModifier {
     raw,
     editState
 };
 Q_ENUM_NS(NameModifier)
 
-enum struct NodeType {
+enum class NodeType {
     root,
     group,
     runGroup,
@@ -78,7 +78,7 @@ enum struct NodeType {
 };
 Q_ENUM_NS(NodeType)
 
-enum struct FileKind {
+enum class FileKind {
     None,
     Gsp,
     Gms,
@@ -98,7 +98,7 @@ inline unsigned int qHash(FileKind key, unsigned int seed)
     return ::qHash(static_cast<unsigned int>(key), seed);
 }
 
-enum struct EditorType {
+enum class EditorType {
     undefined = 0,
     source = 1,
     log = 2,
@@ -111,7 +111,7 @@ enum struct EditorType {
 };
 Q_ENUM_NS(EditorType)
 
-enum struct FileEventKind {
+enum class FileEventKind {
     invalid,
     changed,
     closed,

@@ -34,12 +34,15 @@ namespace syntax {
 
 Q_NAMESPACE
 
-enum struct SyntaxKind {
+enum class SyntaxKind {
     Standard,
     Directive,
     DirectiveBody,                  // text following the Directive
     DirectiveComment,               // a DirectiveBody formatted as comment
     Title,                          // a DirectiveBody formatted as title
+    String,
+    Formula,
+    Assignment,
 
     CommentLine,
     CommentBlock,
@@ -77,43 +80,42 @@ enum struct SyntaxKind {
     EmbeddedBody,
     EmbeddedEnd,
     Reserved,
-    ReservedBody,
 
     KindCount
 };
 Q_ENUM_NS(SyntaxKind);
 
-//inline QTextStream &operator <<(QTextStream &steam, syntax::SyntaxKind key) noexcept { return steam << QVariant::fromValue(key).toString(); }
+//inline QTextStream &operator <<(QTextStream &steam, SyntaxKind key) noexcept { return steam << QVariant::fromValue(key).toString(); }
 
-QString syntaxKindName(syntax::SyntaxKind kind);
+QString syntaxKindName(SyntaxKind kind);
 
-enum struct SyntaxShift {
-    shift,      ///> shifts from the previous kind to the current kind
-    skip,       ///> skips the current kind
-    in,         ///> stacks the nextKind on top
-    out,        ///> steps out of the kind (unstacks current kind)
+enum class SyntaxShift {
+    shift,      ///> replace current-top-kind by this
+    skip,       ///> skips this kind (keep current-top-kind)
+    in,         ///> stacks the nextKind on top of current-top-kind
+    out,        ///> steps out of the kind (unstacks current-top-kind)
     reset,      ///> steps out of the whole stack until SyntaxKind::Standard is reached
 };
 Q_ENUM_NS(SyntaxShift);
 
 struct SyntaxTransition
 {
-    SyntaxTransition(syntax::SyntaxKind _kind, SyntaxShift _shift) : kind(_kind), shift(_shift) {}
-    const syntax::SyntaxKind kind;
+    SyntaxTransition(SyntaxKind _kind, SyntaxShift _shift) : kind(_kind), shift(_shift) {}
+    const SyntaxKind kind;
     const SyntaxShift shift;
 };
 
-typedef QList<syntax::SyntaxKind> SyntaxTransitions;
+typedef QList<SyntaxKind> SyntaxTransitions;
 
 class SyntaxAbstract;
 
 struct SyntaxBlock
 {
     SyntaxBlock(SyntaxAbstract* _syntax = nullptr, int _start = 0, int _end = 0, bool _error = false
-            , SyntaxShift _shift = SyntaxShift::shift, syntax::SyntaxKind _next = SyntaxKind::Standard)
+            , SyntaxShift _shift = SyntaxShift::shift, SyntaxKind _next = SyntaxKind::Standard)
         : syntax(_syntax), start(_start), end(_end), error(_error), shift(_shift), next(_next)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, syntax::SyntaxKind _next, bool _error = false)
+    SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxKind _next, bool _error = false)
         : syntax(_syntax), start(_start), end(_end), error(_error), shift(SyntaxShift::in), next(_next)
     { }
     SyntaxBlock(SyntaxAbstract* _syntax, int _start, int _end, SyntaxShift _shift, bool _error = false)
@@ -124,7 +126,7 @@ struct SyntaxBlock
     int end;
     bool error;
     SyntaxShift shift;
-    syntax::SyntaxKind next;
+    SyntaxKind next;
     int length() { return end-start; }
     bool isValid() { return syntax && start<end; }
 };
@@ -133,12 +135,12 @@ struct SyntaxBlock
 class SyntaxAbstract
 {
 public:
-    SyntaxAbstract(syntax::SyntaxKind kind) : mKind(kind) {}
+    SyntaxAbstract(SyntaxKind kind) : mKind(kind) {}
     virtual ~SyntaxAbstract() {}
-    syntax::SyntaxKind kind() { return mKind; }
+    SyntaxKind kind() { return mKind; }
 
     /// Finds the begin of this syntax
-    virtual SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) = 0;
+    virtual SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) = 0;
 
     /// Finds the end of valid trailing characters for this syntax
     virtual SyntaxBlock validTail(const QString &line, int index, bool &hasContent) = 0;
@@ -148,8 +150,8 @@ public:
     virtual int maxNesting() { return 0; }
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
     int intSyntaxType() { return static_cast<int>(kind()); }
-    static int stateToInt(syntax::SyntaxKind _state);
-    static syntax::SyntaxKind intToState(int intState);
+    static int stateToInt(SyntaxKind _state);
+    static SyntaxKind intToState(int intState);
 protected:
 
     inline bool isKeywordChar(const QChar& ch) {
@@ -166,7 +168,7 @@ protected:
         return (ch.category()==QChar::Separator_Space || ch == '\t' || ch == '\n' || ch == '\r');
     }
 protected:
-    syntax::SyntaxKind mKind;
+    SyntaxKind mKind;
     QTextCharFormat mCharFormat;
     SyntaxTransitions mSubKinds;
     SyntaxTransitions mEmptyLineKinds;
@@ -178,23 +180,25 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard();
-    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
-
+class SyntaxCommentEndline;
 /// \brief Defines the syntax for a directive.
 class SyntaxDirective : public SyntaxAbstract
 {
 public:
     SyntaxDirective(QChar directiveChar = '$');
-    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
-    QHash<QString, syntax::SyntaxKind> mSpecialKinds;
+    QHash<QString, SyntaxKind> mSpecialKinds;
+    SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
 };
 
 
@@ -202,8 +206,8 @@ private:
 class SyntaxDirectiveBody: public SyntaxAbstract
 {
 public:
-    SyntaxDirectiveBody(syntax::SyntaxKind kind);
-    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxDirectiveBody(SyntaxKind kind);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -212,10 +216,21 @@ class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(QChar commentChar = '*');
-    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QChar mCommentChar;
+};
+
+ /// \brief Defines the syntax for a single comment line.
+class SyntaxCommentEndline: public SyntaxAbstract
+{
+    QString mCommentChars;
+public:
+    SyntaxCommentEndline(QString commentChars = "!!");
+    void setCommentChars(QString commentChars);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 /// \brief Defines the syntax for a multi-line comment block.
@@ -223,7 +238,7 @@ class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
-    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -231,10 +246,37 @@ class SyntaxDelimiter: public SyntaxAbstract
 {
     QChar mDelimiter;
 public:
-    SyntaxDelimiter(syntax::SyntaxKind kind);
-    SyntaxBlock find(syntax::SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxDelimiter(SyntaxKind kind);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
+
+class SyntaxFormula: public SyntaxAbstract
+{
+public:
+    SyntaxFormula();
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+private:
+    int canBreak(QChar ch, int &prev);
+};
+
+class SyntaxString : public SyntaxAbstract
+{
+public:
+    SyntaxString();
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class SyntaxAssign : public SyntaxAbstract
+{
+public:
+    SyntaxAssign();
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
 
 
 } // namespace syntax
