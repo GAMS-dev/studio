@@ -323,6 +323,16 @@ void StudioSettings::loadUserSettings()
     mUserSettings->beginGroup("Editor");
 
     QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    QFontMetrics ffm(ff);
+    if (ffm.width('i') != ffm.width('w')) {
+        QFontDatabase fdb;
+        for (QString fontName: fdb.families(QFontDatabase::Latin)) {
+            ff = fdb.font(fontName, QString(), 10);
+            ffm = QFontMetrics(ff);
+            if (ffm.width('i') == ffm.width('w'))
+                break;
+        }
+    }
     setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());

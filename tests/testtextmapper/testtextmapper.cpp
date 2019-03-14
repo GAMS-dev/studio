@@ -77,6 +77,7 @@ void TestTextMapper::init()
 
 void TestTextMapper::cleanup()
 {
+    mMapper->closeAndReset(true);
     delete mMapper;
     mMapper = nullptr;
 }

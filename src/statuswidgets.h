@@ -12,7 +12,6 @@ class QLabel;
 namespace gams {
 namespace studio {
 
-enum class EditMode {Readonly, Insert, Overwrite};
 
 class AmountLabel: public QLabel
 {
@@ -38,6 +37,9 @@ protected:
 class StatusWidgets : public QObject
 {
     Q_OBJECT
+public:
+    enum class EditMode {Readonly, Insert, Overwrite};
+    Q_ENUM(EditMode)
 
 public:
     explicit StatusWidgets(QMainWindow *parent);

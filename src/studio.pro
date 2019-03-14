@@ -136,7 +136,6 @@ SOURCES += \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
-    syntax/errorhighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -247,7 +246,6 @@ HEADERS += \
     statuswidgets.h \
     studiosettings.h \
     syntax.h \
-    syntax/errorhighlighter.h \
     syntax/syntaxdata.h \
     syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \
@@ -282,7 +280,8 @@ HEADERS += \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
     logtabcontextmenu.h \
-    search/searchworker.h
+    search/searchworker.h \
+    syntax/blockcode.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

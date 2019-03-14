@@ -156,6 +156,7 @@ public slots:
     void appendSystemLog(const QString &text);
     void showErrorMessage(QString text);
     void optionRunChanged();
+    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>());
 
 
 private slots:
@@ -314,6 +315,7 @@ private:
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
 
 private:
+    QTime mTestTimer;
     Ui::MainWindow *ui;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;

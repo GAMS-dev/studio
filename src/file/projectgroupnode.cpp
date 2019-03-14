@@ -265,6 +265,28 @@ ProjectLogNode *ProjectRunGroupNode::logNode()
     return mLogNode;
 }
 
+///
+/// \brief ProjectGroupNode::setLogLocation sets the location of the log. Filename can be determined automatically from path.
+/// \param path
+///
+void ProjectRunGroupNode::setLogLocation(const QString& path)
+{
+    QFileInfo log(path);
+    QString fullPath;
+
+    fullPath = log.filePath();
+    if (log.isDir()) {
+
+        if (!fullPath.endsWith(QDir::separator()))
+            fullPath.append(QDir::separator());
+
+        QFileInfo filename(mLogNode->file()->location());
+        fullPath.append(filename.completeBaseName() + "." + FileType::from(FileKind::Log).defaultSuffix());
+    }
+
+    mLogNode->file()->setLocation(fullPath);
+}
+
 FileMeta* ProjectRunGroupNode::runnableGms() const
 {
     return fileRepo()->fileMeta(specialFile(FileKind::Gms));
@@ -374,16 +396,17 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
                 || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            path = cleanPath(item.value, "");
+            path = item.value;
             gamsArgs[item.key] = item.value;
         }
     }
 
     QFileInfo fi(gmsLocation);
     if (path.isEmpty()) path = fi.path();
+    setSpecialFile(FileKind::Dir, path);
 
-    // set default lst name to revert deleted o parameter values
     clearSpecialFiles();
+    // set default lst name to revert deleted o parameter values
     setSpecialFile(FileKind::Lst, cleanPath(path, fi.baseName() + ".lst"));
 
     bool defaultOverride = false;
@@ -395,7 +418,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         value = value.replace('\\', QDir::separator());
 
         // regex to remove dots at the end of a filename
-        QRegularExpression notDotAsEnding("(\\.+)[\"\\\\ ]*$");
+        QRegularExpression notDotAsEnding("[\\w\\d](\\.)[\"\\\\ ]*$");
         QRegularExpressionMatch match = notDotAsEnding.match(value);
         if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
 
@@ -411,12 +434,12 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
-            if (value == "default") value = fi.baseName() + ".gdx";
+            if (value == "default") value = "\"" + fi.baseName() + ".gdx\"";
             setSpecialFile(FileKind::Gdx, cleanPath(path, value));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
-            if (value == "default") value = fi.baseName() + ".ref";
+            if (value == "default") value = "\"" + fi.baseName() + ".ref\"";
             setSpecialFile(FileKind::Ref, cleanPath(path, value));
         }
 
@@ -458,13 +481,17 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
 
     QString ret = "";
+
+    path.remove("\"");
+    QDir dir(path);
+    if (dir.isRelative()) {
+        path = location() + QDir::separator() + path;
+    }
+
     file.remove("\"");                        // remove quotes from filename
     file = file.trimmed();
-    path.remove("\"");
-
     if (file.isEmpty() || QFileInfo(file).isRelative()) {
         ret = path;
-
         if (! ret.endsWith(QDir::separator()))
             ret += QDir::separator();
     }
@@ -533,7 +560,7 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
             if (runNode)
                 node->file()->setCodec(runNode->codec());
         } else {
-            SysLogLocator::systemLog()->append("Could not create " + loc, LogMsgType::Error);
+            SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
         }
     }
 }
@@ -556,10 +583,13 @@ void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &pa
             fullPath += ".gdx";
             break;
         case FileKind::Lst:
-            // no! gams does not add lst extension. unlike .ref or .gdx
+            // gams does not add lst extension. unlike .ref or .gdx
             break;
         case FileKind::Ref:
             fullPath += ".ref";
+            break;
+        case FileKind::Dir:
+            setLogLocation(fullPath);
             break;
         default:
             qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";

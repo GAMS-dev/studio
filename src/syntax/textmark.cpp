@@ -99,15 +99,6 @@ void TextMark::clearBackRefs()
         backRef->unsetRefMark(this);
     }
     mBackRefs.clear();
-    if (mBlockData) mBlockData->removeTextMark(this);
-    mBlockData = nullptr;
-}
-
-void TextMark::setBlockData(BlockData *blockData)
-{
-    // recent value of mBlockData is commonly invalid
-    mBlockData = blockData;
-    if (mBlockData) mBlockData->addTextMark(this);
 }
 
 QColor TextMark::color()
@@ -149,10 +140,7 @@ QIcon TextMark::icon()
     return QIcon();
 }
 
-inline TextMark::Type TextMark::refType() const
-{
-    return (mReference) ? mReference->type() : none;
-}
+
 
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {

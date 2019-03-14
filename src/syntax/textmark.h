@@ -36,6 +36,7 @@ class TextMark
 {
 public:
     enum Type {none, error, link, target, bookmark, all};
+    Q_ENUM(Type)
 
     FileId fileId() const;
     NodeId groupId() const;
@@ -54,11 +55,10 @@ public:
     void setValue(int value);
 
     void clearBackRefs();
-    void setBlockData(BlockData* blockData);
 
     QIcon icon();
     inline Type type() const {return mType;}
-    inline Type refType() const;
+    inline Type refType() const { return (mReference) ? mReference->type() : none; }
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
     inline bool isValid() {return mMarkRepo && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)

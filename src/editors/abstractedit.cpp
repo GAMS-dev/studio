@@ -23,6 +23,7 @@
 #include <QToolTip>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
+#include "locators/settingslocator.h"
 #include "logger.h"
 #include "keys.h"
 
@@ -35,6 +36,9 @@ AbstractEdit::AbstractEdit(QWidget *parent)
     viewport()->installEventFilter(this);
     installEventFilter(this);
     setTextInteractionFlags(Qt::TextEditorInteraction);
+    mSelUpdater.setSingleShot(true);
+    mSelUpdater.setInterval(10);
+    connect(&mSelUpdater, &QTimer::timeout, this, &AbstractEdit::internalExtraSelUpdate);
 }
 
 AbstractEdit::~AbstractEdit()
@@ -92,6 +96,15 @@ void AbstractEdit::updateGroupId()
     marksChanged();
 }
 
+void AbstractEdit::updateExtraSelections()
+{
+//    TRACE();
+    mSelUpdater.start();
+//    QList<QTextEdit::ExtraSelection> selections;
+//    extraSelMarks(selections);
+//    setExtraSelections(selections);
+}
+
 void AbstractEdit::setMarks(const LineMarks *marks)
 {
     mMarks = marks;
@@ -106,6 +119,72 @@ const LineMarks* AbstractEdit::marks() const
 int AbstractEdit::effectiveBlockNr(const int &localBlockNr) const
 {
     return localBlockNr;
+}
+
+int AbstractEdit::topVisibleLine()
+{
+    QTextBlock block = firstVisibleBlock();
+    return block.isValid() ? block.blockNumber() : 0;
+}
+
+void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
+{
+    if (!SettingsLocator::settings()->highlightCurrentLine()) return;
+
+    QTextEdit::ExtraSelection selection;
+    selection.format.setBackground(SettingsLocator::settings()->colorScheme().value("Edit.currentLineBg",
+                                                                                    QColor(255, 250, 170)));
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = textCursor();
+    selection.cursor.movePosition(QTextCursor::StartOfBlock);
+    selection.cursor.clearSelection();
+    selections.append(selection);
+}
+
+void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
+{
+    if (!marks()) return;
+    QTextBlock block = firstVisibleBlock();
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int line = topVisibleLine();
+    while (block.isValid() && top < viewport()->height()) {
+        const QList<TextMark*> lm = marks()->values(line);
+        for (const TextMark* m: lm) {
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = textCursor();
+            if (m->blockStart() < 0) continue;
+            int start = m->size() < 0 ? ( m->blockStart() < m->size() ? 0 : m->blockEnd() )
+                                      : m->blockStart();
+            int siz = m->size() ? (m->size() < 0 ? block.length() : m->size()+1) : m->size();
+            selection.cursor.setPosition(block.position() + start);
+            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, siz);
+            if (m->type() == TextMark::error || m->refType() == TextMark::error) {
+                if (m->refType() == TextMark::error)
+                    selection.format.setForeground(QColor(180,0,0));
+                selection.format.setUnderlineColor(Qt::red);
+                selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+                selection.format.setAnchorName(QString::number(m->line()));
+            } else if (m->type() == TextMark::link) {
+                selection.format.setForeground(QColor(10,20,255));
+                selection.format.setUnderlineColor(QColor(10,20,255));
+                selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+                selection.format.setAnchor(true);
+                selection.format.setAnchorName(QString::number(m->line()));
+            }
+            selections << selection;
+        }
+        top += qRound(blockBoundingRect(block).height());
+        block = block.next();
+        ++line;
+    }
+}
+
+void AbstractEdit::internalExtraSelUpdate()
+{
+    QList<QTextEdit::ExtraSelection> selections;
+    extraSelCurrentLine(selections);
+    extraSelMarks(selections);
+    setExtraSelections(selections);
 }
 
 void AbstractEdit::showToolTip(const QList<TextMark*> marks)
@@ -160,6 +239,8 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         verticalScrollBar()->setValue(verticalScrollBar()->value()+verticalScrollBar()->pageStep());
     } else {
         QPlainTextEdit::keyPressEvent(e);
+        if ((e->key() & 0x11111110) == 0x01000010)
+            emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
     }
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (e->modifiers() & Qt::ControlModifier) {
@@ -183,6 +264,14 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
     QPlainTextEdit::mousePressEvent(e);
     if (!mMarksAtMouse.isEmpty()) {
         mClickPos = e->pos();
+    } else if (e->button() == Qt::RightButton) {
+        QTextCursor currentTC = textCursor();
+        QTextCursor mouseTC = cursorForPosition(e->pos());
+        if (currentTC.hasSelection()
+                && (mouseTC.position() > qMin(currentTC.position(), currentTC.anchor())
+                    && mouseTC.position() < qMax(currentTC.position(), currentTC.anchor())))
+                return;
+        setTextCursor(mouseTC);
     }
 }
 

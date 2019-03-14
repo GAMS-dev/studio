@@ -17,47 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FILEEVENT_H
-#define FILEEVENT_H
+#ifndef TESTBLOCKCODE_H
+#define TESTBLOCKCODE_H
 
-#include <QEvent>
-#include <QString>
-#include "common.h"
+#include "syntax/syntaxhighlighter.h"
+#include <QtTest/QTest>
 
-namespace gams {
-namespace studio {
+using gams::studio::syntax::BlockCode;
 
-class FileEvent;
-
-struct FileEventData
+class TestBlockCode : public QObject
 {
-    FileEventData();
-    FileEventData(FileId _fileId, FileEventKind _kind);
-    FileEventData(const FileEventData &other);
-    FileEventData &operator= (const FileEventData &other);
-    bool operator==(const FileEventData &other) const;
-    FileId fileId;
-    FileEventKind kind;
+    Q_OBJECT
+
+private slots:
+    void testFile();
 };
 
-class FileEvent : public QEvent
-{
-public:
-
-    FileEvent(FileId fileId, FileEventKind kind);
-    ~FileEvent();
-    FileId fileId() const;
-    FileEventKind kind() const;
-    FileEventData data() const;
-    static QEvent::Type type();
-
-private:
-    FileEventData mData;
-    static QEvent::Type mType;
-
-};
-
-} // namespace studio
-} // namespace gams
-
-#endif // FILEEVENT_H
+#endif // TESTBLOCKCODE_H

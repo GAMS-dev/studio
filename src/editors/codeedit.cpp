@@ -48,7 +48,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(this, &CodeEdit::blockCountChanged, this, &CodeEdit::updateLineNumberAreaWidth);
-    connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateLineNumberArea);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEdit::updateExtraSelections);
@@ -486,12 +486,6 @@ bool CodeEdit::allowClosing(int chIndex)
     return allowAutoClose && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
-int CodeEdit::topVisibleLine()
-{
-    QTextBlock block = firstVisibleBlock();
-    return block.isValid() ? block.blockNumber() : 0;
-}
-
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 {
     // return pressed: ignore here
@@ -578,9 +572,21 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             emit cursorPositionChanged();
         }
     } else {
-        if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
-            endBlockEdit(false);
-        AbstractEdit::mousePressEvent(e);
+        if (mBlockEdit) {
+            if (e->modifiers() || e->buttons() != Qt::RightButton)
+                endBlockEdit(false);
+            else if (e->button() == Qt::RightButton) {
+                QTextCursor mouseTC = cursorForPosition(e->pos());
+                if (mouseTC.blockNumber() < qMin(mBlockEdit->startLine(), mBlockEdit->currentLine())
+                        || mouseTC.blockNumber() > qMax(mBlockEdit->startLine(), mBlockEdit->currentLine())) {
+                    endBlockEdit(false);
+                    setTextCursor(mouseTC);
+                }
+            } else {
+                AbstractEdit::mousePressEvent(e);
+            }
+        } else
+            AbstractEdit::mousePressEvent(e);
     }
 }
 
@@ -970,7 +976,7 @@ QStringList CodeEdit::clipboard(bool *isBlock)
     return texts;
 }
 
-CharType CodeEdit::charType(QChar c)
+CodeEdit::CharType CodeEdit::charType(QChar c)
 {
     switch (c.category()) {
     case QChar::Number_DecimalDigit:
@@ -1037,7 +1043,7 @@ AbstractEdit::EditorType CodeEdit::type()
     return EditorType::CodeEdit;
 }
 
-void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intState)
+void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intKind)
 {
     QString text = cursor.block().text();
     int start = cursor.positionInBlock();
@@ -1046,12 +1052,12 @@ void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intState)
     if (from >= 0 && from <= to) {
         word = text.mid(from, to-from+1);
         start = from + cursor.block().position();
-        emit requestSyntaxState(start+1, intState);
+        emit requestSyntaxKind(start+1, intKind);
 //        cursor.setPosition(start+1);
 //        intState = cursor.charFormat().property(QTextFormat::UserProperty).toInt();
     } else {
         word = "";
-        intState = 0;
+        intKind = 0;
     }
 }
 
@@ -1072,9 +1078,11 @@ void CodeEdit::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
 
 ParenthesesMatch CodeEdit::matchParentheses()
 {
-    static QString parentheses("{[(/}])\\");
+    static QString parentheses("{[(/E}])\\e");
+    static int pSplit = parentheses.length()/2;
     QTextBlock block = textCursor().block();
     if (!block.userData()) return ParenthesesMatch();
+//    int state = block.userState();
     QVector<ParenthesesPos> parList = static_cast<BlockData*>(block.userData())->parentheses();
     int pos = textCursor().positionInBlock();
     int start = -1;
@@ -1087,12 +1095,12 @@ ParenthesesMatch CodeEdit::matchParentheses()
     if (start < 0) return ParenthesesMatch();
     // prepare matching search
     int ci = parentheses.indexOf(parList.at(start).character);
-    bool back = ci > 3;
-    ci = ci % 4;
+    bool back = ci >= pSplit;
+    ci = ci % pSplit;
     bool inPar = back ^ (parList.at(start).relPos != pos);
     ParenthesesMatch result(block.position() + parList.at(start).relPos);
-    QStringRef parEnter = parentheses.midRef(back ? 4 : 0, 4);
-    QStringRef parLeave = parentheses.midRef(back ? 0 : 4, 4);
+    QStringRef parEnter = parentheses.midRef(back ? pSplit : 0, pSplit);
+    QStringRef parLeave = parentheses.midRef(back ? 0 : pSplit, pSplit);
     QVector<QChar> parStack;
     parStack << parLeave.at(ci);
     int pi = start;
@@ -1118,6 +1126,7 @@ ParenthesesMatch CodeEdit::matchParentheses()
             if (parList.at(pi).character == parStack.last()) {
                 parStack.removeLast();
                 if (parStack.isEmpty()) {
+                    if (parentheses.at(ci) == 'E') return ParenthesesMatch(); // only mark embedded on mismatch
                     result.valid = true;
                     result.match = block.position() + parList.at(pi).relPos;
                     result.inOutMatch = result.match + (inPar^back ? 0 : 1);
@@ -1153,13 +1162,13 @@ bool CodeEdit::overwriteMode() const
 
 inline int CodeEdit::assignmentKind(int p)
 {
-    int preState = 0;
-    int postState = 0;
-    emit requestSyntaxState(p-1, preState);
-    emit requestSyntaxState(p+1, postState);
-    if (postState == static_cast<int>(SyntaxState::IdentifierAssignment)) return 1;
-    if (preState == static_cast<int>(SyntaxState::IdentifierAssignment)) return -1;
-    if (preState == static_cast<int>(SyntaxState::IdentifierAssignmentEnd)) return -1;
+    int preKind = 0;
+    int postKind = 0;
+    emit requestSyntaxKind(p-1, preKind);
+    emit requestSyntaxKind(p+1, postKind);
+    if (postKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return 1;
+    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return -1;
+    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignmentEnd)) return -1;
     return 0;
 }
 
@@ -1227,6 +1236,7 @@ void CodeEdit::updateExtraSelections()
     }
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
+    extraSelMarks(selections);
     setExtraSelections(selections);
 }
 
@@ -1235,19 +1245,6 @@ void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
     if (mBlockEdit) {
         selections.append(mBlockEdit->extraSelections());
     }
-}
-
-void CodeEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections)
-{
-    if (!mSettings->highlightCurrentLine()) return;
-
-    QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
-    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = textCursor();
-    selection.cursor.movePosition(QTextCursor::StartOfBlock);
-    selection.cursor.clearSelection();
-    selections.append(selection);
 }
 
 void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
@@ -1797,18 +1794,6 @@ QVector<ParenthesesPos> BlockData::parentheses() const
 void BlockData::setParentheses(const QVector<ParenthesesPos> &parentheses)
 {
     mparentheses = parentheses;
-}
-
-void BlockData::addTextMark(TextMark *mark)
-{
-    if (mMarks.contains(mark)) return;
-    mMarks << mark;
-    mark->setBlockData(this);
-}
-
-void BlockData::removeTextMark(TextMark *mark)
-{
-    mMarks.removeAll(mark);
 }
 
 void LineNumberArea::mousePressEvent(QMouseEvent *event)

@@ -29,12 +29,32 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
+
+enum ColorEnum {
+    SyntaxDirex,
+    SyntaxDiBdy,
+    SyntaxComnt,
+    SyntaxTitle,
+    SyntaxDeclr,
+    SyntaxAssgn,
+    SyntaxStrin,
+    SyntaxIdent,
+    SyntaxKeywd,
+    SyntaxDescr,
+    SyntaxAsLab,
+    SyntaxAsVal,
+    SyntaxIdAsn,
+    SyntaxTabHd,
+    SyntaxEmbed,
+};
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
-    : ErrorHighlighter(doc)
+    : QSyntaxHighlighter(doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
+        {SyntaxAssgn, QColor()},
         {SyntaxDiBdy, QColor(Qt::darkBlue).lighter(170)},
         {SyntaxComnt, QColor(80, 145, 75)},
         {SyntaxTitle, QColor(Qt::darkBlue).lighter(140)},
@@ -42,88 +62,100 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
         {SyntaxDeclr, QColor(Qt::darkBlue).lighter(140)},
         {SyntaxIdent, QColor(Qt::black)},
         {SyntaxDescr, QColor(Qt::darkBlue).lighter(170)},
-        {SyntaxAssgn, QColor(Qt::darkGreen).darker(140)},
+        {SyntaxIdAsn, QColor(Qt::darkGreen).darker(140)},
         {SyntaxAsLab, QColor(Qt::darkGreen).darker(110)},
 //        {SyntaxAsVal, QColor(Qt::darkCyan).darker(150)},
         {SyntaxAsVal, QColor(0, 80, 120)},
         {SyntaxTabHd, QColor(Qt::darkGreen).darker(140)},
         {SyntaxEmbed, QColor(200, 70, 0)},
     };
-    // To visualize one format: add color index at start e.g. initState(1, new SyntaxReservedBody());
-    initState(new SyntaxStandard(), Qt::red);
-    initState(new SyntaxDirective(), cl.value(SyntaxDirex));
-    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveBody), cl.value(SyntaxDiBdy));
-    initState(new SyntaxDirectiveBody(SyntaxState::DirectiveComment), cl.value(SyntaxComnt), fItalic);
-    initState(new SyntaxDirectiveBody(SyntaxState::Title), cl.value(SyntaxTitle), fBoldItalic);
-    initState(new SyntaxCommentLine(), cl.value(SyntaxComnt), fItalic);
-    initState(new SyntaxCommentBlock(), cl.value(SyntaxComnt), fItalic);
+    // To visualize one format: add color index at start e.g. initKind(1, new SyntaxReservedBody());
+    initKind(new SyntaxStandard(), Qt::red);
+    SyntaxDirective *syntaxDirective = new SyntaxDirective();
+    initKind(syntaxDirective, cl.value(SyntaxDirex));
+    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody), cl.value(SyntaxDiBdy));
+    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), cl.value(SyntaxComnt), fItalic);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::Title), cl.value(SyntaxTitle), fBoldItalic);
+    initKind(new SyntaxFormula());
+    initKind(new SyntaxAssign(), cl.value(SyntaxAssgn), fBold);
+    initKind(new SyntaxString(), cl.value(SyntaxStrin));
+    initKind(new SyntaxCommentLine(), cl.value(SyntaxComnt), fItalic);
+    initKind(new SyntaxCommentBlock(), cl.value(SyntaxComnt), fItalic);
+    SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
+    initKind(syntaxCommentEndline, cl.value(SyntaxComnt), fItalic);
+    syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
 
-    initState(new SyntaxDelimiter(SyntaxState::Semicolon));
-    initState(new SyntaxDelimiter(SyntaxState::Comma));
-    initState(new SyntaxReserved(), cl.value(SyntaxKeywd), fBold);
-    initState(new SyntaxReservedBody());
-    initState(new SyntaxEmbedded(SyntaxState::Embedded), cl.value(SyntaxKeywd), fBold);
-    initState(new SyntaxEmbedded(SyntaxState::EmbeddedEnd), cl.value(SyntaxKeywd), fBold);
-    initState(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed), fNormal);
-    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationSetType), cl.value(SyntaxDeclr), fBold);
-    initState(new SyntaxPreDeclaration(SyntaxState::DeclarationVariableType), cl.value(SyntaxDeclr), fBold);
-    initState(new SyntaxDeclaration(), cl.value(SyntaxDeclr), fBold);
-    initState(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), fBold);
+    initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
+    initKind(new SyntaxDelimiter(SyntaxKind::Comma));
+    initKind(new SyntaxReserved(), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxEmbedded(SyntaxKind::Embedded), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed), fNormal);
+    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationSetType), cl.value(SyntaxDeclr), fBold);
+    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationVariableType), cl.value(SyntaxDeclr), fBold);
+    initKind(new SyntaxDeclaration(), cl.value(SyntaxDeclr), fBold);
+    initKind(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), fBold);
 
-    initState(new SyntaxIdentifier(SyntaxState::Identifier));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription1), cl.value(SyntaxDescr));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierDescription2), cl.value(SyntaxDescr));
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignment), cl.value(SyntaxAssgn));
-    initState(new AssignmentLabel(), cl.value(SyntaxAsLab));
-    initState(new AssignmentValue(), cl.value(SyntaxAsVal));
-    initState(new SyntaxIdentAssign(SyntaxState::IdentifierAssignmentEnd), cl.value(SyntaxAssgn));
+    initKind(new SyntaxIdentifier(SyntaxKind::Identifier));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2));
+    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription), cl.value(SyntaxDescr));
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), cl.value(SyntaxIdAsn));
+    initKind(new AssignmentLabel(), cl.value(SyntaxAsLab));
+    initKind(new AssignmentValue(), cl.value(SyntaxAsVal));
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), cl.value(SyntaxIdAsn));
 
-    initState(new SyntaxIdentifier(SyntaxState::IdentifierTable));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription1), cl.value(SyntaxDescr));
-    initState(new SyntaxIdentDescript(SyntaxState::IdentifierTableDescription2), cl.value(SyntaxDescr));
+    initKind(new SyntaxIdentifier(SyntaxKind::IdentifierTable));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim1));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim2));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd1));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd2));
+    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierTableDescription), cl.value(SyntaxDescr));
 
-    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), fBold);
-    initState(new SyntaxTableAssign(SyntaxState::IdentifierTableAssignmentRow), cl.value(SyntaxAssgn));
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), fBold);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), cl.value(SyntaxIdAsn));
 
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
 {
-    while (!mStates.isEmpty()) {
-        delete mStates.takeFirst();
+    while (!mKinds.isEmpty()) {
+        delete mKinds.takeFirst();
     }
 }
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
     QVector<ParenthesesPos> parPosList;
-    QList<TextMark*> markList = marks()->values(currentBlock().blockNumber());
-    setCombiFormat(0, text.length(), QTextCharFormat(), markList);
-    int code = previousBlockState();
-    if (code < 0) code = 0;
+    parPosList.reserve(20);
+    BlockCode code = previousBlockState();
+    if (!code.isValid()) code = 0;
     int index = 0;
     QTextBlock textBlock = currentBlock();
-    int posForSyntaxState = mPositionForSyntaxState - textBlock.position();
-    if (posForSyntaxState < 0) posForSyntaxState = text.length();
-    bool extendSearch = true;
+    int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
+    if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
+    bool emptyLineKinds = true;
+//    DEB() << text;
 
     while (index < text.length()) {
-        StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
-        SyntaxAbstract* syntax = mStates.at(stateCode.first);
+        KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
+        SyntaxAbstract* syntax = mKinds.at(kindCode.first);
         bool stack = true;
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
-        if (stack) extendSearch = false;
+        if (stack) emptyLineKinds = false;
 
-        // HOWTO(JM) For states redefined with directives:
-        //   - add new Syntax to mStates
+        // HOWTO(JM) For kinds redefined with directives:
+        //   - add new Syntax to mKinds
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
         SyntaxBlock nextBlock;
-        for (SyntaxState nextState: syntax->nextStates(extendSearch)) {
-            SyntaxAbstract* testSyntax = getSyntax(nextState);
+        for (SyntaxKind nextKind: syntax->nextKinds(emptyLineKinds)) {
+            SyntaxAbstract* testSyntax = getSyntax(nextKind);
             if (testSyntax) {
-                SyntaxBlock testBlock = testSyntax->find(syntax->state(), text, index);
+                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), text, index);
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;
@@ -134,45 +166,53 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (!nextBlock.isValid()) {
             if (!tailBlock.isValid()) {
                 // no valid characters found, mark error
-                setCombiFormat(index, text.length() - index, syntax->charFormatError(), markList);
                 index = text.length();
-                code = getCode(code, SyntaxStateShift::reset, stateCode.first, stateCode.first);
+                code = getCode(code, SyntaxShift::reset, kindCode.first, kindCode.first);
                 continue;
             }
             nextBlock = tailBlock;
         } else {
-            extendSearch = false;
+            emptyLineKinds = false;
             if (tailBlock.isValid()) {
                 if (nextBlock.start < tailBlock.end) tailBlock.end = nextBlock.start;
                 if (tailBlock.isValid()) {
-                    if (tailBlock.syntax->state() != SyntaxState::Standard) {
-                        setCombiFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat(), markList);
-                        scanParentheses(text, tailBlock.start, tailBlock.length(), tailBlock.syntax->state(), parPosList);
+                    if (tailBlock.syntax->kind() != SyntaxKind::Standard) {
+                        setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
+//                        if (tailBlock.syntax)
+//                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
+//                                  << tailBlock.syntax->kind() << "  (tail from " << syntax->kind() << ")";
+                        scanParentheses(text, tailBlock.start, tailBlock.length(), syntax->kind(),
+                                        tailBlock.syntax->kind(), tailBlock.next, parPosList);
                     }
-                    code = getCode(code, tailBlock.shift, getStateIdx(tailBlock.syntax->state()), getStateIdx(tailBlock.next));
+                    code = getCode(code, tailBlock.shift, getKindIdx(tailBlock.syntax->kind()), getKindIdx(tailBlock.next));
                 }
             }
         }
 
         if (nextBlock.error && nextBlock.length() > 0) {
-            setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError(), markList);
-        } else if (nextBlock.syntax->state() != SyntaxState::Standard) {
-            setCombiFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat(), markList);
-            if (nextBlock.syntax->state() == SyntaxState::Semicolon) extendSearch = true;
+            setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError());
+        } else if (nextBlock.syntax->kind() != SyntaxKind::Standard) {
+            setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
+//            if (nextBlock.syntax)
+//                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
+//                      << " " << nextBlock.syntax->kind() << "  (next from " << syntax->kind() << ")";
+            if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
-        scanParentheses(text, nextBlock.start, nextBlock.length(), nextBlock.syntax->state(), parPosList);
+        scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),
+                        nextBlock.syntax->kind(), nextBlock.next, parPosList);
         index = nextBlock.end;
 
-        code = getCode(code, nextBlock.shift, getStateIdx(nextBlock.syntax->state()), getStateIdx(nextBlock.next));
+        code = getCode(code, nextBlock.shift, getKindIdx(nextBlock.syntax->kind()), getKindIdx(nextBlock.next));
 
-        if (posForSyntaxState <= index) {
-            mLastSyntaxState = nextBlock.syntax->intSyntaxType();
-            mPositionForSyntaxState = -1;
-            posForSyntaxState = text.length()+1;
+        if (posForSyntaxKind <= index) {
+            mLastSyntaxKind = nextBlock.syntax->intSyntaxType();
+            mPositionForSyntaxKind = -1;
+            posForSyntaxKind = text.length()+1;
         }
     }
     // update BlockData
     if (!parPosList.isEmpty() || textBlock.userData()) {
+        parPosList.squeeze();
         BlockData* blockData = textBlock.userData() ? static_cast<BlockData*>(textBlock.userData()) : nullptr;
         if (!parPosList.isEmpty() && !blockData) {
             blockData = new BlockData();
@@ -183,61 +223,81 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         else
             textBlock.setUserData(blockData);
     }
-    StateCode stateCode = (code < 0) ? mCodes.at(0) : mCodes.at(code);
-    if (mStates.at(stateCode.first)->state() != SyntaxState::Standard) {
-        setCurrentBlockState(code);
+    KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
+//    int oldState = currentBlockState();
+    if (mKinds.at(kindCode.first)->kind() != SyntaxKind::Standard) {
+        setCurrentBlockState(code.code());
     } else if (currentBlockState() != -1) {
         setCurrentBlockState(-1);
     }
+//    DEB() << oldState << " -> " << currentBlockState();
 }
 
-SyntaxAbstract*SyntaxHighlighter::getSyntax(SyntaxState state) const
+void SyntaxHighlighter::syntaxKind(int position, int &intKind)
 {
-    int i = mStates.length();
+    mPositionForSyntaxKind = position;
+    mLastSyntaxKind = 0;
+    rehighlightBlock(document()->findBlock(position));
+    intKind = mLastSyntaxKind;
+    mLastSyntaxKind = 0;
+}
+
+SyntaxAbstract*SyntaxHighlighter::getSyntax(SyntaxKind kind) const
+{
+    int i = mKinds.length();
     while (i > 0) {
         --i;
-        if (mStates.at(i)->state() == state) return mStates.at(i);
+        if (mKinds.at(i)->kind() == kind) return mKinds.at(i);
     }
     return nullptr;
 }
 
-int SyntaxHighlighter::getStateIdx(SyntaxState state) const
+int SyntaxHighlighter::getKindIdx(SyntaxKind kind) const
 {
-    int i = mStates.length();
+    int i = mKinds.length();
     while (i > 0) {
         --i;
-        if (mStates.at(i)->state() == state) return i;
+        if (mKinds.at(i)->kind() == kind) return i;
     }
     return -1;
 }
 
-const QVector<SyntaxState> validparenthesesSyntax = {
-    SyntaxState::Standard,
-    SyntaxState::Identifier,
-    SyntaxState::IdentifierTable,
-    SyntaxState::IdentifierAssignment,
-    SyntaxState::IdentifierAssignmentEnd,
-    SyntaxState::IdentifierTableAssignmentHead,
-    SyntaxState::IdentifierTableAssignmentRow,
-    SyntaxState::Reserved,
-    SyntaxState::ReservedBody,
+const QVector<SyntaxKind> validParenthesesSyntax = {
+    SyntaxKind::Standard,
+    SyntaxKind::Identifier,
+    SyntaxKind::IdentifierTable,
+    SyntaxKind::IdentifierAssignment,
+    SyntaxKind::IdentifierAssignmentEnd,
+    SyntaxKind::IdentifierTableAssignmentHead,
+    SyntaxKind::IdentifierTableAssignmentRow,
+    SyntaxKind::Reserved,
+    SyntaxKind::Formula,
+    SyntaxKind::EmbeddedBody,
 };
 
-const QString validparentheses("{[(}])/");
+const QString validParentheses("{[(}])/");
 const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
 
-void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxState state,  QVector<ParenthesesPos> &parentheses)
+void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind, SyntaxKind postKind,  QVector<ParenthesesPos> &parentheses)
 {
     bool inBlock = false;
-    if (!validparenthesesSyntax.contains(state)) return;
+    if (kind == SyntaxKind::Embedded || (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody)) {
+        parentheses << ParenthesesPos('E', start);
+        return;
+    } else if (kind == SyntaxKind::EmbeddedEnd || (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive)) {
+        parentheses << ParenthesesPos('e', start);
+        return;
+    }
+    if (!validParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
-        int kind = validparentheses.indexOf(text.at(i));
-        if (kind == 6) {
-            if (state == SyntaxState::IdentifierAssignmentEnd)
+        int iPara = validParentheses.indexOf(text.at(i));
+        if (iPara == 6) {
+            if (kind == SyntaxKind::IdentifierAssignmentEnd) {
                 parentheses << ParenthesesPos('\\', i);
-            else if (state == SyntaxState::IdentifierAssignment)
-                parentheses << ParenthesesPos(text.at(i), i);
-        } else if (kind >= 0) {
+            } else if (kind == SyntaxKind::IdentifierAssignment) {
+                parentheses << ParenthesesPos('/', i);
+            }
+        } else if (iPara >= 0) {
             parentheses << ParenthesesPos(text.at(i), i);
         }
         int blockKind = specialBlocks.indexOf(text.at(i));
@@ -251,10 +311,10 @@ void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len,
     }
 }
 
-void SyntaxHighlighter::addState(SyntaxAbstract* syntax, CodeIndex ci)
+void SyntaxHighlighter::addKind(SyntaxAbstract* syntax, CodeIndex ci)
 {
-    mStates << syntax;
-    addCode(mStates.length()-1, ci);
+    mKinds << syntax;
+    addCode(mKinds.length()-1, ci);
 }
 
 QColor backColor(int index) {
@@ -264,7 +324,7 @@ QColor backColor(int index) {
     return debColor.at(index);
 }
 
-void SyntaxHighlighter::initState(int debug, SyntaxAbstract *syntax, QColor color, FontModifier fMod)
+void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, QColor color, FontModifier fMod)
 {
     if (debug) syntax->charFormat().setBackground(backColor(debug));
 
@@ -272,20 +332,20 @@ void SyntaxHighlighter::initState(int debug, SyntaxAbstract *syntax, QColor colo
     if (color.isValid()) syntax->charFormat().setForeground(color);
     if (fMod & fItalic) syntax->charFormat().setFontItalic(true);
     if (fMod & fBold) syntax->charFormat().setFontWeight(QFont::Bold);
-    mStates << syntax;
-    addCode(mStates.length()-1, 0);
+    mKinds << syntax;
+    addCode(mKinds.length()-1, 0);
 }
 
-void SyntaxHighlighter::initState(SyntaxAbstract *syntax, QColor color, FontModifier fMod)
+void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, QColor color, FontModifier fMod)
 {
-    initState(false, syntax, color, fMod);
+    initKind(false, syntax, color, fMod);
 }
 
-int SyntaxHighlighter::addCode(StateIndex si, CodeIndex ci)
+int SyntaxHighlighter::addCode(KindIndex si, CodeIndex ci)
 {
-    StateCode sc(si, ci);
+    KindCode sc(si, ci);
     if (si < 0)
-        EXCEPT() << "Can't generate code for invalid StateIndex";
+        EXCEPT() << "Can't generate code for invalid KindIndex";
     int index = mCodes.indexOf(sc);
     if (index >= 0)
         return index;
@@ -293,34 +353,43 @@ int SyntaxHighlighter::addCode(StateIndex si, CodeIndex ci)
     return mCodes.length()-1;
 }
 
-int SyntaxHighlighter::getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext)
+BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest)
 {
-    if (code < 0) code = 0;
-    if (shift == SyntaxStateShift::skip)
+    if (!code.isValid()) code = 0; // default to syntax gams-standard
+    if (nest) {
+        code.setDepth(code.depth() + nest);
+        if (code.depth() > 0) return code;
+    }
+    if (shift == SyntaxShift::skip) {
         return code;
-    if (shift == SyntaxStateShift::out)
-        return mCodes.at(code).second;
-    if (shift == SyntaxStateShift::in)
-        return addCode(stateNext, code);
-    if (shift == SyntaxStateShift::shift)
-        return addCode(state, mCodes.at(code).second);
+    } else if (shift == SyntaxShift::out) {
+        code.setKind(mCodes.at(code.kind()).second);
+        return code;
+    } else if (shift == SyntaxShift::in) {
+        code.setKind(addCode(kindNext, code.kind()));
+        return code;
+    } else if (shift == SyntaxShift::shift) {
+        code.setKind(addCode(kind, mCodes.at(code.kind()).second));
+        return code;
+    }
 
-    while (mStates.at(mCodes.at(code).first)->state() != SyntaxState::Standard) {
-        code = mCodes.at(code).second;
+    while (mKinds.at(mCodes.at(code.kind()).first)->kind() != SyntaxKind::Standard) {
+        code.setKind(mCodes.at(code.kind()).second);
     }
     return code;
 }
 
-QString SyntaxHighlighter::codeDeb(int code)
-{
-    QString res = syntaxStateName(mStates.at(mCodes.at(code).first)->state());
-    while (code) {
-        code = mCodes.at(code).second;
-        res = syntaxStateName(mStates.at(mCodes.at(code).first)->state()) + ", " + res;
-    }
-    return res;
-}
+//QString SyntaxHighlighter::codeDeb(int code)
+//{
+//    QString res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind());
+//    while (code) {
+//        code = mCodes.at(code).second;
+//        res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind()) + ", " + res;
+//    }
+//    return res;
+//}
 
 
+} // namespace syntax
 } // namespace studio
 } // namespace gams

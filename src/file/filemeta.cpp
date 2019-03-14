@@ -157,14 +157,12 @@ void FileMeta::linkDocument(QTextDocument *doc)
     }
 
     if (kind() == FileKind::Gms) {
-        mHighlighter = new SyntaxHighlighter(mDocument);
+        mHighlighter = new syntax::SyntaxHighlighter(mDocument);
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
-    } else if (kind() != FileKind::Gdx) {
-        mHighlighter = new ErrorHighlighter(mDocument);
     }
-    if (mHighlighter)
-        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+//    if (mHighlighter)
+//        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
 void FileMeta::unlinkAndFreeDocument()
@@ -278,18 +276,10 @@ void FileMeta::updateMarks()
 
     // update changed editors
     for (QWidget *w: mEditors) {
-        AbstractEdit *edit = nullptr;
-        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w)) {
-            edit = ed;
+        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w))
             ed->marksChanged(mDirtyLines);
-        }
-        if (TextView * tv = ViewHelper::toTextView(w)) {
-            edit = tv->edit();
+        if (TextView * tv = ViewHelper::toTextView(w))
             tv->marksChanged(mDirtyLines);
-        }
-        if (edit && mHighlighter) {
-            mHighlighter->rehighlight();
-        }
     }
     mDirtyLines.clear();
 }
@@ -324,7 +314,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         if (scEdit) {
-            connect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+            connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
         }
         if (!aEdit->viewport()->hasMouseTracking()) {
             aEdit->viewport()->setMouseTracking(true);
@@ -355,6 +345,7 @@ void FileMeta::removeEditor(QWidget *edit)
     mEditors.removeAt(i);
 
     if (aEdit) {
+        aEdit->setMarks(nullptr);
         QTextDocument *doc = new QTextDocument(aEdit);
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc)); // w/o layout the setDocument() fails
         aEdit->setDocument(doc);
@@ -377,7 +368,7 @@ void FileMeta::removeEditor(QWidget *edit)
         mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
     }
     if (scEdit && mHighlighter) {
-        disconnect(scEdit, &CodeEdit::requestSyntaxState, mHighlighter, &ErrorHighlighter::syntaxState);
+        disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
     }
 }
 
@@ -506,7 +497,7 @@ void FileMeta::renameToBackup()
 
 }
 
-FileDifferences FileMeta::compare(QString fileName)
+FileMeta::FileDifferences FileMeta::compare(QString fileName)
 {
     FileDifferences res;
     Data other(fileName.isEmpty() ? location() : fileName);
@@ -555,7 +546,7 @@ void FileMeta::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
     }
 }
 
-ErrorHighlighter *FileMeta::highlighter() const
+syntax::SyntaxHighlighter *FileMeta::highlighter() const
 {
     return mHighlighter;
 }
@@ -602,7 +593,7 @@ QTextDocument *FileMeta::document() const
 
 int FileMeta::codecMib() const
 {
-    return mCodec ? mCodec->mibEnum() : -1;
+    return mCodec ? mCodec->mibEnum() : QTextCodec::codecForLocale()->mibEnum();
 }
 
 void FileMeta::setCodecMib(int mib)
@@ -614,8 +605,8 @@ void FileMeta::setCodecMib(int mib)
     }
     if (document() && !isReadOnly() && codec != mCodec) {
         document()->setModified();
-        setCodec(codec);
     }
+    setCodec(codec);
 }
 
 QTextCodec *FileMeta::codec() const
@@ -651,6 +642,7 @@ bool FileMeta::isOpen() const
 QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib)
 {
     QWidget* res = nullptr;
+    if (codecMib == -1) codecMib = FileMeta::codecMib();
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gdx) {
@@ -730,7 +722,7 @@ FileMeta::Data::Data(QString location, FileType *knownType)
     }
 }
 
-FileDifferences FileMeta::Data::compare(FileMeta::Data other)
+FileMeta::FileDifferences FileMeta::Data::compare(FileMeta::Data other)
 {
     FileDifferences res;
     if (!other.exist) res.setFlag(FdMissing);

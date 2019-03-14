@@ -18,11 +18,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths \
-           testeditors \
-           testservicelocators \
-           testcheckforupdatewrapper \
-           testtextmapper \
-           testblockcode
+include(../tests.pri)
+
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/syntax
+
+HEADERS += \
+    testblockcode.h \
+    $$SRCPATH/syntax/blockcode.h
+
+SOURCES += \
+    testblockcode.cpp \
+    $$SRCPATH/logger.cpp

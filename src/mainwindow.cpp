@@ -147,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
+    connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
@@ -708,9 +709,10 @@ void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
-        mStatusWidgets->setEditMode(EditMode::Readonly);
+        mStatusWidgets->setEditMode(StatusWidgets::EditMode::Readonly);
     } else {
-        mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
+        mStatusWidgets->setEditMode(edit->overwriteMode() ? StatusWidgets::EditMode::Overwrite
+                                                          : StatusWidgets::EditMode::Insert);
     }
 }
 
@@ -742,7 +744,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::on_actionNew_triggered()
+void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups)
 {
     QString path = mRecent.path;
     if (path.isEmpty()) path = ".";
@@ -754,8 +756,8 @@ void MainWindow::on_actionNew_triggered()
     int nr = 1;
     while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
     path += QString("/new%1.gms").arg(nr);
-    int choice = 0;
-    while (choice < 1) {
+    int choice = 4;
+    while (choice == 4) {
         QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
                                                         tr("GAMS code (*.gms *.inc );;"
                                                            "Text files (*.txt);;"
@@ -767,35 +769,58 @@ void MainWindow::on_actionNew_triggered()
         QFile file(filePath);
         bool exists = file.exists();
         FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
-        choice = destFM ? -1 : exists ? 0 : 1;
-        if (choice < 0) {
+
+        // choices:   0=duplicate   1=overwrite   2=open-existing   3=open-new   4=abort
+        if (destFM) {
             choice = QMessageBox::question(this, "file in use"
                                            , QString("%1 is already in use.").arg(filePath)
-                                           , "Select other", "Open", "Abort", 0, 2);
-            if (choice == 1) {
-                openFilePath(filePath);
-                return;
+                                           , "Duplicate", "Open", "Back", 1, 2);
+            choice *= 2;                    // 0 - 2 - 4
+            if (groups.isEmpty() && choice == 0) {
+                groups << mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
             }
-        } else if (choice < 1) {
+        } else if (exists) {
             choice = QMessageBox::question(this, "File exists", filePath+" already exists."
-                                           , "Select other", "Overwrite", "Abort", 0, 2);
+                                           , "Overwrite", "Open", "Back", 1, 2);
+            ++choice;
+            if (choice > 1) ++choice;       // 1 - 3 - 4
         } else {
-            choice = 1;
+            choice = groups.isEmpty() ? 2 : 3;
         }
 
-        if (choice == 1) {
+        if (choice < 4) {
             if (!file.exists()) { // new
                 file.open(QIODevice::WriteOnly);
                 file.close();
-            } else { // replace old
+            } else if (choice == 1) { // replace old
                 file.resize(0);
             }
-            if (ProjectFileNode *fc = addNode("", filePath)) {
-                fc->file()->save();
-                openFileNode(fc);
+
+            if (choice == 2) { // default for new_file and existing_node
+                openFilePath(filePath);
+                return;
             }
+
+            if (groups.isEmpty()) {
+                if (ProjectFileNode *fc = addNode("", filePath)) {
+                    fc->file()->save();
+                    // TODO(JM) at choice==0 -> create Node (look at TreeView)
+                    openFileNode(fc);
+                }
+            } else {
+                for (ProjectGroupNode *group: groups) {
+                    addToGroup(group, filePath);
+                }
+            }
+
         }
     }
+}
+
+void MainWindow::on_actionNew_triggered()
+{
+    QString fileLocation;
+    newFileDialog();
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -1309,6 +1334,8 @@ void MainWindow::postGamsRun(NodeId origin)
 
     // add all created files to project explorer
     groupNode->addNodesForSpecialFiles();
+
+//    DEB() << "RUNmsec: " << QTime::currentTime().msecsSinceStartOfDay() - mTestTimer.msecsSinceStartOfDay();
 }
 
 void MainWindow::postGamsLibRun()
@@ -1343,12 +1370,12 @@ void MainWindow::on_actionHelp_triggered()
         CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
         if (ce) {
             QString word;
-            int istate = 0;
-            ce->wordInfo(ce->textCursor(), word, istate);
+            int iKind = 0;
+            ce->wordInfo(ce->textCursor(), word, iKind);
 
-            if (istate == static_cast<int>(SyntaxState::Title)) {
+            if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-            } else if (istate == static_cast<int>(SyntaxState::Directive)) {
+            } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
             } else {
                 mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
@@ -1765,6 +1792,7 @@ OptionWidget *MainWindow::gamsOptionWidget() const
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
+    mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (!runGroup) {
@@ -1878,7 +1906,9 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     }
     process->setGroupId(runGroup->id());
     process->setWorkingDir(workDir);
+
     process->execute();
+    ui->toolBar->repaint();
 
     connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
@@ -2075,6 +2105,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
         try {
+            if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, runGroup, codecMib);
         } catch (Exception &e) {
             showErrorMessage(e.what());
@@ -2416,9 +2447,8 @@ bool MainWindow::readTabs(const QJsonObject &json)
             QJsonObject tabObject = tabArray[i].toObject();
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
-                int mib = tabObject.contains("codecMib") ? tabObject["codecMib"].toInt() : -1;
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, true, mib);
+                    openFilePath(location, true);
                     mOpenTabsList << location;
                 }
                 QApplication::processEvents(QEventLoop::AllEvents, 1);
@@ -2450,7 +2480,6 @@ void MainWindow::writeTabs(QJsonObject &json) const
         if (!fm) continue;
         QJsonObject tabObject;
         tabObject["location"] = fm->location();
-        tabObject["codecMib"] = fm->codecMib();
         // TODO(JM) store current tab index
         tabArray.append(tabObject);
     }
@@ -2858,6 +2887,8 @@ void MainWindow::resetViews()
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         }
     }
+    mGamsOptionWidget->setEditorExtended(false);
+    addDockWidget(Qt::TopDockWidgetArea, mGamsOptionWidget->extendedEditor());
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)

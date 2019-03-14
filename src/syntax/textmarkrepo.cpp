@@ -176,6 +176,8 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
 {
     QList<TextMark*> res;
     if (!mMarks.contains(fileId)) return res;
+
+    //TODO(JM) take iterator instead of values()
     QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(fileId)->values() : mMarks.value(fileId)->values(lineNr);
     if (groupId < 0 && refType == TextMark::all) return marks;
     int i = 0;
@@ -267,10 +269,10 @@ LineMarks::LineMarks() : QMultiMap<int, TextMark *>()
 
 bool LineMarks::hasVisibleMarks() const
 {
-    QList<TextMark*> tm = values();
-    for (TextMark* t : tm) {
-        if ((t->type() == TextMark::link) || (t->type() == TextMark::error)
-                || (t->type() == TextMark::bookmark))
+    QMultiMap<int, TextMark*>::const_iterator it;
+    for (it = begin() ; it != end() ; ++it) {
+        if ((it.value()->type() == TextMark::link) || (it.value()->type() == TextMark::error)
+                || (it.value()->type() == TextMark::bookmark))
             return true;
     }
     return false;

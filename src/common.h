@@ -21,6 +21,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 #include <QHashFunctions>
+#include <QObject>
+#include <QTextStream>
+#include <QMetaEnum>
 
 namespace gams {
 namespace studio {
@@ -58,20 +61,24 @@ typedef PhantomInt<PiFileId> FileId;
 typedef PhantomInt<PiNodeId> NodeId;
 typedef PhantomInt<PiTextMarkId> TextMarkId;
 
-enum struct NameModifier {
+Q_NAMESPACE
+
+enum class NameModifier {
     raw,
     editState
 };
+Q_ENUM_NS(NameModifier)
 
-enum struct NodeType {
+enum class NodeType {
     root,
     group,
     runGroup,
     file,
     log
 };
+Q_ENUM_NS(NodeType)
 
-enum struct FileKind {
+enum class FileKind {
     None,
     Gsp,
     Gms,
@@ -82,14 +89,16 @@ enum struct FileKind {
     Log,
     Gdx,
     Ref,
+    Dir
 };
+Q_ENUM_NS(FileKind)
 
 inline unsigned int qHash(FileKind key, unsigned int seed)
 {
     return ::qHash(static_cast<unsigned int>(key), seed);
 }
 
-enum struct EditorType {
+enum class EditorType {
     undefined = 0,
     source = 1,
     log = 2,
@@ -100,6 +109,26 @@ enum struct EditorType {
     gdx = 7,
     ref = 8,
 };
+Q_ENUM_NS(EditorType)
+
+enum class FileEventKind {
+    invalid,
+    changed,
+    closed,
+    created,
+    changedExtern,
+    removedExtern,  // removed-event is delayed to improve recognition of moved- or rewritten-events
+};
+Q_ENUM_NS(FileEventKind)
+
+template <typename T>
+typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
+operator<<(QTextStream &dbg, T enumValue)
+{
+    const QMetaObject *mo = qt_getEnumMetaObject(enumValue);
+    int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
+    return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
+}
 
 }
 }

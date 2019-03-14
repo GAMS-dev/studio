@@ -19,6 +19,7 @@
  */
 #include "processlogedit.h"
 #include <QMenu>
+#include <QScrollBar>
 
 namespace gams {
 namespace studio {
@@ -27,6 +28,8 @@ ProcessLogEdit::ProcessLogEdit(QWidget *parent)
     : AbstractEdit(parent)
 {
     setTextInteractionFlags(Qt::TextSelectableByMouse);
+    connect(this, &ProcessLogEdit::textChanged, this, &ProcessLogEdit::updateExtraSelections);
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &ProcessLogEdit::updateExtraSelections);
 }
 
 void ProcessLogEdit::mouseDoubleClickEvent(QMouseEvent *event)
@@ -81,6 +84,18 @@ void ProcessLogEdit::contextMenuEvent(QContextMenuEvent *e)
     menu->exec(e->globalPos());
     delete menu;
 }
+
+void ProcessLogEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
+{
+    Q_UNUSED(selections);
+    return;
+}
+
+//void ProcessLogEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
+//{
+//    Q_UNUSED(selections);
+//    return;
+//}
 
 AbstractEdit::EditorType ProcessLogEdit::type()
 {

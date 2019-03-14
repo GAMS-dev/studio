@@ -123,7 +123,7 @@ void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
             return;
     }
     disconnect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
-    mTextView->jumpTo(lineNr, 0);
+    mTextView->jumpTo(lineNr-1, 0);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
 }
 

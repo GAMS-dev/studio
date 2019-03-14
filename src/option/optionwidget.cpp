@@ -95,9 +95,11 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
 
-    mExtendedEditor = new QDockWidget("GAMS Arguments", this);
+    mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
     mExtendedEditor->setWidget(ui->gamsOptionWidget);
+    mExtendedEditor->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    mExtendedEditor->setTitleBarWidget(new QWidget(this));
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
     connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility);
     mExtendedEditor->setVisible(false);
@@ -107,8 +109,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 #else
     ui->verticalLayout->setContentsMargins(2,0,2,2);
 #endif
-
-
 }
 
 OptionWidget::~OptionWidget()
@@ -255,7 +255,7 @@ void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 {
     bool activate = isRunnable && !isRunning;
     setRunActionsEnabled(activate);
-    setInterruptActionsEnabled(activate);
+    setInterruptActionsEnabled(isRunnable && isRunning);
 
     ui->gamsOptionWidget->setEnabled(activate);
     ui->gamsOptionCommandLine->setEnabled(activate && !isEditorExtended());
@@ -358,6 +358,11 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
     actionInterrupt->setEnabled(enable);
     actionStop->setEnabled(enable);
     ui->gamsInterruptToolButton->menu()->setEnabled(enable);
+}
+
+QDockWidget* OptionWidget::extendedEditor() const
+{
+    return mExtendedEditor;
 }
 
 CommandLineTokenizer *OptionWidget::getGamsOptionTokenizer() const

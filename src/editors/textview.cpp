@@ -73,11 +73,11 @@ int TextView::lineCount() const
     return mMapper.lineCount();
 }
 
-void TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
+bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 {
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
     mMapper.setCodec(codecMib == -1 ? QTextCodec::codecForMib(codecMib) : QTextCodec::codecForLocale());
-    mMapper.openFile(fileName, initAnchor);
+    if (!mMapper.openFile(fileName, initAnchor)) return false;
     updateVScrollZone();
     int count = (lineCount() < 0) ? mTopBufferLines*3 : lineCount();
     mMapper.setMappingSizes(count);
@@ -85,11 +85,15 @@ void TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
         mMapper.setVisibleTopLine(0);
     topLineMoved();
     mPeekTimer.start(100);
+    return true;
 }
 
 void TextView::closeFile()
 {
     mMapper.closeAndReset(false);
+    ChangeKeeper x(mDocChanging);
+    mEdit->clear();
+    topLineMoved();
 }
 
 void TextView::reopenFile()
@@ -376,6 +380,7 @@ void TextView::topLineMoved()
 {
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
+        mEdit->setTextCursor(QTextCursor(mEdit->document()));
         mEdit->protectWordUnderCursor(true);
         mEdit->setPlainText(mMapper.lines(0, 3*mTopBufferLines));
         updatePosAndAnchor();
