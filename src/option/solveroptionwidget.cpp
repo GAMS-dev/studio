@@ -255,7 +255,15 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
-            action->setVisible( everySelectionIsARow && thereIsARowSelection  );
+            bool everyRowIsAnOption = true;
+            for (QModelIndex selection : ui->solverOptionTableView->selectionModel()->selectedRows()) {
+                QVariant data = ui->solverOptionTableView->model()->headerData(selection.row(), Qt::Vertical,  Qt::CheckStateRole);
+                if (Qt::CheckState(data.toUInt())==Qt::PartiallyChecked) {
+                    everyRowIsAnOption = false;
+                    break;
+                }
+            }
+            action->setVisible( everySelectionIsARow && thereIsARowSelection && everyRowIsAnOption );
             menu.addAction(action);
         }
     }
