@@ -176,8 +176,8 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, bool &has
 
 SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
 {
-    if (kind != SyntaxKind::DirectiveBody && kind != SyntaxKind::DirectiveComment && kind != SyntaxKind::Title)
-        FATAL() << "invalid SyntaxKind to initialize SyntaxDirectiveBody: " << syntaxKindName(kind);
+    Q_ASSERT_X((kind == SyntaxKind::DirectiveBody || kind == SyntaxKind::DirectiveComment || kind == SyntaxKind::Title),
+               "SyntaxDirectiveBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
 }
 
 SyntaxBlock SyntaxDirectiveBody::find(SyntaxKind entryKind, const QString& line, int index)
@@ -244,7 +244,9 @@ SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
     } else if (kind == SyntaxKind::Comma) {
         mDelimiter = ',';
         mSubKinds << SyntaxKind::Identifier;
-    } else FATAL() << "invalid SyntaxKind to initialize SyntaxDelimiter: " << syntaxKindName(kind);
+    } else {
+        Q_ASSERT_X(false, "SyntaxDelimiter", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
+    }
 }
 
 SyntaxBlock SyntaxDelimiter::find(SyntaxKind entryKind, const QString &line, int index)

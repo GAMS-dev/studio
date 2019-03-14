@@ -53,7 +53,7 @@ SyntaxIdentifier::SyntaxIdentifier(SyntaxKind kind) : SyntaxAbstract(kind)
         mSubKinds << SyntaxKind::IdentifierTableDescription;  // must not exist in emptyLineKinds
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentifier: " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxIdentifier", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
 }
 
@@ -116,10 +116,10 @@ SyntaxIdentifierDim::SyntaxIdentifierDim(SyntaxKind kind) : SyntaxAbstract(kind)
         mTable = true;
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentifier: " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxIdentifierDim", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
     if (!delims.contains(static_cast<int>(kind)))
-        FATAL() << "missing delimiter for syntax-kind " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxIdentifierDim", QString("missing delimiter for SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     mDelimiterIn = delims.value(static_cast<int>(kind));
     mDelimiterOut = (mDelimiterIn == '(') ? ')' : ']';
 }
@@ -183,10 +183,10 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
         mTable = true;
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentifierDimEnd: " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxIdentifierDimEnd", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
     if (!delims.contains(static_cast<int>(kind)))
-        FATAL() << "missing delimiter for syntax-kind " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxIdentifierDimEnd", QString("missing delimiter for SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     mDelimiter = delims.value(static_cast<int>(kind));
 }
 
@@ -232,7 +232,7 @@ SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
         mTable = true;
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentDescript: " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxIdentDescript", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
 }
 
@@ -293,7 +293,7 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
         mEmptyLineKinds = mSubKinds << SyntaxKind::Identifier;
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxIdentAssign: " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxIdentAssign", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
 }
 
@@ -443,7 +443,7 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
         mSubKinds << SyntaxKind::IdentifierTableAssignmentHead;
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxTableAssign: " << syntaxKindName(kind);
+        Q_ASSERT_X(false, "SyntaxTableAssign", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
 }
 

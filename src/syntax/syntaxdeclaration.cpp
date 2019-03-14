@@ -151,7 +151,7 @@ SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxKind kind) : SyntaxKeywordBase(
         mSubKinds << SyntaxKind::Declaration;
         break;
     default:
-        FATAL() << "invalid SyntaxKind to initialize SyntaxDeclaration";
+        Q_ASSERT_X(false, "SyntaxPreDeclaration", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
                << SyntaxKind::CommentInline;

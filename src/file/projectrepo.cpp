@@ -57,10 +57,10 @@ ProjectRepo::~ProjectRepo()
 
 void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
 {
-    if (mFileRepo || mTextMarkRepo) FATAL() << "The ProjectRepo already has been initialized";
-    if (!treeView) FATAL() << "The ProjectTreeView must not be null";
-    if (!fileRepo) FATAL() << "The FileMetaRepo must not be null";
-    if (!textMarkRepo) FATAL() << "The TextMarkRepo must not be null";
+    Q_ASSERT_X(!mFileRepo && !mTextMarkRepo, "ProjectRepo initialization", "The ProjectRepo already has been initialized");
+    Q_ASSERT_X(treeView, "ProjectRepo initialization", "The ProjectTreeView must not be null");
+    Q_ASSERT_X(fileRepo, "ProjectRepo initialization", "The FileMetaRepo must not be null");
+    Q_ASSERT_X(textMarkRepo, "ProjectRepo initialization", "The TextMarkRepo must not be null");
     mTreeView = treeView;
     mFileRepo = fileRepo;
     mTextMarkRepo = textMarkRepo;
@@ -229,13 +229,13 @@ ProjectTreeModel*ProjectRepo::treeModel() const
 
 FileMetaRepo *ProjectRepo::fileRepo() const
 {
-    if (!mFileRepo) FATAL() << "Instance not initialized";
+    Q_ASSERT_X(mFileRepo, "ProjectRepo", "FileMetaRepo not initialized");
     return mFileRepo;
 }
 
 TextMarkRepo *ProjectRepo::textMarkRepo() const
 {
-    if (!mTextMarkRepo) FATAL() << "Instance not initialized";
+    Q_ASSERT_X(mTextMarkRepo, "ProjectRepo", "TextMarkRepo not initialized");
     return mTextMarkRepo;
 }
 
