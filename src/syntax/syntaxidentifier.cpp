@@ -319,7 +319,7 @@ SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, bool &h
     int end = (line.length() > start) ? start+1 : start;
     while (isWhitechar(line, end) || (line.length() > end && line.at(end) == ',')) end++;
     hasContent = (end > start);
-    return SyntaxBlock(this, start, end, SyntaxShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
 AssignmentLabel::AssignmentLabel()
