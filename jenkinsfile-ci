@@ -17,7 +17,11 @@ pipeline {
                         sh '''
                             qmake gams-studio.pro CONFIG+=release && make -j3
                         '''
-                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                    post {
+                        always {
+                            recordIssues enabledForFailure: true, tools: [gcc4(reportEncoding: 'UTF-8')]
+                        }
                     }
                 }
                 stage ('windowsX86') {
