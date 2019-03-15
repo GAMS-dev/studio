@@ -42,7 +42,11 @@ pipeline {
                             qmake gams-studio.pro "CONFIG+=release"
                             nmake
                         '''
-                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                    post {
+                        always {
+                            recordIssues enabledForFailure: true, tools: [msBuild(reportEncoding: 'UTF-8')]
+                        }
                     }
                 }
                 stage ('windowsX64') {
@@ -59,7 +63,11 @@ pipeline {
                             qmake gams-studio.pro "CONFIG+=release"
                             nmake
                         '''
-                        warnings canComputeNew: false, canResolveRelativePaths: false, categoriesPattern: '', consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''
+                    }
+                    post {
+                        always {
+                            recordIssues enabledForFailure: true, tools: [msBuild(reportEncoding: 'UTF-8')]
+                        }
                     }
                 }
                 stage ('macos') {
