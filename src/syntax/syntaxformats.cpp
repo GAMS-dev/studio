@@ -416,7 +416,7 @@ SyntaxBlock SyntaxCommentEndline::find(gams::studio::syntax::SyntaxKind entryKin
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (start+2 < line.length() && line.at(start) == mCommentChars.at(0) && line.at(start+1) == mCommentChars.at(1))
+    if (start+2 <= line.length() && line.at(start) == mCommentChars.at(0) && line.at(start+1) == mCommentChars.at(1))
         return SyntaxBlock(this, start, line.length(), SyntaxShift::skip);
     return SyntaxBlock(this);
 }
