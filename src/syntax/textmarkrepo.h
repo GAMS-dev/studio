@@ -33,7 +33,7 @@ public:
     TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);
     TextMark* createMark(const FileId fileId, const NodeId groupId, TextMark::Type type, int value, int line, int column, int size = 0);
     bool hasBookmarks(FileId fileId);
-    TextMark* findBookmark(FileId fileId, NodeId groupId, int currentLine, bool back);
+    TextMark* findBookmark(FileId fileId, int currentLine, bool back);
     void removeBookmarks();
     QTextDocument* document(FileId fileId) const;
 
