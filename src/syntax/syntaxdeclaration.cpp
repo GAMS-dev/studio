@@ -70,7 +70,7 @@ QStringList SyntaxKeywordBase::swapStringCase(QStringList list)
     return res;
 }
 
-int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, int &iKey)
+int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, int &iKey, bool openEnd)
 {
     iKey = 0;
     int iChar = 0;
@@ -82,6 +82,8 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, 
         } else if (iChar < dEntry->length() &&  dEntry->is(line.at(iChar+index), iChar) ) {
             // character equals
             iChar++;
+        } else if (openEnd && iChar == dEntry->length()) {
+            return iChar+index; // reached an valid end of keyword-start
         } else {
             // different character  at iChar: switch to next keyword
             iKey++;
@@ -291,8 +293,14 @@ SyntaxSolveKey::SyntaxSolveKey() : SyntaxKeywordBase(SyntaxKind::SolveKey)
 {
     QList<QPair<QString, QString>> list;
     list = SyntaxData::modelType();
-    mLastModelType = list.length()-3;
     mKeywords.insert(int(kind()), new DictList(list));
+    int iKey;
+    findEnd(kind(), "min", 0, iKey);
+    mOtherKey << iKey;
+    findEnd(kind(), "max", 0, iKey);
+    mOtherKey << iKey;
+    findEnd(kind(), "us", 0, iKey);
+    mOtherKey << iKey;
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
@@ -320,18 +328,17 @@ SyntaxBlock SyntaxSolveKey::find(SyntaxKind entryKind, const QString &line, int 
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (start < line.length()) return SyntaxBlock(this);
+    if (start >= line.length()) return SyntaxBlock(this);
     int end = -1;
     int iKey;
-    end = findEnd(kind(), line, start, iKey);
-//    if (end < 0 && start+2 < line.length() && (line.at(start) == 'm' || line.at(start) == 'M')) {
-//        if (line.mid(start,3).compare("min", Qt::CaseInsensitive)==0 ||
-//                line.mid(start,3).compare("max", Qt::CaseInsensitive)==0) {
-//            end = start+3;
-//            int prev = 2;
-//            while (end < line.length() && canBreak(line.at(end), prev) == 2) ++end;
-//        }
-//    }
+    end = findEnd(kind(), line, start, iKey, true);
+    if (end >= 0) {
+        int prev = 2;
+        if (!mOtherKey.contains(iKey) && canBreak(line.at(end), prev) == 2)
+            end = -1;
+        else while (end < line.length() && canBreak(line.at(end), prev) == 2)
+            ++end;
+    }
     if (end > start) {
         return SyntaxBlock(this, start, end, false, SyntaxShift::shift, kind());
     }

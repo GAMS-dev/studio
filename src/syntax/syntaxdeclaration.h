@@ -73,7 +73,7 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 
 protected:
-    int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex);
+    int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false);
     QHash<int, DictList*> mKeywords;
 
 private:
@@ -111,7 +111,7 @@ public:
 
 class SyntaxSolveKey: public SyntaxKeywordBase
 {
-    int mLastModelType;
+    QVector<int> mOtherKey;
 public:
     SyntaxSolveKey();
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;

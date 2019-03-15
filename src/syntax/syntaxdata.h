@@ -403,6 +403,7 @@ public:
             {"MPSGE", "Extended Mathematical Program"},
             {"min", "minimize"},
             {"max", "maximize"},
+            {"us", "using"},
         };
         return list;
     }
