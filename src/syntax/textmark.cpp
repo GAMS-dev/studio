@@ -101,7 +101,7 @@ void TextMark::clearBackRefs()
     mBackRefs.clear();
 }
 
-QColor TextMark::color()
+QColor TextMark::color() const
 {
     if (mReference) {
         if (mReference->type() == TextMark::error) return Qt::darkRed;

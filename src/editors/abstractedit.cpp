@@ -160,13 +160,13 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, siz);
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
-                    selection.format.setForeground(QColor(180,0,0));
+                    selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(Qt::red);
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorName(QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
-                selection.format.setForeground(QColor(10,20,255));
-                selection.format.setUnderlineColor(QColor(10,20,255));
+                selection.format.setForeground(m->color());
+                selection.format.setUnderlineColor(m->color());
                 selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
                 selection.format.setAnchor(true);
                 selection.format.setAnchorName(QString::number(m->line()));
