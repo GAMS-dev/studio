@@ -290,22 +290,6 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
     }
 }
 
-int SyntaxFormula::canBreak(QChar ch, int &prev) {
-
-    // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
-    // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
-    static QVector<QChar> cList = {'"', '$', '\'', '.', ';', '='};  // other breaking kind
-
-    if (ch < '"' || ch > 'z')
-        prev = 0;
-    else if (ch >= 'a' || (ch >= 'A' && ch <= 'Z') || ch == '_')
-        prev = 2;  // break by keyword kind
-    else if (ch >= '0' && ch <= '9') {
-        if (prev!=2) prev = 0;
-    } else prev = cList.contains(ch) ? 1 : 0;
-    return prev;
-}
-
 SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
@@ -316,12 +300,12 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, const QString &line,
     int prev = 0;
 
     int end = start;
-    int chKind = canBreak(line.at(end), prev);
+    int chKind = charClass(line.at(end), prev);
     bool skipWord = (chKind == 2);
     if (chKind == 1) --end;
 
     while (++end < line.length()) {
-        chKind = canBreak(line.at(end), prev);
+        chKind = charClass(line.at(end), prev);
         if (chKind == 1) break;
         if (chKind != 2) skipWord = false;
         else if (!skipWord) break;
@@ -331,14 +315,16 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, const QString &line,
 
 SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, bool &hasContent)
 {
-    int start = index;
-    while (isWhitechar(line, start))
-        ++start;
-    int end = start;
-    if (end >= line.length()) return SyntaxBlock(this);
+    int end = index;
+    while (isWhitechar(line, end))
+        ++end;
+    if (end >= line.length()) {
+        if (end > index) return SyntaxBlock(this, index, end, SyntaxShift::shift);
+        else return SyntaxBlock(this);
+    }
     int prev = 0;
-    int cb1 = end < line.length() ? canBreak(line.at(end), prev) : 0;
-    while (++end < line.length() && canBreak(line.at(end), prev) == cb1) ;
+    int cb1 = end < line.length() ? charClass(line.at(end), prev) : 0;
+    while (++end < line.length() && charClass(line.at(end), prev) == cb1) ;
     hasContent = false;
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }

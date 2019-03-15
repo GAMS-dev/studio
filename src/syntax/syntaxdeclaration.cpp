@@ -306,22 +306,6 @@ SyntaxSolveKey::SyntaxSolveKey() : SyntaxKeywordBase(SyntaxKind::SolveKey)
     mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
 }
 
-int canBreak(QChar ch, int &prev) {
-    // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
-    // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
-    static QVector<QChar> cList = {'"', '$', '\'', '.', ';', '='};  // other breaking kind
-
-    if (ch < '"' || ch > 'z')
-        prev = 0;
-    else if (ch >= 'a' || (ch >= 'A' && ch <= 'Z') || ch == '_')
-        prev = 2;  // break by keyword kind
-    else if (ch >= '0' && ch <= '9') {
-        if (prev!=2) prev = 0;
-    } else prev = cList.contains(ch) ? 1 : 0;
-    return prev;
-}
-
-
 SyntaxBlock SyntaxSolveKey::find(SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
@@ -334,9 +318,9 @@ SyntaxBlock SyntaxSolveKey::find(SyntaxKind entryKind, const QString &line, int 
     end = findEnd(kind(), line, start, iKey, true);
     if (end >= 0) {
         int prev = 2;
-        if (!mOtherKey.contains(iKey) && canBreak(line.at(end), prev) == 2)
+        if (!mOtherKey.contains(iKey) && charClass(line.at(end), prev) == 2)
             end = -1;
-        else while (end < line.length() && canBreak(line.at(end), prev) == 2)
+        else while (end < line.length() && charClass(line.at(end), prev) == 2)
             ++end;
     }
     if (end > start) {
