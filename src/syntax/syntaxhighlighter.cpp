@@ -76,8 +76,14 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody), cl.value(SyntaxDiBdy));
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), cl.value(SyntaxComnt), fItalic);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title), cl.value(SyntaxTitle), fBoldItalic);
-    initKind(new SyntaxFormula(SyntaxKind::Formula));
-    initKind(new SyntaxFormula(SyntaxKind::SolveBody));
+
+    SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
+    initKind(syntaxFormula);
+    syntaxDirective->addSyntaxFormula(syntaxFormula);
+    SyntaxFormula * syntaxSolveBody = new SyntaxFormula(SyntaxKind::SolveBody);
+    initKind(syntaxSolveBody);
+    syntaxDirective->addSyntaxFormula(syntaxSolveBody);
+
     initKind(new SyntaxAssign(), cl.value(SyntaxAssgn), fBold);
     initKind(new SyntaxString(), cl.value(SyntaxStrin));
     initKind(new SyntaxCommentLine(), cl.value(SyntaxComnt), fItalic);
