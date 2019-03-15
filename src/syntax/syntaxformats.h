@@ -80,6 +80,9 @@ enum class SyntaxKind {
     EmbeddedBody,
     EmbeddedEnd,
     Reserved,
+    Solve,
+    SolveBody,
+    SolveKey,
 
     KindCount
 };
@@ -153,6 +156,21 @@ public:
     static int stateToInt(SyntaxKind _state);
     static SyntaxKind intToState(int intState);
 protected:
+
+    inline int charClass(QChar ch, int &prev) {
+        // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
+        // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
+        static QVector<QChar> cList = {'"', '$', '\'', '.', ';', '='};  // other breaking kind
+        if (ch < '"' || ch > 'z')
+            prev = 0;
+        else if (ch >= 'a' || (ch >= 'A' && ch <= 'Z') || ch == '_')
+            prev = 2;  // break by keyword kind
+        else if (ch >= '0' && ch <= '9') {
+            if (prev!=2) prev = 0;
+        } else prev = cList.contains(ch) ? 1 : 0;
+        return prev;
+    }
+
 
     inline bool isKeywordChar(const QChar& ch) {
         return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
@@ -254,11 +272,9 @@ public:
 class SyntaxFormula: public SyntaxAbstract
 {
 public:
-    SyntaxFormula();
+    SyntaxFormula(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
-private:
-    int canBreak(QChar ch, int &prev);
 };
 
 class SyntaxString : public SyntaxAbstract
