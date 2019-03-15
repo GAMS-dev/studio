@@ -586,7 +586,7 @@
   <action name="actionGAMS_Library">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/database_bw</normaloff>:/img/database_bw</iconset>
+     <normaloff>:/img/books</normaloff>:/img/books</iconset>
    </property>
    <property name="text">
     <string>&amp;Model Library Explorer</string>

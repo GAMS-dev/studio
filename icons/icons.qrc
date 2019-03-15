@@ -2,6 +2,7 @@
     <qresource prefix="/img">
         <file alias="backward">angle-up.svg</file>
         <file alias="book">book.svg</file>
+        <file alias="books">books.svg</file>
         <file alias="bookmark">bookmark.svg</file>
         <file alias="bug-r">bug-r.svg</file>
         <file alias="cogs">cogs.svg</file>
