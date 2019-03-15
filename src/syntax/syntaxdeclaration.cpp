@@ -238,7 +238,10 @@ SyntaxBlock SyntaxReserved::find(SyntaxKind entryKind, const QString &line, int 
     int iKey;
     end = findEnd(kind(), line, start, iKey);
     if (end > start) {
-        return SyntaxBlock(this, start, end, false, SyntaxShift::in, kind());
+        if (kind() == SyntaxKind::Reserved)
+            return SyntaxBlock(this, start, end, false, SyntaxShift::in, SyntaxKind::Formula);
+        else
+            return SyntaxBlock(this, start, end, false, SyntaxShift::in, SyntaxKind::SolveBody);
     }
     return SyntaxBlock(this);
 }
@@ -316,7 +319,7 @@ SyntaxBlock SyntaxSolveKey::find(SyntaxKind entryKind, const QString &line, int 
     int end = -1;
     int iKey;
     end = findEnd(kind(), line, start, iKey, true);
-    if (end >= 0) {
+    if (end >= 0 && end < line.length()) {
         int prev = 2;
         if (!mOtherKey.contains(iKey) && charClass(line.at(end), prev) == 2)
             end = -1;
