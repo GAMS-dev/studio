@@ -26,6 +26,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
     void leaveEvent(QEvent *event) override;
     QSize sectionSizeFromContents(int logicalIndex) const override;
 
@@ -38,6 +39,8 @@ private:
     int dim() const;
     QPoint mMousePos = QPoint(-1,-1);
     QPoint mDragStartPosition;
+
+    int dimIdxEnd = -1;
 };
 
 } // namespace gdxviewer

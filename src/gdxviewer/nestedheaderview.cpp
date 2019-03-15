@@ -95,6 +95,11 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_MouseOver;
             opt.state = state;
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
+            if (dimIdxEnd == i) {
+                painter->restore();
+                painter->drawLine(opt.rect.left(),opt.rect.top(), opt.rect.left(), opt.rect.bottom());
+                painter->save();
+            }
         }
     } else {
         for(int i=0; i<dim(); i++) {
@@ -116,6 +121,11 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_MouseOver;
             opt.state = state;
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
+            if (dimIdxEnd == i) {
+                painter->restore();
+                painter->drawLine(opt.rect.left(),opt.rect.top(), opt.rect.right(), opt.rect.top());
+                painter->save();
+            }
         }
     }
     painter->setBrushOrigin(oldBO);
@@ -166,13 +176,14 @@ void NestedHeaderView::dragEnterEvent(QDragEnterEvent *event)
 
 void NestedHeaderView::dragMoveEvent(QDragMoveEvent *event)
 {
-    int dimIdxEnd = pointToDimension(event->pos());
+    dimIdxEnd = pointToDimension(event->pos());
     int orientationEnd = orientation();
     if (orientationEnd == Qt::Horizontal)
         dimIdxEnd += sym()->dim()-sym()->tvColDim();
     if (orientation() == Qt::Horizontal)
         dimIdxEnd = dimIdxEnd - sym()->dim() + dim();
     decideAcceptDragEvent(event);
+    viewport()->update();
 }
 
 void NestedHeaderView::decideAcceptDragEvent(QDragMoveEvent *event)
@@ -201,13 +212,14 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
         orientationStart = Qt::Vertical;
     }
 
-    int dimIdxEnd = pointToDimension(event->pos());
+    dimIdxEnd = pointToDimension(event->pos());
     int orientationEnd = orientation();
     if (orientationEnd == Qt::Horizontal)
         dimIdxEnd += sym()->dim()-sym()->tvColDim();
 
     if (dimIdxStart == dimIdxEnd && orientationStart == orientationEnd) { //nothing happens
         event->accept();
+        dimIdxEnd = -1;
         return;
     }
 
@@ -229,6 +241,14 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->verticalHeader())->geometriesChanged();
     static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->horizontalHeader())->geometriesChanged();
     event->accept();
+    dimIdxEnd = -1;
+}
+
+void NestedHeaderView::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    QHeaderView::dragLeaveEvent(event);
+    dimIdxEnd = -1;
+    viewport()->update();
 }
 
 void NestedHeaderView::leaveEvent(QEvent *event)
