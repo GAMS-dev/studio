@@ -39,17 +39,6 @@ class StudioSettings;
 class LineNumberArea;
 class SearchWidget;
 
-enum class CharType {
-    None,
-    Ctrl,
-    Seperator,
-    Punctuation,
-    Other,
-    Number,
-    LetterUCase,
-    LetterLCase,
-};
-
 struct ParenthesesMatch {
     ParenthesesMatch(int _pos = -1, int _match = -1, int _inOutMatch = -1, bool _valid = false)
         : pos(_pos), match(_match), inOutMatch(_inOutMatch), valid(_valid) {}
@@ -95,6 +84,18 @@ class CodeEdit : public AbstractEdit
 {
     Q_OBJECT
 
+public:
+    enum class CharType {
+        None,
+        Ctrl,
+        Seperator,
+        Punctuation,
+        Other,
+        Number,
+        LetterUCase,
+        LetterLCase,
+    };
+    Q_ENUM(CharType)
 
 public:
     CodeEdit(QWidget *parent = nullptr);

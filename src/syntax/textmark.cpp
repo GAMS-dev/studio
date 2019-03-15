@@ -31,7 +31,7 @@ TextMarkId TextMark::mNextId = 0;
 TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId groupId)
     : mId(mNextId++), mFileId(fileId), mGroupId(groupId), mMarkRepo(marks), mType(tmType)
 {
-    if (!mMarkRepo) FATAL() << "The TextMarkRepo must be a valid instance.";
+    Q_ASSERT_X(mMarkRepo, "TextMark constructor", "The TextMarkRepo must be a valid instance.");
 }
 
 void TextMark::setLine(int lineNr)

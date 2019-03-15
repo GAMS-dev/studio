@@ -24,9 +24,15 @@
 #include <QHash>
 #include <QStringList>
 #include <QRegularExpression>
+#include <QMetaEnum>
+#include <QTextStream>
 
 namespace gams {
 namespace studio {
+
+namespace syntax {
+
+Q_NAMESPACE
 
 enum class SyntaxKind {
     Standard,
@@ -34,6 +40,9 @@ enum class SyntaxKind {
     DirectiveBody,                  // text following the Directive
     DirectiveComment,               // a DirectiveBody formatted as comment
     Title,                          // a DirectiveBody formatted as title
+    String,
+    Formula,
+    Assignment,
 
     CommentLine,
     CommentBlock,
@@ -48,16 +57,22 @@ enum class SyntaxKind {
     DeclarationTable,
 
     Identifier,
-    IdentifierDescription1,         // description started with single quote '
-    IdentifierDescription2,         // description started with double quote "
+    IdentifierDim1,                 // dimension started with '('
+    IdentifierDim2,                 // dimension started with '['
+    IdentifierDimEnd1,              // dimension started with '(' must end with ')'
+    IdentifierDimEnd2,              // dimension started with '[' must end with ']'
+    IdentifierDescription,
     IdentifierAssignment,
     AssignmentLabel,
     AssignmentValue,
     IdentifierAssignmentEnd,        // after assignment to keep declaration-level
 
     IdentifierTable,
-    IdentifierTableDescription1,
-    IdentifierTableDescription2,
+    IdentifierTableDim1,
+    IdentifierTableDim2,
+    IdentifierTableDimEnd1,
+    IdentifierTableDimEnd2,
+    IdentifierTableDescription,
     IdentifierTableAssignmentHead,
     IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
 
@@ -65,19 +80,26 @@ enum class SyntaxKind {
     EmbeddedBody,
     EmbeddedEnd,
     Reserved,
-    ReservedBody,
+    Solve,
+    SolveBody,
+    SolveKey,
 
     KindCount
 };
+Q_ENUM_NS(SyntaxKind);
+
+//inline QTextStream &operator <<(QTextStream &steam, SyntaxKind key) noexcept { return steam << QVariant::fromValue(key).toString(); }
+
 QString syntaxKindName(SyntaxKind kind);
 
 enum class SyntaxShift {
-    shift,      ///> shifts from the previous kind to the current kind
-    skip,       ///> skips the current kind
-    in,         ///> stacks the nextKind on top
-    out,        ///> steps out of the kind (unstacks current kind)
+    shift,      ///> replace current-top-kind by this
+    skip,       ///> skips this kind (keep current-top-kind)
+    in,         ///> stacks the nextKind on top of current-top-kind
+    out,        ///> steps out of the kind (unstacks current-top-kind)
     reset,      ///> steps out of the whole stack until SyntaxKind::Standard is reached
 };
+Q_ENUM_NS(SyntaxShift);
 
 struct SyntaxTransition
 {
@@ -128,11 +150,27 @@ public:
     virtual SyntaxTransitions nextKinds(bool emptyLine = false);
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
+    virtual int maxNesting() { return 0; }
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
     int intSyntaxType() { return static_cast<int>(kind()); }
     static int stateToInt(SyntaxKind _state);
     static SyntaxKind intToState(int intState);
 protected:
+
+    inline int charClass(QChar ch, int &prev) {
+        // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
+        // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
+        static QVector<QChar> cList = {'"', '$', '\'', '.', ';', '='};  // other breaking kind
+        if (ch < '"' || ch > 'z')
+            prev = 0;
+        else if (ch >= 'a' || (ch >= 'A' && ch <= 'Z') || ch == '_')
+            prev = 2;  // break by keyword kind
+        else if (ch >= '0' && ch <= '9') {
+            if (prev!=2) prev = 0;
+        } else prev = cList.contains(ch) ? 1 : 0;
+        return prev;
+    }
+
 
     inline bool isKeywordChar(const QChar& ch) {
         return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
@@ -164,7 +202,7 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
-
+class SyntaxCommentEndline;
 /// \brief Defines the syntax for a directive.
 class SyntaxDirective : public SyntaxAbstract
 {
@@ -172,11 +210,13 @@ public:
     SyntaxDirective(QChar directiveChar = '$');
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
     QHash<QString, SyntaxKind> mSpecialKinds;
+    SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
 };
 
 
@@ -200,6 +240,17 @@ private:
     QChar mCommentChar;
 };
 
+ /// \brief Defines the syntax for a single comment line.
+class SyntaxCommentEndline: public SyntaxAbstract
+{
+    QString mCommentChars;
+public:
+    SyntaxCommentEndline(QString commentChars = "!!");
+    void setCommentChars(QString commentChars);
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
 /// \brief Defines the syntax for a multi-line comment block.
 class SyntaxCommentBlock: public SyntaxAbstract
 {
@@ -218,6 +269,33 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
+class SyntaxFormula: public SyntaxAbstract
+{
+public:
+    SyntaxFormula(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class SyntaxString : public SyntaxAbstract
+{
+public:
+    SyntaxString();
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class SyntaxAssign : public SyntaxAbstract
+{
+public:
+    SyntaxAssign();
+    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+
+
+} // namespace syntax
 } // namespace studio
 } // namespace gams
 

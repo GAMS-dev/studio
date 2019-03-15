@@ -39,7 +39,7 @@ class TextView : public QAbstractScrollArea
     Q_OBJECT
 public:
     explicit TextView(QWidget *parent = nullptr);
-    void loadFile(const QString &fileName, int codecMib, bool initAnchor);
+    bool loadFile(const QString &fileName, int codecMib, bool initAnchor);
     void closeFile();
     void reopenFile();
     qint64 fileSize() const;

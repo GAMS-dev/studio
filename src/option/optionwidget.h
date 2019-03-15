@@ -68,6 +68,7 @@ public:
 
     void setEditorExtended(bool extended);
     bool isEditorExtended();
+    QDockWidget* extendedEditor() const;
 
 signals:
     void optionLoaded(const QString &location);

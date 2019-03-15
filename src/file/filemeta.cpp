@@ -157,7 +157,7 @@ void FileMeta::linkDocument(QTextDocument *doc)
     }
 
     if (kind() == FileKind::Gms) {
-        mHighlighter = new SyntaxHighlighter(mDocument);
+        mHighlighter = new syntax::SyntaxHighlighter(mDocument);
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
     }
@@ -276,18 +276,10 @@ void FileMeta::updateMarks()
 
     // update changed editors
     for (QWidget *w: mEditors) {
-        AbstractEdit *edit = nullptr;
-        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w)) {
-            edit = ed;
+        if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w))
             ed->marksChanged(mDirtyLines);
-        }
-        if (TextView * tv = ViewHelper::toTextView(w)) {
-            edit = tv->edit();
+        if (TextView * tv = ViewHelper::toTextView(w))
             tv->marksChanged(mDirtyLines);
-        }
-        if (edit && mHighlighter) {
-            mHighlighter->rehighlight();
-        }
     }
     mDirtyLines.clear();
 }
@@ -322,7 +314,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         if (scEdit) {
-            connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &SyntaxHighlighter::syntaxKind);
+            connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
         }
         if (!aEdit->viewport()->hasMouseTracking()) {
             aEdit->viewport()->setMouseTracking(true);
@@ -376,7 +368,7 @@ void FileMeta::removeEditor(QWidget *edit)
         mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
     }
     if (scEdit && mHighlighter) {
-        disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &SyntaxHighlighter::syntaxKind);
+        disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
     }
 }
 
@@ -505,7 +497,7 @@ void FileMeta::renameToBackup()
 
 }
 
-FileDifferences FileMeta::compare(QString fileName)
+FileMeta::FileDifferences FileMeta::compare(QString fileName)
 {
     FileDifferences res;
     Data other(fileName.isEmpty() ? location() : fileName);
@@ -554,7 +546,7 @@ void FileMeta::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
     }
 }
 
-SyntaxHighlighter *FileMeta::highlighter() const
+syntax::SyntaxHighlighter *FileMeta::highlighter() const
 {
     return mHighlighter;
 }
@@ -730,7 +722,7 @@ FileMeta::Data::Data(QString location, FileType *knownType)
     }
 }
 
-FileDifferences FileMeta::Data::compare(FileMeta::Data other)
+FileMeta::FileDifferences FileMeta::Data::compare(FileMeta::Data other)
 {
     FileDifferences res;
     if (!other.exist) res.setFlag(FdMissing);

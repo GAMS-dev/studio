@@ -709,9 +709,10 @@ void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
     if (!edit || edit->isReadOnly()) {
-        mStatusWidgets->setEditMode(EditMode::Readonly);
+        mStatusWidgets->setEditMode(StatusWidgets::EditMode::Readonly);
     } else {
-        mStatusWidgets->setEditMode(edit->overwriteMode() ? EditMode::Overwrite : EditMode::Insert);
+        mStatusWidgets->setEditMode(edit->overwriteMode() ? StatusWidgets::EditMode::Overwrite
+                                                          : StatusWidgets::EditMode::Insert);
     }
 }
 
@@ -1334,7 +1335,7 @@ void MainWindow::postGamsRun(NodeId origin)
     // add all created files to project explorer
     groupNode->addNodesForSpecialFiles();
 
-    DEB() << "RUNmsec: " << QTime::currentTime().msecsSinceStartOfDay() - mTestTimer.msecsSinceStartOfDay();
+//    DEB() << "RUNmsec: " << QTime::currentTime().msecsSinceStartOfDay() - mTestTimer.msecsSinceStartOfDay();
 }
 
 void MainWindow::postGamsLibRun()
@@ -1372,9 +1373,9 @@ void MainWindow::on_actionHelp_triggered()
             int iKind = 0;
             ce->wordInfo(ce->textCursor(), word, iKind);
 
-            if (iKind == static_cast<int>(SyntaxKind::Title)) {
+            if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, "title");
-            } else if (iKind == static_cast<int>(SyntaxKind::Directive)) {
+            } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
                 mHelpWidget->on_helpContentRequested(HelpWidget::DOLLARCONTROL_CHAPTER, word);
             } else {
                 mHelpWidget->on_helpContentRequested(HelpWidget::INDEX_CHAPTER, word);
@@ -1461,6 +1462,10 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
+    bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
+    if (isResults)
+        mSearchDialog->clearResults();
+
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
@@ -1469,8 +1474,8 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         AbstractEdit* ed = ViewHelper::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
 
-        // dont remove syslog
-        if (edit != mSyslog)
+        // dont remove syslog and dont delete resultsView
+        if (!(edit == mSyslog || isResults))
             edit->deleteLater();
     }
 }
@@ -2373,16 +2378,20 @@ void MainWindow::on_actionSearch_triggered()
     }
 }
 
-void MainWindow::showResults(SearchResultList &results)
+void MainWindow::showResults(SearchResultList* results)
 {
-    ResultsView* resultsView = searchDialog()->resultsView();
-    int index = ui->logTabs->indexOf(resultsView); // did widget exist before?
+    int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
+    // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));
-    QString title("Results: " + mSearchDialog->searchTerm() + " (" + QString::number(results.size()) + ")");
+
+    QString nr;
+    if (results->size() > 49999) nr = "50000+";
+    else nr = QString::number(results->size());
+
+    QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
 
     ui->dockLogView->show();
-    searchDialog()->resultsView()->resizeColumnsToContent();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
@@ -2878,6 +2887,8 @@ void MainWindow::resetViews()
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         }
     }
+    mGamsOptionWidget->setEditorExtended(false);
+    addDockWidget(Qt::TopDockWidgetArea, mGamsOptionWidget->extendedEditor());
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)

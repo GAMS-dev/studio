@@ -119,7 +119,7 @@ public:
     QWidgetList openEditors();
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
-    void showResults(SearchResultList &results);
+    void showResults(SearchResultList* results);
     void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, LibraryItem *model);

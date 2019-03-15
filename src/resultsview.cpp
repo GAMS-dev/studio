@@ -26,12 +26,15 @@
 namespace gams {
 namespace studio {
 
-ResultsView::ResultsView(SearchResultList &resultList, MainWindow *parent) :
-    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList)
+ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
+    QWidget(parent), ui(new Ui::ResultsView), mMain(parent)
 {
     ui->setupUi(this);
-    ui->tableView->setModel(&mResultList);
-    searchTermLength = resultList.searchTerm().length();
+    mResultList = resultList;
+    ui->tableView->setModel(mResultList);
+    searchTermLength = resultList->searchTerm().length();
+    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
 }
 
 ResultsView::~ResultsView()
@@ -41,14 +44,14 @@ ResultsView::~ResultsView()
 
 void ResultsView::resizeColumnsToContent()
 {
-    ui->tableView->resizeColumnsToContents();
-    ui->tableView->resizeRowsToContents();
+    ui->tableView->resizeColumnToContents(0);
+    ui->tableView->resizeColumnToContents(1);
 }
 
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
     int selectedRow = index.row();
-    Result item = mResultList.at(selectedRow);
+    Result item = mResultList->at(selectedRow);
 
     // open so we have a document of the file
     if (QFileInfo(item.filepath()).exists())
@@ -63,7 +66,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 
 SearchResultList* ResultsView::resultList()
 {
-    return &mResultList;
+    return mResultList;
 }
 
 }

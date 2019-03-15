@@ -32,8 +32,7 @@ namespace studio {
 ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectGroupNode* root)
     : QAbstractItemModel(parent), mProjectRepo(parent), mRoot(root)
 {
-    if (!mProjectRepo)
-        FATAL() << "nullptr not allowed. The FileTreeModel needs a valid FileRepository.";
+    Q_ASSERT_X(mProjectRepo, "ProjectTreeModel constructor", "The FileTreeModel needs a valid FileRepository");
 }
 
 QModelIndex ProjectTreeModel::index(const ProjectAbstractNode *entry) const
@@ -171,7 +170,6 @@ bool ProjectTreeModel::removeRows(int row, int count, const QModelIndex& parent)
     Q_UNUSED(row);
     Q_UNUSED(count);
     Q_UNUSED(parent);
-    DEB() << "FileTreeModel::removeRows is unsupported, please use FileTreeModel::removeChild";
     return false;
 }
 

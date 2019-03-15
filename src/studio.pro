@@ -165,7 +165,8 @@ SOURCES += \
     support/gamslicenseinfo.cpp         \
     support/solvertablemodel.cpp        \
     maintabcontextmenu.cpp \
-    logtabcontextmenu.cpp
+    logtabcontextmenu.cpp \
+    search/searchworker.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -278,7 +279,9 @@ HEADERS += \
     support/gamslicenseinfo.h       \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
-    logtabcontextmenu.h
+    logtabcontextmenu.h \
+    search/searchworker.h \
+    syntax/blockcode.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

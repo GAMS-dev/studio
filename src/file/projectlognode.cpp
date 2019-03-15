@@ -202,7 +202,6 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
                         tm->setRefMark(mark.textMark);
                         if (mark.textMark->fileKind() == FileKind::Lst)
                             mLastLstLink = mark.textMark;
-                        mark.textMark->rehighlight();
                     }
                     size = -1;
                 }

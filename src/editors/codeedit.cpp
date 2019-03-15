@@ -572,9 +572,21 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             emit cursorPositionChanged();
         }
     } else {
-        if (mBlockEdit && (e->modifiers() || e->buttons() != Qt::RightButton))
-            endBlockEdit(false);
-        AbstractEdit::mousePressEvent(e);
+        if (mBlockEdit) {
+            if (e->modifiers() || e->buttons() != Qt::RightButton)
+                endBlockEdit(false);
+            else if (e->button() == Qt::RightButton) {
+                QTextCursor mouseTC = cursorForPosition(e->pos());
+                if (mouseTC.blockNumber() < qMin(mBlockEdit->startLine(), mBlockEdit->currentLine())
+                        || mouseTC.blockNumber() > qMax(mBlockEdit->startLine(), mBlockEdit->currentLine())) {
+                    endBlockEdit(false);
+                    setTextCursor(mouseTC);
+                }
+            } else {
+                AbstractEdit::mousePressEvent(e);
+            }
+        } else
+            AbstractEdit::mousePressEvent(e);
     }
 }
 
@@ -964,7 +976,7 @@ QStringList CodeEdit::clipboard(bool *isBlock)
     return texts;
 }
 
-CharType CodeEdit::charType(QChar c)
+CodeEdit::CharType CodeEdit::charType(QChar c)
 {
     switch (c.category()) {
     case QChar::Number_DecimalDigit:
@@ -1154,9 +1166,9 @@ inline int CodeEdit::assignmentKind(int p)
     int postKind = 0;
     emit requestSyntaxKind(p-1, preKind);
     emit requestSyntaxKind(p+1, postKind);
-    if (postKind == static_cast<int>(SyntaxKind::IdentifierAssignment)) return 1;
-    if (preKind == static_cast<int>(SyntaxKind::IdentifierAssignment)) return -1;
-    if (preKind == static_cast<int>(SyntaxKind::IdentifierAssignmentEnd)) return -1;
+    if (postKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return 1;
+    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return -1;
+    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignmentEnd)) return -1;
     return 0;
 }
 
@@ -1390,7 +1402,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 CodeEdit::BlockEdit::BlockEdit(CodeEdit* edit, int blockNr, int colNr)
     : mEdit(edit)
 {
-    if (!edit) FATAL() << "BlockEdit needs a valid editor";
+    Q_ASSERT_X(edit, "BlockEdit constructor", "BlockEdit needs a valid editor");
     mStartLine = blockNr;
     mCurrentLine = blockNr;
     mColumn = colNr;

@@ -2,6 +2,7 @@
     <qresource prefix="/img">
         <file alias="backward">angle-up.svg</file>
         <file alias="book">book.svg</file>
+        <file alias="books">books.svg</file>
         <file alias="bookmark">bookmark.svg</file>
         <file alias="bug-r">bug-r.svg</file>
         <file alias="cogs">cogs.svg</file>
@@ -21,6 +22,7 @@
         <file alias="exclam-triangle-y">exclam-triangle-y.svg</file>
         <file alias="external-link">external-link.svg</file>
         <file alias="file">file.svg</file>
+        <file alias="file-edit">file-edit.svg</file>
         <file alias="file-alt">file-alt.svg</file>
         <file alias="file-alt-run">file-alt-run.svg</file>
         <file alias="filter">filter.svg</file>

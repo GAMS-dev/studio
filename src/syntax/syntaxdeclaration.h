@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
 
 class DictEntry
 {
@@ -72,8 +73,8 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 
 protected:
-    int findEnd(SyntaxKind kind, const QString& line, int index);
-    QHash<SyntaxKind, DictList*> mKeywords;
+    int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false);
+    QHash<int, DictList*> mKeywords;
 
 private:
     inline QStringList swapStringCase(QStringList list);
@@ -104,16 +105,16 @@ public:
 class SyntaxReserved: public SyntaxKeywordBase
 {
 public:
-    SyntaxReserved();
+    SyntaxReserved(SyntaxKind kind);
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
 };
 
-class SyntaxReservedBody: public SyntaxAbstract
+class SyntaxSolveKey: public SyntaxKeywordBase
 {
+    QVector<int> mOtherKey;
 public:
-    SyntaxReservedBody();
+    SyntaxSolveKey();
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxEmbedded: public SyntaxKeywordBase
@@ -133,6 +134,7 @@ public:
 
 constexpr inline uint qHash(SyntaxKind key, uint seed = 0) noexcept { return uint(key) ^ seed; }
 
+} // namespace syntax
 } // namespace studio
 } // namespace gans
 
