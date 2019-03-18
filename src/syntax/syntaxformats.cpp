@@ -26,7 +26,7 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';', '='};
+const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';'};
 
 QString syntaxKindName(SyntaxKind kind)
 {
@@ -342,6 +342,13 @@ SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, bool &hasCo
     while (++end < line.length() && charClass(line.at(end), prev, mSpecialDynamicChars) == cb1) ;
     hasContent = false;
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
+}
+
+void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
+{
+    mSpecialDynamicChars = chars;
+    if (kind() == SyntaxKind::Formula)
+        mSpecialDynamicChars << '=';
 }
 
 SyntaxString::SyntaxString()
