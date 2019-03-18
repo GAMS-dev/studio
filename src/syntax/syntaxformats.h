@@ -143,7 +143,7 @@ public:
     SyntaxKind kind() { return mKind; }
 
     /// Finds the begin of this syntax
-    virtual SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) = 0;
+    virtual SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) = 0;
 
     /// Finds the end of valid trailing characters for this syntax
     virtual SyntaxBlock validTail(const QString &line, int index, bool &hasContent) = 0;
@@ -198,7 +198,7 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -208,7 +208,7 @@ class SyntaxDirective : public SyntaxAbstract
 {
 public:
     SyntaxDirective(QChar directiveChar = '$');
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
     void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
 private:
@@ -225,7 +225,7 @@ class SyntaxDirectiveBody: public SyntaxAbstract
 {
 public:
     SyntaxDirectiveBody(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -234,7 +234,7 @@ class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(QChar commentChar = '*');
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QChar mCommentChar;
@@ -247,7 +247,7 @@ class SyntaxCommentEndline: public SyntaxAbstract
 public:
     SyntaxCommentEndline(QString commentChars = "!!");
     void setCommentChars(QString commentChars);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -256,7 +256,7 @@ class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -265,7 +265,7 @@ class SyntaxDelimiter: public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxDelimiter(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -281,7 +281,7 @@ class SyntaxString : public SyntaxAbstract
 {
 public:
     SyntaxString();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -289,7 +289,7 @@ class SyntaxAssign : public SyntaxAbstract
 {
 public:
     SyntaxAssign();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
