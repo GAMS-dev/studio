@@ -28,12 +28,8 @@ namespace studio {
 DynamicFile::DynamicFile(QString fileName, int backups, QObject *parent): QObject(parent), mBackups(backups)
 {
     mFile.setFileName(QDir::toNativeSeparators(fileName));
-    if (mFile.exists())
-        runBackupCircle();
 
-    mCloseTimer.setSingleShot(true);
-    mCloseTimer.setInterval(1000);
-    connect(&mCloseTimer, &QTimer::timeout, this, &DynamicFile::closeFile);
+    if (mFile.exists()) runBackupCircle();
 }
 
 DynamicFile::~DynamicFile()
