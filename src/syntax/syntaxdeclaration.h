@@ -109,11 +109,11 @@ public:
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
 };
 
-class SyntaxSolveKey: public SyntaxKeywordBase
+class SyntaxSubsetKey: public SyntaxKeywordBase
 {
     QVector<int> mOtherKey;
 public:
-    SyntaxSolveKey();
+    SyntaxSubsetKey(SyntaxKind kind);
     SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
 };
 
