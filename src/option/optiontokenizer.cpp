@@ -45,7 +45,7 @@ OptionTokenizer::OptionTokenizer(const QString &optionFileName)
 {
     // option definition
     mOption = new Option(CommonPaths::systemDir(), optionFileName);
-    mOPTAvailable = true;
+    mOPTAvailable = mOption->available();
 
     // option parser
     char msg[GMS_SSSIZE];
@@ -528,7 +528,10 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
 
 bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str)
 {
-    QString text = str; //item->text.simplified();
+    if (!mOption->available())
+        return false;
+
+    QString text = str;
 
     optResetAll( mOPTHandle );
     if (text.startsWith("*") && firstTime) {
@@ -822,7 +825,10 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
 
 bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem *item)
 {
-    QString str = ""; // = QString("%1 %2 ").arg(key).arg(value);
+    if (!mOption->available())
+        return false;
+
+    QString str = "";
 
     QString separator = " ";
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
@@ -1122,9 +1128,13 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
 
        while (!in.atEnd()) {
            i++;
-           optResetAll( mOPTHandle );
            SolverOptionItem* item = new SolverOptionItem();
-           getOptionItemFromStr(item, true, in.readLine());
+           if (mOption->available()) {
+              optResetAll( mOPTHandle );
+              getOptionItemFromStr(item, true, in.readLine());
+           } else {
+               item->key = in.readLine();
+           }
            items.append( item );
        }
        inputFile.close();

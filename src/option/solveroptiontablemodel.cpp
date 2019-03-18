@@ -510,7 +510,8 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
                   text = data( index(idx.row(), SolverOptionTableModel::COLUMN_EOL_COMMENT), Qt::DisplayRole).toString();
               }
 
-              mOptionTokenizer->updateOptionItem(key, value, text, mOptionItem.at(idx.row()));
+              if (mOptionTokenizer->getOption()->available())
+                  mOptionTokenizer->updateOptionItem(key, value, text, mOptionItem.at(idx.row()));
 
               if (mOptionItem.at(idx.row())->error == No_Error)
                    setHeaderData( idx.row(), Qt::Vertical,

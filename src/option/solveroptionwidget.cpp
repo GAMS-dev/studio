@@ -54,6 +54,10 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
     ui->solverOptionTabWidget->addTab( logEdit, "Message" );
+    if (!mOptionTokenizer->getOption()->available())  {
+        qDebug() << "Problem reading definition file " << QString("opt%1.def").arg(solverName);
+        mOptionTokenizer->logger()->append(QString("%1 is not a valid solver name").arg(solverName), LogMsgType::Warning);
+    }
 
     SolverOptionSetting* settingEdit = new SolverOptionSetting(mOptionTokenizer->getOption()->getEOLChars(), this);
     mOptionTokenizer->on_EOLCommentChar_changed( settingEdit->getDefaultEOLCharacter() );
@@ -67,7 +71,10 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     });
     ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
 
-    mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+    if (!mOptionTokenizer->getOption()->available())
+        mOptionTokenizer->logger()->append(QString("Loading unknown options from %1").arg(mLocation), LogMsgType::Warning);
+    else
+        mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
     QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mCodec);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
