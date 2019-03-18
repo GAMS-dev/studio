@@ -26,11 +26,12 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
+const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';', '='};
+
 QString syntaxKindName(SyntaxKind kind)
 {
     return QVariant::fromValue(kind).toString();
 }
-
 
 SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 {
@@ -149,10 +150,18 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
     } else if (mSyntaxCommentEndline) {
         if ( match.captured(2).startsWith("oneolcom")) {
             mSyntaxCommentEndline->setCommentChars("!!");
+            for (SyntaxFormula * sf: mSyntaxFormula) {
+                sf->setSpecialDynamicChars(QVector<QChar>() << '!');
+            }
          } else if (match.captured(2).startsWith("eolcom")) {
             int i = match.capturedEnd(2);
             while (isWhitechar(line,i)) ++i;
-            if (i+2 <= line.length()) mSyntaxCommentEndline->setCommentChars(line.mid(i,2));
+            if (i+2 <= line.length()) {
+                mSyntaxCommentEndline->setCommentChars(line.mid(i,2));
+                for (SyntaxFormula * sf: mSyntaxFormula) {
+                    sf->setSpecialDynamicChars(QVector<QChar>() << line.at(i));
+                }
+            }
         }
     }
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
@@ -302,12 +311,12 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, const QString &line,
     int prev = 0;
 
     int end = start;
-    int chKind = charClass(line.at(end), prev);
+    int chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
     bool skipWord = (chKind == 2);
     if (chKind == 1) --end;
 
     while (++end < line.length()) {
-        chKind = charClass(line.at(end), prev);
+        chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
         if (chKind == 1) break;
         if (chKind != 2) skipWord = false;
         else if (!skipWord) break;
@@ -325,8 +334,8 @@ SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, bool &hasCo
         else return SyntaxBlock(this);
     }
     int prev = 0;
-    int cb1 = end < line.length() ? charClass(line.at(end), prev) : 0;
-    while (++end < line.length() && charClass(line.at(end), prev) == cb1) ;
+    int cb1 = end < line.length() ? charClass(line.at(end), prev, mSpecialDynamicChars) : 0;
+    while (++end < line.length() && charClass(line.at(end), prev, mSpecialDynamicChars) == cb1) ;
     hasContent = false;
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
@@ -368,12 +377,16 @@ SyntaxBlock SyntaxAssign::find(const SyntaxKind entryKind, const QString &line, 
     while (isWhitechar(line, start)) start++;
     if (start >= line.length()) return SyntaxBlock(this);
     if (line.at(start) == '.') {
-        if (line.length() > start+1 || line.at(start) == '.')
+        if (line.length() > start+1 && line.at(start+1) == '.')
             return SyntaxBlock(this, start, start+2, SyntaxShift::skip);
     } else if (line.at(start) == '=') {
-        if (line.length() <= start+2 || line.at(start+2) != '=')
+        if (start+1 >= line.length())
             return SyntaxBlock(this, start, start+1, SyntaxShift::skip);
-        if (line.length() >= start+2) {
+        if (line.at(start+1) == '=')
+            return SyntaxBlock(this, start, start+2, SyntaxShift::skip);
+        if (start+2 >= line.length() || line.at(start+2) != '=')
+            return SyntaxBlock(this, start, start+1, SyntaxShift::skip);
+        if (start+2 <= line.length()) {
             bool error = (QString("eglnxcb").indexOf(line.at(start+1), 0, Qt::CaseInsensitive) < 0);
             return SyntaxBlock(this, start, start+3, error, SyntaxShift::skip);
         }
@@ -407,7 +420,7 @@ SyntaxBlock SyntaxCommentEndline::find(const SyntaxKind entryKind, const QString
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (start+2 < line.length() && line.at(start) == mCommentChars.at(0) && line.at(start+1) == mCommentChars.at(1))
+    if (start+2 <= line.length() && line.at(start) == mCommentChars.at(0) && line.at(start+1) == mCommentChars.at(1))
         return SyntaxBlock(this, start, line.length(), SyntaxShift::skip);
     return SyntaxBlock(this);
 }
