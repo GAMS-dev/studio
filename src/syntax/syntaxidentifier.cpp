@@ -70,7 +70,7 @@ SyntaxBlock SyntaxIdentifier::find(SyntaxKind entryKind, const QString& line, in
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (start == line.length()) return SyntaxBlock(this);
+    if (start >= line.length()) return SyntaxBlock(this);
     int end = start;
     if (identChar(line.at(end++)) != 2) return SyntaxBlock(this);
     while (end < line.length()) {
@@ -197,7 +197,7 @@ SyntaxBlock SyntaxIdentifierDimEnd::find(SyntaxKind entryKind, const QString &li
     while (isWhitechar(line, start))
         ++start;
     if (start >= line.length() || line.at(start) != mDelimiter)  return SyntaxBlock(this);
-    return SyntaxBlock(this, start, start+1, SyntaxShift::shift);
+    return SyntaxBlock(this, index, qMin(start+1, line.length()), SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, bool &hasContent)
@@ -265,8 +265,7 @@ SyntaxBlock SyntaxIdentDescript::find(SyntaxKind entryKind, const QString &line,
         if (delim == '/' && line.at(end) == ';') break;
         if (!isWhitechar(line, end)) lastNonWhite = end;
     }
-    if (delim != '/') return SyntaxBlock(this, start, lastNonWhite+1, SyntaxShift::shift, true);
-    return SyntaxBlock(this, start, lastNonWhite+1, SyntaxShift::shift);
+    return SyntaxBlock(this, start, lastNonWhite+1, SyntaxShift::shift, (delim != '/'));
 }
 
 SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, bool &hasContent)

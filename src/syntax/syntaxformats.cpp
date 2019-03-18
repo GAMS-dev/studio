@@ -377,12 +377,16 @@ SyntaxBlock SyntaxAssign::find(gams::studio::syntax::SyntaxKind entryKind, const
     while (isWhitechar(line, start)) start++;
     if (start >= line.length()) return SyntaxBlock(this);
     if (line.at(start) == '.') {
-        if (line.length() > start+1 || line.at(start) == '.')
+        if (line.length() > start+1 && line.at(start+1) == '.')
             return SyntaxBlock(this, start, start+2, SyntaxShift::skip);
     } else if (line.at(start) == '=') {
-        if (line.length() <= start+2 || line.at(start+2) != '=')
+        if (start+1 >= line.length())
             return SyntaxBlock(this, start, start+1, SyntaxShift::skip);
-        if (line.length() >= start+2) {
+        if (line.at(start+1) == '=')
+            return SyntaxBlock(this, start, start+2, SyntaxShift::skip);
+        if (start+2 >= line.length() || line.at(start+2) != '=')
+            return SyntaxBlock(this, start, start+1, SyntaxShift::skip);
+        if (start+2 <= line.length()) {
             bool error = (QString("eglnxcb").indexOf(line.at(start+1), 0, Qt::CaseInsensitive) < 0);
             return SyntaxBlock(this, start, start+3, error, SyntaxShift::skip);
         }
