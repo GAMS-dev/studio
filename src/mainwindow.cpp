@@ -766,6 +766,7 @@ void MainWindow::on_actionNew_triggered()
     while (choice < 1) {
         QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
                                                         tr("GAMS code (*.gms *.inc );;"
+                                                           "Option files (*.opt *.op* *.o*);;"
                                                            "Text files (*.txt);;"
                                                            "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
         if (filePath == "") return;
