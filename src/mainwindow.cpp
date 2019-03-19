@@ -254,6 +254,16 @@ void MainWindow::initToolBar()
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
 }
 
+void MainWindow::updateToolbar(QWidget* current)
+{
+    // deactivate save for welcome page
+    bool activateSave = (current != mWp);
+
+    for (auto a : ui->toolBar->actions()) {
+        if (a->text() == "&Save") a->setEnabled(activateSave);
+    }
+}
+
 void MainWindow::initAutoSave()
 {
     mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
@@ -1085,6 +1095,8 @@ void MainWindow::activeTabChanged(int index)
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
+    updateToolbar(mainTabs()->currentWidget());
+
     updateEditorMode();
 }
 
