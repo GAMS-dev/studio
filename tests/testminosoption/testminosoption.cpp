@@ -564,60 +564,74 @@ void TestMINOSOption::testNonExistReadOptionFile()
     QCOMPARE( items.size(), 0);
 }
 
-void TestMINOSOption::testWriteOptionFile()
+void TestMINOSOption::testWriteOptionFile_data()
 {
     // given
-    QList<OptionItem> items;
-    items.append(OptionItem("summary frequency", "1000"));
-    items.append(OptionItem("crash option", "3"));
-    items.append(OptionItem("factorization frequency", "99"));
+    QList<SolverOptionItem *> items;
+    items.append(new SolverOptionItem(-1, "* summary frequency 1234", "", "", true));
+    items.append(new SolverOptionItem(-1, "summary frequency", "1000", "", false));
+    items.append(new SolverOptionItem(-1, "crash option", "3", "", false));
+    items.append(new SolverOptionItem(-1, "factorization frequency", "99", "", false));
 
-    items.append(OptionItem("LU factor tolerance", "2e+8"));
-    items.append(OptionItem("optimality tolerance", "1.0e-2"));
+    items.append(new SolverOptionItem(-1, "LU factor tolerance", "2e+8", "", false));
+    items.append(new SolverOptionItem(-1, "optimality tolerance", "1.0e-2", "", false));
 
-    items.append(OptionItem("solution", "YES"));
-    items.append(OptionItem("start assigned nonlinears", "ELIGIBLE FOR CRASH"));
-    items.append(OptionItem("LU complete pivoting", ""));
-    items.append(OptionItem("scale no", ""));
-    items.append(OptionItem("verify gradients", ""));
+    items.append(new SolverOptionItem(-1, "solution", "YES", "", false));
+    items.append(new SolverOptionItem(-1, "start assigned nonlinears", "ELIGIBLE FOR CRASH", "", false));
+    items.append(new SolverOptionItem(-1, "LU complete pivoting", "", "", false));
+    items.append(new SolverOptionItem(-1, "scale no", "", "", false));
+    items.append(new SolverOptionItem(-1, "verify gradients", "", "", false));
+
+    int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath( "minos.opt") ));
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op4"), QTextCodec::codecForLocale()) );
+
+    // clean up
+    qDeleteAll(items);
+    items.clear();
 
     // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.opt"));
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op4"));
     int i = 0;
+    QStringList optionItems;
+
     if (inputFile.open(QIODevice::ReadOnly)) {
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
-          QStringList strList = in.readLine().split( "=" );
-          QVERIFY( containKey (items, strList.at(0)) );
-
-          if ((QString::compare(strList.at(0), "summary frequency", Qt::CaseInsensitive)==0) ||
-              (QString::compare(strList.at(0), "crash option", Qt::CaseInsensitive)==0) ||
-              (QString::compare(strList.at(0), "factorization frequency", Qt::CaseInsensitive)==0)
-             ) {
-             QCOMPARE( getValue(items, strList.at(0)).toInt(), strList.at(1).toInt() );
-          } else if ((QString::compare(strList.at(0), "LU factor tolerance", Qt::CaseInsensitive)==0) ||
-                     (QString::compare(strList.at(0), "optimality tolerance", Qt::CaseInsensitive)==0)) {
-              QCOMPARE( getValue(items, strList.at(0)).toDouble(), strList.at(1).toDouble() );
-          } else if ((QString::compare(strList.at(0), "solution", Qt::CaseInsensitive)==0) ||
-                     (QString::compare(strList.at(0), "start assigned nonlinears", Qt::CaseInsensitive)==0)) {
-              QString value = strList.at(1);
-              if (value.startsWith("\""))
-                 value = value.right(value.length()-1);
-              if (value.endsWith("\""))
-                 value = value.left( value.length()-1);
-              QCOMPARE( getValue(items, strList.at(0)).toString(), value );
-          } else {
-              QCOMPARE( strList.size(), 1 );
-          }
-          i++;
+           optionItems << in.readLine();
+           i++ ;
        }
        inputFile.close();
     }
-    QCOMPARE(i, items.size());
 
+    QCOMPARE( optionItems.size(), size );
+    QCOMPARE( i, size );
+
+    QTest::addColumn<QString>("optionString");
+    QTest::addColumn<QString>("line");
+
+    QTest::newRow("line0") << optionItems.at(0) <<  "* summary frequency 1234";
+    QTest::newRow("line1") << optionItems.at(1) <<  "summary frequency 1000";
+    QTest::newRow("line2") << optionItems.at(2) <<  "crash option 3";
+    QTest::newRow("line3") << optionItems.at(3) <<  "factorization frequency 99";
+
+    QTest::newRow("line4") << optionItems.at(4) <<  "LU factor tolerance 2e+8";
+    QTest::newRow("line5") << optionItems.at(5) <<  "optimality tolerance 1.0e-2";
+
+    QTest::newRow("line6")  << optionItems.at(6)  <<  "solution YES";
+    QTest::newRow("line7")  << optionItems.at(7)  <<  "start assigned nonlinears \"ELIGIBLE FOR CRASH\"";
+    QTest::newRow("line8")  << optionItems.at(8)  <<  "LU complete pivoting";
+    QTest::newRow("line9")  << optionItems.at(9)  <<  "scale no";
+    QTest::newRow("line10") << optionItems.at(10) <<  "verify gradients";
+}
+
+void TestMINOSOption::testWriteOptionFile()
+{
+    QFETCH(QString, optionString);
+    QFETCH(QString, line);
+
+    QCOMPARE( optionString, line );
 }
 
 void TestMINOSOption::testEOLChars()

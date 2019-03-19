@@ -58,6 +58,7 @@ private slots:
     void testReadOptionFile();
     void testNonExistReadOptionFile();
 
+    void testWriteOptionFile_data();
     void testWriteOptionFile();
 
     void testEOLChars();

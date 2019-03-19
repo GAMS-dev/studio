@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QStandardPaths>
+#include <QTextCodec>
 
 #include "commonpaths.h"
 #include "testgurobioption.h"
@@ -448,49 +449,61 @@ void TestGUROBIOption::testNonExistReadOptionFile()
     QCOMPARE( items.size(), 0);
 }
 
-void TestGUROBIOption::testWriteOptionFile()
+void TestGUROBIOption::testWriteOptionFile_data()
 {
     // given
-    QList<OptionItem> items;
-    items.append(OptionItem("cliquecuts", "1"));
-    items.append(OptionItem("computeserver", "https://server1/ https://server2/"));
-    items.append(OptionItem("intfeastol", "1e-3"));
-    items.append(OptionItem("method", "3"));
-    items.append(OptionItem("perturbvalue", "0.0012345"));
+    QList<SolverOptionItem *> items;
+    items.append(new SolverOptionItem(-1, "cliquecuts", "1", "", false));
+    items.append(new SolverOptionItem(-1, "computeserver", "https://server1/ https://server2/", "", false));
+    items.append(new SolverOptionItem(-1, "intfeastol", "1e-3", "", false));
+    items.append(new SolverOptionItem(-1, "* -x-x-x--------------------", "", "", true));
+    items.append(new SolverOptionItem(-1, "method", "3", "", false));
+    items.append(new SolverOptionItem(-1, "perturbvalue", "0.0012345", "", false));
+
+    int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.opt") ));
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op4"), QTextCodec::codecForLocale()) );
+
+    // clean up
+    qDeleteAll(items);
+    items.clear();
 
     // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.opt"));
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op4"));
     int i = 0;
+    QStringList optionItems;
+
     if (inputFile.open(QIODevice::ReadOnly)) {
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
-          QStringList strList = in.readLine().split( "=" );
-
-          QVERIFY( containKey (items, strList.at(0)) );
-          if ((QString::compare(strList.at(0), "cliquecuts", Qt::CaseInsensitive)==0) ||
-              (QString::compare(strList.at(0), "kappaexact", Qt::CaseInsensitive)==0) ||
-              (QString::compare(strList.at(0), "method", Qt::CaseInsensitive)==0)
-             ) {
-             QCOMPARE( getValue(items, strList.at(0)).toInt(), strList.at(1).toInt() );
-          } else if ((QString::compare(strList.at(0), "intfeastol", Qt::CaseInsensitive)==0) ||
-                     (QString::compare(strList.at(0), "perturbvalue", Qt::CaseInsensitive)==0)) {
-              QCOMPARE( getValue(items, strList.at(0)).toDouble(), strList.at(1).toDouble() );
-          } else {
-              QString value = strList.at(1);
-              if (value.startsWith("\""))
-                 value = value.right(value.length()-1);
-              if (value.endsWith("\""))
-                 value = value.left( value.length()-1);
-              QCOMPARE( getValue(items, strList.at(0)).toString(), value );
-          }
-          i++;
+           optionItems << in.readLine();
+           i++ ;
        }
        inputFile.close();
     }
-    QCOMPARE(i, items.size());
+
+    QCOMPARE( optionItems.size(), size );
+    QCOMPARE( i, size );
+
+    QTest::addColumn<QString>("optionString");
+    QTest::addColumn<QString>("line");
+
+    QTest::newRow("line0") << optionItems.at(0) <<  "cliquecuts 1";
+    QTest::newRow("line1") << optionItems.at(1) << "computeserver \"https://server1/ https://server2/\"";
+    QTest::newRow("line2") << optionItems.at(2) << "intfeastol 1e-3";
+    QTest::newRow("line3") << optionItems.at(3) <<  "* -x-x-x--------------------";
+    QTest::newRow("line4") << optionItems.at(4) << "method 3";
+    QTest::newRow("line5") << optionItems.at(5) << "perturbvalue 0.0012345";
+
+}
+
+void TestGUROBIOption::testWriteOptionFile()
+{
+    QFETCH(QString, optionString);
+    QFETCH(QString, line);
+
+    QCOMPARE( optionString, line );
 }
 
 void TestGUROBIOption::testEOLChars()

@@ -436,49 +436,59 @@ void TestConopt4Option::testNonExistReadOptionFile()
     QCOMPARE( items.size(), 0);
 }
 
-void TestConopt4Option::testWriteOptionFile()
+void TestConopt4Option::testWriteOptionFile_data()
 {
     // given
-    QList<OptionItem> items;
-    items.append(OptionItem("DF_Method", "1"));
-    items.append(OptionItem("Lim_Iteration", "100"));
-    items.append(OptionItem("Tol_Bound", "5.e-9"));
-    items.append(OptionItem("Tol_Optimality", "1.e-10"));
-    items.append(OptionItem("cooptfile", "C:/Users/Programs Files/Dude/coopt.file"));
+    QList<SolverOptionItem *> items;
+    items.append(new SolverOptionItem(-1, "DF_Method", "1", "", false));
+    items.append(new SolverOptionItem(-1, "Lim_Iteration", "100", "", false));
+    items.append(new SolverOptionItem(-1, "Tol_Bound", " 5.e-9", "", false));
+    items.append(new SolverOptionItem(-1, "Tol_Optimality", "1.e-10", "", false));
+    items.append(new SolverOptionItem(-1, "cooptfile", "C:/Users/Programs Files/Dude/coopt.file", "", false));
 //    items.append(OptionItem("readfile", "this is read file"));  => optTypeImmediate
+    int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionParameterFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.opt") ) );
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op4"), QTextCodec::codecForLocale()) );
+
+    // clean up
+    qDeleteAll(items);
+    items.clear();
 
     // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.opt"));
+    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op4"));
     int i = 0;
+    QStringList optionItems;
+
     if (inputFile.open(QIODevice::ReadOnly)) {
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
-          QStringList strList = in.readLine().split( "=" );
-
-          QVERIFY( containKey (items, strList.at(0)) );
-          if ((QString::compare(strList.at(0), "DF_Method", Qt::CaseInsensitive)==0) ||
-              (QString::compare(strList.at(0), "Lim_Iteration", Qt::CaseInsensitive)==0)
-             ) {
-             QCOMPARE( getValue(items, strList.at(0)).toInt(), strList.at(1).toInt() );
-          } else if ((QString::compare(strList.at(0), "Tol_Bound", Qt::CaseInsensitive)==0) ||
-                     (QString::compare(strList.at(0), "Tol_Optimality", Qt::CaseInsensitive)==0)) {
-              QCOMPARE( getValue(items, strList.at(0)).toDouble(), strList.at(1).toDouble() );
-          } else {
-              QString value = strList.at(1);
-              if (value.startsWith("\""))
-                 value = value.right(value.length()-1);
-              if (value.endsWith("\""))
-                 value = value.left( value.length()-1);
-              QCOMPARE( getValue(items, strList.at(0)).toString(), value );
-          }
-          i++;
+           optionItems << in.readLine();
+           i++ ;
        }
        inputFile.close();
     }
-    QCOMPARE(i, items.size());
+
+    QCOMPARE( optionItems.size(), size );
+    QCOMPARE( i, size );
+
+    QTest::addColumn<QString>("optionString");
+    QTest::addColumn<QString>("line");
+
+    QTest::newRow("line0") << optionItems.at(0) << "DF_Method 1";
+    QTest::newRow("line1") << optionItems.at(1) << "Lim_Iteration 100";
+    QTest::newRow("line2") << optionItems.at(2) << "Tol_Bound 5.e-9";
+    QTest::newRow("line3") << optionItems.at(3) << "Tol_Optimality 1.e-10";
+    QTest::newRow("line4") << optionItems.at(4) << "cooptfile \"C:/Users/Programs Files/Dude/coopt.file\"";
+
+}
+
+void TestConopt4Option::testWriteOptionFile()
+{
+    QFETCH(QString, optionString);
+    QFETCH(QString, line);
+
+    QCOMPARE( optionString, line );
 }
 
 void TestConopt4Option::testEOLChars()
