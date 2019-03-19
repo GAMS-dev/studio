@@ -393,6 +393,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QString path = "";
     QString cdir = "";
     QString wdir = "";
+    QString filestem = "";
     for (OptionItem item : itemList) {
         if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0) {
@@ -405,6 +406,9 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             wdir = item.value;
             gamsArgs[item.key] = item.value;
         }
+
+        if (QString::compare(item.key, "filestem", Qt::CaseInsensitive) == 0)
+            filestem = item.value;
     }
 
     if (!cdir.isEmpty()) path = cdir;
@@ -418,13 +422,15 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     }
 
     QFileInfo fi(gmsLocation);
+    if (filestem.isEmpty()) filestem = fi.path() + QDir::separator() + fi.baseName();
     if (path.isEmpty()) path = fi.path();
     else if (QDir(path).isRelative()) path = fi.path() + QDir::separator() + path;
-    setLogLocation(path);
+
+    setLogLocation(path); // TODO(rogo): add file name to log location?
 
     clearParameters();
     // set default lst name to revert deleted o parameter values
-    setParameter("lst", cleanPath(path, fi.baseName() + ".lst"));
+    setParameter("lst", cleanPath(path, filestem + ".lst"));
 
     bool defaultOverride = false;
     for (OptionItem item : itemList) {
@@ -451,12 +457,12 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
-            if (value == "default") value = "\"" + fi.baseName() + ".gdx\"";
+            if (value == "default") value = "\"" + filestem + ".gdx\"";
             setParameter("gdx", cleanPath(path, value));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
-            if (value == "default") value = "\"" + fi.baseName() + ".ref\"";
+            if (value == "default") value = "\"" + filestem + ".ref\"";
             setParameter("ref", cleanPath(path, value));
         }
 
