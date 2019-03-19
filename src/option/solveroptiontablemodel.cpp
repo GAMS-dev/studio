@@ -30,10 +30,10 @@ SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> i
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
     if (mOption->isEOLCharDefined()) {
-        mHeader << "Option" << "Value" << "Comment" << "Debug Entry";
+        mHeader << "Key" << "Value" << "Comment" << "Debug Entry";
         columnEntryNumber = 3;
     } else {
-         mHeader << "Option" << "Value" << "Debug Entry";
+         mHeader << "Key" << "Value" << "Debug Entry";
          columnEntryNumber = 2;
     }
 
