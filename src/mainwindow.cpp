@@ -853,11 +853,12 @@ void MainWindow::on_actionSave_triggered()
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (!fm) return;
-    if (fm->kind() == FileKind::Log /* TODO(JM) .. or file was new */ ) {
-        on_actionSave_As_triggered();
-    } else if (fm->isModified()) {
+
+    if (fm->isModified() && !fm->isReadOnly())
         fm->save();
-    }
+    else if (fm->isReadOnly())
+        on_actionSave_As_triggered();
+
 }
 
 void MainWindow::on_actionSave_As_triggered()
