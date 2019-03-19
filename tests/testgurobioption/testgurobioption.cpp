@@ -494,7 +494,7 @@ void TestGUROBIOption::testReadOptionFile()
     QCOMPARE( optionItem_disabledFlag, disabledFlag );
     QCOMPARE( optionItem_optionKey, optionKey );
     if (doubleValue)
-        QCOMPARE( optionItem_optionValue.toDouble(), optionValue.toDouble() );
+        QVERIFY( qAbs(optionItem_optionValue.toDouble() - optionValue.toDouble()) < 1e-8  );
     else
         QCOMPARE( optionItem_optionValue, optionValue );
     QCOMPARE( optionItem_optionText, optionText );
