@@ -1144,7 +1144,7 @@ void TestCPLEXOption::testNonExistReadOptionFile()
 {
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op012345");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
     QCOMPARE( items.size(), 0);

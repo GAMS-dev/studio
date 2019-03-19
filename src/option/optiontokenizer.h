@@ -70,8 +70,6 @@ public:
     QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QTextCodec* codec);
     bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QTextCodec* codec);
 
-    QList<OptionItem> readOptionParameterFile(const QString &absoluteFilePath);
-
     void validateOption(QList<OptionItem> &items);
     void validateOption(QList<SolverOptionItem *> &items);
 

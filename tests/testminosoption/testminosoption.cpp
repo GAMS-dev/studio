@@ -558,7 +558,7 @@ void TestMINOSOption::testNonExistReadOptionFile()
 {
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op012345");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
     QCOMPARE( items.size(), 0);

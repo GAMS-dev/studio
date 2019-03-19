@@ -430,7 +430,7 @@ void TestConopt4Option::testNonExistReadOptionFile()
 {
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op012345");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
     QCOMPARE( items.size(), 0);

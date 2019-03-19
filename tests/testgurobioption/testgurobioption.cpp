@@ -393,7 +393,7 @@ void TestGUROBIOption::testOptionGroup()
     QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
 }
 
-void TestGUROBIOption::testReadOptionFile()
+void TestGUROBIOption::testReadOptionFile_data()
 {
     // given
     QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op2"));
@@ -404,7 +404,7 @@ void TestGUROBIOption::testReadOptionFile()
     out << "cutoff 0.12345" << endl;
     out << "cliquecuts=-1" << endl;
     out << "iterationlimit=120000" << endl;
-    out << "barconvtol 1e-9" << endl;
+    out << "barconvtol 1e-08" << endl;
     out << "mipgap 0.10" << endl;
     out << "fixoptfile /This/Is/a/Fix/opt/file" << endl;
     out << "objnreltol str1, str2, str3" << endl;
@@ -412,38 +412,96 @@ void TestGUROBIOption::testReadOptionFile()
 
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op2");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
     QCOMPARE( items.size(), 7 );
 
-    QVERIFY( containKey (items,"cutoff") );
-    QCOMPARE( getValue(items,"cutoff").toDouble(),  QVariant("0.12345").toDouble() );
+    QTest::addColumn<bool>("optionItem_disabledFlag");
+    QTest::addColumn<bool>("disabledFlag");
+    QTest::addColumn<QString>("optionItem_optionKey");
+    QTest::addColumn<QString>("optionKey");
+    QTest::addColumn<QVariant>("optionItem_optionValue");
+    QTest::addColumn<QVariant>("optionValue");
+    QTest::addColumn<QString>("optionItem_optionText");
+    QTest::addColumn<QString>("optionText");
+    QTest::addColumn<int>("optionItem_optionId");
+    QTest::addColumn<int>("optionId");
+    QTest::addColumn<int>("optionItem_error");
+    QTest::addColumn<int>("error");
 
-    QVERIFY( containKey (items,"iterationlimit") );
-    QCOMPARE( getValue(items,"iterationlimit").toInt(),  QVariant("120000").toInt() );
+    QTest::newRow("cutoff 0.12345")  << items.at(0)->disabled <<  false
+                           << items.at(0)->key      << "cutoff"
+                           << items.at(0)->value    << QVariant("0.12345")
+                           << items.at(0)->text     << ""
+                           << items.at(0)->optionId << 28
+                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("cliquecuts=-1")  << items.at(1)->disabled <<  false
+                           << items.at(1)->key      << "cliquecuts"
+                           << items.at(1)->value    << QVariant("-1")
+                           << items.at(1)->text     << ""
+                           << items.at(1)->optionId << 13
+                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("iterationlimit=120000")  << items.at(2)->disabled <<  false
+                           << items.at(2)->key      << "iterationlimit"
+                           << items.at(2)->value    << QVariant("120000")
+                           << items.at(2)->text     << ""
+                           << items.at(2)->optionId << 59
+                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("barconvtol 1e-08")  << items.at(3)->disabled <<  false
+                           << items.at(3)->key      << "barconvtol"
+                           << items.at(3)->value    << QVariant(1e-08)
+                           << items.at(3)->text     << ""
+                           << items.at(3)->optionId << 5
+                           << static_cast<int>(items.at(3)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("mipgap 0.10")  << items.at(4)->disabled <<  false
+                           << items.at(4)->key      << "mipgap"
+                           << items.at(4)->value    << QVariant(0.10)
+                           << items.at(4)->text     << ""
+                           << items.at(4)->optionId << 69
+                           << static_cast<int>(items.at(4)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("fixoptfile /This/Is/a/Fix/opt/file")  << items.at(5)->disabled <<  false
+                           << items.at(5)->key      << "fixoptfile"
+                           << items.at(5)->value    << QVariant("/This/Is/a/Fix/opt/file")
+                           << items.at(5)->text     << ""
+                           << items.at(5)->optionId << 39
+                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
+    QTest::newRow("objnreltol str1, str2, str3")  << items.at(6)->disabled <<  false
+                           << items.at(6)->key      << "objnreltol"
+                           << items.at(6)->value    << QVariant("str1, str2, str3")
+                           << items.at(6)->text     << ""
+                           << items.at(6)->optionId << 93
+                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
+}
 
-    QVERIFY( containKey (items,"cliquecuts") );
-    QCOMPARE( getValue(items,"cliquecuts").toInt(),  QVariant("-1").toInt() );
+void TestGUROBIOption::testReadOptionFile()
+{
+    QFETCH(bool, optionItem_disabledFlag);
+    QFETCH(bool, disabledFlag);
+    QFETCH(QString, optionItem_optionKey);
+    QFETCH(QString, optionKey);
+    QFETCH(QVariant, optionItem_optionValue);
+    QFETCH(QVariant, optionValue);
+    QFETCH(QString, optionItem_optionText);
+    QFETCH(QString, optionText);
+    QFETCH(int, optionItem_optionId);
+    QFETCH(int, optionId);
+    QFETCH(int, optionItem_error);
+    QFETCH(int, error);
 
-    QVERIFY( containKey (items,"barconvtol") );
-    QCOMPARE( getValue(items,"barconvtol").toDouble(),  QVariant("1e-9").toDouble() );
-
-    QVERIFY( containKey (items,"mipgap") );
-    QCOMPARE( getValue(items,"mipgap").toDouble(),  QVariant("0.10").toDouble() );
-
-    QVERIFY( containKey (items,"fixoptfile") );
-    QCOMPARE( getValue(items,"fixoptfile").toString(),  QVariant("/This/Is/a/Fix/opt/file").toString() );
-
-    QVERIFY( containKey (items,"objnreltol") );
-    QCOMPARE( getValue(items,"objnreltol").toString(),  QVariant("str1, str2, str3").toString() );
+    QCOMPARE( optionItem_disabledFlag, disabledFlag );
+    QCOMPARE( optionItem_optionKey, optionKey );
+    QCOMPARE( optionItem_optionValue, optionValue );
+    QCOMPARE( optionItem_optionText, optionText );
+    QCOMPARE( optionItem_optionId, optionId );
+    QCOMPARE( optionItem_error, error );
 }
 
 void TestGUROBIOption::testNonExistReadOptionFile()
 {
     // when
     QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op012345");
-    QList<OptionItem> items = optionTokenizer->readOptionParameterFile(optFile);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
     QCOMPARE( items.size(), 0);

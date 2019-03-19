@@ -55,7 +55,9 @@ private slots:
     void testOptionGroup_data();
     void testOptionGroup();
 
+    void testReadOptionFile_data();
     void testReadOptionFile();
+
     void testNonExistReadOptionFile();
 
     void testWriteOptionFile_data();
