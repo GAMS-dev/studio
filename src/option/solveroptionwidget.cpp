@@ -346,12 +346,12 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                        ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_SYNONYM) ;
     QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
                                                         ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
-    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex : index ;
+    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
+                                                             ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
 
     QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
     QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
-
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
