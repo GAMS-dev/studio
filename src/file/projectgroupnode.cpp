@@ -426,7 +426,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     if (path.isEmpty()) path = fi.path();
     else if (QDir(path).isRelative()) path = fi.path() + QDir::separator() + path;
 
-    setLogLocation(path); // TODO(rogo): add file name to log location?
+    setLogLocation(cleanPath(path, filestem));
 
     clearParameters();
     // set default lst name to revert deleted o parameter values
@@ -445,7 +445,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         QRegularExpressionMatch match = notDotAsEnding.match(value);
         if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
 
-        // lst handling
+        // set parameters
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
@@ -464,6 +464,11 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
             if (value == "default") value = "\"" + filestem + ".ref\"";
             setParameter("ref", cleanPath(path, value));
+
+        } else if (QString::compare(item.key, "lf", Qt::CaseInsensitive) == 0) {
+
+            if (!value.endsWith(".log")) value.append(".log");
+            setLogLocation(cleanPath(path, value));
         }
 
         if (defaultGamsArgs.contains(item.key))
@@ -511,7 +516,7 @@ QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
         path = location() + QDir::separator() + path;
     }
 
-    file.remove("\"");                        // remove quotes from filename
+    file.remove("\""); // remove quotes from filename
     file = file.trimmed();
     if (file.isEmpty() || QFileInfo(file).isRelative()) {
         ret = path;
