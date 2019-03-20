@@ -1129,12 +1129,10 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
        while (!in.atEnd()) {
            i++;
            SolverOptionItem* item = new SolverOptionItem();
-           if (mOption->available()) {
-              optResetAll( mOPTHandle );
+           if (mOption->available())
               getOptionItemFromStr(item, true, in.readLine());
-           } else {
+           else
                item->key = in.readLine();
-           }
            items.append( item );
        }
        inputFile.close();
