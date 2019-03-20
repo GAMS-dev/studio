@@ -177,11 +177,8 @@ void NestedHeaderView::dragEnterEvent(QDragEnterEvent *event)
 void NestedHeaderView::dragMoveEvent(QDragMoveEvent *event)
 {
     dimIdxEnd = pointToDimension(event->pos());
-    int orientationEnd = orientation();
-    if (orientationEnd == Qt::Horizontal)
-        dimIdxEnd += sym()->dim()-sym()->tvColDim();
     if (orientation() == Qt::Horizontal)
-        dimIdxEnd = dimIdxEnd - sym()->dim() + dim();
+        dimIdxEnd += dim()-sym()->tvColDim();
     decideAcceptDragEvent(event);
     viewport()->update();
 }
