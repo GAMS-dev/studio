@@ -49,32 +49,23 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     addActions();
 
-    mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(solverName));
+    init();
+}
+
+SolverOptionWidget::~SolverOptionWidget()
+{
+    delete ui;
+    delete mOptionTokenizer;
+    delete mOptionTableModel;
+}
+
+bool SolverOptionWidget::init()
+{
+    mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(mSolverName));
 
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
     ui->solverOptionTabWidget->addTab( logEdit, "Message" );
-    if (!mOptionTokenizer->getOption()->available())  {
-        qDebug() << "Problem reading definition file " << QString("opt%1.def").arg(solverName);
-        mOptionTokenizer->logger()->append(QString("%1 is not a valid solver name").arg(solverName), LogMsgType::Warning);
-    }
-
-    SolverOptionSetting* settingEdit = new SolverOptionSetting(mOptionTokenizer->getOption()->getEOLChars(), this);
-    mOptionTokenizer->on_EOLCommentChar_changed( settingEdit->getDefaultEOLCharacter() );
-    connect(settingEdit, &SolverOptionSetting::EOLCharChanged, [=](QChar ch){
-            mOptionTokenizer->on_EOLCommentChar_changed(ch);
-            setModified(true);
-    });
-    connect(settingEdit, &SolverOptionSetting::separatorCharChanged, [=](QChar ch){
-            mOptionTokenizer->on_separatorChar_changed(ch);
-            setModified(true);
-    });
-    ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
-
-    if (!mOptionTokenizer->getOption()->available())
-        mOptionTokenizer->logger()->append(QString("Loading unknown options from %1").arg(mLocation), LogMsgType::Warning);
-    else
-        mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
 
     QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mCodec);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
@@ -104,10 +95,6 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
 
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->solverOptionTableView->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectRow);
-    connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
-    connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
-    connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
@@ -140,8 +127,6 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    connect(ui->solverOptionSearch, &QLineEdit::textChanged,
-            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
     ui->solverOptionTreeView->setModel( proxymodel );
     ui->solverOptionTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -161,39 +146,72 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
     ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
-    connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
-    connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
-
-    connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
-         optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
-    });
-
-    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
-    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
-    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
-    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
-    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
-
-    connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, this, &SolverOptionWidget::on_addEOLCommentChanged);
-    connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, mOptionTableModel, &SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged);
-
-    connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAboveChanged);
-    connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
-    connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);
-
-    connect(this, &SolverOptionWidget::compactViewChanged, optdefmodel, &SolverOptionDefinitionModel::on_compactViewChanged);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
 
     setModified(false);
-}
 
-SolverOptionWidget::~SolverOptionWidget()
-{
-    delete ui;
-    delete mOptionTokenizer;
-    delete mOptionTableModel;
+    if (!mOptionTokenizer->getOption()->available())  {
+        QString msg = QString("%1 is not a valid solver name").arg(mSolverName);
+        mOptionTokenizer->logger()->append(msg, LogMsgType::Warning);
+        mOptionTokenizer->logger()->append(QString("Unable to load options from %1").arg(mLocation), LogMsgType::Warning);
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Unable to open Option File");
+        msgBox.setText(QString("Unable to open %1 Properly.\nProblem: %2.").arg(mLocation).arg(msg));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        return false;
+    }
+    else {
+        SolverOptionSetting* settingEdit = new SolverOptionSetting(mOptionTokenizer->getOption()->getEOLChars(), this);
+        mOptionTokenizer->on_EOLCommentChar_changed( settingEdit->getDefaultEOLCharacter() );
+        ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
+
+        connect(settingEdit, &SolverOptionSetting::EOLCharChanged, [=](QChar ch){
+                mOptionTokenizer->on_EOLCommentChar_changed(ch);
+                setModified(true);
+        });
+        connect(settingEdit, &SolverOptionSetting::separatorCharChanged, [=](QChar ch){
+                mOptionTokenizer->on_separatorChar_changed(ch);
+                setModified(true);
+        });
+
+        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectRow);
+        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
+        connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
+        connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
+
+        connect(ui->solverOptionSearch, &QLineEdit::textChanged,
+                proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
+
+        connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
+        connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
+
+        connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
+             optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
+        });
+
+        connect(mOptionTableModel, &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
+        connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
+
+        connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, this, &SolverOptionWidget::on_addEOLCommentChanged);
+        connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, mOptionTableModel, &SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged);
+
+        connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAboveChanged);
+        connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
+        connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);
+
+        connect(this, &SolverOptionWidget::compactViewChanged, optdefmodel, &SolverOptionDefinitionModel::on_compactViewChanged);
+
+        mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+        return true;
+    }
 }
 
 bool SolverOptionWidget::isInFocused(QWidget *focusWidget)

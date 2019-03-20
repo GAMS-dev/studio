@@ -129,6 +129,8 @@ private:
     bool isThereARowSelection() const;
     bool isEverySelectionARow() const;
 
+    bool init();
+
     MainWindow* getMainWindow();
 
 };
