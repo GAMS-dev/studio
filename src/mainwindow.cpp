@@ -2821,10 +2821,10 @@ void MainWindow::on_actionToggle_Extended_Option_Editor_toggled(bool checked)
 {
     if (checked) {
         ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/hide"));
-        ui->actionToggle_Extended_Option_Editor->setToolTip("Hide Command Line Parameters Editor");
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Hide Extended Option Editor");
     } else {
         ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/show") );
-        ui->actionToggle_Extended_Option_Editor->setToolTip("Show Command Line Parameters Editor");
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Show Extended Option Editor");
     }
 
     mGamsOptionWidget->setEditorExtended(checked);
