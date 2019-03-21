@@ -30,8 +30,12 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
     if (role == Qt::DisplayRole) {        
         QStringList header;
         if (orientation == Qt::Horizontal) {
-            if (mNeedDummyColumn)
-                header << " ";
+            if (mNeedDummyColumn) {
+                if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_PAR)
+                    header << "Value";
+                else
+                    header << "Text";
+            }
             else if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
                 for (int i=0; i<mTvColHeaders[section].size()-1; i++ ) {
                     uint uel = mTvColHeaders[section][i];
@@ -51,8 +55,12 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
             }
         }
         else {
-            if (mNeedDummyRow)
-                header << " ";
+            if (mNeedDummyRow) {
+                if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_PAR)
+                    header << "Value";
+                else
+                    header << "Text";
+            }
             else {
                 for (uint uel: mTvRowHeaders[section])
                     header << mGdxSymbolTable->uel2Label(uel);
@@ -62,7 +70,7 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
     }
     else if (role == Qt::SizeHintRole && orientation == Qt::Vertical) {
         if (mNeedDummyRow)
-            return 10;
+            return 50;
         int totalWidth = 0;
         for (int i=0; i<mSym->mDim-mTvColDim; i++) {
             int width;
@@ -252,7 +260,7 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     tvSectionWidth->resize(mSym->mDim-mTvColDim);
 
     if (tvSectionWidth->isEmpty()) {
-        tvSectionWidth->push_back(10);
+        tvSectionWidth->push_back(50);
     }
 
     if (mTvRowHeaders.isEmpty())
