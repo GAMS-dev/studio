@@ -1347,8 +1347,6 @@ void MainWindow::postGamsRun(NodeId origin)
 
     // add all created files to project explorer
     groupNode->addNodesForSpecialFiles();
-
-//    DEB() << "RUNmsec: " << QTime::currentTime().msecsSinceStartOfDay() - mTestTimer.msecsSinceStartOfDay();
 }
 
 void MainWindow::postGamsLibRun()
