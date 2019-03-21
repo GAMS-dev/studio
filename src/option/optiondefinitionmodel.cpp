@@ -291,55 +291,88 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             break;
         }
         switch(optdef.type){
-        case optTypeInteger :
-            columnData.append( QString("[%1, %2]").arg( optdef.lowerBound.canConvert<int>() ? optdef.lowerBound.toInt() : optdef.lowerBound.toDouble() )
-                                                 .arg( optdef.upperBound.canConvert<int>() ? optdef.upperBound.toInt() : optdef.upperBound.toDouble() ) );
+        case optTypeInteger : {
+            columnData.append( QString("[%1, %2]").arg( optdef.lowerBound.toInt() ).arg( optdef.upperBound.toInt() ) );
             columnData.append("Integer");
             break;
-        case optTypeDouble :
+        }
+        case optTypeDouble : {
             columnData.append( QString("[%1, %2]").arg( optdef.lowerBound.canConvert<double>() ? optdef.lowerBound.toDouble() : optdef.lowerBound.toInt() )
                                                  .arg( optdef.upperBound.canConvert<double>() ? optdef.upperBound.toDouble() : optdef.upperBound.toInt() ) );
             columnData.append("Double");
             break;
-        case optTypeString :
+        }
+        case optTypeString : {
             columnData.append("");
             if (optdef.subType == optsubNoValue)
                columnData.append("String (no Value)");
             else
                columnData.append("String");
             break;
-        case optTypeBoolean :
-            columnData.append("");
+        }
+        case optTypeBoolean : {
+            columnData.append("{0, 1}");
             columnData.append("Boolean");
             break;
-        case optTypeEnumStr :
-            columnData.append("");
+        }
+        case optTypeEnumStr : {
+            QString range("");
+            if (optdef.valueList.size()>0) {
+                range.append("{");
+                int i = 0;
+                for(i =0; i<optdef.valueList.size()-1; i++) {
+                    range.append(optdef.valueList.at(i).value.toString());
+                    if (optdef.valueList.size()>=NUMBER_DISPLAY_ENUMSTR_RANGE) {
+                        if (i+1>=NUMBER_DISPLAY_ENUMSTR_RANGE && i<optdef.valueList.size()-2) {
+                           range.append(",..,");
+                           break;
+                        }
+                    }
+                    range.append(", ");
+                }
+                range.append( optdef.valueList.at(optdef.valueList.size()-1).value.toString() );
+                range.append("}");
+            }
+            columnData.append(range);
             columnData.append("EnumStr");
             break;
-        case optTypeEnumInt :
-            columnData.append("");
+        }
+        case optTypeEnumInt : {
+            QString range("");
+            if (optdef.valueList.size()>0) {
+                range.append("{");
+                int i = 0;
+                for(i =0; i<optdef.valueList.size()-1; i++) {
+                    range.append(optdef.valueList.at(i).value.toString());
+                    range.append(",");
+                }
+                range.append( optdef.valueList.at(i).value.toString() );
+                range.append("}");
+            }
+            columnData.append(range);
             columnData.append("EnumInt");
             break;
-        case optTypeMultiList :
+        }
+        case optTypeMultiList : {
             columnData.append("");
             columnData.append("MultiList");
             break;
-        case optTypeStrList   :
+        }
+        case optTypeStrList   : {
             columnData.append("");
             columnData.append("StrList");
             break;
-        case optTypeMacro     :
+        }
+        case optTypeMacro     : {
             columnData.append("");
             columnData.append("Macro");
             break;
-        case optTypeImmediate :
+        }
+        case optTypeImmediate : {
             columnData.append("");
             columnData.append("Immediate");
             break;
-//        default:
-//            columnData.append("");
-//            columnData.append("");
-//            break;
+        }
         }
         columnData.append(optdef.description);
         columnData.append(optdef.number);

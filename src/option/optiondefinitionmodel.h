@@ -66,6 +66,8 @@ public:
     static const int COLUMN_DESCIPTION = 5;
     static const int COLUMN_ENTRY_NUMBER = 6;
 
+    static const int NUMBER_DISPLAY_ENUMSTR_RANGE = 3;
+
 public slots:
     void loadOptionFromGroup(const int group);
 
