@@ -179,7 +179,7 @@ bool SolverOptionWidget::init()
                 setModified(true);
         });
 
-        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectRow);
+        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectAndToggleRow);
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
         connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
         connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
@@ -484,6 +484,12 @@ void SolverOptionWidget::on_selectRow(int logicalIndex)
     QModelIndex  bottomRight = ui->solverOptionTableView->model()->index(logicalIndex, mOptionTableModel->getColumnEntryNumber(), QModelIndex());
     QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+}
+
+void SolverOptionWidget::on_selectAndToggleRow(int logicalIndex)
+{
+    on_selectRow(logicalIndex);
+    on_toggleRowHeader(logicalIndex);
 }
 
 void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)

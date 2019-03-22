@@ -83,6 +83,7 @@ public slots:
 
     void on_reloadSolverOptionFile(QTextCodec* codec);
     void on_selectRow(int logicalIndex);
+    void on_selectAndToggleRow(int logicalIndex);
     void on_toggleRowHeader(int logicalIndex);
 
     void on_compactViewCheckBox_stateChanged(int checkState);
