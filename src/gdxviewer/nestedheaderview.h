@@ -32,15 +32,23 @@ protected:
 
 private:
     int pointToDimension(QPoint p);
+    int pointToDropDimension(QPoint p);
     void bindScrollMechanism();
     void decideAcceptDragEvent(QDragMoveEvent* event);
+    int toGlobalDim(int localDim);
 
     TableViewModel* sym() const;
     int dim() const;
     QPoint mMousePos = QPoint(-1,-1);
     QPoint mDragStartPosition;
 
+    int dimIdxStart = -1;
     int dimIdxEnd = -1;
+
+    int dragOrientationStart = -1;
+    int dragOrientationEnd = -1;
+
+
 };
 
 } // namespace gdxviewer
