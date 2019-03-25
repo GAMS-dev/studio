@@ -197,9 +197,9 @@ QStringList FileMeta::suffix() const
     return mData.type->suffix();
 }
 
-void FileMeta::setKind(FileKind fk)
+void FileMeta::setKind(const QString &suffix)
 {
-    mData.type = &FileType::from(fk);
+    mData.type = &FileType::from(suffix);
 }
 
 FileKind FileMeta::kind() const
@@ -303,7 +303,6 @@ void FileMeta::addEditor(QWidget *edit)
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
-    CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
 
     if (aEdit) {
         if (!mDocument)
@@ -313,12 +312,14 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
-        if (scEdit) {
+
+        CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
+        if (scEdit && mHighlighter)
             connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
-        }
-        if (!aEdit->viewport()->hasMouseTracking()) {
+
+        if (!aEdit->viewport()->hasMouseTracking())
             aEdit->viewport()->setMouseTracking(true);
-        }
+
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);

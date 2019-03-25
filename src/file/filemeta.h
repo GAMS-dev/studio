@@ -60,7 +60,7 @@ public:
     FileId id() const;
     QString location() const;
     QStringList suffix() const;
-    void setKind(FileKind fk);
+    void setKind(const QString &suffix);
     FileKind kind() const;
     QString name(NameModifier mod = NameModifier::raw);
     QTextDocument* document() const;

@@ -254,6 +254,16 @@ void MainWindow::initToolBar()
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
 }
 
+void MainWindow::updateToolbar(QWidget* current)
+{
+    // deactivate save for welcome page
+    bool activateSave = (current != mWp);
+
+    for (auto a : ui->toolBar->actions()) {
+        if (a->text() == "&Save") a->setEnabled(activateSave);
+    }
+}
+
 void MainWindow::initAutoSave()
 {
     mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
@@ -853,11 +863,12 @@ void MainWindow::on_actionSave_triggered()
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (!fm) return;
-    if (fm->kind() == FileKind::Log /* TODO(JM) .. or file was new */ ) {
-        on_actionSave_As_triggered();
-    } else if (fm->isModified()) {
+
+    if (fm->isModified() && !fm->isReadOnly())
         fm->save();
-    }
+    else if (fm->isReadOnly())
+        on_actionSave_As_triggered();
+
 }
 
 void MainWindow::on_actionSave_As_triggered()
@@ -1084,6 +1095,8 @@ void MainWindow::activeTabChanged(int index)
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
+    updateToolbar(mainTabs()->currentWidget());
+
     updateEditorMode();
 }
 
@@ -1314,7 +1327,7 @@ void MainWindow::postGamsRun(NodeId origin)
         return;
     }
     if(groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->specialFile(FileKind::Lst);
+        QString lstFile = groupNode->parameter("lst");
         bool doFocus = groupNode == mRecent.group;
 
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
@@ -1744,7 +1757,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     QString mainGms;
     if (gmsFiles.size() > 0) {
         ProjectRunGroupNode *prgn = group->toRunGroup();
-        if (prgn) prgn->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
+        if (prgn) prgn->setParameter("gms", gmsFiles.first()->location());
     }
 
     if (!filesNotFound.empty()) {
@@ -1857,12 +1870,12 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
                                                                                           : AbstractEdit::NoWrap);
     }
     // cleanup bookmarks
-    QVector<FileKind> cleanupKinds;
-    cleanupKinds << FileKind::Gdx << FileKind::Gsp << FileKind::Log << FileKind::Lst << FileKind::Lxi << FileKind::Ref;
+    QVector<QString> cleanupKinds;
+    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "lxi" << "ref";
     markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
-    for (const FileKind &kind: cleanupKinds) {
-        if (runGroup->hasSpecialFile(kind)) {
-            FileMeta *file = mFileMetaRepo.fileMeta(runGroup->specialFile(kind));
+    for (const QString &kind: cleanupKinds) {
+        if (runGroup->hasParameter(kind)) {
+            FileMeta *file = mFileMetaRepo.fileMeta(runGroup->parameter(kind));
             if (file) mTextMarkRepo.removeMarks(file->id(), markTypes);
         }
     }
@@ -1879,7 +1892,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     ui->dockLogView->setVisible(true);
 
     // select gms-file and working dir to run
-    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->specialFile(FileKind::Gms));
+    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
     if (gmsFilePath == "") {
         mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
         ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
@@ -1899,7 +1912,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QList<OptionItem> itemList = mGamsOptionWidget->getGamsOptionTokenizer()->tokenize( commandLineStr );
     GamsProcess* process = runGroup->gamsProcess();
     process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
-    if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->specialFile(FileKind::Lst))) {
+    if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
         for (QWidget *wid: lstNode->file()->editors()) {
             if (TextView *tv = ViewHelper::toTextView(wid)) tv->closeFile();
         }
@@ -2808,10 +2821,10 @@ void MainWindow::on_actionToggle_Extended_Option_Editor_toggled(bool checked)
 {
     if (checked) {
         ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/hide"));
-        ui->actionToggle_Extended_Option_Editor->setToolTip("Hide Command Line Parameters Editor");
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Hide Extended Option Editor");
     } else {
         ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/show") );
-        ui->actionToggle_Extended_Option_Editor->setToolTip("Show Command Line Parameters Editor");
+        ui->actionToggle_Extended_Option_Editor->setToolTip("Show Extended Option Editor");
     }
 
     mGamsOptionWidget->setEditorExtended(checked);

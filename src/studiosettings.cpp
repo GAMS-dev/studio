@@ -136,6 +136,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", main->size());
     mAppSettings->setValue("pos", main->pos());
+    mAppSettings->setValue("maximized", main->isMaximized());
     mAppSettings->setValue("windowState", main->saveState());
 
     // search window
@@ -251,8 +252,13 @@ void StudioSettings::loadViewStates(MainWindow *main)
 
     // main window
     mAppSettings->beginGroup("mainWindow");
-    main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
-    main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    bool maximized = mAppSettings->value("maximized", false).toBool();
+    if (maximized) {
+        main->setWindowState(Qt::WindowMaximized);
+    } else {
+        main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
+        main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    }
     main->restoreState(mAppSettings->value("windowState").toByteArray());
     main->ensureInScreen();
 

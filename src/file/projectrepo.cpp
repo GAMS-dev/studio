@@ -648,7 +648,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     }
     ProjectRunGroupNode *runGroup = group->toRunGroup();
     if (runGroup && !runGroup->runnableGms() && !gmsFiles.isEmpty()) {
-        runGroup->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
+        runGroup->setParameter("gms", gmsFiles.first()->location());
     }
     if (act & Qt::MoveAction) {
         for (NodeId nodeId: knownIds) {

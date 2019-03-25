@@ -113,7 +113,7 @@ SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxKind::Declarati
                << SyntaxKind::CommentInline << SyntaxKind::DeclarationTable << SyntaxKind::Identifier;
 }
 
-SyntaxBlock SyntaxDeclaration::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, const QString& line, int index)
 {
     int start = index;
     int end = -1;
@@ -163,7 +163,7 @@ SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxKind kind) : SyntaxKeywordBase(
 
 }
 
-SyntaxBlock SyntaxPreDeclaration::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxPreDeclaration::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     int start = index;
     int end = -1;
@@ -191,7 +191,7 @@ SyntaxDeclarationTable::SyntaxDeclarationTable() : SyntaxKeywordBase(SyntaxKind:
                << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
 }
 
-SyntaxBlock SyntaxDeclarationTable::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxDeclarationTable::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     int start = index;
     int end = -1;
@@ -234,7 +234,7 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind) : SyntaxKeywordBase(kind)
     mKeywords.insert(int(kind), new DictList(list));
 }
 
-SyntaxBlock SyntaxReserved::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;
@@ -271,7 +271,7 @@ SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind) : SyntaxKeywordBase(kind)
     mKeywords.insert(int(kind), new DictList(list));
 }
 
-SyntaxBlock SyntaxEmbedded::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;
@@ -292,7 +292,7 @@ SyntaxEmbeddedBody::SyntaxEmbeddedBody() : SyntaxAbstract(SyntaxKind::EmbeddedBo
     mSubKinds << SyntaxKind::EmbeddedEnd << SyntaxKind::Directive;
 }
 
-SyntaxBlock SyntaxEmbeddedBody::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxEmbeddedBody::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     return SyntaxBlock(this, index, line.length());
@@ -332,7 +332,7 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind) : SyntaxKeywordBase(kind)
 
 }
 
-SyntaxBlock SyntaxSubsetKey::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;

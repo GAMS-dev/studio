@@ -313,6 +313,8 @@ private:
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
+    void initToolBar();
+    void updateToolbar(QWidget* current);
 
 private:
     QTime mTestTimer;
@@ -353,7 +355,6 @@ private:
     int mTimerID;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
-    void initToolBar();
 };
 
 }

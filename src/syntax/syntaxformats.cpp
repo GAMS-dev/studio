@@ -80,7 +80,7 @@ SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
               << SyntaxKind::Formula;
 }
 
-SyntaxBlock SyntaxStandard::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxStandard::find(const SyntaxKind entryKind, const QString& line, int index)
 {
     static QVector<SyntaxKind> invalidEntries {SyntaxKind::Declaration, SyntaxKind::DeclarationSetType,
                 SyntaxKind::DeclarationTable, SyntaxKind::DeclarationVariableType};
@@ -134,7 +134,7 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mSpecialKinds.insert(QString("hidden").toLower(), SyntaxKind::DirectiveComment);
 }
 
-SyntaxBlock SyntaxDirective::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& line, int index)
 {
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
@@ -191,7 +191,7 @@ SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
                "SyntaxDirectiveBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
 }
 
-SyntaxBlock SyntaxDirectiveBody::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxDirectiveBody::find(const SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind);
     return SyntaxBlock(this, index, line.length(), SyntaxShift::skip);
@@ -210,7 +210,7 @@ SyntaxCommentLine::SyntaxCommentLine(QChar commentChar)
     : SyntaxAbstract(SyntaxKind::CommentLine), mCommentChar(commentChar)
 { }
 
-SyntaxBlock SyntaxCommentLine::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxCommentLine::find(const SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind)
     if (entryKind == SyntaxKind::CommentLine || (index==0 && line.startsWith(mCommentChar)))
@@ -232,7 +232,7 @@ SyntaxCommentBlock::SyntaxCommentBlock() : SyntaxAbstract(SyntaxKind::CommentBlo
     mSubKinds << SyntaxKind::Directive;
 }
 
-SyntaxBlock SyntaxCommentBlock::find(SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxCommentBlock::find(const SyntaxKind entryKind, const QString& line, int index)
 {
     Q_UNUSED(entryKind)
     return SyntaxBlock(this, index, line.length());
@@ -260,7 +260,7 @@ SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
     }
 }
 
-SyntaxBlock SyntaxDelimiter::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxDelimiter::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int end = index;
@@ -348,7 +348,7 @@ SyntaxString::SyntaxString()
     : SyntaxAbstract(SyntaxKind::String)
 {}
 
-SyntaxBlock SyntaxString::find(SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxString::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind);
     int start = index;
@@ -374,7 +374,7 @@ SyntaxAssign::SyntaxAssign()
     : SyntaxAbstract(SyntaxKind::Assignment)
 {}
 
-SyntaxBlock SyntaxAssign::find(gams::studio::syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxAssign::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -418,7 +418,7 @@ void SyntaxCommentEndline::setCommentChars(QString commentChars)
         mCommentChars = commentChars;
 }
 
-SyntaxBlock SyntaxCommentEndline::find(gams::studio::syntax::SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxCommentEndline::find(const SyntaxKind entryKind, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
