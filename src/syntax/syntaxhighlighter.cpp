@@ -79,10 +79,13 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
 
     SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
     initKind(syntaxFormula);
-    syntaxDirective->addSyntaxFormula(syntaxFormula);
+    syntaxDirective->addSubBody(syntaxFormula);
     SyntaxFormula * syntaxSolveBody = new SyntaxFormula(SyntaxKind::SolveBody);
     initKind(syntaxSolveBody);
-    syntaxDirective->addSyntaxFormula(syntaxSolveBody);
+    syntaxDirective->addSubBody(syntaxSolveBody);
+    SyntaxFormula * syntaxOptionBody = new SyntaxFormula(SyntaxKind::OptionBody);
+    initKind(syntaxOptionBody);
+    syntaxDirective->addSubBody(syntaxOptionBody);
 
     initKind(new SyntaxAssign(), cl.value(SyntaxAssgn), fBold);
     initKind(new SyntaxString(), cl.value(SyntaxStrin));
@@ -92,11 +95,13 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(syntaxCommentEndline, cl.value(SyntaxComnt), fItalic);
     syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
 
-    initKind(new SyntaxSolveKey(), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
     initKind(new SyntaxDelimiter(SyntaxKind::Comma));
     initKind(new SyntaxReserved(SyntaxKind::Reserved), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxReserved(SyntaxKind::Solve), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxReserved(SyntaxKind::Option), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxEmbedded(SyntaxKind::Embedded), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed), fNormal);
@@ -280,9 +285,11 @@ const QVector<SyntaxKind> validParenthesesSyntax = {
     SyntaxKind::IdentifierTableAssignmentHead,
     SyntaxKind::IdentifierTableAssignmentRow,
     SyntaxKind::Reserved,
-    SyntaxKind::Solve,
     SyntaxKind::Formula,
+    SyntaxKind::Solve,
     SyntaxKind::SolveBody,
+    SyntaxKind::Option,
+    SyntaxKind::OptionBody,
     SyntaxKind::EmbeddedBody,
 };
 

@@ -83,6 +83,9 @@ enum class SyntaxKind {
     Solve,
     SolveBody,
     SolveKey,
+    Option,
+    OptionBody,
+    OptionKey,
 
     KindCount
 };
@@ -214,14 +217,14 @@ public:
     SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
     void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
-    void addSyntaxFormula(SyntaxFormula *syntax) {mSyntaxFormula << syntax;}
+    void addSubBody(SyntaxFormula *syntax) {mSubSyntaxBody << syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
     QHash<QString, SyntaxKind> mSpecialKinds;
     SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
-    QVector<SyntaxFormula*> mSyntaxFormula;
+    QVector<SyntaxFormula*> mSubSyntaxBody;
 
 };
 
@@ -282,7 +285,7 @@ public:
     SyntaxFormula(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
-    void setSpecialDynamicChars(QVector<QChar> chars) { mSpecialDynamicChars = chars; }
+    void setSpecialDynamicChars(QVector<QChar> chars);
 };
 
 class SyntaxString : public SyntaxAbstract

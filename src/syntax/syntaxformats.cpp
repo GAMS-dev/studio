@@ -26,7 +26,7 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';', '='};
+const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';'};
 
 QString syntaxKindName(SyntaxKind kind)
 {
@@ -74,6 +74,7 @@ SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
               << SyntaxKind::DeclarationTable
               << SyntaxKind::Directive
               << SyntaxKind::Solve
+              << SyntaxKind::Option
               << SyntaxKind::Reserved
               << SyntaxKind::Embedded
               << SyntaxKind::Formula;
@@ -150,7 +151,7 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
     } else if (mSyntaxCommentEndline) {
         if ( match.captured(2).startsWith("oneolcom")) {
             mSyntaxCommentEndline->setCommentChars("!!");
-            for (SyntaxFormula * sf: mSyntaxFormula) {
+            for (SyntaxFormula * sf: mSubSyntaxBody) {
                 sf->setSpecialDynamicChars(QVector<QChar>() << '!');
             }
          } else if (match.captured(2).startsWith("eolcom")) {
@@ -158,7 +159,7 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
             while (isWhitechar(line,i)) ++i;
             if (i+2 <= line.length()) {
                 mSyntaxCommentEndline->setCommentChars(line.mid(i,2));
-                for (SyntaxFormula * sf: mSyntaxFormula) {
+                for (SyntaxFormula * sf: mSubSyntaxBody) {
                     sf->setSpecialDynamicChars(QVector<QChar>() << line.at(i));
                 }
             }
@@ -284,9 +285,9 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, bool &has
 
 SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
 {
-    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Reserved
-              << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
-              << SyntaxKind::String << SyntaxKind::Directive << SyntaxKind::Assignment
+    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Option
+              << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
+              << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Directive << SyntaxKind::Assignment
               << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
               << SyntaxKind::DeclarationVariableType << SyntaxKind::DeclarationTable;
     switch (kind) {
@@ -296,8 +297,11 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
     case SyntaxKind::SolveBody:
         mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
         break;
+    case SyntaxKind::OptionBody:
+        mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
+        break;
     default:
-        Q_ASSERT_X(false, "SyntaxSolveBody", ("Invalid SyntaxKind:"+syntaxKindName(kind)).toLatin1());
+        Q_ASSERT_X(false, "SyntaxFormula", ("Invalid SyntaxKind:"+syntaxKindName(kind)).toLatin1());
     }
 }
 
@@ -338,6 +342,13 @@ SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, bool &hasCo
     while (++end < line.length() && charClass(line.at(end), prev, mSpecialDynamicChars) == cb1) ;
     hasContent = false;
     return SyntaxBlock(this, index, end, SyntaxShift::shift);
+}
+
+void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
+{
+    mSpecialDynamicChars = chars;
+    if (kind() == SyntaxKind::Formula)
+        mSpecialDynamicChars << '=';
 }
 
 SyntaxString::SyntaxString()
