@@ -73,23 +73,23 @@ void DynamicFile::openFile()
 void DynamicFile::runBackupCircle()
 {
     QStringList names;
-    int dot = mFile.fileName().lastIndexOf(".")+1;
-    QString fileBase = mFile.fileName().left(dot);
-    QString suffix = mFile.fileName().right(mFile.fileName().length()-dot);
-    names << (fileBase + suffix);
-    // if filename has a temp-marker add non-temp filename to backup-circle
-    if (suffix.contains('~')) names.prepend(fileBase + suffix.remove('~'));
 
-    // add all backup filenames until the last doesn't exist
+    QFileInfo fi(mFile);
+    QString fileBase = fi.completeBaseName();
+    QString suffix = fi.suffix();
+    names << mFile.fileName();
+    // if filename has a temp-marker add non-temp filename to backup-circle
+    if (suffix.contains('~')) names.prepend(mFile.fileName().remove('~'));
+
+    // add all backup filenames until one doesn't exist
     for (int i = 1; i <= mBackups; ++i) {
-        names.prepend(fileBase+suffix+"~"+QString::number(i));
+        names.prepend(mFile.fileName().remove('~') + "~" + QString::number(i));
         if (!QFile(names.first()).exists()) break;
     }
     // last backup will be overwritten - if it exists, delete it
     QFile file(names.first());
     if (file.exists()) file.remove();
 
-    //
     QString destName;
     for (QString sourceName: names) {
         if (!destName.isEmpty()) {
