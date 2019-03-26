@@ -336,7 +336,6 @@ void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int cha
     //TODO: make smarter
     Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
     searchParameterChanged();
-    clearResults();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -394,14 +393,12 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int index)
 void SearchDialog::on_btn_back_clicked()
 {
     insertHistory();
-    if (mHasChanged) clearResults();
     findNext(SearchDialog::Backward);
 }
 
 void SearchDialog::on_btn_forward_clicked()
 {
     insertHistory();
-    if (mHasChanged) clearResults();
     findNext(SearchDialog::Forward);
 }
 
