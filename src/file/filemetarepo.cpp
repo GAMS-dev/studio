@@ -92,6 +92,38 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
     }
 }
 
+void FileMetaRepo::toggleBookmark(FileId fileId, int lineNr, int posInLine)
+{
+    if (mTextMarkRepo->marks(fileId, lineNr, -1, TextMark::bookmark, 1).isEmpty()) {
+        // add bookmark
+        mTextMarkRepo->createMark(fileId, TextMark::bookmark, lineNr, posInLine);
+    } else {
+        // remove bookmark
+        mTextMarkRepo->removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark, lineNr);
+    }
+}
+
+void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, int refLineNr)
+{
+    TextMark *bookmark = nullptr;
+    if (mTextMarkRepo->hasBookmarks(refFileId)) {
+        bookmark = mTextMarkRepo->findBookmark(refFileId, refLineNr, back);
+    }
+    FileMeta *fm = fileMeta(refFileId);
+    ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm) : nullptr;
+    ProjectAbstractNode * node = startNode;
+    while (!bookmark && startNode) {
+        node = back ? mProjectRepo->previous(node) : mProjectRepo->next(node);
+        FileId fileId = node->toFile() ? node->toFile()->file()->id() : FileId();
+        if (fileId.isValid() && mTextMarkRepo->hasBookmarks(fileId)) {
+            bookmark = mTextMarkRepo->findBookmark(fileId, -1, back);
+        }
+        if (node == startNode) break;
+    }
+
+    if (bookmark) bookmark->jumpToMark();
+}
+
 TextMarkRepo *FileMetaRepo::textMarkRepo() const
 {
     if (!mTextMarkRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
@@ -140,7 +172,6 @@ QWidgetList FileMetaRepo::editors() const
 void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
     if (fileMeta->location().isEmpty()) return;
-
     mWatcher.removePath(fileMeta->location());
     mMissList.removeAll(fileMeta->location());
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
@@ -208,11 +239,6 @@ void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecM
     emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
 }
 
-//void FileMetaRepo::dirChanged(const QString &path)
-//{
-//    // TODO(JM) stack dir-name to check after timeout if it's deleted or contents has changed
-//}
-
 void FileMetaRepo::fileChanged(const QString &path)
 {
     FileMeta *file = fileMeta(path);
@@ -241,8 +267,8 @@ void FileMetaRepo::reviewRemoved()
         if (!file) continue;
         mProjectRepo->fileChanged(file->id());
         if (watch(file)) {
-            FileDifferences diff = file->compare();
-            if (diff.testFlag(FdMissing)) {
+            FileMeta::FileDifferences diff = file->compare();
+            if (diff.testFlag(FileMeta::FdMissing)) {
                 FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {

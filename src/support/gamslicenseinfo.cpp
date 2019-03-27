@@ -18,9 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslicenseinfo.h"
-#include "commonpaths.h"
 #include "locators/abstractsystemlogger.h"
 #include "locators/sysloglocator.h"
+#include "commonpaths.h"
+#include "common.h"
 #include "cfgmcc.h"
 #include "palmcc.h"
 #include "gclgms.h"
@@ -33,6 +34,10 @@ GamsLicenseInfo::GamsLicenseInfo()
 {
     auto logger = SysLogLocator::systemLog();
 
+    cfgSetExitIndicator(0); // switch of exit() call
+    cfgSetScreenIndicator(0);
+    cfgSetErrorCallback(GamsLicenseInfo::errorCallback);
+
     char msg[GMS_SSSIZE];
     if (!cfgCreateD(&mCFG,
                     CommonPaths::systemDir().toStdString().c_str(),
@@ -44,6 +49,11 @@ GamsLicenseInfo::GamsLicenseInfo()
         cfgGetMsg(mCFG, msg);
         logger->append(msg, LogMsgType::Error);
     }
+
+    palSetExitIndicator(0); // switch of exit() call
+    palSetScreenIndicator(0);
+    palSetErrorCallback(GamsLicenseInfo::errorCallback);
+
     if (!palCreateD(&mPAL,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
@@ -55,6 +65,7 @@ GamsLicenseInfo::GamsLicenseInfo()
                          msg,
                          &rc))
         logger->append(msg, LogMsgType::Error);
+
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
@@ -85,9 +96,23 @@ QString GamsLicenseInfo::solverName(int id) const
 QMap<int, QString> GamsLicenseInfo::solverNames()
 {
     QMap<int, QString> names;
-    for (int i=0; i<solvers(); ++i)
-        names[i] = solverName(i);
+    for (int i=1, j=1; i<=solvers(); ++i) {
+        if (!cfgAlgHidden(mCFG, i)) {
+            names[j++] = solverName(i);
+        }
+    }
     return names;
+}
+
+QMap<int, int> GamsLicenseInfo::solverIndices()
+{
+    QMap<int, int> indices;
+    for (int i=1, j=1; i<=solvers(); ++i) {
+        if (!cfgAlgHidden(mCFG, i)) {
+            indices[j++] = i;
+        }
+    }
+    return indices;
 }
 
 QMap<int, QString> GamsLicenseInfo::modelTypeNames()
@@ -127,6 +152,15 @@ char* GamsLicenseInfo::solverCodes(int solverId) const
     char msg[GMS_SSSIZE];
     char *codes = cfgAlgCode(mCFG, solverId, msg);
     return codes;
+}
+
+int GamsLicenseInfo::errorCallback(int count, const char *message)
+{
+    Q_UNUSED(count);
+    auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
+    logger->append(message, LogMsgType::Error);
+    return 0;
 }
 
 }

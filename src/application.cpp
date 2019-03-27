@@ -22,11 +22,14 @@
 #include "studiosettings.h"
 #include "commonpaths.h"
 #include "locators/settingslocator.h"
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 
 #include <iostream>
 #include <QMessageBox>
 #include <QFileOpenEvent>
 #include <QLocalSocket>
+#include <QWindow>
 
 namespace gams {
 namespace studio {
@@ -44,6 +47,7 @@ Application::Application(int& argc, char** argv)
     mServerName = "com.gams.studio." + userName;
 
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
+    connect(&mDistribValidator, &support::DistributionValidator::newError, this, &Application::logError);
 }
 
 void Application::init()
@@ -134,11 +138,23 @@ void Application::receiveFileArguments()
     mMainWindow->setForegroundOSCheck();
 }
 
+void Application::logError(const QString &message)
+{
+    SysLogLocator::systemLog()->append(message, LogMsgType::Error);
+}
+
 bool Application::event(QEvent *event)
 {
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mMainWindow->openFilePath(openEvent->url().path());
+        mMainWindow->setInitialFiles({openEvent->url().path()});
+        mMainWindow->openFiles({openEvent->url().path()});
+        for (auto window : allWindows()) {
+            if (!window->isVisible())
+                continue;
+            window->show();
+            window->raise();
+        }
     }
     return QApplication::event(event);
 }

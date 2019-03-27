@@ -63,9 +63,10 @@ signals:
 public slots:
     void openFile(FileMeta* fm, NodeId groupId, bool focus = true, int codecMib = -1);
     void removeFile(FileMeta* fileMeta);
+    void toggleBookmark(FileId fileId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, FileId refFileId, int refLineNr);
 
 private slots:
-//    void dirChanged(const QString& path);
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();

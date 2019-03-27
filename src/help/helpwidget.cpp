@@ -517,6 +517,17 @@ void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::We
     });
 }
 
+void HelpWidget::wheelEvent(QWheelEvent* e)
+{
+    if (e->modifiers() & Qt::ControlModifier) {
+        const int delta = e->delta();
+        if (delta < 0) zoomOut();
+        else if (delta > 0) zoomIn();
+        return;
+    }
+    QWidget::wheelEvent(e);
+}
+
 void HelpWidget::closeEvent(QCloseEvent *event)
 {
     clearStatusBar();

@@ -22,11 +22,11 @@
 
 #include "projectfilenode.h"
 #include "dynamicfile.h"
+#include <QContiguousCache>
 
 namespace gams {
 namespace studio {
 
-// TODO(JM) integrate Log node as normal node, set a valid location, set a valid name - no "[LOG]" encoding in name
 class ProjectLogNode final: public ProjectFileNode
 {
 public:
@@ -36,9 +36,6 @@ public:
     void markOld();
     void logDone();
 
-//public:
-//    void fileClosed(ProjectFileNode* fc);
-//    TextMark* firstErrorMark();
     ProjectFileNode *lstNode() const;
     const ProjectRootNode *root() const override;
     NodeId runGroupId() const override;
@@ -47,21 +44,24 @@ public:
 public slots:
     void addProcessData(const QByteArray &data);
     void setJumpToLogEnd(bool state);
+    void repaint();
 
 protected:
     friend class ProjectRepo;
     friend class ProjectRunGroupNode;
 
     ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *assignedRunGroup);
-//    void setParentNode(ProjectGroupNode *parent) override;
 
     struct LinkData {
         TextMark* textMark = nullptr;
         int col = 0;
         int size = 1;
     };
-    QString extractLinks(const QString &text, ExtractionState &state, QList<LinkData>& marks);
-
+    struct LinksCache {
+        int line;
+        QString text;
+    };
+    QString extractLinks(const QString &text, ExtractionState &state, QVector<LinkData> &marks, bool createMarks, bool &hasError);
 
 private:
     ProjectRunGroupNode *mRunGroup = nullptr;
@@ -80,6 +80,10 @@ private:
     bool mConceal = false;
     QString mLastSourceFile;
     DynamicFile *mLogFile = nullptr;
+    int mRepaintCount = -1;
+    QVector<QTextCharFormat> mFormat;
+    int mErrorCount = 0;
+    QContiguousCache<LinksCache> mLastErrors;
 };
 
 } // namespace studio

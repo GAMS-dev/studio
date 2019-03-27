@@ -31,7 +31,7 @@ TextMarkId TextMark::mNextId = 0;
 TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId groupId)
     : mId(mNextId++), mFileId(fileId), mGroupId(groupId), mMarkRepo(marks), mType(tmType)
 {
-    if (!mMarkRepo) FATAL() << "The TextMarkRepo must be a valid instance.";
+    Q_ASSERT_X(mMarkRepo, "TextMark constructor", "The TextMarkRepo must be a valid instance.");
 }
 
 void TextMark::setLine(int lineNr)
@@ -42,6 +42,16 @@ void TextMark::setLine(int lineNr)
 TextMark *TextMark::refMark() const
 {
     return mReference;
+}
+
+QVector<TextMark *> TextMark::backRefs(FileId fileId) const
+{
+    if (!fileId.isValid()) return mBackRefs;
+    QVector<TextMark *> res;
+    for (TextMark* mark: mBackRefs) {
+        if (mark->fileId() == fileId) res << mark;
+    }
+    return res;
 }
 
 TextMark::~TextMark()
@@ -56,17 +66,17 @@ void TextMark::setPosition(int line, int column, int size)
     mColumn = (size<0) ? column-mSize : column;
 }
 
-void TextMark::jumpToRefMark(bool focus)
+void TextMark::jumpToRefMark(bool focus, bool ignoreColumn)
 {
     if (mReference)
-        mReference->jumpToMark(focus);
+        mReference->jumpToMark(focus, ignoreColumn);
     else
         DEB() << "No TextMark reference to jump to";
 }
 
-void TextMark::jumpToMark(bool focus)
+void TextMark::jumpToMark(bool focus, bool ignoreColumn)
 {
-    mMarkRepo->jumpTo(this, focus);
+    mMarkRepo->jumpTo(this, focus, ignoreColumn);
 }
 
 void TextMark::setRefMark(TextMark* refMark)
@@ -89,18 +99,9 @@ void TextMark::clearBackRefs()
         backRef->unsetRefMark(this);
     }
     mBackRefs.clear();
-    if (mBlockData) mBlockData->removeTextMark(this);
-    mBlockData = nullptr;
 }
 
-void TextMark::setBlockData(BlockData *blockData)
-{
-    // recent value of mBlockData is commonly invalid
-    mBlockData = blockData;
-    if (mBlockData) mBlockData->addTextMark(this);
-}
-
-QColor TextMark::color()
+QColor TextMark::color() const
 {
     if (mReference) {
         if (mReference->type() == TextMark::error) return Qt::darkRed;
@@ -123,7 +124,7 @@ FileKind TextMark::refFileKind()
 
 QIcon TextMark::icon()
 {
-    switch (mType) { // TODO(JM) hold ref to TextMark instead of icon
+    switch (mType) {
     case error:
         return QIcon(":/img/exclam-circle-r");
     case link:
@@ -139,10 +140,7 @@ QIcon TextMark::icon()
     return QIcon();
 }
 
-inline TextMark::Type TextMark::refType() const
-{
-    return (mReference) ? mReference->type() : none;
-}
+
 
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {

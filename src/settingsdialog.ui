@@ -203,7 +203,7 @@
      </widget>
      <widget class="QWidget" name="tabEditor">
       <attribute name="title">
-       <string>Editor</string>
+       <string>Editor &amp;&amp; Log</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">

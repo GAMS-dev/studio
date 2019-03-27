@@ -29,15 +29,15 @@
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextCodec>
+#include <QDir>
 
 namespace gams {
 namespace studio {
 
-ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, ProjectGroupNode* group, NodeType type)
+ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, NodeType type)
     : ProjectAbstractNode(fileMeta?fileMeta->name():"[NULL]", type), mFileMeta(fileMeta)
 {
     if (!mFileMeta) EXCEPT() << "The assigned FileMeta must not be null.";
-    if (group) setParentNode(group);
 }
 
 ProjectFileNode::~ProjectFileNode()
@@ -46,7 +46,6 @@ ProjectFileNode::~ProjectFileNode()
 void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
 {
     ProjectAbstractNode::setParentNode(parent);
-    // TODO(JM) setRunId in FileMeta
 }
 
 QIcon ProjectFileNode::icon()
@@ -54,13 +53,15 @@ QIcon ProjectFileNode::icon()
     ProjectGroupNode* par = parentNode();
     while (par && !par->toRunGroup()) par = par->parentNode();
     if (!par) return QIcon();
-    QString runMark = par->toRunGroup()->specialFile(FileKind::Gms) == location() ? "-run" : "";
+    QString runMark = par->toRunGroup()->parameter("gms") == location() ? "-run" : "";
     if (file()->kind() == FileKind::Gms)
         return QIcon(":/img/gams-w"+runMark);
     if (file()->kind() == FileKind::Gdx)
         return QIcon(":/img/database");
     if (file()->kind() == FileKind::Ref)
         return QIcon(":/img/ref-file");
+    if (file()->kind() == FileKind::Txt)
+        return QIcon(":/img/file-edit");
     return QIcon(":/img/file-alt"+runMark);
 }
 
@@ -107,7 +108,7 @@ QString ProjectFileNode::location() const
 
 QString ProjectFileNode::tooltip()
 {
-    QString tip = location();
+    QString tip = QDir::toNativeSeparators(location());
     if (!file()->exists(true)) tip += "\n--missing--";
     if (!debugMode())
         return tip;

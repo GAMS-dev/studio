@@ -74,31 +74,10 @@ int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
     return mChildNodes.indexOf(child);
 }
 
-void ProjectGroupNode::insertChild(ProjectAbstractNode* child)
+void ProjectGroupNode::appendChild(ProjectAbstractNode* child)
 {
     if (!child || mChildNodes.contains(child)) return;
     mChildNodes.append(child);
-    int i = mChildNodes.size()-1;
-    while (i > 0 && child->name().compare(mChildNodes.at(i-1)->name(), Qt::CaseInsensitive) < 0)
-        --i;
-    if (i < mChildNodes.size()-1)
-        mChildNodes.move(mChildNodes.size()-1, i);
-// TODO(JM) set runableGms if missing
-
-//    bool hit;
-//    int pos = peekIndex(child->name(), &hit);
-//    if (hit) pos++;
-//    mChildList.insert(pos, child);
-//    if (child->type() == ProjectAbstractNode::File) {
-//        // TODO(JM) move file binding to FileMetaRepo
-//        TextMarkRepo *markList = marks(child->location());
-//        markList->bind(static_cast<ProjectFileNode*>(child));
-//    }
-//    if (!mAttachedFiles.contains(child->location())) {
-//        mAttachedFiles << child->location();
-//    }
-//    if (child->testFlag(cfActive))
-//        setFlag(cfActive);
 }
 
 void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
@@ -119,7 +98,7 @@ void ProjectGroupNode::setLocation(const QString& location)
 
 QString ProjectGroupNode::tooltip()
 {
-    QString res = location();
+    QString res = QDir::toNativeSeparators(location());
     if (debugMode()) {
         res.append("\nNodeId: "+QString::number(id()));
         res.append("\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?"));
@@ -163,17 +142,21 @@ ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recur
     return nullptr;
 }
 
-ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location)
+ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location, const QString &suffix)
 {
     ProjectFileNode* node = findFile(location, false);
-    if (node) return node;
-    FileMeta* fm = projectRepo()->fileRepo()->findOrCreateFileMeta(location);
-    return projectRepo()->findOrCreateFileNode(fm, this);
+    if (node) {
+        if (!suffix.isEmpty()) node->file()->setKind(suffix);
+        return node;
+    } else {
+        FileMeta* fm = projectRepo()->fileRepo()->findOrCreateFileMeta(location, &FileType::from(suffix));
+        return projectRepo()->findOrCreateFileNode(fm, this);
+    }
 }
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
 {
-    for (ProjectAbstractNode* node: internalNodeList()) {
+    for (ProjectAbstractNode* node: childNodes()) {
         ProjectRunGroupNode* runGroup = node->toRunGroup();
         if (runGroup && runGroup->isProcess(process))
             return runGroup;
@@ -188,7 +171,7 @@ ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *proce
 
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(FileId runId) const
 {
-    for (ProjectAbstractNode* node: internalNodeList()) {
+    for (ProjectAbstractNode* node: childNodes()) {
         ProjectRunGroupNode* runGroup = node->toRunGroup();
         if (runGroup && runGroup->runnableGms()->id() == runId)
             return runGroup;
@@ -214,6 +197,11 @@ QVector<ProjectFileNode *> ProjectGroupNode::listFiles(bool recurse) const
         }
     }
     return res;
+}
+
+void ProjectGroupNode::moveChildNode(int from, int to)
+{
+    mChildNodes.move(from, to);
 }
 
 ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
@@ -256,12 +244,24 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
     mLogNode = logNode;
 }
 
+void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
+{
+    ProjectGroupNode::removeChild(child);
+    ProjectFileNode *file = child->toFile();
+    if (file) {
+        QList<QString> files = mParameterHash.keys(file->location());
+        for (const QString &file: files) {
+            mParameterHash.remove(file);
+        }
+    }
+}
+
 ProjectLogNode *ProjectRunGroupNode::logNode()
 {
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QFileInfo fi = !specialFile(FileKind::Gms).isEmpty()
-                       ? specialFile(FileKind::Gms) : QFileInfo(location()+"/"+name()+"."+suffix);
+        QFileInfo fi = !parameter("gms").isEmpty()
+                       ? parameter("gms") : QFileInfo(location()+"/"+name()+"."+suffix);
         QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new ProjectLogNode(fm, this);
@@ -269,9 +269,31 @@ ProjectLogNode *ProjectRunGroupNode::logNode()
     return mLogNode;
 }
 
+///
+/// \brief ProjectGroupNode::setLogLocation sets the location of the log. Filename can be determined automatically from path.
+/// \param path
+///
+void ProjectRunGroupNode::setLogLocation(const QString& path)
+{
+    QFileInfo log(path);
+    QString fullPath;
+
+    fullPath = log.filePath();
+    if (log.isDir()) {
+
+        if (!fullPath.endsWith(QDir::separator()))
+            fullPath.append(QDir::separator());
+
+        QFileInfo filename(mLogNode->file()->location());
+        fullPath.append(filename.completeBaseName() + "." + FileType::from(FileKind::Log).defaultSuffix());
+    }
+
+    mLogNode->file()->setLocation(fullPath);
+}
+
 FileMeta* ProjectRunGroupNode::runnableGms() const
 {
-    return fileRepo()->fileMeta(specialFile(FileKind::Gms));
+    return fileRepo()->fileMeta(parameter("gms"));
 }
 
 void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
@@ -279,7 +301,7 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     ProjectFileNode *gmsFileNode;
     if (!gmsFile) {
         // find alternative runable file
-        for (ProjectAbstractNode *node: internalNodeList()) {
+        for (ProjectAbstractNode *node: childNodes()) {
             gmsFileNode = node->toFile();
             if (gmsFileNode->file()->kind() == FileKind::Gms) {
                 gmsFile = gmsFileNode->file();
@@ -294,16 +316,14 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
         DEB() << "Only files of FileKind::Gms can become runable";
         return;
     }
+    setParameter("gms", "");
     if (!gmsFile) {
-        setSpecialFile(FileKind::Gms, "");
-        setSpecialFile(FileKind::Lst, "");
+        setParameter("lst", "");
         return;
     }
     setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
     QString gmsPath = gmsFile->location();
-    QString lstPath = QFileInfo(gmsPath).completeBaseName() + ".lst";
-    setSpecialFile(FileKind::Gms, gmsPath);
-    setSpecialFile(FileKind::Lst, lstPath);
+    setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
 }
 
@@ -355,6 +375,12 @@ QStringList ProjectRunGroupNode::getRunParametersHistory() const
     return mRunParametersHistory;
 }
 
+///
+/// \brief ProjectRunGroupNode::analyzeParameters translates the gms file and an OptionItem list into a single QStringList, while also setting all extracted parameters for this group
+/// \param gmsLocation gms file to be run
+/// \param itemList list of options given by studio and user
+/// \return QStringList all arguments
+///
 QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList)
 {
     // set studio default parameters
@@ -369,63 +395,141 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
     // find directory changes first
     QString path = "";
+    QString cdir = "";
+    QString wdir = "";
+    QString filestem = "";
     for (OptionItem item : itemList) {
         if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
-            path = item.value;
-            if (! (path.endsWith("/") || path.endsWith("\\")) )
-                path += "/";
-
+                || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0) {
+            cdir = item.value;
             gamsArgs[item.key] = item.value;
         }
+
+        if (QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
+                || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
+            wdir = item.value;
+            gamsArgs[item.key] = item.value;
+        }
+
+        if (QString::compare(item.key, "filestem", Qt::CaseInsensitive) == 0)
+            filestem = item.value;
+    }
+
+    if (!cdir.isEmpty()) path = cdir;
+
+    // wdir replaces cdir for output files
+    // if wdir is relative, it is appended to cdir
+    if (!wdir.isEmpty()) {
+        if (!cdir.isEmpty() && QDir(wdir).isRelative())
+            path += QDir::separator() + wdir;
+        else path = wdir;
     }
 
     QFileInfo fi(gmsLocation);
-    // set default lst name to revert deleted o parameter values
-    clearSpecialFiles();
-    setSpecialFile(FileKind::Lst, path + fi.baseName() + ".lst");
+    if (filestem.isEmpty()) filestem = fi.path() + QDir::separator() + fi.baseName();
+    if (path.isEmpty()) path = fi.path();
+    else if (QDir(path).isRelative()) path = fi.path() + QDir::separator() + path;
 
-    // iterate options
+    setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
+
+    clearParameters();
+    // set default lst name to revert deleted o parameter values
+    setParameter("lst", cleanPath(path, filestem + ".lst"));
+
+    bool defaultOverride = false;
     for (OptionItem item : itemList) {
-        // output (o) found
+
+        // convert to native seperator
+        QString value = item.value;
+        value = value.replace('/', QDir::separator());
+        value = value.replace('\\', QDir::separator());
+
+        // regex to remove dots at the end of a filename
+        QRegularExpression notDotAsEnding("[\\w\\d](\\.)[\"\\\\ ]*$");
+        QRegularExpressionMatch match = notDotAsEnding.match(value);
+        if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
+
+        // set parameters
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
 
-            setSpecialFile(FileKind::Lst, path + item.value);
+            mParameterHash.remove("lst"); // remove default
+
+            if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
+                        || QString::compare(value, "/dev/null", Qt::CaseInsensitive) == 0))
+            setParameter("lst", cleanPath(path, value));
+
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
 
-            QString name = item.value;
-            if (name == "default") name = fi.baseName() + ".gdx";
-            setSpecialFile(FileKind::Gdx, path + name);
+            if (value == "default") value = "\"" + filestem + ".gdx\"";
+            setParameter("gdx", cleanPath(path, value));
+
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
 
-            QString name = item.value;
-            if (name == "default") name = fi.baseName() + ".ref";
-            setSpecialFile(FileKind::Ref, path + name);
+            if (value == "default") value = "\"" + filestem + ".ref\"";
+            setParameter("ref", cleanPath(path, value));
+
+        } else if (QString::compare(item.key, "lf", Qt::CaseInsensitive) == 0) {
+
+            if (!value.endsWith(".log")) value.append("." + FileType::from(FileKind::Log).defaultSuffix());
+            setLogLocation(cleanPath(path, value));
         }
 
-        if (defaultGamsArgs.contains(item.key)) {
-            SysLogLocator::systemLog()->append("You are overwriting at least one GAMS Studio default argument. "
-                                 "Some of these are necessary to ensure a smooth experience. "
-                                 "Use at your own risk!", LogMsgType::Warning);
-        }
-        gamsArgs[item.key] = item.value;
+        if (defaultGamsArgs.contains(item.key))
+            defaultOverride = true;
+
+        gamsArgs[item.key] = value;
     }
 
-    // prepare return value
+    if (defaultOverride)
+        SysLogLocator::systemLog()->append("You are overwriting at least one GAMS Studio default argument. "
+                     "Some of these are necessary to ensure a smooth experience. "
+                     "Use at your own risk!", LogMsgType::Warning);
+
+    // prepare gams command
 #if defined(__unix__) || defined(__APPLE__)
     QStringList output { QDir::toNativeSeparators(gmsLocation) };
 #else
     QStringList output { "\""+QDir::toNativeSeparators(gmsLocation)+"\"" };
 #endif
+    // normalize gams parameter format
     for(QString k : gamsArgs.keys()) {
         output.append(k + "=" + gamsArgs.value(k));
     }
+    // console output
     QString msg = "Running GAMS:";
     msg.append(output.join(" "));
-
     SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
+
     return output;
+}
+
+///
+/// \brief ProjectRunGroupNode::normalizePath removes quotes and trims whitespaces for use within studio. do not pass to gams!
+/// \param path workign dir
+/// \param file file name, can be absolute or relative
+/// \return cleaned path
+///
+QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
+
+    QString ret = "";
+
+    path.remove("\"");
+    QDir dir(path);
+    if (dir.isRelative()) {
+        path = location() + QDir::separator() + path;
+    }
+
+    file.remove("\""); // remove quotes from filename
+    file = file.trimmed();
+    if (file.isEmpty() || QFileInfo(file).isRelative()) {
+        ret = path;
+        if (! ret.endsWith(QDir::separator()))
+            ret += QDir::separator();
+    }
+    ret.append(file);
+
+    return QFileInfo(ret).absoluteFilePath();
 }
 
 bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
@@ -433,17 +537,26 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
     return process && mGamsProcess.get() == process;
 }
 
-void ProjectRunGroupNode::jumpToFirstError(bool focus)
+bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
 {
-    if (!runnableGms()) return;
+    if (!runnableGms()) return false;
     QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
     TextMark* textMark = marks.size() ? marks.first() : nullptr;
+
     if (textMark) {
-        if (SettingsLocator::settings()->openLst())
+        if (SettingsLocator::settings()->openLst()) {
+            textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);
-        else
+        } else {
+            if (lstNode && !lstNode->file()->editors().isEmpty()) textMark->jumpToRefMark(false);
             textMark->jumpToMark(focus);
+        }
+        // jump to first error in LOG
+        QVector<TextMark*> backRef = textMark->backRefs(logNode()->file()->id());
+        if (backRef.size()) backRef.at(0)->jumpToMark(false, true);
+        return true;
     }
+    return false;
 }
 
 void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &result)
@@ -457,61 +570,62 @@ void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &
     }
 }
 
-QString ProjectRunGroupNode::specialFile(const FileKind &kind) const
+QString ProjectRunGroupNode::parameter(const QString &kind) const
 {
-    return mSpecialFiles.value(kind);
+    return mParameterHash.value(kind);
 }
 
-bool ProjectRunGroupNode::hasSpecialFile(const FileKind &kind) const
+bool ProjectRunGroupNode::hasParameter(const QString &kind) const
 {
-    return mSpecialFiles.contains(kind);
+    return mParameterHash.contains(kind);
 }
 
 void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
     FileMeta* runNode = runnableGms();
-    for (QString loc : mSpecialFiles.values()) {
-        ProjectFileNode* node = findOrCreateFileNode(loc);
-        node->file()->setKind(mSpecialFiles.key(loc));
-        if (runNode)
-            node->file()->setCodec(runNode->codec());
+    for (QString loc : mParameterHash.values()) {
+
+        if (QFileInfo::exists(loc)) {
+            ProjectFileNode* node = findOrCreateFileNode(loc, mParameterHash.key(loc));
+            if (runNode)
+                node->file()->setCodec(runNode->codec());
+        } else {
+            SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
+        }
     }
 }
 
-void ProjectRunGroupNode::setSpecialFile(const FileKind &kind, const QString &path)
+void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
 {
     if (path.isEmpty()) {
-        mSpecialFiles.remove(kind);
+        mParameterHash.remove(kind);
         return;
     }
     QString fullPath = path;
     if (QFileInfo(path).isRelative())
         fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
 
+    fullPath.remove("\"");
+
     if (QFileInfo(fullPath).suffix().isEmpty()) {
-        switch (kind) {
-        case FileKind::Gdx:
+        if (kind == "gdx")
             fullPath += ".gdx";
-            break;
-        case FileKind::Lst:
-            // no! gams does not add lst extension. unlike .ref or .gdx
-            break;
-        case FileKind::Ref:
+        else if (kind == "lst")
+        { /* do nothing */ } // gams does not add lst extension. unlike .ref or .gdx
+        else if (kind == "ref")
             fullPath += ".ref";
-            break;
-        default:
-            qDebug() << "WARNING: unhandled file type!" << fullPath << "is missing extension.";
-        }
+        else
+            qDebug() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
     }
 
-    mSpecialFiles.insert(kind, fullPath);
+    mParameterHash.insert(kind, fullPath);
 }
 
-void ProjectRunGroupNode::clearSpecialFiles()
+void ProjectRunGroupNode::clearParameters()
 {
-    QString gms = mSpecialFiles.value(FileKind::Gms);
-    mSpecialFiles.clear();
-    mSpecialFiles.insert(FileKind::Gms, gms);
+    QString gms = mParameterHash.value("gms");
+    mParameterHash.clear();
+    mParameterHash.insert("gms", gms);
 }
 
 QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const
@@ -521,33 +635,16 @@ QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const
 
 QString ProjectRunGroupNode::tooltip()
 {
-    QString res(location());
+    QString res(QDir::toNativeSeparators(location()));
     if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
-    if (!specialFile(FileKind::Lst).isEmpty())
-        res.append("\nLast output file: ").append(QFileInfo(specialFile(FileKind::Lst)).fileName());
+    if (!parameter("lst").isEmpty())
+        res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());
     if (debugMode()) {
         res.append("\nNodeId: "+QString::number(id()));
         res.append("\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?"));
     }
     return res;
 }
-
-int ProjectGroupNode::peekIndex(const QString& name, bool *hit)
-{
-    if (hit) *hit = false;
-    for (int i = 0; i < childCount(); ++i) {
-        ProjectAbstractNode *child = childNode(i);
-        QString other = child->name();
-        int comp = name.compare(other, Qt::CaseInsensitive);
-        if (comp < 0) return i;
-        if (comp == 0) {
-            if (hit) *hit = true;
-            return i;
-        }
-    }
-    return childCount();
-}
-
 
 void ProjectRunGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
@@ -582,210 +679,6 @@ TextMarkRepo *ProjectRootNode::textMarkRepo() const
 {
     return mRepo ? mRepo->textMarkRepo() : nullptr;
 }
-
-/*
-
-
-
-
-void ProjectGroupNode::setFlag(ContextFlag flag, bool value)
-{
-    if (flag == ProjectAbstractNode::cfEditMod || flag == ProjectAbstractNode::cfFileMod)
-        EXCEPT() << "Can't modify flag " << (flag == ProjectAbstractNode::cfEditMod ? "cfEditMod" : "cfFileMod");
-    ProjectAbstractNode::setFlag(flag, value);
-
-    // distribute missing flag to child entries
-    if (flag == (ProjectAbstractNode::cfMissing & flag)) {
-        for (ProjectAbstractNode *fc: mChildList) {
-            fc->setFlag(flag);
-        }
-    }
-}
-
-void ProjectGroupNode::unsetFlag(ContextFlag flag)
-{
-    if (flag == ProjectAbstractNode::cfEditMod || flag == ProjectAbstractNode::cfFileMod)
-        EXCEPT() << "Can't modify flag " << (flag == ProjectAbstractNode::cfEditMod ? "cfEditMod" : "cfFileMod");
-    ProjectAbstractNode::setFlag(flag, false);
-}
-
-ProjectAbstractNode* ProjectGroupNode::findNode(QString filePath)
-{
-    QFileInfo fi(filePath);
-    for (int i = 0; i < childCount(); i++) {
-        ProjectAbstractNode *child = childEntry(i);
-        if (QFileInfo(child->location()) == fi)
-            return child;
-        if (child->type() == NodeType::Group) {
-            ProjectGroupNode *group = static_cast<ProjectGroupNode*>(child);
-            ProjectAbstractNode *subChild = group->findNode(filePath);
-            if (subChild) return subChild;
-        }
-    }
-    return nullptr;
-}
-
-ProjectFileNode *ProjectGroupNode::findFile(FileId fileId)
-{
-    for (int i = 0; i < childCount(); i++) {
-        ProjectAbstractNode *child = childEntry(i);
-        if (QFileInfo(child->id()) == fileId)
-            return child;
-        if (child->type() == NodeType::Group) {
-            ProjectGroupNode *group = static_cast<ProjectGroupNode*>(child);
-            ProjectAbstractNode *subChild = group->findNode(fileId);
-            if (subChild) return subChild;
-        }
-    }
-    return nullptr;
-}
-
-ProjectFileNode*ProjectGroupNode::findFile(QString filePath)
-{
-    ProjectAbstractNode* fsc = findNode(filePath);
-    return (fsc && (fsc->type() == ProjectAbstractNode::File || fsc->type() == ProjectAbstractNode::Log))
-            ? static_cast<ProjectFileNode*>(fsc) : nullptr;
-}
-
-void ProjectGroupNode::checkFlags()
-{
-    bool active = false;
-    for (ProjectAbstractNode *fsc: mChildList) {
-        if (fsc->testFlag(cfActive)) {
-            active = true;
-            break;
-        }
-    }
-    setFlag(cfActive, active);
-}
-
-void ProjectGroupNode::updateRunState(const QProcess::ProcessState& state)
-{
-    Q_UNUSED(state)
-    // TODO(JM) visualize if a state is running
-}
-
-TextMarkRepo *ProjectGroupNode::marks(const QString& fileName)
-{
-    if (!mMarksForFilenames.contains(fileName)) {
-        TextMarkRepo* marks = new TextMarkRepo(this, fileName);
-        // TOOD(JM) move functionality to FileMetaRepo
-        connect(marks, &TextMarkRepo::getFileNode, this, &ProjectGroupNode::findOrCreateFileNode);
-        mMarksForFilenames.insert(fileName, marks);
-    }
-    return mMarksForFilenames.value(fileName);
-}
-
-void ProjectGroupNode::removeMarks(QSet<TextMark::Type> tmTypes)
-{
-    QHash<QString, TextMarkRepo*>::iterator it;
-    for (it = mMarksForFilenames.begin(); it != mMarksForFilenames.end(); ++it) {
-        ProjectFileNode *file = findFile(it.key());
-        if (file) {
-            file->removeTextMarks(tmTypes);
-        } else {
-            // TODO(JM) move file binding to FileMetaRepo
-            it.value()->removeTextMarks(tmTypes);
-        }
-    }
-}
-
-void ProjectGroupNode::removeMarks(QString fileName, QSet<TextMark::Type> tmTypes)
-{
-    // TODO(JM) move file binding to FileMetaRepo
-    mMarksForFilenames.value(fileName)->removeTextMarks(tmTypes, true);
-}
-
-void ProjectGroupNode::dumpMarks()
-{
-    for (QString file: mMarksForFilenames.keys()) {
-        QString res = file+":\n";
-        TextMarkRepo* list = marks(file);
-        for (TextMark* mark: list->marks()) {
-            res.append(QString("  %1\n").arg(mark->dump()));
-        }
-        DEB() << res;
-    }
-}
-
-void ProjectGroupNode::detachFile(const QString& filepath)
-{
-    QFileInfo fi(filepath);
-    if (mAttachedFiles.contains(fi)) {
-        ProjectAbstractNode* fsc = findNode(filepath);
-        ProjectFileNode *fc = (fsc && fsc->type()==ProjectAbstractNode::File) ? static_cast<ProjectFileNode*>(fsc) : nullptr;
-        if (!fc || fc->editors().isEmpty()) {
-            mAttachedFiles.removeOne(fi);
-        }
-    }
-}
-
-typedef QPair<int, ProjectAbstractNode*> IndexedNode;
-
-void ProjectGroupNode::updateChildNodes()
-{
-    QFileInfoList addList = mAttachedFiles;
-    QList<IndexedNode> vanishedEntries;
-    for (int i = 0; i < childCount(); ++i) {
-        ProjectAbstractNode *entry = childEntry(i);
-        if (entry->type() == ProjectAbstractNode::Log)
-            continue;
-        QFileInfo fi(entry->location());
-        int pos = addList.indexOf(fi);
-        if (pos >= 0) {
-            // keep existing entries and remove them from addList
-            addList.removeAt(pos);
-            entry->unsetFlag(ProjectAbstractNode::cfMissing);
-        } else {
-            // prepare indicees in reverse order (highest index first)
-            vanishedEntries.insert(0, IndexedNode(i, entry));
-        }
-    }
-    // check for vanished files and directories
-    for (IndexedNode childIndex: vanishedEntries) {
-        ProjectAbstractNode* entry = childIndex.second;
-        if (entry->testFlag(ProjectAbstractNode::cfActive)) {
-            // mark active files as missing (directories recursively)
-            entry->setFlag(ProjectAbstractNode::cfMissing);
-            qDebug() << "Missing node: " << entry->name();
-        } else {
-            // inactive files can be removed (directories recursively)
-            emit removeNode(entry);
-        }
-    }
-    // add newly appeared files and directories
-    for (QFileInfo fi: addList) {
-        if (fi.exists())
-            emit requestNode(fi.fileName(), CommonPaths::absolutFilePath(fi.filePath()), this);
-    }
-}
-
-void ProjectGroupNode::saveGroup()
-{
-    for (ProjectAbstractNode* child: mChildList) {
-        if (child->type() == NodeType::Group) {
-            ProjectGroupNode *fgc = static_cast<ProjectGroupNode*>(child);
-            fgc->saveGroup();
-        } else if (child->type() == NodeType::File) {
-            ProjectFileNode *fc = static_cast<ProjectFileNode*>(child);
-            fc->save();
-        }
-    }
-}
-
-GamsProcess*ProjectGroupNode::gamsProcess()
-{
-    return mGamsProcess.get();
-}
-
-QProcess::ProcessState ProjectGroupNode::gamsProcessState() const
-{
-    return mGamsProcess->state();
-}
-
-*/
-
-
 
 } // namespace studio
 } // namespace gams

@@ -54,10 +54,12 @@ public:
     virtual QString lstErrorText(int line);
     ProjectFileNode *findFile(const QString &location, bool recurse = true) const;
     ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
-    ProjectFileNode *findOrCreateFileNode(const QString &location);
+    ProjectFileNode *findOrCreateFileNode(const QString &location, const QString& suffix = "");
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
     QVector<ProjectFileNode*> listFiles(bool recurse = false) const;
+    void moveChildNode(int from, int to);
+    const QList<ProjectAbstractNode*> &childNodes() const { return mChildNodes; }
 
 protected:
     friend class ProjectRepo;
@@ -66,19 +68,14 @@ protected:
     friend class ProjectFileNode;
 
     ProjectGroupNode(QString name, QString location, NodeType type = NodeType::group);
-    void insertChild(ProjectAbstractNode *child);
+    void appendChild(ProjectAbstractNode *child);
     void removeChild(ProjectAbstractNode *child);
     void setLocation(const QString &location);
-    int peekIndex(const QString &name, bool* hit = nullptr);
-    const QList<ProjectAbstractNode*> &internalNodeList() const { return mChildNodes; }
 
 private:
     QList<ProjectAbstractNode*> mChildNodes;
     QString mLocation;
-
 };
-
-
 
 class ProjectRunGroupNode : public ProjectGroupNode
 {
@@ -98,16 +95,16 @@ public:
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
 
-    QString specialFile(const FileKind& kind) const;
-    bool hasSpecialFile(const FileKind& kind) const;
+    QString parameter(const QString& kind) const;
+    bool hasParameter(const QString& kind) const;
     void addNodesForSpecialFiles();
-    void setSpecialFile(const FileKind& kind, const QString& path);
-    void clearSpecialFiles();
+    void setParameter(const QString& kind, const QString& path);
+    void clearParameters();
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
     GamsProcess *gamsProcess() const;
-    void jumpToFirstError(bool focus);
+    bool jumpToFirstError(bool focus, ProjectFileNode *lstNode);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -125,14 +122,18 @@ protected:
     void updateRunState(const QProcess::ProcessState &state);
     void lstTexts(const QList<TextMark*> &marks, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
+    void removeChild(ProjectAbstractNode *child);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
     ProjectLogNode* mLogNode = nullptr;
     QHash<int, QString> mLstErrorTexts;
     QStringList mRunParametersHistory;
-    QHash<FileKind, QString> mSpecialFiles;
+    QHash<QString, QString> mParameterHash;
 
+private:
+    QString cleanPath(QString path, QString file);
+    void setLogLocation(const QString& path);
 };
 
 

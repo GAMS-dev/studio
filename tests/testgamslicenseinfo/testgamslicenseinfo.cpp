@@ -116,7 +116,7 @@ void TestGamsLicenseInfo::testSolverNames()
     auto count = gamsLicenseInfo.solvers();
     QVERIFY2(count, "The number of solvers shall not be 0.");
     auto result = gamsLicenseInfo.solverNames();
-    QVERIFY2(count == result.size(), "The number of solvers shall be equal to the number of available solvers.");
+    QVERIFY2(count >= result.size(), "The number of solvers shall be greater or equal to the number of available solvers (some might be hidden).");
     QVERIFY2(!result.isEmpty(), "The result shall not be empty.");
 }
 
@@ -203,10 +203,9 @@ void TestGamsLicenseInfo::testSolverLicense()
     bool test = true;
     GamsLicenseInfo gamsLicenseInfo;
     auto solverKeys = gamsLicenseInfo.solverNames().keys();
-    QVERIFY(gamsLicenseInfo.solvers() == solverKeys.size());
+    QVERIFY(gamsLicenseInfo.solvers() >= solverKeys.size());
     for (auto solverId : solverKeys) {
-        // use solverID+1 because there is no solver with Id 0
-        auto result = gamsLicenseInfo.solverLicense(solverId+1);
+        auto result = gamsLicenseInfo.solverLicense(solverId);
         test = result.contains("Demo") || result.contains("Full") ||
                 result.contains("Evaluation") || result.contains("Expired");
         if (!test) break;

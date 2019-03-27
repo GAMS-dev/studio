@@ -24,23 +24,46 @@
 
 namespace gams {
 namespace studio {
+namespace syntax {
 
 class SyntaxIdentifier : public SyntaxAbstract
 {
-    QRegularExpression mRex;
 public:
-    SyntaxIdentifier(SyntaxState state);
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxIdentifier(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+private:
+    int identChar(const QChar &c) const;
+};
+
+class SyntaxIdentifierDim : public SyntaxAbstract
+{
+    QChar mDelimiterIn;
+    QChar mDelimiterOut;
+    bool mTable;
+public:
+    SyntaxIdentifierDim(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    int maxNesting() override { return 1; }
+};
+
+class SyntaxIdentifierDimEnd : public SyntaxAbstract
+{
+    QChar mDelimiter;
+    bool mTable;
+public:
+    SyntaxIdentifierDimEnd(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxIdentDescript : public SyntaxAbstract
 {
-    QChar mDelimiter;
     bool mTable;
 public:
-    SyntaxIdentDescript(SyntaxState state);
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxIdentDescript(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -48,19 +71,37 @@ class SyntaxIdentAssign : public SyntaxAbstract
 {
     QChar mDelimiter;
 public:
-    SyntaxIdentAssign(SyntaxState state);
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxIdentAssign(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class AssignmentLabel: public SyntaxAbstract
+{
+public:
+    AssignmentLabel();
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+};
+
+class AssignmentValue: public SyntaxAbstract
+{
+public:
+    AssignmentValue();
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxTableAssign : public SyntaxAbstract
 {
 public:
-    SyntaxTableAssign(SyntaxState state);
-    SyntaxBlock find(SyntaxState entryState, const QString &line, int index) override;
+    SyntaxTableAssign(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
+
+} // namespace syntax
 } // namespace studio
 } // namespace gams
 

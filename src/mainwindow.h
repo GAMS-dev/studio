@@ -94,7 +94,6 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void setInitialFiles(QStringList files);
-//    void createEdit(QTabWidget* tabWidget, bool focus, FileId id = FileId(), int codecMip = -1);
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew = false);
     void watchProjectTree();
@@ -113,8 +112,6 @@ public:
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
-    void checkOptionDefinition(bool checked);
-    bool isOptionDefinitionChecked();
     FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
     TextMarkRepo* textMarkRepo();
@@ -122,19 +119,21 @@ public:
     QWidgetList openEditors();
     QList<AbstractEdit*> openLogs();
     SearchDialog* searchDialog() const;
-    void showResults(SearchResultList &results);
+    void showResults(SearchResultList* results);
     void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, LibraryItem *model);
     bool readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
-//    void delayedFileRestoration();
     void resetViews();
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
     void setForeground();
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
+    void ensureInScreen();
+    void setExtendedEditorVisibility(bool visible);
+    void resetLoadAmount();
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
@@ -149,14 +148,16 @@ public slots:
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
+    void updateLoadAmount();
     void runGmsFile(ProjectFileNode *node);
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
-
-    void commandLineHelpTriggered();
+    void showErrorMessage(QString text);
     void optionRunChanged();
+    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>());
+
 
 private slots:
     void openInitialFiles();
@@ -176,8 +177,9 @@ private slots:
     void closeFileEditors(const FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void changeToLog(ProjectAbstractNode* node, bool createMissing = false);
+    void changeToLog(ProjectAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
+    void cloneBookmarkMenu(QMenu *menu);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -189,7 +191,6 @@ private slots:
     void closeHelpView();
     void outputViewVisibiltyChanged(bool visibility);
     void projectViewVisibiltyChanged(bool visibility);
-    void optionViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
     void showMainTabsMenu();
     void showLogTabsMenu();
@@ -226,7 +227,7 @@ private slots:
     // View
     void on_actionOutput_View_triggered(bool checked);
     void on_actionProject_View_triggered(bool checked);
-    void on_actionOption_View_triggered(bool checked);
+    void on_actionToggle_Extended_Option_Editor_toggled(bool checked);
     void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();
@@ -270,7 +271,11 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
-    void renameGroup(ProjectGroupNode *group);
+
+    void on_actionToggleBookmark_triggered();
+    void on_actionNextBookmark_triggered();
+    void on_actionPreviousBookmark_triggered();
+    void on_actionRemoveBookmarks_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -299,7 +304,7 @@ private:
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
     bool isActiveTabRunnable();
-    bool isRecentGroupInRunningState();
+    bool isRecentGroupRunning();
     void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
@@ -308,8 +313,11 @@ private:
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
+    void initToolBar();
+    void updateToolbar(QWidget* current);
 
 private:
+    QTime mTestTimer;
     Ui::MainWindow *ui;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;

@@ -78,7 +78,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 
@@ -153,8 +152,7 @@ void GdxSymbolView::resetSortFilter()
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
     }
     ui->cbSqueezeDefaults->setChecked(false);
-
-
+    showListView();
 }
 
 void GdxSymbolView::refreshView()
@@ -198,6 +196,10 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
         }
         ui->tbVisibleValCols->addAction(checkableAction);
     }
+
+    connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+
     refreshView();
 }
 
@@ -277,8 +279,6 @@ void GdxSymbolView::showContextMenu(QPoint p)
 void GdxSymbolView::showListView()
 {
     mTableView = false;
-    ui->pbResetSortFilter->setEnabled(true);
-
     ui->tvTableView->hide();
 
     // This is required in order to avoid a bug with the horizontal scrollbar (see 843)
@@ -291,8 +291,6 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
-    ui->pbResetSortFilter->setEnabled(false);
-
     static_cast<TableViewModel*>(ui->tvTableView->model())->setTableView(true);
     ui->pbToggleView->setText("List View");
 

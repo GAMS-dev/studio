@@ -39,6 +39,8 @@ protected:
 
     void jumpToLst(QPoint pos, bool fuzzy);
     void contextMenuEvent(QContextMenuEvent *e) override;
+    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
+//    void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections) override;
 
 };
 

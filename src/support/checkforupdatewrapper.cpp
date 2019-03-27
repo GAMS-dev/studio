@@ -18,9 +18,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "checkforupdatewrapper.h"
+#include "locators/abstractsystemlogger.h"
+#include "locators/sysloglocator.h"
+#include "commonpaths.h"
+#include "common.h"
 #include "gclgms.h"
 #include "c4umcc.h"
-#include "commonpaths.h"
 
 #include <cstring>
 
@@ -34,6 +37,10 @@ namespace support {
   */
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
+    c4uSetExitIndicator(0); // switch of exit() call
+    c4uSetScreenIndicator(0);
+    c4uSetErrorCallback(CheckForUpdateWrapper::errorCallback);
+
     char buffer[GMS_SSSIZE];
     if (!c4uCreateD(&mC4U, CommonPaths::systemDir().toLatin1(), buffer, GMS_SSSIZE)) {
         mMessages << "Could not load c4u library: " << buffer;
@@ -160,6 +167,15 @@ void CheckForUpdateWrapper::getMessages(int &messageIndex, char *buffer)
         if (c4uGetMsg(mC4U, messageIndex, buffer))
             mMessages.append(buffer);
     }
+}
+
+int CheckForUpdateWrapper::errorCallback(int count, const char *message)
+{
+    Q_UNUSED(count);
+    auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
+    logger->append(message, LogMsgType::Error);
+    return 0;
 }
 
 }

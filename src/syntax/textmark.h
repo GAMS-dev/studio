@@ -36,28 +36,29 @@ class TextMark
 {
 public:
     enum Type {none, error, link, target, bookmark, all};
+    Q_ENUM(Type)
 
     FileId fileId() const;
     NodeId groupId() const;
-    void jumpToRefMark(bool focus = true);
-    void jumpToMark(bool focus = true);
+    void jumpToRefMark(bool focus = true, bool ignoreColumn = false);
+    void jumpToMark(bool focus = true, bool ignoreColumn = false);
     void setRefMark(TextMark* refMark);
     void unsetRefMark(TextMark* refMark);
     TextMark *refMark() const;
+    QVector<TextMark *> backRefs(FileId fileId) const;
 
     inline bool isErrorRef() { return (mReference && mReference->type() == error); }
-    QColor color();
+    QColor color() const;
     FileKind fileKind();
     FileKind refFileKind();
     int value() const;
     void setValue(int value);
 
     void clearBackRefs();
-    void setBlockData(BlockData* blockData);
 
     QIcon icon();
     inline Type type() const {return mType;}
-    inline Type refType() const;
+    inline Type refType() const { return (mReference) ? mReference->type() : none; }
     Qt::CursorShape& cursorShape(Qt::CursorShape* shape, bool inIconRegion = false);
     inline bool isValid() {return mMarkRepo && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
@@ -95,7 +96,6 @@ private:
     FileId mFileId;
     NodeId mGroupId;
     TextMarkRepo* mMarkRepo = nullptr;
-//    int mPosition = -1;
     Type mType = none;
     int mLine = -1;
     int mColumn = 0;
@@ -103,10 +103,7 @@ private:
     int mValue = -1;
     int mSpread = 0;
     TextMark* mReference = nullptr;
-//    TextMarkData* mRefData = nullptr;
     QVector<TextMark*> mBackRefs;
-
-    // TODO(JM) maybe later we want to link the mark to the QTextBlock
     BlockData* mBlockData = nullptr;
 };
 

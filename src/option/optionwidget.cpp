@@ -17,6 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 #include <QMessageBox>
+#include <QShortcut>
 
 #include "optionwidget.h"
 #include "ui_optionwidget.h"
@@ -40,32 +41,23 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->setupUi(this);
 
     mGamsOptionTokenizer = new CommandLineTokenizer(QString("optgams.def"));
-//    mCommandLineHistory = new CommandLineHistory(this);
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
     setInterruptActionGroup(aInterrupt, actionStop);
 
     ui->gamsOptionWidget->hide();
-    connect(ui->gamsOptionEditorButton, &QAbstractButton::clicked, this, &OptionWidget::toggleOptionDefinition);
-    connect(ui->gamsCommandHelpButton, &QPushButton::clicked, main, &MainWindow::commandLineHelpTriggered);
 
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged,
-            main, &MainWindow::optionRunChanged);
-    connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
-            ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            mGamsOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            this, &OptionWidget::updateOptionTableModel );
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged, main, &MainWindow::optionRunChanged);
+    connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged, ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, mGamsOptionTokenizer, &CommandLineTokenizer::formatTextLineEdit);
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, this, &OptionWidget::updateOptionTableModel );
 
     QList<OptionItem> optionItem = mGamsOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
     QString normalizedText = mGamsOptionTokenizer->normalize(optionItem);
     OptionTableModel* optionTableModel = new OptionTableModel(normalizedText, mGamsOptionTokenizer,  this);
     ui->gamsOptionTableView->setModel( optionTableModel );
-    connect(optionTableModel, &OptionTableModel::optionModelChanged,
-            this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
-    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged),
-            mGamsOptionTokenizer, &CommandLineTokenizer::formatItemLineEdit);
+    connect(optionTableModel, &OptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mGamsOptionTokenizer, &CommandLineTokenizer::formatItemLineEdit);
 
     ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mGamsOptionTokenizer, ui->gamsOptionTableView));
     ui->gamsOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -103,33 +95,56 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
 
-    connect(this, &OptionWidget::optionEditorDisabled, this, &OptionWidget::disableOptionEditor);
+    mExtendedEditor = new QDockWidget("GAMS Parameters", this);
+    mExtendedEditor->setObjectName("gamsArguments");
+    mExtendedEditor->setWidget(ui->gamsOptionWidget);
+    mExtendedEditor->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    mExtendedEditor->setTitleBarWidget(new QWidget(this));
+    main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
+    connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility);
+    mExtendedEditor->setVisible(false);
+
+#ifdef __APPLE__
+    ui->verticalLayout->setContentsMargins(2,2,2,0);
+#else
+    ui->verticalLayout->setContentsMargins(2,0,2,2);
+#endif
 }
 
 OptionWidget::~OptionWidget()
 {
     delete ui;
-//    delete mCommandLineHistory;
     delete mGamsOptionTokenizer;
+}
+
+void OptionWidget::runDefaultAction()
+{
+    ui->gamsRunToolButton->defaultAction()->trigger();
 }
 
 QString OptionWidget::on_runAction(RunActionState state)
 {
-    QString commandLineStr =  ui->gamsOptionCommandLine->getCurrentOption();
+    QString commandLineStr =  ui->gamsOptionCommandLine->getOptionString();
 
     if (!commandLineStr.endsWith(" "))
         commandLineStr.append(" ");
 
-    // TODO check key duplication
-    if (state == RunActionState::RunWithGDXCreation) {
+    bool gdxParam = commandLineStr.contains(QRegularExpression("gdx[= ]", QRegularExpression::CaseInsensitiveOption));
+    bool actParam = commandLineStr.contains("ACTION=C",Qt::CaseInsensitive);
+
+    if (state == RunActionState::RunWithGDXCreation && !gdxParam) {
        commandLineStr.append("GDX=default");
        ui->gamsRunToolButton->setDefaultAction( actionRun_with_GDX_Creation );
-    } else if (state == RunActionState::Compile) {
+
+    } else if (state == RunActionState::Compile && !actParam) {
         commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile );
+
     } else if (state == RunActionState::CompileWithGDXCreation) {
-        commandLineStr.append("ACTION=C GDX=default");
+        if (!gdxParam) commandLineStr.append("GDX=default ");
+        if (!actParam) commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile_with_GDX_Creation );
+
     } else {
         ui->gamsRunToolButton->setDefaultAction( actionRun );
     }
@@ -147,21 +162,10 @@ void OptionWidget::on_stopAction()
     ui->gamsInterruptToolButton->setDefaultAction( actionStop );
 }
 
-void OptionWidget::checkOptionDefinition(bool checked)
-{
-    toggleOptionDefinition(checked);
-}
-
-bool OptionWidget::isOptionDefinitionChecked()
-{
-    return ui->gamsOptionEditorButton->isChecked();
-}
-
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit);
-    if (ui->gamsOptionWidget->isHidden())
-        return;
+    if (mExtendedEditor->isHidden()) return;
 
     emit optionTableModelChanged(commandLineStr);
 }
@@ -188,15 +192,15 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
-    QAction* addAction = menu.addAction(QIcon(":/img/plus"), "add new option");
-    QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "insert new option");
+    QAction* addAction = menu.addAction(QIcon(":/img/plus"), "Add new option");
+    QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "Insert new option");
     menu.addSeparator();
-    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move selected option up");
-    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move selected option down");
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "Move selected option up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "Move selected option down");
     menu.addSeparator();
-    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "remove selected option");
+    QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "Remove selected option");
     menu.addSeparator();
-    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "remove all options");
+    QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "Remove all options");
 
     if (ui->gamsOptionTableView->model()->rowCount() <= 0) {
         deleteAllActions->setVisible(false);
@@ -249,12 +253,12 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
 void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 {
-    setRunActionsEnabled( isRunnable & !isRunning );
-    setInterruptActionsEnabled( isRunnable & isRunning );
+    bool activate = isRunnable && !isRunning;
+    setRunActionsEnabled(activate);
+    setInterruptActionsEnabled(isRunnable && isRunning);
 
-    ui->gamsOptionWidget->setEnabled( isRunnable & !isRunning );
-    ui->gamsOptionCommandLine->lineEdit()->setReadOnly( isRunning );
-    ui->gamsOptionCommandLine->lineEdit()->setEnabled( isRunnable & ui->gamsOptionWidget->isHidden() );
+    ui->gamsOptionWidget->setEnabled(activate);
+    ui->gamsOptionCommandLine->setEnabled(activate && !isEditorExtended());
 }
 
 void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
@@ -277,25 +281,9 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->gamsOptionTableView->selectRow(ui->gamsOptionTableView->model()->rowCount()-1);
 }
 
-//void OptionWidget::loadCommandLineOption(const QString &location)
-//{
-//    ui->gamsOptionCommandLine->clear();
-//    QStringList option =  mCommandLineHistory->getHistoryFor(location);
-//    for (QString str: option) {
-//       ui->gamsOptionCommandLine->insertItem(0, str );
-//    }
-//    ui->gamsOptionCommandLine->setCurrentIndex(0);
-//    ui->gamsOptionCommandLine->setCurrentContext(location);
-//    ui->gamsOptionCommandLine->setEnabled(true);
-
-////    setRunActionsEnabled(false);
-////    setInterruptActionsEnabled(false);
-//}
-
 void OptionWidget::loadCommandLineOption(const QStringList &history)
 {
     ui->gamsOptionCommandLine->clear();
-    ui->gamsOptionCommandLine->setEnabled(true);
     if (history.isEmpty()) {
         ui->gamsOptionCommandLine->setCurrentIndex(0);
         return;
@@ -306,34 +294,17 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
     ui->gamsOptionCommandLine->setCurrentIndex(0);
 }
 
-void OptionWidget::disableOptionEditor()
+void OptionWidget::setEditorExtended(bool extended)
 {
-    ui->gamsOptionCommandLine->setCurrentIndex(-1);
-    ui->gamsOptionCommandLine->setCurrentContext("");
-    ui->gamsOptionCommandLine->setEnabled(false);
-    ui->gamsOptionWidget->setEnabled(false);
-
-    setRunActionsEnabled(false);
-    setInterruptActionsEnabled(false);
+    if (extended) emit optionTableModelChanged(ui->gamsOptionCommandLine->currentText());
+    mExtendedEditor->setVisible(extended);
+    main->updateRunState();
+    ui->gamsOptionCommandLine->setEnabled(!extended);
 }
 
-void OptionWidget::toggleOptionDefinition(bool checked)
+bool OptionWidget::isEditorExtended()
 {
-    ui->gamsOptionEditorButton->setChecked(checked);
-    if (checked) {
-        ui->gamsOptionEditorButton->setIcon( QIcon(":/img/hide") );
-        ui->gamsOptionEditorButton->setToolTip( "Hide Command Line Parameters Editor"  ) ;
-        ui->gamsOptionWidget->show();
-        main->updateRunState();
-        emit optionTableModelChanged(ui->gamsOptionCommandLine->lineEdit()->text());
-
-    } else {
-        ui->gamsOptionEditorButton->setIcon( QIcon(":/img/show") );
-        ui->gamsOptionEditorButton->setToolTip( "Show Command Line Parameters Editor"  ) ;
-        ui->gamsOptionWidget->hide();
-        main->updateRunState();
-        main->resizeOptionEditor(ui->gamsCommandWidget->size());
-    }
+    return mExtendedEditor->isVisible();
 }
 
 void OptionWidget::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX)
@@ -389,6 +360,11 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
     ui->gamsInterruptToolButton->menu()->setEnabled(enable);
 }
 
+QDockWidget* OptionWidget::extendedEditor() const
+{
+    return mExtendedEditor;
+}
+
 CommandLineTokenizer *OptionWidget::getGamsOptionTokenizer() const
 {
     return mGamsOptionTokenizer;
@@ -429,14 +405,13 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
                 return ui->gamsOptionTreeView->model()->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
             }
         }
-    } /*else if (widget == ui->gamsOptionCommandLine) {
-    }*/
+    }
     return selectedOptions;
 }
 
 QString OptionWidget::getCurrentCommandLineData() const
 {
-    return ui->gamsOptionCommandLine->getCurrentOption();
+    return ui->gamsOptionCommandLine->getOptionString();
 }
 
 void OptionWidget::focus()

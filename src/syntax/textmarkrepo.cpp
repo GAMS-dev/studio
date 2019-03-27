@@ -18,23 +18,24 @@ TextMarkRepo::~TextMarkRepo()
 {
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types)
+void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types, int lineNr)
 {
-    removeMarks(fileId, groupId, false, types);
+    removeMarks(fileId, groupId, false, types, lineNr);
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types)
+void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types, int lineNr)
 {
-    removeMarks(fileId, NodeId(), true, types);
+    removeMarks(fileId, NodeId(), true, types, lineNr);
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types)
+void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr)
 {
     LineMarks* marks = mMarks.value(fileId);
     if (!marks) return;
+    bool remainingBookmarks = false;
     QSet<NodeId> groups;
     LineMarks::iterator it = marks->begin();
-    if ((types.isEmpty() || types.contains(TextMark::all)) && allGroups) {
+    if ((types.isEmpty() || types.contains(TextMark::all)) && lineNr == -1 && allGroups) {
         // delete all
         while (it != marks->end()) {
             delete *it;
@@ -46,15 +47,22 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
         while (it != marks->end()) {
             TextMark* mark = (*it);
             ++it;
-            if (types.contains(mark->type()) && (allGroups || mark->groupId() == groupId)) {
+            if (types.contains(mark->type())
+                    && (allGroups || mark->groupId() == groupId)
+                    && (lineNr == -1 || lineNr == mark->line()) ) {
                 groups << mark->groupId();
                 marks->remove(mark->line(), mark);
                 delete mark;
+            } else {
+                if (!remainingBookmarks && mark->type() == TextMark::bookmark)
+                    remainingBookmarks = true;
             }
         }
     }
+    if (!remainingBookmarks) mBookmarkedFiles.removeAll(fileId);
     if (groups.isEmpty()) return;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
+    // TODO(JM) gather dirtyLines
     if (fm) fm->marksChanged();
 }
 
@@ -67,10 +75,10 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
                                    , int line, int column, int size)
 {
     Q_UNUSED(value)
-    if (groupId < 0) {
-        DEB() << "No valid groupId to create a TextMark";
-        return nullptr;
-    }
+//    if (groupId < 0) {
+//        DEB() << "No valid groupId to create a TextMark";
+//        return nullptr;
+//    }
     if (!fileId.isValid()) {
         DEB() << "No valid fileId to create a TextMark";
         return nullptr;
@@ -82,7 +90,62 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
     mark->setPosition(line, column, size);
     LineMarks *marks = mMarks.value(fileId);
     marks->insert(mark->line(), mark);
+    if (mark->type() == TextMark::bookmark && !mBookmarkedFiles.contains(fileId))
+        mBookmarkedFiles << fileId;
+    FileMeta *fm = mFileRepo->fileMeta(fileId);
+    if (fm) {
+        fm->marksChanged();
+        // TODO(JM) add list of changed lines
+//        if (type == TextMark::bookmark) fm->marksChanged();
+//        else fm->marksChanged(QSet<int>() << line);
+    }
     return mark;
+}
+
+bool TextMarkRepo::hasBookmarks(FileId fileId)
+{
+    return mBookmarkedFiles.contains(fileId);
+}
+
+TextMark *TextMarkRepo::findBookmark(FileId fileId, int currentLine, bool back)
+{
+    const LineMarks *lm = marks(fileId);
+    if (lm->cbegin() == lm->cend()) return nullptr;
+    if (back) {
+        LineMarks::const_iterator it = currentLine < 0 ? lm->cend() : lm->lowerBound(currentLine);
+        while (it-- != lm->begin()) {
+            if ((currentLine < 0 || it.value()->line() < currentLine) && (it.value()->type() == TextMark::bookmark))
+                return it.value();
+        }
+    } else {
+        LineMarks::const_iterator it = lm->lowerBound(currentLine);
+        while (it != lm->end()) {
+            if ((it.value()->line() > currentLine) && (it.value()->type() == TextMark::bookmark))
+                return it.value();
+            ++it;
+        }
+    }
+    return nullptr;
+
+
+//    TextMark* res = nullptr;
+//    QList<TextMark*> bookmarks = marks(fileId, -1, groupId, TextMark::bookmark);
+//    for (TextMark *mark: bookmarks) {
+//        if (back) {
+//            if ((currentLine < 0 || mark->line() < currentLine) && (!res || res->line() < mark->line())) res = mark;
+//        } else {
+//            if (mark->line() > currentLine && (!res || res->line() > mark->line())) res = mark;
+//        }
+//    }
+//    return res;
+}
+
+void TextMarkRepo::removeBookmarks()
+{
+    QVector<FileId> files = mBookmarkedFiles;
+    for (FileId fileId: files) {
+        removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark);
+    }
 }
 
 QTextDocument *TextMarkRepo::document(FileId fileId) const
@@ -101,14 +164,17 @@ void TextMarkRepo::clear()
         mMarks.remove(fileId);
         delete marks;
     }
+    mBookmarkedFiles.clear();
 }
 
-void TextMarkRepo::jumpTo(TextMark *mark, bool focus)
+void TextMarkRepo::jumpTo(TextMark *mark, bool focus, bool ignoreColumn)
 {
     FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
     mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findRunGroup(mark->groupId()));
 
-    if (fm) fm->jumpTo(mark->groupId(), focus, mark->line(), mark->blockEnd());
+    if (fm) {
+        fm->jumpTo(mark->groupId(), focus, mark->line(), ignoreColumn ? 0 : mark->blockEnd());
+    }
 }
 
 void TextMarkRepo::rehighlight(FileId fileId, int line)
@@ -128,9 +194,12 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
 {
     QList<TextMark*> res;
     if (!mMarks.contains(fileId)) return res;
+
+    //TODO(JM) take iterator instead of values()
     QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(fileId)->values() : mMarks.value(fileId)->values(lineNr);
     if (groupId < 0 && refType == TextMark::all) return marks;
     int i = 0;
+    if (marks.size()) res.reserve(marks.size());
     for (TextMark* mark: marks) {
         if (refType != TextMark::all && refType != mark->type()) continue;
         if (groupId.isValid() && mark->groupId().isValid() && groupId != mark->groupId()) continue;
@@ -143,8 +212,9 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
 
 const LineMarks *TextMarkRepo::marks(FileId fileId)
 {
-    if (!mMarks.contains(fileId))
+    if (!mMarks.contains(fileId)) {
         mMarks.insert(fileId, new LineMarks());
+    }
     return mMarks.value(fileId, nullptr);
 }
 
@@ -152,12 +222,15 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
 {
     LineMarks *marks = mMarks.value(fileId);
     if (!marks->size() || !lineShift) return;
+//    QSet<int> changedLines;
+//    changedLines.reserve(marks->size()*2);
     QMutableMapIterator<int, TextMark*> it(*marks);
     QVector<TextMark*> parked;
     if (lineShift < 0) {
         while (it.hasNext()) {
             it.next();
             if (it.key() < firstLine) continue;
+//            changedLines << it.value()->line() << (it.value()->line()+lineShift);
             parked << it.value();
             it.remove();
         }
@@ -166,6 +239,7 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
         while (it.hasPrevious()) {
             it.previous();
             if (it.key() < firstLine) break;
+//            changedLines << it.value()->line() << (it.value()->line()+lineShift);
             parked << it.value();
             it.remove();
         }
@@ -176,6 +250,8 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
     }
     FileMeta *fm = mFileRepo->fileMeta(fileId);
     if (fm) fm->marksChanged();
+    // TODO(JM) add list of changed lines
+//    if (fm) fm->marksChanged(changedLines);
 }
 
 void TextMarkRepo::setDebugMode(bool debug)
@@ -212,10 +288,10 @@ LineMarks::LineMarks() : QMultiMap<int, TextMark *>()
 
 bool LineMarks::hasVisibleMarks() const
 {
-    QList<TextMark*> tm = values();
-    for (TextMark* t : tm) {
-        if ((t->type() == TextMark::link) || (t->type() == TextMark::error)
-                || (t->type() == TextMark::bookmark))
+    QMultiMap<int, TextMark*>::const_iterator it;
+    for (it = begin() ; it != end() ; ++it) {
+        if ((it.value()->type() == TextMark::link) || (it.value()->type() == TextMark::error)
+                || (it.value()->type() == TextMark::bookmark))
             return true;
     }
     return false;

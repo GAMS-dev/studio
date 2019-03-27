@@ -22,14 +22,14 @@
 namespace gams {
 namespace studio {
 
-Logger::Logger()
-{
-}
+Logger::Logger(const char* file, int line, const char* func)
+    : mFile(file), mLine(line), mFunc(func)
+{}
 
 Logger::~Logger()
 {
     if (mStream) {
-        qDebug().noquote() << indent() << mBuffer;
+        QMessageLogger(mFile, mLine, mFunc).debug().noquote().nospace() << indent() << mBuffer;
         delete mStream;
     }
 }

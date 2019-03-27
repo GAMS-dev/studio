@@ -20,31 +20,21 @@
 #ifndef SYNTAXHIGHLIGHTER_H
 #define SYNTAXHIGHLIGHTER_H
 
-#include "errorhighlighter.h"
+#include <QSyntaxHighlighter>
+#include "syntaxformats.h"
+#include "blockcode.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
 
-class ProjectFileNode;
-class TextMarkList;
-//class TextMark;
 struct ParenthesesPos;
 
-enum ColorEnum {
-    SyntaxDirex,
-    SyntaxDiBdy,
-    SyntaxComnt,
-    SyntaxTitle,
-    SyntaxDeclr,
-    SyntaxIdent,
-    SyntaxKeywd,
-    SyntaxDescr,
-    SyntaxAssgn,
-    SyntaxTabHd,
-    SyntaxEmbed,
-};
+namespace syntax {
 
-class SyntaxHighlighter : public ErrorHighlighter
+class ProjectFileNode;
+
+class SyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
@@ -53,35 +43,44 @@ public:
 
     void highlightBlock(const QString &text);
 
-private:
-    SyntaxAbstract *getSyntax(SyntaxState state) const;
-    int getStateIdx(SyntaxState state) const;
-    void scanParentheses(const QString &text, int start, int len, SyntaxState state, QVector<ParenthesesPos> &parentheses);
+public slots:
+    void syntaxKind(int position, int &intKind);
 
 private:
-    typedef int StateIndex;
+    SyntaxAbstract *getSyntax(SyntaxKind kind) const;
+    int getKindIdx(SyntaxKind kind) const;
+    void scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind,SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
+
+private:
+    enum FontModifier {fNormal, fBold, fItalic, fBoldItalic};
+    Q_DECLARE_FLAGS(FontModifiers, FontModifier)
+    typedef int KindIndex;
     typedef int CodeIndex;
-    typedef QPair<StateIndex, CodeIndex> StateCode;
-    typedef QList<SyntaxAbstract*> States;
-    typedef QList<StateCode> Codes;
+    typedef QPair<KindIndex, CodeIndex> KindCode;
+    typedef QList<SyntaxAbstract*> Kinds;
+    typedef QList<KindCode> Codes;
 
-    /// \brief addState
+    /// \brief addKind
     /// \param syntax The syntax to be added to the stack
-    /// \param ci The index in mStates of the previous syntax
-    void addState(SyntaxAbstract* syntax, CodeIndex ci = 0);
-    void initState(int debug, SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false);
-    void initState(SyntaxAbstract* syntax, QColor color = QColor(), bool bold = false, bool italic = false, int debug = 0);
+    /// \param ci The index in mKinds of the previous syntax
+    void addKind(SyntaxAbstract* syntax, CodeIndex ci = 0);
+    void initKind(int debug, SyntaxAbstract* syntax, QColor color = QColor(), FontModifier fMod = fNormal);
+    void initKind(SyntaxAbstract* syntax, QColor color = QColor(), FontModifier fMod = fNormal);
 
-    int addCode(StateIndex si, CodeIndex ci);
-    int getCode(CodeIndex code, SyntaxStateShift shift, StateIndex state, StateIndex stateNext);
-    QString codeDeb(int code);
+    int addCode(KindIndex si, CodeIndex ci);
+    BlockCode getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest = 0);
+//    QString codeDeb(int code);
 
-    States mStates;
+private:
+    int mPositionForSyntaxKind = -1;
+    int mLastSyntaxKind = 0;
+    Kinds mKinds;
     Codes mCodes;
     // TODO(JM) process events after a couple of ms
     // http://enki-editor.org/2014/08/22/Syntax_highlighting.html
 };
 
+} // namespace syntax
 } // namespace studio
 } // namespace gams
 
