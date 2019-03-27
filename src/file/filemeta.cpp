@@ -672,10 +672,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
         res = edit;
-//        if (kind() == FileKind::Lst) {
-//            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(codeEdit, location(), tabWidget));
-//        }
-        if (kind() == FileKind::Log || /*kind() == FileKind::Lst ||*/ kind() == FileKind::TxtRO) {
+        if (kind() == FileKind::Log) {
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         }

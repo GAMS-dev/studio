@@ -142,18 +142,6 @@ ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recur
     return nullptr;
 }
 
-ProjectFileNode *ProjectGroupNode::findOrCreateFileNode(const QString &location, const QString &suffix)
-{
-    ProjectFileNode* node = findFile(location, false);
-    if (node) {
-        if (!suffix.isEmpty()) node->file()->setKind(suffix);
-        return node;
-    } else {
-        FileMeta* fm = projectRepo()->fileRepo()->findOrCreateFileMeta(location, &FileType::from(suffix));
-        return projectRepo()->findOrCreateFileNode(fm, this);
-    }
-}
-
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
 {
     for (ProjectAbstractNode* node: childNodes()) {
@@ -586,7 +574,7 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
     for (QString loc : mParameterHash.values()) {
 
         if (QFileInfo::exists(loc)) {
-            ProjectFileNode* node = findOrCreateFileNode(loc, mParameterHash.key(loc));
+            ProjectFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
             if (runNode)
                 node->file()->setCodec(runNode->codec());
         } else {

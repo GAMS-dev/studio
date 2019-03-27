@@ -632,7 +632,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     QList<NodeId> newIds;
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
-            ProjectFileNode* file = group->findOrCreateFileNode(item);
+            ProjectFileNode* file = findOrCreateFileNode(item, group);
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
         } else {
