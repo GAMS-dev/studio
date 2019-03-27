@@ -211,9 +211,9 @@ void NestedHeaderView::decideAcceptDragEvent(QDragMoveEvent *event)
         event->ignore();
 }
 
-int NestedHeaderView::toGlobalDim(int localDim)
+int NestedHeaderView::toGlobalDim(int localDim, int orientation)
 {
-    if (dragOrientationEnd == Qt::Horizontal)
+    if (orientation == Qt::Horizontal)
         return localDim + sym()->dim()-sym()->tvColDim();
     else
         return localDim;
@@ -294,14 +294,11 @@ int NestedHeaderView::pointToDimension(QPoint p)
 
 int NestedHeaderView::pointToDropDimension(QPoint p)
 {
-    int globalStart = toGlobalDim(dimIdxStart);
-    int globalEnd   = toGlobalDim(pointToDimension(p));
+    int globalStart = toGlobalDim(dimIdxStart, dragOrientationStart);
+    int globalEnd   = toGlobalDim(pointToDimension(p), dragOrientationEnd);
 
-    if ((sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && globalEnd == dim()+1) {
-        if (globalStart+1 == globalEnd)
-            return dimIdxStart;
-        //return pointToDimension(p)-1;
-    }
+    if ((sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && globalEnd == sym()->dim())
+            return dim()-1;
 
     //special behavior for switching adjacent dimensions when start and end orientation is the same
     if (dragOrientationStart == dragOrientationEnd) {

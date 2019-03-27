@@ -35,7 +35,7 @@ private:
     int pointToDropDimension(QPoint p);
     void bindScrollMechanism();
     void decideAcceptDragEvent(QDragMoveEvent* event);
-    int toGlobalDim(int localDim);
+    int toGlobalDim(int localDim, int orientation);
 
     TableViewModel* sym() const;
     int dim() const;
