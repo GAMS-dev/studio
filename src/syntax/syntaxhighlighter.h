@@ -21,6 +21,7 @@
 #define SYNTAXHIGHLIGHTER_H
 
 #include <QSyntaxHighlighter>
+#include "basehighlighter.h"
 #include "syntaxformats.h"
 #include "blockcode.h"
 #include "logger.h"
@@ -34,7 +35,7 @@ namespace syntax {
 
 class ProjectFileNode;
 
-class SyntaxHighlighter : public QSyntaxHighlighter
+class SyntaxHighlighter : public BaseHighlighter
 {
     Q_OBJECT
 public:
