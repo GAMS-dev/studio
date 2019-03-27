@@ -27,7 +27,6 @@
 
 #include <QClipboard>
 #include <QWidgetAction>
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -292,7 +291,6 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
-    qDebug() << "show table view 1";
     ui->pbResetSortFilter->setEnabled(false);
 
     static_cast<TableViewModel*>(ui->tvTableView->model())->setTableView(true);
@@ -311,7 +309,6 @@ void GdxSymbolView::showTableView()
 
 void GdxSymbolView::toggleView()
 {
-    qDebug() << "toggleView";
     if (mTableView)
         showListView();
     else
