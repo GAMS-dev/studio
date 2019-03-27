@@ -655,15 +655,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
         res = tView;
-//        tView->loadFile(location());
-//        QTimer::singleShot(1, tView, &PagingTextView::reorganize);
-        if (kind() == FileKind::Lst) {
+//        tView->loadFile(location(), codecMib, true);
+        if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
-        }
-        if (kind() == FileKind::Log || kind() == FileKind::Lst || kind() == FileKind::TxtRO) {
-//            tView->setReadOnly(true);
-//            tView->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-        }
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
