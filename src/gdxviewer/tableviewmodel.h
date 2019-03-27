@@ -47,6 +47,8 @@ public:
 
     bool needDummyColumn() const;
 
+    void reset();
+
 private:
     void calcDefaultColumnsTableView();
     void initTableView(int nrColDim, QVector<int> dimOrder);

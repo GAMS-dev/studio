@@ -150,6 +150,7 @@ void GdxSymbolView::resetSortFilter()
         }
         mSym->resetSortFilter();
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
+        static_cast<TableViewModel*>(ui->tvTableView->model())->reset();
     }
     ui->cbSqueezeDefaults->setChecked(false);
     showListView();
