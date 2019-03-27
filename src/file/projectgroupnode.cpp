@@ -575,8 +575,7 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
 
         if (QFileInfo::exists(loc)) {
             ProjectFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
-            if (runNode)
-                node->file()->setCodec(runNode->codec());
+            if (runNode) node->file()->setCodec(runNode->codec());
         } else {
             SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
         }

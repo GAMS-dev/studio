@@ -438,8 +438,8 @@ void ProjectRepo::purgeGroup(ProjectGroupNode *group)
     }
 }
 
-ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
-                                                   , QString explicitName)
+ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType,
+                                                   QString explicitName)
 {
     if (location.isEmpty())
         return nullptr;
