@@ -346,6 +346,21 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             setTextCursor(cur);
             e->accept();
             return;
+        } else if (e->key() == Qt::Key_Home) {
+            QTextCursor tc = textCursor();
+            QTextBlock block = tc.block();
+
+            QRegularExpression leadingSpaces("^(\\s*)");
+            QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
+
+            if (lsMatch.capturedLength(1) < tc.positionInBlock())
+                tc.setPosition(block.position() + lsMatch.capturedLength(1));
+            else
+                tc.setPosition(block.position());
+
+            setTextCursor(tc);
+            e->accept();
+            return;
         }
     }
 
