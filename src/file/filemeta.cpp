@@ -655,7 +655,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
         res = tView;
-//        tView->loadFile(location(), codecMib, true);
+        tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else {
@@ -683,7 +683,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
     tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
     addEditor(res);
-    if (mEditors.size() == 1 && kind() != FileKind::Log && (ViewHelper::toAbstractEdit(res) || ViewHelper::toTextView(res))) {
+    if (mEditors.size() == 1 && kind() != FileKind::Log && ViewHelper::toAbstractEdit(res)) {
         try {
             load(codecMib);
         } catch (Exception &e) {
