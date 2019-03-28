@@ -365,7 +365,6 @@ QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
         QSize s(0,sectionSize(logicalIndex));
         QStringList labels = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();
         s.setWidth(model()->headerData(logicalIndex, orientation(), Qt::SizeHintRole).toInt());
-        s.setWidth(s.width()+1);
         return s;
     } else {
         QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);
