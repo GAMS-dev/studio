@@ -39,7 +39,7 @@ public:
 
     int type();
 
-    void setTableView(bool tableView, int colDim = -1, QVector<int> tvDims = QVector<int>());
+    void setTableView(int colDim = -1, QVector<int> tvDims = QVector<int>());
 
     bool isAllDefault(int valColIdx);
 

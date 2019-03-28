@@ -251,7 +251,7 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
         dimIdxEnd--;
     tvDims.move(dimIdxStart, dimIdxEnd);
 
-    sym()->setTableView(true, newColDim, tvDims);
+    sym()->setTableView(newColDim, tvDims);
 
     static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->verticalHeader())->geometriesChanged();
     static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->horizontalHeader())->geometriesChanged();
