@@ -37,9 +37,11 @@ void BaseHighlighter::setDocument(QTextDocument *doc, bool wipe)
             cursor.endEditBlock();
         }
     }
+    mBlockCount = 1;
     mDoc = doc;
     if (mDoc) {
         connect(mDoc, &QTextDocument::contentsChange, this, &BaseHighlighter::reformatBlocks);
+        connect(mDoc, &QTextDocument::blockCountChanged, this, &BaseHighlighter::blockCountChanged);
         setDirty(0);
         QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
     }
@@ -108,7 +110,24 @@ void BaseHighlighter::reformatBlocks(int from, int charsRemoved, int charsAdded)
     if (!lastBlock.isValid())
         lastBlock = mDoc->lastBlock();
     setDirty(fromBlock.blockNumber(), (lastBlock.isValid() ? lastBlock.blockNumber()+1 : -1));
+    mChangeLine = lastBlock.blockNumber();
+    QString preHighlight = debugDirty();
     rehighlightBlock(fromBlock);
+}
+
+void BaseHighlighter::blockCountChanged(int newBlockCount)
+{
+    if (mChangeLine < 0) return;
+    int change = newBlockCount - mBlockCount;
+    for (int i = 0 ; i < mDirtyBlocks.size() ; ++i) {
+        if (mDirtyBlocks.at(i).second > mChangeLine) {
+            mDirtyBlocks[i].second += change;
+            if (mDirtyBlocks.at(i).first > mChangeLine) mDirtyBlocks[i].first += change;
+            if (mDirtyBlocks.at(i).isEmpty()) mDirtyBlocks.removeAt(i--);
+        }
+    }
+    mChangeLine = -1;
+    mBlockCount = newBlockCount;
 }
 
 void BaseHighlighter::processDirtyParts()
