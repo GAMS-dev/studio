@@ -70,23 +70,8 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
         if (mNeedDummyRow)
             return 50;
         int totalWidth = 0;
-        for (int i=0; i<mSym->mDim-mTvColDim; i++) {
-            int width;
-            QString label = mGdxSymbolTable->uel2Label(mTvRowHeaders[section][i]);
-            if (tvLabelWidth->contains(label))
-                width = tvLabelWidth->value(label);
-            else {
-                QVariant var = headerData(section, orientation, Qt::FontRole);
-                QFont fnt;
-                if (var.isValid() && var.canConvert<QFont>())
-                    fnt = qvariant_cast<QFont>(var);
-                fnt.setBold(true);
-                width = QFontMetrics(fnt).width(label)*1.3;
-                tvLabelWidth->insert(label, width);
-            }
-            totalWidth += width;
-            tvSectionWidth->replace(i, qMax(tvSectionWidth->at(i), width));
-        }
+        for (int i=0; i<mSym->mDim-mTvColDim; i++)
+            totalWidth += tvSectionWidth->at(i);
         return totalWidth;
     }
     return QVariant();
@@ -253,9 +238,7 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
 
     calcDefaultColumnsTableView();
-
-    tvSectionWidth->clear();
-    tvSectionWidth->resize(mSym->mDim-mTvColDim);
+    calcSectionWidth();
 
     if (tvSectionWidth->isEmpty()) {
         tvSectionWidth->push_back(50);
@@ -269,6 +252,30 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
         mNeedDummyColumn = true;
     else
         mNeedDummyColumn = false;
+}
+
+void TableViewModel::calcSectionWidth()
+{
+    tvSectionWidth->clear();
+    tvSectionWidth->resize(mSym->mDim-mTvColDim);
+    for (int section=0; section<mTvRowHeaders.size(); section++) {
+        for (int i=0; i<mSym->mDim-mTvColDim; i++) {
+            int width;
+            QString label = mGdxSymbolTable->uel2Label(mTvRowHeaders[section][i]);
+            if (tvLabelWidth->contains(label))
+                width = tvLabelWidth->value(label);
+            else {
+                QVariant var = headerData(section, Qt::Vertical, Qt::FontRole);
+                QFont fnt;
+                if (var.isValid() && var.canConvert<QFont>())
+                    fnt = qvariant_cast<QFont>(var);
+                fnt.setBold(true);
+                width = QFontMetrics(fnt).width(label)*1.3;
+                tvLabelWidth->insert(label, width);
+            }
+            tvSectionWidth->replace(i, qMax(tvSectionWidth->at(i), width));
+        }
+    }
 }
 
 bool TableViewModel::needDummyColumn() const

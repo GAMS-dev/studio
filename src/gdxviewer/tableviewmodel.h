@@ -53,6 +53,8 @@ private:
     void calcDefaultColumnsTableView();
     void initTableView(int nrColDim, QVector<int> dimOrder);
 
+    void calcSectionWidth();
+
     GdxSymbol* mSym;
     GdxSymbolTable* mGdxSymbolTable;
 

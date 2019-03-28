@@ -83,6 +83,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
             int rowWidth = static_cast<TableViewModel*>(model())->getTvSectionWidth()->at(i);
+            //qDebug() << "rowWidth: " << rowWidth;
 
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
@@ -95,6 +96,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             if (opt.rect.contains(mMousePos))
                 state |= QStyle::State_MouseOver;
             opt.state = state;
+            //qDebug() << "DRAW:" << opt.rect.x();
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
             if (dimIdxEnd == i) {
                 painter->restore();
@@ -252,10 +254,8 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     tvDims.move(dimIdxStart, dimIdxEnd);
 
     sym()->setTableView(newColDim, tvDims);
-
-    static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->verticalHeader())->geometriesChanged();
-    static_cast<NestedHeaderView*>(static_cast<QTableView*>(parent())->horizontalHeader())->geometriesChanged();
     event->accept();
+
     dimIdxEnd = -1;
     dimIdxStart = -1;
 }
