@@ -44,6 +44,8 @@ void BaseHighlighter::setDocument(QTextDocument *doc, bool wipe)
         connect(mDoc, &QTextDocument::blockCountChanged, this, &BaseHighlighter::blockCountChanged);
         setDirty(0);
         QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
+    } else {
+        mDirtyBlocks.clear();
     }
 }
 
@@ -265,6 +267,7 @@ void BaseHighlighter::applyFormatChanges()
 
 void BaseHighlighter::setDirty(int fromBlock, int toBlock)
 {
+    if (!mDoc) return;
     // TODO(JM) rework with Interval
     if (fromBlock == toBlock) return;
     if (toBlock < 0) toBlock = mDoc->blockCount();
