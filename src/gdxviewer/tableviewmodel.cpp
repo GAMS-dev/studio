@@ -1,5 +1,7 @@
 ﻿#include "tableviewmodel.h"
 
+#include <QDebug>
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -237,7 +239,6 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     std::stable_sort(mTvRowHeaders.begin(), mTvRowHeaders.end());
     std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
 
-    calcDefaultColumnsTableView();
     calcSectionWidth();
 
     if (tvSectionWidth->isEmpty()) {
@@ -252,6 +253,8 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
         mNeedDummyColumn = true;
     else
         mNeedDummyColumn = false;
+
+    calcDefaultColumnsTableView();
 }
 
 void TableViewModel::calcSectionWidth()
