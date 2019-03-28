@@ -1,7 +1,5 @@
 ﻿#include "tableviewmodel.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace gdxviewer {
