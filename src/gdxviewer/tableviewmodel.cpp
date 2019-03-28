@@ -1,7 +1,5 @@
 ﻿#include "tableviewmodel.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -281,6 +279,7 @@ bool TableViewModel::needDummyColumn() const
 void TableViewModel::reset()
 {
     mTvColDim = 1;
+    mTvDimOrder.clear();
     for(int i=0; i<mSym->mDim; i++)
         mTvDimOrder << i;
     setTableView(true);
