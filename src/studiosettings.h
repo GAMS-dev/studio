@@ -196,9 +196,8 @@ private:
     void initSettingsFiles();
     void initDefaultColors();
     void loadViewStates(MainWindow *main);
-    int validateVersion(QString currentVersion);
+    bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);
-    void TEST();
 };
 
 }
