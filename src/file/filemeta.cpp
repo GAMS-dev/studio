@@ -55,13 +55,16 @@ public:
     }
     void run() {
         if (mHighlighter) {
-            mHighlighter->setDocument(nullptr);
+            mHighlighter->setDocument(nullptr, true);
             mHighlighter->deleteLater();
             mHighlighter = nullptr;
         }
+        mDocument->setHtml("");
         mDocument->deleteLater();
         mDocument = nullptr;
         this->deleteLater();
+    }
+    ~KillThread() {
     }
 };
 
