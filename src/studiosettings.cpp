@@ -480,8 +480,8 @@ void StudioSettings::loadSettings(MainWindow *main)
 
 void StudioSettings::checkAndUpdateSettings()
 {
-    if (!mAppSettings->contains("version")) return;
-    QString settingsVersion = mAppSettings->value("version").toString();
+    if (!mAppSettings->contains("settings/version")) return;
+    QString settingsVersion = mAppSettings->value("settings/version").toString();
     if (!isValidVersion(settingsVersion)) {
         DEB() << "Invalid version in settings: " << settingsVersion;
         return;
