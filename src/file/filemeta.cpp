@@ -133,7 +133,7 @@ void FileMeta::internalSave(const QString &location)
     out << document()->toPlainText();
     out.flush();
     file.close();
-    mData = Data(location);
+    mData = Data(location, mData.type);
     document()->setModified(false);
     mFileRepo->watch(this);
 }
@@ -205,6 +205,11 @@ void FileMeta::setKind(const QString &suffix)
 FileKind FileMeta::kind() const
 {
     return mData.type->kind();
+}
+
+QString FileMeta::kindAsStr() const
+{
+    return mData.type->suffix().first();
 }
 
 QString FileMeta::name(NameModifier mod)
@@ -383,7 +388,8 @@ void FileMeta::load(int codecMib, bool init)
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
 
-    mData = Data(location());
+    mData = Data(location(), mData.type);
+
     // TODO(JM) Later, this method should be moved to the new DataWidget
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {

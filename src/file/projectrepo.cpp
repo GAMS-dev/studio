@@ -281,7 +281,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
         } else {
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
-                FileType *ft = &FileType::from(nodeObject["type"].toString(""));
+                FileType *ft = &FileType::from(nodeObject["type"].toString());
                 if (QFileInfo(file).exists()) {
                     ProjectFileNode * node = findOrCreateFileNode(file, group, ft, name);
                     if (nodeObject.contains("codecMib")) {
@@ -328,8 +328,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
             nodeObject["name"] = file->name();
             if (node->toFile()) {
                 ProjectFileNode * fileNode = node->toFile();
-                if (!fileNode->file()->suffix().isEmpty())
-                    nodeObject["type"] = fileNode->file()->suffix().first();
+                nodeObject["type"] = fileNode->file()->kindAsStr();
                 int mib = fileNode->file()->codecMib();
                 if (mib) nodeObject["codecMib"] = mib;
             }
