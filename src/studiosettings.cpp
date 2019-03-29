@@ -230,7 +230,6 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("writeLog", writeLog());
     mUserSettings->setValue("nrLogBackups", nrLogBackups());
     mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
-    mUserSettings->setValue("editableMaxSizeMB", editableMaxSizeMB());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -300,6 +299,33 @@ void StudioSettings::loadViewStates(MainWindow *main)
     mAppSettings->endGroup();
 }
 
+bool StudioSettings::isValidVersion(QString currentVersion)
+{
+    for (const QChar &c: currentVersion)
+        if (c != '.' && (c < '0' || c > '9')) return false;
+    QStringList verList = currentVersion.split('.');
+    if (verList.size() < 2) return false;
+    for (const QString &s: verList)
+        if (s.isEmpty()) return false;
+    return true;
+}
+
+int StudioSettings::compareVersion(QString currentVersion, QString otherVersion)
+{
+    QStringList curntList = currentVersion.split('.');
+    QStringList otherList = otherVersion.split('.');
+    for (int i = 0; i < qMax(curntList.size(), otherList.size()); ++i) {
+        if (i == curntList.size()) return -1;
+        if (i == otherList.size()) return 1;
+        bool a,b;
+        int res = curntList.at(i).toInt(&a) - otherList.at(i).toInt(&b);
+        if (a && !b) return 2;
+        if (b && !a) return -2;
+        if (res) return res/qAbs(res);
+    }
+    return 0;
+}
+
 void StudioSettings::loadUserSettings()
 {
     QMutexLocker locker(&mMutex);
@@ -332,7 +358,7 @@ void StudioSettings::loadUserSettings()
     setWriteLog(mUserSettings->value("writeLog", true).toBool());
     setNrLogBackups(mUserSettings->value("nrLogBackups", 3).toInt());
     setAutoCloseBraces(mUserSettings->value("autoCloseBraces", true).toBool());
-    setEditableMaxSizeMB(mUserSettings->value("editableMaxSizeMB", 10).toInt());
+    setEditableMaxSizeMB(mUserSettings->value("editableMaxSizeMB", 50).toInt());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -429,6 +455,8 @@ void StudioSettings::loadSettings(MainWindow *main)
     if (mResetSettings) {
         mAppSettings->clear();
         mUserSettings->clear();
+    } else {
+        checkAndUpdateSettings();
     }
 
     loadUserSettings();
@@ -437,6 +465,21 @@ void StudioSettings::loadSettings(MainWindow *main)
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = CommonPaths::userModelLibraryDir();
+}
+
+void StudioSettings::checkAndUpdateSettings()
+{
+    if (!mAppSettings->contains("settings/version")) return;
+    QString settingsVersion = mAppSettings->value("settings/version").toString();
+    if (!isValidVersion(settingsVersion)) {
+        DEB() << "Invalid version in settings: " << settingsVersion;
+        return;
+    }
+    if (compareVersion(settingsVersion, "0.10.6") <= 0) {
+        mUserSettings->beginGroup("Editor");
+        mUserSettings->remove("editableMaxSizeMB");
+        mUserSettings->endGroup();
+    }
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)

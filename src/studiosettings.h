@@ -192,9 +192,12 @@ private:
 
     // user model library directory
     QString mUserModelLibraryDir;
+    void checkAndUpdateSettings();
     void initSettingsFiles();
     void initDefaultColors();
     void loadViewStates(MainWindow *main);
+    bool isValidVersion(QString currentVersion);
+    int compareVersion(QString currentVersion, QString otherVersion);
 };
 
 }

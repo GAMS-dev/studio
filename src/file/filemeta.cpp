@@ -424,11 +424,9 @@ void FileMeta::load(int codecMib, bool init)
     QFile file(location());
     qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
     if (file.exists() && file.size() > maxSize) {
-        SysLogLocator::systemLog()->append("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
-                                           + " MB exeeded by " + location());
         EXCEPT() << ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
-                     + " MB exeeded by " + location());
-//        return;
+                     + " MB exceeded by " + location() + "\n"
+                     + "It is not recommended to open such large files in edit mode.");
     }
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
