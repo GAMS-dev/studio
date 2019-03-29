@@ -28,6 +28,8 @@
 #include <QClipboard>
 #include <QWidgetAction>
 
+#include <QDebug>
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -89,6 +91,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
 GdxSymbolView::~GdxSymbolView()
 {
+    if (mTvModel)
+        delete mTvModel;
     delete ui;
 }
 
