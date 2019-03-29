@@ -136,6 +136,7 @@ private:
     bool updateMaxTop();
     Chunk *getChunk(int chunkNr) const;
     Chunk *loadChunk(int chunkNr) const;
+    void deleteChunkIfUnused(Chunk *&chunk);
     void updateLineOffsets(Chunk *chunk) const;
     Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
     void updateBytesPerLine(const ChunkLines &chunkLines) const;

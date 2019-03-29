@@ -84,14 +84,14 @@ class SyntaxDeclaration: public SyntaxKeywordBase
 {
 public:
     SyntaxDeclaration();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index);
 };
 
 class SyntaxPreDeclaration: public SyntaxKeywordBase
 {
 public:
     SyntaxPreDeclaration(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index);
 };
 
 
@@ -99,36 +99,36 @@ class SyntaxDeclarationTable: public SyntaxKeywordBase
 {
 public:
     SyntaxDeclarationTable();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
 };
 
 class SyntaxReserved: public SyntaxKeywordBase
 {
 public:
     SyntaxReserved(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
 };
 
-class SyntaxSolveKey: public SyntaxKeywordBase
+class SyntaxSubsetKey: public SyntaxKeywordBase
 {
     QVector<int> mOtherKey;
 public:
-    SyntaxSolveKey();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxSubsetKey(SyntaxKind kind);
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
 };
 
 class SyntaxEmbedded: public SyntaxKeywordBase
 {
 public:
     SyntaxEmbedded(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
 };
 
 class SyntaxEmbeddedBody: public SyntaxAbstract
 {
 public:
     SyntaxEmbeddedBody();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 

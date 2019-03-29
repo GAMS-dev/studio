@@ -57,27 +57,24 @@ bool AbstractEdit::overwriteMode() const
 void AbstractEdit::sendToggleBookmark()
 {
     FileId fi = fileId();
-    NodeId gi = groupId();
-    if (fi.isValid() && gi.isValid()) {
-        emit toggleBookmark(fi, gi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+    if (fi.isValid()) {
+        emit toggleBookmark(fi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
     }
 }
 
 void AbstractEdit::sendJumpToNextBookmark()
 {
     FileId fi = fileId();
-    NodeId gi = groupId();
-    if (fi.isValid() && gi.isValid()) {
-        emit jumpToNextBookmark(false, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    if (fi.isValid()) {
+        emit jumpToNextBookmark(false, fi, effectiveBlockNr(textCursor().blockNumber()));
     }
 }
 
 void AbstractEdit::sendJumpToPrevBookmark()
 {
     FileId fi = fileId();
-    NodeId gi = groupId();
-    if (fi.isValid() && gi.isValid()) {
-        emit jumpToNextBookmark(true, fi, gi, effectiveBlockNr(textCursor().blockNumber()));
+    if (fi.isValid()) {
+        emit jumpToNextBookmark(true, fi, effectiveBlockNr(textCursor().blockNumber()));
     }
 }
 
@@ -160,13 +157,13 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, siz);
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
-                    selection.format.setForeground(QColor(180,0,0));
+                    selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(Qt::red);
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorName(QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
-                selection.format.setForeground(QColor(10,20,255));
-                selection.format.setUnderlineColor(QColor(10,20,255));
+                selection.format.setForeground(m->color());
+                selection.format.setUnderlineColor(m->color());
                 selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
                 selection.format.setAnchor(true);
                 selection.format.setAnchorName(QString::number(m->line()));

@@ -48,7 +48,7 @@ public:
     QVector<TextMark *> backRefs(FileId fileId) const;
 
     inline bool isErrorRef() { return (mReference && mReference->type() == error); }
-    QColor color();
+    QColor color() const;
     FileKind fileKind();
     FileKind refFileKind();
     int value() const;

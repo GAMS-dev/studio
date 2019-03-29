@@ -83,6 +83,9 @@ enum class SyntaxKind {
     Solve,
     SolveBody,
     SolveKey,
+    Option,
+    OptionBody,
+    OptionKey,
 
     KindCount
 };
@@ -143,7 +146,7 @@ public:
     SyntaxKind kind() { return mKind; }
 
     /// Finds the begin of this syntax
-    virtual SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) = 0;
+    virtual SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) = 0;
 
     /// Finds the end of valid trailing characters for this syntax
     virtual SyntaxBlock validTail(const QString &line, int index, bool &hasContent) = 0;
@@ -156,18 +159,20 @@ public:
     static int stateToInt(SyntaxKind _state);
     static SyntaxKind intToState(int intState);
 protected:
+    static const QVector<QChar> cSpecialCharacters;  // other breaking kind
 
-    inline int charClass(QChar ch, int &prev) {
+    inline int charClass(QChar ch, int &prev, QVector<QChar> moreSpecialChars = QVector<QChar>()) {
         // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
         // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
-        static QVector<QChar> cList = {'"', '$', '\'', '.', ';', '='};  // other breaking kind
         if (ch < '"' || ch > 'z')
             prev = 0;
         else if (ch >= 'a' || (ch >= 'A' && ch <= 'Z') || ch == '_')
             prev = 2;  // break by keyword kind
         else if (ch >= '0' && ch <= '9') {
-            if (prev!=2) prev = 0;
-        } else prev = cList.contains(ch) ? 1 : 0;
+            if (prev != 2) prev = 0;
+        } else {
+            prev = (cSpecialCharacters.contains(ch) || moreSpecialChars.contains(ch)) ? 1 : 0;
+        }
         return prev;
     }
 
@@ -198,25 +203,29 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxCommentEndline;
+class SyntaxFormula;
 /// \brief Defines the syntax for a directive.
 class SyntaxDirective : public SyntaxAbstract
 {
 public:
     SyntaxDirective(QChar directiveChar = '$');
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
     void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
+    void addSubBody(SyntaxFormula *syntax) {mSubSyntaxBody << syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
     QHash<QString, SyntaxKind> mSpecialKinds;
     SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
+    QVector<SyntaxFormula*> mSubSyntaxBody;
+
 };
 
 
@@ -225,7 +234,7 @@ class SyntaxDirectiveBody: public SyntaxAbstract
 {
 public:
     SyntaxDirectiveBody(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -234,7 +243,7 @@ class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(QChar commentChar = '*');
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     QChar mCommentChar;
@@ -247,7 +256,7 @@ class SyntaxCommentEndline: public SyntaxAbstract
 public:
     SyntaxCommentEndline(QString commentChars = "!!");
     void setCommentChars(QString commentChars);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -256,7 +265,7 @@ class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -265,23 +274,25 @@ class SyntaxDelimiter: public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxDelimiter(SyntaxKind kind);
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
 class SyntaxFormula: public SyntaxAbstract
 {
+    QVector<QChar> mSpecialDynamicChars;
 public:
     SyntaxFormula(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    void setSpecialDynamicChars(QVector<QChar> chars);
 };
 
 class SyntaxString : public SyntaxAbstract
 {
 public:
     SyntaxString();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -289,7 +300,7 @@ class SyntaxAssign : public SyntaxAbstract
 {
 public:
     SyntaxAssign();
-    SyntaxBlock find(SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 

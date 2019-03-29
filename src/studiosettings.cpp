@@ -136,6 +136,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", main->size());
     mAppSettings->setValue("pos", main->pos());
+    mAppSettings->setValue("maximized", main->isMaximized());
     mAppSettings->setValue("windowState", main->saveState());
 
     // search window
@@ -229,7 +230,6 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("writeLog", writeLog());
     mUserSettings->setValue("nrLogBackups", nrLogBackups());
     mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
-    mUserSettings->setValue("editableMaxSizeMB", editableMaxSizeMB());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -251,8 +251,13 @@ void StudioSettings::loadViewStates(MainWindow *main)
 
     // main window
     mAppSettings->beginGroup("mainWindow");
-    main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
-    main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    bool maximized = mAppSettings->value("maximized", false).toBool();
+    if (maximized) {
+        main->setWindowState(Qt::WindowMaximized);
+    } else {
+        main->resize(mAppSettings->value("size", QSize(1024, 768)).toSize());
+        main->move(mAppSettings->value("pos", QPoint(100, 100)).toPoint());
+    }
     main->restoreState(mAppSettings->value("windowState").toByteArray());
     main->ensureInScreen();
 
@@ -292,16 +297,33 @@ void StudioSettings::loadViewStates(MainWindow *main)
         main->helpWidget()->setZoomFactor(1.0);
 #endif
     mAppSettings->endGroup();
+}
 
-    mAppSettings->beginGroup("fileHistory");
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < historySize(); i++) {
-        mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+bool StudioSettings::isValidVersion(QString currentVersion)
+{
+    for (const QChar &c: currentVersion)
+        if (c != '.' && (c < '0' || c > '9')) return false;
+    QStringList verList = currentVersion.split('.');
+    if (verList.size() < 2) return false;
+    for (const QString &s: verList)
+        if (s.isEmpty()) return false;
+    return true;
+}
+
+int StudioSettings::compareVersion(QString currentVersion, QString otherVersion)
+{
+    QStringList curntList = currentVersion.split('.');
+    QStringList otherList = otherVersion.split('.');
+    for (int i = 0; i < qMax(curntList.size(), otherList.size()); ++i) {
+        if (i == curntList.size()) return -1;
+        if (i == otherList.size()) return 1;
+        bool a,b;
+        int res = curntList.at(i).toInt(&a) - otherList.at(i).toInt(&b);
+        if (a && !b) return 2;
+        if (b && !a) return -2;
+        if (res) return res/qAbs(res);
     }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
+    return 0;
 }
 
 void StudioSettings::loadUserSettings()
@@ -336,7 +358,7 @@ void StudioSettings::loadUserSettings()
     setWriteLog(mUserSettings->value("writeLog", true).toBool());
     setNrLogBackups(mUserSettings->value("nrLogBackups", 3).toInt());
     setAutoCloseBraces(mUserSettings->value("autoCloseBraces", true).toBool());
-    setEditableMaxSizeMB(mUserSettings->value("editableMaxSizeMB", 10).toInt());
+    setEditableMaxSizeMB(mUserSettings->value("editableMaxSizeMB", 50).toInt());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
@@ -433,6 +455,8 @@ void StudioSettings::loadSettings(MainWindow *main)
     if (mResetSettings) {
         mAppSettings->clear();
         mUserSettings->clear();
+    } else {
+        checkAndUpdateSettings();
     }
 
     loadUserSettings();
@@ -441,6 +465,21 @@ void StudioSettings::loadSettings(MainWindow *main)
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
     mUserModelLibraryDir = CommonPaths::userModelLibraryDir();
+}
+
+void StudioSettings::checkAndUpdateSettings()
+{
+    if (!mAppSettings->contains("settings/version")) return;
+    QString settingsVersion = mAppSettings->value("settings/version").toString();
+    if (!isValidVersion(settingsVersion)) {
+        DEB() << "Invalid version in settings: " << settingsVersion;
+        return;
+    }
+    if (compareVersion(settingsVersion, "0.10.6") <= 0) {
+        mUserSettings->beginGroup("Editor");
+        mUserSettings->remove("editableMaxSizeMB");
+        mUserSettings->endGroup();
+    }
 }
 
 void StudioSettings::importSettings(const QString &path, MainWindow *main)

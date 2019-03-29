@@ -76,8 +76,17 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody), cl.value(SyntaxDiBdy));
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), cl.value(SyntaxComnt), fItalic);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title), cl.value(SyntaxTitle), fBoldItalic);
-    initKind(new SyntaxFormula(SyntaxKind::Formula));
-    initKind(new SyntaxFormula(SyntaxKind::SolveBody));
+
+    SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
+    initKind(syntaxFormula);
+    syntaxDirective->addSubBody(syntaxFormula);
+    SyntaxFormula * syntaxSolveBody = new SyntaxFormula(SyntaxKind::SolveBody);
+    initKind(syntaxSolveBody);
+    syntaxDirective->addSubBody(syntaxSolveBody);
+    SyntaxFormula * syntaxOptionBody = new SyntaxFormula(SyntaxKind::OptionBody);
+    initKind(syntaxOptionBody);
+    syntaxDirective->addSubBody(syntaxOptionBody);
+
     initKind(new SyntaxAssign(), cl.value(SyntaxAssgn), fBold);
     initKind(new SyntaxString(), cl.value(SyntaxStrin));
     initKind(new SyntaxCommentLine(), cl.value(SyntaxComnt), fItalic);
@@ -86,11 +95,13 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(syntaxCommentEndline, cl.value(SyntaxComnt), fItalic);
     syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
 
-    initKind(new SyntaxSolveKey(), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
     initKind(new SyntaxDelimiter(SyntaxKind::Comma));
     initKind(new SyntaxReserved(SyntaxKind::Reserved), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxReserved(SyntaxKind::Solve), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxReserved(SyntaxKind::Option), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxEmbedded(SyntaxKind::Embedded), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed), fNormal);
@@ -274,9 +285,11 @@ const QVector<SyntaxKind> validParenthesesSyntax = {
     SyntaxKind::IdentifierTableAssignmentHead,
     SyntaxKind::IdentifierTableAssignmentRow,
     SyntaxKind::Reserved,
-    SyntaxKind::Solve,
     SyntaxKind::Formula,
+    SyntaxKind::Solve,
     SyntaxKind::SolveBody,
+    SyntaxKind::Option,
+    SyntaxKind::OptionBody,
     SyntaxKind::EmbeddedBody,
 };
 
