@@ -198,7 +198,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
             cb = new QCheckBox(valColNames[i]);
             cb->setChecked(true);
             layout->addWidget(cb);
-            connect(cb, &QCheckBox::toggled, [this, i]() {toggleColumnHidden(i);});
+            connect(cb, &QCheckBox::toggled, [this]() {toggleColumnHidden();});
             mShowValColActions.append(cb);
         }
         ui->tbVisibleValCols->addAction(checkableAction);
@@ -269,7 +269,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     clip->setText(sList.join(""));
 }
 
-void GdxSymbolView::toggleColumnHidden(int valCol)
+void GdxSymbolView::toggleColumnHidden()
 {
     toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
 }

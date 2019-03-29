@@ -49,7 +49,7 @@ public:
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable);
     void copySelectionToClipboard(QString separator);
-    void toggleColumnHidden(int valCol);
+    void toggleColumnHidden();
 
 public slots:
     void enableControls();
