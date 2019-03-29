@@ -230,7 +230,6 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("writeLog", writeLog());
     mUserSettings->setValue("nrLogBackups", nrLogBackups());
     mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
-//    mUserSettings->setValue("editableMaxSizeMB", editableMaxSizeMB());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Misc");
