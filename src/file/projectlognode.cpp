@@ -364,7 +364,7 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
                     mLstNode = mRunGroup->findFile(mRunGroup->parameter("lst"));
                     if (!mLstNode) {
                         QFileInfo fi(mRunGroup->parameter("lst"));
-                        mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->parameter("lst"), mRunGroup);
+                        mLstNode = projectRepo()->findOrCreateFileNode(mRunGroup->parameter("lst"), mRunGroup, &FileType::from(FileKind::Lst));
                         if (!mLstNode) {
                             errFound = false;
                             continue;

@@ -298,16 +298,6 @@ void StudioSettings::loadViewStates(MainWindow *main)
         main->helpWidget()->setZoomFactor(1.0);
 #endif
     mAppSettings->endGroup();
-
-    mAppSettings->beginGroup("fileHistory");
-    mAppSettings->beginReadArray("lastOpenedFiles");
-    for (int i = 0; i < historySize(); i++) {
-        mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
-    }
-    mAppSettings->endArray();
-    mAppSettings->endGroup();
-
 }
 
 void StudioSettings::loadUserSettings()
