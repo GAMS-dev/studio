@@ -706,6 +706,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 
 FileMeta::Data::Data(QString location, FileType *knownType)
 {
+    if (knownType == &FileType::from(""))
+        knownType = nullptr;
+
     if (location.startsWith('[')) {
         int len = location.indexOf(']')-2;
         type = knownType ? knownType
