@@ -284,15 +284,6 @@ bool TableViewModel::needDummyColumn() const
     return mNeedDummyColumn;
 }
 
-void TableViewModel::reset()
-{
-    mTvColDim = 1;
-    mTvDimOrder.clear();
-    for(int i=0; i<mSym->mDim; i++)
-        mTvDimOrder << i;
-    setTableView(true);
-}
-
 bool TableViewModel::needDummyRow() const
 {
     return mNeedDummyRow;

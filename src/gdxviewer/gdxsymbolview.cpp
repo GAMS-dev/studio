@@ -154,10 +154,13 @@ void GdxSymbolView::resetSortFilter()
         }
         mSym->resetSortFilter();
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
-        static_cast<TableViewModel*>(ui->tvTableView->model())->reset();
+        ui->cbSqueezeDefaults->setChecked(false);
+        showListView();
+        if (mTvModel) {
+            delete mTvModel;
+            mTvModel = nullptr;
+        }
     }
-    ui->cbSqueezeDefaults->setChecked(false);
-    showListView();
 }
 
 void GdxSymbolView::refreshView()
@@ -177,11 +180,10 @@ GdxSymbol *GdxSymbolView::sym() const
 void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
 {
     mSym = sym;
+    mGdxSymbolTable = symbolTable;
     if (mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     ui->tvListView->setModel(mSym);
-    mTvModel = new TableViewModel(mSym, symbolTable);
-    ui->tvTableView->setModel(mTvModel);
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
         QVector<QString> valColNames;
@@ -296,7 +298,11 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
-    static_cast<TableViewModel*>(ui->tvTableView->model())->setTableView(true);
+    if (!mTvModel) {
+        mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
+        ui->tvTableView->setModel(mTvModel);
+    }
+    mTvModel->setTableView(true);
     ui->pbToggleView->setText("List View");
 
     ui->tvListView->hide();

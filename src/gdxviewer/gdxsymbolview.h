@@ -76,6 +76,7 @@ private:
 
     QVector<QCheckBox *> mShowValColActions;
 
+    GdxSymbolTable* mGdxSymbolTable = nullptr;
     bool mTableView = false;
 };
 
