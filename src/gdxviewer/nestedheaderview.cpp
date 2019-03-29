@@ -291,6 +291,7 @@ int NestedHeaderView::pointToDimension(QPoint p)
                 return i;
         }
     }
+    return 0; //is never reached
 }
 
 int NestedHeaderView::pointToDropDimension(QPoint p)
@@ -343,6 +344,7 @@ int NestedHeaderView::pointToDropDimension(QPoint p)
             }
         }
     }
+    return 0; //is never reached
 }
 
 void NestedHeaderView::bindScrollMechanism()
