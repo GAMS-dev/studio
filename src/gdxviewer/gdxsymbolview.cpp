@@ -302,7 +302,7 @@ void GdxSymbolView::showTableView()
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
         ui->tvTableView->setModel(mTvModel);
     }
-    mTvModel->setTableView(true);
+    mTvModel->setTableView();
     ui->pbToggleView->setText("List View");
 
     ui->tvListView->hide();
