@@ -21,14 +21,22 @@ BaseHighlighter::BaseHighlighter(QTextDocument *parent): QObject(parent)
 
 BaseHighlighter::~BaseHighlighter()
 {
+    mAborted = true;
     mDirtyBlocks.clear();
     setDocument(nullptr);
+}
+
+void BaseHighlighter::abortHighlighting()
+{
+    mAborted = true;
 }
 
 void BaseHighlighter::setDocument(QTextDocument *doc, bool wipe)
 {
     if (mDoc) {
+        abortHighlighting();
         disconnect(mDoc, &QTextDocument::contentsChange, this, &BaseHighlighter::reformatBlocks);
+        disconnect(mDoc, &QTextDocument::blockCountChanged, this, &BaseHighlighter::blockCountChanged);
         if (wipe) {
             QTextCursor cursor(mDoc);
             cursor.beginEditBlock();
@@ -68,17 +76,18 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
     bool forceHighlightOfNextBlock = true;
     int iDirty = dirtyIndex(mCurrentBlock.blockNumber());
     const int firstCleanBlockNr = mCurrentBlock.blockNumber();
-    int count = 0;
+    if (mTime.isNull()) mTime = QTime::currentTime();
 
-    while (mDoc && mCurrentBlock.isValid() && (forceHighlightOfNextBlock || !mDirtyBlocks.isEmpty())) {
+    while (mDoc && !mAborted && mCurrentBlock.isValid() && (forceHighlightOfNextBlock || !mDirtyBlocks.isEmpty())) {
         const int stateBeforeHighlight = mCurrentBlock.userState();
 
         reformatCurrentBlock();
         forceHighlightOfNextBlock = (mCurrentBlock.userState() != stateBeforeHighlight);
 
-        if (++count > cMaxCount) {
+        if (!mTime.isNull() && QTime::currentTime().msecsSinceStartOfDay()-mTime.msecsSinceStartOfDay() > 50) {
             if (forceHighlightOfNextBlock)
                 setDirty(mCurrentBlock.blockNumber(), mCurrentBlock.blockNumber()+1);
+            mTime = QTime();
             break;
         }
 
@@ -94,10 +103,11 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
         mCurrentBlock = mCurrentBlock.next();
     }
     mFormatChanges.clear();
+    if (mAborted) mDirtyBlocks.clear();
     if (mDoc) {
         const int lastCleanBlockNr = mCurrentBlock.isValid() ? mCurrentBlock.blockNumber() : mDoc->blockCount();
         setClean(firstCleanBlockNr, lastCleanBlockNr);
-        if (!mDirtyBlocks.isEmpty()) QTimer::singleShot(20, this, &BaseHighlighter::processDirtyParts);
+        if (!mDirtyBlocks.isEmpty()) QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
 //        else DEB() << "Highlight done";
     }
 }
@@ -141,7 +151,7 @@ void BaseHighlighter::processDirtyParts()
 
 void BaseHighlighter::setFormat(int start, int count, const QTextCharFormat &format)
 {
-    if (start < 0 || start >= mFormatChanges.count())
+    if (mAborted || start < 0 || start >= mFormatChanges.count())
         return;
 
     const int end = qMin(start + count, mFormatChanges.count());
@@ -195,9 +205,13 @@ QTextBlock BaseHighlighter::currentBlock() const
 
 void BaseHighlighter::reformatCurrentBlock()
 {
-    mFormatChanges.fill(QTextCharFormat(), mCurrentBlock.length() - 1);
-    highlightBlock(mCurrentBlock.text());
-    applyFormatChanges();
+    if (mAborted) {
+        highlightBlock(mCurrentBlock.text());
+    } else {
+        mFormatChanges.fill(QTextCharFormat(), mCurrentBlock.length() - 1);
+        highlightBlock(mCurrentBlock.text());
+        applyFormatChanges();
+    }
 }
 
 void BaseHighlighter::applyFormatChanges()

@@ -41,33 +41,6 @@
 namespace gams {
 namespace studio {
 
-class KillThread : public QThread
-{
-private:
-    syntax::SyntaxHighlighter *mHighlighter;
-    QTextDocument *mDocument;
-
-public:
-    KillThread(syntax::SyntaxHighlighter *highlighter, QTextDocument *doc)
-        : mHighlighter(highlighter), mDocument(doc) {
-        mDocument->setParent(nullptr);
-        if (mDocument) mDocument->moveToThread(this);
-    }
-    void run() {
-        if (mHighlighter) {
-            mHighlighter->setDocument(nullptr, true);
-            mHighlighter->deleteLater();
-            mHighlighter = nullptr;
-        }
-        mDocument->setHtml("");
-        mDocument->deleteLater();
-        mDocument = nullptr;
-        this->deleteLater();
-    }
-    ~KillThread() {
-    }
-};
-
 FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType *knownType)
     : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
@@ -201,18 +174,14 @@ void FileMeta::unlinkAndFreeDocument()
         disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
     }
 
-    KillThread *ks = new KillThread(mHighlighter, mDocument);
-    mHighlighter = nullptr;
+    if (mHighlighter) {
+        mHighlighter->abortHighlighting();
+        mHighlighter->setDocument(nullptr);
+        mHighlighter->deleteLater();
+        mHighlighter = nullptr;
+    }
+    mDocument->deleteLater();
     mDocument = nullptr;
-    ks->run();
-
-//    if (mHighlighter) {
-//        mHighlighter->setDocument(nullptr);
-//        mHighlighter->deleteLater();
-//        mHighlighter = nullptr;
-//    }
-//    mDocument->deleteLater();
-//    mDocument = nullptr;
 }
 
 FileId FileMeta::id() const

@@ -6,6 +6,7 @@
 #include <QTextCharFormat>
 #include <QTextObject>
 #include <QVector>
+#include <QTime>
 
 namespace gams {
 namespace studio {
@@ -18,6 +19,7 @@ public:
     explicit BaseHighlighter(QObject *parent = nullptr);
     explicit BaseHighlighter(QTextDocument *parent = nullptr);
     virtual ~BaseHighlighter();
+    void abortHighlighting();
 
     void setDocument(QTextDocument *doc, bool wipe = false);
     QTextDocument *document() const;
@@ -75,13 +77,15 @@ private:
         virtual ~Interval() {}
     };
 
+    QTime mTime;
+    bool mAborted = false;
     QTextDocument *mDoc = nullptr;
     int mChangeLine = -1;
     int mBlockCount = 1;
     QTextBlock mCurrentBlock;
     QVector<Interval> mDirtyBlocks;
     QVector<QTextCharFormat> mFormatChanges;
-    static const int cMaxCount = 50;
+    static const int cMaxCount = 50000000;
 
 };
 
