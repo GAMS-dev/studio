@@ -1321,19 +1321,22 @@ void MainWindow::postGamsRun(NodeId origin)
         mSyslog->append("No group attached to process", LogMsgType::Error);
         return;
     }
+
+    // add all created files to project explorer
+    groupNode->addNodesForSpecialFiles();
+
     FileMeta *runMeta = groupNode->runnableGms();
     if (!runMeta) {
         mSyslog->append("Invalid runable attached to process", LogMsgType::Error);
         return;
     }
-    if(groupNode && runMeta->exists(true)) {
+    if (groupNode && runMeta->exists(true)) {
         QString lstFile = groupNode->parameter("lst");
         bool doFocus = groupNode == mRecent.group;
 
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
-        for (QWidget *edit: lstNode->file()->editors()) {
+        for (QWidget *edit: lstNode->file()->editors())
             if (TextView* tv = ViewHelper::toTextView(edit)) tv->reopenFile();
-        }
 
         bool alreadyJumped = false;
         if (mSettings->jumpToError())
@@ -1344,11 +1347,6 @@ void MainWindow::postGamsRun(NodeId origin)
     }
     if (groupNode && groupNode->hasLogNode())
         groupNode->logNode()->logDone();
-
-    // add all created files to project explorer
-    groupNode->addNodesForSpecialFiles();
-
-//    DEB() << "RUNmsec: " << QTime::currentTime().msecsSinceStartOfDay() - mTestTimer.msecsSinceStartOfDay();
 }
 
 void MainWindow::postGamsLibRun()

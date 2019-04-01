@@ -281,7 +281,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
         } else {
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
-                FileType *ft = &FileType::from(nodeObject["type"].toString(""));
+                FileType *ft = &FileType::from(nodeObject["type"].toString());
                 if (QFileInfo(file).exists()) {
                     ProjectFileNode * node = findOrCreateFileNode(file, group, ft, name);
                     if (nodeObject.contains("codecMib")) {
@@ -328,8 +328,7 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
             nodeObject["name"] = file->name();
             if (node->toFile()) {
                 ProjectFileNode * fileNode = node->toFile();
-                if (!fileNode->file()->suffix().isEmpty())
-                    nodeObject["type"] = fileNode->file()->suffix().first();
+                nodeObject["type"] = fileNode->file()->kindAsStr();
                 int mib = fileNode->file()->codecMib();
                 if (mib) nodeObject["codecMib"] = mib;
             }
@@ -438,8 +437,8 @@ void ProjectRepo::purgeGroup(ProjectGroupNode *group)
     }
 }
 
-ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
-                                                   , QString explicitName)
+ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType,
+                                                   QString explicitName)
 {
     if (location.isEmpty())
         return nullptr;
@@ -632,7 +631,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     QList<NodeId> newIds;
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
-            ProjectFileNode* file = group->findOrCreateFileNode(item);
+            ProjectFileNode* file = findOrCreateFileNode(item, group);
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
         } else {

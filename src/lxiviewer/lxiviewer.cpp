@@ -36,14 +36,13 @@ namespace lxiviewer {
 LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
-    mTextView(textView),
-    mLstFile(lstFile)
+    mTextView(textView)
 {
     ui->setupUi(this);
 
     ui->splitter->addWidget(mTextView);
 
-    QFileInfo info(mLstFile);
+    QFileInfo info(lstFile);
     mLxiFile = info.path() + "/" + info.baseName() + ".lxi";
 
     loadLxi();

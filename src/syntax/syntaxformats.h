@@ -285,7 +285,7 @@ public:
     SyntaxFormula(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
-    void setSpecialDynamicChars(QVector<QChar> chars) { mSpecialDynamicChars = chars; }
+    void setSpecialDynamicChars(QVector<QChar> chars);
 };
 
 class SyntaxString : public SyntaxAbstract

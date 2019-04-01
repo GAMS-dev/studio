@@ -571,8 +571,11 @@ bool TextMapper::findText(QRegularExpression seachRegex, QTextDocument::FindFlag
             setPosAbsolute(chunk, line+startLine, charNr);
             setPosAbsolute(chunk, line+startLine, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
             continueFind = false;
+            deleteChunkIfUnused(chunk);
             return true;
         }
+        deleteChunkIfUnused(chunk);
+
         if (refPos->chunkNr == mFindChunk && backwards == (part==2)) {
             // reached start-chunk again - nothing found
             continueFind = false;
@@ -885,6 +888,15 @@ int TextMapper::selectionSize() const
     return int(selSize);
 }
 
+void TextMapper::deleteChunkIfUnused(Chunk *&chunk)
+{
+    if (!mChunks.contains(chunk)) {
+        mFile.unmap(chunk->map);
+        delete chunk;
+        chunk = nullptr;
+    }
+}
+
 bool TextMapper::peekChunksForLineNrs(int chunkCount)
 {
     int known = mLastChunkWithLineNr;
@@ -892,6 +904,7 @@ bool TextMapper::peekChunksForLineNrs(int chunkCount)
     for (int i = 1; i <= chunkCount; ++i) {
         chunk = loadChunk(known + i);
         if (!chunk) break;
+        deleteChunkIfUnused(chunk);
     }
     return mLastChunkWithLineNr < this->chunkCount()-1;
 }

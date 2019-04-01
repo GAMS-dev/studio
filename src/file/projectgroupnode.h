@@ -54,7 +54,6 @@ public:
     virtual QString lstErrorText(int line);
     ProjectFileNode *findFile(const QString &location, bool recurse = true) const;
     ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
-    ProjectFileNode *findOrCreateFileNode(const QString &location);
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
     QVector<ProjectFileNode*> listFiles(bool recurse = false) const;

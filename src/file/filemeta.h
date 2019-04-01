@@ -62,6 +62,7 @@ public:
     QStringList suffix() const;
     void setKind(const QString &suffix);
     FileKind kind() const;
+    QString kindAsStr() const;
     QString name(NameModifier mod = NameModifier::raw);
     QTextDocument* document() const;
     int codecMib() const;
