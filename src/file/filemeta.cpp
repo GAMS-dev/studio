@@ -175,7 +175,6 @@ void FileMeta::unlinkAndFreeDocument()
     }
 
     if (mHighlighter) {
-        mHighlighter->abortHighlighting();
         mHighlighter->setDocument(nullptr);
         mHighlighter->deleteLater();
         mHighlighter = nullptr;

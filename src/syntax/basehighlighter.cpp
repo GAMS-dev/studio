@@ -205,13 +205,9 @@ QTextBlock BaseHighlighter::currentBlock() const
 
 void BaseHighlighter::reformatCurrentBlock()
 {
-    if (mAborted) {
-        highlightBlock(mCurrentBlock.text());
-    } else {
-        mFormatChanges.fill(QTextCharFormat(), mCurrentBlock.length() - 1);
-        highlightBlock(mCurrentBlock.text());
-        applyFormatChanges();
-    }
+    mFormatChanges.fill(QTextCharFormat(), mCurrentBlock.length() - 1);
+    highlightBlock(mCurrentBlock.text());
+    applyFormatChanges();
 }
 
 void BaseHighlighter::applyFormatChanges()
