@@ -369,6 +369,16 @@ QVariant GdxSymbol::formatValue(double val) const
     return QVariant();
 }
 
+bool GdxSymbol::filterHasChanged() const
+{
+    return mFilterHasChanged;
+}
+
+void GdxSymbol::setFilterHasChanged(bool filterHasChanged)
+{
+    mFilterHasChanged = filterHasChanged;
+}
+
 std::vector<bool> GdxSymbol::filterActive() const
 {
     return mFilterActive;
