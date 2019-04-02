@@ -296,10 +296,9 @@ void GdxSymbolView::showTableView()
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
         mTvModel->setTableView();
         ui->tvTableView->setModel(mTvModel);
-    } else if (mSym->filterHasChanged()) {
+    } else if (mSym->filterHasChanged())
         mTvModel->setTableView();
-        mSym->setFilterHasChanged(false);
-    }
+    mSym->setFilterHasChanged(false);
 
     ui->pbToggleView->setText("List View");
 
