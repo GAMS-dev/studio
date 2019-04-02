@@ -49,7 +49,7 @@ void NestedHeaderView::reset()
         QStyleOptionHeader opt;
         initStyleOption(&opt);
         //TODO CW: The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
-        int borderWidth = fm.width("___");
+        int borderWidth = 10;
         for (int i=0; i<dimension; i++)
             vhSectionWidth.replace(i, vhSectionWidth.at(i) + borderWidth);
     }
