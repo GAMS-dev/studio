@@ -147,6 +147,11 @@ void TableViewModel::calcLabelsInRows()
     mlabelsInRows.clear();
     mlabelsInRows.resize(rowDim);
 
+    if (mNeedDummyRow) {
+        mlabelsInRows[0].append(this->headerData(0, Qt::Vertical).toString());
+        return;
+    }
+
     for (int r=0; r<mTvRowHeaders.size(); r++) {
         for(int c=0; c<rowDim; c++)
             uelsInRows[c].insert(mTvRowHeaders[r][c]);
