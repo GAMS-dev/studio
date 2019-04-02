@@ -2068,10 +2068,11 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
 void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
 {
     qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
+    int factor = (sizeof (void*) == 2) ? 16 : 23;
     if (mFileMetaRepo.askBigFileEdit() && file.exists() && file.size() > maxSize) {
         QString text = ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
                         + " MB exceeded by " + file.fileName() + "\n"
-                        + "About " + QString::number(qreal(file.size())/1024/1024*16, 'f', 1)
+                        + "About " + QString::number(qreal(file.size())/1024/1024*factor, 'f', 1)
                         + " MB of memory need to be allocated.\n"
                         + "It is not recommended to open such large files in edit mode." );
         int choice = QMessageBox::question(nullptr, "File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
