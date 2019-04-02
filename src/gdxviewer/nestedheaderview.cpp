@@ -34,29 +34,24 @@ void NestedHeaderView::reset()
         int dimension = dim();
         vhSectionWidth.clear();
         vhSectionWidth.resize(dimension);
-        int rowCount = model()->rowCount();
 
         QFont fnt = font();
         fnt.setBold(true);
 
         QFontMetrics fm(fnt);
 
-        for (int r=0; r<rowCount; r++) {
-            QStringList labels = model()->headerData(r, Qt::Vertical, Qt::DisplayRole).toStringList();
-            for (int i=0; i<dimension; i++) {
-                int width = fm.width(labels[i]);
-                vhSectionWidth.replace(i, qMax(vhSectionWidth.at(i), width));
-            }
+        for (int i=0; i<dimension; i++) {
+            QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
+            for (QString label : labelsInRows.at(i))
+                vhSectionWidth.replace(i, qMax(vhSectionWidth.at(i), fm.width(label)));
         }
 
         QStyleOptionHeader opt;
         initStyleOption(&opt);
+        //TODO CW: The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
         int borderWidth = fm.width("___");
-        for (int i=0; i<dimension; i++) {
-            //TODO CW: The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
-
+        for (int i=0; i<dimension; i++)
             vhSectionWidth.replace(i, vhSectionWidth.at(i) + borderWidth);
-        }
     }
     QHeaderView::reset();
 }

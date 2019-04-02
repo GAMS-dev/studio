@@ -12,11 +12,6 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, Q
         mTvDimOrder << i;
 }
 
-TableViewModel::~TableViewModel()
-{
-
-}
-
 QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole) {        
@@ -142,6 +137,31 @@ void TableViewModel::calcDefaultColumnsTableView()
     }
 }
 
+void TableViewModel::calcLabelsInRows()
+{
+    QVector<QSet<uint>> uelsInRows;
+
+    int rowDim = mTvRowHeaders[0].size();
+    uelsInRows.resize(rowDim);
+
+    mlabelsInRows.clear();
+    mlabelsInRows.resize(rowDim);
+
+    for (int r=0; r<mTvRowHeaders.size(); r++) {
+        for(int c=0; c<rowDim; c++)
+            uelsInRows[c].insert(mTvRowHeaders[r][c]);
+    }
+    for (int c=0; c<uelsInRows.size(); c++) {
+        for(uint uel : uelsInRows[c])
+            mlabelsInRows[c].append(mGdxSymbolTable->uel2Label(uel));
+    }
+}
+
+QVector<QList<QString> > TableViewModel::labelsInRows() const
+{
+    return mlabelsInRows;
+}
+
 void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
 {
     if (dimOrder.isEmpty()) {
@@ -233,6 +253,7 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
         mNeedDummyColumn = false;
 
     calcDefaultColumnsTableView();
+    calcLabelsInRows();
 }
 
 bool TableViewModel::needDummyColumn() const

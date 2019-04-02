@@ -28,8 +28,6 @@
 #include <QClipboard>
 #include <QWidgetAction>
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -296,9 +294,10 @@ void GdxSymbolView::showTableView()
 {
     if (!mTvModel) {
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
+        mTvModel->setTableView();
         ui->tvTableView->setModel(mTvModel);
-    }
-    mTvModel->setTableView();
+    } else
+        mTvModel->setTableView();
 
     ui->pbToggleView->setText("List View");
 

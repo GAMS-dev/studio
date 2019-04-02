@@ -16,8 +16,6 @@ class TableViewModel : public QAbstractTableModel
 public:
     explicit TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
 
-    ~TableViewModel();
-
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
@@ -45,8 +43,14 @@ public:
 
     bool needDummyColumn() const;
 
+    QVector<QList<QString> > labelsInRows() const;
+
 private:
     void calcDefaultColumnsTableView();
+
+    void calcLabelsInRows();
+    QVector<QList<QString>> mlabelsInRows;
+
     void initTableView(int nrColDim, QVector<int> dimOrder);
 
     GdxSymbol* mSym;
