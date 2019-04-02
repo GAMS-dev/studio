@@ -6,6 +6,7 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -325,7 +326,7 @@ int NestedHeaderView::pointToDropDimension(QPoint p)
     int globalEnd   = toGlobalDim(pointToDimension(p), dragOrientationEnd);
 
     if ((sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && globalEnd == sym()->dim()) {
-        if (dimIdxStart+1 == pointToDimension(p))
+        if (globalStart+1 == globalEnd)
             return dimIdxStart;
         else
             return dim()-1;
