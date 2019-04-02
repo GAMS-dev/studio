@@ -2378,12 +2378,19 @@ void MainWindow::on_actionSearch_triggered()
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
-           QPoint p(0,0);
-           QPoint newP(this->mapToGlobal(p));
+           int sbs;
+           if (mRecent.editor() && ViewHelper::toAbstractEdit(mRecent.editor())
+                   && ViewHelper::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
+               sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
+           else
+               sbs = 2;
 
-           if (ui->mainTab->currentWidget())
-               mSearchDialog->move(newP.x(), newP.y());
+           QPoint c = mapToGlobal(centralWidget()->pos());
+           QPoint p(c.x() + (centralWidget()->width() - mSearchDialog->width() - sbs),
+                    c.y() + (centralWidget()->height() - mSearchDialog->height() - statusBar()->height() + 4)
+                   );
 
+           mSearchDialog->move(p);
            mSearchDialog->show();
        }
     }
