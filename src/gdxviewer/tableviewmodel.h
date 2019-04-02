@@ -31,8 +31,6 @@ public:
 
     QVector<int> tvDimOrder() const;
 
-    QVector<int> *getTvSectionWidth() const;
-
     int dim();
 
     int tvColDim() const;
@@ -51,8 +49,6 @@ private:
     void calcDefaultColumnsTableView();
     void initTableView(int nrColDim, QVector<int> dimOrder);
 
-    void calcSectionWidth();
-
     GdxSymbol* mSym;
     GdxSymbolTable* mGdxSymbolTable;
 
@@ -63,9 +59,6 @@ private:
     QHash<QVector<uint>, int> mTvKeysToValIdx;
 
     QVector<bool> mDefaultColumnTableView;
-
-    QVector<int>* tvSectionWidth = nullptr;
-    QMap<QString, int>* tvLabelWidth = nullptr;
 
     bool mNeedDummyRow = false;
     bool mNeedDummyColumn = false;

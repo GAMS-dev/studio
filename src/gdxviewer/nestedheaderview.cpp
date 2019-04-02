@@ -6,7 +6,6 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -27,6 +26,39 @@ void NestedHeaderView::setModel(QAbstractItemModel *model)
 {
     QHeaderView::setModel(model);
     bindScrollMechanism();
+}
+
+void NestedHeaderView::reset()
+{
+    if (this->model() && orientation() == Qt::Vertical) {
+        int dimension = dim();
+        vhSectionWidth.clear();
+        vhSectionWidth.resize(dimension);
+        int rowCount = model()->rowCount();
+
+        QFont fnt = font();
+        fnt.setBold(true);
+
+        QFontMetrics fm(fnt);
+
+        for (int r=0; r<rowCount; r++) {
+            QStringList labels = model()->headerData(r, Qt::Vertical, Qt::DisplayRole).toStringList();
+            for (int i=0; i<dimension; i++) {
+                int width = fm.width(labels[i]);
+                vhSectionWidth.replace(i, qMax(vhSectionWidth.at(i), width));
+            }
+        }
+
+        QStyleOptionHeader opt;
+        initStyleOption(&opt);
+        int borderWidth = fm.width("___");
+        for (int i=0; i<dimension; i++) {
+            //TODO CW: The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
+
+            vhSectionWidth.replace(i, vhSectionWidth.at(i) + borderWidth);
+        }
+    }
+    QHeaderView::reset();
 }
 
 int NestedHeaderView::dim() const
@@ -82,8 +114,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Enabled;
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
-            int rowWidth = static_cast<TableViewModel*>(model())->getTvSectionWidth()->at(i);
-            //qDebug() << "rowWidth: " << rowWidth;
+            int rowWidth = vhSectionWidth.at(i);
 
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
@@ -96,7 +127,6 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             if (opt.rect.contains(mMousePos))
                 state |= QStyle::State_MouseOver;
             opt.state = state;
-            //qDebug() << "DRAW:" << opt.rect.x();
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
             if (dimIdxEnd == i) {
                 painter->restore();
@@ -278,7 +308,7 @@ int NestedHeaderView::pointToDimension(QPoint p)
     if (orientation() == Qt::Vertical) {
         int totWidth = 0;
         for(int i=0; i<dim(); i++) {
-            totWidth += static_cast<TableViewModel*>(model())->getTvSectionWidth()->at(i);
+            totWidth += vhSectionWidth.at(i);
             if (p.x() < totWidth)
                 return i;
         }
@@ -320,7 +350,7 @@ int NestedHeaderView::pointToDropDimension(QPoint p)
             return 0;
         int totWidth = 0;
         for(int i=0; i<dim(); i++) {
-            int curWidth = static_cast<TableViewModel*>(model())->getTvSectionWidth()->at(i);
+            int curWidth = vhSectionWidth.at(i);
             totWidth += curWidth;
             if (p.x() < totWidth) {
                 int relX = p.x() - totWidth + curWidth;
@@ -365,8 +395,10 @@ QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
     if (orientation() == Qt::Vertical) {
         QSize s(0,sectionSize(logicalIndex));
-        QStringList labels = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();
-        s.setWidth(model()->headerData(logicalIndex, orientation(), Qt::SizeHintRole).toInt());
+        int totWidth = 0;
+        for (int i=0; i<dim(); i++)
+            totWidth += vhSectionWidth.at(i);
+        s.setWidth(totWidth);
         return s;
     } else {
         QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);

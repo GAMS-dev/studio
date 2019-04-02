@@ -157,6 +157,7 @@ void GdxSymbolView::resetSortFilter()
         ui->cbSqueezeDefaults->setChecked(false);
         showListView();
         if (mTvModel) {
+            ui->tvTableView->setModel(nullptr);
             delete mTvModel;
             mTvModel = nullptr;
         }
@@ -287,11 +288,6 @@ void GdxSymbolView::showListView()
 {
     mTableView = false;
     ui->tvTableView->hide();
-
-    // This is required in order to avoid a bug with the horizontal scrollbar (see 843)
-    //ui->tvListView->setModel(nullptr);
-    //ui->tvListView->setModel(mSym);
-
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
 }
@@ -303,16 +299,11 @@ void GdxSymbolView::showTableView()
         ui->tvTableView->setModel(mTvModel);
     }
     mTvModel->setTableView();
+
     ui->pbToggleView->setText("List View");
 
     ui->tvListView->hide();
     ui->tvTableView->show();
-
-    QAbstractItemModel* model = ui->tvTableView->model();
-    ui->tvTableView->setModel(nullptr);
-    ui->tvTableView->setModel(model);
-
-
     mTableView = true;
 }
 

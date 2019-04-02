@@ -10,17 +10,11 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, Q
     mTvColDim = 1;
     for(int i=0; i<mSym->mDim; i++)
         mTvDimOrder << i;
-
-    tvLabelWidth = new QMap<QString, int>();
-    tvSectionWidth = new QVector<int>();
 }
 
 TableViewModel::~TableViewModel()
 {
-    if (tvSectionWidth)
-        delete tvSectionWidth;
-    if (tvLabelWidth)
-        delete tvLabelWidth;
+
 }
 
 QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -35,7 +29,7 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
                     header << "Text";
             }
             else if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
-                for (int i=0; i<mTvColHeaders[section].size()-1; i++ ) {
+                for (int i=0; i<mTvColHeaders[section].size()-1; i++) {
                     uint uel = mTvColHeaders[section][i];
                     header << mGdxSymbolTable->uel2Label(uel);
                 }
@@ -65,14 +59,6 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
             }
         }
         return header;
-    }
-    else if (role == Qt::SizeHintRole && orientation == Qt::Vertical) {
-        if (mNeedDummyRow)
-            return 50;
-        int totalWidth = 0;
-        for (int i=0; i<mSym->mDim-mTvColDim; i++)
-            totalWidth += tvSectionWidth->at(i);
-        return totalWidth;
     }
     return QVariant();
 }
@@ -237,12 +223,6 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     std::stable_sort(mTvRowHeaders.begin(), mTvRowHeaders.end());
     std::stable_sort(mTvColHeaders.begin(), mTvColHeaders.end());
 
-    calcSectionWidth();
-
-    if (tvSectionWidth->isEmpty()) {
-        tvSectionWidth->push_back(50);
-    }
-
     if (mTvRowHeaders.isEmpty())
         mNeedDummyRow = true;
     else
@@ -255,30 +235,6 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     calcDefaultColumnsTableView();
 }
 
-void TableViewModel::calcSectionWidth()
-{
-    tvSectionWidth->clear();
-    tvSectionWidth->resize(mSym->mDim-mTvColDim);
-    for (int section=0; section<mTvRowHeaders.size(); section++) {
-        for (int i=0; i<mSym->mDim-mTvColDim; i++) {
-            int width;
-            QString label = mGdxSymbolTable->uel2Label(mTvRowHeaders[section][i]);
-            if (tvLabelWidth->contains(label))
-                width = tvLabelWidth->value(label);
-            else {
-                QVariant var = headerData(section, Qt::Vertical, Qt::FontRole);
-                QFont fnt;
-                if (var.isValid() && var.canConvert<QFont>())
-                    fnt = qvariant_cast<QFont>(var);
-                fnt.setBold(true);
-                width = QFontMetrics(fnt).width(label)*1.3;
-                tvLabelWidth->insert(label, width);
-            }
-            tvSectionWidth->replace(i, qMax(tvSectionWidth->at(i), width));
-        }
-    }
-}
-
 bool TableViewModel::needDummyColumn() const
 {
     return mNeedDummyColumn;
@@ -286,12 +242,7 @@ bool TableViewModel::needDummyColumn() const
 
 bool TableViewModel::needDummyRow() const
 {
-    return mNeedDummyRow;
-}
-
-QVector<int> *TableViewModel::getTvSectionWidth() const
-{
-    return tvSectionWidth;
+    return  mNeedDummyRow;
 }
 
 int TableViewModel::dim()

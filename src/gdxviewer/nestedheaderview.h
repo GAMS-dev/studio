@@ -19,6 +19,9 @@ public:
     ~NestedHeaderView() override;
     void setModel(QAbstractItemModel *model) override;
 
+public slots:
+    void reset() override;
+
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -48,7 +51,7 @@ private:
     int dragOrientationStart = -1;
     int dragOrientationEnd = -1;
 
-
+    QVector<int> vhSectionWidth;
 };
 
 } // namespace gdxviewer
