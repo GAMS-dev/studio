@@ -50,7 +50,7 @@ enum ColorEnum {
 };
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
-    : QSyntaxHighlighter(doc)
+    : BaseHighlighter(doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},

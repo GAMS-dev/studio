@@ -168,15 +168,16 @@ void FileMeta::linkDocument(QTextDocument *doc)
 void FileMeta::unlinkAndFreeDocument()
 {
     if (!mDocument) return;
-    if (mHighlighter) {
-        mHighlighter->setDocument(nullptr);
-        mHighlighter->deleteLater();
-        mHighlighter = nullptr;
-    }
     disconnect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
     if (kind() == FileKind::Gms) {
         disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+    }
+
+    if (mHighlighter) {
+        mHighlighter->setDocument(nullptr);
+        mHighlighter->deleteLater();
+        mHighlighter = nullptr;
     }
     mDocument->deleteLater();
     mDocument = nullptr;
