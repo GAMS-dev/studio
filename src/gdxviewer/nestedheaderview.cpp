@@ -116,13 +116,14 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 opt.text = labelCurSection[i];
             else
                 opt.text = "";
-            opt.rect.setLeft(opt.rect.left()+ lastRowWidth);
+            opt.rect.setLeft(opt.rect.left()+ lastRowWidth);\
             lastRowWidth = rowWidth;
             opt.rect.setWidth(rowWidth);
 
             if (opt.rect.contains(mMousePos))
                 state |= QStyle::State_MouseOver;
             opt.state = state;
+            opt.textAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
             if (dimIdxEnd == i) {
                 painter->restore();

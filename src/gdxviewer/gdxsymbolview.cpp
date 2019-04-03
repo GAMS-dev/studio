@@ -84,6 +84,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
     ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
 
+    ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(ui->tvTableView->fontMetrics().height()*1.4));
+
     //mSym->setTvTableView(ui->tvTableView);
 }
 
