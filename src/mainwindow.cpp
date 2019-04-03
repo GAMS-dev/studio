@@ -2074,9 +2074,9 @@ void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
                         + " MB exceeded by " + file.fileName() + "\n"
                         + "About " + QString::number(qreal(file.size())/1024/1024*factor, 'f', 1)
                         + " MB of memory need to be allocated.\n"
-                        + "It is not recommended to open such large files in edit mode." );
+                        + "Opening this file can take a long time during which Studio will be unresponsive.");
         int choice = QMessageBox::question(nullptr, "File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
-                                           + " MB exceeded", text, "open anyway", "open always", "cancel", 2, 2);
+                                           + " MB exceeded", text, "Open anyway", "Always open", "Cancel", 2, 2);
         if (choice == 2) {
             canOpen = false;
             return;
