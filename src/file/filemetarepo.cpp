@@ -83,6 +83,16 @@ void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
     watch(fileMeta);
 }
 
+bool FileMetaRepo::askBigFileEdit() const
+{
+    return mAskBigFileEdit;
+}
+
+void FileMetaRepo::setAskBigFileEdit(bool askBigFileEdit)
+{
+    mAskBigFileEdit = askBigFileEdit;
+}
+
 void FileMetaRepo::removeFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
@@ -327,6 +337,7 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
     FileMeta* res = fileMeta(location);
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);
+        connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
         addFileMeta(res);
     }
     return res;
