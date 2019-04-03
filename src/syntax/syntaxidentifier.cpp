@@ -270,10 +270,11 @@ SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, const QString 
 
 SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, bool &hasContent)
 {
-    Q_UNUSED(line);
-    Q_UNUSED(index);
+    int end = index;
+    while (isWhitechar(line, end))
+        ++end;
     hasContent = false;
-    return SyntaxBlock(this);
+    return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
 SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
@@ -374,11 +375,11 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
 
 SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, bool &hasContent)
 {
-    int start = index;
-    while (isWhitechar(line, start))
-        ++start;
+    int end = index;
+    while (isWhitechar(line, end))
+        ++end;
     hasContent = false;
-    return SyntaxBlock(this, index, start, SyntaxShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
 AssignmentValue::AssignmentValue()
@@ -423,11 +424,11 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const QString &lin
 
 SyntaxBlock AssignmentValue::validTail(const QString &line, int index, bool &hasContent)
 {
-    int start = index;
-    while (isWhitechar(line, start))
-        ++start;
+    int end = index;
+    while (isWhitechar(line, end))
+        ++end;
     hasContent = false;
-    return SyntaxBlock(this, index, start, SyntaxShift::shift);
+    return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
 SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
