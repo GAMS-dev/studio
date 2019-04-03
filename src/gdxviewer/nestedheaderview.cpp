@@ -264,8 +264,8 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
         return;
     }
 
-    if (orientation() == Qt::Horizontal && sym()->needDummyColumn())
-        dimIdxEnd--;
+    //if (orientation() == Qt::Horizontal && sym()->needDummyColumn())
+    //    dimIdxEnd--;
 
     int newColDim = sym()->tvColDim();
     if (dragOrientationStart != dragOrientationEnd) {
