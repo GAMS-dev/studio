@@ -252,7 +252,8 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     QTextCursor cursor(mDocument);
     cursor.setPosition(from);
     int column = cursor.positionInBlock();
-    int fromLine = cursor.blockNumber() + (cursor.block().length() == column+1 ? 1 : 0);
+    int fromLine = cursor.blockNumber();
+    bool atEnd = (cursor.block().length() == column+1);
     cursor.setPosition(from+charsAdded);
     int toLine = cursor.blockNumber();
     int removedLines = mLineCount-mDocument->lineCount() + toLine-fromLine;
@@ -261,7 +262,8 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     if (!column) --mChangedLine;
     if (removedLines > 0)
         mFileRepo->textMarkRepo()->removeMarks(id(), edit->groupId(), QSet<TextMark::Type>()
-                                               , fromLine+1, fromLine+removedLines-1);
+                                               , fromLine, fromLine+removedLines);
+    if (atEnd) ++fromLine;
     for (int i = fromLine; i <= toLine; ++i) {
         QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, edit->groupId());
         for (TextMark *mark: marks) {

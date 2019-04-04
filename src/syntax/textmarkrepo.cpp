@@ -52,7 +52,6 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
                     && (lineNr == -1 || (lineNr <= mark->line() && lastLine >= mark->line())) ) {
                 groups << mark->groupId();
                 marks->remove(mark->line(), mark);
-                DEB() << "deleting mark at line " << mark->line();
                 delete mark;
             } else {
                 if (!remainingBookmarks && mark->type() == TextMark::bookmark)

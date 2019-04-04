@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setApplicationVersion(STUDIO_VERSION);
-    QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+//    QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
 
     // to temporarily add additional information enable the following line
 //    qSetMessagePattern("[%{function}:%{line}]  %{message}");
