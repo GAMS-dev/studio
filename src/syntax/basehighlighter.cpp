@@ -135,7 +135,7 @@ void BaseHighlighter::blockCountChanged(int newBlockCount)
         if (mDirtyBlocks.at(i).second > mChangeLine) {
             mDirtyBlocks[i].second += change;
             if (mDirtyBlocks.at(i).first > mChangeLine) mDirtyBlocks[i].first += change;
-            if (mDirtyBlocks.at(i).isEmpty()) mDirtyBlocks.removeAt(i--);
+            if (mDirtyBlocks.at(i).isEmpty()) mDirtyBlocks[i].second = mDirtyBlocks.at(i).first+1;
         }
     }
     mChangeLine = -1;

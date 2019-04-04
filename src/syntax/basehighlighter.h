@@ -71,7 +71,7 @@ private:
     class Interval : public QPair<int,int>  {
     public:
         Interval(int first=0, int second=0) : QPair<int,int>(qMin(first, second), qMax(first, second)) {}
-        bool isEmpty() const { return first == second; }
+        bool isEmpty() const { return first >= second; }
         Interval subtractOverlap(const Interval &other);
         bool extendOverlap(const Interval &other);
         virtual ~Interval() {}
@@ -85,7 +85,6 @@ private:
     QTextBlock mCurrentBlock;
     QVector<Interval> mDirtyBlocks;
     QVector<QTextCharFormat> mFormatChanges;
-    static const int cMaxCount = 50000000;
 
 };
 
