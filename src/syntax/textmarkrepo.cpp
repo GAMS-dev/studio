@@ -18,17 +18,17 @@ TextMarkRepo::~TextMarkRepo()
 {
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types, int lineNr)
+void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types, int lineNr, int lastLine)
 {
-    removeMarks(fileId, groupId, false, types, lineNr);
+    removeMarks(fileId, groupId, false, types, lineNr, (lastLine < 0 ? lineNr : lastLine));
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types, int lineNr)
+void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types, int lineNr, int lastLine)
 {
-    removeMarks(fileId, NodeId(), true, types, lineNr);
+    removeMarks(fileId, NodeId(), true, types, lineNr, (lastLine < 0 ? lineNr : lastLine));
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr)
+void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr, int lastLine)
 {
     LineMarks* marks = mMarks.value(fileId);
     if (!marks) return;
@@ -47,11 +47,12 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
         while (it != marks->end()) {
             TextMark* mark = (*it);
             ++it;
-            if (types.contains(mark->type())
+            if ((types.isEmpty() || types.contains(TextMark::all) || types.contains(mark->type()))
                     && (allGroups || mark->groupId() == groupId)
-                    && (lineNr == -1 || lineNr == mark->line()) ) {
+                    && (lineNr == -1 || (lineNr <= mark->line() && lastLine >= mark->line())) ) {
                 groups << mark->groupId();
                 marks->remove(mark->line(), mark);
+                DEB() << "deleting mark at line " << mark->line();
                 delete mark;
             } else {
                 if (!remainingBookmarks && mark->type() == TextMark::bookmark)
@@ -245,7 +246,7 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
         }
     }
     for (TextMark *mark: parked) {
-        mark->setLine(mark->line()+lineShift);
+        mark->setLine(lineShift<0 ? qMax(mark->line()+lineShift, firstLine): mark->line()+lineShift);
         marks->insert(mark->line(), mark);
     }
     FileMeta *fm = mFileRepo->fileMeta(fileId);
