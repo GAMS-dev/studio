@@ -1289,8 +1289,6 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
                 selection.cursor = textCursor();
                 selection.cursor.setPosition(block.position()+match.capturedStart(2));
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
-//                QPen outlinePen( Qt::lightGray, 1);
-//                selection.format.setProperty(QTextFormat::OutlinePen, outlinePen);
                 selection.format.setBackground(mSettings->colorScheme().value("Edit.currentWordBg", QColor(Qt::lightGray)));
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
