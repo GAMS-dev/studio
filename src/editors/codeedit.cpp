@@ -1235,7 +1235,14 @@ void CodeEdit::updateExtraSelections()
         regexp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
         if (regex) regexp.setPattern(searchTerm);                      // treat as regex
         else regexp.setPattern(QRegularExpression::escape(searchTerm));// take literally
-        regexp.setPattern("\\b" + regexp.pattern() + "\\b");           // only match whole selection
+        regexp.setPattern(regexp.pattern() + "\\b");           // only match whole selection
+
+        // word boundary (\b) only matches start-of-string when first character is \w
+        // so \b will only be added when first character of selectedText is a \w
+        // if first character is not \w  the whole string needs to be matched in order to deactivate HWUC
+        QRegularExpression startsWithW("^\\w");
+        if (startsWithW.match(selectedText).hasMatch())
+            regexp.setPattern("\\b" + regexp.pattern());
 
         QRegularExpressionMatch match = regexp.match(selectedText);
         bool skipWordTimer = (sender() == &mParenthesesDelay
@@ -1248,7 +1255,7 @@ void CodeEdit::updateExtraSelections()
                && (mSettings->wordUnderCursor() || hasSelection())
                // (  depending on settings: no selection necessary skip word-timer )
                && (mSettings->wordUnderCursor() || skipWordTimer))
-             // AND deactivate when navigation search results
+             // AND deactivate when navigating search results
              && match.captured(0).isEmpty()) {
             extraSelCurrentWord(selections);
         }
