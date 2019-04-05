@@ -1842,7 +1842,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
                 if (file->kind() != FileKind::Log) {
                     try {
                         file->load(file->codecMib());
-                    } catch (Exception &e) {
+                    } catch (Exception&) {
 
                     }
                 }
