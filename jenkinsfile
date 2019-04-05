@@ -39,7 +39,7 @@ pipeline {
                         checkout scm
                         bat '''
                             @echo off
-                            echo Setting up environment for VS 2015 usage...
+                            echo Setting up environment for VS 2017 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build"
                             call vcvars32.bat
                             cd %WORKSPACE%
@@ -198,7 +198,7 @@ pipeline {
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                             withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
                             bat '''
-                                echo Setting up environment for VS 2015 usage...
+                                echo Setting up environment for VS 2017 usage...
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build"
                                 call vcvars32.bat
                                 cd %WORKSPACE%\\tmp\\studio

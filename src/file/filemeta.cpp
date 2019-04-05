@@ -37,6 +37,7 @@
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
 #include <QScrollBar>
+#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -168,15 +169,16 @@ void FileMeta::linkDocument(QTextDocument *doc)
 void FileMeta::unlinkAndFreeDocument()
 {
     if (!mDocument) return;
-    if (mHighlighter) {
-        mHighlighter->setDocument(nullptr);
-        mHighlighter->deleteLater();
-        mHighlighter = nullptr;
-    }
     disconnect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
     if (kind() == FileKind::Gms) {
         disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+    }
+
+    if (mHighlighter) {
+        mHighlighter->setDocument(nullptr);
+        mHighlighter->deleteLater();
+        mHighlighter = nullptr;
     }
     mDocument->deleteLater();
     mDocument = nullptr;
@@ -251,13 +253,17 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     cursor.setPosition(from);
     int column = cursor.positionInBlock();
     int fromLine = cursor.blockNumber();
+    bool atEnd = (cursor.block().length() == column+1);
     cursor.setPosition(from+charsAdded);
     int toLine = cursor.blockNumber();
+    int removedLines = mLineCount-mDocument->lineCount() + toLine-fromLine;
     mChangedLine = toLine;
-    if (charsAdded) {
-        --mChangedLine;
-        if (!column) --mChangedLine;
-    }
+    if (charsAdded) --mChangedLine;
+    if (!column) --mChangedLine;
+    if (removedLines > 0)
+        mFileRepo->textMarkRepo()->removeMarks(id(), edit->groupId(), QSet<TextMark::Type>()
+                                               , fromLine, fromLine+removedLines);
+    if (atEnd) ++fromLine;
     for (int i = fromLine; i <= toLine; ++i) {
         QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, edit->groupId());
         for (TextMark *mark: marks) {
@@ -422,12 +428,11 @@ void FileMeta::load(int codecMib, bool init)
 
 
     QFile file(location());
-    qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
-    if (file.exists() && file.size() > maxSize) {
-        EXCEPT() << ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
-                     + " MB exceeded by " + location() + "\n"
-                     + "It is not recommended to open such large files in edit mode.");
-    }
+    bool canOpen = true;
+    emit editableFileSizeCheck(file, canOpen);
+    if (!canOpen)
+        EXCEPT() << "FileMeta" << '\t' << "Size for editable files exceeded: " << file.fileName();
+
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
         linkDocument(doc);

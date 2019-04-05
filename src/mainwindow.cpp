@@ -135,6 +135,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
+    connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -1838,8 +1839,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
             return;
         } else if (msgBox.clickedButton() == discardButton) {
             for (FileMeta *file: modifiedFiles)
-                if (file->kind() != FileKind::Log)
-                    file->load(file->codecMib());
+                if (file->kind() != FileKind::Log) {
+                    try {
+                        file->load(file->codecMib());
+                    } catch (Exception&) {
+
+                    }
+                }
             doSave = false;
         }
     }
@@ -2059,6 +2065,27 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
     menu->addAction(ui->actionToggleBookmark);
 }
 
+void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
+{
+    qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
+    int factor = (sizeof (void*) == 2) ? 16 : 23;
+    if (mFileMetaRepo.askBigFileEdit() && file.exists() && file.size() > maxSize) {
+        QString text = ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
+                        + " MB exceeded by " + file.fileName() + "\n"
+                        + "About " + QString::number(qreal(file.size())/1024/1024*factor, 'f', 1)
+                        + " MB of memory need to be allocated.\n"
+                        + "Opening this file can take a long time during which Studio will be unresponsive.");
+        int choice = QMessageBox::question(nullptr, "File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
+                                           + " MB exceeded", text, "Open anyway", "Always open", "Cancel", 2, 2);
+        if (choice == 2) {
+            canOpen = false;
+            return;
+        }
+        if (choice == 1) mFileMetaRepo.setAskBigFileEdit(false);
+    }
+    canOpen = true;
+}
+
 void MainWindow::ensureInScreen()
 {
     QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
@@ -2119,11 +2146,11 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, runGroup, codecMib);
         } catch (Exception &e) {
-            showErrorMessage(e.what());
+            mSyslog->append(e.what(), LogMsgType::Error);
             return;
         }
         if (!edit) {
-            DEB() << "Error: could nor create editor for '" << fileMeta->location() << "'";
+            DEB() << "Error: could not create editor for '" << fileMeta->location() << "'";
             return;
         }
         if (ViewHelper::toCodeEdit(edit)) {

@@ -60,7 +60,7 @@ QIcon ProjectFileNode::icon()
         return QIcon(":/img/database");
     if (file()->kind() == FileKind::Ref)
         return QIcon(":/img/ref-file");
-    if (file()->kind() == FileKind::Txt)
+    if (!file()->isReadOnly())
         return QIcon(":/img/file-edit");
     return QIcon(":/img/file-alt"+runMark);
 }
