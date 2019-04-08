@@ -347,7 +347,7 @@ void StudioSettings::loadUserSettings()
     mUserSettings->beginGroup("Editor");
 
     QFont ff("Monospace");
-    ff.setFixedPitch(true);
+    //ff.setFixedPitch(true);
     ff.setStyleHint(QFont::TypeWriter);
     qDebug() << "fixed pitch >> " << ff.fixedPitch();
     setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
