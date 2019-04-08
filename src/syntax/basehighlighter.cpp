@@ -69,13 +69,17 @@ void BaseHighlighter::rehighlight()
     processDirtyParts();
 }
 
+QString nrStr(int val) {
+    return ((val<0 || val>9) ? "" : " ") + QString::number(val);
+}
+
 void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
 {
+    TRACE();
     if (!block.isValid()) return;
     mCurrentBlock = block;
     bool forceHighlightOfNextBlock = true;
     int iDirty = dirtyIndex(mCurrentBlock.blockNumber());
-    const int firstCleanBlockNr = mCurrentBlock.blockNumber();
     if (mTime.isNull()) mTime = QTime::currentTime();
 
     while (mDoc && !mAborted && mCurrentBlock.isValid() && (forceHighlightOfNextBlock || !mDirtyBlocks.isEmpty())) {
@@ -83,8 +87,16 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
 
         reformatCurrentBlock();
         forceHighlightOfNextBlock = (mCurrentBlock.userState() != stateBeforeHighlight);
+        setClean(mCurrentBlock.blockNumber(), mCurrentBlock.blockNumber()+1);
+
+        { QString blStr = "";
+            for (const Interval &in: mDirtyBlocks)
+                blStr += (blStr.isEmpty()?"":", ")+nrStr(in.first)+".."+nrStr(in.second);
+            DEB() << nrStr(mCurrentBlock.blockNumber()) << ": [" << blStr << "]";
+        }
 
         if (!mTime.isNull() && QTime::currentTime().msecsSinceStartOfDay()-mTime.msecsSinceStartOfDay() > 50) {
+            mCurrentBlock = mCurrentBlock.next();
             if (forceHighlightOfNextBlock)
                 setDirty(mCurrentBlock.blockNumber(), mCurrentBlock.blockNumber()+1);
             mTime = QTime();
@@ -105,10 +117,8 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
     mFormatChanges.clear();
     if (mAborted) mDirtyBlocks.clear();
     if (mDoc) {
-        const int lastCleanBlockNr = mCurrentBlock.isValid() ? mCurrentBlock.blockNumber() : mDoc->blockCount();
-        setClean(firstCleanBlockNr, lastCleanBlockNr);
         if (!mDirtyBlocks.isEmpty()) QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
-//        else DEB() << "Highlight done";
+//        else DEB() << "Highlight done.  (Intervals: " << mDirtyBlocks.length() << ")";
     }
 }
 
@@ -131,11 +141,14 @@ void BaseHighlighter::blockCountChanged(int newBlockCount)
 {
     if (mChangeLine < 0) return;
     int change = newBlockCount - mBlockCount;
+    DEB() << "BLOCK count changed by " << change << " lines";
     for (int i = 0 ; i < mDirtyBlocks.size() ; ++i) {
         if (mDirtyBlocks.at(i).second > mChangeLine) {
             mDirtyBlocks[i].second += change;
-            if (mDirtyBlocks.at(i).first > mChangeLine) mDirtyBlocks[i].first += change;
-            if (mDirtyBlocks.at(i).isEmpty()) mDirtyBlocks[i].second = mDirtyBlocks.at(i).first+1;
+            if (mDirtyBlocks.at(i).first > mChangeLine)
+                mDirtyBlocks[i].first = qMin(mDirtyBlocks.at(i).first + change, newBlockCount);
+            if (mDirtyBlocks.at(i).isEmpty())
+                mDirtyBlocks[i].second = mDirtyBlocks.at(i).first+1;
         }
     }
     mChangeLine = -1;
@@ -278,7 +291,6 @@ void BaseHighlighter::applyFormatChanges()
 void BaseHighlighter::setDirty(int fromBlock, int toBlock)
 {
     if (!mDoc) return;
-    // TODO(JM) rework with Interval
     if (fromBlock == toBlock) return;
     if (toBlock < 0) toBlock = mDoc->blockCount();
     mDirtyBlocks << Interval(fromBlock, toBlock);
@@ -292,7 +304,7 @@ void BaseHighlighter::setDirty(int fromBlock, int toBlock)
 
 void BaseHighlighter::setClean(int fromBlock, int toBlock)
 {
-    if (fromBlock == toBlock) return;
+    if (fromBlock == toBlock || mDirtyBlocks.isEmpty()) return;
     if (toBlock < 0) toBlock = mDoc->blockCount();
     Interval cleaner(fromBlock, toBlock);
     for (int i = 0; i < mDirtyBlocks.size(); i++)  {
@@ -302,6 +314,21 @@ void BaseHighlighter::setClean(int fromBlock, int toBlock)
         else if (mDirtyBlocks[i].isEmpty())
             mDirtyBlocks.removeAt(i--);
     }
+//    QString blStr = "";
+//    for (const Interval &in: mDirtyBlocks) blStr += (blStr.isEmpty()?"":", ")+nrStr(in.first)+".."+nrStr(in.second);
+//    DEB() << "    after: [" << blStr << "]\n";
+}
+
+bool BaseHighlighter::Interval::updateFromBlocks()
+{
+    if (!bFirst.isValid() || !bSecond.isValid()) return false;
+    if (first != bFirst.blockNumber()) {
+        first = bFirst.blockNumber();
+    }
+    if (second != bSecond.blockNumber()) {
+        second = bSecond.blockNumber();
+    }
+    return true;
 }
 
 bool BaseHighlighter::Interval::extendOverlap(const BaseHighlighter::Interval &other)

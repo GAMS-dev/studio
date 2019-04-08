@@ -72,10 +72,22 @@ private:
     public:
         Interval(int first=0, int second=0) : QPair<int,int>(qMin(first, second), qMax(first, second)) {}
         bool isEmpty() const { return first >= second; }
-        Interval subtractOverlap(const Interval &other);
         bool extendOverlap(const Interval &other);
+        Interval subtractOverlap(const Interval &other);
         virtual ~Interval() {}
     };
+
+//    class BInterval : public QPair<QTextBlock, QTextBlock>  {
+//    public:
+//        BInterval(QTextBlock first = QTextBlock(), QTextBlock second = QTextBlock())
+//            : QPair<QTextBlock, QTextBlock>(qMin(first, second), qMax(first, second)) {}
+//        bool isEmpty() const { return !first.isValid() || !second.isValid() || second < first; }
+//        bool extendOverlap(const BInterval &other);
+//        int iFirst() const {return first.isValid() ? first.blockNumber() : -1;}
+//        int iSecond() const {return second.isValid() ? second.blockNumber() : -1;}
+//        BInterval subtractOverlap(const BInterval &other);
+//        virtual ~BInterval() {}
+//    };
 
     QTime mTime;
     bool mAborted = false;
