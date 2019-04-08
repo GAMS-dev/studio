@@ -255,10 +255,10 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionInsert_option")==0) {
-            action->setVisible( !thereIsARowSelection );
+            action->setVisible( !isThereARow() || isThereARowSelection() );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
-            action->setVisible( !thereIsARowSelection );
+            action->setVisible( !isThereARow() || isThereARowSelection() );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
@@ -711,6 +711,7 @@ void SolverOptionWidget::insertOption()
         }
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
+        ui->solverOptionTableView->clearSelection();
         ui->solverOptionTableView->selectRow(index.row());
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
