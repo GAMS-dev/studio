@@ -6,7 +6,6 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -282,6 +281,9 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
 
     sym()->setTableView(newColDim, tvDims);
     event->accept();
+
+    (static_cast<QTableView*>(this->parent()))->horizontalHeader()->geometriesChanged();
+    (static_cast<QTableView*>(this->parent()))->verticalHeader()->geometriesChanged();
 
     dimIdxEnd = -1;
     dimIdxStart = -1;
