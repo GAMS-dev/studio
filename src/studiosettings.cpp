@@ -344,7 +344,8 @@ void StudioSettings::loadUserSettings()
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    QFont ff;
+    ff.setStyleHint(QFont::TypeWriter);
     setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
