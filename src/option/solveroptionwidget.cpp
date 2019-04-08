@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -231,14 +231,14 @@ bool SolverOptionWidget::isModified() const
 
 void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 {
-    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    bool thereIsCurrentIndex = ui->solverOptionTableView->selectionModel()->currentIndex().isValid();
     bool thereIsAnIndexSelection = indexSelection.count();
 
-    bool thereIsARow = (ui->solverOptionTableView->model()->rowCount() > 0);
-    bool thereIsARowSelection = thereIsARow && isThereARowSelection();
-    bool everySelectionIsARow = thereIsARow && (indexSelection.count() % ui->solverOptionTableView->model()->columnCount() == 0);
+    for(QModelIndex index : indexSelection) {
+        ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+    QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    bool thereIsARowSelection = isThereARowSelection();
     bool viewIsCompact = isViewCompact();
     if (viewIsCompact) {
         for(QAction* action : this->actions())
@@ -250,33 +250,30 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QAction* moveUpAction = nullptr;
     QAction* moveDownAction = nullptr;
     for(QAction* action : this->actions()) {
-        if (action->objectName().compare("actionSelect_option")==0) {
-            action->setVisible( thereIsAnIndexSelection || thereIsCurrentIndex );
-            menu.addAction(action);
-        } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setVisible( thereIsAnIndexSelection );
-            menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionToggle_comment")==0) {
-            action->setVisible( everySelectionIsARow && thereIsARowSelection );
+        if (action->objectName().compare("actionToggle_comment")==0) {
+            action->setVisible( thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionInsert_option")==0) {
-            action->setVisible( ( !thereIsARow || everySelectionIsARow ) );
+            action->setVisible( !thereIsARowSelection );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
-            action->setVisible( ( !thereIsARow || everySelectionIsARow ) );
+            action->setVisible( !thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
-            action->setVisible( isThereARowSelection() && everySelectionIsARow );
+            action->setVisible( thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            action->setVisible( everySelectionIsARow && thereIsARowSelection && (selection.first().row() > 0) );
+            action->setVisible( thereIsARowSelection && (selection.first().row() > 0) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setVisible( everySelectionIsARow && thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            action->setVisible( thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionSelect_all")==0) {
+            action->setVisible( thereIsAnIndexSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
@@ -288,7 +285,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                     break;
                 }
             }
-            action->setVisible( everySelectionIsARow && thereIsARowSelection && everyRowIsAnOption );
+            action->setVisible( thereIsARowSelection && everyRowIsAnOption );
             menu.addAction(action);
         }
     }
@@ -647,6 +644,11 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
 
 void SolverOptionWidget::toggleCommentOption()
 {
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    for(QModelIndex index : indexSelection) {
+        ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+
     if ( isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()) )
         return;
 
@@ -681,6 +683,11 @@ void SolverOptionWidget::selectAnOption()
 
 void SolverOptionWidget::insertOption()
 {
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    for(QModelIndex index : indexSelection) {
+        ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+
     if  (isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()))
         return;
 
@@ -734,6 +741,11 @@ void SolverOptionWidget::insertOption()
 
 void SolverOptionWidget::insertComment()
 {
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    for(QModelIndex index : indexSelection) {
+        ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+
     if  (isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()))
         return;
 
@@ -777,6 +789,11 @@ void SolverOptionWidget::insertComment()
 
 void SolverOptionWidget::deleteOption()
 {
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    for(QModelIndex index : indexSelection) {
+        ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+
     if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
@@ -796,6 +813,11 @@ void SolverOptionWidget::deleteOption()
 
 void SolverOptionWidget::moveOptionUp()
 {
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    for(QModelIndex index : indexSelection) {
+        ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+
     if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
@@ -819,6 +841,11 @@ void SolverOptionWidget::moveOptionUp()
 
 void SolverOptionWidget::moveOptionDown()
 {
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    for(QModelIndex index : indexSelection) {
+        ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+
     if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
@@ -842,20 +869,6 @@ void SolverOptionWidget::moveOptionDown()
 
 void SolverOptionWidget::addActions()
 {
-    QAction* selectOption = mContextMenu.addAction("Select Option", [this]() { selectAnOption(); });
-    selectOption->setObjectName("actionSelect_option");
-    selectOption->setShortcut( tr("Ctrl+R") );
-    selectOption->setShortcutVisibleInContextMenu(true);
-    selectOption->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(selectOption);
-
-    QAction* selectAll = mContextMenu.addAction("Select All", ui->solverOptionTableView, &QTableView::selectAll);
-    selectAll->setObjectName("actionSelect_all");
-    selectAll->setShortcut( tr("Ctrl+A") );
-    selectAll->setShortcutVisibleInContextMenu(true);
-    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(selectAll);
-
     QAction* commentAction = mContextMenu.addAction("Toggle comment/option selection", [this]() { toggleCommentOption(); });
     commentAction->setObjectName("actionToggle_comment");
     commentAction->setShortcut( tr("Ctrl+T") );
@@ -897,6 +910,13 @@ void SolverOptionWidget::addActions()
     moveDownAction->setShortcutVisibleInContextMenu(true);
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(moveDownAction);
+
+    QAction* selectAll = mContextMenu.addAction("Select All", ui->solverOptionTableView, &QTableView::selectAll);
+    selectAll->setObjectName("actionSelect_all");
+    selectAll->setShortcut( tr("Ctrl+A") );
+    selectAll->setShortcutVisibleInContextMenu(true);
+    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(selectAll);
 
     QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
     showDefinitionAction->setObjectName("actionShowDefinition_option");
