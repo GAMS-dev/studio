@@ -344,7 +344,7 @@ void StudioSettings::loadUserSettings()
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-    QFont ff;
+    QFont ff("Monospace");
     ff.setStyleHint(QFont::TypeWriter);
     setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
