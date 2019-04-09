@@ -32,8 +32,6 @@
 #include "commandlineparser.h"
 #include "logger.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 
@@ -346,11 +344,13 @@ void StudioSettings::loadUserSettings()
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-    QFont ff("Monospace");
-    //ff.setFixedPitch(true);
-    ff.setStyleHint(QFont::TypeWriter);
-    qDebug() << "fixed pitch >> " << ff.fixedPitch();
-    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
+    // TODO(AF) fix font selection on macOS
+    QFont font("Monospace");
+    font.setStyleHint(QFont::TypeWriter);
+    setFontFamily(mUserSettings->value("fontFamily", font.defaultFamily()).toString());
+    //setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
+    //qDebug() << "font family >> " << font.family();
+    //qDebug() << "font default family >> " << font.defaultFamily();
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
