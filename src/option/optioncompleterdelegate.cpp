@@ -45,10 +45,16 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     } else  if (index.column()==SolverOptionTableModel::COLUMN_OPTION_VALUE) {
         QVariant key = index.model()->data( index.model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_KEY) );
         if (mOption->isValid(key.toString())) {
-            completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(key.toString())) );
+            if ( mOption->getOptionType(key.toString()) == optTypeBoolean)
+                completer->setModel(new QStringListModel( { "0", "1" } ));
+            else
+                completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(key.toString())) );
         } else {
             QString keyStr = mOption->getNameFromSynonym(key.toString());
-            completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(keyStr)) );
+            if ( mOption->getOptionType(key.toString()) == optTypeBoolean)
+                completer->setModel(new QStringListModel( { "0", "1" } ));
+            else
+                completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(keyStr)) );
         }
     }
     completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
