@@ -15,6 +15,7 @@ NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
     :QHeaderView(orientation, parent)
 {
     setAcceptDrops(true);
+    connect(this, &QHeaderView::sectionResized, [this]() { ddEnabled = false; });
 }
 
 NestedHeaderView::~NestedHeaderView()
@@ -181,11 +182,18 @@ void NestedHeaderView::mousePressEvent(QMouseEvent *event)
     QHeaderView::mousePressEvent(event);
 }
 
+void NestedHeaderView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        ddEnabled = true;
+    QHeaderView::mouseReleaseEvent(event);
+}
+
 void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
 {
     QHeaderView::mouseMoveEvent(event);
     mMousePos = event->pos();
-    if ((event->buttons() & Qt::LeftButton) && (mMousePos - mDragStartPosition).manhattanLength() > QApplication::startDragDistance()) {
+    if ((event->buttons() & Qt::LeftButton) && (mMousePos - mDragStartPosition).manhattanLength() > QApplication::startDragDistance() && ddEnabled) {
         // do not allow to drag a dummy row/column
         if (orientation() == Qt::Vertical && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyRow())
             return;

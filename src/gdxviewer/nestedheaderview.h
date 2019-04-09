@@ -25,6 +25,7 @@ public slots:
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
@@ -52,6 +53,7 @@ private:
     int dragOrientationEnd = -1;
 
     QVector<int> vhSectionWidth;
+    bool ddEnabled = true;
 };
 
 } // namespace gdxviewer
