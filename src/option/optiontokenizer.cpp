@@ -590,6 +590,10 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                      if (value.simplified().isEmpty() && iopttype == optTypeBoolean) {
                          iv = (ivalue == 0) ? "no" : "yes";
                          value = getValueFromStr(text, itype, ioptsubtype, n, iv);
+                         if (value.simplified().isEmpty()) {
+                             iv = (ivalue == 0) ? "false" : "true";
+                             value = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                         }
                      }
                      valueRead = true;
                      break;
@@ -882,6 +886,10 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    if (definedValue.simplified().isEmpty() && iopttype == optTypeBoolean) {
                        iv = (ivalue == 0) ? "no" : "yes";
                        definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                       if (definedValue.simplified().isEmpty()) {
+                           iv = (ivalue == 0) ? "false" : "true";
+                           definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                       }
                    }
                    valueRead = true;
                    break;
