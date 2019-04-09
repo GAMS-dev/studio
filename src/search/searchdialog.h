@@ -131,12 +131,7 @@ private:
         Clear = 2
     };
     void replaceAll();
-    void findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
-    // TODO(rogo): remove these:
-    void findInGroup();
-    void findInOpenFiles();
-    void findInAllFiles();
-    // end todo(rogo)
+    void findInFiles(QList<FileMeta *> fml = QList<FileMeta*>(), bool skipFilters = false);
     QList<FileMeta*> getFilesByScope();
     void updateMatchAmount(int current = 0);
     void updateFindNextLabel(QTextCursor matchSelection);

@@ -94,23 +94,7 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         insertHistory();
 
-        switch (ui->combo_scope->currentIndex()) {
-        case SearchScope::ThisFile:
-            if (mMain->recent()->editor())
-                findInFiles(QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
-            break;
-        case SearchScope::ThisGroup:
-            findInGroup();
-            break;
-        case SearchScope::OpenTabs:
-            findInOpenFiles();
-            break;
-        case SearchScope::AllFiles:
-            findInAllFiles();
-            break;
-        default:
-            break;
-        }
+        findInFiles();
 
         updateEditHighlighting();
     } else {
@@ -162,14 +146,11 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
-    for(FileMeta* fm : fml) {
-        if (!skipFilters) { // filter files by pattern and scope
-            if ((ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)
-                    || fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Log || fm->kind() == FileKind::Ref) {
-                continue;
-            }
-        }
+    if (fml.isEmpty() && skipFilters) fml = mMain->fileRepo()->fileMetas();
+    else if (fml.isEmpty()) fml = getFilesByScope();
 
+    for(FileMeta* fm : fml) {
+        // sort files by modified
         if (fm->isModified())
             modified << fm;
         else
@@ -191,31 +172,6 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
 
     mThread.start();
     emit startSearch();
-}
-
-void SearchDialog::findInAllFiles()
-{
-    QList<FileMeta*> files = mMain->fileRepo()->fileMetas();
-    findInFiles(files);
-}
-
-void SearchDialog::findInOpenFiles()
-{
-    QList<FileMeta*> files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
-    findInFiles(files);
-}
-
-void SearchDialog::findInGroup()
-{
-    ProjectFileNode* fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
-    ProjectGroupNode* group = (fc ? fc->parentNode() : nullptr);
-
-    QList<FileMeta*> files;
-    for (ProjectFileNode* fn : group->listFiles(true)) {
-        if (!files.contains(fn->file()))
-            files.append(fn->file());
-    }
-    findInFiles(files);
 }
 
 void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
@@ -242,7 +198,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope()
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
         if (mMain->recent()->editor())
-            findInFiles(QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
+            files.append(mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
         break;
     case SearchScope::ThisGroup:
         for (ProjectFileNode* fn : mMain->projectRepo()->findFileNode(mMain->recent()->editor())->parentNode()->listFiles(true)) {
@@ -312,7 +268,7 @@ void SearchDialog::replaceAll()
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files. " +
                        "This action cannot be undone. Are you sure?");
         QString detailedText;
-        msgBox.setInformativeText("Click \"Show Details...\" to see affected files.");
+        msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
         for (FileMeta* fm : fml)
             detailedText.append(fm->location()+"\n");
         msgBox.setDetailedText(detailedText);
