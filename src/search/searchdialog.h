@@ -130,12 +130,16 @@ private:
         NoResults = 1,
         Clear = 2
     };
-    void simpleReplaceAll();
-    void findInFiles(QMutex& mutex, QList<FileMeta *> fml, bool skipFilters = false);
-    void findInGroup(QMutex& mutex);
-    void findInOpenFiles(QMutex& mutex);
-    void findInAllFiles(QMutex& mutex);
+    void replaceAll();
+    void findInFiles(QList<FileMeta *> fml, bool skipFilters = false);
+    // TODO(rogo): remove these:
+    void findInGroup();
+    void findInOpenFiles();
+    void findInAllFiles();
+    // end todo(rogo)
+    QList<FileMeta*> getFilesByScope();
     void updateMatchAmount(int current = 0);
+    void updateFindNextLabel(QTextCursor matchSelection);
     void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
     void searchParameterChanged();
@@ -164,7 +168,6 @@ private:
     QThread mThread;
     bool mSearching = false;
     QMutex mMutex;
-    void updateFindNextLabel(QTextCursor matchSelection);
 };
 
 }

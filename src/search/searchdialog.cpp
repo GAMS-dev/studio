@@ -76,8 +76,7 @@ void SearchDialog::on_btn_Replace_clicked()
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
 {
-    // TODO: allow users to replace in more than the current file?
-    simpleReplaceAll();
+    replaceAll();
 }
 
 void SearchDialog::on_btn_FindAll_clicked()
@@ -98,16 +97,16 @@ void SearchDialog::on_btn_FindAll_clicked()
         switch (ui->combo_scope->currentIndex()) {
         case SearchScope::ThisFile:
             if (mMain->recent()->editor())
-                findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
+                findInFiles(QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
             break;
         case SearchScope::ThisGroup:
-            findInGroup(mMutex);
+            findInGroup();
             break;
         case SearchScope::OpenTabs:
-            findInOpenFiles(mMutex);
+            findInOpenFiles();
             break;
         case SearchScope::AllFiles:
-            findInAllFiles(mMutex);
+            findInAllFiles();
             break;
         default:
             break;
@@ -156,7 +155,7 @@ void SearchDialog::setSearchOngoing(bool searching)
 /// \param fml list of files to search
 /// \param skipFilters enable for result caching (find next/prev)
 ///
-void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFilters)
+void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
 {
     QList<FileMeta*> files;
     QList<FileMeta*> modified; // need to be treated differently
@@ -194,19 +193,19 @@ void SearchDialog::findInFiles(QMutex& mMutex, QList<FileMeta*> fml, bool skipFi
     emit startSearch();
 }
 
-void SearchDialog::findInAllFiles(QMutex& mMutex)
+void SearchDialog::findInAllFiles()
 {
     QList<FileMeta*> files = mMain->fileRepo()->fileMetas();
-    findInFiles(mMutex, files);
+    findInFiles(files);
 }
 
-void SearchDialog::findInOpenFiles(QMutex& mMutex)
+void SearchDialog::findInOpenFiles()
 {
     QList<FileMeta*> files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
-    findInFiles(mMutex, files);
+    findInFiles(files);
 }
 
-void SearchDialog::findInGroup(QMutex& mMutex)
+void SearchDialog::findInGroup()
 {
     ProjectFileNode* fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     ProjectGroupNode* group = (fc ? fc->parentNode() : nullptr);
@@ -216,7 +215,7 @@ void SearchDialog::findInGroup(QMutex& mMutex)
         if (!files.contains(fn->file()))
             files.append(fn->file());
     }
-    findInFiles(mMutex, files);
+    findInFiles(files);
 }
 
 void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
@@ -237,56 +236,147 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
     } while (!item.isNull());
 }
 
-void SearchDialog::simpleReplaceAll()
+QList<FileMeta*> SearchDialog::getFilesByScope()
 {
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    if (!edit || edit->isReadOnly()) return;
+    QList<FileMeta*> files;
+    switch (ui->combo_scope->currentIndex()) {
+    case SearchScope::ThisFile:
+        if (mMain->recent()->editor())
+            findInFiles(QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
+        break;
+    case SearchScope::ThisGroup:
+        for (ProjectFileNode* fn : mMain->projectRepo()->findFileNode(mMain->recent()->editor())->parentNode()->listFiles(true)) {
+            if (!files.contains(fn->file()))
+                files.append(fn->file());
+        }
+        break;
+    case SearchScope::OpenTabs:
+        files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+        break;
+    case SearchScope::AllFiles:
+        files = mMain->fileRepo()->fileMetas();
+        break;
+    default:
+        break;
+    }
+    return files;
+}
+
+void SearchDialog::replaceAll()
+{
+    QList<FileMeta*> fml = getFilesByScope();
+
+    QList<FileMeta*> files;
+    QList<FileMeta*> modified;
+    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
+    fileFilter.setPatternSyntax(QRegExp::Wildcard);
+
+    setSearchStatus(SearchStatus::Searching);
+    int matchedFiles = 0;
+    for (FileMeta* fm : fml) {
+
+        // replace only works with editable files
+        if (fm->isReadOnly()) {
+            fml.removeOne(fm);
+            continue;
+        }
+
+        // check if filtered by pattern (when not SearchScope == ThisFile)
+        if (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1) {
+            fml.removeOne(fm);
+            continue;
+        }
+
+        if (fm->isModified()) modified << fm;
+        else files << fm;
+
+        matchedFiles++;
+    }
 
     QString searchTerm = ui->combo_search->currentText();
-    if (searchTerm.isEmpty()) return;
-
-    QRegularExpression searchRegex = createRegex();
     QString replaceTerm = ui->txt_replace->text();
 
-    QList<QTextCursor> hits;
-    QTextCursor item;
-    QTextCursor lastItem;
-
-    QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
-
-    do {
-        item = edit->document()->find(searchRegex, lastItem, flags);
-        lastItem = item;
-
-        if (!item.isNull())
-            hits.append(item);
-
-    } while (!item.isNull());
-
     QMessageBox msgBox;
-    if (hits.length() == 1) {
-        msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->projectRepo()->findFileNode(mMain->recent()->editor())->location()
-                       + ". Are you sure?");
-    } else {
-        msgBox.setText("Replacing " + QString::number(hits.length()) + " occurrences of '" +
-                       searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mMain->projectRepo()->findFileNode(mMain->recent()->editor())->location()
-                       + ". Are you sure?");
-    }
-    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    int answer = msgBox.exec();
+    if (fml.length() == 0) {
+        msgBox.setText("Nothing to replace.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
+        return;
 
-    if (answer == QMessageBox::Ok) {
-        edit->textCursor().beginEditBlock();
-        for (QTextCursor tc: hits) {
-            tc.insertText(replaceTerm);
-        }
-        edit->textCursor().endEditBlock();
-        clearResults();
-        invalidateCache();
+    } else if (matchedFiles == 1) {
+        msgBox.setText("Are you sure you want to replace all occurences of '" +
+                       searchTerm + "' with '" + replaceTerm + "' in file "
+                       + fml.first()->name() + ". This action cannot be undone. Are you sure?");
+    } else if (matchedFiles >= 2) {
+        msgBox.setText("Are you sure you want to replace all occurences of '" +
+                       searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files. " +
+                       "This action cannot be undone. Are you sure?");
+        QString detailedText;
+        msgBox.setInformativeText("Click \"Show Details...\" to see affected files.");
+        for (FileMeta* fm : fml)
+            detailedText.append(fm->location()+"\n");
+        msgBox.setDetailedText(detailedText);
     }
+    QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
+    QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
+    QPushButton *showCandidates = msgBox.addButton("Show Candidates", QMessageBox::RejectRole);
+    msgBox.setDefaultButton(showCandidates);
+
+    msgBox.exec();
+    if (msgBox.clickedButton() == ok) {
+
+        for (FileMeta* fm : files) {
+            // replace on disk
+        }
+        for (FileMeta* fm : files) {
+            // replace in modified
+        }
+    } else if (msgBox.clickedButton() == showCandidates) {
+        findInFiles(fml);
+    } else if (msgBox.clickedButton() == cancel) {
+        // todo: cancel
+    }
+
+
+
+    clearResults();
+    invalidateCache();
 }
+
+
+// TODO: DEPRECATE WARNING, REMOVE THIS (rogo)
+//void SearchDialog::simpleReplaceAll()
+//{
+//    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+//    if (!edit || edit->isReadOnly()) return;
+
+//    QString searchTerm = ui->combo_search->currentText();
+//    if (searchTerm.isEmpty()) return;
+
+//    QString replaceTerm = ui->txt_replace->text();
+
+//QList<QTextCursor> hits;
+//QTextCursor item;
+//QTextCursor lastItem;
+
+//QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
+
+//do {
+//    item = fm->document()->find(searchRegex, lastItem, flags);
+//    lastItem = item;
+
+//    if (!item.isNull())
+//        hits.append(item);
+
+//} while (!item.isNull());
+
+//return hits;
+//    QMessageBox msgBox;
+//    if (hits.length() == 1) {
+//        msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "' in file "
+//                       + mMain->projectRepo()->findFileNode(mMain->recent()->editor())->location()
+//                       + ". Are you sure?");
+//    } else {
 
 void SearchDialog::updateSearchCache()
 {
@@ -294,7 +384,7 @@ void SearchDialog::updateSearchCache()
     mCachedResults->clear();
     mCachedResults->setSearchTerm(createRegex().pattern());
     mCachedResults->useRegex(regex());
-    findInFiles(mMutex, QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
+    findInFiles(QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
 
     mHasChanged = false;
 }
