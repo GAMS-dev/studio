@@ -317,20 +317,25 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         }
         case optTypeEnumStr : {
             QString range("");
-            if (optdef.valueList.size()>0) {
+            QList<OptionValue> valueList;
+            for(OptionValue value : optdef.valueList) {
+                if (!value.hidden)
+                    valueList.append( value );
+            }
+            if (valueList.size()>0) {
                 range.append("{");
                 int i = 0;
-                for(i =0; i<optdef.valueList.size()-1; i++) {
-                    range.append(optdef.valueList.at(i).value.toString());
-                    if (optdef.valueList.size()>=NUMBER_DISPLAY_ENUMSTR_RANGE) {
-                        if (i+1>=NUMBER_DISPLAY_ENUMSTR_RANGE && i<optdef.valueList.size()-2) {
+                for(i =0; i<valueList.size()-1; i++) {
+                    range.append(valueList.at(i).value.toString());
+                    if (valueList.size()>=NUMBER_DISPLAY_ENUMSTR_RANGE) {
+                        if (i+1>=NUMBER_DISPLAY_ENUMSTR_RANGE && i<valueList.size()-2) {
                            range.append(",..,");
                            break;
                         }
                     }
                     range.append(", ");
                 }
-                range.append( optdef.valueList.at(optdef.valueList.size()-1).value.toString() );
+                range.append( valueList.at(valueList.size()-1).value.toString() );
                 range.append("}");
             }
             columnData.append(range);
@@ -339,14 +344,19 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         }
         case optTypeEnumInt : {
             QString range("");
-            if (optdef.valueList.size()>0) {
+            QList<OptionValue> valueList;
+            for(OptionValue value : optdef.valueList) {
+                if (!value.hidden)
+                    valueList.append( value );
+            }
+            if (valueList.size()>0) {
                 range.append("{");
                 int i = 0;
-                for(i =0; i<optdef.valueList.size()-1; i++) {
-                    range.append(optdef.valueList.at(i).value.toString());
+                for(i =0; i<valueList.size()-1; i++) {
+                    range.append(valueList.at(i).value.toString());
                     range.append(",");
                 }
-                range.append( optdef.valueList.at(i).value.toString() );
+                range.append( valueList.at(i).value.toString() );
                 range.append("}");
             }
             columnData.append(range);
