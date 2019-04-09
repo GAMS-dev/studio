@@ -26,8 +26,6 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace support {
@@ -43,11 +41,8 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     ui->label->setText(gamsLicense());
 
     ui->solverTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    qDebug() << "SolverTableModel";
     auto dataModel = new SolverTableModel(this);
-    qDebug() << "QSortFilterProxyModel";
     auto sortModel = new QSortFilterProxyModel(this);
-    qDebug() << "setSourceModel";
     sortModel->setSourceModel(dataModel);
     ui->solverTable->setModel(sortModel);
 }
