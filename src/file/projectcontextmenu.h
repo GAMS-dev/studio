@@ -50,6 +50,7 @@ signals:
     void openLogFor(ProjectAbstractNode* node, bool createMissing);
     void renameGroup(ProjectGroupNode* group);
     void openFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void reOpenFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void selectAll();
     void expandAll();
     void collapseAll();
@@ -70,6 +71,8 @@ private:
     void onOpenFileLoc();
     void onOpenFile();
     void onOpenFileAsText();
+    void onReOpenSolverOptionFile();
+    void onReOpenSolverOptionFileAsText();
     void onOpenLog();
     void addNewFile(const QString &filePath);
 

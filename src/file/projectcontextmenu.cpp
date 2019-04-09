@@ -25,6 +25,7 @@
 #include "projectcontextmenu.h"
 #include "file.h"
 #include "commonpaths.h"
+#include "editors/viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -32,6 +33,8 @@ namespace studio {
 enum ContextAction {
     actOpen,
     actOpenAsText,
+    actReOpen,
+    actReOpenAsText,
     actSep1,
     actExplorer,
     actLogTab,
@@ -56,6 +59,9 @@ ProjectContextMenu::ProjectContextMenu()
 {
     mActions.insert(actOpen, addAction("&Open File", this, &ProjectContextMenu::onOpenFile));
     mActions.insert(actOpenAsText, addAction("&Open File As Text", this, &ProjectContextMenu::onOpenFileAsText));
+    mActions.insert(actReOpen, addAction("&Reopen File using Solver Option Editor", this, &ProjectContextMenu::onReOpenSolverOptionFile));
+    mActions.insert(actReOpenAsText, addAction("Reopen File as Text", this, &ProjectContextMenu::onReOpenSolverOptionFileAsText));
+
     mActions.insert(actSep1, addSeparator());
 
     mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
@@ -69,12 +75,11 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
 
-    mActions.insert(actSep4, addSeparator());
     mActions.insert(actAddNewGms, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
 
     QMenu* newSolverOptionMenu = addMenu( "Add new solver option file" );
     mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
-    int solverOptActionBaseIndex = actAddNewOpt*1000;
+    int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
@@ -87,7 +92,7 @@ ProjectContextMenu::ProjectContextMenu()
         connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername); });
 
         mAvailableSolvers << solvername;
-        mSolverOptionActions.insert(++solverOptActionBaseIndex, createSolverOption);
+        mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
     }
 
     mActions.insert(actSep5, addSeparator());
@@ -115,8 +120,19 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     ProjectFileNode *fileNode = mNodes.first()->toFile();
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
     bool isRunnable = false;
+    bool isOpen = fileNode && fileNode->file()->isOpen();
     bool isOpenable = fileNode && !fileNode->file()->isOpen();
-    bool isOpenableAsText = isOpenable && fileNode->file()->kind() == FileKind::Opt;
+    bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt;
+    bool isOpenableAsText = isOpenable && isOptFile;
+    bool isOpenWithSolverOptionEditor = false;
+    if (fileNode) {
+        for (QWidget *e : fileNode->file()->editors()) {
+            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
+            if (so) isOpenWithSolverOptionEditor = true;
+        }
+    }
+    bool isReOpenableWithSolverOptionEditor = isOpen && isOptFile && !isOpenWithSolverOptionEditor;
+    bool isReOpenableAsText = isOpen && isOptFile && isOpenWithSolverOptionEditor;
 
     QString file;
     if (fileNode && fileNode->assignedRunGroup()) {
@@ -130,6 +146,11 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     mActions[actOpen]->setVisible(isOpenable);
     mActions[actOpenAsText]->setEnabled(isOpenableAsText);
     mActions[actOpenAsText]->setVisible(isOpenableAsText);
+
+    mActions[actReOpen]->setEnabled(isReOpenableWithSolverOptionEditor);
+    mActions[actReOpen]->setVisible(isReOpenableWithSolverOptionEditor);
+    mActions[actReOpenAsText]->setEnabled(isReOpenableAsText);
+    mActions[actReOpenAsText]->setVisible(isReOpenableAsText);
 
     mActions[actLogTab]->setVisible(isGroup);
     mActions[actLogTab]->setEnabled(single);
@@ -329,6 +350,18 @@ void ProjectContextMenu::onOpenFileAsText()
 {
     ProjectFileNode *file = mNodes.first()->toFile();
     if (file) emit openFile(file, true, -1, true);
+}
+
+void ProjectContextMenu::onReOpenSolverOptionFile()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit reOpenFile(file, true, -1, false);
+}
+
+void ProjectContextMenu::onReOpenSolverOptionFileAsText()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit reOpenFile(file, true, -1, true);
 }
 
 void ProjectContextMenu::onOpenLog()

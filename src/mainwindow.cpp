@@ -161,6 +161,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->logTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::logTabContextMenuRequested);
 
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
+    connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this, &MainWindow::reOpenFileNode);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -2168,6 +2169,31 @@ void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib, b
 {
     if (!node) return;
     openFile(node->file(), focus, node->assignedRunGroup(), codecMib, forcedAsTextEditor);
+}
+
+void MainWindow::reOpenFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
+{
+    FileMeta* fc = node->file();
+    if (!fc) return;
+
+    int ret = QMessageBox::Discard;
+    if (fc->editors().size() == 1 && fc->isModified()) {
+        // only ask, if this is the last editor of this file
+        ret = showSaveChangesMsgBox(node->file()->name()+" has been modified.");
+    }
+
+    if (ret == QMessageBox::Save) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        fc->save();
+        closeFileEditors(fc->id());
+    } else if (ret == QMessageBox::Discard) {
+        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        closeFileEditors(fc->id());
+    } else if (ret == QMessageBox::Cancel) {
+        return;
+    }
+
+    openFileNode(node, focus, codecMib, forcedAsTextEditor);
 }
 
 void MainWindow::closeGroup(ProjectGroupNode* group)
