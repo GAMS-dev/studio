@@ -229,13 +229,8 @@ void SearchDialog::replaceAll()
 
     setSearchStatus(SearchStatus::Searching);
     int matchedFiles = 0;
-    for (FileMeta* fm : fml) {
 
-        // replace only works with editable files
-        if (fm->isReadOnly()) {
-            fml.removeOne(fm);
-            continue;
-        }
+    for (FileMeta* fm : fml) {
 
         // check if filtered by pattern (when not SearchScope == ThisFile)
         if (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1) {
@@ -269,8 +264,12 @@ void SearchDialog::replaceAll()
                        "This action cannot be undone. Are you sure?");
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
+
         for (FileMeta* fm : fml)
             detailedText.append(fm->location()+"\n");
+        detailedText.append("\nThese files do not necessarily have any matches in them. "
+                            "This is just a representation of the selected scope in the search window.");
+
         msgBox.setDetailedText(detailedText);
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
