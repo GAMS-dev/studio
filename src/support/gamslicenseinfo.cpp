@@ -21,6 +21,7 @@
 #include "locators/abstractsystemlogger.h"
 #include "locators/sysloglocator.h"
 #include "commonpaths.h"
+#include "exception.h"
 #include "common.h"
 #include "cfgmcc.h"
 #include "palmcc.h"
@@ -42,8 +43,10 @@ GamsLicenseInfo::GamsLicenseInfo()
     if (!cfgCreateD(&mCFG,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
-                    sizeof(msg)))
+                    sizeof(msg))) {
         logger->append(msg, LogMsgType::Error);
+        EXCEPT() << "Could not open About GAMS dialog. " << msg;
+    }
     if (cfgReadConfig(mCFG,
                       CommonPaths::configFile().toStdString().c_str())) {
         cfgGetMsg(mCFG, msg);
@@ -57,8 +60,10 @@ GamsLicenseInfo::GamsLicenseInfo()
     if (!palCreateD(&mPAL,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
-                    sizeof(msg)))
+                    sizeof(msg))) {
         logger->append(msg, LogMsgType::Error);
+        EXCEPT() << "Could not open About GAMS dialog. " << msg;
+    }
     int rc; // additional return code, not used here
     if (!palLicenseReadU(mPAL,
                          CommonPaths::licenseFile().toStdString().c_str(),
