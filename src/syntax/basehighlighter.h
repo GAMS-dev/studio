@@ -50,8 +50,9 @@ protected:
 private:
     void reformatCurrentBlock();
     void applyFormatChanges();
-    void setDirty(int fromBlock, int toBlock = -1);
-    void setClean(int fromBlock, int toBlock);
+    QTextBlock nextDirty();
+    void setDirty(QTextBlock fromBlock, QTextBlock toBlock);
+    void setClean(QTextBlock block);
     inline int dirtyIndex(int blockNr) {
         for (int i = 0; i < mDirtyBlocks.size(); ++i) {
             if (mDirtyBlocks.at(i).first > blockNr || mDirtyBlocks.at(i).second > blockNr)
@@ -69,21 +70,46 @@ private:
 
 private:
     class Interval : public QPair<int,int>  {
+        void set(const QTextBlock &block, QTextBlock &bVal, int &val) {
+            if (!block.isValid()) {
+                bVal = QTextBlock();
+                val = 0;
+            } else {
+                bVal = block;
+                val = block.blockNumber();
+            }
+        }
     public:
-        Interval(int first=0, int second=0) : QPair<int,int>(qMin(first, second), qMax(first, second)) {}
-        bool isEmpty() const { return first >= second; }
-        Interval subtractOverlap(const Interval &other);
-        bool extendOverlap(const Interval &other);
+        Interval(QTextBlock firstBlock = QTextBlock(), QTextBlock secondBlock = QTextBlock());
         virtual ~Interval() {}
+        void setFirst(QTextBlock block = QTextBlock()) { set(block, bFirst, first); }
+        void setSecond(QTextBlock block = QTextBlock()) { set(block, bSecond, second); }
+        bool isValid() const { return !bFirst.isValid() || !bSecond.isValid() || second < first; }
+        bool updateFromBlocks();
+        bool extendOverlap(const Interval &other);
+        Interval setSplit(QTextBlock &block);
+        QTextBlock bFirst;  // backup for changes
+        QTextBlock bSecond; // backup for changes
     };
+
+//    class BInterval : public QPair<QTextBlock, QTextBlock>  {
+//    public:
+//        BInterval(QTextBlock first = QTextBlock(), QTextBlock second = QTextBlock())
+//            : QPair<QTextBlock, QTextBlock>(qMin(first, second), qMax(first, second)) {}
+//        bool isEmpty() const { return !first.isValid() || !second.isValid() || second < first; }
+//        bool extendOverlap(const BInterval &other);
+//        int iFirst() const {return first.isValid() ? first.blockNumber() : -1;}
+//        int iSecond() const {return second.isValid() ? second.blockNumber() : -1;}
+//        BInterval subtractOverlap(const BInterval &other);
+//        virtual ~BInterval() {}
+//    };
 
     QTime mTime;
     bool mAborted = false;
     QTextDocument *mDoc = nullptr;
-    int mChangeLine = -1;
     int mBlockCount = 1;
     QTextBlock mCurrentBlock;
-    QVector<Interval> mDirtyBlocks;
+    QVector<Interval> mDirtyBlocks;             // disjoint regions of dirty blocks
     QVector<QTextCharFormat> mFormatChanges;
 
 };
