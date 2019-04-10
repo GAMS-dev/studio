@@ -254,15 +254,12 @@ int NestedHeaderView::toGlobalDim(int localDim, int orientation)
         return localDim + sym()->dim()-sym()->tvColDim();
     else
         return localDim;
-
 }
 
 void NestedHeaderView::dropEvent(QDropEvent *event)
 {
-    if (dragOrientationEnd == Qt::Horizontal)
-        dimIdxEnd += sym()->dim()-sym()->tvColDim();
-    if (dragOrientationStart == Qt::Horizontal)
-        dimIdxStart += sym()->dim()-sym()->tvColDim();
+    dimIdxStart = toGlobalDim(dimIdxStart, dragOrientationStart);
+    dimIdxEnd = toGlobalDim(dimIdxEnd, dragOrientationEnd);
 
     if (dimIdxStart == dimIdxEnd && dragOrientationStart == dragOrientationEnd) { //nothing happens
         event->accept();
@@ -270,9 +267,6 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
         dimIdxStart = -1;
         return;
     }
-
-    //if (orientation() == Qt::Horizontal && sym()->needDummyColumn())
-    //    dimIdxEnd--;
 
     int newColDim = sym()->tvColDim();
     if (dragOrientationStart != dragOrientationEnd) {
@@ -285,6 +279,7 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
 
     if (dimIdxStart < dimIdxEnd)
         dimIdxEnd--;
+
     tvDims.move(dimIdxStart, dimIdxEnd);
 
     sym()->setTableView(newColDim, tvDims);
@@ -338,7 +333,7 @@ int NestedHeaderView::pointToDropDimension(QPoint p)
 
     if ((sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && globalEnd == sym()->dim()) {
         if (globalStart+1 == globalEnd)
-            return dimIdxStart;
+            return 0;
         else
             return dim()-1;
     }
