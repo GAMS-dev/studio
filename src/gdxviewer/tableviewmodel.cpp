@@ -142,6 +142,8 @@ void TableViewModel::calcLabelsInRows()
     QVector<QSet<uint>> uelsInRows;
 
     if (mNeedDummyRow) {
+        mlabelsInRows.clear();
+        mlabelsInRows.resize(1);
         mlabelsInRows[0].append(this->headerData(0, Qt::Vertical).toString());
         return;
     }
