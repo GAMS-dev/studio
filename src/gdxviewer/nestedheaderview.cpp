@@ -329,11 +329,16 @@ int NestedHeaderView::pointToDimension(QPoint p)
 int NestedHeaderView::pointToDropDimension(QPoint p)
 {
     int globalStart = toGlobalDim(dimIdxStart, dragOrientationStart);
-    int globalEnd   = toGlobalDim(pointToDimension(p), dragOrientationEnd);
+    int localEnd = pointToDimension(p);
+    int globalEnd   = toGlobalDim(localEnd, dragOrientationEnd);
 
     if ((sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && globalEnd == sym()->dim()) {
-        if (globalStart+1 == globalEnd)
-            return 0;
+        if (globalStart+1 == globalEnd) {
+            if (dragOrientationStart == dragOrientationEnd)
+                return localEnd-1;
+            else
+                return 0;
+        }
         else
             return dim()-1;
     }
