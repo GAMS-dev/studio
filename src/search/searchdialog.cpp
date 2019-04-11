@@ -290,11 +290,11 @@ void SearchDialog::replaceAll()
 
         // replace using document() for modified files
         for (FileMeta* fm : modified)
-            replaceModified(fm, regex, replaceTerm, flags);
+            replaceOpened(fm, regex, replaceTerm, flags);
 
         // file-based replace for unmodified (and unopened) files
         for (FileMeta* fm : unmodified)
-            replaceUnmodified(fm, regex, replaceTerm);
+            replaceUnopened(fm, regex, replaceTerm);
 
     } else if (msgBox.clickedButton() == showCandidates) {
         findInFiles(fml);
@@ -306,7 +306,13 @@ void SearchDialog::replaceAll()
     invalidateCache();
 }
 
-void SearchDialog::replaceUnmodified(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
+///
+/// \brief SearchDialog::replaceUnopened replaces in files where there is currently no editor open
+/// \param fm file
+/// \param regex find
+/// \param replaceTerm replace with
+///
+void SearchDialog::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
 {
     QFile file(fm->location());
     QTextStream ts(&file);
@@ -324,7 +330,15 @@ void SearchDialog::replaceUnmodified(FileMeta* fm, QRegularExpression regex, QSt
     if (fm->document()) fm->reload();
 }
 
-void SearchDialog::replaceModified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
+///
+/// \brief SearchDialog::replaceOpened uses QTextDocument for replacing strings. this allows the user
+/// to undo changes made by replacing.
+/// \param fm filemeta
+/// \param regex find
+/// \param replaceTerm replace with
+/// \param flags options
+///
+void SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
 {
     QTextCursor item;
     QTextCursor lastItem;
