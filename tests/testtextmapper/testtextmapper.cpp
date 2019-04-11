@@ -189,7 +189,6 @@ void TestTextMapper::testUpdateLineCounting()
     mMapper->setVisibleTopLine(20000);
     mMapper->setVisibleTopLine(1.0);
     qDebug() << mMapper->lines(0,1);
-    QCOMPARE(mMapper->topChunk(), mMapper->chunkCount()-1);
 }
 
 void TestTextMapper::testPeekChunkLineNrs()
@@ -197,7 +196,7 @@ void TestTextMapper::testPeekChunkLineNrs()
     // ---------- check peek chunk line numbers
     mMapper->setVisibleTopLine(0.015);
     QVERIFY(mMapper->absTopLine() < 0);
-    mMapper->peekChunksForLineNrs(4);
+    mMapper->peekChunksForLineNrs();
     QCOMPARE(mMapper->absTopLine(), 717);
 }
 
@@ -206,10 +205,10 @@ void TestTextMapper::testLineNrEstimation()
     // ---------- check line number esimation
     mMapper->setVisibleTopLine(0.04);
     QCOMPARE(mMapper->absTopLine(), -1971);
-    mMapper->peekChunksForLineNrs(1);
+    mMapper->peekChunksForLineNrs();
     for (int i = 1; i < 11; ++i) {
         if (i==1) QCOMPARE(mMapper->absTopLine(), -1971);
-        mMapper->peekChunksForLineNrs(1);
+        mMapper->peekChunksForLineNrs();
     }
     QCOMPARE(mMapper->absTopLine(), 1967);
 }
@@ -227,7 +226,7 @@ void TestTextMapper::testPosAndAnchor()
     QCOMPARE(pos.x(), 10);
     QVERIFY(anc.y() < 0);
     QCOMPARE(anc.x(), 10);
-    mMapper->peekChunksForLineNrs(4);
+    mMapper->peekChunksForLineNrs();
     pos = mMapper->position();
     anc = mMapper->anchor();
     QCOMPARE(pos.y(), 397);
@@ -240,7 +239,10 @@ void TestTextMapper::testPosAndAnchor()
     QCOMPARE(anc.y(), 397);
     QCOMPARE(anc.x(), 10);
 
-    mMapper->peekChunksForLineNrs(16);
+    mMapper->peekChunksForLineNrs();
+    mMapper->peekChunksForLineNrs();
+    mMapper->peekChunksForLineNrs();
+    mMapper->peekChunksForLineNrs();
     mMapper->setVisibleTopLine(1620);
     mMapper->setPosRelative(0, 0);
     mMapper->setPosRelative(310, 1, QTextCursor::KeepAnchor);

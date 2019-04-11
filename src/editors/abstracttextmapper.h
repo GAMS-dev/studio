@@ -1,0 +1,189 @@
+#ifndef ABSTRACTTEXTMAPPER_H
+#define ABSTRACTTEXTMAPPER_H
+
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <QObject>
+#include <QTextCodec>
+#include <QVector>
+#include <QSet>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTimer>
+//#include "syntax.h"
+
+namespace gams {
+namespace studio {
+
+///
+/// class AbstractTextMapper
+/// Maps text data into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
+/// model on the fly.
+///
+class AbstractTextMapper: public QObject
+{
+    Q_OBJECT
+
+protected:
+
+    struct Chunk {  // a mapped part of a file
+        int nr = -1;
+        qint64 start = -1;
+        int size = 0;
+        uchar* map = nullptr;
+        QByteArray bArray;
+        QVector<int> lineBytes;
+        bool isValid() const { return start >= 0;}
+        int lineCount() const { return lineBytes.size()-1; }
+    };
+    struct LinePosition {
+        int chunkNr = 0;
+        qint64 absStart = 0;
+        int localLine = 0;
+        int lineCount = 0;
+    };
+    struct ChunkLines {
+        ChunkLines(int nr = 0, int lines = -1, int lineOffset = -1)
+            : chunkNr(nr), lineCount(lines), lineOffset(lineOffset) {}
+        inline bool isKnown() const { return lineCount >= 0; }
+        inline bool hasLineNrs() const { return lineCount >= 0 && lineOffset >= 0; }
+        int chunkNr = 0;
+        qint64 linesStartPos = 0;
+        int linesByteSize = 0;
+        int lineCount = -1;
+        int lineOffset = -1;
+    };
+    struct CursorPosition {
+        bool operator ==(const CursorPosition &other) const {
+            return chunkNr == other.chunkNr && absLinePos == other.absLinePos && charNr == other.charNr; }
+        bool operator <(const CursorPosition &other) const {
+            return absLinePos + charNr < other.absLinePos + other.charNr; }
+        int effectiveCharNr() const { return qMin(charNr, lineLen); }
+        int chunkNr = -1;
+        qint64 absLinePos = -1;
+        int charNr = -1;
+        int localLine = -1;
+        int localLinePos = -1;
+        int lineLen = -1;
+    };
+
+public:
+    ~AbstractTextMapper();
+
+    QTextCodec *codec() const;                                  // share FM + MM (FileMapper + MemoryMapper)
+    void setCodec(QTextCodec *codec);                           // share FM + MM
+
+    virtual bool isEmpty() const;
+    virtual void closeAndReset(bool initAnchor);                        // share FM + MM    // 2FF CC
+    virtual qint64 size() const = 0;                                    // share FM + MM
+    virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
+
+    virtual bool setMappingSizes(int bufferedLines = 60, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
+    virtual void setVisibleLineCount(int visibleLines);                 // share FM + MM
+    virtual int visibleLineCount() { return mVisibleLineCount; }        // share FM + MM
+    virtual bool setVisibleTopLine(double region);                      // share FM + MM
+    virtual bool setVisibleTopLine(int lineNr);                         // share FM + MM
+    virtual int moveVisibleTopLine(int lineDelta);                      // share FM + MM
+    virtual void scrollToPosition();                                    // share FM + MM
+
+    int topChunk() const; // TODO (JM) deprecated!                    CC
+
+    virtual int visibleOffset() const;                                  // share FM + MM
+    virtual int absTopLine() const;                                     // share FM + MM
+    virtual int lineCount() const;                                      // share FM + MM    // 2FF
+    virtual int knownLineNrs() const;                                   // share FM + MM
+
+    virtual QString lines(int localLineNrFrom, int lineCount) const;    // share FM + MM    //    CC?
+    virtual bool findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind);   // share FM + MM
+
+    virtual QString selectedText() const;                               // share FM + MM    //    CC?
+    virtual void copyToClipboard();                                     // share FM + MM
+
+    virtual void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // share FM + MM
+    virtual void selectAll();                                           // share FM + MM
+    virtual QPoint position(bool local = false) const;                  // share FM + MM
+    virtual QPoint anchor(bool local = false) const;                    // share FM + MM
+    virtual bool hasSelection() const;                                  // share FM + MM
+    virtual int selectionSize() const;                                  // share FM + MM
+
+signals:
+    void blockCountChanged(int newBlockCount);
+    void loadAmountChanged(int knownLineCount);
+    void selectionChanged();
+
+protected:
+    AbstractTextMapper(QObject *parent = nullptr);
+
+    inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
+    virtual Chunk *getChunk(int chunkNr) const = 0;
+    virtual Chunk *loadChunk(int chunkNr) const = 0;
+    void initDelimiter(Chunk *chunk) const;
+    virtual bool updateMaxTop();
+    virtual void deleteChunkIfUnused(Chunk *&chunk);
+    void updateLineOffsets(Chunk *chunk) const;
+    bool setTopOffset(qint64 byteNr);
+    bool setTopLine(int lineNr);
+    int findChunk(int lineNr);
+    void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC
+    QPoint convertPos(const CursorPosition &pos) const;
+    QPoint convertPosLocal(const CursorPosition &pos) const;
+    QString lines(Chunk *chunk, int startLine, int &lineCount) const; // CC
+    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const; // CC
+    bool isMapped(Chunk *chunk) { return mChunks.contains(chunk); }
+    QVector<Chunk*>& chunks() const { return mChunks; }
+    int maxChunks() const;
+    int chunkSize() const;
+    int maxLineWidth() const;
+    QVector<ChunkLines> chunkLineNrs() const;
+    int lastChunkWithLineNr() const;
+    void initTopLine();
+
+private:
+    void updateBytesPerLine(const ChunkLines &chunkLines) const;
+    Chunk *chunkForLine(int absLine, int *lineInChunk) const;   // CC
+    QString line(Chunk *chunk, int chunkLineNr) const;          // CC
+
+private:
+    mutable QByteArray mDelimiter;
+    mutable QVector<Chunk*> mChunks;
+    mutable QVector<ChunkLines> mChunkLineNrs;
+    mutable int mLastChunkWithLineNr = -1;
+    mutable double mBytesPerLine = 20.0;
+
+    LinePosition mTopLine;
+    LinePosition mMaxTopLine;
+    int mVisibleTopLine = 0;
+    int mBufferedLineCount = 0;
+    int mVisibleLineCount = 0;
+    CursorPosition mAnchor;
+    CursorPosition mPosition;
+    int mFindChunk = 0;
+
+    QTextCodec *mCodec = nullptr;
+    int mMaxChunks = 5;
+    int mChunkSize = 1024*1024;
+    int mMaxLineWidth = 1024;
+};
+
+} // namespace studio
+} // namespace gams
+
+#endif // ABSTRACTTEXTMAPPER_H

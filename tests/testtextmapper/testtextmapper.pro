@@ -27,10 +27,12 @@ INCLUDEPATH += $$SRCPATH \
 
 HEADERS += \
     testtextmapper.h \
-    $$SRCPATH/editors/textmapper.h
+    $$SRCPATH/editors/textmapper.h \
+    $$SRCPATH/editors/abstracttextmapper.h
 
 SOURCES += \
     testtextmapper.cpp \
     $$SRCPATH/editors/textmapper.cpp \
+    $$SRCPATH/editors/abstracttextmapper.cpp \
     $$SRCPATH/exception.cpp \
     $$SRCPATH/logger.cpp

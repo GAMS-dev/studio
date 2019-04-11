@@ -71,7 +71,6 @@ public slots:
 
 private slots:
     void editScrollChanged();
-    void peekMoreLines();
     void outerScrollAction(int action);
     void horizontalScrollAction(int action);
     void adjustOuterScrollAction();
@@ -115,9 +114,8 @@ private:
     bool mInit = true;
     int mHScrollValue = 0;
 
-    TextMapper mMapper;
+    TextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
-    QTimer mPeekTimer;
     QTextCodec *mCodec = nullptr;
     int mLineToFind = -1;
     int mTopBufferLines = 100;

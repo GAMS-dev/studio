@@ -149,6 +149,7 @@ SOURCES += \
     wplabel.cpp \
     gotodialog.cpp \
     editors/abstractedit.cpp \
+    editors/abstracttextmapper.cpp \
     editors/codeedit.cpp \
     editors/editorhelper.cpp \
     editors/processlogedit.cpp \
@@ -264,6 +265,7 @@ HEADERS += \
     wplabel.h \
     gotodialog.h \
     editors/abstractedit.h \
+    editors/abstracttextmapper.h \
     editors/codeedit.h \
     editors/editorhelper.h \
     editors/processlogedit.h \

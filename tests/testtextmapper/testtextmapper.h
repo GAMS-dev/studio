@@ -21,6 +21,7 @@
 #define TESTTEXTMAPPER_H
 
 #include "editors/textmapper.h"
+#include "editors/abstracttextmapper.h"
 #include <QtTest/QTest>
 
 using gams::studio::TextMapper;
