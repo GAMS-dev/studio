@@ -222,36 +222,32 @@ void SearchDialog::replaceAll()
 {
     QList<FileMeta*> fml = getFilesByScope();
 
-    QList<FileMeta*> unmodified;
-    QList<FileMeta*> modified;
+    QList<FileMeta*> opened;
+    QList<FileMeta*> unopened;
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
     setSearchStatus(SearchStatus::Searching);
     int matchedFiles = 0;
 
+    // sort anid filter FMs by editability, selected scope and open state
     for (FileMeta* fm : fml) {
-
-        if (fm->isReadOnly()) {
-            fml.removeOne(fm);
-            continue;
-        }
-
         // check if filtered by pattern (when not SearchScope == ThisFile)
-        if (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1) {
+        if (fm->isReadOnly() ||
+                (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)) {
             fml.removeOne(fm);
             continue;
         }
 
-        if (fm->isModified()) modified << fm;
-        else unmodified << fm;
+        if (fm->document()) opened << fm;
+        else unopened << fm;
 
         matchedFiles++;
     }
 
+    // user interaction
     QString searchTerm = ui->combo_search->currentText();
     QString replaceTerm = ui->txt_replace->text();
-
     QMessageBox msgBox;
     if (fml.length() == 0) {
         msgBox.setText("Nothing to replace.");
@@ -288,19 +284,16 @@ void SearchDialog::replaceAll()
         QRegularExpression regex = createRegex();
         QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
 
-        // replace using document() for modified files
-        for (FileMeta* fm : modified)
+        for (FileMeta* fm : opened)
             replaceOpened(fm, regex, replaceTerm, flags);
 
-        // file-based replace for unmodified (and unopened) files
-        for (FileMeta* fm : unmodified)
+        for (FileMeta* fm : unopened)
             replaceUnopened(fm, regex, replaceTerm);
 
-    } else if (msgBox.clickedButton() == showCandidates) {
+    } else if (msgBox.clickedButton() == showCandidates)
         findInFiles(fml);
-    } else if (msgBox.clickedButton() == cancel) {
+    else if (msgBox.clickedButton() == cancel)
         return;
-    }
 
     clearResults();
     invalidateCache();
@@ -355,8 +348,6 @@ void SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString
         if (!item.isNull()) item.insertText(replaceTerm);
     } while(!item.isNull());
     tc.endEditBlock();
-
-    if (fm->document()) fm->reload();
 }
 
 void SearchDialog::updateSearchCache()
