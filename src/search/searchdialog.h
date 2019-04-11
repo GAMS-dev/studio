@@ -143,8 +143,8 @@ private:
     void updateEditHighlighting();
     void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);
-    void replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
-    void replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
+    int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
+    int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
 private:
     Ui::SearchDialog *ui;

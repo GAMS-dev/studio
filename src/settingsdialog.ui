@@ -292,7 +292,7 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>When activated all occurences of the word that is currently under the text cursor will be highlighted. When deactivated a selection of the word is needed.</string>
+             <string>When activated all occurrences of the word that is currently under the text cursor will be highlighted. When deactivated a selection of the word is needed.</string>
             </property>
             <property name="text">
              <string>Highlight word under cursor without selection</string>

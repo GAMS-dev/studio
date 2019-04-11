@@ -239,8 +239,13 @@ void SearchDialog::replaceAll()
             continue;
         }
 
-        if (fm->document()) opened << fm;
-        else unopened << fm;
+        if (fm->document()) {
+            if (!opened.contains(fm))
+                opened << fm;
+        } else {
+            if (!unopened.contains(fm))
+                unopened << fm;
+        }
 
         matchedFiles++;
     }
@@ -256,11 +261,11 @@ void SearchDialog::replaceAll()
         return;
 
     } else if (matchedFiles == 1) {
-        msgBox.setText("Are you sure you want to replace all occurences of '" +
+        msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in file "
                        + fml.first()->name() + ". This action cannot be undone. Are you sure?");
     } else if (matchedFiles >= 2) {
-        msgBox.setText("Are you sure you want to replace all occurences of '" +
+        msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files. " +
                        "This action cannot be undone. Are you sure?");
         QString detailedText;
@@ -278,24 +283,32 @@ void SearchDialog::replaceAll()
     QPushButton *showCandidates = msgBox.addButton("Start Search", QMessageBox::RejectRole);
     msgBox.setDefaultButton(showCandidates);
 
+    int hits = 0;
     msgBox.exec();
     if (msgBox.clickedButton() == ok) {
 
         QRegularExpression regex = createRegex();
         QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
 
-        for (FileMeta* fm : opened)
-            replaceOpened(fm, regex, replaceTerm, flags);
+        for (FileMeta* fm : opened) {
+            hits += replaceOpened(fm, regex, replaceTerm, flags);
+        }
 
-        for (FileMeta* fm : unopened)
-            replaceUnopened(fm, regex, replaceTerm);
+        for (FileMeta* fm : unopened) {
+            hits += replaceUnopened(fm, regex, replaceTerm);
+        }
 
-    } else if (msgBox.clickedButton() == showCandidates)
+    } else if (msgBox.clickedButton() == showCandidates) {
         findInFiles(fml);
-    else if (msgBox.clickedButton() == cancel)
+        return;
+    } else if (msgBox.clickedButton() == cancel)
         return;
 
-    clearResults();
+    QMessageBox ansBox;
+    ansBox.setText(QString::number(hits) + " occurrences of '" + searchTerm + "' were replaced with '" + replaceTerm + "'.");
+    ansBox.addButton(QMessageBox::Ok);
+    ansBox.exec();
+
     invalidateCache();
 }
 
@@ -305,22 +318,23 @@ void SearchDialog::replaceAll()
 /// \param regex find
 /// \param replaceTerm replace with
 ///
-void SearchDialog::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
+int SearchDialog::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
 {
     QFile file(fm->location());
     QTextStream ts(&file);
     ts.setCodec(fm->codec());
+    int hits = 0;
 
     if (file.open(QIODevice::ReadWrite)) {
         QString content = ts.readAll();
+        hits = content.count(regex);
         content.replace(regex, replaceTerm);
 
         ts.seek(0);
         ts << content;
     }
     file.close();
-
-    if (fm->document()) fm->reload();
+    return hits;
 }
 
 ///
@@ -331,10 +345,11 @@ void SearchDialog::replaceUnopened(FileMeta* fm, QRegularExpression regex, QStri
 /// \param replaceTerm replace with
 /// \param flags options
 ///
-void SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
+int SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
 {
     QTextCursor item;
     QTextCursor lastItem;
+    int hits = 0;
 
     QTextCursor tc;
     if (fm->editors().size() > 0)
@@ -345,9 +360,14 @@ void SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString
         item = fm->document()->find(regex, lastItem, flags);
         lastItem = item;
 
-        if (!item.isNull()) item.insertText(replaceTerm);
+        if (!item.isNull()) {
+            item.insertText(replaceTerm);
+            hits++;
+        }
     } while(!item.isNull());
     tc.endEditBlock();
+
+    return hits;
 }
 
 void SearchDialog::updateSearchCache()
