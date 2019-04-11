@@ -496,13 +496,22 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
     QString key = item->key.simplified();
     QString value = item->value.toString();
     QString text = item->text;
-    QChar separator = (value.simplified().isEmpty() ? ' ' : mSeparatorChar);
+    QString separator = (mOption->isDefaultSeparatorDefined() ? mOption->getDefaultSeparator() : " ");
 
     if (item->disabled) {
-        if (key.startsWith("*") && key.mid(1).simplified().isEmpty())
-            return QString("");
-        if (!item->key.isEmpty() && !item->key.startsWith("*"))
-            return QString("* %1%2%3").arg(key).arg(separator).arg(value);
+        if (key.startsWith("*")) {
+            if (key.mid(1).simplified().isEmpty())
+                return QString("");
+            if (!key.isEmpty())
+                return QString("%1").arg(key);
+            else
+                return QString("%1%2%3").arg(key).arg(separator).arg(value);
+        } else {
+            if (!key.isEmpty())
+                return QString("* %1").arg(key);
+            else
+                return QString("* %1%2%3").arg(key).arg(separator).arg(value);
+        }
     }
 
     OptionDefinition optdef;
@@ -517,7 +526,6 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
                 value.prepend("\"");
             if (!value.endsWith("\""))
                 value.append("\"");
-//            qDebug() << "format value [" << value << "]";
         }
     }
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
@@ -688,10 +696,10 @@ void OptionTokenizer::on_EOLCommentChar_changed(const QChar ch)
     mEOLCommentChar = ch;
 }
 
-void OptionTokenizer::on_separatorChar_changed(const QChar ch)
-{
-    mSeparatorChar = ch;
-}
+//void OptionTokenizer::on_separatorChar_changed(const QChar ch)
+//{
+//    mSeparatorChar = ch;
+//}
 
 OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
 {

@@ -169,6 +169,9 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="tabPosition">
+          <enum>QTabWidget::North</enum>
+         </property>
         </widget>
        </item>
       </layout>

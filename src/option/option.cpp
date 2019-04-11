@@ -286,6 +286,26 @@ bool Option::isEOLCharDefined() const
     return !mEOLChars.isEmpty();
 }
 
+QString Option::getDefaultSeparator() const
+{
+    return mSeparator;
+}
+
+bool Option::isDefaultSeparatorDefined() const
+{
+    return !mSeparator.isEmpty();
+}
+
+QString Option::getDefaultStringquote() const
+{
+    return mStringquote;
+}
+
+bool Option::isDefaultStringquoteDefined() const
+{
+    return !mStringquote.isEmpty();
+}
+
 QStringList Option::getKeyList() const
 {
     QStringList keyList;
@@ -471,10 +491,15 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 
          char eolchars[GMS_SSSIZE];
          int numChars = optEOLChars(mOPTHandle, eolchars);
-         if (numChars>0)
-             mEOLChars = QString(eolchars);
-         else
-             mEOLChars = "";
+         mEOLChars = (numChars>0) ?  QString(eolchars) : "";
+
+         char separatorChars[GMS_SSSIZE];
+         char* c = optSeparator(mOPTHandle, separatorChars);
+         mSeparator = (c ? (c[0] ? separatorChars : " ") : " ");
+
+         char stringquoteChars[GMS_SSSIZE];
+         char* s = optStringQuote(mOPTHandle, stringquoteChars);
+         mStringquote = (s ? (s[0] ? stringquoteChars : "") : "");
 
          for (int i = 1; i <= optCount(mOPTHandle); ++i) {
 

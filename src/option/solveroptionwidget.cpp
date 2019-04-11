@@ -166,18 +166,21 @@ bool SolverOptionWidget::init()
         return false;
     }
     else {
-        SolverOptionSetting* settingEdit = new SolverOptionSetting(mOptionTokenizer->getOption()->getEOLChars(), this);
+        SolverOptionSetting* settingEdit = new SolverOptionSetting(mOptionTokenizer->getOption()->getEOLChars(),
+                                                                   mOptionTokenizer->getOption()->getDefaultSeparator(),
+                                                                   mOptionTokenizer->getOption()->getDefaultStringquote(),
+                                                                   this);
         mOptionTokenizer->on_EOLCommentChar_changed( settingEdit->getDefaultEOLCharacter() );
         ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
 
         connect(settingEdit, &SolverOptionSetting::EOLCharChanged, [=](QChar ch){
                 mOptionTokenizer->on_EOLCommentChar_changed(ch);
-                setModified(true);
+//                setModified(true);
         });
-        connect(settingEdit, &SolverOptionSetting::separatorCharChanged, [=](QChar ch){
-                mOptionTokenizer->on_separatorChar_changed(ch);
-                setModified(true);
-        });
+//        connect(settingEdit, &SolverOptionSetting::separatorCharChanged, [=](QChar ch){
+//                mOptionTokenizer->on_separatorChar_changed(ch);
+//                setModified(true);
+//        });
 
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectAndToggleRow);
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);

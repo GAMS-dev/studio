@@ -148,6 +148,12 @@ public:
     QString getEOLChars() const;
     bool isEOLCharDefined() const;
 
+    QString getDefaultSeparator() const;
+    bool isDefaultSeparatorDefined() const;
+
+    QString getDefaultStringquote() const;
+    bool isDefaultStringquoteDefined() const;
+
     QStringList getKeyList() const;
     QStringList getValidNonDeprecatedKeyList() const;
     QStringList getKeyAndSynonymList() const;
@@ -183,6 +189,9 @@ private:
     QString mOptionDefinitionFile;
 
     QString mEOLChars;
+    QString mSeparator;
+    QString mStringquote;
+
     QMap<QString, OptionDefinition> mOption;
     QStringList mDeprecatedSynonym;
     QMap<QString, QString> mSynonymMap;

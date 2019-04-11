@@ -19,17 +19,23 @@
  */
 #include "solveroptionsetting.h"
 #include "ui_solveroptionsetting.h"
+#include "reference/referencetabstyle.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionSetting::SolverOptionSetting(QString eolchars, QWidget *parent) :
+SolverOptionSetting::SolverOptionSetting(QString eolchars, QString separator, QString stringquote, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SolverOptionSetting),
-    mEOLChars(eolchars)
+    mEOLChars(eolchars),
+    mDefaultSeparator(separator),
+    mDefaultStringQute(stringquote)
 {
     ui->setupUi(this);
+
+    ui->tabWidget->tabBar()->setStyle( new reference::ReferenceTabStyle );
+
     ui->eolCommentWidget->setVisible(!eolchars.isEmpty());
     ui->addEOLCommentCheckBox->setVisible(!eolchars.isEmpty());
     if (!eolchars.isEmpty()) {
@@ -39,11 +45,12 @@ SolverOptionSetting::SolverOptionSetting(QString eolchars, QWidget *parent) :
     } else {
         mDefaultEOLChar = QChar();
     }
-    mDefaultSeparatorChar = ' ';
+    ui->defaultSeparatorLineEdit->setText(mDefaultSeparator);
+    ui->defaultStringquoteLineEdit->setText(mDefaultStringQute);
     connect(ui->eolCommentCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
         [=](int index){ emit EOLCharChanged(ui->eolCommentCharComboBox->itemText(index).at(0)); });
-    connect(ui->separatorCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-        [=](int index){ emit separatorCharChanged(ui->separatorCharComboBox->itemText(index).at(0)); });
+//    connect(ui->separatorCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+//        [=](int index){ emit separatorCharChanged(ui->separatorCharComboBox->itemText(index).at(0)); });
 }
 
 SolverOptionSetting::~SolverOptionSetting()
@@ -51,10 +58,10 @@ SolverOptionSetting::~SolverOptionSetting()
     delete ui;
 }
 
-QChar SolverOptionSetting::getDefaultSeparatorCharacter() const
-{
-    return mDefaultSeparatorChar;
-}
+//QChar SolverOptionSetting::getDefaultSeparatorCharacter() const
+//{
+//    return mDefaultSeparator;
+//}
 
 QChar SolverOptionSetting::getDefaultEOLCharacter() const
 {
