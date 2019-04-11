@@ -128,8 +128,10 @@ private:
     enum SearchStatus {
         Searching = 0,
         NoResults = 1,
-        Clear = 2
+        Clear = 2,
+        Replacing = 4
     };
+
     void replaceAll();
     void findInFiles(QList<FileMeta *> fml = QList<FileMeta*>(), bool skipFilters = false);
     QList<FileMeta*> getFilesByScope();

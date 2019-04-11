@@ -227,7 +227,6 @@ void SearchDialog::replaceAll()
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
-    setSearchStatus(SearchStatus::Searching);
     int matchedFiles = 0;
 
     // sort anid filter FMs by editability, selected scope and open state
@@ -255,7 +254,7 @@ void SearchDialog::replaceAll()
     QString replaceTerm = ui->txt_replace->text();
     QMessageBox msgBox;
     if (fml.length() == 0) {
-        msgBox.setText("Nothing to replace.");
+        msgBox.setText("No files matching criteria.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
         return;
@@ -280,12 +279,15 @@ void SearchDialog::replaceAll()
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
     QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
-    QPushButton *showCandidates = msgBox.addButton("Start Search", QMessageBox::RejectRole);
+    QPushButton *showCandidates = msgBox.addButton("Search", QMessageBox::RejectRole);
     msgBox.setDefaultButton(showCandidates);
 
     int hits = 0;
     msgBox.exec();
     if (msgBox.clickedButton() == ok) {
+
+        setSearchStatus(SearchStatus::Replacing);
+        QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
 
         QRegularExpression regex = createRegex();
         QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
@@ -298,11 +300,13 @@ void SearchDialog::replaceAll()
             hits += replaceUnopened(fm, regex, replaceTerm);
         }
 
+        setSearchStatus(SearchStatus::Clear);
     } else if (msgBox.clickedButton() == showCandidates) {
         findInFiles(fml);
         return;
-    } else if (msgBox.clickedButton() == cancel)
+    } else if (msgBox.clickedButton() == cancel) {
         return;
+    }
 
     QMessageBox ansBox;
     ansBox.setText(QString::number(hits) + " occurrences of '" + searchTerm + "' were replaced with '" + replaceTerm + "'.");
@@ -667,6 +671,11 @@ void SearchDialog::setSearchStatus(SearchStatus status)
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("");
         ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
+        break;
+    case SearchStatus::Replacing:
+        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
+        ui->lbl_nrResults->setText("Replacing...");
+        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     }
 }
