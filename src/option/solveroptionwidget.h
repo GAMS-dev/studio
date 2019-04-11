@@ -87,8 +87,6 @@ public slots:
     void on_toggleRowHeader(int logicalIndex);
 
     void on_compactViewCheckBox_stateChanged(int checkState);
-    void on_saveButton_clicked(bool checked = false);
-    void on_saveAsButton_clicked(bool checked = false);
     void on_openAsTextButton_clicked(bool checked = false);
 
    void on_addCommentAboveChanged(int checkState);

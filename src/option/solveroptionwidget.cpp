@@ -522,24 +522,6 @@ void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
     emit compactViewChanged(isViewCompact);
 }
 
-void SolverOptionWidget::on_saveButton_clicked(bool checked)
-{
-    Q_UNUSED(checked);
-    MainWindow* main = getMainWindow();
-    if (!main) return;
-
-    emit main->saved();
-}
-
-void SolverOptionWidget::on_saveAsButton_clicked(bool checked)
-{
-    Q_UNUSED(checked);
-    MainWindow* main = getMainWindow();
-    if (!main) return;
-
-    emit main->savedAs();
-}
-
 void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
 {
     Q_UNUSED(checked);
@@ -929,8 +911,6 @@ void SolverOptionWidget::addActions()
 
 void SolverOptionWidget::updateEditActions(bool modified)
 {
-    ui->saveButton->setEnabled(modified);
-    ui->saveAsButton->setEnabled(true);
     ui->openAsTextButton->setEnabled(!modified);
 }
 
