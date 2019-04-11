@@ -279,7 +279,7 @@ void SearchDialog::replaceAll()
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
     QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
-    QPushButton *showCandidates = msgBox.addButton("Show Candidates", QMessageBox::RejectRole);
+    QPushButton *showCandidates = msgBox.addButton("Start Search", QMessageBox::RejectRole);
     msgBox.setDefaultButton(showCandidates);
 
     msgBox.exec();
@@ -294,7 +294,7 @@ void SearchDialog::replaceAll()
 
         // file-based replace for unmodified (and unopened) files
         for (FileMeta* fm : unmodified)
-            replaceUnmodified(fm, regex, replaceTerm, flags);
+            replaceUnmodified(fm, regex, replaceTerm);
 
     } else if (msgBox.clickedButton() == showCandidates) {
         findInFiles(fml);
@@ -306,7 +306,7 @@ void SearchDialog::replaceAll()
     invalidateCache();
 }
 
-void SearchDialog::replaceUnmodified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
+void SearchDialog::replaceUnmodified(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
 {
     QFile file(fm->location());
     QTextStream ts(&file);

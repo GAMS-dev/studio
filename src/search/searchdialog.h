@@ -144,7 +144,7 @@ private:
     void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);
     void replaceModified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
-    void replaceUnmodified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
+    void replaceUnmodified(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
 private:
     Ui::SearchDialog *ui;
