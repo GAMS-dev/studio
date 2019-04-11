@@ -88,8 +88,7 @@ enum class FileKind {
     Lxi,
     Log,
     Gdx,
-    Ref,
-    Dir
+    Ref
 };
 Q_ENUM_NS(FileKind)
 

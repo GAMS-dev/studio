@@ -141,7 +141,7 @@ void SearchDialog::setSearchOngoing(bool searching)
 ///
 void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
 {
-    QList<FileMeta*> files;
+    QList<FileMeta*> umodified;
     QList<FileMeta*> modified; // need to be treated differently
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
@@ -154,7 +154,7 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
         if (fm->isModified())
             modified << fm;
         else
-            files << fm;
+            umodified << fm;
     }
 
     // non-parallel first
@@ -162,7 +162,7 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
         findInDoc(createRegex(), fm);
 
     // search file thread
-    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), files, mCachedResults);
+    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), umodified, mCachedResults);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -222,7 +222,7 @@ void SearchDialog::replaceAll()
 {
     QList<FileMeta*> fml = getFilesByScope();
 
-    QList<FileMeta*> files;
+    QList<FileMeta*> unmodified;
     QList<FileMeta*> modified;
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
     fileFilter.setPatternSyntax(QRegExp::Wildcard);
@@ -232,6 +232,11 @@ void SearchDialog::replaceAll()
 
     for (FileMeta* fm : fml) {
 
+        if (fm->isReadOnly()) {
+            fml.removeOne(fm);
+            continue;
+        }
+
         // check if filtered by pattern (when not SearchScope == ThisFile)
         if (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1) {
             fml.removeOne(fm);
@@ -239,7 +244,7 @@ void SearchDialog::replaceAll()
         }
 
         if (fm->isModified()) modified << fm;
-        else files << fm;
+        else unmodified << fm;
 
         matchedFiles++;
     }
@@ -280,58 +285,65 @@ void SearchDialog::replaceAll()
     msgBox.exec();
     if (msgBox.clickedButton() == ok) {
 
-        for (FileMeta* fm : files) {
-            // replace on disk
-        }
-        for (FileMeta* fm : files) {
-            // replace in modified
-        }
+        QRegularExpression regex = createRegex();
+        QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
+
+        // replace using document() for modified files
+        for (FileMeta* fm : modified)
+            replaceModified(fm, regex, replaceTerm, flags);
+
+        // file-based replace for unmodified (and unopened) files
+        for (FileMeta* fm : unmodified)
+            replaceUnmodified(fm, regex, replaceTerm, flags);
+
     } else if (msgBox.clickedButton() == showCandidates) {
         findInFiles(fml);
     } else if (msgBox.clickedButton() == cancel) {
-        // todo: cancel
+        return;
     }
-
-
 
     clearResults();
     invalidateCache();
 }
 
+void SearchDialog::replaceUnmodified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
+{
+    QFile file(fm->location());
+    QTextStream ts(&file);
+    ts.setCodec(fm->codec());
 
-// TODO: DEPRECATE WARNING, REMOVE THIS (rogo)
-//void SearchDialog::simpleReplaceAll()
-//{
-//    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-//    if (!edit || edit->isReadOnly()) return;
+    if (file.open(QIODevice::ReadWrite)) {
+        QString content = ts.readAll();
+        content.replace(regex, replaceTerm);
 
-//    QString searchTerm = ui->combo_search->currentText();
-//    if (searchTerm.isEmpty()) return;
+        ts.seek(0);
+        ts << content;
+    }
+    file.close();
 
-//    QString replaceTerm = ui->txt_replace->text();
+    if (fm->document()) fm->reload();
+}
 
-//QList<QTextCursor> hits;
-//QTextCursor item;
-//QTextCursor lastItem;
+void SearchDialog::replaceModified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
+{
+    QTextCursor item;
+    QTextCursor lastItem;
 
-//QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
+    QTextCursor tc;
+    if (fm->editors().size() > 0)
+        tc = ViewHelper::toAbstractEdit(fm->editors().first())->textCursor();
 
-//do {
-//    item = fm->document()->find(searchRegex, lastItem, flags);
-//    lastItem = item;
+    tc.beginEditBlock();
+    do {
+        item = fm->document()->find(regex, lastItem, flags);
+        lastItem = item;
 
-//    if (!item.isNull())
-//        hits.append(item);
+        if (!item.isNull()) item.insertText(replaceTerm);
+    } while(!item.isNull());
+    tc.endEditBlock();
 
-//} while (!item.isNull());
-
-//return hits;
-//    QMessageBox msgBox;
-//    if (hits.length() == 1) {
-//        msgBox.setText("Replacing 1 occurrence of '" + searchTerm + "' with '" + replaceTerm + "' in file "
-//                       + mMain->projectRepo()->findFileNode(mMain->recent()->editor())->location()
-//                       + ". Are you sure?");
-//    } else {
+    if (fm->document()) fm->reload();
+}
 
 void SearchDialog::updateSearchCache()
 {
@@ -781,6 +793,7 @@ QFlags<QTextDocument::FindFlag> SearchDialog::setFlags(SearchDirection direction
     QFlags<QTextDocument::FindFlag> flags;
     flags.setFlag(QTextDocument::FindBackward, direction == SearchDirection::Backward);
     flags.setFlag(QTextDocument::FindCaseSensitively, caseSens());
+    flags.setFlag(QTextDocument::FindWholeWords, wholeWords());
 
     return flags;
 }

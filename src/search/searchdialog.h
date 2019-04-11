@@ -143,19 +143,18 @@ private:
     void updateEditHighlighting();
     void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);
+    void replaceModified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
+    void replaceUnmodified(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
 
 private:
     Ui::SearchDialog *ui;
     MainWindow *mMain;
-    QTextCursor mSelection;       // selected with find
-    QTextCursor mLastSelection;   // last selection, as starting point for find next
     ResultsView *mResultsView = nullptr;
     SearchResultList *mCachedResults = nullptr;
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = true;
     bool mFirstReturn = false;
     TextView *mSplitSearchView = nullptr;
-    QRegularExpression mSplitSearchRegEx;
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;
     bool mShowResults = true;
