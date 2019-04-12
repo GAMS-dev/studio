@@ -37,7 +37,7 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     setViewportMargins(0,0,0,0);
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     setFocusPolicy(Qt::NoFocus);
-    mMapper = new TextMapper();
+    mMapper = new FileMapper();
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
     QVBoxLayout *lay = new QVBoxLayout(this);
@@ -55,9 +55,9 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     connect(mEdit, &TextViewEdit::searchFindNextPressed, this, &TextView::searchFindNextPressed);
     connect(mEdit, &TextViewEdit::searchFindPrevPressed, this, &TextView::searchFindPrevPressed);
-    connect(mMapper, &TextMapper::loadAmountChanged, this, &TextView::loadAmountChanged);
-    connect(mMapper, &TextMapper::blockCountChanged, this, &TextView::blockCountChanged);
-    connect(mMapper, &TextMapper::selectionChanged, this, &TextView::selectionChanged);
+    connect(mMapper, &FileMapper::loadAmountChanged, this, &TextView::loadAmountChanged);
+    connect(mMapper, &FileMapper::blockCountChanged, this, &TextView::blockCountChanged);
+    connect(mMapper, &FileMapper::selectionChanged, this, &TextView::selectionChanged);
 
 /* --- scrollbar controlling qt-methods
     QObject::connect(control, SIGNAL(documentSizeChanged(QSizeF)), q, SLOT(_q_adjustScrollbars()));

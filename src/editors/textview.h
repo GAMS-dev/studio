@@ -20,7 +20,7 @@
 #ifndef TEXTVIEW_H
 #define TEXTVIEW_H
 
-#include "textmapper.h"
+#include "filemapper.h"
 #include "syntax/textmarkrepo.h"
 #include "editors/abstractedit.h"
 #include <QAbstractScrollArea>
@@ -114,7 +114,7 @@ private:
     bool mInit = true;
     int mHScrollValue = 0;
 
-    TextMapper *mMapper = nullptr;
+    FileMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
     QTextCodec *mCodec = nullptr;
     int mLineToFind = -1;

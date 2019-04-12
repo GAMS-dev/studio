@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "textmapper.h"
+#include "filemapper.h"
 #include "exception.h"
 #include "logger.h"
 #include <QFile>
@@ -28,22 +28,22 @@
 namespace gams {
 namespace studio {
 
-TextMapper::TextMapper(QObject *parent): AbstractTextMapper(parent)
+FileMapper::FileMapper(QObject *parent): AbstractTextMapper(parent)
 {
     mTimer.setInterval(200);
     mTimer.setSingleShot(true);
-    connect(&mTimer, &QTimer::timeout, this, &TextMapper::closeFile);
+    connect(&mTimer, &QTimer::timeout, this, &FileMapper::closeFile);
     mPeekTimer.setSingleShot(true);
-    connect(&mPeekTimer, &QTimer::timeout, this, &TextMapper::peekChunksForLineNrs);
+    connect(&mPeekTimer, &QTimer::timeout, this, &FileMapper::peekChunksForLineNrs);
     closeAndReset(true);
 }
 
-TextMapper::~TextMapper()
+FileMapper::~FileMapper()
 {
     closeFile();
 }
 
-bool TextMapper::openFile(const QString &fileName, bool initAnchor)
+bool FileMapper::openFile(const QString &fileName, bool initAnchor)
 {
     if (!fileName.isEmpty()) {
         closeAndReset(initAnchor);
@@ -70,7 +70,7 @@ bool TextMapper::openFile(const QString &fileName, bool initAnchor)
     return false;
 }
 
-bool TextMapper::reopenFile()
+bool FileMapper::reopenFile()
 {
     QString fileName = mFile.fileName();
     if (!size() && !fileName.isEmpty()) {
@@ -79,7 +79,7 @@ bool TextMapper::reopenFile()
     return size();
 }
 
-void TextMapper::closeAndReset(bool initAnchor)
+void FileMapper::closeAndReset(bool initAnchor)
 {
     for (Chunk *block: chunks()) {
         mFile.unmap(block->map);
@@ -90,7 +90,7 @@ void TextMapper::closeAndReset(bool initAnchor)
 }
 
 
-TextMapper::Chunk *TextMapper::getChunk(int chunkNr) const
+FileMapper::Chunk *FileMapper::getChunk(int chunkNr) const
 {
     int foundIndex = -1;
     for (int i = chunks().size()-1; i >= 0; --i) {
@@ -116,7 +116,7 @@ TextMapper::Chunk *TextMapper::getChunk(int chunkNr) const
 }
 
 
-TextMapper::Chunk* TextMapper::loadChunk(int chunkNr) const
+FileMapper::Chunk* FileMapper::loadChunk(int chunkNr) const
 {
     qint64 chunkStart = qint64(chunkNr) * chunkSize();
     if (chunkStart < 0 || chunkStart >= size()) return nullptr;
@@ -172,14 +172,14 @@ TextMapper::Chunk* TextMapper::loadChunk(int chunkNr) const
     return res;
 }
 
-void TextMapper::closeFile()
+void FileMapper::closeFile()
 {
     QMutexLocker locker(&mMutex);
     mTimer.stop();
     if (mFile.isOpen()) mFile.close();
 }
 
-int TextMapper::lineCount() const
+int FileMapper::lineCount() const
 {
     int res = 0;
     try {
@@ -190,7 +190,7 @@ int TextMapper::lineCount() const
     return int(res);
 }
 
-void TextMapper::deleteChunkIfUnused(Chunk *&chunk)
+void FileMapper::deleteChunkIfUnused(Chunk *&chunk)
 {
     if (!isMapped(chunk)) {
         mFile.unmap(chunk->map);
@@ -199,7 +199,7 @@ void TextMapper::deleteChunkIfUnused(Chunk *&chunk)
     }
 }
 
-void TextMapper::peekChunksForLineNrs()
+void FileMapper::peekChunksForLineNrs()
 {
     // peek and keep timer alive if not done
     int known = lastChunkWithLineNr();

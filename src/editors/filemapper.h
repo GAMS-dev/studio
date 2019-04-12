@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TEXTMAPPER_H
-#define TEXTMAPPER_H
+#ifndef FILEMAPPER_H
+#define FILEMAPPER_H
 
 #include <QTextCodec>
 #include <QVector>
@@ -35,16 +35,16 @@ namespace gams {
 namespace studio {
 
 ///
-/// class TextMapper
+/// class FileMapper
 /// Opens a file into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
 /// model on the fly.
 ///
-class TextMapper: public AbstractTextMapper
+class FileMapper: public AbstractTextMapper
 {
     Q_OBJECT
 public:
-    TextMapper(QObject *parent = nullptr);
-    ~TextMapper() override;
+    FileMapper(QObject *parent = nullptr);
+    ~FileMapper() override;
 
     bool openFile(const QString &fileName, bool initAnchor);
     bool reopenFile();
@@ -86,4 +86,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // TEXTMAPPER_H
+#endif // FILEMAPPER_H

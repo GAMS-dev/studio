@@ -154,7 +154,6 @@ SOURCES += \
     editors/editorhelper.cpp \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
-    editors/textmapper.cpp \
     editors/textview.cpp \
     editors/textviewedit.cpp \
     editors/viewhelper.cpp \
@@ -168,7 +167,9 @@ SOURCES += \
     support/solvertablemodel.cpp        \
     maintabcontextmenu.cpp \
     logtabcontextmenu.cpp \
-    search/searchworker.cpp
+    search/searchworker.cpp \
+    editors/filemapper.cpp \
+    editors/memorymapper.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -270,7 +271,6 @@ HEADERS += \
     editors/editorhelper.h \
     editors/processlogedit.h \
     editors/systemlogedit.h \
-    editors/textmapper.h \
     editors/textview.h \
     editors/textviewedit.h \
     editors/viewhelper.h \
@@ -285,7 +285,9 @@ HEADERS += \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
     logtabcontextmenu.h \
-    search/searchworker.h
+    search/searchworker.h \
+    editors/filemapper.h \
+    editors/memorymapper.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
