@@ -20,8 +20,7 @@ void MemoryMapper::closeAndReset(bool initAnchor)
 
 bool MemoryMapper::setMappingSizes(int bufferedLines, int chunkSizeInBytes, int chunkOverlap)
 {
-    AbstractTextMapper::setMappingSizes(bufferedLines, chunkSizeInBytes, chunkOverlap);
-
+    return AbstractTextMapper::setMappingSizes(bufferedLines, chunkSizeInBytes, chunkOverlap);
 }
 
 AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const
