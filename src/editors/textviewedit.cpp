@@ -29,7 +29,7 @@
 namespace gams {
 namespace studio {
 
-TextViewEdit::TextViewEdit(FileMapper &mapper, QWidget *parent)
+TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings())
 {
     setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);

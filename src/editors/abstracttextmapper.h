@@ -93,6 +93,7 @@ public:
 
     virtual bool isEmpty() const;
     virtual void closeAndReset(bool initAnchor);                        // share FM + MM    // 2FF CC
+    virtual void createSection();
     virtual qint64 size() const = 0;                                    // share FM + MM
     virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
 
@@ -104,7 +105,7 @@ public:
     virtual int moveVisibleTopLine(int lineDelta);                      // share FM + MM
     virtual void scrollToPosition();                                    // share FM + MM
 
-    int topChunk() const; // TODO (JM) deprecated!                    CC
+    int topChunk() const; // TODO(JM) deprecated!
 
     virtual int visibleOffset() const;                                  // share FM + MM
     virtual int absTopLine() const;                                     // share FM + MM

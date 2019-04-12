@@ -202,12 +202,6 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
     }
 }
 
-void ProjectRunGroupNode::updateRunState(const QProcess::ProcessState &state)
-{
-    Q_UNUSED(state)
-    // TODO(JM) visualize if a state is running
-}
-
 GamsProcess *ProjectRunGroupNode::gamsProcess() const
 {
     return mGamsProcess.get();
@@ -636,7 +630,6 @@ QString ProjectRunGroupNode::tooltip()
 void ProjectRunGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
     Q_UNUSED(newState);
-    updateRunState(newState);
     emit gamsProcessStateChanged(this);
 }
 

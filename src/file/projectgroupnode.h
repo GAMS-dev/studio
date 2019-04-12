@@ -118,7 +118,6 @@ protected:
     friend class ProjectFileNode;
 
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
-    void updateRunState(const QProcess::ProcessState &state);
     void lstTexts(const QList<TextMark*> &marks, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
     void removeChild(ProjectAbstractNode *child);

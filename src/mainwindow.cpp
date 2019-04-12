@@ -1337,7 +1337,7 @@ void MainWindow::postGamsRun(NodeId origin)
 
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
         for (QWidget *edit: lstNode->file()->editors())
-            if (TextView* tv = ViewHelper::toTextView(edit)) tv->reopenFile();
+            if (TextView* tv = ViewHelper::toTextView(edit)) tv->reload();
 
         bool alreadyJumped = false;
         if (mSettings->jumpToError())
@@ -1918,7 +1918,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
         for (QWidget *wid: lstNode->file()->editors()) {
-            if (TextView *tv = ViewHelper::toTextView(wid)) tv->closeFile();
+            if (TextView *tv = ViewHelper::toTextView(wid)) tv->prepareRun();
         }
     }
     process->setGroupId(runGroup->id());

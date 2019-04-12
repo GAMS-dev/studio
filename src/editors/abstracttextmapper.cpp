@@ -93,6 +93,11 @@ void AbstractTextMapper::closeAndReset(bool initAnchor)
         setPosAbsolute(nullptr, 0, 0);
 }
 
+void AbstractTextMapper::createSection()
+{
+    return;
+}
+
 
 void AbstractTextMapper::updateLineOffsets(Chunk *chunk) const
 {
@@ -294,7 +299,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         lineDelta -= mTopLine.lineCount - mTopLine.localLine; // subtract remaining line-count
         if (lineDelta < 0) {
             // delta is in this chunk
-            // TODO(JM) crop visible top line at end on file
             mTopLine.localLine = mTopLine.lineCount + lineDelta;
             mTopLine.absStart = chunk->start + chunk->lineBytes.at(mTopLine.localLine);
             return mVisibleTopLine;

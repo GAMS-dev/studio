@@ -391,9 +391,7 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
 
 void FileMeta::load(int codecMib, bool init)
 {
-    // TODO(JM) Later, this method should be moved to the new DataWidget
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
-
     mData = Data(location(), mData.type);
 
     // TODO(JM) Later, this method should be moved to the new DataWidget
@@ -662,7 +660,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
-        TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, tabWidget));
         res = tView;
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)

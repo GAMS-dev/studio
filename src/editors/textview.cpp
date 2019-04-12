@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "textview.h"
+#include "filemapper.h"
+#include "memorymapper.h"
 #include "logger.h"
 #include "exception.h"
 #include "textviewedit.h"
@@ -32,12 +34,13 @@ namespace gams {
 namespace studio {
 
 
-TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
+TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent), mTextKind(kind)
 {
     setViewportMargins(0,0,0,0);
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     setFocusPolicy(Qt::NoFocus);
-    mMapper = new FileMapper();
+    if (kind == FileText) mMapper = new FileMapper();
+    if (kind == MemoryText) mMapper = new MemoryMapper();
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
     QVBoxLayout *lay = new QVBoxLayout(this);
@@ -66,7 +69,6 @@ TextView::TextView(QWidget *parent) : QAbstractScrollArea(parent)
     QPlainTextEdit::resizeEvent(QResizeEvent *e);
     QPlainTextEdit::setLineWrapMode(LineWrapMode wrap);
 */
-
 }
 
 int TextView::lineCount() const
@@ -76,9 +78,11 @@ int TextView::lineCount() const
 
 bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 {
+    if (mTextKind != FileText) return false;
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
     mMapper->setCodec(codecMib == -1 ? QTextCodec::codecForMib(codecMib) : QTextCodec::codecForLocale());
-    if (!mMapper->openFile(fileName, initAnchor)) return false;
+
+    if (!static_cast<FileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
     updateVScrollZone();
     int count = (lineCount() < 0) ? mTopBufferLines*3 : lineCount();
     mMapper->setMappingSizes(count);
@@ -90,15 +94,20 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 
 void TextView::closeFile()
 {
+}
+
+void TextView::reload()
+{
+    if (mTextKind == FileText)
+        static_cast<FileMapper*>(mMapper)->reopenFile();
+}
+
+void TextView::prepareRun()
+{
     mMapper->closeAndReset(false);
     ChangeKeeper x(mDocChanging);
     mEdit->clear();
     topLineMoved();
-}
-
-void TextView::reopenFile()
-{
-    mMapper->reopenFile();
 }
 
 qint64 TextView::fileSize() const
@@ -380,6 +389,11 @@ void TextView::topLineMoved()
         mEdit->horizontalScrollBar()->setValue(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mHScrollValue);  // workaround: isn't set correctly on the first time
     }
+}
+
+TextView::TextKind TextView::textKind() const
+{
+    return mTextKind;
 }
 
 void TextView::updatePosAndAnchor()

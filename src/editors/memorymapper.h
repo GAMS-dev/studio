@@ -12,6 +12,9 @@ class MemoryMapper : public AbstractTextMapper
 public:
     explicit MemoryMapper(QObject *parent = nullptr);
     qint64 size() const override;
+    void closeAndReset(bool initAnchor) override;
+    bool setMappingSizes(int bufferedLines, int chunkSizeInBytes, int chunkOverlap) override;
+
 
 signals:
 
@@ -20,6 +23,8 @@ public slots:
 protected:
     Chunk *getChunk(int chunkNr) const override;
     Chunk *loadChunk(int chunkNr) const override;
+
+private:
 
 };
 

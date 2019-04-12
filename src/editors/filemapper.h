@@ -54,11 +54,6 @@ public:
 
     int lineCount() const override;
 
-signals:
-    void blockCountChanged(int newBlockCount);
-    void loadAmountChanged(int knownLineCount);
-    void selectionChanged();
-
 public slots:
     void peekChunksForLineNrs();
 

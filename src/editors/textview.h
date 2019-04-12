@@ -20,7 +20,7 @@
 #ifndef TEXTVIEW_H
 #define TEXTVIEW_H
 
-#include "filemapper.h"
+#include "abstracttextmapper.h"
 #include "syntax/textmarkrepo.h"
 #include "editors/abstractedit.h"
 #include <QAbstractScrollArea>
@@ -38,10 +38,13 @@ class TextView : public QAbstractScrollArea
 {
     Q_OBJECT
 public:
-    explicit TextView(QWidget *parent = nullptr);
+    enum TextKind { FileText, MemoryText };
+
+    explicit TextView(TextKind kind, QWidget *parent = nullptr);
     bool loadFile(const QString &fileName, int codecMib, bool initAnchor);
     void closeFile();
-    void reopenFile();
+    void reload();
+    void prepareRun();
     qint64 fileSize() const;
     int lineCount() const;
     int knownLines() const;
@@ -58,6 +61,7 @@ public:
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    TextKind textKind() const;
 
 signals:
     void blockCountChanged(int newBlockCount);
@@ -107,6 +111,7 @@ private:
     void topLineMoved();
 
 private:
+    TextKind mTextKind;
     int mTopLine = 0;
     int mTopVisibleLine = 0;
     int mVisibleLines = 0;
@@ -114,7 +119,7 @@ private:
     bool mInit = true;
     int mHScrollValue = 0;
 
-    FileMapper *mMapper = nullptr;
+    AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
     QTextCodec *mCodec = nullptr;
     int mLineToFind = -1;

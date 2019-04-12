@@ -21,7 +21,7 @@
 #define TEXTVIEWEDIT_H
 
 #include "codeedit.h"
-#include "filemapper.h"
+#include "abstracttextmapper.h"
 #include "locators/settingslocator.h"
 #include <QWidget>
 
@@ -32,7 +32,7 @@ class TextViewEdit : public CodeEdit
 {
     Q_OBJECT
 public:
-    TextViewEdit(FileMapper &mapper, QWidget *parent = nullptr);
+    TextViewEdit(AbstractTextMapper &mapper, QWidget *parent = nullptr);
     bool showLineNr() const override { return false; }
     void protectWordUnderCursor(bool protect);
     bool hasSelection() const override;
@@ -70,7 +70,7 @@ private:
     int topVisibleLine() override;
 
 private:
-    FileMapper &mMapper;
+    AbstractTextMapper &mMapper;
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
     int mSubOffset = 0;

@@ -71,6 +71,8 @@ void ProjectLogNode::clearLog()
 
 void ProjectLogNode::markOld()
 {
+    if (TextView *tv = ViewHelper::toTextView(file()->editors().first()))
+        tv->prepareRun();
     if (document() && !document()->isEmpty()) {
         QTextCursor cur(document());
         cur.movePosition(QTextCursor::End);
