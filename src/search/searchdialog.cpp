@@ -513,8 +513,7 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         if (edit) {
             matchSelection = edit->textCursor();
-        } else {
-            updateMatchAmount();
+        } else { // is large file using textview
             return;
         }
     }
