@@ -94,6 +94,7 @@ private:
     Option* mOption = nullptr;
     optHandle_t mOPTHandle;
     bool mOPTAvailable = false;
+    QStringList mLineComments;
     QChar mEOLCommentChar = QChar();
 //    QChar mSeparatorChar = QChar(' ');
 

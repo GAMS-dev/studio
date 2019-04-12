@@ -58,11 +58,12 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
         else
             return mCheckState[index];
     case Qt::ToolTipRole: {
+        QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
         if (mOptionItem.at(index)->disabled) {
-            if (mOptionItem.at(index)->key.startsWith("*"))
+            if (mOptionItem.at(index)->key.startsWith(lineComment))
                 return QString("%1 %2").arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString());
             else
-                return QString("* %1 %2").arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString()); //->text);
+                return QString("%1 %2 %3").arg(lineComment).arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString()); //->text);
         } else {
           switch(mOptionItem.at(index)->error) {
           case Invalid_Key:
@@ -124,7 +125,8 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole: {
         if (col==COLUMN_OPTION_KEY) {
             QString text = mOptionItem.at(row)->key;
-            if (mOptionItem.at(row)->key.startsWith("*"))
+            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+            if (mOptionItem.at(row)->key.startsWith(lineComment))
                 text = mOptionItem.at(row)->key.mid(1);
             return QVariant(text);
         } else if (col==COLUMN_OPTION_VALUE) {
@@ -244,8 +246,9 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
         QString dataValue = value.toString();
         if (index.column()==COLUMN_OPTION_KEY) {
             if (mOptionItem[index.row()]->disabled) {
-                if (!dataValue.startsWith("*"))
-                    mOptionItem[index.row()]->key = QString("* %1").arg(dataValue);
+                QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+                if (!dataValue.startsWith(lineComment))
+                    mOptionItem[index.row()]->key = QString("%1 %2").arg(lineComment).arg(dataValue);
                 else
                     mOptionItem[index.row()]->key = dataValue;
             } else {
@@ -396,7 +399,8 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
 
         for (const QString &text : newItems) {
             insertRows(beginRow, 1, QModelIndex());
-            if (text.startsWith("*")) {
+            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+            if (text.startsWith(lineComment)) {
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
                 setData(idx, text, Qt::EditRole);
                 setHeaderData( idx.row(), Qt::Vertical,

@@ -63,8 +63,13 @@ OptionTokenizer::OptionTokenizer(const QString &optionFileName)
     }
 
     // default is the first EOL char defined, unless user specifies otherwise
-    if (mOption->isEOLCharDefined())
+    if (mOption->isEOLCharDefined()) {
         mEOLCommentChar = mOption->getEOLChars().at(0);
+        mLineComments.append(mOption->getEOLChars().at(0));
+        mLineComments.append("*");
+    } else {
+        mLineComments.append("*");
+    }
 
     // option Format
     mInvalidKeyFormat.setFontItalic(true);
@@ -499,18 +504,25 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
     QString separator = (mOption->isDefaultSeparatorDefined() ? mOption->getDefaultSeparator() : " ");
 
     if (item->disabled) {
-        if (key.startsWith("*")) {
-            if (key.mid(1).simplified().isEmpty())
+        if (key.isEmpty()) {
+            if (value.isEmpty())
                 return QString("");
-            if (!key.isEmpty())
-                return QString("%1").arg(key);
             else
-                return QString("%1%2%3").arg(key).arg(separator).arg(value);
+                return QString("%1 %2").arg(mLineComments.at(0)).arg(value);
         } else {
-            if (!key.isEmpty())
-                return QString("* %1").arg(key);
-            else
-                return QString("* %1%2%3").arg(key).arg(separator).arg(value);
+            if (mLineComments.contains(key.at(0))) {
+               if (key.mid(1).simplified().isEmpty())
+                   return QString("");
+               if (value.isEmpty())
+                   return QString("%1").arg(key);
+               else
+                   return QString("%1%2%3").arg(key).arg(separator).arg(value);
+            } else {
+                if (value.isEmpty())
+                    return QString("%1 %2").arg(mLineComments.at(0)).arg(key);
+                else
+                    return QString("%1 %2%3%4").arg(mLineComments.at(0)).arg(key).arg(separator).arg(value);
+            }
         }
     }
 
@@ -542,22 +554,22 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
     QString text = str;
 
     optResetAll( mOPTHandle );
-    if (text.startsWith("*") && firstTime) {
-        item->optionId = -1;
-        item->key = text;
-        item->value = "";
-        item->text = "";
-        item->error = No_Error;
-        item->disabled = true;
-    } else if (text.simplified().isEmpty()) {
+    if (text.simplified().isEmpty()) {
         item->optionId = -1;
         item->key = "";
         item->value = "";
         item->text = "";
         item->error = No_Error;
         item->disabled = true;
+    } else if (mLineComments.contains(text.at(0)) && firstTime) {
+        item->optionId = -1;
+        item->key = text;
+        item->value = "";
+        item->text = "";
+        item->error = No_Error;
+        item->disabled = true;
     } else {
-        if (str.startsWith("*")) {
+        if (mLineComments.contains(text.at(0))) {
             text = str.mid(1).simplified();
             item->optionId = -1;
         }
@@ -849,7 +861,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
        str = QString("%1%2%3").arg(key).arg(separator).arg(value);
 
     optResetAll( mOPTHandle );
-    if (str.simplified().isEmpty() || str.startsWith("*")) {
+    if (str.simplified().isEmpty() || mLineComments.contains(str.at(0))) {
         item->optionId = -1;
         item->key = str;
         item->value = "";

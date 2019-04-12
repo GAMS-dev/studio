@@ -54,10 +54,11 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             OptionDefinitionItem *childItem = static_cast<OptionDefinitionItem*>(index.internalPointer());
             OptionDefinitionItem *parentItem = childItem->parentItem();
 
+            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
             if (parentItem == rootItem) {
                 if (addCommentAbove) {
-                    stream << QString("* %1").arg(data(descriptionIndex, Qt::DisplayRole).toString());
+                    stream << QString("%1 %2").arg(lineComment).arg(data(descriptionIndex, Qt::DisplayRole).toString());
                 }
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
                 QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
@@ -67,10 +68,10 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
                                                 .arg(data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
                 if (addCommentAbove) {
-                    stream << QString("* %1").arg(parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
-
-                    stream << QString("* %1 - %2").arg(data(index, Qt::DisplayRole).toString())
-                                                  .arg(data(descriptionIndex, Qt::DisplayRole).toString());
+                    stream << QString("%1 %2").arg(lineComment).arg(parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
+                    stream << QString("%1 %2 - %3").arg(lineComment)
+                                                   .arg(data(index, Qt::DisplayRole).toString())
+                                                   .arg(data(descriptionIndex, Qt::DisplayRole).toString());
                 }
                 stream << QString("%1=%2=%3=%4").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
                                                 .arg(data(index, Qt::DisplayRole).toString())
