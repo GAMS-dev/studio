@@ -7,7 +7,7 @@ request when your changes are ready.
 
 ## Requirements
 
-To get started with the development you need a systems provides the following.
+To get started with the development you need a system which provides the following.
 
 * A C++14-standard-compliant compiler
 * [Qt](https://www.qt.io/) 5.12.x LTS 
