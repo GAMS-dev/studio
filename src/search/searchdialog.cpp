@@ -150,6 +150,11 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
     else if (fml.isEmpty()) fml = getFilesByScope();
 
     for(FileMeta* fm : fml) {
+
+        // skip certain file types
+        if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Lxi || fm->kind() == FileKind::Ref)
+            continue;
+
         // sort files by modified
         if (fm->isModified())
             modified << fm;
