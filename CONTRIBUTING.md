@@ -2,7 +2,7 @@
 
 Your contributions to the GAMS Studio project are highly appreciated! Depending on
 your type of improvement you may want to [create an issue](https://help.github.com/en/articles/creating-an-issue)
-or [fork GAMS Studio](https://guides.github.com/activities/forking/) to make a pull
+or [fork GAMS Studio](https://guides.github.com/activities/forking/), to make a pull
 request when your changes are ready.
 
 ## Requirements
