@@ -127,10 +127,14 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
             if (dimIdxEnd == i) {
                 painter->restore();
+                QPen pen(palette().text().color());
+                painter->setPen(pen);
                 painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.left(), opt.rect.bottom());
                 painter->save();
             } else if (dimIdxEnd-1 == i && dimIdxEnd == dim()) {
                 painter->restore();
+                QPen pen(palette().text().color());
+                painter->setPen(pen);
                 painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
                 painter->save();
             }
