@@ -31,8 +31,6 @@ class SearchResultList : public QAbstractTableModel
     Q_OBJECT
 public:
     SearchResultList();
-    SearchResultList(SearchResultList &searchResultList);
-    SearchResultList(const QString &searchTerm, QObject *parent = nullptr);
     virtual ~SearchResultList() override;
     QList<Result> resultList() const;
     QMultiHash<QString, QList<Result> > resultHash() const;

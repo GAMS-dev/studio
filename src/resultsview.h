@@ -42,7 +42,6 @@ public:
     explicit ResultsView(SearchResultList* resultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
-    SearchResultList* resultList();
 
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);
@@ -50,8 +49,7 @@ private slots:
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList* mResultList;
-    int searchTermLength = 0;
+    SearchResultList mResultList;
 };
 
 }

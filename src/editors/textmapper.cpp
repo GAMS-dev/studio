@@ -890,7 +890,7 @@ int TextMapper::selectionSize() const
 
 void TextMapper::deleteChunkIfUnused(Chunk *&chunk)
 {
-    if (!mChunks.contains(chunk)) {
+    if (chunk && !mChunks.contains(chunk)) {
         mFile.unmap(chunk->map);
         delete chunk;
         chunk = nullptr;

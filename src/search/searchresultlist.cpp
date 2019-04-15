@@ -27,21 +27,6 @@ SearchResultList::SearchResultList()
 {
 }
 
-SearchResultList::SearchResultList(SearchResultList &searchResultList)
-    : QAbstractTableModel(searchResultList.parent()),
-      mSearchTerm(searchResultList.searchTerm()),
-      mSize(searchResultList.size()),
-      mResultHash(searchResultList.resultHash())
-{
-}
-
-SearchResultList::SearchResultList(const QString &searchTerm, QObject *parent) :
-     QAbstractTableModel(parent), mSearchTerm(searchTerm)
-{
-    useRegex(false); // set default
-    mResultHash.empty();
-}
-
 SearchResultList::~SearchResultList()
 {
 }

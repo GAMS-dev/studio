@@ -519,6 +519,7 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
     }
 
     int count = 0;
+    // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
     for (Result match: mCachedResults->resultList()) {
         if (match.lineNr() == matchSelection.blockNumber()+1
                 && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
@@ -561,7 +562,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
             edit->setTextCursor(matchSelection);
         }
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-        mMain->closeResultsPage();
 
         mSplitSearchView = tv;
         mSplitSearchFlags = flags;

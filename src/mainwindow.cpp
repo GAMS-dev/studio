@@ -1092,11 +1092,10 @@ void MainWindow::activeTabChanged(int index)
     }
 
     searchDialog()->updateReplaceActionAvailability();
+    updateToolbar(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
-    updateToolbar(mainTabs()->currentWidget());
-
     updateEditorMode();
 }
 
@@ -1474,8 +1473,7 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
-    if (isResults)
-        mSearchDialog->clearResults();
+    if (isResults) mSearchDialog->clearResults();
 
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
@@ -2872,7 +2870,6 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 
         window->searchDialog()->setActiveEditWidget(tv);
     }
-    window->searchDialog()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 }
