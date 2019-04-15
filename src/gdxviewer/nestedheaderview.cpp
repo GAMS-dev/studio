@@ -125,17 +125,15 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             opt.state = state;
             opt.textAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
-            if (dimIdxEnd == i) {
+            if (dimIdxEnd>-1) {
                 painter->restore();
-                QPen pen(palette().text().color());
+                QPen pen(painter->pen());
+                pen.setColor(palette().text().color());
                 painter->setPen(pen);
-                painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.left(), opt.rect.bottom());
-                painter->save();
-            } else if (dimIdxEnd-1 == i && dimIdxEnd == dim()) {
-                painter->restore();
-                QPen pen(palette().text().color());
-                painter->setPen(pen);
-                painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
+                if (dimIdxEnd == i)
+                    painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.left(), opt.rect.bottom());
+                else if (dimIdxEnd-1 == i && dimIdxEnd == dim())
+                    painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
                 painter->save();
             }
         }
