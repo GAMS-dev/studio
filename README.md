@@ -12,7 +12,7 @@ The recommended way to get Qt is via its official [Qt online installer](https://
 If you are interested in the Qt sources you can download them through the 
 installer or build Qt from scratch by following the [Qt documentation](https://doc.qt.io/qt-5/build-sources.html).
 Alternatively, you can get and build Qt from the official [Qt GitHub mirror](https://github.com/qt/qt5).
-Please check the [CONTRIBUTING.md](CONTRIBUTING.md) for the required C++ and Qt version.
+Please check the [CONTRIBUTING.md](CONTRIBUTING.md) for the GAMS Studio C++ and Qt requirements.
 
 ## 2. Download and install GAMS ##
 
