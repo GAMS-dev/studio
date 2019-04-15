@@ -11,3 +11,4 @@ To get started with the development you need a system which provides the followi
 
 * A C++14-standard-compliant compiler
 * [Qt](https://www.qt.io/) 5.12.x LTS 
+* The latest [GAMS](https://www.gams.com/download/) release
