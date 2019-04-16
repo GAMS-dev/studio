@@ -20,7 +20,7 @@
 
 # Set this to "false" to build Studio without QWebEngine enabled,
 # which deactivates the studio help view.
-QWEBENGINE=false
+QWEBENGINE=true
 
 QT       += core gui svg concurrent network
 
