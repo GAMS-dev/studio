@@ -428,6 +428,7 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
         if (edit) {
             matchSelection = edit->textCursor();
         } else { // is large file using textview
+            setSearchStatus(SearchStatus::Clear);
             return;
         }
     }
