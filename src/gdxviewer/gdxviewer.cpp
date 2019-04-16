@@ -201,12 +201,8 @@ void GdxViewer::copySelectionToClipboard()
 bool GdxViewer::init()
 {
     int errNr = 0;
-
-    qDebug() << "mGdx:" << mGdx;
-    qDebug() << "mGdxFile.toLocal8Bit(),:" << mGdxFile.toLocal8Bit();
     gdxOpenRead(mGdx, mGdxFile.toLocal8Bit(), &errNr);
 
-    qDebug() << "after openread";
     if (errNr) {
         gdxClose(mGdx);
         char msg[GMS_SSSIZE];
