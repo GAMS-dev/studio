@@ -41,7 +41,6 @@ public:
     bool isRegex() const;
     void useRegex(bool regex);
     int size();
-    void clear();
     Result at(int index) const;
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

@@ -50,14 +50,13 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     ui->combo_search->setAutoCompletion(false);
     adjustSize();
 
-    mCachedResults = new SearchResultList();
-
     connect(ui->combo_search->lineEdit(), &QLineEdit::returnPressed, this, &SearchDialog::returnPressed);
 }
 
 SearchDialog::~SearchDialog()
 {
     delete ui;
+    delete mCachedResults;
 }
 
 void SearchDialog::on_btn_Replace_clicked()
@@ -87,8 +86,7 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         setSearchOngoing(true);
         clearResults();
-
-        mCachedResults->clear();
+        mCachedResults = new SearchResultList();
         mCachedResults->setSearchTerm(createRegex().pattern());
         mCachedResults->useRegex(regex());
 
@@ -382,7 +380,13 @@ int SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString 
 void SearchDialog::updateSearchCache()
 {
     QApplication::sendPostedEvents();
-    mCachedResults->clear();
+
+    if (mCachedResults) {
+        delete mCachedResults;
+        mCachedResults = nullptr;
+    }
+
+    mCachedResults = new SearchResultList();
     mCachedResults->setSearchTerm(createRegex().pattern());
     mCachedResults->useRegex(regex());
     findInFiles(QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
@@ -396,8 +400,8 @@ void SearchDialog::findNext(SearchDirection direction)
 
     mShowResults = false;
     setSearchOngoing(true);
-    // only cache when we have changes or are not searching a large file
-    if (mHasChanged && !ViewHelper::toTextView(mMain->recent()->editor()))
+    // only cache when we have changes, no cache, or are not searching a large file
+    if ((!mCachedResults || mHasChanged) && !ViewHelper::toTextView(mMain->recent()->editor()))
         updateSearchCache();
 
     selectNextMatch(direction);
@@ -583,7 +587,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    searchParameterChanged();
+    if (!mSuppressChangeEvent)
+        searchParameterChanged();
 }
 
 void SearchDialog::searchParameterChanged() {
@@ -624,12 +629,18 @@ void SearchDialog::updateReplaceActionAvailability()
 
     ui->combo_filePattern->setEnabled(activateSearch && (ui->combo_scope->currentIndex() != SearchScope::ThisFile));
     ui->combo_scope->setEnabled(activateSearch);
+
+    // tab was switched and cache was created for last file focussed
+    invalidateCache();
+    if (!resultsView()) setSearchStatus(SearchStatus::Clear);
 }
 
 void SearchDialog::clearSearch()
 {
+    mSuppressChangeEvent = true;
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
+    mSuppressChangeEvent = false;
 
     clearResults();
 }
@@ -643,6 +654,11 @@ void SearchDialog::updateEditHighlighting()
 void SearchDialog::clearResults()
 {
     setSearchStatus(SearchStatus::Clear);
+    if (mCachedResults) {
+        delete mCachedResults;
+        mCachedResults = nullptr;
+    }
+
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
 
@@ -652,7 +668,6 @@ void SearchDialog::clearResults()
         tc.clearSelection();
         edit->setTextCursor(tc);
     }
-    mCachedResults->clear();
     updateEditHighlighting();
     mMain->closeResultsPage();
 }
@@ -692,9 +707,11 @@ void SearchDialog::insertHistory()
         ui->combo_search->insertItem(0, searchText);
     } else {
         bool state = mHasChanged;
+        mSuppressChangeEvent = true;
         ui->combo_search->removeItem(ui->combo_search->findText(searchText));
         ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
+        mSuppressChangeEvent = false;
         mHasChanged = state;
     }
 
@@ -771,8 +788,17 @@ QRegularExpression SearchDialog::createRegex()
     return searchRegex;
 }
 
+// TODO(rogo): analyze this
 void SearchDialog::invalidateCache()
 {
+    // if cache is also used in ui dont delete list
+    if (resultsView() && mCachedResults == resultsView()->resultList())
+        mCachedResults = nullptr;
+    else if (mCachedResults){
+        delete mCachedResults;
+        mCachedResults = nullptr;
+    }
+
     mHasChanged = true;
 }
 

@@ -67,12 +67,6 @@ int SearchResultList::size()
     return mSize;
 }
 
-void SearchResultList::clear()
-{
-    mResultHash.clear();
-    mSize = 0;
-}
-
 int SearchResultList::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())

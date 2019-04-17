@@ -160,6 +160,7 @@ private:
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;
     bool mShowResults = true;
+    bool mSuppressChangeEvent = false;
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
     QThread mThread;
     bool mSearching = false;
