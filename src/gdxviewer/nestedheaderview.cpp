@@ -2,6 +2,10 @@
 
 #include <QTableView>
 #include <QScrollBar>
+#include <QDrag>
+#include <QMimeData>
+#include <QApplication>
+#include <QMap>
 
 namespace gams {
 namespace studio {
@@ -10,7 +14,8 @@ namespace gdxviewer {
 NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
     :QHeaderView(orientation, parent)
 {
-
+    setAcceptDrops(true);
+    connect(this, &QHeaderView::sectionResized, [this]() { ddEnabled = false; });
 }
 
 NestedHeaderView::~NestedHeaderView()
@@ -18,19 +23,47 @@ NestedHeaderView::~NestedHeaderView()
 
 }
 
-void NestedHeaderView::init()
+void NestedHeaderView::setModel(QAbstractItemModel *model)
 {
-    calcSectionSize();
-    // need to update the first visible sections when scrolling in order to trigger the repaint for showing all labels for the first section
-    if (orientation() == Qt::Vertical)
-        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(orientation(), 0, 2); });
-    else
-        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(orientation(), 0, 2); });
+    QHeaderView::setModel(model);
+    bindScrollMechanism();
+}
+
+void NestedHeaderView::reset()
+{
+    if (this->model() && orientation() == Qt::Vertical) {
+        int dimension = dim();
+        vhSectionWidth.clear();
+        vhSectionWidth.resize(dimension);
+
+        QFont fnt = font();
+        fnt.setBold(true);
+
+        QFontMetrics fm(fnt);
+
+        for (int i=0; i<dimension; i++) {
+            QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
+            for (QString label : labelsInRows.at(i))
+                vhSectionWidth.replace(i, qMax(vhSectionWidth.at(i), fm.width(label)));
+        }
+
+        QStyleOptionHeader opt;
+        initStyleOption(&opt);
+        //TODO CW: The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
+        int borderWidth = 10;
+        for (int i=0; i<dimension; i++)
+            vhSectionWidth.replace(i, vhSectionWidth.at(i) + borderWidth);
+    }
+    QHeaderView::reset();
 }
 
 int NestedHeaderView::dim() const
 {
-    if (orientation() == Qt::Vertical)
+    if (orientation() == Qt::Vertical && sym()->needDummyRow())
+        return 1;
+    else if (orientation() == Qt::Horizontal && sym()->needDummyColumn())
+        return 1;
+    else if (orientation() == Qt::Vertical)
         return sym()->dim() - sym()->tvColDim();
     else {
         int d = sym()->tvColDim();
@@ -77,21 +110,32 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Enabled;
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
-            //int rowWidth = getSectionSize(logicalIndex, i).width();
-            int rowWidth = mMaxSectionWidth[i];
+            int rowWidth = vhSectionWidth.at(i);
 
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
             else
                 opt.text = "";
-            opt.rect.setLeft(opt.rect.left()+ lastRowWidth);
+            opt.rect.setLeft(opt.rect.left()+ lastRowWidth);\
             lastRowWidth = rowWidth;
             opt.rect.setWidth(rowWidth);
 
             if (opt.rect.contains(mMousePos))
                 state |= QStyle::State_MouseOver;
             opt.state = state;
+            opt.textAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
+            if (dimIdxEnd>-1) {
+                painter->restore();
+                QPen pen(painter->pen());
+                pen.setColor(palette().text().color());
+                painter->setPen(pen);
+                if (dimIdxEnd == i)
+                    painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.left(), opt.rect.bottom());
+                else if (dimIdxEnd-1 == i && dimIdxEnd == dim())
+                    painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
+                painter->save();
+            }
         }
     } else {
         for(int i=0; i<dim(); i++) {
@@ -100,8 +144,6 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Enabled;
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
-            //int rowWidth = getSectionSize(logicalIndex, i).width();
-            //int rowWidth = mMaxSectionWidth[i];
 
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
@@ -115,20 +157,148 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_MouseOver;
             opt.state = state;
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
+            if (dimIdxEnd == i) {
+                painter->restore();
+                painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.right(), opt.rect.top());
+                painter->save();
+            } else if (dimIdxEnd-1 == i && dimIdxEnd == dim()) {
+                painter->restore();
+                if (sym()->type() == GMS_DT_VAR || sym()->type() == GMS_DT_EQU)
+                    painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.right(), opt.rect.top());
+                else
+                    painter->drawLine(opt.rect.left(), opt.rect.bottom(), opt.rect.right(), opt.rect.bottom());
+                painter->save();
+            }
         }
     }
     painter->setBrushOrigin(oldBO);
     painter->restore();
 }
 
+void NestedHeaderView::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        mDragStartPosition = event->pos();
+        dimIdxStart = pointToDimension(event->pos());
+    }
+    QHeaderView::mousePressEvent(event);
+}
+
+void NestedHeaderView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        ddEnabled = true;
+    QHeaderView::mouseReleaseEvent(event);
+}
+
 void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
 {
     QHeaderView::mouseMoveEvent(event);
     mMousePos = event->pos();
+    if ((event->buttons() & Qt::LeftButton) && (mMousePos - mDragStartPosition).manhattanLength() > QApplication::startDragDistance() && ddEnabled) {
+        // do not allow to drag a dummy row/column
+        if (orientation() == Qt::Vertical && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyRow())
+            return;
+        if (orientation() == Qt::Horizontal && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyColumn())
+            return;
+        //do not allow to drag the value column (lavel, marginal,...) of variables and equations
+        if (orientation() == Qt::Horizontal && (sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && pointToDimension(mDragStartPosition)==dim()-1)
+            return;
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
+        if (orientation() == Qt::Vertical)
+            mimeData->setData("GDXDRAGDROP/COL", QByteArray::number(pointToDimension(mDragStartPosition)));
+        else
+            mimeData->setData("GDXDRAGDROP/ROW", QByteArray::number(pointToDimension(mDragStartPosition)));
+        drag->setMimeData(mimeData);
+        drag->exec();
+    }
+
     if(orientation() == Qt::Vertical)
         headerDataChanged(orientation(),0, qMax(0,model()->rowCount()-1));
     else
         headerDataChanged(orientation(),0, qMax(0,model()->columnCount()-1));
+}
+
+void NestedHeaderView::dragEnterEvent(QDragEnterEvent *event)
+{
+    decideAcceptDragEvent(event);
+    event->acceptProposedAction();
+}
+
+void NestedHeaderView::dragMoveEvent(QDragMoveEvent *event)
+{
+    if (event->mimeData()->hasFormat("GDXDRAGDROP/ROW")) {
+        dimIdxStart = event->mimeData()->data("GDXDRAGDROP/ROW").toInt();
+        dragOrientationStart = Qt::Horizontal;
+    }
+    else {
+        dimIdxStart = event->mimeData()->data("GDXDRAGDROP/COL").toInt();
+        dragOrientationStart = Qt::Vertical;
+    }
+    dimIdxEnd = pointToDropDimension(event->pos());
+    dragOrientationEnd = orientation();
+    decideAcceptDragEvent(event);
+    viewport()->update();
+}
+
+void NestedHeaderView::decideAcceptDragEvent(QDragMoveEvent *event)
+{
+    if (event->mimeData()->hasFormat("GDXDRAGDROP/COL") || event->mimeData()->hasFormat("GDXDRAGDROP/ROW"))
+        event->acceptProposedAction();
+    else
+        event->ignore();
+}
+
+int NestedHeaderView::toGlobalDim(int localDim, int orientation)
+{
+    if (orientation == Qt::Horizontal)
+        return localDim + sym()->dim()-sym()->tvColDim();
+    else
+        return localDim;
+}
+
+void NestedHeaderView::dropEvent(QDropEvent *event)
+{
+    dimIdxStart = toGlobalDim(dimIdxStart, dragOrientationStart);
+    dimIdxEnd = toGlobalDim(dimIdxEnd, dragOrientationEnd);
+
+    if (dimIdxStart == dimIdxEnd && dragOrientationStart == dragOrientationEnd) { //nothing happens
+        event->accept();
+        dimIdxEnd = -1;
+        dimIdxStart = -1;
+        return;
+    }
+
+    int newColDim = sym()->tvColDim();
+    if (dragOrientationStart != dragOrientationEnd) {
+        if (dragOrientationStart == Qt::Vertical)
+            newColDim++;
+        else
+            newColDim--;
+    }
+    QVector<int> tvDims = sym()->tvDimOrder();
+
+    if (dimIdxStart < dimIdxEnd)
+        dimIdxEnd--;
+
+    tvDims.move(dimIdxStart, dimIdxEnd);
+
+    sym()->setTableView(newColDim, tvDims);
+    event->accept();
+
+    (static_cast<QTableView*>(this->parent()))->horizontalHeader()->geometriesChanged();
+    (static_cast<QTableView*>(this->parent()))->verticalHeader()->geometriesChanged();
+
+    dimIdxEnd = -1;
+    dimIdxStart = -1;
+}
+
+void NestedHeaderView::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    QHeaderView::dragLeaveEvent(event);
+    dimIdxEnd = -1;
+    viewport()->update();
 }
 
 void NestedHeaderView::leaveEvent(QEvent *event)
@@ -137,58 +307,107 @@ void NestedHeaderView::leaveEvent(QEvent *event)
     mMousePos = QPoint(-1,-1);
 }
 
-void NestedHeaderView::calcSectionSize()
+int NestedHeaderView::pointToDimension(QPoint p)
 {
-    mMaxSectionWidth.clear();
-    for(int i=0; i<dim(); i++)
-        mMaxSectionWidth << 0;
-    QStyleOptionHeader opt;
-    initStyleOption(&opt);
+    if (orientation() == Qt::Vertical) {
+        int totWidth = 0;
+        for(int i=0; i<dim(); i++) {
+            totWidth += vhSectionWidth.at(i);
+            if (p.x() < totWidth)
+                return i;
+        }
+    } else {
+        int sectionHeight = QHeaderView::sectionSizeFromContents(0).height();
+        int totHeight = 0;
+        for(int i=0; i<dim(); i++) {
+            totHeight += sectionHeight;
+            if (p.y() < totHeight)
+                return i;
+        }
+    }
+    return 0; //is never reached
+}
 
-    QVector<QSet<QString>> labelAlreadySeen(dim());
+int NestedHeaderView::pointToDropDimension(QPoint p)
+{
+    int globalStart = toGlobalDim(dimIdxStart, dragOrientationStart);
+    int localEnd = pointToDimension(p);
+    int globalEnd   = toGlobalDim(localEnd, dragOrientationEnd);
 
-
-    int indexCount;
-    if (orientation() == Qt::Vertical)
-        indexCount = model()->rowCount();
-    else
-        indexCount = model()->columnCount();
-
-    for(int logicalIndex=0; logicalIndex<indexCount; logicalIndex++) {
-        opt.section = logicalIndex;
-        QVariant var = model()->headerData(logicalIndex, orientation(), Qt::FontRole);
-        QFont fnt;
-        if (var.isValid() && var.canConvert<QFont>())
-            fnt = qvariant_cast<QFont>(var);
+    if ((sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && globalEnd == sym()->dim()) {
+        if (globalStart+1 == globalEnd) {
+            if (dragOrientationStart == dragOrientationEnd)
+                return localEnd-1;
+            else
+                return 0;
+        }
         else
-            fnt = font();
-        fnt.setBold(true);
-        opt.fontMetrics = QFontMetrics(fnt);
-        QStringList text = model()->headerData(logicalIndex, orientation(), Qt::DisplayRole).toStringList();
-        for(int d=0; d<dim(); d++) {
-            QString label = text[d];
-            if (!labelAlreadySeen[d].contains(label)) {
-                labelAlreadySeen[d].insert(label);
-                opt.text = label;
-                //TODO(CW): This function is terribly slow. We avoid calling it multiple times for the same label in a dimension
-                QSize s = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
-                mMaxSectionWidth[d] = qMax(s.width(), mMaxSectionWidth[d]);
+            return dim()-1;
+    }
+
+    //special behavior for switching adjacent dimensions when start and end orientation is the same
+    if (dragOrientationStart == dragOrientationEnd) {
+        if (globalStart == globalEnd)
+            return dimIdxStart;
+        else if (globalStart+1 == globalEnd)
+            return dimIdxStart+2;
+        else if (globalStart-1 == globalEnd)
+            return dimIdxStart-1;
+    }
+    if (dragOrientationEnd == Qt::Vertical) {
+        if (sym()->needDummyRow())
+            return 0;
+        int totWidth = 0;
+        for(int i=0; i<dim(); i++) {
+            int curWidth = vhSectionWidth.at(i);
+            totWidth += curWidth;
+            if (p.x() < totWidth) {
+                int relX = p.x() - totWidth + curWidth;
+                if (relX > curWidth/2)
+                    i++;
+                return i;
+            }
+        }
+    } else {
+        if (sym()->needDummyColumn())
+            return 0;
+        int sectionHeight = QHeaderView::sectionSizeFromContents(0).height();
+        int totHeight = 0;
+        for(int i=0; i<dim(); i++) {
+            totHeight += sectionHeight;
+            if (p.y() < totHeight) {
+                int relY = p.y() - totHeight + sectionHeight;
+                if (relY > sectionHeight/2)
+                    i++;
+                return i;
             }
         }
     }
+    return 0; //is never reached
 }
 
-GdxSymbol *NestedHeaderView::sym() const
+void NestedHeaderView::bindScrollMechanism()
 {
-    return static_cast<GdxSymbol*>(model());
+    // need to update the first visible sections when scrolling in order to trigger the repaint for showing all labels for the first section
+    if (orientation() == Qt::Vertical)
+        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(this->orientation(), 0, 2); });
+    else
+        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(this->orientation(), 0, 2); });
+}
+
+TableViewModel *NestedHeaderView::sym() const
+{
+    return static_cast<TableViewModel*>(model());
 }
 
 QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
     if (orientation() == Qt::Vertical) {
         QSize s(0,sectionSize(logicalIndex));
+        int totWidth = 0;
         for (int i=0; i<dim(); i++)
-            s.setWidth(mMaxSectionWidth[i] + s.width());
+            totWidth += vhSectionWidth.at(i);
+        s.setWidth(totWidth);
         return s;
     } else {
         QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);

@@ -22,6 +22,7 @@
 
 #include <QAbstractTableModel>
 #include <QString>
+#include <QTableView>
 
 #include "gdxcc.h"
 
@@ -32,10 +33,13 @@ namespace studio {
 namespace gdxviewer {
 
 class GdxSymbolTable;
+class TableViewModel;
 
 class GdxSymbol : public QAbstractTableModel
 {
     Q_OBJECT
+
+    friend class TableViewModel;
 
 public:
     explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr,
@@ -69,13 +73,10 @@ public:
     std::vector<bool> filterActive() const;
     void setFilterActive(const std::vector<bool> &filterActive);
 
-    void setTableView(bool tableView);
-
     int tvColDim() const;
 
-    bool tableView() const;
-
-    QVector<bool> defaultColumnTableView() const;
+    bool filterHasChanged() const;
+    void setFilterHasChanged(bool filterHasChanged);
 
 signals:
     void loadFinished();
@@ -88,8 +89,6 @@ private:
     void loadDomains();
     double specVal2SortVal(double val);
     QVariant formatValue(double val) const;
-
-    void initTableView(int nrColDim, QVector<int> dimOrder);
 
 private:
     gdxHandle_t mGdx = nullptr;
@@ -119,7 +118,6 @@ private:
     QStringList mDomains;
 
     bool mDefaultColumn[GMS_VAL_MAX] {false};
-    QVector<bool> mDefaultColumnTableView;
 
     std::vector<double> mSpecValSortVal;
 
@@ -130,13 +128,7 @@ private:
     std::vector<int> mRecSortIdx;
     std::vector<int> mRecFilterIdx;
 
-    int mTvColDim;
-    QVector<int> mTvDimOrder;
-    QVector<QVector<uint>> mTvRowHeaders;
-    QVector<QVector<uint>> mTvColHeaders;
-    QHash<QVector<uint>, int> mTvKeysToValIdx;
-
-    bool mTableView = false;
+    bool mFilterHasChanged = false;
 };
 
 } // namespace gdxviewer

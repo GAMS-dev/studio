@@ -98,7 +98,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         if (!mSymbolViews.at(selectedIdx)) {
             GdxSymbolView* symView = new GdxSymbolView();
             mSymbolViews.replace(selectedIdx, symView);
-            symView->setSym(selectedSymbol);
+            symView->setSym(selectedSymbol, mGdxSymbolTable);
         }
 
         if (!selectedSymbol->isLoaded())
@@ -201,8 +201,8 @@ void GdxViewer::copySelectionToClipboard()
 bool GdxViewer::init()
 {
     int errNr = 0;
-
     gdxOpenRead(mGdx, mGdxFile.toLocal8Bit(), &errNr);
+
     if (errNr) {
         gdxClose(mGdx);
         char msg[GMS_SSSIZE];
