@@ -136,7 +136,7 @@ void SearchDialog::finalUpdate()
     updateEditHighlighting();
 
     if (!mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
-    else updateFindNextLabel(QTextCursor());
+    else updateMatchAmount();
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
