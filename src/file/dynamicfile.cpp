@@ -28,7 +28,6 @@ namespace studio {
 DynamicFile::DynamicFile(QString fileName, int backups, QObject *parent): QObject(parent), mBackups(backups)
 {
     mFile.setFileName(QDir::toNativeSeparators(fileName));
-
     if (mFile.exists()) runBackupCircle();
 }
 
@@ -45,7 +44,6 @@ void DynamicFile::appendLine(QString line)
     if (mFile.isOpen()) {
         mFile.write(line.toUtf8());
         mFile.write("\n");
-        mCloseTimer.start();
     }
 }
 
@@ -55,7 +53,6 @@ void DynamicFile::closeFile()
     if (mFile.isOpen()) {
         mFile.flush();
         mFile.close();
-        mCloseTimer.stop();
         runBackupCircle();
     }
 }
@@ -64,9 +61,7 @@ void DynamicFile::openFile()
 {
     QMutexLocker locker(&mMutex);
     if (!mFile.isOpen()) {
-        bool isOpened = mFile.open(QFile::Append);
-        if (isOpened) mCloseTimer.start();
-        else DEB() << "Could not open \"" + mFile.fileName() +"\"";
+        mFile.open(QFile::Append);
     }
 }
 

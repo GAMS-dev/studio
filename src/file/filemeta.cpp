@@ -582,8 +582,17 @@ bool FileMeta::isModified() const
 bool FileMeta::isReadOnly() const
 {
     AbstractEdit* edit = mEditors.isEmpty() ? nullptr : ViewHelper::toAbstractEdit(mEditors.first());
-    if (!edit) return true;
-    return edit->isReadOnly();
+    if (edit) return edit->isReadOnly();
+
+    if (kind() == FileKind::TxtRO
+            || kind() == FileKind::Lst
+            || kind() == FileKind::Lxi
+            || kind() == FileKind::Gdx
+            || kind() == FileKind::Ref
+            || kind() == FileKind::Log)
+        return true;
+    else
+        return false;
 }
 
 bool FileMeta::isAutoReload() const

@@ -30,7 +30,6 @@
 #include "search/searchdialog.h"
 #include "version.h"
 #include "commandlineparser.h"
-#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -344,8 +343,9 @@ void StudioSettings::loadUserSettings()
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-    QFont ff = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    setFontFamily(mUserSettings->value("fontFamily", ff.defaultFamily()).toString());
+    QFont font;
+    font.setStyleHint(QFont::Monospace);
+    setFontFamily(mUserSettings->value("fontFamily", font.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
