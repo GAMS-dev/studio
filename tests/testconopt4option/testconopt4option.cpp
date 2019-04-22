@@ -373,21 +373,21 @@ void TestConopt4Option::testReadOptionFile_data()
             << items.at(5)->key      << "cooptfile"
             << items.at(5)->value    << QVariant("\"C:/Users/Dude/coopt.file\"") << false
             << items.at(5)->text     << ""
-            << items.at(5)->optionId << 296
+            << items.at(5)->optionId << 298
             << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
     QTest::newRow("Tol_Bound=5.E-9 ; Bound filter tolerance for solution values close to a bound.")
             << items.at(6)->disabled <<  false
             << items.at(6)->key      << "Tol_Bound"
             << items.at(6)->value    << QVariant("5.E-9")  << true
             << items.at(6)->text     << "Bound filter tolerance for solution values close to a bound."
-            << items.at(6)->optionId << 222
+            << items.at(6)->optionId << 224
             << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
     QTest::newRow("HEAPLIMIT 1e20  # Maximum Heap size in MB allowed")
             << items.at(7)->disabled <<  false
             << items.at(7)->key      << "HEAPLIMIT"
             << items.at(7)->value    << QVariant("1e20")   << true
             << items.at(7)->text     << "Maximum Heap size in MB allowed"
-            << items.at(7)->optionId << 297
+            << items.at(7)->optionId << 299
             << static_cast<int>(items.at(7)->error)    << static_cast<int>(No_Error);
     QTest::newRow("Lim_Variable  1e+03 ")
             << items.at(8)->disabled <<  false
