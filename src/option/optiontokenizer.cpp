@@ -499,8 +499,8 @@ void OptionTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactiva
 QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
 {
     QString key = item->key.simplified();
-    QString value = item->value.toString();
-    QString text = item->text;
+    QString value = item->value.toString().simplified();
+    QString text = item->text.simplified();
     QString separator = (mOption->isDefaultSeparatorDefined() ? mOption->getDefaultSeparator() : " ");
 
     if (item->disabled) {
@@ -540,10 +540,14 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
                 value.append("\"");
         }
     }
+    QString returnStr(key.simplified());
+    if (!value.isEmpty())
+       returnStr.append(QString("%1%2").arg(separator).arg(value));
+
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
-       return QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text).simplified();
-    else
-       return QString("%1%2%3").arg(key).arg(separator).arg(value).simplified();
+       returnStr.append(QString(" %1 %2").arg(mEOLCommentChar).arg(text));
+
+    return returnStr;
 }
 
 bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str)

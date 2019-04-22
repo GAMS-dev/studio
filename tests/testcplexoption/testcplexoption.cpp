@@ -1174,7 +1174,7 @@ void TestCPLEXOption::testWriteOptionFile_data()
     items.append(new SolverOptionItem(195, "solnpoolintensity", "3", "", false));
     items.append(new SolverOptionItem(216, "tuning", "str1, str2, str3", "tuning str1, str2, str3", false));
     items.append(new SolverOptionItem(216, "tuning", "str 4, str 5", "tuning str 4, str 5", false));
-    items.append(new SolverOptionItem(-1, "feasoptmode 4 0.1", "", "feasoptmode 4 0.1", false));
+    items.append(new SolverOptionItem(-1, "feasoptmode=4", "", "", false));
 
     int size = items.size();
 
@@ -1209,23 +1209,23 @@ void TestCPLEXOption::testWriteOptionFile_data()
     QTest::newRow("line1") << optionItems.at(1) << "* this is a comment line";
     QTest::newRow("line2") << optionItems.at(2) << "";
     QTest::newRow("line3") << optionItems.at(3) << "";
-    QTest::newRow("line4") << optionItems.at(4) << "advind 1";
-    QTest::newRow("line5") << optionItems.at(5) << "cuts 2";
+    QTest::newRow("line4") << optionItems.at(4) << "advind=1";
+    QTest::newRow("line5") << optionItems.at(5) << "cuts=2";
     QTest::newRow("line6") << optionItems.at(6) << "* -----------------------]";
-    QTest::newRow("line7") << optionItems.at(7) << "cost.feaspref 0.9";
-    QTest::newRow("line8") << optionItems.at(8) << "x.feaspref 1.0";
+    QTest::newRow("line7") << optionItems.at(7) << "cost.feaspref=0.9";
+    QTest::newRow("line8") << optionItems.at(8) << "x.feaspref=1.0";
     QTest::newRow("line9") << optionItems.at(9) << "* -----------------------]";
-    QTest::newRow("line10") << optionItems.at(10) << "aggcutlim 1000000000";
+    QTest::newRow("line10") << optionItems.at(10) << "aggcutlim=1000000000";
     QTest::newRow("line11") << optionItems.at(11) << "* eprhs=0.001";
     QTest::newRow("line12") << optionItems.at(12) << "";
-    QTest::newRow("line13") << optionItems.at(13) << "benderspartitioninstage 1";
-    QTest::newRow("line14") << optionItems.at(14) << "dettilim 1e+075";
+    QTest::newRow("line13") << optionItems.at(13) << "benderspartitioninstage=1";
+    QTest::newRow("line14") << optionItems.at(14) << "dettilim=1e+075";
     QTest::newRow("line15") << optionItems.at(15) << "* rerun auto";
-    QTest::newRow("line16") << optionItems.at(16) << "solnpoolcapacity 1100000000 ! solnpoolcapacity=1100000000";
-    QTest::newRow("line17") << optionItems.at(17) << "solnpoolintensity 3";
-    QTest::newRow("line18") << optionItems.at(18) << "tuning \"str1, str2, str3\" ! tuning str1, str2, str3";
-    QTest::newRow("line19") << optionItems.at(19) << "tuning \"str 4, str 5\" ! tuning str 4, str 5";
-    QTest::newRow("line20") << optionItems.at(20) << "feasoptmode 4 0.1 ! feasoptmode 4 0.1";
+    QTest::newRow("line16") << optionItems.at(16) << "solnpoolcapacity=1100000000 ! solnpoolcapacity=1100000000";
+    QTest::newRow("line17") << optionItems.at(17) << "solnpoolintensity=3";
+    QTest::newRow("line18") << optionItems.at(18) << "tuning=\"str1, str2, str3\" ! tuning str1, str2, str3";
+    QTest::newRow("line19") << optionItems.at(19) << "tuning=\"str 4, str 5\" ! tuning str 4, str 5";
+    QTest::newRow("line20") << optionItems.at(20) << "feasoptmode=4";
 }
 
 void TestCPLEXOption::testWriteOptionFile()

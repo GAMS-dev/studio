@@ -552,12 +552,12 @@ void TestGUROBIOption::testWriteOptionFile_data()
     QTest::addColumn<QString>("optionString");
     QTest::addColumn<QString>("line");
 
-    QTest::newRow("line0") << optionItems.at(0) <<  "cliquecuts 1";
-    QTest::newRow("line1") << optionItems.at(1) << "computeserver \"https://server1/ https://server2/\"";
-    QTest::newRow("line2") << optionItems.at(2) << "intfeastol 1e-3";
+    QTest::newRow("line0") << optionItems.at(0) <<  "cliquecuts=1";
+    QTest::newRow("line1") << optionItems.at(1) << "computeserver=\"https://server1/ https://server2/\"";
+    QTest::newRow("line2") << optionItems.at(2) << "intfeastol=1e-3";
     QTest::newRow("line3") << optionItems.at(3) <<  "* -x-x-x--------------------";
-    QTest::newRow("line4") << optionItems.at(4) << "method 3";
-    QTest::newRow("line5") << optionItems.at(5) << "perturbvalue 0.0012345";
+    QTest::newRow("line4") << optionItems.at(4) << "method=3";
+    QTest::newRow("line5") << optionItems.at(5) << "perturbvalue=0.0012345";
 
 }
 

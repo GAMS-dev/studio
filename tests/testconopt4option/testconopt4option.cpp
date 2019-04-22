@@ -366,7 +366,7 @@ void TestConopt4Option::testReadOptionFile_data()
             << items.at(4)->key      << "Flg_Hessian"
             << items.at(4)->value    << QVariant("1")  << false
             << items.at(4)->text     << ""
-            << items.at(4)->optionId << 279
+            << items.at(4)->optionId << 281
             << static_cast<int>(items.at(4)->error)    << static_cast<int>(No_Error);
     QTest::newRow("cooptfile \"C:/Users/Dude/coopt.file\"")
             << items.at(5)->disabled <<  false
@@ -474,21 +474,21 @@ void TestConopt4Option::testWriteOptionFile_data()
 
     QTest::addColumn<QString>("optionString");
     QTest::addColumn<QString>("line");
+    QTest::addColumn<QString>("writtenLine");
 
-    QTest::newRow("line0") << optionItems.at(0) << "DF_Method 1";
-    QTest::newRow("line1") << optionItems.at(1) << "Lim_Iteration 100";
-    QTest::newRow("line2") << optionItems.at(2) << "Tol_Bound 5.e-9";
-    QTest::newRow("line3") << optionItems.at(3) << "Tol_Optimality 1.e-10";
-    QTest::newRow("line4") << optionItems.at(4) << "cooptfile \"C:/Users/Programs Files/Dude/coopt.file\"";
-
+    QTest::newRow("line0") << optionItems.at(0) << "DF_Method 1"           << "DF_Method=1";
+    QTest::newRow("line1") << optionItems.at(1) << "Lim_Iteration 100"     << "Lim_Iteration=100";
+    QTest::newRow("line2") << optionItems.at(2) << "Tol_Bound 5.e-9"       << "Tol_Bound=5.e-9";
+    QTest::newRow("line3") << optionItems.at(3) << "Tol_Optimality 1.e-10" << "Tol_Optimality=1.e-10";
+    QTest::newRow("line4") << optionItems.at(4) << "cooptfile \"C:/Users/Programs Files/Dude/coopt.file\"" << "cooptfile=\"C:/Users/Programs Files/Dude/coopt.file\"";
 }
 
 void TestConopt4Option::testWriteOptionFile()
 {
     QFETCH(QString, optionString);
-    QFETCH(QString, line);
+    QFETCH(QString, writtenLine);
 
-    QCOMPARE( optionString, line );
+    QCOMPARE( optionString, writtenLine );
 }
 
 void TestConopt4Option::testEOLChars()

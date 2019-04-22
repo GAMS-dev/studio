@@ -610,28 +610,30 @@ void TestMINOSOption::testWriteOptionFile_data()
 
     QTest::addColumn<QString>("optionString");
     QTest::addColumn<QString>("line");
+    QTest::addColumn<QString>("writtenLine");
 
-    QTest::newRow("line0") << optionItems.at(0) <<  "* summary frequency 1234";
-    QTest::newRow("line1") << optionItems.at(1) <<  "summary frequency 1000";
-    QTest::newRow("line2") << optionItems.at(2) <<  "crash option 3";
-    QTest::newRow("line3") << optionItems.at(3) <<  "factorization frequency 99";
+    QTest::newRow("line0") << optionItems.at(0) <<  "* summary frequency 1234"   <<  "* summary frequency 1234";
+    QTest::newRow("line1") << optionItems.at(1) <<  "summary frequency 1000"     <<  "summary frequency=1000";
+    QTest::newRow("line2") << optionItems.at(2) <<  "crash option 3"             <<  "crash option=3";
+    QTest::newRow("line3") << optionItems.at(3) <<  "factorization frequency 99" <<  "factorization frequency=99";
 
-    QTest::newRow("line4") << optionItems.at(4) <<  "LU factor tolerance 2e+8";
-    QTest::newRow("line5") << optionItems.at(5) <<  "optimality tolerance 1.0e-2";
+    QTest::newRow("line4") << optionItems.at(4) <<  "LU factor tolerance 2e+8"    <<  "LU factor tolerance=2e+8";
+    QTest::newRow("line5") << optionItems.at(5) <<  "optimality tolerance 1.0e-2" <<  "optimality tolerance=1.0e-2";
 
-    QTest::newRow("line6")  << optionItems.at(6)  <<  "solution YES";
-    QTest::newRow("line7")  << optionItems.at(7)  <<  "start assigned nonlinears \"ELIGIBLE FOR CRASH\"";
-    QTest::newRow("line8")  << optionItems.at(8)  <<  "LU complete pivoting";
-    QTest::newRow("line9")  << optionItems.at(9)  <<  "scale no";
-    QTest::newRow("line10") << optionItems.at(10) <<  "verify gradients";
+    QTest::newRow("line6")  << optionItems.at(6)  <<  "solution YES"              <<  "solution=YES";
+    QTest::newRow("line7")  << optionItems.at(7)  <<  "start assigned nonlinears \"ELIGIBLE FOR CRASH\"" <<  "start assigned nonlinears=\"ELIGIBLE FOR CRASH\"";
+    QTest::newRow("line8")  << optionItems.at(8)  <<  "LU complete pivoting"      <<  "LU complete pivoting";
+    QTest::newRow("line9")  << optionItems.at(9)  <<  "scale no"                  <<  "scale no";
+    QTest::newRow("line10") << optionItems.at(10) <<  "verify gradients"          <<  "verify gradients";
 }
 
 void TestMINOSOption::testWriteOptionFile()
 {
     QFETCH(QString, optionString);
     QFETCH(QString, line);
+    QFETCH(QString, writtenLine);
 
-    QCOMPARE( optionString, line );
+    QCOMPARE( optionString, writtenLine );
 }
 
 void TestMINOSOption::testEOLChars()
