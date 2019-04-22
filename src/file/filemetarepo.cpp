@@ -83,6 +83,16 @@ void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
     watch(fileMeta);
 }
 
+bool FileMetaRepo::askBigFileEdit() const
+{
+    return mAskBigFileEdit;
+}
+
+void FileMetaRepo::setAskBigFileEdit(bool askBigFileEdit)
+{
+    mAskBigFileEdit = askBigFileEdit;
+}
+
 void FileMetaRepo::removeFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
@@ -92,31 +102,31 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
     }
 }
 
-void FileMetaRepo::toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine)
+void FileMetaRepo::toggleBookmark(FileId fileId, int lineNr, int posInLine)
 {
-    if (mTextMarkRepo->marks(fileId, lineNr, groupId, TextMark::bookmark).isEmpty()) {
+    if (mTextMarkRepo->marks(fileId, lineNr, -1, TextMark::bookmark, 1).isEmpty()) {
         // add bookmark
-        mTextMarkRepo->createMark(fileId, groupId, TextMark::bookmark, -1, lineNr, posInLine);
+        mTextMarkRepo->createMark(fileId, TextMark::bookmark, lineNr, posInLine);
     } else {
         // remove bookmark
-        mTextMarkRepo->removeMarks(fileId, groupId, QSet<TextMark::Type>() << TextMark::bookmark, lineNr);
+        mTextMarkRepo->removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark, lineNr);
     }
 }
 
-void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr)
+void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, int refLineNr)
 {
     TextMark *bookmark = nullptr;
     if (mTextMarkRepo->hasBookmarks(refFileId)) {
-        bookmark = mTextMarkRepo->findBookmark(refFileId, refGroupId, refLineNr, back);
+        bookmark = mTextMarkRepo->findBookmark(refFileId, refLineNr, back);
     }
     FileMeta *fm = fileMeta(refFileId);
-    ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm, mProjectRepo->asGroup(refGroupId)) : nullptr;
+    ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm) : nullptr;
     ProjectAbstractNode * node = startNode;
     while (!bookmark && startNode) {
         node = back ? mProjectRepo->previous(node) : mProjectRepo->next(node);
         FileId fileId = node->toFile() ? node->toFile()->file()->id() : FileId();
         if (fileId.isValid() && mTextMarkRepo->hasBookmarks(fileId)) {
-            bookmark = mTextMarkRepo->findBookmark(fileId, node->parentNode()->id(), -1, back);
+            bookmark = mTextMarkRepo->findBookmark(fileId, -1, back);
         }
         if (node == startNode) break;
     }
@@ -172,7 +182,6 @@ QWidgetList FileMetaRepo::editors() const
 void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
     if (fileMeta->location().isEmpty()) return;
-
     mWatcher.removePath(fileMeta->location());
     mMissList.removeAll(fileMeta->location());
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
@@ -240,11 +249,6 @@ void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecM
     emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
 }
 
-//void FileMetaRepo::dirChanged(const QString &path)
-//{
-//    // TODO(JM) stack dir-name to check after timeout if it's deleted or contents has changed
-//}
-
 void FileMetaRepo::fileChanged(const QString &path)
 {
     FileMeta *file = fileMeta(path);
@@ -273,8 +277,8 @@ void FileMetaRepo::reviewRemoved()
         if (!file) continue;
         mProjectRepo->fileChanged(file->id());
         if (watch(file)) {
-            FileDifferences diff = file->compare();
-            if (diff.testFlag(FdMissing)) {
+            FileMeta::FileDifferences diff = file->compare();
+            if (diff.testFlag(FileMeta::FdMissing)) {
                 FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {
@@ -333,6 +337,7 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
     FileMeta* res = fileMeta(location);
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);
+        connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
         addFileMeta(res);
     }
     return res;

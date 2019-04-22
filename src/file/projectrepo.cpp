@@ -57,10 +57,10 @@ ProjectRepo::~ProjectRepo()
 
 void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMarkRepo *textMarkRepo)
 {
-    if (mFileRepo || mTextMarkRepo) FATAL() << "The ProjectRepo already has been initialized";
-    if (!treeView) FATAL() << "The ProjectTreeView must not be null";
-    if (!fileRepo) FATAL() << "The FileMetaRepo must not be null";
-    if (!textMarkRepo) FATAL() << "The TextMarkRepo must not be null";
+    Q_ASSERT_X(!mFileRepo && !mTextMarkRepo, "ProjectRepo initialization", "The ProjectRepo already has been initialized");
+    Q_ASSERT_X(treeView, "ProjectRepo initialization", "The ProjectTreeView must not be null");
+    Q_ASSERT_X(fileRepo, "ProjectRepo initialization", "The FileMetaRepo must not be null");
+    Q_ASSERT_X(textMarkRepo, "ProjectRepo initialization", "The TextMarkRepo must not be null");
     mTreeView = treeView;
     mFileRepo = fileRepo;
     mTextMarkRepo = textMarkRepo;
@@ -173,7 +173,7 @@ ProjectAbstractNode *ProjectRepo::previous(ProjectAbstractNode *node)
     } else {
         return node->parentNode();
     }
-    ProjectGroupNode *group = group = node->toGroup();
+    ProjectGroupNode *group = node->toGroup();
     while (group && group->childCount()) {
         node = group->childNode(group->childCount()-1);
         group = node->toGroup();
@@ -229,13 +229,13 @@ ProjectTreeModel*ProjectRepo::treeModel() const
 
 FileMetaRepo *ProjectRepo::fileRepo() const
 {
-    if (!mFileRepo) FATAL() << "Instance not initialized";
+    Q_ASSERT_X(mFileRepo, "ProjectRepo", "FileMetaRepo not initialized");
     return mFileRepo;
 }
 
 TextMarkRepo *ProjectRepo::textMarkRepo() const
 {
-    if (!mTextMarkRepo) FATAL() << "Instance not initialized";
+    Q_ASSERT_X(mTextMarkRepo, "ProjectRepo", "TextMarkRepo not initialized");
     return mTextMarkRepo;
 }
 
@@ -250,14 +250,14 @@ void ProjectRepo::read(const QJsonObject &json)
 void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray)
 {
     for (int i = 0; i < jsonArray.size(); ++i) {
-        QJsonObject jsonObject = jsonArray[i].toObject();
-        QString name = jsonObject["name"].toString("");
-        QString file = jsonObject["file"].toString("");
-        QString path = jsonObject["path"].toString("");
+        QJsonObject nodeObject = jsonArray[i].toObject();
+        QString name = nodeObject["name"].toString("");
+        QString file = nodeObject["file"].toString("");
+        QString path = nodeObject["path"].toString("");
         if (path.isEmpty()) path = QFileInfo(file).absolutePath();
-        if (jsonObject.contains("nodes")) {
+        if (nodeObject.contains("nodes")) {
             // group
-            QJsonArray gprArray = jsonObject["nodes"].toArray();
+            QJsonArray gprArray = nodeObject["nodes"].toArray();
             if (!gprArray.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
                 ProjectGroupNode* subGroup = createGroup(name, path, file, group);
                 if (subGroup) {
@@ -265,11 +265,11 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                     if (subGroup->isEmpty()) {
                         closeGroup(subGroup);
                     } else {
-                        bool expand = jsonObject["expand"].toBool(true);
+                        bool expand = nodeObject["expand"].toBool(true);
                         emit setNodeExpanded(mTreeModel->index(subGroup), expand);
                     }
                 }
-                QJsonArray optArray = jsonObject["options"].toArray();
+                QJsonArray optArray = nodeObject["options"].toArray();
                 if (!optArray.isEmpty() && subGroup->toRunGroup()) {
                     for (QVariant opt : optArray.toVariantList()) {
                         ProjectRunGroupNode *prgn = subGroup->toRunGroup();
@@ -281,9 +281,13 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
         } else {
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
-                FileType *ft = &FileType::from(jsonObject["type"].toString(""));
-                if (QFileInfo(file).exists())
-                    findOrCreateFileNode(file, group, ft, name);
+                FileType *ft = &FileType::from(nodeObject["type"].toString());
+                if (QFileInfo(file).exists()) {
+                    ProjectFileNode * node = findOrCreateFileNode(file, group, ft, name);
+                    if (nodeObject.contains("codecMib")) {
+                        node->file()->setCodecMib(nodeObject["codecMib"].toInt(-1));
+                    }
+                }
             }
         }
     }
@@ -300,35 +304,36 @@ void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArra
 {
     for (int i = 0; i < group->childCount(); ++i) {
         ProjectAbstractNode *node = group->childNode(i);
-        QJsonObject jsonObject;
+        QJsonObject nodeObject;
         bool expand = true;
         if (node->toGroup()) {
             if (ProjectRunGroupNode *runGroup = node->toRunGroup()) {
                 if (runGroup->runnableGms())
-                    jsonObject["file"] = node->toRunGroup()->runnableGms()->location();
+                    nodeObject["file"] = node->toRunGroup()->runnableGms()->location();
             }
             const ProjectGroupNode *subGroup = node->toGroup();
-            jsonObject["path"] = subGroup->location();
-            jsonObject["name"] = node->name();
+            nodeObject["path"] = subGroup->location();
+            nodeObject["name"] = node->name();
             if (subGroup->toRunGroup())
-                jsonObject["options"] = QJsonArray::fromStringList(subGroup->toRunGroup()->getRunParametersHistory());
+                nodeObject["options"] = QJsonArray::fromStringList(subGroup->toRunGroup()->getRunParametersHistory());
             emit isNodeExpanded(mTreeModel->index(subGroup), expand);
-            if (!expand) jsonObject["expand"] = false;
+            if (!expand) nodeObject["expand"] = false;
             QJsonArray subArray;
             writeGroup(subGroup, subArray);
-            jsonObject["nodes"] = subArray;
+            nodeObject["nodes"] = subArray;
 
         } else {
             const ProjectFileNode *file = node->toFile();
-            jsonObject["file"] = file->location();
-            jsonObject["name"] = file->name();
+            nodeObject["file"] = file->location();
+            nodeObject["name"] = file->name();
             if (node->toFile()) {
                 ProjectFileNode * fileNode = node->toFile();
-                if (!fileNode->file()->suffix().isEmpty())
-                    jsonObject["type"] = fileNode->file()->suffix().first();
+                nodeObject["type"] = fileNode->file()->kindAsStr();
+                int mib = fileNode->file()->codecMib();
+                if (mib) nodeObject["codecMib"] = mib;
             }
         }
-        jsonArray.append(jsonObject);
+        jsonArray.append(nodeObject);
     }
 }
 
@@ -432,8 +437,8 @@ void ProjectRepo::purgeGroup(ProjectGroupNode *group)
     }
 }
 
-ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType
-                                                   , QString explicitName)
+ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup, FileType *knownType,
+                                                   QString explicitName)
 {
     if (location.isEmpty())
         return nullptr;
@@ -626,7 +631,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     QList<NodeId> newIds;
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
-            ProjectFileNode* file = group->findOrCreateFileNode(item);
+            ProjectFileNode* file = findOrCreateFileNode(item, group);
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
         } else {
@@ -642,7 +647,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     }
     ProjectRunGroupNode *runGroup = group->toRunGroup();
     if (runGroup && !runGroup->runnableGms() && !gmsFiles.isEmpty()) {
-        runGroup->setSpecialFile(FileKind::Gms, gmsFiles.first()->location());
+        runGroup->setParameter("gms", gmsFiles.first()->location());
     }
     if (act & Qt::MoveAction) {
         for (NodeId nodeId: knownIds) {
@@ -747,30 +752,6 @@ void ProjectRepo::setDebugMode(bool debug)
     mFileRepo->setDebugMode(debug);
     mTextMarkRepo->setDebugMode(debug);
 }
-
-//void ProjectRepo::dump(ProjectAbstractNode *fc, int lv)
-//{
-//    if (!fc) return;
-
-//    qDebug() << QString("  ").repeated(lv) + "+ " + fc->location() + "  (" + fc->name() + ")";
-//    ProjectGroupNode *gc = qobject_cast<ProjectGroupNode*>(fc);
-//    if (!gc) return;
-//    for (int i=0 ; i < gc->childCount() ; i++) {
-//        ProjectAbstractNode *child = gc->childNode(i);
-//        dump(child, lv+1);
-//    }
-//}
-
-// TODO(JM) move implementation to AbstractEdit
-//void ProjectRepo::updateLinkDisplay(AbstractEdit *editUnderCursor)
-//{
-//    if (editUnderCursor) {
-//        ProjectFileNode *fc = fileNode(editUnderCursor);
-//        bool ctrl = QApplication::queryKeyboardModifiers() & Qt::ControlModifier;
-//        bool  isLink = fc->mouseOverLink();
-//        editUnderCursor->viewport()->setCursor(ctrl&&isLink ? Qt::PointingHandCursor : Qt::ArrowCursor);
-//    }
-//}
 
 } // namespace studio
 } // namespace gams

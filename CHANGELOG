@@ -1,0 +1,12 @@
+Version 0.11.0
+========================
+
+## General
+- fixed flickering of Studio when resizing
+- added "open anyway" to warning dialog for large files
+- changed icon of all editable non-GAMS files (prior that was only for txt files)
+
+## Editor
+- further syntax highlighter improvements
+- improved performance of error highlighting when editing a file contaning many
+- fixed highlighting of word under cursor when stepping through vertain search results

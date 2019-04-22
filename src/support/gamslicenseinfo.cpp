@@ -18,9 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslicenseinfo.h"
-#include "commonpaths.h"
 #include "locators/abstractsystemlogger.h"
 #include "locators/sysloglocator.h"
+#include "commonpaths.h"
+#include "exception.h"
+#include "common.h"
 #include "cfgmcc.h"
 #include "palmcc.h"
 #include "gclgms.h"
@@ -33,28 +35,42 @@ GamsLicenseInfo::GamsLicenseInfo()
 {
     auto logger = SysLogLocator::systemLog();
 
+    cfgSetExitIndicator(0); // switch of exit() call
+    cfgSetScreenIndicator(0);
+    cfgSetErrorCallback(GamsLicenseInfo::errorCallback);
+
     char msg[GMS_SSSIZE];
     if (!cfgCreateD(&mCFG,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
-                    sizeof(msg)))
+                    sizeof(msg))) {
         logger->append(msg, LogMsgType::Error);
+        EXCEPT() << "Could not open About GAMS dialog. " << msg;
+    }
     if (cfgReadConfig(mCFG,
                       CommonPaths::configFile().toStdString().c_str())) {
         cfgGetMsg(mCFG, msg);
         logger->append(msg, LogMsgType::Error);
     }
+
+    palSetExitIndicator(0); // switch of exit() call
+    palSetScreenIndicator(0);
+    palSetErrorCallback(GamsLicenseInfo::errorCallback);
+
     if (!palCreateD(&mPAL,
                     CommonPaths::systemDir().toStdString().c_str(),
                     msg,
-                    sizeof(msg)))
+                    sizeof(msg))) {
         logger->append(msg, LogMsgType::Error);
+        EXCEPT() << "Could not open About GAMS dialog. " << msg;
+    }
     int rc; // additional return code, not used here
     if (!palLicenseReadU(mPAL,
                          CommonPaths::licenseFile().toStdString().c_str(),
                          msg,
                          &rc))
         logger->append(msg, LogMsgType::Error);
+
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
@@ -141,6 +157,15 @@ char* GamsLicenseInfo::solverCodes(int solverId) const
     char msg[GMS_SSSIZE];
     char *codes = cfgAlgCode(mCFG, solverId, msg);
     return codes;
+}
+
+int GamsLicenseInfo::errorCallback(int count, const char *message)
+{
+    Q_UNUSED(count);
+    auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
+    logger->append(message, LogMsgType::Error);
+    return 0;
 }
 
 }

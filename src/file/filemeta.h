@@ -23,12 +23,14 @@
 #include <QWidget>
 #include <QDateTime>
 #include <QTextDocument>
+#include <QTableView>
 #include "syntax.h"
 #include "editors/codeedit.h"
 #include "editors/processlogedit.h"
 #include "reference/referenceviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
+#include "editors/textview.h"
 
 class QTabWidget;
 
@@ -37,26 +39,30 @@ namespace studio {
 
 class ProjectRunGroupNode;
 
-enum FileDifference {
-    FdEqual = 0x00,
-    FdMissing = 0x01,
-    FdTime = 0x02,
-    FdSize = 0x04,
-    FdName = 0x08,
-    FdType = 0x10,
-};
-typedef QFlags<FileDifference> FileDifferences;
 
 class FileMeta: public QObject
 {
     Q_OBJECT
 public:
+    enum FileDifference {
+        FdEqual = 0x00,
+        FdMissing = 0x01,
+        FdTime = 0x02,
+        FdSize = 0x04,
+        FdName = 0x08,
+        FdType = 0x10,
+    };
+    Q_ENUM(FileDifference)
+    typedef QFlags<FileDifference> FileDifferences;
+
+public:
     ~FileMeta() override;
     FileId id() const;
     QString location() const;
     QStringList suffix() const;
-    void setKind(FileKind fk);
+    void setKind(const QString &suffix);
     FileKind kind() const;
+    QString kindAsStr() const;
     QString name(NameModifier mod = NameModifier::raw);
     QTextDocument* document() const;
     int codecMib() const;
@@ -78,7 +84,7 @@ public:
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
-    void load(int codecMib);
+    void load(int codecMib, bool init = true);
     void save();
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
@@ -86,8 +92,8 @@ public:
     void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0);
     void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
-    ErrorHighlighter* highlighter() const;
-    void marksChanged(QSet<NodeId> groups = QSet<NodeId>());
+    syntax::SyntaxHighlighter *highlighter() const;
+    void marksChanged(QSet<int> lines = QSet<int>());
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
     void setLocation(const QString &location);
@@ -95,16 +101,17 @@ public:
 public slots:
     void reload();
 
-public: // static convenience methods
 signals:
     void changed(FileId fileId);
     void documentOpened();
     void documentClosed();
+    void editableFileSizeCheck(const QFile &file, bool &canOpen);
 
 private slots:
     void modificationChanged(bool modiState);
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
+    void updateMarks();
 
 private:
     struct Data {
@@ -136,21 +143,15 @@ private:
     QWidgetList mEditors;
     QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;
-    ErrorHighlighter* mHighlighter = nullptr;
+    syntax::SyntaxHighlighter* mHighlighter = nullptr;
     int mLineCount = 0;
     int mChangedLine = 0;
     bool mLoading = false;
     QTimer mTempAutoReloadTimer;
     QTimer mReloadTimer;
-
-    // TODO(JM): QTextBlock.userData  ->  TextMark
-    // TODO(JM): TextChanged events
-    // TODO(JM): FileChanged events
-    // TODO(JM): Autosave
-    // TODO(JM): Data-Reference ( QTextDocument / GDX / LST+LXI / ... )
-    // TODO(JM): FileState (opened, closed, changed, removed, ...)
-    // TODO(JM): FileType info
-
+    QTimer mDirtyLinesUpdater;
+    QSet<int> mDirtyLines;
+    QMutex mDirtyLinesMutex;
 };
 
 } // namespace studio

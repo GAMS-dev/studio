@@ -28,12 +28,12 @@ public:
     explicit TextMarkRepo(FileMetaRepo* fileRepo, ProjectRepo *projectRepo, QObject *parent = nullptr);
     ~TextMarkRepo() override;
 
-    void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1);
-    void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1);
+    void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
+    void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
     TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);
     TextMark* createMark(const FileId fileId, const NodeId groupId, TextMark::Type type, int value, int line, int column, int size = 0);
     bool hasBookmarks(FileId fileId);
-    TextMark* findBookmark(FileId fileId, NodeId groupId, int currentLine, bool back);
+    TextMark* findBookmark(FileId fileId, int currentLine, bool back);
     void removeBookmarks();
     QTextDocument* document(FileId fileId) const;
 
@@ -58,7 +58,7 @@ private:
 
 private:
     FileId ensureFileId(QString location);
-    void removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr);
+    void removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr, int lastLine);
 
 };
 

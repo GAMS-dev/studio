@@ -184,6 +184,8 @@ public:
     QString getOptionDefinitionFile() const;
     QString getOptionDefinitionPath() const;
 
+    static int errorCallback(int count, const char *message);
+
 private:
     QString mOptionDefinitionPath;
     QString mOptionDefinitionFile;

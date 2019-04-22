@@ -126,6 +126,8 @@ private:
     char* distribVersionString(char *version, size_t length);
     void getMessages(int &messageIndex, char *buffer);
 
+    static int errorCallback(int count, const char *message);
+
 private:
     bool mValid = true;
     c4uHandle_t mC4U;

@@ -1,7 +1,7 @@
 #ifndef NESTEDHEADERVIEW_H
 #define NESTEDHEADERVIEW_H
 
-#include "gdxsymbol.h"
+#include "tableviewmodel.h"
 
 #include <QHeaderView>
 #include <QPainter>
@@ -17,21 +17,43 @@ class NestedHeaderView : public QHeaderView
 public:
     NestedHeaderView(Qt::Orientation orientation, QWidget *parent = nullptr);
     ~NestedHeaderView() override;
-    void init();
+    void setModel(QAbstractItemModel *model) override;
+
+public slots:
+    void reset() override;
 
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
     void leaveEvent(QEvent *event) override;
     QSize sectionSizeFromContents(int logicalIndex) const override;
 
 private:
-    void calcSectionSize();
+    int pointToDimension(QPoint p);
+    int pointToDropDimension(QPoint p);
+    void bindScrollMechanism();
+    void decideAcceptDragEvent(QDragMoveEvent* event);
+    int toGlobalDim(int localDim, int orientation);
 
-    GdxSymbol* sym() const;
+    TableViewModel* sym() const;
     int dim() const;
-    QVector<int> mMaxSectionWidth;
     QPoint mMousePos = QPoint(-1,-1);
+    QPoint mDragStartPosition;
+
+    int dimIdxStart = -1;
+    int dimIdxEnd = -1;
+
+    int dragOrientationStart = -1;
+    int dragOrientationEnd = -1;
+
+    QVector<int> vhSectionWidth;
+    bool ddEnabled = true;
 };
 
 } // namespace gdxviewer

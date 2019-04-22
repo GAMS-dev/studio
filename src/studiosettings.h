@@ -144,6 +144,9 @@ public:
     bool autoCloseBraces() const;
     void setAutoCloseBraces(bool autoCloseBraces);
 
+    int editableMaxSizeMB() const;
+    void setEditableMaxSizeMB(int editableMaxSizeMB);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -176,6 +179,7 @@ private:
     bool mWriteLog;
     int mNrLogBackups;
     bool mAutoCloseBraces;
+    int mEditableMaxSizeMB;
 
     // misc settings page
     int mHistorySize;
@@ -188,9 +192,12 @@ private:
 
     // user model library directory
     QString mUserModelLibraryDir;
+    void checkAndUpdateSettings();
     void initSettingsFiles();
     void initDefaultColors();
     void loadViewStates(MainWindow *main);
+    bool isValidVersion(QString currentVersion);
+    int compareVersion(QString currentVersion, QString otherVersion);
 };
 
 }

@@ -31,7 +31,7 @@ TextMarkId TextMark::mNextId = 0;
 TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId groupId)
     : mId(mNextId++), mFileId(fileId), mGroupId(groupId), mMarkRepo(marks), mType(tmType)
 {
-    if (!mMarkRepo) FATAL() << "The TextMarkRepo must be a valid instance.";
+    Q_ASSERT_X(mMarkRepo, "TextMark constructor", "The TextMarkRepo must be a valid instance.");
 }
 
 void TextMark::setLine(int lineNr)
@@ -99,18 +99,9 @@ void TextMark::clearBackRefs()
         backRef->unsetRefMark(this);
     }
     mBackRefs.clear();
-    if (mBlockData) mBlockData->removeTextMark(this);
-    mBlockData = nullptr;
 }
 
-void TextMark::setBlockData(BlockData *blockData)
-{
-    // recent value of mBlockData is commonly invalid
-    mBlockData = blockData;
-    if (mBlockData) mBlockData->addTextMark(this);
-}
-
-QColor TextMark::color()
+QColor TextMark::color() const
 {
     if (mReference) {
         if (mReference->type() == TextMark::error) return Qt::darkRed;
@@ -133,7 +124,7 @@ FileKind TextMark::refFileKind()
 
 QIcon TextMark::icon()
 {
-    switch (mType) { // TODO(JM) hold ref to TextMark instead of icon
+    switch (mType) {
     case error:
         return QIcon(":/img/exclam-circle-r");
     case link:
@@ -149,10 +140,7 @@ QIcon TextMark::icon()
     return QIcon();
 }
 
-inline TextMark::Type TextMark::refType() const
-{
-    return (mReference) ? mReference->type() : none;
-}
+
 
 Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
 {

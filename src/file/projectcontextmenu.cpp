@@ -136,7 +136,7 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
 
     QString file;
     if (fileNode && fileNode->assignedRunGroup()) {
-        file = fileNode->assignedRunGroup()->specialFile(FileKind::Gms);
+        file = fileNode->assignedRunGroup()->parameter("gms");
         isRunnable = fileNode->location() == file;
     }
 
@@ -241,25 +241,14 @@ void ProjectContextMenu::onAddExisitingFile()
 
 void ProjectContextMenu::onAddNewFile()
 {
-    QString sourcePath = "";
-    emit getSourcePath(sourcePath);
-
-    QString filePath = QFileDialog::getSaveFileName(mParent,
-                                                    "Create new file...",
-                                                    sourcePath,
-                                                    tr("GAMS code (*.gms *.inc);;"
-                                                       "Text files (*.txt);;"
-                                                       "All files (*.*)"),
-                                                    nullptr,
-                                                    DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
-    if (filePath == "") return;
-
-    QFileInfo fi(filePath);
-    if (fi.suffix().isEmpty())
-        filePath += ".gms";
-
-    addNewFile(filePath);
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (!groups.contains(group))
+            groups << group;
+    }
+    emit newFileDialog(groups);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
@@ -366,7 +355,7 @@ void ProjectContextMenu::onReOpenSolverOptionFileAsText()
 
 void ProjectContextMenu::onOpenLog()
 {
-    if (mNodes.first()) emit openLogFor(mNodes.first(), true);
+    if (mNodes.first()) emit openLogFor(mNodes.first(), true, true);
 }
 
 void ProjectContextMenu::addNewFile(const QString &filePath)

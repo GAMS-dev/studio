@@ -116,6 +116,8 @@ private:
     };
     void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
+
+    void wheelEvent(QWheelEvent* e);
 };
 
 } // namespace studio

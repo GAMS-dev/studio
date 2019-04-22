@@ -28,7 +28,7 @@
 namespace gams {
 namespace studio {
 
-enum class Hotkey {
+enum struct Hotkey {
     // when key-setup can be persisted ensure the assignments won't change any more
 
     NewLine = 1,
@@ -37,6 +37,10 @@ enum class Hotkey {
     Paste = 12,
     Undo = 13,
     Redo = 14,
+    MoveViewLineUp = 15,
+    MoveViewLineDown = 16,
+    MoveViewPageUp = 17,
+    MoveViewPageDown = 18,
     MoveCharGroupRight = 21,
     MoveCharGroupLeft = 22,
     SelectCharGroupRight = 23,

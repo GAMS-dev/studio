@@ -48,6 +48,7 @@ public:
         Exiting,
         FollowupError,
     };
+    Q_ENUM(ExtractionState)
 
     ~ProjectFileNode() override;
 
@@ -79,7 +80,6 @@ protected:
 
 private:
     FileMeta* mFileMeta;
-    ErrorHighlighter* mSyntaxHighlighter = nullptr;
 };
 
 } // namespace studio

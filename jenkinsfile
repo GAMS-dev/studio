@@ -10,6 +10,7 @@ pipeline {
     agent none
 
     options {
+        parallelsAlwaysFailFast()
         buildDiscarder(logRotator(numToKeepStr: '20', daysToKeepStr: '5'))
         disableConcurrentBuilds()
     }
@@ -202,7 +203,7 @@ pipeline {
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build"
                                 call vcvars32.bat
                                 cd %WORKSPACE%\\tmp\\studio
-                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com/rfc3161 studio.exe
+                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com studio.exe
                             '''
                         }
                         script {
@@ -226,7 +227,7 @@ pipeline {
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                                 call vcvars64.bat
                                 cd %WORKSPACE%\\tmp\\studio
-                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com/rfc3161 studio.exe
+                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com studio.exe
                             '''
                         }
                         script {

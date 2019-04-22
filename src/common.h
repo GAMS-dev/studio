@@ -20,13 +20,15 @@
 
 #ifndef COMMON_H
 #define COMMON_H
-#include <qhashfunctions.h>
-
 #include <QHashFunctions>
+#include <QObject>
+#include <QTextStream>
+#include <QMetaEnum>
 
 namespace gams {
 namespace studio {
 
+const QString InvalidGAMS = "The GAMS system you use is not compatible with your version of GAMS Studio. Please use GAMS " GAMS_DISTRIB_VERSION_SHORT " or higher.";
 
 template <typename PHANTOM_TYPE>
 class PhantomInt
@@ -59,20 +61,24 @@ typedef PhantomInt<PiFileId> FileId;
 typedef PhantomInt<PiNodeId> NodeId;
 typedef PhantomInt<PiTextMarkId> TextMarkId;
 
-enum struct NameModifier {
+Q_NAMESPACE
+
+enum class NameModifier {
     raw,
     editState
 };
+Q_ENUM_NS(NameModifier)
 
-enum struct NodeType {
+enum class NodeType {
     root,
     group,
     runGroup,
     file,
     log
 };
+Q_ENUM_NS(NodeType)
 
-enum struct FileKind {
+enum class FileKind {
     None,
     Gsp,
     Gms,
@@ -84,24 +90,47 @@ enum struct FileKind {
     Gdx,
     Ref,
     Opt,
+    Dir
 };
+Q_ENUM_NS(FileKind)
 
 inline unsigned int qHash(FileKind key, unsigned int seed)
 {
     return ::qHash(static_cast<unsigned int>(key), seed);
 }
 
-enum struct EditorType {
+enum class EditorType {
     undefined = 0,
     source = 1,
     log = 2,
     syslog = 3,
     txt = 4,
-    lxiLst = 5,
-    gdx = 6,
-    ref = 7,
-    opt = 8,
+    txtRo = 5,
+    lxiLst = 6,
+    gdx = 7,
+    ref = 8,
+    opt = 9,
 };
+Q_ENUM_NS(EditorType)
+
+enum class FileEventKind {
+    invalid,
+    changed,
+    closed,
+    created,
+    changedExtern,
+    removedExtern,  // removed-event is delayed to improve recognition of moved- or rewritten-events
+};
+Q_ENUM_NS(FileEventKind)
+
+template <typename T>
+typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
+operator<<(QTextStream &dbg, T enumValue)
+{
+    const QMetaObject *mo = qt_getEnumMetaObject(enumValue);
+    int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
+    return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
+}
 
 }
 }

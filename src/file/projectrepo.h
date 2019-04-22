@@ -168,7 +168,6 @@ private:
     }
     bool parseGdxHeader(QString location);
 
-
 private:
     FileId mNextId;
     ProjectTreeView* mTreeView = nullptr;

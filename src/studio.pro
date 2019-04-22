@@ -94,6 +94,7 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/nestedheaderview.cpp \
+    gdxviewer/tableviewmodel.cpp \
     keys.cpp \
     locators/searchlocator.cpp \
     logger.cpp \
@@ -142,7 +143,7 @@ SOURCES += \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
-    syntax/errorhighlighter.cpp \
+    syntax/basehighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -155,21 +156,25 @@ SOURCES += \
     wplabel.cpp \
     gotodialog.cpp \
     editors/abstractedit.cpp \
+    editors/codeedit.cpp \
+    editors/editorhelper.cpp \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
+    editors/textmapper.cpp \
+    editors/textview.cpp \
+    editors/textviewedit.cpp \
+    editors/viewhelper.cpp \
     encodingsdialog.cpp \
-    editors/codeedit.cpp \
     tabdialog.cpp \
-    locators/settingslocator.cpp        \
-    locators/sysloglocator.cpp          \
-    locators/defaultsystemlogger.cpp    \
+    locators/settingslocator.cpp \
+    locators/sysloglocator.cpp \
+    locators/defaultsystemlogger.cpp \
     support/aboutgamsdialog.cpp         \
     support/gamslicenseinfo.cpp         \
     support/solvertablemodel.cpp        \
-    editors/viewhelper.cpp              \
-    editors/editorhelper.cpp \
     maintabcontextmenu.cpp \
-    logtabcontextmenu.cpp
+    logtabcontextmenu.cpp \
+    search/searchworker.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -207,6 +212,7 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/nestedheaderview.h \
+    gdxviewer/tableviewmodel.h \
     keys.h \
     locators/searchlocator.h \
     logger.h \
@@ -255,7 +261,8 @@ HEADERS += \
     statuswidgets.h \
     studiosettings.h \
     syntax.h \
-    syntax/errorhighlighter.h \
+    syntax/basehighlighter.h \
+    syntax/blockcode.h \
     syntax/syntaxdata.h \
     syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \
@@ -271,22 +278,26 @@ HEADERS += \
     wplabel.h \
     gotodialog.h \
     editors/abstractedit.h \
+    editors/codeedit.h \
+    editors/editorhelper.h \
     editors/processlogedit.h \
     editors/systemlogedit.h \
+    editors/textmapper.h \
+    editors/textview.h \
+    editors/textviewedit.h \
+    editors/viewhelper.h \
     encodingsdialog.h \
-    editors/codeedit.h \
     tabdialog.h \
     locators/settingslocator.h \
     locators/sysloglocator.h \
     locators/abstractsystemlogger.h \
-    locators/defaultsystemlogger.h  \
+    locators/defaultsystemlogger.h \
     support/aboutgamsdialog.h       \
     support/gamslicenseinfo.h       \
     support/solvertablemodel.h      \
-    editors/viewhelper.h            \
-    editors/editorhelper.h \
     maintabcontextmenu.h \
-    logtabcontextmenu.h
+    logtabcontextmenu.h \
+    search/searchworker.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

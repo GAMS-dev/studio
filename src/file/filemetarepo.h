@@ -57,17 +57,20 @@ public:
     static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
     void updateRenamed(FileMeta *file, QString oldLocation);
 
+    bool askBigFileEdit() const;
+    void setAskBigFileEdit(bool askBigFileEdit);
+
 signals:
     void fileEvent(FileEvent &e);
+    void editableFileSizeCheck(const QFile &file, bool &canOpen);
 
 public slots:
     void openFile(FileMeta* fm, NodeId groupId, bool focus = true, int codecMib = -1);
     void removeFile(FileMeta* fileMeta);
-    void toggleBookmark(FileId fileId, NodeId groupId, int lineNr, int posInLine);
-    void jumpToNextBookmark(bool back, FileId refFileId, NodeId refGroupId, int refLineNr);
+    void toggleBookmark(FileId fileId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, FileId refFileId, int refLineNr);
 
 private slots:
-//    void dirChanged(const QString& path);
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();
@@ -86,6 +89,7 @@ private:
     QStringList mRemoved; // List to be checked once
     QStringList mMissList; // List to be checked periodically
     QTimer mMissCheckTimer;
+    bool mAskBigFileEdit = true;
     bool mDebug = false;
 
 };

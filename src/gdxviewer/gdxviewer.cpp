@@ -22,7 +22,10 @@
 #include "gdxsymbol.h"
 #include "gdxsymboltable.h"
 #include "gdxsymbolview.h"
+#include "common.h"
 #include "exception.h"
+#include "locators/abstractsystemlogger.h"
+#include "locators/sysloglocator.h"
 
 #include <QMutex>
 #include <QtConcurrent>
@@ -49,6 +52,9 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     ui->tvSymbols->setPalette(palette);
 
     mGdxMutex = new QMutex();
+    gdxSetExitIndicator(0); // switch of exit() call
+    gdxSetScreenIndicator(0);
+    gdxSetErrorCallback(GdxViewer::errorCallback);
     char msg[GMS_SSSIZE];
     if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
         EXCEPT() << "Could not load GDX library: " << msg;
@@ -92,7 +98,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         if (!mSymbolViews.at(selectedIdx)) {
             GdxSymbolView* symView = new GdxSymbolView();
             mSymbolViews.replace(selectedIdx, symView);
-            symView->setSym(selectedSymbol);
+            symView->setSym(selectedSymbol, mGdxSymbolTable);
         }
 
         if (!selectedSymbol->isLoaded())
@@ -195,8 +201,8 @@ void GdxViewer::copySelectionToClipboard()
 bool GdxViewer::init()
 {
     int errNr = 0;
-
     gdxOpenRead(mGdx, mGdxFile.toLocal8Bit(), &errNr);
+
     if (errNr) {
         gdxClose(mGdx);
         char msg[GMS_SSSIZE];
@@ -290,10 +296,13 @@ void GdxViewer::toggleSearchColumns(bool checked)
         mSymbolTableProxyModel->setFilterKeyColumn(1);
 }
 
-void GdxViewer::reportIoError(int errNr, QString message)
+int GdxViewer::errorCallback(int count, const char *message)
 {
-    // TODO(JM) An exception contains information about it's source line -> it should be thrown where it occurs
-    EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
+    Q_UNUSED(count);
+    auto logger = SysLogLocator::systemLog();
+    logger->append(InvalidGAMS, LogMsgType::Error);
+    logger->append(message, LogMsgType::Error);
+    return 0;
 }
 
 } // namespace gdxviewer

@@ -20,6 +20,7 @@
 #ifndef OPTIONWIDGET_H
 #define OPTIONWIDGET_H
 
+#include <QDockWidget>
 #include <QWidget>
 
 #include "option.h"
@@ -58,18 +59,22 @@ public:
     void on_interruptAction();
     void on_stopAction();
 
-    void checkOptionDefinition(bool checked);
-    bool isOptionDefinitionChecked() const;
 
     OptionTokenizer *getOptionTokenizer() const;
     bool isAnOptionWidgetFocused(QWidget* focusWidget) const;
+
     QString getSelectedOptionName(QWidget* widget) const;
 
     QString getCurrentCommandLineData() const;
     void focus();
 
+    void runDefaultAction();
+
+    void setEditorExtended(bool extended);
+    bool isEditorExtended();
+    QDockWidget* extendedEditor() const;
+
 signals:
-    void optionEditorDisabled();
     void optionLoaded(const QString &location);
     void optionTableModelChanged(const QString &commandLineStr);
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
@@ -82,10 +87,8 @@ public slots:
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QStringList &history);
-    void disableOptionEditor();
 
 private slots:
-    void toggleOptionDefinition(bool checked);
     void on_newTableRowDropped(const QModelIndex &index);
     void on_optionTableNameChanged(const QString &from, const QString &to);
 
@@ -96,6 +99,7 @@ private:
     void setInterruptActionsEnabled(bool enable);
 
     Ui::OptionWidget *ui;
+    QDockWidget *mExtendedEditor = nullptr;
 
     QAction* actionRun;
     QAction* actionRun_with_GDX_Creation;
@@ -107,7 +111,6 @@ private:
 
     MainWindow* main;
 
-//    CommandLineHistory* mCommandLineHistory;
     OptionTokenizer* mOptionTokenizer;
 };
 

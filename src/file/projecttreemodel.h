@@ -78,7 +78,6 @@ protected:
 
     void update(const QModelIndex& ind = QModelIndex());
 
-
 private:
     ProjectRepo *mProjectRepo;
     ProjectGroupNode* mRoot = nullptr;

@@ -46,7 +46,6 @@ ProjectFileNode::~ProjectFileNode()
 void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
 {
     ProjectAbstractNode::setParentNode(parent);
-    // TODO(JM) setRunId in FileMeta
 }
 
 QIcon ProjectFileNode::icon()
@@ -54,7 +53,7 @@ QIcon ProjectFileNode::icon()
     ProjectGroupNode* par = parentNode();
     while (par && !par->toRunGroup()) par = par->parentNode();
     if (!par) return QIcon();
-    QString runMark = par->toRunGroup()->specialFile(FileKind::Gms) == location() ? "-run" : "";
+    QString runMark = par->toRunGroup()->parameter("gms") == location() ? "-run" : "";
     if (file()->kind() == FileKind::Gms)
         return QIcon(":/img/gams-w"+runMark);
     if (file()->kind() == FileKind::Gdx)
@@ -63,6 +62,8 @@ QIcon ProjectFileNode::icon()
         return QIcon(":/img/ref-file");
     if (file()->kind() == FileKind::Opt)
         return QIcon(":/img/option-file");
+    if (!file()->isReadOnly())
+        return QIcon(":/img/file-edit");
     return QIcon(":/img/file-alt"+runMark);
 }
 
