@@ -215,10 +215,13 @@
              <item>
               <widget class="QLineEdit" name="defaultSeparatorLineEdit">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="maxLength">
+                <number>5</number>
                </property>
                <property name="readOnly">
                 <bool>true</bool>
@@ -269,10 +272,13 @@
              <item>
               <widget class="QLineEdit" name="defaultStringquoteLineEdit">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="maxLength">
+                <number>5</number>
                </property>
                <property name="readOnly">
                 <bool>true</bool>
@@ -329,13 +335,16 @@
              <item>
               <widget class="QComboBox" name="eolCommentCharComboBox">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
                <property name="sizeAdjustPolicy">
                 <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+               </property>
+               <property name="minimumContentsLength">
+                <number>3</number>
                </property>
               </widget>
              </item>
