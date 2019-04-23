@@ -328,24 +328,42 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
     if (selection.count() <= 0)
         return;
 
-    QMenu menu(this);
-    QAction* addThisOptionAction = menu.addAction(QIcon(":/img/plus"), "add This Option");
-    menu.addSeparator();
-    QAction* copyAction = menu.addAction("Copy Text");
-    menu.addSeparator();
-    QAction* copyNameAction = menu.addAction("Copy Option Name");
-    QAction* copyDescriptionAction = menu.addAction("Copy Description");
-
-    QAction* action = menu.exec(ui->solverOptionTreeView->viewport()->mapToGlobal(pos));
-    if (action == copyAction) {
-        copyDefinitionToClipboard( -1 );
-    } else if (action == copyNameAction) {
-        copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_OPTION_NAME );
-    } else if (action == copyDescriptionAction) {
-        copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_DESCIPTION );
-    } else if (action == addThisOptionAction) {
-         addOptionFromDefinition(selection.at(0));
+    bool hasSelectionBeenAdded = (selection.size()>0);
+    bool isThereEnumerationSelection = false;
+    for (QModelIndex idx : selection) {
+        if (ui->solverOptionTreeView->model()->parent(idx).row() < 0) {
+            QVariant data = ui->solverOptionTreeView->model()->data(idx, Qt::CheckStateRole);
+            hasSelectionBeenAdded &= (Qt::CheckState(data.toInt()) == Qt::Checked);
+            isThereEnumerationSelection |= false;
+        } else {
+            isThereEnumerationSelection |= true;
+        }
     }
+
+    QMenu menu(this);
+    for(QAction* action : this->actions()) {
+        if (action->objectName().compare("actionFindThisOption")==0) {
+            action->setVisible( !isThereEnumerationSelection && hasSelectionBeenAdded );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionAddThisOption")==0) {
+            action->setVisible( isThereEnumerationSelection || !hasSelectionBeenAdded );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionDeleteThisOption")==0) {
+            action->setVisible( !isThereEnumerationSelection && hasSelectionBeenAdded );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionCopyDefinitionText")==0) {
+            menu.addAction(action);
+        } else if (action->objectName().compare("actionCopyDefinitionOptionName")==0) {
+            menu.addAction(action);
+        } else if (action->objectName().compare("actionCopyDefinitionOptionDescription")==0) {
+            menu.addAction(action);
+        }
+    }
+
+    menu.exec(ui->solverOptionTreeView->viewport()->mapToGlobal(pos));
 }
 
 void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
@@ -366,6 +384,10 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                         ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
                                                              ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
+
+//    QVariant data = ui->solverOptionTreeView->model()->data(optionNameIndex, Qt::CheckStateRole);
+//    if (Qt::CheckState(data.toUInt())==Qt::Checked) {
+//    }
 
     QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
     QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
@@ -628,6 +650,28 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
     }
     QClipboard* clip = QApplication::clipboard();
     clip->setText( text );
+}
+
+void SolverOptionWidget::findAndSelectionOptionFromDefinition()
+{
+    QModelIndex idx = ui->solverOptionTreeView->model()->index( ui->solverOptionTreeView->selectionModel()->currentIndex().row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
+    QVariant data = ui->solverOptionTreeView->model()->data( idx, Qt::DisplayRole );
+    QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
+                                                                       Qt::DisplayRole,
+                                                                       data.toString(), Qt::MatchRecursive);
+    ui->solverOptionTableView->clearSelection();
+    QItemSelection selection;
+    qDebug() << __FUNCTION__ << "::"<< mOptionTableModel->getColumnEntryNumber()<<"::" << data.toString() << "::" << indices.size();
+    for(QModelIndex i :indices) {
+        qDebug() << "      :: ("<< i.row() << "," << i.column() << ")" ;
+        QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(i.row(), 0);
+        QModelIndex rightIndex = ui->solverOptionTableView->model()->index(i.row(), ui->solverOptionTableView->model()->columnCount() -1);
+
+        QItemSelection rowSelection(leftIndex, rightIndex);
+        selection.merge(rowSelection, QItemSelectionModel::Select);
+    }
+
+    ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
 }
 
 void SolverOptionWidget::toggleCommentOption()
@@ -913,6 +957,51 @@ void SolverOptionWidget::addActions()
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(showDefinitionAction);
+
+
+    QAction* findThisOptionAction = mContextMenu.addAction("find This Option", [this]() {
+        findAndSelectionOptionFromDefinition();
+    });
+    findThisOptionAction->setObjectName("actionFindThisOption");
+    findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(findThisOptionAction);
+
+    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "add This Option", [this]() {
+        QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
+        if (selection.size()>0)
+            addOptionFromDefinition(selection.at(0));
+    });
+    addThisOptionAction->setObjectName("actionAddThisOption");
+    addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(addThisOptionAction);
+
+    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete This Option", [this]() {
+        findAndSelectionOptionFromDefinition();
+        deleteOption();
+    });
+    deleteThisOptionAction->setObjectName("actionDeleteThisOption");
+    deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(deleteThisOptionAction);
+
+    QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy Definition Text",
+                                                               [this]() { copyDefinitionToClipboard( -1 ); });
+    copyDefinitionTextAction->setObjectName("actionCopyDefinitionText");
+    copyDefinitionTextAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(copyDefinitionTextAction);
+
+    QAction* copyDefinitionOptionNameAction = mContextMenu.addAction("Copy Definition Option Name",
+                                                                     [this]() { copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_OPTION_NAME ); });
+    copyDefinitionOptionNameAction->setObjectName("actionCopyDefinitionOptionName");
+    copyDefinitionOptionNameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(copyDefinitionOptionNameAction);
+
+    QAction* copyDefinitionOptionDescriptionAction = mContextMenu.addAction("Copy Definition Description",
+                                                                            [this]() { copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_DESCIPTION ); });
+    copyDefinitionOptionDescriptionAction->setObjectName("actionCopyDefinitionOptionDescription");
+    copyDefinitionOptionDescriptionAction->setShortcutVisibleInContextMenu(true);
+    copyDefinitionOptionDescriptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(copyDefinitionOptionDescriptionAction);
+
 }
 
 void SolverOptionWidget::updateEditActions(bool modified)
