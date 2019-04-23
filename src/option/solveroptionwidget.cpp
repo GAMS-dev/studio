@@ -449,6 +449,9 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     showOptionDefinition();
 
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
+
+    if (parentIndex.row()<0)
+        ui->solverOptionTableView->edit(insertValueIndex);
 }
 
 
@@ -988,8 +991,10 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
         ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
-
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
+
+    ui->solverOptionTableView->edit( ui->solverOptionTableView->model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE ));
+
 }
 
 void SolverOptionWidget::setModified(bool modified)
