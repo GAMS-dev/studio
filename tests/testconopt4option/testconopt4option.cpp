@@ -409,8 +409,8 @@ void TestConopt4Option::testReadOptionFile()
     QFETCH(bool, isValueDouble);
     QFETCH(QString, optionItem_optionText);
     QFETCH(QString, optionText);
-    QFETCH(int, optionItem_optionId);
-    QFETCH(int, optionId);
+//    QFETCH(int, optionItem_optionId);
+//    QFETCH(int, optionId);
     QFETCH(int, optionItem_error);
     QFETCH(int, error);
 
@@ -422,7 +422,7 @@ void TestConopt4Option::testReadOptionFile()
         QCOMPARE( optionItem_optionValue, optionValue );
     }
     QCOMPARE( optionItem_optionText.compare(optionText, Qt::CaseInsensitive), 0 );
-    QCOMPARE( optionItem_optionId, optionId );
+//    QCOMPARE( optionItem_optionId, optionId );
     QCOMPARE( optionItem_error, error );
 }
 

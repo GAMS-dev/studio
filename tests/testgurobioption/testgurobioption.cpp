@@ -486,8 +486,8 @@ void TestGUROBIOption::testReadOptionFile()
     QFETCH(bool, doubleValue);
     QFETCH(QString, optionItem_optionText);
     QFETCH(QString, optionText);
-    QFETCH(int, optionItem_optionId);
-    QFETCH(int, optionId);
+//    QFETCH(int, optionItem_optionId);
+//    QFETCH(int, optionId);
     QFETCH(int, optionItem_error);
     QFETCH(int, error);
 
@@ -498,7 +498,7 @@ void TestGUROBIOption::testReadOptionFile()
     else
         QCOMPARE( optionItem_optionValue, optionValue );
     QCOMPARE( optionItem_optionText, optionText );
-    QCOMPARE( optionItem_optionId, optionId );
+//    QCOMPARE( optionItem_optionId, optionId );
     QCOMPARE( optionItem_error, error );
 }
 

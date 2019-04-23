@@ -541,8 +541,8 @@ void TestMINOSOption::testReadOptionFile()
     QFETCH(QVariant, optionValue);
     QFETCH(QString, optionItem_optionText);
     QFETCH(QString, optionText);
-    QFETCH(int, optionItem_optionId);
-    QFETCH(int, optionId);
+//    QFETCH(int, optionItem_optionId);
+//    QFETCH(int, optionId);
     QFETCH(int, optionItem_error);
     QFETCH(int, error);
 
@@ -550,7 +550,7 @@ void TestMINOSOption::testReadOptionFile()
     QCOMPARE( optionItem_optionKey, optionKey );
     QCOMPARE( optionItem_optionValue, optionValue );
     QCOMPARE( optionItem_optionText, optionText );
-    QCOMPARE( optionItem_optionId, optionId );
+//    QCOMPARE( optionItem_optionId, optionId );
     QCOMPARE( optionItem_error, error );
 }
 
