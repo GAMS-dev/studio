@@ -831,13 +831,25 @@ void SolverOptionWidget::deleteOption()
         return;
 
     if (isThereARowSelection() && isEverySelectionARow()) {
-        QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
-        QModelIndex index = selection.at(0);
-        QModelIndex removeTableIndex = mOptionTableModel->index(index.row(), 0);
-        QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
+        QItemSelection selection( ui->solverOptionTableView->selectionModel()->selection() );
 
-        ui->solverOptionTableView->model()->removeRows(index.row(), selection.count(), QModelIndex());
-        mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
+        QList<int> rows;
+        foreach( const QModelIndex & index, selection.indexes() ) {
+           rows.append( index.row() );
+        }
+        std::sort(rows.begin(), rows.end());
+
+        int prev = -1;
+        for(int i=rows.count()-1; i>=0; i--) {
+           int current = rows[i];
+           if (current != prev) {
+               QModelIndex removeTableIndex = mOptionTableModel->index(i, 0);
+               QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
+               ui->solverOptionTableView->model()->removeRows( current, 1 );
+               mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
+               prev = current;
+           }
+        }
         updateTableColumnSpan();
         setModified(true);
         emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
