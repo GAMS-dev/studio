@@ -971,14 +971,14 @@ void SolverOptionWidget::addActions()
     addAction(showDefinitionAction);
 
 
-    QAction* findThisOptionAction = mContextMenu.addAction("find This Option", [this]() {
+    QAction* findThisOptionAction = mContextMenu.addAction("show Selection of This Option", [this]() {
         findAndSelectionOptionFromDefinition();
     });
     findThisOptionAction->setObjectName("actionFindThisOption");
     findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(findThisOptionAction);
 
-    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "add This Option", [this]() {
+    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Option", [this]() {
         QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
             addOptionFromDefinition(selection.at(0));
@@ -987,7 +987,7 @@ void SolverOptionWidget::addActions()
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(addThisOptionAction);
 
-    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete This Option", [this]() {
+    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "remove This Option", [this]() {
         findAndSelectionOptionFromDefinition();
         deleteOption();
     });
