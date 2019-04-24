@@ -131,6 +131,8 @@ private:
 
     bool init();
 
+    QString getOptionTableEntry(int row);
+
     MainWindow* getMainWindow();
 
 };

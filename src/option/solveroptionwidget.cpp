@@ -217,6 +217,28 @@ bool SolverOptionWidget::init()
     }
 }
 
+QString SolverOptionWidget::getOptionTableEntry(int row)
+{
+    QModelIndex keyIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_KEY);
+    QVariant optionKey = ui->solverOptionTableView->model()->data(keyIndex, Qt::DisplayRole);
+    if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(row, Qt::Vertical, Qt::CheckStateRole).toInt())==Qt::PartiallyChecked) {
+        return QString("%1 %2").arg(mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0)) :"#")
+                               .arg(optionKey.toString());
+    } else {
+        QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
+        QModelIndex commentIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+        QVariant optionComment = ui->solverOptionTableView->model()->data(commentIndex, Qt::DisplayRole);
+        if (mOptionTokenizer->getOption()->isEOLCharDefined() && !optionComment.toString().isEmpty()) {
+            return QString("%1%2%3  %4 %5").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString())
+                                           .arg(QString(mOptionTokenizer->getOption()->getEOLChars().at(0)))
+                                           .arg(optionComment.toString());
+        } else {
+            return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
+        }
+   }
+}
+
 bool SolverOptionWidget::isInFocused(QWidget *focusWidget)
 {
     return (focusWidget==ui->solverOptionTableView || focusWidget==ui->solverOptionTreeView);
@@ -418,6 +440,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         ui->solverOptionTableView->model()->setData( insertKeyIndex, descriptionData, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
+
         if (parentIndex.row() >= 0) {  // insert enum comment description row
             descriptionIndex = ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
             QString strData =  selectedValueData;
@@ -455,6 +478,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
+
+    mOptionTokenizer->logger()->append(QString("Option entry '%1' added").arg(getOptionTableEntry(insertNumberIndex.row())), LogMsgType::Info);
 
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
     int lastRow = ui->solverOptionTableView->model()->rowCount()-1;
@@ -664,9 +689,7 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
                                                                        data.toString(), Qt::MatchRecursive);
     ui->solverOptionTableView->clearSelection();
     QItemSelection selection;
-    qDebug() << __FUNCTION__ << "::"<< mOptionTableModel->getColumnEntryNumber()<<"::" << data.toString() << "::" << indices.size();
     for(QModelIndex i :indices) {
-        qDebug() << "      :: ("<< i.row() << "," << i.column() << ")" ;
         QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(i.row(), 0);
         QModelIndex rightIndex = ui->solverOptionTableView->model()->index(i.row(), ui->solverOptionTableView->model()->columnCount() -1);
 
@@ -846,10 +869,9 @@ void SolverOptionWidget::deleteOption()
         for(int i=rows.count()-1; i>=0; i--) {
            int current = rows[i];
            if (current != prev) {
-               QModelIndex removeTableIndex = mOptionTableModel->index(i, 0);
-               QVariant optionName = mOptionTableModel->data(removeTableIndex, Qt::DisplayRole);
+               QString text = getOptionTableEntry(current);
                ui->solverOptionTableView->model()->removeRows( current, 1 );
-               mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
+               mOptionTokenizer->logger()->append(QString("Option entry '%1' deleted").arg(text), LogMsgType::Info);
                prev = current;
            }
         }
