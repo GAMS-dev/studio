@@ -68,6 +68,11 @@ QChar SolverOptionSetting::getDefaultEOLCharacter() const
     return mDefaultEOLChar;
 }
 
+void SolverOptionSetting::on_overrideExistingOptionCheckBox_stateChanged(int checkState)
+{
+    emit overrideExistingOptionChanged(checkState);
+}
+
 void SolverOptionSetting::on_addCommentAboveCheckBox_stateChanged(int checkState)
 {
     emit addCommentAboveChanged(checkState);

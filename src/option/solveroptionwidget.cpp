@@ -206,6 +206,7 @@ bool SolverOptionWidget::init()
         connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, this, &SolverOptionWidget::on_addEOLCommentChanged);
         connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, mOptionTableModel, &SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged);
 
+        connect(settingEdit, &SolverOptionSetting::overrideExistingOptionChanged, this, &SolverOptionWidget::on_overrideExistingOptionChanged);
         connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAboveChanged);
         connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
         connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);
@@ -410,11 +411,63 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QVariant data = ui->solverOptionTreeView->model()->data(optionNameIndex, Qt::CheckStateRole);
     if (Qt::CheckState(data.toUInt())==Qt::Checked) {
         findAndSelectionOptionFromDefinition();
-        deleteOption();
-        return;
     }
 
+    bool replaceExistingEntry = false;
     QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
+    QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
+                                                        ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
+    QString optionIdData = ui->solverOptionTreeView->model()->data(optionIdIndex).toString();
+    QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
+                                                                        Qt::DisplayRole,
+                                                                        optionIdData, Qt::MatchRecursive);
+    if (overrideExistingOption) {
+        bool singleEntryExisted = (indices.size()==1);
+        bool multipleEntryExisted = (indices.size()>1);
+        if (singleEntryExisted ) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Option has been added");
+            msgBox.setText("Option '" + optionNameData + "' already exists in your option file.");
+            msgBox.setInformativeText("Do you want to add another entry or replace the entry?");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
+            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
+
+            switch(msgBox.exec()) {
+            case 0: // TODO: replace
+                replaceExistingEntry = true;
+                return;
+            case 1: // add
+                break;
+            case QMessageBox::Abort:
+                return;
+            }
+        } else if (multipleEntryExisted){
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Multiple Entries existed");
+            msgBox.setText("Multiple entries of Option '" + optionNameData + "' already exists in your option file.");
+            msgBox.setInformativeText("??");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
+            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
+
+            switch(msgBox.exec()) {
+            case 0: // delete and replace
+                // TODO: replace other
+                for(QModelIndex idx : indices ) { qDebug() << "row(" << idx.row() << "," << idx.column() << ")"; }
+                deleteOption(true);
+                replaceExistingEntry = true;
+
+                return;
+            case 1: // add
+                break;
+            case QMessageBox::Abort:
+                return;
+            }
+
+        }
+    }
+
     QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
@@ -591,6 +644,11 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
     ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
 
     emit main->projectRepo()->openFile(fileMeta, true, runGroup, -1, true);
+}
+
+void SolverOptionWidget::on_overrideExistingOptionChanged(int checkState)
+{
+    overrideExistingOption = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
 void SolverOptionWidget::on_addCommentAboveChanged(int checkState)
@@ -846,8 +904,10 @@ void SolverOptionWidget::insertComment()
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 }
 
-void SolverOptionWidget::deleteOption()
+void SolverOptionWidget::deleteOption(bool keepFirstOne)
 {
+    Q_UNUSED(keepFirstOne);
+    qDebug() << __FUNCTION__ << ":" << (keepFirstOne ? "true" : "false");
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );

@@ -89,8 +89,9 @@ public slots:
     void on_compactViewCheckBox_stateChanged(int checkState);
     void on_openAsTextButton_clicked(bool checked = false);
 
-   void on_addCommentAboveChanged(int checkState);
-   void on_addEOLCommentChanged(int checkState);
+    void on_overrideExistingOptionChanged(int checkState);
+    void on_addCommentAboveChanged(int checkState);
+    void on_addEOLCommentChanged(int checkState);
 
 private slots:
     void showOptionDefinition();
@@ -101,7 +102,7 @@ private slots:
     void selectAnOption();
     void insertOption();
     void insertComment();
-    void deleteOption();
+    void deleteOption(bool keepFirstOne = false);
     void moveOptionUp();
     void moveOptionDown();
 
@@ -111,6 +112,7 @@ private:
     QString mLocation;
     QString mSolverName;
 
+    bool overrideExistingOption = false;
     bool addCommentAbove = false;
     bool addEOLComment = false;
 
