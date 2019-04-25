@@ -99,6 +99,8 @@ void ProjectLogNode::logDone()
     }
     mRepaintCount = -1;
     mErrorCount = 0;
+    for (QWidget *edit: file()->editors())
+        if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 }
 
 void ProjectLogNode::addProcessData(const QByteArray &data)

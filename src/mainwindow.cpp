@@ -1337,7 +1337,7 @@ void MainWindow::postGamsRun(NodeId origin)
 
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
         for (QWidget *edit: lstNode->file()->editors())
-            if (TextView* tv = ViewHelper::toTextView(edit)) tv->reload();
+            if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 
         bool alreadyJumped = false;
         if (mSettings->jumpToError())

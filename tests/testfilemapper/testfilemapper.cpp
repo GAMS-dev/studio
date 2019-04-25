@@ -76,7 +76,7 @@ void TestFileMapper::init()
 
 void TestFileMapper::cleanup()
 {
-    mMapper->closeAndReset(true);
+    mMapper->startRun();
     delete mMapper;
     mMapper = nullptr;
 }

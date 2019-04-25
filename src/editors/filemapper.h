@@ -47,11 +47,9 @@ public:
     ~FileMapper() override;
 
     bool openFile(const QString &fileName, bool initAnchor);
-    bool reopenFile();
     qint64 size() const override { return mSize; }
-
-    void closeAndReset(bool initAnchor) override;
-
+    void startRun() override;
+    void endRun() override;
     int lineCount() const override;
 
 public slots:
@@ -59,13 +57,14 @@ public slots:
 
 protected:
     Chunk *getChunk(int chunkNr) const override;
-    Chunk *loadChunk(int chunkNr) const override;
+    void chunkUncached(Chunk *&chunk) const override;
 
 private slots:
+    void closeAndReset();
     void closeFile();                                           //2FF
 
 private:
-    void deleteChunkIfUnused(Chunk *&chunk) override;
+    bool reload();
 
 private:
     mutable QFile mFile;                // mutable to provide consistant logical const-correctness

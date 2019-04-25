@@ -96,15 +96,14 @@ void TextView::closeFile()
 {
 }
 
-void TextView::reload()
+void TextView::endRun()
 {
-    if (mTextKind == FileText)
-        static_cast<FileMapper*>(mMapper)->reopenFile();
+    mMapper->endRun();
 }
 
 void TextView::prepareRun()
 {
-    mMapper->closeAndReset(false);
+    mMapper->startRun();
     ChangeKeeper x(mDocChanging);
     mEdit->clear();
     topLineMoved();

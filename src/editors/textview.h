@@ -43,8 +43,8 @@ public:
     explicit TextView(TextKind kind, QWidget *parent = nullptr);
     bool loadFile(const QString &fileName, int codecMib, bool initAnchor);
     void closeFile();
-    void reload();
     void prepareRun();
+    void endRun();
     qint64 fileSize() const;
     int lineCount() const;
     int knownLines() const;

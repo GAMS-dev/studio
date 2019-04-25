@@ -15,6 +15,9 @@ qint64 MemoryMapper::size() const
 
 void MemoryMapper::closeAndReset(bool initAnchor)
 {
+    if (mChunks.size()) {
+        mRecent << Recent(mChunks.size()-1);
+    }
     // prepare new section
 }
 
@@ -23,9 +26,14 @@ bool MemoryMapper::setMappingSizes(int bufferedLines, int chunkSizeInBytes, int 
     return AbstractTextMapper::setMappingSizes(bufferedLines, chunkSizeInBytes, chunkOverlap);
 }
 
+void MemoryMapper::startRun()
+{
+    closeAndReset(false);
+}
+
 AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const
 {
-    // clarify how to manage chunks()
+    // clarify how to manage chunk-cache and internal chunks
     // 1. recentChunks = the count of chunks declared as recent
     // 2. first active chunk = recentChunk + 1
     // 3. pre-allocate full chunks
@@ -34,11 +42,6 @@ AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const
     //    a. mark last line of first active chunk with "..."
     //    b. append new data at last chunk
     //    c. reduce second active chunk
-    return nullptr;
-}
-
-AbstractTextMapper::Chunk *MemoryMapper::loadChunk(int chunkNr) const
-{
     return nullptr;
 }
 

@@ -35,7 +35,7 @@ FileMapper::FileMapper(QObject *parent): AbstractTextMapper(parent)
     connect(&mTimer, &QTimer::timeout, this, &FileMapper::closeFile);
     mPeekTimer.setSingleShot(true);
     connect(&mPeekTimer, &QTimer::timeout, this, &FileMapper::peekChunksForLineNrs);
-    closeAndReset(true);
+    closeAndReset();
 }
 
 FileMapper::~FileMapper()
@@ -46,7 +46,8 @@ FileMapper::~FileMapper()
 bool FileMapper::openFile(const QString &fileName, bool initAnchor)
 {
     if (!fileName.isEmpty()) {
-        closeAndReset(initAnchor);
+        closeAndReset();
+        if (initAnchor) setPosAbsolute(nullptr, 0, 0);
         mFile.setFileName(fileName);
         if (!mFile.open(QFile::ReadOnly)) {
             DEB() << "Could not open file " << fileName;
@@ -54,12 +55,8 @@ bool FileMapper::openFile(const QString &fileName, bool initAnchor)
         }
         mSize = mFile.size();
         int chunkCount = int(mFile.size()/chunkSize())+1;
-        chunkLineNrs().reserve(chunkCount);
-        for (int i = chunkLineNrs().size(); i < chunkCount; ++i) {
-            // initialize elements
-            chunkLineNrs() << ChunkLines(i);
-        }
-        Chunk *chunk = getChunk(0);
+        initChunkCount(chunkCount);
+        Chunk *chunk = setActiveChunk(0);
         if (chunk && chunk->isValid()) {
             if (initAnchor) initTopLine();
             updateMaxTop();
@@ -70,7 +67,7 @@ bool FileMapper::openFile(const QString &fileName, bool initAnchor)
     return false;
 }
 
-bool FileMapper::reopenFile()
+bool FileMapper::reload()
 {
     QString fileName = mFile.fileName();
     if (!size() && !fileName.isEmpty()) {
@@ -79,44 +76,19 @@ bool FileMapper::reopenFile()
     return size();
 }
 
-void FileMapper::closeAndReset(bool initAnchor)
+void FileMapper::closeAndReset()
 {
-    for (Chunk *block: chunks()) {
-        mFile.unmap(block->map);
+    Chunk * chunk = activeChunk();
+    while (chunk) {
+        uncacheChunk(chunk);
+        chunk = activeChunk();
     }
     closeFile();
     mSize = 0;
-    AbstractTextMapper::closeAndReset(initAnchor);
+    reset();
 }
 
-
-FileMapper::Chunk *FileMapper::getChunk(int chunkNr) const
-{
-    int foundIndex = -1;
-    for (int i = chunks().size()-1; i >= 0; --i) {
-        if (chunks().at(i)->nr == chunkNr) {
-            foundIndex = i;
-            break;
-        }
-    }
-    if (foundIndex < 0) {
-        if (chunks().size() == maxChunks()) {
-            Chunk * delChunk = chunks().takeFirst();
-            mFile.unmap(delChunk->map);
-            delete delChunk;
-        }
-        Chunk *newChunk = loadChunk(chunkNr);
-        if (!newChunk) return nullptr;
-        chunks() << newChunk;
-
-    } else if (foundIndex < chunks().size()-1) {
-        chunks().move(foundIndex, chunks().size()-1);
-    }
-    return chunks().last();
-}
-
-
-FileMapper::Chunk* FileMapper::loadChunk(int chunkNr) const
+FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
 {
     qint64 chunkStart = qint64(chunkNr) * chunkSize();
     if (chunkStart < 0 || chunkStart >= size()) return nullptr;
@@ -172,6 +144,23 @@ FileMapper::Chunk* FileMapper::loadChunk(int chunkNr) const
     return res;
 }
 
+void FileMapper::chunkUncached(AbstractTextMapper::Chunk *&chunk) const
+{
+    mFile.unmap(chunk->map);
+    delete chunk;
+    chunk = nullptr;
+}
+
+void FileMapper::startRun()
+{
+    closeAndReset();
+}
+
+void FileMapper::endRun()
+{
+    reload();
+}
+
 void FileMapper::closeFile()
 {
     QMutexLocker locker(&mMutex);
@@ -190,24 +179,15 @@ int FileMapper::lineCount() const
     return int(res);
 }
 
-void FileMapper::deleteChunkIfUnused(Chunk *&chunk)
-{
-    if (!isMapped(chunk)) {
-        mFile.unmap(chunk->map);
-        delete chunk;
-        chunk = nullptr;
-    }
-}
-
 void FileMapper::peekChunksForLineNrs()
 {
     // peek and keep timer alive if not done
     int known = lastChunkWithLineNr();
     Chunk *chunk = nullptr;
     for (int i = 1; i <= 4; ++i) {
-        chunk = loadChunk(known + i);
+        chunk = getChunk(known + i);
         if (!chunk) break;
-        deleteChunkIfUnused(chunk);
+        if (!isCached(chunk)) chunkUncached(chunk);
     }
     if (lastChunkWithLineNr() < this->chunkCount()-1) mPeekTimer.start(50);
 

@@ -42,35 +42,14 @@ class AbstractTextMapper: public QObject
 {
     Q_OBJECT
 
-protected:
-
-    struct Chunk {  // a mapped part of a file
-        int nr = -1;
-        qint64 start = -1;
-        int size = 0;
-        uchar* map = nullptr;
-        QByteArray bArray;
-        QVector<int> lineBytes;
-        bool isValid() const { return start >= 0;}
-        int lineCount() const { return lineBytes.size()-1; }
-    };
+private:
     struct LinePosition {
         int chunkNr = 0;
         qint64 absStart = 0;
         int localLine = 0;
         int lineCount = 0;
     };
-    struct ChunkLines {
-        ChunkLines(int nr = 0, int lines = -1, int lineOffset = -1)
-            : chunkNr(nr), lineCount(lines), lineOffset(lineOffset) {}
-        inline bool isKnown() const { return lineCount >= 0; }
-        inline bool hasLineNrs() const { return lineCount >= 0 && lineOffset >= 0; }
-        int chunkNr = 0;
-        qint64 linesStartPos = 0;
-        int linesByteSize = 0;
-        int lineCount = -1;
-        int lineOffset = -1;
-    };
+
     struct CursorPosition {
         bool operator ==(const CursorPosition &other) const {
             return chunkNr == other.chunkNr && absLinePos == other.absLinePos && charNr == other.charNr; }
@@ -85,6 +64,30 @@ protected:
         int lineLen = -1;
     };
 
+    struct ChunkLines {
+        ChunkLines(int nr = 0, int lines = -1, int lineOffset = -1)
+            : chunkNr(nr), lineCount(lines), lineOffset(lineOffset) {}
+        inline bool isKnown() const { return lineCount >= 0; }
+        inline bool hasLineNrs() const { return lineCount >= 0 && lineOffset >= 0; }
+        int chunkNr = 0;
+        qint64 linesStartPos = 0;
+        int linesByteSize = 0;
+        int lineCount = -1;
+        int lineOffset = -1;
+    };
+
+protected:
+    struct Chunk {  // a mapped part of a file
+        int nr = -1;
+        qint64 start = -1;
+        int size = 0;
+        uchar* map = nullptr;
+        QByteArray bArray;
+        QVector<int> lineBytes;
+        bool isValid() const { return start >= 0;}
+        int lineCount() const { return lineBytes.size()-1; }
+    };
+
 public:
     ~AbstractTextMapper();
 
@@ -92,7 +95,8 @@ public:
     void setCodec(QTextCodec *codec);                           // share FM + MM
 
     virtual bool isEmpty() const;
-    virtual void closeAndReset(bool initAnchor);                        // share FM + MM    // 2FF CC
+    virtual void startRun();
+    virtual void endRun();
     virtual void createSection();
     virtual qint64 size() const = 0;                                    // share FM + MM
     virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
@@ -133,38 +137,40 @@ signals:
 protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
+    virtual void reset();
     inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
+    Chunk *setActiveChunk(int chunkNr) const;
+    Chunk *activeChunk();
+    void uncacheChunk(Chunk *&chunk);
     virtual Chunk *getChunk(int chunkNr) const = 0;
-    virtual Chunk *loadChunk(int chunkNr) const = 0;
     void initDelimiter(Chunk *chunk) const;
     virtual bool updateMaxTop();
-    virtual void deleteChunkIfUnused(Chunk *&chunk);
+    virtual void chunkUncached(Chunk *&chunk) const;
     void updateLineOffsets(Chunk *chunk) const;
-    bool setTopOffset(qint64 byteNr);
-    bool setTopLine(int lineNr);
-    int findChunk(int lineNr);
-    void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC
-    QPoint convertPos(const CursorPosition &pos) const;
-    QPoint convertPosLocal(const CursorPosition &pos) const;
-    QString lines(Chunk *chunk, int startLine, int &lineCount) const; // CC
-    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const; // CC
-    bool isMapped(Chunk *chunk) { return mChunks.contains(chunk); }
-    QVector<Chunk*>& chunks() const { return mChunks; }
-    int maxChunks() const;
+    bool isCached(Chunk *chunk);
     int chunkSize() const;
     int maxLineWidth() const;
-    QVector<ChunkLines> chunkLineNrs() const;
+    void initChunkCount(int count) const;
     int lastChunkWithLineNr() const;
     void initTopLine();
+    void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC
 
 private:
+    QString lines(Chunk *chunk, int startLine, int &lineCount) const;
+    QString line(Chunk *chunk, int chunkLineNr) const;
+    bool setTopLine(int lineNr);
+    bool setTopOffset(qint64 byteNr);
     void updateBytesPerLine(const ChunkLines &chunkLines) const;
-    Chunk *chunkForLine(int absLine, int *lineInChunk) const;   // CC
-    QString line(Chunk *chunk, int chunkLineNr) const;          // CC
+    int maxChunks() const;
+    int findChunk(int lineNr);
+    Chunk *chunkForLine(int absLine, int *lineInChunk) const;
+    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
+    QPoint convertPos(const CursorPosition &pos) const;
+    QPoint convertPosLocal(const CursorPosition &pos) const;
 
 private:
     mutable QByteArray mDelimiter;
-    mutable QVector<Chunk*> mChunks;
+    mutable QVector<Chunk*> mChunkCache;
     mutable QVector<ChunkLines> mChunkLineNrs;
     mutable int mLastChunkWithLineNr = -1;
     mutable double mBytesPerLine = 20.0;
