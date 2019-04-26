@@ -37,6 +37,7 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
     ui->tableView->setModel(mResultList);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
+    ui->tableView->setTextElideMode(Qt::ElideLeft);
 }
 
 ResultsView::~ResultsView()
@@ -46,7 +47,7 @@ ResultsView::~ResultsView()
 
 void ResultsView::resizeColumnsToContent()
 {
-    ui->tableView->resizeColumnToContents(0);
+    ui->tableView->setColumnWidth(0, this->width()/3);
     ui->tableView->resizeColumnToContents(1);
 }
 
