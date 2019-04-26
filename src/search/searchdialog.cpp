@@ -141,8 +141,6 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
 {
     QList<FileMeta*> umodified;
     QList<FileMeta*> modified; // need to be treated differently
-    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
-    fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
     if (fml.isEmpty() && skipFilters) fml = mMain->fileRepo()->fileMetas();
     else if (fml.isEmpty()) fml = getFilesByScope();
@@ -198,6 +196,9 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
 QList<FileMeta*> SearchDialog::getFilesByScope()
 {
     QList<FileMeta*> files;
+    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
+    fileFilter.setPatternSyntax(QRegExp::Wildcard);
+
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
         if (mMain->recent()->editor())
@@ -218,6 +219,12 @@ QList<FileMeta*> SearchDialog::getFilesByScope()
     default:
         break;
     }
+
+    // apply filter
+    for (FileMeta* fm : files) {
+        if (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)
+            files.removeAll(fm);
+    }
     return files;
 }
 
@@ -227,16 +234,13 @@ void SearchDialog::replaceAll()
 
     QList<FileMeta*> opened;
     QList<FileMeta*> unopened;
-    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
-    fileFilter.setPatternSyntax(QRegExp::Wildcard);
 
     int matchedFiles = 0;
 
-    // sort anid filter FMs by editability, selected scope and open state
+    // sort and filter FMs by editability and open state
     for (FileMeta* fm : fml) {
         // check if filtered by pattern (when not SearchScope == ThisFile)
-        if (fm->isReadOnly() ||
-                (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)) {
+        if (fm->isReadOnly()) {
             fml.removeOne(fm);
             continue;
         }
