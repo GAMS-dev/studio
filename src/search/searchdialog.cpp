@@ -481,8 +481,8 @@ void SearchDialog::searchResume()
 
 void SearchDialog::on_combo_scope_currentIndexChanged(int index)
 {
-    ui->combo_filePattern->setEnabled(index != SearchScope::ThisFile);
     searchParameterChanged();
+    updateReplaceActionAvailability();
 }
 
 void SearchDialog::on_btn_back_clicked()
@@ -607,6 +607,7 @@ void SearchDialog::updateReplaceActionAvailability()
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txtRo;
+    activateSearch = activateSearch || (ui->combo_scope->currentIndex() != SearchScope::ThisFile);
 
     AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     bool activateReplace = (edit && !edit->isReadOnly());
@@ -628,7 +629,6 @@ void SearchDialog::updateReplaceActionAvailability()
     ui->cb_wholeWords->setEnabled(activateSearch);
 
     ui->combo_filePattern->setEnabled(activateSearch && (ui->combo_scope->currentIndex() != SearchScope::ThisFile));
-    ui->combo_scope->setEnabled(activateSearch);
 
     // tab was switched and cache was created for last file focussed
     invalidateCache();

@@ -161,8 +161,6 @@ void FileMeta::linkDocument(QTextDocument *doc)
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
     }
-//    if (mHighlighter)
-//        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
 void FileMeta::unlinkAndFreeDocument()
