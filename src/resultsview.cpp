@@ -67,9 +67,25 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, qMax(item.colNr(), 0));
 }
 
-SearchResultList* ResultsView::resultList() const
+SearchResultList* ResultsView::searchResultList() const
 {
     return mResultList;
+}
+
+void ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
+{
+    if (ui->tableView->selectionModel()->hasSelection()) {
+        // todo: jump to next selected row
+        int row = ui->tableView->selectionModel()->selectedRows(0).first().row();
+        if (backwards)
+            ui->tableView->selectRow(row - 1);
+        else
+            ui->tableView->selectRow(row + 1);
+
+        on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+    } else {
+        // todo: create selection from cursor
+    }
 }
 
 }

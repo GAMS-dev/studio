@@ -83,6 +83,7 @@ void SearchDialog::on_btn_FindAll_clicked()
     if (!mSearching) {
         if (createRegex().pattern().isEmpty()) return;
         mShowResults = true;
+        mHasChanged = false;
 
         setSearchOngoing(true);
         clearResults();
@@ -403,12 +404,64 @@ void SearchDialog::findNext(SearchDirection direction)
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
     mShowResults = false;
-    setSearchOngoing(true);
     // only cache when we have changes, no cache, or are not searching a large file
     if ((!mCachedResults || mHasChanged) && !ViewHelper::toTextView(mMain->recent()->editor()))
         updateSearchCache();
 
-    selectNextMatch(direction);
+    if (mResultsView) {
+        QWidget* edit = mMain->recent()->editor();
+        CodeEdit* ce = ViewHelper::toCodeEdit(edit);
+
+        QTextCursor tc = (ce) ? ce->textCursor() : QTextCursor();
+        mResultsView->selectNextItem(ViewHelper::location(edit), tc, direction);
+
+    } else selectNextMatch(direction);
+
+    setSearchStatus(SearchStatus::Clear);
+}
+
+///
+/// \brief SearchDialog::selectNextMatch steps through words in a document
+/// \param direction
+/// \param second is second time entering this function, to avoid too deep recursion
+///
+void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
+{
+    QTextCursor matchSelection;
+    QRegularExpression searchRegex = createRegex();
+
+    setSearchStatus(SearchStatus::Searching);
+
+    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+    if (!fc) return;
+    QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
+
+    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
+
+        if (matchSelection.isNull()) { // empty selection == reached end of document
+
+            QTextCursor tc(edit->document()); // set to top
+            if (direction == SearchDirection::Backward)
+                tc.movePosition(QTextCursor::End); // move to bottom
+            edit->setTextCursor(tc);
+
+            // try once more to start over
+            if (!second) selectNextMatch(direction, true);
+            else setSearchStatus(SearchStatus::NoResults);
+
+        } else { // found next match
+            edit->jumpTo(matchSelection);
+            edit->setTextCursor(matchSelection);
+        }
+    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+
+        mSplitSearchView = tv;
+        mSplitSearchFlags = flags;
+        mSplitSearchContinue = false;
+        searchResume();
+    }
+    updateFindNextLabel(matchSelection);
 }
 
 void SearchDialog::showEvent(QShowEvent *event)
@@ -483,7 +536,7 @@ void SearchDialog::searchResume()
     setSearchOngoing(false);
 }
 
-void SearchDialog::on_combo_scope_currentIndexChanged(int index)
+void SearchDialog::on_combo_scope_currentIndexChanged(int)
 {
     searchParameterChanged();
     updateReplaceActionAvailability();
@@ -534,7 +587,7 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
 
     int count = 0;
     // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
-    for (Result match: mCachedResults->resultList()) {
+    for (Result match: mCachedResults->resultsAsList()) {
         if (match.lineNr() == matchSelection.blockNumber()+1
                 && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
             updateMatchAmount(count+1);
@@ -544,49 +597,6 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
         }
     }
     updateMatchAmount();
-}
-
-void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
-{
-    QTextCursor matchSelection;
-    QRegularExpression searchRegex = createRegex();
-
-    setSearchStatus(SearchStatus::Searching);
-
-    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
-    if (!fc) return;
-    QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
-
-    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
-
-        if (matchSelection.isNull()) { // empty selection == reached end of document
-
-            QTextCursor tc(edit->document()); // set to top
-            if (direction == SearchDirection::Backward)
-                tc.movePosition(QTextCursor::End); // move to bottom
-            edit->setTextCursor(tc);
-
-            // try once more to start over
-            if (!second) selectNextMatch(direction, true);
-            else setSearchStatus(SearchStatus::NoResults);
-
-        } else { // found next match
-            edit->jumpTo(matchSelection);
-            edit->setTextCursor(matchSelection);
-        }
-    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-
-        mSplitSearchView = tv;
-        mSplitSearchFlags = flags;
-        mSplitSearchContinue = false;
-        searchResume();
-    }
-
-    // set match and counter
-    setSearchOngoing(false);
-    setSearchStatus(SearchStatus::Clear);
-    updateFindNextLabel(matchSelection);
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
@@ -796,7 +806,7 @@ QRegularExpression SearchDialog::createRegex()
 void SearchDialog::invalidateCache()
 {
     // if cache is also used in ui dont delete list
-    if (resultsView() && mCachedResults == resultsView()->resultList())
+    if (resultsView() && mCachedResults == resultsView()->searchResultList())
         mCachedResults = nullptr;
     else if (mCachedResults){
         delete mCachedResults;

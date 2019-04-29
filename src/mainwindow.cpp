@@ -2419,6 +2419,7 @@ void MainWindow::closeResultsPage()
 {
     int index = ui->logTabs->indexOf(searchDialog()->resultsView());
     if (index != -1) ui->logTabs->removeTab(index);
+    mSearchDialog->setResultsView(nullptr);
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)

@@ -32,7 +32,7 @@ class SearchResultList : public QAbstractTableModel
 public:
     SearchResultList();
     virtual ~SearchResultList() override;
-    QList<Result> resultList() const;
+    QList<Result> resultsAsList() const;
     QMultiHash<QString, QList<Result> > resultHash() const;
     void addResult(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
     QList<Result> filteredResultList(QString fileLocation);

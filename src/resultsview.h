@@ -21,6 +21,7 @@
 #define RESULTSVIEW_H
 
 #include <QTableWidget>
+#include <QTextCursor>
 #include <QWidget>
 #include "search/searchresultlist.h"
 
@@ -39,10 +40,11 @@ class ResultsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit ResultsView(SearchResultList* resultList, MainWindow *parent = nullptr);
+    explicit ResultsView(SearchResultList* searchResultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
-    SearchResultList* resultList() const;
+    SearchResultList* searchResultList() const;
+    void selectNextItem(QString file, QTextCursor tc, bool backwards = false);
 
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);

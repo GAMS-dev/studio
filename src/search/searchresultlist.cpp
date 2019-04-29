@@ -31,7 +31,7 @@ SearchResultList::~SearchResultList()
 {
 }
 
-QList<Result> SearchResultList::resultList() const
+QList<Result> SearchResultList::resultsAsList() const
 {
     QList<Result> result;
     for (QList<Result> rl : mResultHash.values())
