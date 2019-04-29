@@ -670,6 +670,8 @@ void SolverOptionWidget::showOptionDefinition()
     if (indexSelection.count() <= 0)
         return;
 
+    ui->solverOptionGroup->setCurrentIndex(0);
+    ui->solverOptionSearch->clear();
     ui->solverOptionTreeView->selectionModel()->clearSelection();
     selectAnOption();
 
