@@ -32,7 +32,6 @@ AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 {
     mCodec = QTextCodec::codecForLocale();
     setMappingSizes();
-    startRun();
     setPosAbsolute(nullptr, 0, 0);
 }
 
@@ -91,12 +90,6 @@ bool AbstractTextMapper::isEmpty() const
 {
     return true;
 }
-
-void AbstractTextMapper::startRun()
-{  }
-
-void AbstractTextMapper::endRun()
-{  }
 
 bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mBufferedLineCount
 {

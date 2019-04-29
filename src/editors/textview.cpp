@@ -92,21 +92,17 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
     return true;
 }
 
-void TextView::closeFile()
-{
-}
-
-void TextView::endRun()
-{
-    mMapper->endRun();
-}
-
 void TextView::prepareRun()
 {
     mMapper->startRun();
     ChangeKeeper x(mDocChanging);
     mEdit->clear();
     topLineMoved();
+}
+
+void TextView::endRun()
+{
+    mMapper->endRun();
 }
 
 qint64 TextView::fileSize() const

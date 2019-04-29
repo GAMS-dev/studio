@@ -1,11 +1,12 @@
 #include "memorymapper.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
-
+    moveToRecent();
 }
 
 qint64 MemoryMapper::size() const
@@ -13,7 +14,7 @@ qint64 MemoryMapper::size() const
     return 0;
 }
 
-void MemoryMapper::closeAndReset(bool initAnchor)
+void MemoryMapper::moveToRecent()
 {
     if (mChunks.size()) {
         mRecent << Recent(mChunks.size()-1);
@@ -28,7 +29,30 @@ bool MemoryMapper::setMappingSizes(int bufferedLines, int chunkSizeInBytes, int 
 
 void MemoryMapper::startRun()
 {
-    closeAndReset(false);
+    moveToRecent();
+}
+
+void MemoryMapper::endRun()
+{ }
+
+void MemoryMapper::addProcessData(const QByteArray &data)
+{
+
+}
+
+void MemoryMapper::addLine(const QString &line)
+{
+
+}
+
+void MemoryMapper::setJumpToLogEnd(bool state)
+{
+
+}
+
+void MemoryMapper::repaint()
+{
+
 }
 
 AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const

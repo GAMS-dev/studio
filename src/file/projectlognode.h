@@ -24,6 +24,8 @@
 #include "dynamicfile.h"
 #include <QContiguousCache>
 
+#include "editors/logparser.h"
+
 namespace gams {
 namespace studio {
 
@@ -43,6 +45,7 @@ public:
 
 public slots:
     void addProcessData(const QByteArray &data);
+    void addProcessDataX(const QByteArray &data);
     void setJumpToLogEnd(bool state);
     void repaint();
 
@@ -84,6 +87,8 @@ private:
     QVector<QTextCharFormat> mFormat;
     int mErrorCount = 0;
     QContiguousCache<LinksCache> mLastErrors;
+
+    LogParser::MarksBlockState *mbState;
 };
 
 } // namespace studio

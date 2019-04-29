@@ -95,8 +95,8 @@ public:
     void setCodec(QTextCodec *codec);                           // share FM + MM
 
     virtual bool isEmpty() const;
-    virtual void startRun();
-    virtual void endRun();
+    virtual void startRun() = 0;
+    virtual void endRun() = 0;
     virtual void createSection();
     virtual qint64 size() const = 0;                                    // share FM + MM
     virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM

@@ -170,7 +170,8 @@ SOURCES += \
     logtabcontextmenu.cpp \
     search/searchworker.cpp \
     editors/filemapper.cpp \
-    editors/memorymapper.cpp
+    editors/memorymapper.cpp \
+    editors/logparser.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -289,7 +290,8 @@ HEADERS += \
     logtabcontextmenu.h \
     search/searchworker.h \
     editors/filemapper.h \
-    editors/memorymapper.h
+    editors/memorymapper.h \
+    editors/logparser.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

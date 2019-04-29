@@ -22,16 +22,21 @@ public:
     qint64 size() const override;
     bool setMappingSizes(int bufferedLines, int chunkSizeInBytes, int chunkOverlap) override;
     void startRun() override;
+    void endRun() override;
 
 signals:
 
 public slots:
+    void addProcessData(const QByteArray &data);
+    void addLine(const QString &line);
+    void setJumpToLogEnd(bool state);
+    void repaint();
 
 protected:
     Chunk *getChunk(int chunkNr) const override;
 
 private:
-    void closeAndReset(bool initAnchor);
+    void moveToRecent();
 
 
 private:
