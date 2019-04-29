@@ -352,29 +352,26 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
         return;
 
     bool hasSelectionBeenAdded = (selection.size()>0);
-    bool isThereEnumerationSelection = false;
+    // assume single selection
     for (QModelIndex idx : selection) {
-        if (ui->solverOptionTreeView->model()->parent(idx).row() < 0) {
-            QVariant data = ui->solverOptionTreeView->model()->data(idx, Qt::CheckStateRole);
-            hasSelectionBeenAdded &= (Qt::CheckState(data.toInt()) == Qt::Checked);
-            isThereEnumerationSelection |= false;
-        } else {
-            isThereEnumerationSelection |= true;
-        }
+        QModelIndex parentIdx = ui->solverOptionTreeView->model()->parent(idx);
+        QVariant data = (parentIdx.row() < 0) ?  ui->solverOptionTreeView->model()->data(idx, Qt::CheckStateRole)
+                                              : ui->solverOptionTreeView->model()->data(parentIdx, Qt::CheckStateRole);
+        hasSelectionBeenAdded = (Qt::CheckState(data.toInt()) == Qt::Checked);
     }
 
     QMenu menu(this);
     for(QAction* action : this->actions()) {
         if (action->objectName().compare("actionFindThisOption")==0) {
-            action->setVisible( !isThereEnumerationSelection && hasSelectionBeenAdded );
+            action->setVisible(  hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionAddThisOption")==0) {
-            action->setVisible( isThereEnumerationSelection || !hasSelectionBeenAdded );
+            action->setVisible( !hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            action->setVisible( !isThereEnumerationSelection && hasSelectionBeenAdded );
+            action->setVisible( hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionCopyDefinitionText")==0) {
