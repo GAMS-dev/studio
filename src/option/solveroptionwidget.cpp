@@ -742,7 +742,11 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
 
 void SolverOptionWidget::findAndSelectionOptionFromDefinition()
 {
-    QModelIndex idx = ui->solverOptionTreeView->model()->index( ui->solverOptionTreeView->selectionModel()->currentIndex().row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
+    QModelIndex index = ui->solverOptionTreeView->selectionModel()->currentIndex();
+    QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
+
+    QModelIndex idx = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
+                                            : ui->solverOptionTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
     QVariant data = ui->solverOptionTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                        Qt::DisplayRole,
