@@ -112,7 +112,7 @@ private:
     QString mLocation;
     QString mSolverName;
 
-    bool overrideExistingOption = false;
+    bool overrideExistingOption = true;
     bool addCommentAbove = false;
     bool addEOLComment = false;
 

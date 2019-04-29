@@ -36,6 +36,8 @@ SolverOptionSetting::SolverOptionSetting(QString eolchars, QString separator, QS
 
     ui->tabWidget->tabBar()->setStyle( new reference::ReferenceTabStyle );
 
+    ui->overrideExistingOptionCheckBox->setCheckState(Qt::Checked);
+
     ui->eolCommentWidget->setVisible(!eolchars.isEmpty());
     ui->addEOLCommentCheckBox->setVisible(!eolchars.isEmpty());
     if (!eolchars.isEmpty()) {
