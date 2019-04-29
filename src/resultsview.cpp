@@ -53,6 +53,8 @@ void ResultsView::resizeColumnsToContent()
 
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
+    // TODO(rogo): select full match, not just move cursor to start
+
     int selectedRow = index.row();
     Result item = mResultList->at(selectedRow);
 
@@ -75,7 +77,6 @@ SearchResultList* ResultsView::searchResultList() const
 void ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
 {
     if (ui->tableView->selectionModel()->hasSelection()) {
-        // todo: jump to next selected row
         int row = ui->tableView->selectionModel()->selectedRows(0).first().row();
         if (backwards)
             ui->tableView->selectRow(row - 1);
@@ -84,7 +85,24 @@ void ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
 
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
     } else {
-        // todo: create selection from cursor
+        int index = 0;
+        int block = tc.blockNumber();
+        int col = tc.positionInBlock();
+
+        for (Result r : mResultList->resultsAsList()) {
+            index++;
+            if (r.filepath() != file) continue;
+
+            if (r.lineNr() == block+1) {
+                last = &r;
+
+                if (r.colNr() >= col) {
+                    ui->tableView->selectRow(index);
+                    on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+                    return;
+                }
+            }
+        }
     }
 }
 
