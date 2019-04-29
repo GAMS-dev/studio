@@ -909,8 +909,6 @@ void SolverOptionWidget::insertComment()
 
 void SolverOptionWidget::deleteOption(bool keepFirstOne)
 {
-    Q_UNUSED(keepFirstOne);
-    qDebug() << __FUNCTION__ << ":" << (keepFirstOne ? "true" : "false");
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -923,20 +921,22 @@ void SolverOptionWidget::deleteOption(bool keepFirstOne)
         QItemSelection selection( ui->solverOptionTableView->selectionModel()->selection() );
 
         QList<int> rows;
-        foreach( const QModelIndex & index, selection.indexes() ) {
-           rows.append( index.row() );
+        for( const QModelIndex & index : selection.indexes() ) {
+            if (!rows.contains(index.row()))
+                rows.append( index.row() );
         }
         std::sort(rows.begin(), rows.end());
-
         int prev = -1;
         for(int i=rows.count()-1; i>=0; i--) {
-           int current = rows[i];
-           if (current != prev) {
-               QString text = getOptionTableEntry(current);
-               ui->solverOptionTableView->model()->removeRows( current, 1 );
-               mOptionTokenizer->logger()->append(QString("Option entry '%1' deleted").arg(text), LogMsgType::Info);
-               prev = current;
-           }
+            int current = rows[i];
+            if (keepFirstOne && i==0)
+                continue;
+            if (current != prev) {
+                QString text = getOptionTableEntry(current);
+                ui->solverOptionTableView->model()->removeRows( current, 1 );
+                mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
+                prev = current;
+            }
         }
         updateTableColumnSpan();
         setModified(true);
