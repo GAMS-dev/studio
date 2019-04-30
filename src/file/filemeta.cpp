@@ -112,11 +112,9 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
         AbstractEdit* edit = ViewHelper::toAbstractEdit(widget);
         if (edit) {
             QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
-            QTextCursor cursor(document());
-            if (cursor.blockNumber() < pos.y())
-                cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, qMin(edit->blockCount()-1, pos.y()));
+            QTextCursor cursor(document()->findBlockByNumber(qMin(pos.y(), document()->blockCount()-1)));
             if (cursor.positionInBlock() < pos.x())
-                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(cursor.block().length()-1, pos.x()));
+                cursor.setPosition(cursor.position() + qMin(cursor.block().length()-1, pos.x()));
             edit->setTextCursor(cursor);
         }
         i++;
@@ -525,7 +523,7 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
         QTextCursor tc = QTextCursor(block);
-        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(column, block.length()-1));
+        tc.setPosition(block.position()+qMin(column, block.length()-1));
         edit->setTextCursor(tc);
         // center line vertically
         qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
