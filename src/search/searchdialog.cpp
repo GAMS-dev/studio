@@ -411,7 +411,6 @@ void SearchDialog::findNext(SearchDirection direction)
     //  and
     //  - never cache for a large file
     if ((!mResultsView && (!mCachedResults || mHasChanged)) && !ViewHelper::toTextView(mMain->recent()->editor())) {
-        qDebug() /*rogo: delete*/ << QTime::currentTime() << "updating cache" << !mResultsView << !mCachedResults << mHasChanged;
         updateSearchCache();
     }
 
@@ -420,11 +419,10 @@ void SearchDialog::findNext(SearchDirection direction)
         CodeEdit* ce = ViewHelper::toCodeEdit(edit);
 
         QTextCursor tc = (ce) ? ce->textCursor() : QTextCursor();
-        mResultsView->selectNextItem(ViewHelper::location(edit), tc, direction);
+        int selection = mResultsView->selectNextItem(ViewHelper::location(edit), tc, direction);
+        updateMatchAmount(selection);
 
     } else selectNextMatch(direction);
-
-    setSearchStatus(SearchStatus::Clear);
 }
 
 ///
@@ -578,6 +576,10 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
     searchParameterChanged();
 }
 
+///
+/// \brief SearchDialog::updateFindNextLabel counts from selection to results list and updates label
+/// \param matchSelection cursor position to calculate result number
+///
 void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
 {
     setSearchOngoing(false);
@@ -791,7 +793,11 @@ void SearchDialog::updateMatchAmount(int current)
         }
 
     } else {
-        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(mCachedResults->size()) + " matches");
+        int max = 0;
+        if (mCachedResults) max = mCachedResults->size();
+        else max = mResultsView->searchResultList()->size();
+
+        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(max) + " matches");
     }
 
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);

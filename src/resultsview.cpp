@@ -72,17 +72,24 @@ SearchResultList* ResultsView::searchResultList() const
     return mResultList;
 }
 
-void ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
+///
+/// \brief ResultsView::selectNextItem selects next item in resultsview and jumps to it in file
+/// \param file file where the cursor is
+/// \param tc cursor to get position for jumping to next match
+/// \param backwards WiP not yet implemented
+/// \return returns selected row +1 to make it "human readable"
+///
+int ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
 {
     int tcLine = tc.blockNumber()+1;
     int tcCol = tc.positionInBlock();
 
     // for large docs where we have no cursor just select next item in list
     if (tc.isNull()) {
-        ui->tableView->selectRow(ui->tableView->selectionModel()->selectedRows(0).first().row() + 1);
+        int newRow = ui->tableView->selectionModel()->selectedRows(0).first().row() + 1;
+        ui->tableView->selectRow(newRow);
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-        // TODO(rogo): add label action here
-        return; // and skip all the rest
+        return newRow+1; // and skip all the rest
     }
 
     QList<Result> resultList = mResultList->resultsAsList();
@@ -107,13 +114,14 @@ void ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
             if (tcLine != resultList.at(i).lineNr() || tcCol <= resultList.at(i).colNr()) {
                 ui->tableView->selectRow(i);
                 on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-                return;
+                return i+1;
             }
         }
     }
     // start over when arriving here
     ui->tableView->selectRow(0);
     on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+    return 1;
 }
 
 }

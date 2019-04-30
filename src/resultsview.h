@@ -44,7 +44,7 @@ public:
     ~ResultsView();
     void resizeColumnsToContent();
     SearchResultList* searchResultList() const;
-    void selectNextItem(QString file, QTextCursor tc, bool backwards = false);
+    int selectNextItem(QString file, QTextCursor tc, bool backwards = false);
 
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);
