@@ -916,7 +916,7 @@ int CodeEdit::indent(int size, int fromLine, int toLine)
             if (insertPos - charCount < block.length()) {
                 editCursor.setPosition(block.position() + insertPos - charCount);
                 int tempCount = qMin(charCount, block.length() - (insertPos - charCount));
-                editCursor.setPosition(block.position() + tempCount, QTextCursor::KeepAnchor);
+                editCursor.setPosition(editCursor.position() + tempCount, QTextCursor::KeepAnchor);
                 editCursor.removeSelectedText();
             }
         } else {
