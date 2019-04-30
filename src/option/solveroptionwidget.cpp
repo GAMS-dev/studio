@@ -398,8 +398,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
     QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
                                                           ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-    QModelIndex synonymIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_SYNONYM) :
-                                                       ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_SYNONYM) ;
+//    QModelIndex synonymIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_SYNONYM) :
+//                                                       ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_SYNONYM) ;
     QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
                                                         ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
@@ -415,58 +415,63 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
                                                         ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
     QString optionIdData = ui->solverOptionTreeView->model()->data(optionIdIndex).toString();
-    QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
-                                                                        Qt::DisplayRole,
-                                                                        optionIdData, Qt::MatchRecursive);
+
+    int rowToBeAdded = ui->solverOptionTableView->model()->rowCount();
     if (overrideExistingOption) {
+        QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
+                                                                            Qt::DisplayRole,
+                                                                            optionIdData, Qt::MatchRecursive);
         bool singleEntryExisted = (indices.size()==1);
         bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Option has been added");
             msgBox.setText("Option '" + optionNameData + "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to add another entry or replace the entry?");
+            msgBox.setInformativeText("Do you want to add new entry or replace the entry?");
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
             switch(msgBox.exec()) {
-            case 0: // TODO: replace
+            case 0: // replace
                 replaceExistingEntry = true;
-                return;
+                rowToBeAdded = indices.at(0).row();
+                break;
             case 1: // add
                 break;
             case QMessageBox::Abort:
                 return;
             }
-        } else if (multipleEntryExisted){
+        } else if (multipleEntryExisted) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Multiple Entries existed");
             msgBox.setText("Multiple entries of Option '" + optionNameData + "' already exists in your option file.");
-            msgBox.setInformativeText("??");
+            msgBox.setInformativeText("Do you want to add new entry or replace first entry (and delete other entries)?");
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
             switch(msgBox.exec()) {
             case 0: // delete and replace
-                // TODO: replace other
-                for(QModelIndex idx : indices ) { qDebug() << "row(" << idx.row() << "," << idx.column() << ")"; }
                 deleteOption(true);
                 replaceExistingEntry = true;
-
-                return;
+                indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
+                                                                    Qt::DisplayRole,
+                                                                    optionIdData, Qt::MatchRecursive);
+                rowToBeAdded = indices.at(0).row();
+                break;
             case 1: // add
                 break;
             case QMessageBox::Abort:
                 return;
             }
 
-        }
+        } // else entry not exist
     }
-
-    QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
+qDebug() << "rowToBeAdd=" << rowToBeAdded << (rowToBeAdded != ui->solverOptionTableView->model()->rowCount() ? ", no" : ", yes");
+//    QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
+qDebug() << "01";
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
@@ -477,12 +482,12 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         QModelIndex descriptionIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION):
                                                                ui->solverOptionTreeView->model()->index(parentIndexRow, OptionDefinitionModel::COLUMN_DESCIPTION);
         QString descriptionData = ui->solverOptionTreeView->model()->data(descriptionIndex).toString();
-        ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
 
-        int row = ui->solverOptionTableView->model()->rowCount()-1;
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(row, mOptionTableModel->getColumnEntryNumber());
+        ui->solverOptionTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
+
+        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
 
         ui->solverOptionTableView->model()->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
                                                            Qt::CheckState(Qt::PartiallyChecked),
@@ -491,17 +496,18 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
+        rowToBeAdded++;
         if (parentIndex.row() >= 0) {  // insert enum comment description row
             descriptionIndex = ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION, parentIndex);
             QString strData =  selectedValueData;
             strData.append( " - " );
             strData.append( ui->solverOptionTreeView->model()->data(descriptionIndex).toString() );
 
-            ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
-            row = ui->solverOptionTableView->model()->rowCount()-1;
-            insertKeyIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_KEY);
-            insertValueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-            insertNumberIndex = ui->solverOptionTableView->model()->index(row, mOptionTableModel->getColumnEntryNumber());
+            ui->solverOptionTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
+
+            insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_KEY);
+            insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+            insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
 
             ui->solverOptionTableView->model()->setHeaderData( insertKeyIndex.row(), Qt::Vertical,
                                                                Qt::CheckState(Qt::PartiallyChecked),
@@ -509,30 +515,37 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             ui->solverOptionTableView->model()->setData( insertKeyIndex, strData, Qt::EditRole);
             ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
             ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
+
+            rowToBeAdded++;
         }
     }
     // insert option row
-    ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
-    QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_KEY);
-    QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-    QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, mOptionTableModel->getColumnEntryNumber());
+    if (rowToBeAdded == ui->solverOptionTableView->model()->rowCount()) {
+        ui->solverOptionTableView->model()->insertRows(rowToBeAdded, 1, QModelIndex());
+    }
+    QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_KEY);
+    QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+    QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
     ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
     if (addEOLComment) {
-        QModelIndex commentIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION):
-                                                               ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
+        QModelIndex commentIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION)
+                                                         : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
         QString commentData = ui->solverOptionTreeView->model()->data(commentIndex).toString();
-        QModelIndex insertEOLCommentIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+        QModelIndex insertEOLCommentIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, SolverOptionTableModel::COLUMN_EOL_COMMENT);
         ui->solverOptionTableView->model()->setData( insertEOLCommentIndex, commentData, Qt::EditRole);
     }
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
-    ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
+    ui->solverOptionTableView->selectRow(rowToBeAdded);
 
-    mOptionTokenizer->logger()->append(QString("Option entry '%1' added").arg(getOptionTableEntry(insertNumberIndex.row())), LogMsgType::Info);
+    if (replaceExistingEntry)
+        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been replaced").arg(getOptionTableEntry(insertNumberIndex.row())), LogMsgType::Info);
+    else
+        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been added").arg(getOptionTableEntry(insertNumberIndex.row())), LogMsgType::Info);
 
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
-    int lastRow = ui->solverOptionTableView->model()->rowCount()-1;
+    int lastRow = rowToBeAdded;
     int firstRow = (addCommentAbove ? lastRow-2 : lastRow);
     if (addCommentAbove && firstTime) {
         firstRow = 0;
