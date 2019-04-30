@@ -117,7 +117,7 @@ void SearchDialog::finalUpdate()
 
     updateEditHighlighting();
 
-    if (!mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
+    if (mCachedResults && !mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
     else updateFindNextLabel(QTextCursor());
 }
 
@@ -404,9 +404,16 @@ void SearchDialog::findNext(SearchDirection direction)
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
     mShowResults = false;
-    // only cache when we have changes, no cache, or are not searching a large file
-    if ((!mCachedResults || mHasChanged) && !ViewHelper::toTextView(mMain->recent()->editor()))
+    // deactivate cache when
+    //  - we already have search results (these are used to step through results)
+    //  or
+    //  - no cache yet or changes where made
+    //  and
+    //  - never cache for a large file
+    if ((!mResultsView && (!mCachedResults || mHasChanged)) && !ViewHelper::toTextView(mMain->recent()->editor())) {
+        qDebug() /*rogo: delete*/ << QTime::currentTime() << "updating cache" << !mResultsView << !mCachedResults << mHasChanged;
         updateSearchCache();
+    }
 
     if (mResultsView) {
         QWidget* edit = mMain->recent()->editor();

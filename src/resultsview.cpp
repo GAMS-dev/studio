@@ -53,20 +53,18 @@ void ResultsView::resizeColumnsToContent()
 
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
-    // TODO(rogo): select full match, not just move cursor to start
-
     int selectedRow = index.row();
-    Result item = mResultList->at(selectedRow);
+    Result r = mResultList->at(selectedRow);
 
     // open so we have a document of the file
-    if (QFileInfo(item.filepath()).exists())
-        mMain->openFilePath(item.filepath());
+    if (QFileInfo(r.filepath()).exists())
+        mMain->openFilePath(r.filepath());
 
-    ProjectFileNode *node = mMain->projectRepo()->findFile(item.filepath());
-    if (!node) EXCEPT() << "File not found: " << item.filepath();
+    ProjectFileNode *node = mMain->projectRepo()->findFile(r.filepath());
+    if (!node) EXCEPT() << "File not found: " << r.filepath();
 
     // jump to line
-    node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, qMax(item.colNr(), 0));
+    node->file()->jumpTo(node->runGroupId(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 }
 
 SearchResultList* ResultsView::searchResultList() const
@@ -76,34 +74,46 @@ SearchResultList* ResultsView::searchResultList() const
 
 void ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
 {
-    if (ui->tableView->selectionModel()->hasSelection()) {
-        int row = ui->tableView->selectionModel()->selectedRows(0).first().row();
-        if (backwards)
-            ui->tableView->selectRow(row - 1);
-        else
-            ui->tableView->selectRow(row + 1);
+    int tcLine = tc.blockNumber()+1;
+    int tcCol = tc.positionInBlock();
 
+    // for large docs where we have no cursor just select next item in list
+    if (tc.isNull()) {
+        ui->tableView->selectRow(ui->tableView->selectionModel()->selectedRows(0).first().row() + 1);
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-    } else {
-        int index = 0;
-        int block = tc.blockNumber();
-        int col = tc.positionInBlock();
+        // TODO(rogo): add label action here
+        return; // and skip all the rest
+    }
 
-        for (Result r : mResultList->resultsAsList()) {
-            index++;
-            if (r.filepath() != file) continue;
+    QList<Result> resultList = mResultList->resultsAsList();
+    int start = 0; // first index in current file
+    for (int s = 0; s < resultList.size(); s++) {
+        if (resultList.at(s).filepath() == file) {
+            start = s;
+            break;
+        }
+    }
 
-            if (r.lineNr() == block+1) {
-                last = &r;
+    for (int i = start; i < resultList.size(); i++) {
+        if (file != resultList.at(i).filepath()) { // reset cursor if in next file
+            tcLine = 0;
+            tcCol = 0;
+        }
 
-                if (r.colNr() >= col) {
-                    ui->tableView->selectRow(index);
-                    on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-                    return;
-                }
+        // if match is in one of the following lines
+        if (tcLine <= resultList.at(i).lineNr()) {
+
+            // check if is in same line but behind the cursor
+            if (tcLine != resultList.at(i).lineNr() || tcCol <= resultList.at(i).colNr()) {
+                ui->tableView->selectRow(i);
+                on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+                return;
             }
         }
     }
+    // start over when arriving here
+    ui->tableView->selectRow(0);
+    on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
 }
 
 }
