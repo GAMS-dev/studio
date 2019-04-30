@@ -202,6 +202,7 @@ bool SolverOptionWidget::init()
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
+        connect(mOptionTableModel, &SolverOptionTableModel::optionDefinitionSelected, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
 
         connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, this, &SolverOptionWidget::on_addEOLCommentChanged);
         connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, mOptionTableModel, &SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged);
@@ -217,28 +218,6 @@ bool SolverOptionWidget::init()
         mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
         return true;
     }
-}
-
-QString SolverOptionWidget::getOptionTableEntry(int row)
-{
-    QModelIndex keyIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_KEY);
-    QVariant optionKey = ui->solverOptionTableView->model()->data(keyIndex, Qt::DisplayRole);
-    if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(row, Qt::Vertical, Qt::CheckStateRole).toInt())==Qt::PartiallyChecked) {
-        return QString("%1 %2").arg(mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0)) :"#")
-                               .arg(optionKey.toString());
-    } else {
-        QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
-        QModelIndex commentIndex = ui->solverOptionTableView->model()->index(row, SolverOptionTableModel::COLUMN_EOL_COMMENT);
-        QVariant optionComment = ui->solverOptionTableView->model()->data(commentIndex, Qt::DisplayRole);
-        if (mOptionTokenizer->getOption()->isEOLCharDefined() && !optionComment.toString().isEmpty()) {
-            return QString("%1%2%3  %4 %5").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString())
-                                           .arg(QString(mOptionTokenizer->getOption()->getEOLChars().at(0)))
-                                           .arg(optionComment.toString());
-        } else {
-            return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
-        }
-   }
 }
 
 bool SolverOptionWidget::isInFocused(QWidget *focusWidget)
@@ -426,7 +405,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
             QMessageBox msgBox;
-            msgBox.setWindowTitle("Option has been added");
+            msgBox.setWindowTitle("Option Entry exists");
             msgBox.setText("Option '" + optionNameData + "' already exists in your option file.");
             msgBox.setInformativeText("Do you want to add new entry or replace the entry?");
             msgBox.setStandardButtons(QMessageBox::Abort);
@@ -445,9 +424,9 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             }
         } else if (multipleEntryExisted) {
             QMessageBox msgBox;
-            msgBox.setWindowTitle("Multiple Entries existed");
+            msgBox.setWindowTitle("Multiple Option Entries exist");
             msgBox.setText("Multiple entries of Option '" + optionNameData + "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to add new entry or replace first entry (and delete other entries)?");
+            msgBox.setInformativeText("Do you want to replace first entry (and delete other entries) or add new entry?");
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -540,10 +519,11 @@ qDebug() << "01";
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     ui->solverOptionTableView->selectRow(rowToBeAdded);
 
+    QString text = mOptionTableModel->getOptionTableEntry(insertNumberIndex.row());
     if (replaceExistingEntry)
-        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been replaced").arg(getOptionTableEntry(insertNumberIndex.row())), LogMsgType::Info);
+        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been replaced").arg(text), LogMsgType::Info);
     else
-        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been added").arg(getOptionTableEntry(insertNumberIndex.row())), LogMsgType::Info);
+        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been added").arg(text), LogMsgType::Info);
 
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
     int lastRow = rowToBeAdded;
@@ -753,6 +733,7 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
 
 void SolverOptionWidget::findAndSelectionOptionFromDefinition()
 {
+    ui->solverOptionTableView->selectionModel()->clearSelection();
     QModelIndex index = ui->solverOptionTreeView->selectionModel()->currentIndex();
     QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
 
@@ -946,7 +927,7 @@ void SolverOptionWidget::deleteOption(bool keepFirstOne)
             if (keepFirstOne && i==0)
                 continue;
             if (current != prev) {
-                QString text = getOptionTableEntry(current);
+                QString text = mOptionTableModel->getOptionTableEntry(current);
                 ui->solverOptionTableView->model()->removeRows( current, 1 );
                 mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
                 prev = current;

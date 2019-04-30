@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QIcon>
+#include <QMessageBox>
 #include <QDebug>
 
 #include "solveroptiontablemodel.h"
@@ -395,42 +396,125 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         beginRow = rowCount(QModelIndex());
 
     if (action ==  Qt::CopyAction) {
+
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
 
+        QList<SolverOptionItem *> itemList;
+        QList<int> overrideIdRowList;
         for (const QString &text : newItems) {
-            insertRows(beginRow, 1, QModelIndex());
             QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             if (text.startsWith(lineComment)) {
-                QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
-                setData(idx, text, Qt::EditRole);
-                setHeaderData( idx.row(), Qt::Vertical,
-                            Qt::CheckState(Qt::PartiallyChecked),
-                            Qt::CheckStateRole );
+                itemList.append(new SolverOptionItem(-1, text, "", "", true));
             } else {
-                qDebug() << " HEY, split!";
                 QStringList textList = text.split("=");
-                QModelIndex keyidx = index(beginRow, SolverOptionTableModel::COLUMN_OPTION_KEY);
-                setData(keyidx, textList.at( SolverOptionTableModel::COLUMN_OPTION_KEY ), Qt::EditRole);
-                QModelIndex validx = index(beginRow, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-                setData(validx, textList.at(SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::EditRole);
-                if (addEOLComment) {
-                    QModelIndex commentidx = index(beginRow, SolverOptionTableModel::COLUMN_EOL_COMMENT);
-                    qDebug() << " add [" << textList.at(SolverOptionTableModel::COLUMN_EOL_COMMENT) << "] into ("
-                             << commentidx.row() << "," << commentidx.column() << ")";
-                    setData(commentidx, textList.at(SolverOptionTableModel::COLUMN_EOL_COMMENT), Qt::EditRole);
+                int optionid = mOption->getOptionDefinition(textList.at(0)).number;
+                itemList.append(new SolverOptionItem(optionid,
+                                                     textList.at( COLUMN_OPTION_KEY ),
+                                                     textList.at( COLUMN_OPTION_VALUE ),
+                                                     textList.at( COLUMN_EOL_COMMENT ),
+                                                     false));
+                QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
+
+                if (overrideExistingOption) {
+                    for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
                 }
-                QModelIndex ididx = index(beginRow, columnEntryNumber);
-                setData(ididx, textList.at(columnEntryNumber), Qt::EditRole);
-                setHeaderData( validx.row(), Qt::Vertical,
-                            Qt::CheckState(Qt::Unchecked),
-                            Qt::CheckStateRole );
-                emit newTableRowDropped(keyidx);
+            }
+        }
+        std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
+
+        emit optionDefinitionSelected();
+
+        bool replaceExistingEntry = false;
+        bool singleEntryExisted = (overrideIdRowList.size()==1);
+        bool multipleEntryExisted = (overrideIdRowList.size()>1);
+        if (singleEntryExisted) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Option Entry exists");
+            msgBox.setText("Option '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()+ "' already exists in your option file.");
+            msgBox.setInformativeText("Do you want to add new entry or replace the entry?");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
+            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
+
+            switch(msgBox.exec()) {
+            case 0: // replace
+                replaceExistingEntry = true;
+                beginRow = overrideIdRowList.at(0);
+                break;
+            case 1: // add
+                break;
+            case QMessageBox::Abort:
+                qDeleteAll(itemList);
+                itemList.clear();
+                return false;
+            }
+        } else if (multipleEntryExisted) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Multiple Option Entries exist");
+            msgBox.setText("Multiple entries of Option '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString() + "' already exists in your option file.");
+            msgBox.setInformativeText("Do you want to replace first entry (and delete other entries) or add new entry?");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
+            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
+
+            switch(msgBox.exec()) {
+            case 0: { // delete and replace
+                int prev = -1;
+                for(int i=overrideIdRowList.count()-1; i>=0; i--) {
+                    int current = overrideIdRowList[i];
+                    if (i==0)
+                        continue;
+                    if (current != prev) {
+                        QString text = getOptionTableEntry(current);
+                        removeRows( current, 1 );
+                        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
+                        prev = current;
+                    }
+                }
+
+                replaceExistingEntry = true;
+                beginRow = overrideIdRowList.at(0);
+                break;
+            }
+            case 1: { // add
+                break;
+            }
+            case QMessageBox::Abort: {
+                qDeleteAll(itemList);
+                itemList.clear();
+                return false;
+            }
+            }
+        } // else entry not exist
+
+        for (SolverOptionItem * item : itemList) {
+            if (item->disabled) {
+                insertRows(beginRow, 1, QModelIndex());
+                QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+                setData(idx, item->key, Qt::EditRole);
+                setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::PartiallyChecked), Qt::CheckStateRole );
+            } else {
+                if (!replaceExistingEntry)
+                    insertRows(beginRow, 1, QModelIndex());
+
+                QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+                setData(idx, item->key, Qt::EditRole);
+                setData( index(beginRow, COLUMN_OPTION_VALUE), item->value, Qt::EditRole);
+                if (addEOLComment) {
+                    setData(index(beginRow, COLUMN_EOL_COMMENT), item->text, Qt::EditRole);
+                }
+                setData(index(beginRow, columnEntryNumber), item->optionId, Qt::EditRole);
+                setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
+                emit newTableRowDropped( idx );
             }
             beginRow++;
         }
+
+        qDeleteAll(itemList);
+        itemList.clear();
+
         connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
         return true;
-
     }
 
     return false;
@@ -439,6 +523,28 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
 QList<SolverOptionItem *> SolverOptionTableModel::getCurrentListOfOptionItems() const
 {
     return mOptionItem;
+}
+
+QString SolverOptionTableModel::getOptionTableEntry(int row)
+{
+    QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
+    QVariant optionKey = data(keyIndex, Qt::DisplayRole);
+    if (Qt::CheckState(headerData(row, Qt::Vertical, Qt::CheckStateRole).toInt())==Qt::PartiallyChecked) {
+        return QString("%1 %2").arg(mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0)) :"#")
+                               .arg(optionKey.toString());
+    } else {
+        QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
+        QVariant optionValue = data(valueIndex, Qt::DisplayRole);
+        QModelIndex commentIndex = index(row, COLUMN_EOL_COMMENT);
+        QVariant optionComment = data(commentIndex, Qt::DisplayRole);
+        if (mOptionTokenizer->getOption()->isEOLCharDefined() && !optionComment.toString().isEmpty()) {
+            return QString("%1%2%3  %4 %5").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString())
+                                           .arg(QString(mOptionTokenizer->getOption()->getEOLChars().at(0)))
+                                           .arg(optionComment.toString());
+        } else {
+            return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
+        }
+   }
 }
 
 int SolverOptionTableModel::getColumnEntryNumber() const

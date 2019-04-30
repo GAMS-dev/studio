@@ -54,6 +54,7 @@ public:
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
     QList<SolverOptionItem *> getCurrentListOfOptionItems() const;
+    QString getOptionTableEntry(int row);
 
     static const int COLUMN_OPTION_KEY = 0;
     static const int COLUMN_OPTION_VALUE = 1;
@@ -70,6 +71,7 @@ signals:
     void solverOptionItemRemoved();
     void columnSpanned(int row);
     void columnUnspanned(int row);
+    void optionDefinitionSelected();
 
 public slots:
     void reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem);
