@@ -148,6 +148,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
         to = next;
         conceal = false;
     }
+    return QString();
 }
 
 // addProcessData appends last chunk
