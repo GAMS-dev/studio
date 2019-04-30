@@ -113,10 +113,9 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
     // mapping succeeded: initialise chunk
     Chunk *res = new Chunk();
     res->nr = chunkNr;
-    res->map = map;
     res->start = cStart;
     res->size = int(cEnd - cStart);
-    res->bArray.setRawData(reinterpret_cast<char*>(res->map), uint(res->size));
+    res->bArray.setRawData(reinterpret_cast<char*>(map), uint(res->size));
 
     // if delimiter isn't initialized
     if (delimiter().isEmpty()) initDelimiter(res);
@@ -146,7 +145,7 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
 
 void FileMapper::chunkUncached(AbstractTextMapper::Chunk *&chunk) const
 {
-    mFile.unmap(chunk->map);
+    mFile.unmap(reinterpret_cast<uchar*>(chunk->bArray.data()));
     delete chunk;
     chunk = nullptr;
 }

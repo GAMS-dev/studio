@@ -77,11 +77,10 @@ private:
     };
 
 protected:
-    struct Chunk {  // a mapped part of a file
+    struct Chunk {  // a mapped part of a file OR a standalone part of memory
         int nr = -1;
         qint64 start = -1;
         int size = 0;
-        uchar* map = nullptr;
         QByteArray bArray;
         QVector<int> lineBytes;
         bool isValid() const { return start >= 0;}
@@ -138,7 +137,7 @@ protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
     virtual void reset();
-    inline int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
+    virtual int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
     Chunk *setActiveChunk(int chunkNr) const;
     Chunk *activeChunk();
     void uncacheChunk(Chunk *&chunk);
