@@ -207,6 +207,7 @@ bool SolverOptionWidget::init()
         connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, mOptionTableModel, &SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged);
 
         connect(settingEdit, &SolverOptionSetting::overrideExistingOptionChanged, this, &SolverOptionWidget::on_overrideExistingOptionChanged);
+        connect(settingEdit, &SolverOptionSetting::overrideExistingOptionChanged, mOptionTableModel, &SolverOptionTableModel::on_overrideExistingOptionChanged);
         connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAboveChanged);
         connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
         connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);

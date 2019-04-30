@@ -612,6 +612,11 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
 }
 
+void SolverOptionTableModel::on_overrideExistingOptionChanged(int checkState)
+{
+    overrideExistingOption = (Qt::CheckState(checkState) == Qt::Checked);
+}
+
 void SolverOptionTableModel::on_addCommentAbove_stateChanged(int checkState)
 {
     addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
