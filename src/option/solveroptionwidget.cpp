@@ -153,6 +153,10 @@ bool SolverOptionWidget::init()
     setModified(false);
 
     if (!mOptionTokenizer->getOption()->available())  {
+        ui->solverOptionSearch->setReadOnly(true);
+        ui->compactViewCheckBox->setEnabled(false);
+        ui->openAsTextButton->setEnabled(false);
+
         QString msg = QString("%1 is not a valid solver name").arg(mSolverName);
         mOptionTokenizer->logger()->append(msg, LogMsgType::Warning);
         mOptionTokenizer->logger()->append(QString("Unable to load options from %1").arg(mLocation), LogMsgType::Warning);
