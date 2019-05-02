@@ -77,41 +77,61 @@ SearchResultList* ResultsView::searchResultList() const
 /// \param file file where the cursor is
 /// \param tc cursor to get position for jumping to next match
 /// \param backwards WiP not yet implemented
-/// \return returns selected row +1 to make it "human readable"
+/// \return returns selected row index +1 to make it "human readable"
 ///
 int ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
 {
     int tcLine = tc.blockNumber()+1;
     int tcCol = tc.positionInBlock();
+    int direction = backwards ? -1 : 1;
 
-    // for large docs where we have no cursor just select next item in list
+    // for large docs just select next item in list
     if (tc.isNull()) {
-        int newRow = ui->tableView->selectionModel()->selectedRows(0).first().row() + 1;
+        int newRow = ui->tableView->selectionModel()->selectedRows(0).first().row() + direction;
+
+        if (newRow > ui->tableView->model()->rowCount()-1) newRow = 0; // start over
+        if (newRow < 0) newRow = ui->tableView->model()->rowCount()-1; // start at end
+
         ui->tableView->selectRow(newRow);
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-        return newRow+1; // and skip all the rest
+        return newRow +1; // and skip all the rest
     }
 
     QList<Result> resultList = mResultList->resultsAsList();
-    int start = 0; // first index in current file
-    for (int s = 0; s < resultList.size(); s++) {
-        if (resultList.at(s).filepath() == file) {
-            start = s;
-            break;
+
+    int start = 0; // first index in current file (or last when searching backwards)
+    if (backwards) {
+        for (int s = resultList.size()-1; s >= 0 ; s--) {
+            if (resultList.at(s).filepath() == file) {
+                start = s;
+                break;
+            }
+        }
+    } else { // forwards
+        for (int s = 0; s < resultList.size(); s++) {
+            if (resultList.at(s).filepath() == file) {
+                start = s;
+                break;
+            }
         }
     }
-
-    for (int i = start; i < resultList.size(); i++) {
-        if (file != resultList.at(i).filepath()) { // reset cursor if in next file
-            tcLine = 0;
-            tcCol = 0;
+    // from first (or last) result in a file to size( or 0), either forwards or backwards
+    for (int i = start; i >= 0 && i < resultList.size(); i += direction) {
+        Result r = resultList.at(i);
+        if (file != r.filepath()) { // reset cursor if in next/prev file
+            tcLine = backwards ? INT_MAX : 0;
+            tcCol = backwards ? INT_MAX : 0;
         }
 
-        // if match is in one of the following lines
-        if (tcLine <= resultList.at(i).lineNr()) {
-
-            // check if is in same line but behind the cursor
-            if (tcLine != resultList.at(i).lineNr() || tcCol <= resultList.at(i).colNr()) {
+        // check if is in same line but behind the cursor
+        if (backwards) {
+            if (tcLine > r.lineNr() || (tcLine == r.lineNr() && tcCol > r.colNr() + r.length())) {
+                ui->tableView->selectRow(i);
+                on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+                return i+1;
+            }
+        } else {
+            if (tcLine < r.lineNr() || (tcLine == r.lineNr() && tcCol <= r.colNr())) {
                 ui->tableView->selectRow(i);
                 on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
                 return i+1;
@@ -119,9 +139,10 @@ int ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
         }
     }
     // start over when arriving here
-    ui->tableView->selectRow(0);
+    int row = backwards ? ui->tableView->model()->rowCount()-1 : 0;
+    ui->tableView->selectRow(row);
     on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-    return 1;
+    return row+1;
 }
 
 }
