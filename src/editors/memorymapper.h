@@ -32,7 +32,7 @@ class MemoryMapper : public AbstractTextMapper
     Q_OBJECT
 private:
     struct Unit {
-        Unit(int idx, QString text = QString()) : firstChunkIndex(idx), foldText(text), folded(true) {}
+        Unit(int idx = -1, QString text = QString()) : firstChunkIndex(idx), foldText(text), folded(true) {}
         int firstChunkIndex;
         QString foldText;
         bool folded;
