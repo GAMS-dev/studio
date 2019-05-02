@@ -150,15 +150,15 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             QTextEdit::ExtraSelection selection;
             selection.cursor = textCursor();
             if (m->blockStart() < 0) continue;
-            int start = m->size() < 0 ? ( m->blockStart() < m->size() ? 0 : m->blockEnd() )
-                                      : m->blockStart();
-            int siz = m->size() ? (m->size() < 0 ? block.length() : m->size()+1) : m->size();
+            int start = m->blockStart();
+            int end = m->size() ? (m->size() < 0 ? block.length() : m->blockEnd()+1) : 0;
             selection.cursor.setPosition(block.position() + start);
-            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, siz);
+            selection.cursor.setPosition(block.position() + end, QTextCursor::KeepAnchor);
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(Qt::red);
+                if (m->size() == 1) selection.format.setBackground(QColor(255,220,200));
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorName(QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
@@ -189,7 +189,7 @@ void AbstractEdit::showToolTip(const QList<TextMark*> marks)
     if (marks.size() > 0) {
         QTextCursor cursor(document()->findBlockByNumber(marks.first()->line()));
                 //(marks.first()->textCursor());
-        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, marks.first()->column());
+        cursor.setPosition(cursor.position() + marks.first()->column(), QTextCursor::MoveAnchor);
         QPoint pos = cursorRect(cursor).bottomLeft();
         if (pos.x() < 10) pos.setX(10);
         QStringList tips;
@@ -339,7 +339,7 @@ void AbstractEdit::jumpTo(int line, int column)
     if (document()->blockCount()-1 < line) return;
     cursor = QTextCursor(document()->findBlockByNumber(line));
     cursor.clearSelection();
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, column);
+    cursor.setPosition(cursor.position() + column);
     jumpTo(cursor);
 }
 
