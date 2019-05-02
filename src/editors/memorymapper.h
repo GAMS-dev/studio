@@ -31,9 +31,9 @@ class MemoryMapper : public AbstractTextMapper
 {
     Q_OBJECT
 private:
-    struct Recent {
-        Recent(int idx = -1, QString text = QString()) : index(idx), foldText(text), folded(true) {}
-        int index;
+    struct Unit {
+        Unit(int idx, QString text = QString()) : firstChunkIndex(idx), foldText(text), folded(true) {}
+        int firstChunkIndex;
         QString foldText;
         bool folded;
     };
@@ -66,12 +66,13 @@ protected:
 private:
     QByteArray popNextLine();
     bool parseRemain();
-    void moveToRecent();
+    void startUnit();
     Chunk *addChunk();
 
 private:
     QVector<Chunk*> mChunks;
-    QVector<Recent> mRecent;
+    QVector<Unit> mUnits;
+    qint64 mSize = 0;
     LogParser *mLogParser = nullptr;
     DynamicFile *mLogFile = nullptr;
     LogParser::MarksBlockState *mState = nullptr;

@@ -44,7 +44,7 @@ public:
     bool loadFile(const QString &fileName, int codecMib, bool initAnchor);
     void prepareRun();
     void endRun();
-    qint64 fileSize() const;
+    qint64 size() const;
     int lineCount() const;
     int knownLines() const;
     void zoomIn(int range = 1);

@@ -105,7 +105,7 @@ void TextView::endRun()
     mMapper->endRun();
 }
 
-qint64 TextView::fileSize() const
+qint64 TextView::size() const
 {
     return mMapper->size();
 }
