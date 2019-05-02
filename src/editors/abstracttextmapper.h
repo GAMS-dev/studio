@@ -157,12 +157,10 @@ protected:
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;
     QString line(Chunk *chunk, int chunkLineNr) const;
-    bool setTopLine(int lineNr);
     bool setTopOffset(qint64 byteNr);
     void updateBytesPerLine(const ChunkLines &chunkLines) const;
     int maxChunks() const;
     int findChunk(int lineNr);
-    Chunk *chunkForLine(int absLine, int *lineInChunk) const;
     Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
     QPoint convertPos(const CursorPosition &pos) const;
     QPoint convertPosLocal(const CursorPosition &pos) const;

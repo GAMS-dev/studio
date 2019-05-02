@@ -192,7 +192,14 @@ void AbstractTextMapper::setVisibleLineCount(int visibleLines)
 bool AbstractTextMapper::setTopOffset(qint64 byteNr)
 {
     byteNr = qBound(0LL, byteNr, size()-1);
-    Chunk *chunk = setActiveChunk(int(byteNr / mChunkSize));
+    int iChunk = qMin(int(byteNr / mChunkSize), chunkCount()-1);
+    Chunk *chunk = nullptr;
+    if (iChunk <= mLastChunkWithLineNr) {
+        // iterate down until absPos is in chunk
+        while (iChunk >= 0 && mChunkLineNrs.at(iChunk).linesStartPos > byteNr)
+            --iChunk;
+    }
+    if (iChunk >= 0) chunk = setActiveChunk(iChunk);
     if (!chunk) return false;
 
     int localByteNr = int(byteNr - chunk->start);
@@ -208,24 +215,20 @@ bool AbstractTextMapper::setTopOffset(qint64 byteNr)
     return true;
 }
 
-bool AbstractTextMapper::setTopLine(int lineNr)
-{
-    int chunkNr = findChunk(lineNr);
-    if (chunkNr >= 0) {
-        Chunk* chunk = setActiveChunk(chunkNr);
-        if (!chunk) return false;
-        int byte = chunk->lineBytes.at(lineNr - mChunkLineNrs.at(chunkNr).lineOffset);
-        setTopOffset(chunk->start + byte);
-        return true;
-    }
-    return false;
-}
-
 bool AbstractTextMapper::setVisibleTopLine(double region)
 {
     if (region < 0.0 || region > 1.0) return false;
+
+    // estimate a chunk-index at or beyond the position
     qint64 absPos = qint64(region * size());
-    Chunk *chunk = setActiveChunk(int(absPos / mChunkSize));
+    int iChunk = qMin(int(absPos / mChunkSize), chunkCount()-1);
+    Chunk *chunk = nullptr;
+    if (iChunk <= mLastChunkWithLineNr) {
+        // iterate down until absPos is in chunk
+        while (iChunk >= 0 && mChunkLineNrs.at(iChunk).linesStartPos > absPos)
+            --iChunk;
+    }
+    if (iChunk >= 0) chunk = setActiveChunk(iChunk);
     if (!chunk) return false;
 
     // get the chunk-local line number for the visibleTopLine
@@ -267,9 +270,17 @@ bool AbstractTextMapper::setVisibleTopLine(int lineNr)
 
     // calculate the topLine for this visibleTopLine
     tl = qBound(0, lineNr - mBufferedLineCount/3, qAbs(lineCount())-mBufferedLineCount);
-    setTopLine(tl);
-    mVisibleTopLine = lineNr - absTopLine();
-    return true;
+
+    int chunkNr = findChunk(tl);
+    if (chunkNr >= 0) {
+        Chunk* chunk = setActiveChunk(chunkNr);
+        if (!chunk) return false;
+        int byte = chunk->lineBytes.at(tl - mChunkLineNrs.at(chunkNr).lineOffset);
+        setTopOffset(chunk->start + byte);
+        mVisibleTopLine = lineNr - absTopLine();
+        return true;
+    }
+    return false;
 }
 
 int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
@@ -562,39 +573,6 @@ void AbstractTextMapper::copyToClipboard()
         QClipboard *clip = QGuiApplication::clipboard();
         clip->setText(text);
     }
-}
-
-AbstractTextMapper::Chunk* AbstractTextMapper::chunkForLine(int absLine, int *lineInChunk) const
-{
-    int chunkNr;
-    qint64 pos = 0;
-    if (absLine > knownLineNrs()) { // estimate line position
-        const ChunkLines &cl = mChunkLineNrs.at(mLastChunkWithLineNr);
-        qint64 posFrom = cl.linesStartPos + cl.linesByteSize;
-        qint64 posTo = size();
-        double factor = double(absLine - knownLineNrs()) / (qAbs(lineCount()) - knownLineNrs());
-        pos = qint64((posTo - posFrom) * factor) + posFrom;
-        chunkNr = qMin(int(pos / mChunkSize), chunkCount()-1);
-    } else { // find real line position
-        double factor = double(absLine) / qAbs(lineCount());
-        pos = qint64(size() * factor);
-        chunkNr = qMin(int(pos / mChunkSize), chunkCount()-1);
-        while (absLine < mChunkLineNrs.at(chunkNr).lineOffset)
-            --chunkNr;
-        while (mChunkLineNrs.size() > chunkNr && chunkNr+1 < chunkCount() && mChunkLineNrs.at(chunkNr).lineOffset >= 0
-               && absLine >= mChunkLineNrs.at(chunkNr).lineOffset + mChunkLineNrs.at(chunkNr).lineCount)
-            ++chunkNr;
-    }
-    Chunk *res = setActiveChunk(chunkNr);
-    if (!res) return nullptr;
-    if (lineInChunk) {
-        int posInChunk = int(pos - res->start);
-        *lineInChunk = 0;
-        while (*lineInChunk+1 < res->lineBytes.size() && res->lineBytes.at(*lineInChunk+1) < posInChunk) {
-            ++(*lineInChunk);
-        }
-    }
-    return res;
 }
 
 QString AbstractTextMapper::line(AbstractTextMapper::Chunk *chunk, int chunkLineNr) const
