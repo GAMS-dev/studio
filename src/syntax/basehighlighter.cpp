@@ -84,7 +84,7 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
         setClean(mCurrentBlock);
         if (!mTime.isNull() && QTime::currentTime().msecsSinceStartOfDay()-mTime.msecsSinceStartOfDay() > 50) {
             mCurrentBlock = mCurrentBlock.next();
-            if (forceHighlightOfNextBlock)
+            if (forceHighlightOfNextBlock && mCurrentBlock.isValid())
                 setDirty(mCurrentBlock, mCurrentBlock);
             mTime = QTime();
             break;

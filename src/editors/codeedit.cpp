@@ -530,7 +530,7 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
                 if (pMatch.capturedLength(2) < 1)
                     break;
                 QString spaces = pMatch.captured(2);
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, match.capturedLength(1));
+                cursor.setPosition(cursor.position() + match.capturedLength(1), QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();
                 cursor.insertText(spaces);
                 setTextCursor(cursor);
@@ -552,7 +552,7 @@ void CodeEdit::truncate(QTextBlock block)
     if (match.hasMatch()) {
         QTextCursor cursor(block);
         cursor.movePosition(QTextCursor::EndOfBlock);
-        cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, match.capturedLength(2));
+        cursor.setPosition(cursor.position() - match.capturedLength(2), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
 }
@@ -914,14 +914,14 @@ int CodeEdit::indent(int size, int fromLine, int toLine)
         editCursor.setPosition(block.position());
         if (size < 0) {
             if (insertPos - charCount < block.length()) {
-                editCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, insertPos - charCount);
+                editCursor.setPosition(block.position() + insertPos - charCount);
                 int tempCount = qMin(charCount, block.length() - (insertPos - charCount));
-                editCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, tempCount);
+                editCursor.setPosition(editCursor.position() + tempCount, QTextCursor::KeepAnchor);
                 editCursor.removeSelectedText();
             }
         } else {
             if (insertPos < block.length()) {
-                editCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, insertPos);
+                editCursor.setPosition(block.position() + insertPos);
                 editCursor.insertText(insText);
             }
         }
@@ -1348,7 +1348,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             QTextEdit::ExtraSelection selection;
             selection.cursor = textCursor();
             selection.cursor.setPosition(block.position() + r.colNr());
-            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, r.length());
+            selection.cursor.setPosition(block.position() + r.colNr() + r.length(), QTextCursor::KeepAnchor);
             selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
             selections << selection;
         }
@@ -1772,7 +1772,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
             int rmSize = block.position()+qMin(block.length()-1, toCol) - pos;
             cursor.setPosition(pos);
             if (rmSize) {
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, rmSize);
+                cursor.setPosition(cursor.position()+rmSize, QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();
             }
         } else {
