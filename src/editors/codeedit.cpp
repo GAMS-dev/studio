@@ -346,7 +346,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             setTextCursor(cur);
             e->accept();
             return;
-        } else if (e->key() == Qt::Key_Home && (!e->modifiers() || e->modifiers() & Qt::ShiftModifier)) {
+        } else if (e->key() == Qt::Key_Home && (!e->modifiers() || e->modifiers() & Qt::ShiftModifier || e->modifiers() & Qt::ControlModifier)) {
             QTextCursor tc = textCursor();
             QTextBlock block = tc.block();
             QTextCursor::MoveMode moveMode = QTextCursor::MoveAnchor;
@@ -357,10 +357,13 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QRegularExpression leadingSpaces("^(\\s*)");
             QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
 
-            if (lsMatch.capturedLength(1) < tc.positionInBlock())
-                tc.setPosition(block.position() + lsMatch.capturedLength(1), moveMode);
-            else
-                tc.setPosition(block.position(), moveMode);
+            if (e->modifiers() & Qt::ControlModifier) {
+                tc.setPosition(0, moveMode);
+            } else {
+                if (lsMatch.capturedLength(1) < tc.positionInBlock())
+                    tc.setPosition(block.position() + lsMatch.capturedLength(1), moveMode);
+                else tc.setPosition(block.position(), moveMode);
+            }
 
             setTextCursor(tc);
             e->accept();
