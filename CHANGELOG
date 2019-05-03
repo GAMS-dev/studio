@@ -1,13 +1,7 @@
-Version 0.11.1
+Version 0.11.2
 ========================
 
-## General
-- improved picking of default editor font on macOS and Linux
-- forced light application theme on macOS
-- fixed possible crash related to About GAMS dialog
-- performance improvements when writing log to disk
-
-## Editor
-- performance improvements for syntax highlighting
-- fixed search in files with non-default codec
-- several minor bugfixes related to the search
+# General
+- **added Drag and Drop in GDX Table View**
+- fixed performance issue with very long lines (see #1008)
+- fixed shortcut ctrl+shift+home not working as expected (see #1009)
