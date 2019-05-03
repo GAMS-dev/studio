@@ -77,6 +77,7 @@ void ColumnFilterFrame::apply()
     mSymbol->setFilterActive(filterActive);
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
+    mSymbol->setFilterHasChanged(true);
 }
 
 void ColumnFilterFrame::selectAll()

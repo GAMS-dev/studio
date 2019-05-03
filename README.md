@@ -4,15 +4,15 @@ GAMS Studio is the official development environment of the General Algebraic Mod
 
 GAMS Studio uses [Qt](https://www.qt.io/) which is licensed under [LGPL](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
 
-# Contribute
-
-Contributions to the GAMS Studio project are highly appreciated! For futher information please check our [CONTRIBUTING.md](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
-
 # How to build
 
 ## 1. Download and install Qt ##
 
-The recommended way to get Qt is via its official [Qt online installer](https://www.qt.io/). If you are interested in the Qt sources you can download them through the installer and build Qt from scratch by following the [Qt documentation](https://doc.qt.io/qt-5/build-sources.html). Alternatively, you can get and build Qt from the official [Qt GitHub mirror](https://github.com/qt/qt5). Please note the the current version of GAMS Studio requires Qt 5.10.0 or later.
+The recommended way to get Qt is via its official [Qt online installer](https://www.qt.io/).
+If you are interested in the Qt sources you can download them through the 
+installer or build Qt from scratch by following the [Qt documentation](https://doc.qt.io/qt-5/build-sources.html).
+Alternatively, you can get and build Qt from the official [Qt GitHub mirror](https://github.com/qt/qt5).
+Please check the [CONTRIBUTING.md](CONTRIBUTING.md) for the GAMS Studio C++ and Qt requirements.
 
 ## 2. Download and install GAMS ##
 

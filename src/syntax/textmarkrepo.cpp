@@ -173,6 +173,7 @@ void TextMarkRepo::jumpTo(TextMark *mark, bool focus, bool ignoreColumn)
     mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findRunGroup(mark->groupId()));
 
     if (fm) {
+        if (mark->blockEnd() < 0) ignoreColumn = true;
         fm->jumpTo(mark->groupId(), focus, mark->line(), ignoreColumn ? 0 : mark->blockEnd());
     }
 }
