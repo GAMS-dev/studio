@@ -855,7 +855,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *ref);;"
+                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *.ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -868,7 +868,7 @@ void MainWindow::on_actionOpenNew_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *ref);;"
+                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *.ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -899,14 +899,16 @@ void MainWindow::on_actionSave_As_triggered()
     QFileInfo fi(filePath);
     while (choice < 1) {
         QStringList filters;
-        filters << tr("GAMS code (*.gms *.inc *.log)");
+        filters << tr("GAMS code (*.gms *.inc *.log *.gdx *.opt *.ref)");
         filters << tr("Text files (*.txt)");
         filters << tr("All files (*.*)");
         QString *selFilter = &filters.last();
         if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
         if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
-        filePath = QFileDialog::getSaveFileName(this, "Save file as...", filePath, filters.join(";;"), selFilter
-                                                , QFileDialog::DontConfirmOverwrite);
+        filePath = QFileDialog::getSaveFileName(this, "Save file as...",
+                                                filePath, filters.join(";;"),
+                                                selFilter,
+                                                QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
 
         // perform file copy when file is either a gdx file or a ref file
