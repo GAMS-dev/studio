@@ -51,7 +51,6 @@ public:
     void startRun() override;
     void endRun() override;
     int lineCount() const override;
-    bool isEmpty() const override;
 
 public slots:
     void peekChunksForLineNrs();

@@ -51,8 +51,6 @@ public:
     void startRun() override;
     void endRun() override;
     QString lines(int localLineNrFrom, int lineCount) const override;
-    bool isEmpty() const override;
-
 
 signals:
 
