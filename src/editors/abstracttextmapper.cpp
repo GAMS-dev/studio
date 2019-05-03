@@ -31,7 +31,7 @@ namespace studio {
 AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 {
     mCodec = QTextCodec::codecForLocale();
-    setMappingSizes();
+//    setMappingSizes();
     setPosAbsolute(nullptr, 0, 0);
 }
 

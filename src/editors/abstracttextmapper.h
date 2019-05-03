@@ -97,7 +97,7 @@ public:
     virtual void startRun() = 0;
     virtual void endRun() = 0;
     virtual void createSection();
-    virtual qint64 size() const = 0;                                    // share FM + MM
+    virtual qint64 size() const;                                    // share FM + MM
     virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
 
     virtual bool setMappingSizes(int bufferedLines = 60, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
