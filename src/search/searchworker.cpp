@@ -46,6 +46,8 @@ void SearchWorker::findInFiles()
         QFile file(fm->location());
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
+            in.setCodec(fm->codec());
+
             while (!in.atEnd()) { // read file
                 lineCounter++;
 
@@ -65,9 +67,8 @@ void SearchWorker::findInFiles()
                 if (mMatches->size() > 49999) break;
 
                 // update periodically
-                if (lineCounter % 15000 == 0) {
+                if (lineCounter % 250000 == 0)
                     emit update();
-                }
             }
             file.close();
         }

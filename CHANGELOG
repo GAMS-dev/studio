@@ -1,12 +1,13 @@
-Version 0.11.0
+Version 0.11.1
 ========================
 
 ## General
-- fixed flickering of Studio when resizing
-- added "open anyway" to warning dialog for large files
-- changed icon of all editable non-GAMS files (prior that was only for txt files)
+- improved picking of default editor font on macOS and Linux
+- forced light application theme on macOS
+- fixed possible crash related to About GAMS dialog
+- performance improvements when writing log to disk
 
 ## Editor
-- further syntax highlighter improvements
-- improved performance of error highlighting when editing a file contaning many
-- fixed highlighting of word under cursor when stepping through vertain search results
+- performance improvements for syntax highlighting
+- fixed search in files with non-default codec
+- several minor bugfixes related to the search
