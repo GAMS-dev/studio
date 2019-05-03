@@ -93,7 +93,7 @@ public:
     QTextCodec *codec() const;                                  // share FM + MM (FileMapper + MemoryMapper)
     void setCodec(QTextCodec *codec);                           // share FM + MM
 
-    virtual bool isEmpty() const;
+    bool isEmpty() const;
     virtual void startRun() = 0;
     virtual void endRun() = 0;
     virtual void createSection();

@@ -51,6 +51,7 @@ public:
     void startRun() override;
     void endRun() override;
     int lineCount() const override;
+    bool isEmpty() const override;
 
 public slots:
     void peekChunksForLineNrs();
@@ -74,7 +75,6 @@ private:
     qint64 mSize = 0;
 
     QTimer mPeekTimer;
-
 };
 
 } // namespace studio

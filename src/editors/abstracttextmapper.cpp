@@ -86,10 +86,10 @@ void AbstractTextMapper::setCodec(QTextCodec *codec)
     mCodec = codec;
 }
 
-bool AbstractTextMapper::isEmpty() const
-{
-    return true;
-}
+//bool AbstractTextMapper::isEmpty() const
+//{
+//    return true;
+//}
 
 bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mBufferedLineCount
 {
