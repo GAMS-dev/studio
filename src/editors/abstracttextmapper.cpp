@@ -133,6 +133,11 @@ void AbstractTextMapper::createSection()
     return;
 }
 
+qint64 AbstractTextMapper::size() const
+{
+    return 0;
+}
+
 
 void AbstractTextMapper::updateLineOffsets(Chunk *chunk) const
 {
