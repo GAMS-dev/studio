@@ -911,6 +911,29 @@ void MainWindow::on_actionSave_As_triggered()
                                                 QFileDialog::DontConfirmOverwrite);
         if (filePath.isEmpty()) return;
 
+        choice = 1;
+        if ( fileMeta->kind() == FileKind::Opt  &&
+             QString::compare(QFileInfo(fileMeta->location()).completeBaseName(), QFileInfo(filePath).completeBaseName(), Qt::CaseInsensitive)!=0 )
+            choice = QMessageBox::question(this, "Different solver name"
+                                               , QString("Solver option file name '%1' is different than source option file name '%2'. Saved file '%3' may not be displayed properly.")
+                                                      .arg(QFileInfo(filePath).completeBaseName()).arg(QFileInfo(fileMeta->location()).completeBaseName()).arg(QFileInfo(filePath).fileName())
+                                               , "Select other", "Continue", "Abort", 0, 2);
+        if (choice == 0)
+            continue;
+        else if (choice == 2)
+                 break;
+
+        choice = 1;
+        if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).suffix()))
+            choice = QMessageBox::question(this, "Different file suffix type"
+                                               , QString("Suffix '%1' is of different type than source file suffix '%2'. Saved file '%3' may not be displayed properly.")
+                                                      .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(fileMeta->location()).suffix()).arg(QFileInfo(filePath).fileName())
+                                               , "Select other", "Continue", "Abort", 0, 2);
+        if (choice == 0)
+            continue;
+        else if (choice == 2)
+                 break;
+
         // perform file copy when file is either a gdx file or a ref file
         bool exists = QFile::exists(filePath);
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
