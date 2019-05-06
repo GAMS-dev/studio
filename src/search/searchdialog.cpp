@@ -416,10 +416,19 @@ void SearchDialog::findNext(SearchDirection direction)
 
     if (mResultsView) {
         QWidget* edit = mMain->recent()->editor();
-        CodeEdit* ce = ViewHelper::toCodeEdit(edit);
 
-        QTextCursor tc = (ce) ? ce->textCursor() : QTextCursor();
-        int selection = mResultsView->selectNextItem(ViewHelper::location(edit), tc, direction);
+        int line = 0;
+        int col = 0;
+
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(edit)) {
+            line = ce->textCursor().blockNumber()+1;
+            col = ce->textCursor().positionInBlock()+1;
+        } else if (TextView* tv = ViewHelper::toTextView(edit)) {
+            line = tv->position().y();
+            col = tv->position().x();
+        }
+
+        int selection = mResultsView->selectNextItem(ViewHelper::location(edit), line, col, direction);
         updateMatchAmount(selection);
 
     } else selectNextMatch(direction);

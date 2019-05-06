@@ -2330,8 +2330,7 @@ void MainWindow::on_mainTab_currentChanged(int index)
     }
     changeToLog(fc, false, false);
 
-    CodeEdit* ce = ViewHelper::toCodeEdit(edit);
-    if (ce)
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(edit))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(edit))
         tv->updateExtraSelections();

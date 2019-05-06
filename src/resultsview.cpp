@@ -77,17 +77,15 @@ SearchResultList* ResultsView::searchResultList() const
 /// \param backwards WiP not yet implemented
 /// \return returns selected row index +1 to make it "human readable"
 ///
-int ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
+int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwards)
 {
-    int tcLine = tc.blockNumber()+1;
-    int tcCol = tc.positionInBlock();
     int direction = backwards ? -1 : 1;
 
     if (ui->tableView->selectionModel()->selectedRows(0).isEmpty())
         ui->tableView->selectRow(0);
 
     // for non-document files just select next item in list
-    if (tc.isNull()) {
+    if (lineNr == 0) {
         int newRow = ui->tableView->selectionModel()->selectedRows(0).first().row() + direction;
 
         if (newRow > ui->tableView->model()->rowCount()-1) newRow = 0; // start over
@@ -120,19 +118,19 @@ int ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
     for (int i = start; i >= 0 && i < resultList.size(); i += direction) {
         Result r = resultList.at(i);
         if (file != r.filepath()) { // reset cursor if in next/prev file
-            tcLine = backwards ? INT_MAX : 0;
-            tcCol = backwards ? INT_MAX : 0;
+            lineNr = backwards ? INT_MAX : 0;
+            colNr = backwards ? INT_MAX : 0;
         }
 
         // check if is in same line but behind the cursor
         if (backwards) {
-            if (tcLine > r.lineNr() || (tcLine == r.lineNr() && tcCol > r.colNr() + r.length())) {
+            if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
                 ui->tableView->selectRow(i);
                 on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
                 return i+1;
             }
         } else {
-            if (tcLine < r.lineNr() || (tcLine == r.lineNr() && tcCol <= r.colNr())) {
+            if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
                 ui->tableView->selectRow(i);
                 on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
                 return i+1;
