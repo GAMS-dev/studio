@@ -691,8 +691,8 @@ void SearchDialog::clearResults()
         tc.clearSelection();
         edit->setTextCursor(tc);
     }
-    updateEditHighlighting();
     mMain->closeResultsPage();
+    updateEditHighlighting();
 }
 
 void SearchDialog::setSearchStatus(SearchStatus status)

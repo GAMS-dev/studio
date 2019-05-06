@@ -30,9 +30,6 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
     QWidget(parent), ui(new Ui::ResultsView), mMain(parent)
 {
     ui->setupUi(this);
-    resultList->resultHash();
-    // create copy of hash to decouple cached and displayed results
-
     mResultList = resultList;
     ui->tableView->setModel(mResultList);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -43,6 +40,7 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
 ResultsView::~ResultsView()
 {
     delete ui;
+//  delete mResultList; not needed, deletion handled externally
 }
 
 void ResultsView::resizeColumnsToContent()
@@ -85,7 +83,10 @@ int ResultsView::selectNextItem(QString file, QTextCursor tc, bool backwards)
     int tcCol = tc.positionInBlock();
     int direction = backwards ? -1 : 1;
 
-    // for large docs just select next item in list
+    if (ui->tableView->selectionModel()->selectedRows(0).isEmpty())
+        ui->tableView->selectRow(0);
+
+    // for non-document files just select next item in list
     if (tc.isNull()) {
         int newRow = ui->tableView->selectionModel()->selectedRows(0).first().row() + direction;
 

@@ -49,7 +49,7 @@ void SearchResultList::addResult(int lineNr, int colNr, int length, QString file
 
 QList<Result> SearchResultList::filteredResultList(QString fileLocation)
 {
-    return mResultHash[fileLocation];
+    return mResultHash.value(fileLocation);
 }
 
 QString SearchResultList::searchTerm() const
