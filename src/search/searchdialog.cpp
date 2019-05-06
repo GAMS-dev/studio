@@ -859,9 +859,12 @@ void SearchDialog::setSelectedScope(int index)
     ui->combo_scope->setCurrentIndex(index);
 }
 
-SearchResultList* SearchDialog::cachedResults()
+SearchResultList* SearchDialog::results()
 {
-    return mCachedResults;
+    if (resultsView())
+        return resultsView()->searchResultList();
+    else
+        return mCachedResults;
 }
 
 void SearchDialog::setActiveEditWidget(QWidget *edit)

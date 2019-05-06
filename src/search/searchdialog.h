@@ -78,7 +78,7 @@ public:
     void clearSearch();
     void invalidateCache();
 
-    SearchResultList* cachedResults();
+    SearchResultList* results();
     void setActiveEditWidget(QWidget *edit);
 
     ResultsView *resultsView() const;
