@@ -2331,7 +2331,11 @@ void MainWindow::on_mainTab_currentChanged(int index)
     changeToLog(fc, false, false);
 
     CodeEdit* ce = ViewHelper::toCodeEdit(edit);
-    if (ce) ce->updateExtraSelections();
+    if (ce)
+        ce->updateExtraSelections();
+    else if (TextView* tv = ViewHelper::toTextView(edit))
+        tv->updateExtraSelections();
+
 }
 
 void MainWindow::on_actionSettings_triggered()

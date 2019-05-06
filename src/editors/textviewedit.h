@@ -53,18 +53,6 @@ protected:
     void recalcWordUnderCursor() override;
     int effectiveBlockNr(const int &localBlockNr) const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
-    void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections) override;
-
-//    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections) override;
-
-//    QString lineNrText(int blockNr) override {
-//        double byteNr = mTopByte + document()->findBlockByNumber(blockNr-1).position();
-//        double percent = byteNr * 100 / mOversizeMapper.size;
-//        QString res = QString::number(percent, 'f', mDigits) % QString(mDigits-1, '0');
-//        if (percent < 1.0 || res.startsWith("100")) return ('%' + res).left(mDigits+3);
-//        if (percent < 10.0) return (' ' + res).left(mDigits+3);
-//        return res.left(mDigits+3);
-//    }
 
 private:
     int topVisibleLine() override;
@@ -77,7 +65,6 @@ private:
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;
 };
-
 
 } // namespace studio
 } // namespace gams

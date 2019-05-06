@@ -1325,32 +1325,40 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    SearchResultList *matches = SearchLocator::searchResults();
-    if (!matches) return;
+    SearchDialog *searchDialog = SearchLocator::searchDialog();
+    if (!searchDialog) return;
+    QString searchTerm = searchDialog->searchTerm();
+    if (searchTerm.isEmpty()) return;
+    QRegularExpression regEx = searchDialog->createRegex();
 
     QTextBlock block = firstVisibleBlock();
+    int fromPos = block.position();
+    int toPos = fromPos;
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
-
-    QList<Result> fileResults = matches->filteredResultList(property("location").toString());
-
     while (block.isValid() && top < viewport()->height()) {
-        QList<Result> rowResults;
-        for (Result r : fileResults) {
-            if (r.lineNr() == block.blockNumber()+1)
-                rowResults << r;
-        }
-
-        for (Result r: rowResults) {
-            QTextEdit::ExtraSelection selection;
-            selection.cursor = textCursor();
-            selection.cursor.setPosition(block.position() + r.colNr());
-            selection.cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, r.length());
-            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
-            selections << selection;
-        }
+        toPos = block.position() + block.length();
         top += qRound(blockBoundingRect(block).height());
         block = block.next();
     }
+
+    QTextCursor lastItem = QTextCursor(document());
+    lastItem.setPosition(firstVisibleBlock().position());
+    QTextCursor item;
+    QFlags<QTextDocument::FindFlag> flags;
+    flags.setFlag(QTextDocument::FindCaseSensitively, searchDialog->caseSens());
+
+    do {
+        item = document()->find(regEx, lastItem, flags);
+        if (lastItem == item) break;
+        lastItem = item;
+        if (!item.isNull()) {
+            if (item.position() > toPos) break;
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = item;
+            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
+            selections << selection;
+        }
+    } while (!item.isNull());
 }
 
 QString CodeEdit::lineNrText(int blockNr)
