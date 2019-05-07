@@ -46,6 +46,9 @@ public:
     SearchResultList* searchResultList() const;
     int selectNextItem(QString file, int lineNr, int colNr, bool backwards = false);
 
+signals:
+    void updateMatchLabel(int row);
+
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);
 

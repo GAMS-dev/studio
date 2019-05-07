@@ -435,7 +435,7 @@ void SearchDialog::findNext(SearchDirection direction)
         }
 
         int selection = mResultsView->selectNextItem(ViewHelper::location(edit), line, col, direction);
-        updateMatchAmount(selection);
+        updateMatchLabel(selection);
 
     } else selectNextMatch(direction);
 }
@@ -614,13 +614,13 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
     for (Result match: mCachedResults->resultsAsList()) {
         if (match.lineNr() == matchSelection.blockNumber()+1
                 && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
-            updateMatchAmount(count+1);
+            updateMatchLabel(count+1);
             return;
         } else {
             count++;
         }
     }
-    updateMatchAmount();
+    updateMatchLabel();
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
@@ -792,7 +792,7 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->setFocus();
 }
 
-void SearchDialog::updateMatchAmount(int current)
+void SearchDialog::updateMatchLabel(int current)
 {
     if (current == 0) {
         if (mCachedResults->size() == 1)
