@@ -79,6 +79,7 @@ SearchResultList* ResultsView::searchResultList() const
 ///
 int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwards)
 {
+    qDebug() /*rogo: delete*/ << QTime::currentTime() << "call l/c" << lineNr << colNr;
     int direction = backwards ? -1 : 1;
 
     if (ui->tableView->selectionModel()->selectedRows(0).isEmpty())
@@ -114,7 +115,8 @@ int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwa
             }
         }
     }
-    // from first (or last) result in a file to size( or 0), either forwards or backwards
+
+    // from first (or last) result in a file to SIZE (or 0), either forwards or backwards
     for (int i = start; i >= 0 && i < resultList.size(); i += direction) {
         Result r = resultList.at(i);
         if (file != r.filepath()) { // reset cursor if in next/prev file

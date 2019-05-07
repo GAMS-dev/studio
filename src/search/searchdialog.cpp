@@ -422,9 +422,9 @@ void SearchDialog::findNext(SearchDirection direction)
 
         if (CodeEdit* ce = ViewHelper::toCodeEdit(edit)) {
             line = ce->textCursor().blockNumber()+1;
-            col = ce->textCursor().positionInBlock()+1;
+            col = ce->textCursor().positionInBlock();
         } else if (TextView* tv = ViewHelper::toTextView(edit)) {
-            line = tv->position().y();
+            line = tv->position().y()+1;
             col = tv->position().x();
         }
 
