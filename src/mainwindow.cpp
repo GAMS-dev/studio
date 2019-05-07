@@ -924,11 +924,18 @@ void MainWindow::on_actionSave_As_triggered()
                  break;
 
         choice = 1;
-        if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).suffix()))
-            choice = QMessageBox::question(this, "Different file suffix type"
-                                               , QString("Suffix '%1' is of different type than source file suffix '%2'. Saved file '%3' may not be displayed properly.")
-                                                      .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(fileMeta->location()).suffix()).arg(QFileInfo(filePath).fileName())
-                                               , "Select other", "Continue", "Abort", 0, 2);
+        if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).suffix())) {
+            if (fileMeta->kind() == FileKind::Opt)
+                choice = QMessageBox::question(this, "Invalid Option File Suffix"
+                                                   , QString("'%1' is not a valid option file suffix. Saved file '%2' may not be displayed properly.")
+                                                          .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(fileMeta->location()).suffix()).arg(QFileInfo(filePath).fileName())
+                                                   , "Select other", "Continue", "Abort", 0, 2);
+            else
+                choice = QMessageBox::question(this, "Different File Type"
+                                                   , QString("Suffix '%1' is of different type than source file suffix '%2'. Saved file '%3' may not be displayed properly.")
+                                                          .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(fileMeta->location()).suffix()).arg(QFileInfo(filePath).fileName())
+                                                   , "Select other", "Continue", "Abort", 0, 2);
+        }
         if (choice == 0)
             continue;
         else if (choice == 2)
