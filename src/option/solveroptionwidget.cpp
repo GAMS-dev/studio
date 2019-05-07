@@ -335,6 +335,7 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
     if (selection.count() <= 0)
         return;
 
+    bool viewIsCompact = isViewCompact();
     bool hasSelectionBeenAdded = (selection.size()>0);
     // assume single selection
     for (QModelIndex idx : selection) {
@@ -351,11 +352,11 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionAddThisOption")==0) {
-            action->setVisible( !hasSelectionBeenAdded );
+            action->setVisible( !hasSelectionBeenAdded && !viewIsCompact );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            action->setVisible( hasSelectionBeenAdded );
+            action->setVisible( hasSelectionBeenAdded && !viewIsCompact );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionCopyDefinitionText")==0) {
