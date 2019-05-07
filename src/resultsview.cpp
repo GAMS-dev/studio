@@ -79,14 +79,13 @@ SearchResultList* ResultsView::searchResultList() const
 ///
 int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwards)
 {
-    qDebug() /*rogo: delete*/ << QTime::currentTime() << "call l/c" << lineNr << colNr;
     int direction = backwards ? -1 : 1;
 
     if (ui->tableView->selectionModel()->selectedRows(0).isEmpty())
         ui->tableView->selectRow(0);
 
     // for non-document files just select next item in list
-    if (lineNr == 0) {
+    if (lineNr == -1) {
         int newRow = ui->tableView->selectionModel()->selectedRows(0).first().row() + direction;
 
         if (newRow > ui->tableView->model()->rowCount()-1) newRow = 0; // start over
