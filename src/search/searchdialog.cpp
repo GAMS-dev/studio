@@ -404,17 +404,8 @@ void SearchDialog::findNext(SearchDirection direction)
     if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
 
     mShowResults = false;
-    // deactivate cache when
-    //  - we already have search results (these are used to step through results)
-    //  or
-    //  - no cache yet or changes where made
-    //  and
-    //  - never cache for a large file
-    if ((!mResultsView && (!mCachedResults || mHasChanged)) && !ViewHelper::toTextView(mMain->recent()->editor())) {
-        updateSearchCache();
-    }
 
-    if (mResultsView) {
+    if (mResultsView && !mHasChanged && !mCachedResults) {
         QWidget* edit = mMain->recent()->editor();
 
         int line = -1;
@@ -437,7 +428,10 @@ void SearchDialog::findNext(SearchDirection direction)
         int selection = mResultsView->selectNextItem(ViewHelper::location(edit), line, col, direction);
         updateMatchLabel(selection);
 
-    } else selectNextMatch(direction);
+    } else {
+        if (!mCachedResults) updateSearchCache();
+        selectNextMatch(direction);
+    }
 }
 
 ///
@@ -830,13 +824,12 @@ QRegularExpression SearchDialog::createRegex()
     return searchRegex;
 }
 
-// TODO(rogo): analyze this
 void SearchDialog::invalidateCache()
 {
     // if cache is also used in ui dont delete list
     if (resultsView() && mCachedResults == resultsView()->searchResultList())
         mCachedResults = nullptr;
-    else if (mCachedResults){
+    else {
         delete mCachedResults;
         mCachedResults = nullptr;
     }
