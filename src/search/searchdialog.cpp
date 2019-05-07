@@ -136,7 +136,7 @@ void SearchDialog::finalUpdate()
     updateEditHighlighting();
 
     if (!mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
-    else updateFindNextLabel(QTextCursor());
+    else updateMatchAmount();
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
@@ -427,8 +427,8 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         if (edit) {
             matchSelection = edit->textCursor();
-        } else {
-            updateMatchAmount();
+        } else { // is large file using textview
+            setSearchStatus(SearchStatus::Clear);
             return;
         }
     }

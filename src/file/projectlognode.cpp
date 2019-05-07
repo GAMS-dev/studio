@@ -305,7 +305,8 @@ QString ProjectLogNode::extractLinks(const QString &line, ProjectFileNode::Extra
             result = capture(line, posA, posB, 0, '[').toString();
             fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
             lineNr = capture(line, posA, posB, 2, ',').toInt()-1;
-            size = capture(line, posA, posB, 1, ']').toInt()-1;
+            colStart = capture(line, posA, posB, 1, ']').toInt()-1;
+            size = 1;
             posB++;
             if (mRepaintCount < 0) mRepaintCount = 0;
         }
