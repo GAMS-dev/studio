@@ -250,36 +250,31 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     bool thereIsARowSelection = isThereARowSelection();
     bool viewIsCompact = isViewCompact();
-    if (viewIsCompact) {
-        for(QAction* action : this->actions())
-            action->setVisible( !viewIsCompact );
-        return;
-    }
 
     QMenu menu(this);
     QAction* moveUpAction = nullptr;
     QAction* moveDownAction = nullptr;
     for(QAction* action : this->actions()) {
         if (action->objectName().compare("actionToggle_comment")==0) {
-            action->setVisible( thereIsARowSelection );
+            action->setVisible( !viewIsCompact && thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionInsert_option")==0) {
-            action->setVisible( !isThereARow() || isThereARowSelection() );
+            action->setVisible( !viewIsCompact && (!isThereARow() || isThereARowSelection()) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
-            action->setVisible( !isThereARow() || isThereARowSelection() );
+            action->setVisible( !viewIsCompact && (!isThereARow() || isThereARowSelection()) );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
-            action->setVisible( thereIsARowSelection );
+            action->setVisible( !viewIsCompact && thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            action->setVisible( thereIsARowSelection && (selection.first().row() > 0) );
+            action->setVisible( !viewIsCompact && thereIsARowSelection && (selection.first().row() > 0) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setVisible( thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            action->setVisible( !viewIsCompact && thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionSelect_all")==0) {
@@ -287,15 +282,16 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
-            bool everyRowIsAnOption = true;
-            for (QModelIndex selection : ui->solverOptionTableView->selectionModel()->selectedRows()) {
-                QVariant data = ui->solverOptionTableView->model()->headerData(selection.row(), Qt::Vertical,  Qt::CheckStateRole);
-                if (Qt::CheckState(data.toUInt())==Qt::PartiallyChecked) {
-                    everyRowIsAnOption = false;
+
+            bool thereIsAnOptionSelection = false;
+            for (QModelIndex s : selection) {
+                QVariant data = ui->solverOptionTableView->model()->headerData(s.row(), Qt::Vertical,  Qt::CheckStateRole);
+                if (Qt::CheckState(data.toUInt())!=Qt::PartiallyChecked) {
+                    thereIsAnOptionSelection = true;
                     break;
                 }
             }
-            action->setVisible( thereIsARowSelection && everyRowIsAnOption );
+            action->setVisible( thereIsAnOptionSelection );
             menu.addAction(action);
         }
     }
@@ -784,9 +780,6 @@ void SolverOptionWidget::toggleCommentOption()
 
 void SolverOptionWidget::selectAnOption()
 {
-    if  (isViewCompact())
-        return;
-
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     if (indexSelection.empty())
         indexSelection <<  ui->solverOptionTableView->selectionModel()->currentIndex();
