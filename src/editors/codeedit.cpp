@@ -346,7 +346,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             setTextCursor(cur);
             e->accept();
             return;
-        } else if (e->key() == Qt::Key_Home && (!e->modifiers() || e->modifiers() & Qt::ShiftModifier)) {
+        } else if (e->key() == Qt::Key_Home && (!e->modifiers() || e->modifiers() & Qt::ShiftModifier || e->modifiers() & Qt::ControlModifier)) {
             QTextCursor tc = textCursor();
             QTextBlock block = tc.block();
             QTextCursor::MoveMode moveMode = QTextCursor::MoveAnchor;
@@ -357,10 +357,13 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QRegularExpression leadingSpaces("^(\\s*)");
             QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
 
-            if (lsMatch.capturedLength(1) < tc.positionInBlock())
-                tc.setPosition(block.position() + lsMatch.capturedLength(1), moveMode);
-            else
-                tc.setPosition(block.position(), moveMode);
+            if (e->modifiers() & Qt::ControlModifier) {
+                tc.setPosition(0, moveMode);
+            } else {
+                if (lsMatch.capturedLength(1) < tc.positionInBlock())
+                    tc.setPosition(block.position() + lsMatch.capturedLength(1), moveMode);
+                else tc.setPosition(block.position(), moveMode);
+            }
 
             setTextCursor(tc);
             e->accept();
@@ -530,7 +533,7 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
                 if (pMatch.capturedLength(2) < 1)
                     break;
                 QString spaces = pMatch.captured(2);
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, match.capturedLength(1));
+                cursor.setPosition(cursor.position() + match.capturedLength(1), QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();
                 cursor.insertText(spaces);
                 setTextCursor(cursor);
@@ -552,7 +555,7 @@ void CodeEdit::truncate(QTextBlock block)
     if (match.hasMatch()) {
         QTextCursor cursor(block);
         cursor.movePosition(QTextCursor::EndOfBlock);
-        cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, match.capturedLength(2));
+        cursor.setPosition(cursor.position() - match.capturedLength(2), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
 }
@@ -914,14 +917,14 @@ int CodeEdit::indent(int size, int fromLine, int toLine)
         editCursor.setPosition(block.position());
         if (size < 0) {
             if (insertPos - charCount < block.length()) {
-                editCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, insertPos - charCount);
+                editCursor.setPosition(block.position() + insertPos - charCount);
                 int tempCount = qMin(charCount, block.length() - (insertPos - charCount));
-                editCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, tempCount);
+                editCursor.setPosition(editCursor.position() + tempCount, QTextCursor::KeepAnchor);
                 editCursor.removeSelectedText();
             }
         } else {
             if (insertPos < block.length()) {
-                editCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, insertPos);
+                editCursor.setPosition(block.position() + insertPos);
                 editCursor.insertText(insText);
             }
         }
@@ -1235,7 +1238,14 @@ void CodeEdit::updateExtraSelections()
         regexp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
         if (regex) regexp.setPattern(searchTerm);                      // treat as regex
         else regexp.setPattern(QRegularExpression::escape(searchTerm));// take literally
-        regexp.setPattern("\\b" + regexp.pattern() + "\\b");           // only match whole selection
+        regexp.setPattern(regexp.pattern() + "\\b");           // only match whole selection
+
+        // word boundary (\b) only matches start-of-string when first character is \w
+        // so \b will only be added when first character of selectedText is a \w
+        // if first character is not \w  the whole string needs to be matched in order to deactivate HWUC
+        QRegularExpression startsWithW("^\\w");
+        if (startsWithW.match(selectedText).hasMatch())
+            regexp.setPattern("\\b" + regexp.pattern());
 
         QRegularExpressionMatch match = regexp.match(selectedText);
         bool skipWordTimer = (sender() == &mParenthesesDelay
@@ -1248,7 +1258,7 @@ void CodeEdit::updateExtraSelections()
                && (mSettings->wordUnderCursor() || hasSelection())
                // (  depending on settings: no selection necessary skip word-timer )
                && (mSettings->wordUnderCursor() || skipWordTimer))
-             // AND deactivate when navigation search results
+             // AND deactivate when navigating search results
              && match.captured(0).isEmpty()) {
             extraSelCurrentWord(selections);
         }
@@ -1282,8 +1292,6 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
                 selection.cursor = textCursor();
                 selection.cursor.setPosition(block.position()+match.capturedStart(2));
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
-//                QPen outlinePen( Qt::lightGray, 1);
-//                selection.format.setProperty(QTextFormat::OutlinePen, outlinePen);
                 selection.format.setBackground(mSettings->colorScheme().value("Edit.currentWordBg", QColor(Qt::lightGray)));
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
@@ -1776,7 +1784,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
             int rmSize = block.position()+qMin(block.length()-1, toCol) - pos;
             cursor.setPosition(pos);
             if (rmSize) {
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, rmSize);
+                cursor.setPosition(cursor.position()+rmSize, QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();
             }
         } else {

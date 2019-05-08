@@ -46,7 +46,6 @@ private:
 private:
     QMutex mMutex;
     QFile mFile;
-    QTimer mCloseTimer;
     int mBackups = 0;
 };
 

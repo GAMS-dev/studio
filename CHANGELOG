@@ -1,0 +1,7 @@
+Version 0.11.2
+========================
+
+# General
+- **added Drag and Drop in GDX Table View**
+- fixed performance issue with very long lines (see #1008)
+- fixed shortcut ctrl+shift+home not working as expected (see #1009)

@@ -100,11 +100,11 @@ public:
 public slots:
     void reload();
 
-public: // static convenience methods
 signals:
     void changed(FileId fileId);
     void documentOpened();
     void documentClosed();
+    void editableFileSizeCheck(const QFile &file, bool &canOpen);
 
 private slots:
     void modificationChanged(bool modiState);

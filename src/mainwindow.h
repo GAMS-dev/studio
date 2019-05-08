@@ -180,6 +180,7 @@ private slots:
     void changeToLog(ProjectAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
+    void editableFileSizeCheck(const QFile &file, bool &canOpen);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);

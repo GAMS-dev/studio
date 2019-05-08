@@ -37,6 +37,7 @@
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
 #include <QScrollBar>
+#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -111,11 +112,9 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
         AbstractEdit* edit = ViewHelper::toAbstractEdit(widget);
         if (edit) {
             QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
-            QTextCursor cursor(document());
-            if (cursor.blockNumber() < pos.y())
-                cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, qMin(edit->blockCount()-1, pos.y()));
+            QTextCursor cursor(document()->findBlockByNumber(qMin(pos.y(), document()->blockCount()-1)));
             if (cursor.positionInBlock() < pos.x())
-                cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(cursor.block().length()-1, pos.x()));
+                cursor.setPosition(cursor.position() + qMin(cursor.block().length()-1, pos.x()));
             edit->setTextCursor(cursor);
         }
         i++;
@@ -166,15 +165,16 @@ void FileMeta::linkDocument(QTextDocument *doc)
 void FileMeta::unlinkAndFreeDocument()
 {
     if (!mDocument) return;
-    if (mHighlighter) {
-        mHighlighter->setDocument(nullptr);
-        mHighlighter->deleteLater();
-        mHighlighter = nullptr;
-    }
     disconnect(mDocument, &QTextDocument::modificationChanged, this, &FileMeta::modificationChanged);
     if (kind() == FileKind::Gms) {
         disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+    }
+
+    if (mHighlighter) {
+        mHighlighter->setDocument(nullptr);
+        mHighlighter->deleteLater();
+        mHighlighter = nullptr;
     }
     mDocument->deleteLater();
     mDocument = nullptr;
@@ -251,11 +251,13 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     int fromLine = cursor.blockNumber();
     cursor.setPosition(from+charsAdded);
     int toLine = cursor.blockNumber();
-    mChangedLine = toLine;
-    if (charsAdded) {
-        --mChangedLine;
-        if (!column) --mChangedLine;
-    }
+    int removedLines = mLineCount-mDocument->lineCount() + toLine-fromLine;
+    mChangedLine = fromLine;
+//    if (charsAdded) --mChangedLine;
+//    if (!column) --mChangedLine;
+    if (removedLines > 0)
+        mFileRepo->textMarkRepo()->removeMarks(id(), edit->groupId(), QSet<TextMark::Type>()
+                                               , fromLine, fromLine+removedLines);
     for (int i = fromLine; i <= toLine; ++i) {
         QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, edit->groupId());
         for (TextMark *mark: marks) {
@@ -268,7 +270,7 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
 void FileMeta::blockCountChanged(int newBlockCount)
 {
     if (mLineCount != newBlockCount) {
-        mFileRepo->textMarkRepo()->shiftMarks(id(), mChangedLine+1, newBlockCount-mLineCount);
+        mFileRepo->textMarkRepo()->shiftMarks(id(), mChangedLine, newBlockCount-mLineCount);
         mLineCount = newBlockCount;
     }
 }
@@ -420,12 +422,11 @@ void FileMeta::load(int codecMib, bool init)
 
 
     QFile file(location());
-    qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
-    if (file.exists() && file.size() > maxSize) {
-        EXCEPT() << ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
-                     + " MB exceeded by " + location() + "\n"
-                     + "It is not recommended to open such large files in edit mode.");
-    }
+    bool canOpen = true;
+    emit editableFileSizeCheck(file, canOpen);
+    if (!canOpen)
+        EXCEPT() << "FileMeta" << '\t' << "Size for editable files exceeded: " << file.fileName();
+
     if (!mDocument) {
         QTextDocument *doc = new QTextDocument(this);
         linkDocument(doc);

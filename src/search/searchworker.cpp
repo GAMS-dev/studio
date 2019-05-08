@@ -67,7 +67,7 @@ void SearchWorker::findInFiles()
                 if (mMatches->size() > 49999) break;
 
                 // update periodically
-                if (lineCounter % 15000 == 0)
+                if (lineCounter % 250000 == 0)
                     emit update();
             }
             file.close();

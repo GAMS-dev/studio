@@ -2,6 +2,7 @@ pipeline {
     agent none
 
     options {
+        parallelsAlwaysFailFast()
         buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
         disableConcurrentBuilds()
     }
@@ -31,7 +32,7 @@ pipeline {
                         checkout scm
                         bat '''
                             @echo off
-                            echo Setting up environment for VS 2015 usage...
+                            echo Setting up environment for VS 2017 usage...
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build"
                             call vcvars32.bat
                             cd %WORKSPACE%

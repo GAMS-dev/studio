@@ -94,6 +94,7 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/nestedheaderview.cpp \
+    gdxviewer/tableviewmodel.cpp \
     keys.cpp \
     locators/searchlocator.cpp \
     logger.cpp \
@@ -136,6 +137,7 @@ SOURCES += \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
+    syntax/basehighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -204,6 +206,7 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/nestedheaderview.h \
+    gdxviewer/tableviewmodel.h \
     keys.h \
     locators/searchlocator.h \
     logger.h \
@@ -246,6 +249,8 @@ HEADERS += \
     statuswidgets.h \
     studiosettings.h \
     syntax.h \
+    syntax/basehighlighter.h \
+    syntax/blockcode.h \
     syntax/syntaxdata.h \
     syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \
@@ -280,8 +285,7 @@ HEADERS += \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
     logtabcontextmenu.h \
-    search/searchworker.h \
-    syntax/blockcode.h
+    search/searchworker.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

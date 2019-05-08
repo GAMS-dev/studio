@@ -50,7 +50,7 @@ enum ColorEnum {
 };
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
-    : QSyntaxHighlighter(doc)
+    : BaseHighlighter(doc)
 {
     QHash<ColorEnum, QColor> cl {
         {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
@@ -237,14 +237,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         else
             textBlock.setUserData(blockData);
     }
-    KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
-//    int oldState = currentBlockState();
-    if (mKinds.at(kindCode.first)->kind() != SyntaxKind::Standard) {
-        setCurrentBlockState(code.code());
-    } else if (currentBlockState() != -1) {
-        setCurrentBlockState(-1);
-    }
-//    DEB() << oldState << " -> " << currentBlockState();
+    setCurrentBlockState(code.code());
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind)
