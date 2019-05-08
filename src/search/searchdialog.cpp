@@ -518,6 +518,9 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
     } else if (e->key() == Qt::Key_F3) {
         e->accept();
         on_searchNext();
+    } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
+        e->accept();
+        on_btn_FindAll_clicked();
     }
     QDialog::keyPressEvent(e);
 }
