@@ -42,7 +42,7 @@ void TestOptionAPI::initTestCase()
     else
         Dcreated = true;
 
-    // test cplex for now
+    // test minos for now
     QString optdef = "optminos.def";
     if (optReadDefinition(mOPTHandle, QDir(CommonPaths::systemDir()).filePath(optdef).toLatin1())) {
         optdefRead = false;
@@ -74,12 +74,16 @@ void TestOptionAPI::testOptFileSuffix_data()
 
     QTest::newRow("opt9")   << "opt9"   << false ;
     QTest::newRow("opt99")  << "op99"   << false ;
+    QTest::newRow("opt999") << "op999"  << false ;
+    QTest::newRow("optt")   << "optt"   << false ;
+    QTest::newRow("opt_1")  << "opt_1"  << false ;
 
     QTest::newRow("op0")    << "op0"    << false ;
     QTest::newRow("op1")    << "op1"    << false ;
+    QTest::newRow("op01")   << "op01"   << false ;
     QTest::newRow("op10")   << "op10"   << false ;
     QTest::newRow("op99")   << "op99"   << false ;
-    QTest::newRow("op123")  << "op123"   << false ;
+    QTest::newRow("op123")  << "op123"  << false ;
 
     QTest::newRow("o1")     << "o1"     << false ;
     QTest::newRow("o02")    << "o02"    << false ;
@@ -91,6 +95,16 @@ void TestOptionAPI::testOptFileSuffix_data()
     QTest::newRow("1p2")    << "1p2"    << false ;
     QTest::newRow("12t34")  << "12t34"  << false ;
     QTest::newRow("2pt")    << "2pt"    << false ;
+
+    QTest::newRow("opt.opt")    << "opt.opt"    << false ;
+    QTest::newRow("opt.op1")    << "opt.op1"    << false ;
+    QTest::newRow("opt.o12")    << "opt.o12"    << false ;
+    QTest::newRow("opt.123")    << "opt.123"    << false ;
+    QTest::newRow("opt.1234")   << "opt.1234"   << false ;
+    QTest::newRow("op1.opt")    << "op1.opt"    << false ;
+    QTest::newRow("o12.opt")    << "o12.opt"    << false ;
+    QTest::newRow("123.opt")    << "123.opt"    << false ;
+    QTest::newRow("1234.opt")   << "1234.opt"   << false ;
 
     QTest::newRow("gsp")    << "gsp"    << false ;
     QTest::newRow("pro")    << "pro"    << false ;
@@ -111,6 +125,8 @@ void TestOptionAPI::testOptFileSuffix()
     QFETCH(bool, valid);
 
     QCOMPARE(valid, FileKind::Opt == FileType::from(suffix).kind());
+    QCOMPARE(valid, FileType::from(FileKind::Opt) == FileType::from(suffix));
+    QCOMPARE(valid, QString::compare(FileType::from(suffix).defaultSuffix(), "opt", Qt::CaseInsensitive)==0 );
 }
 
 void TestOptionAPI::testEOLChars()
