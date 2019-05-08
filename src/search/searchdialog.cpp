@@ -82,7 +82,6 @@ void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearching) {
         if (createRegex().pattern().isEmpty()) return;
-        mShowResults = true;
         mHasChanged = false;
 
         setSearchOngoing(true);
@@ -93,6 +92,8 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         insertHistory();
 
+        mShowResults = true;
+        mStepThroughResults = true;
         findInFiles();
 
         updateEditHighlighting();
@@ -322,6 +323,7 @@ void SearchDialog::replaceAll()
     ansBox.exec();
 
     invalidateCache();
+    mStepThroughResults = false;
 }
 
 ///
@@ -405,7 +407,7 @@ void SearchDialog::findNext(SearchDirection direction)
 
     mShowResults = false;
 
-    if (mResultsView && !mHasChanged && !mCachedResults) {
+    if (mResultsView && !mHasChanged && mStepThroughResults) {
         QWidget* edit = mMain->recent()->editor();
 
         int line = -1;
@@ -629,6 +631,7 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString)
 void SearchDialog::searchParameterChanged() {
     setSearchStatus(SearchDialog::Clear);
     invalidateCache();
+    mStepThroughResults = false;
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -703,6 +706,7 @@ void SearchDialog::clearResults()
         tc.clearSelection();
         edit->setTextCursor(tc);
     }
+    mStepThroughResults = false;
     mMain->closeResultsPage();
     updateEditHighlighting();
 }
