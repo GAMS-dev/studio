@@ -123,27 +123,29 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 
 void FileMeta::internalSave(const QString &location)
 {
-    if (kind() == FileKind::Opt) { // 2 possible editor types for an Opt file: SolverOptionWidget and CodeEdit
+    if (document()) {
+        QFile file(location);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            EXCEPT() << "Can't save " << location;
+        QTextStream out(&file);
+        if (mCodec) out.setCodec(mCodec);
+        mActivelySaved = true;
+        out << document()->toPlainText();
+        out.flush();
+        file.close();
+        mData = Data(location, mData.type);
+        setModified(false);
+        mFileRepo->watch(this);
+    } else if (kind() == FileKind::Opt) {
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) {
             mActivelySaved = true;
             solverOptionWidget->saveOptionFile(location);
             mData = Data(location, mData.type);
-            return;
+            setModified(false);
+            mFileRepo->watch(this);
         }
     }
-    QFile file(location);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        EXCEPT() << "Can't save " << location;
-    QTextStream out(&file);
-    if (mCodec) out.setCodec(mCodec);
-    mActivelySaved = true;
-    out << document()->toPlainText();
-    out.flush();
-    file.close();
-    mData = Data(location, mData.type);
-    document()->setModified(false);
-    mFileRepo->watch(this);
 }
 
 bool FileMeta::checkActivelySavedAndReset()
@@ -489,7 +491,7 @@ void FileMeta::load(int codecMib, bool init)
             SysLogLocator::systemLog()->append("System doesn't contain codec for MIB " + QString::number(codecMib), LogMsgType::Info);
         }
         file.close();
-        document()->setModified(false);
+        setModified(false);
         return;
     }
     return;
@@ -613,7 +615,6 @@ bool FileMeta::isModified() const
 
 bool FileMeta::isReadOnly() const
 {
-    if (kind() == FileKind::Opt) return false;  // TODO (JP)
     AbstractEdit* edit = mEditors.isEmpty() ? nullptr : ViewHelper::toAbstractEdit(mEditors.first());
     if (edit) return edit->isReadOnly();
 
@@ -638,14 +639,14 @@ void FileMeta::resetTempReloadState()
     mTempAutoReloadTimer.start(1500);
 }
 
-void FileMeta::setModified()
+void FileMeta::setModified(bool modified)
 {
     if (document()) {
-        document()->setModified();
+        document()->setModified(modified);
     } else if (kind() == FileKind::Opt) {
               for (QWidget *e : mEditors) {
                    option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
-                   if (so) so->setModified(true);
+                   if (so) so->setModified(modified);
               }
     }
 }
@@ -671,7 +672,7 @@ void FileMeta::setCodecMib(int mib)
         return;
 
     if (codec != mCodec) {
-       setModified();
+       setModified(true);
     }
     setCodec(codec);
 }
