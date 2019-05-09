@@ -128,7 +128,7 @@ void FileMeta::internalSave(const QString &location)
         if (solverOptionWidget) {
             mActivelySaved = true;
             solverOptionWidget->saveOptionFile(location);
-            mData = Data(location);
+            mData = Data(location, mData.type);
             return;
         }
     }
