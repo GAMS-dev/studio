@@ -145,6 +145,9 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 // normal line
                 ++i;
                 lf = true;
+            } else if (len) {
+                // old mac style line-ending (seems not to occur any more)
+                lf = true;
             } else {
                 ++start; // skip the leading '\r'
                 // conceal previous line if it hasn't been closed (\n at the end)
