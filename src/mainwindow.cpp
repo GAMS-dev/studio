@@ -2427,7 +2427,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
         if (fType == FileKind::Gsp) {
             // TODO(JM) Read project and create all nodes for associated files
         } else {
-            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group, &fType);
+            node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group);
         }
     }
     return node;
