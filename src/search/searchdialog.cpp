@@ -86,10 +86,6 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         setSearchOngoing(true);
         clearResults();
-        mCachedResults = new SearchResultList();
-        mCachedResults->setSearchTerm(createRegex().pattern());
-        mCachedResults->useRegex(regex());
-
         insertHistory();
 
         mShowResults = true;
@@ -165,6 +161,11 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
         findInDoc(createRegex(), fm);
 
     // search file thread
+    if (!mCachedResults) {
+        mCachedResults = new SearchResultList();
+        mCachedResults->setSearchTerm(createRegex().pattern());
+        mCachedResults->useRegex(regex());
+    }
     SearchWorker* sw = new SearchWorker(mMutex, createRegex(), umodified, mCachedResults);
     sw->moveToThread(&mThread);
 
