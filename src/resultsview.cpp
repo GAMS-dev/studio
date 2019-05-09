@@ -40,7 +40,7 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
 ResultsView::~ResultsView()
 {
     delete ui;
-//  delete mResultList; not needed, deletion handled externally
+    delete mResultList;
 }
 
 void ResultsView::resizeColumnsToContent()

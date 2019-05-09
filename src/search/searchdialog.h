@@ -76,7 +76,7 @@ public:
     void autofillSearchField();
 
     void clearSearch();
-    void invalidateCache();
+    void invalidateCache(bool hasChanged = true);
 
     SearchResultList* results();
     void setActiveEditWidget(QWidget *edit);
@@ -153,6 +153,8 @@ private:
     MainWindow *mMain;
     ResultsView *mResultsView = nullptr;
     SearchResultList *mCachedResults = nullptr;
+    SearchResultList *mTempResults = nullptr;
+    SearchResultList *mFinalResults = nullptr;
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = true;
     bool mFirstReturn = false;

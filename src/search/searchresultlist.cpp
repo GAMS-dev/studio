@@ -52,14 +52,14 @@ QList<Result> SearchResultList::filteredResultList(QString fileLocation)
     return mResultHash.value(fileLocation);
 }
 
-QString SearchResultList::searchTerm() const
+void SearchResultList::setSearchRegex(QRegularExpression searchRegex)
 {
-    return mSearchTerm;
+    mSearchRegex = searchRegex;
 }
 
-void SearchResultList::useRegex(bool regex)
+QRegularExpression SearchResultList::searchRegex()
 {
-    mIsRegex = regex;
+    return mSearchRegex;
 }
 
 int SearchResultList::size()
@@ -140,16 +140,6 @@ Result SearchResultList::at(int index) const
 QMultiHash<QString, QList<Result>> SearchResultList::resultHash() const
 {
     return mResultHash;
-}
-
-void SearchResultList::setSearchTerm(const QString &searchTerm)
-{
-    mSearchTerm = searchTerm;
-}
-
-bool SearchResultList::isRegex() const
-{
-    return mIsRegex;
 }
 
 }

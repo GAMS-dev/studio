@@ -21,6 +21,7 @@
 #define SEARCHRESULTLIST_H
 
 #include <QAbstractTableModel>
+#include <QRegularExpression>
 #include "result.h"
 
 namespace gams {
@@ -36,10 +37,8 @@ public:
     QMultiHash<QString, QList<Result> > resultHash() const;
     void addResult(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
     QList<Result> filteredResultList(QString fileLocation);
-    QString searchTerm() const;
-    void setSearchTerm(const QString &searchTerm);
-    bool isRegex() const;
-    void useRegex(bool regex);
+    QRegularExpression searchRegex();
+    void setSearchRegex(QRegularExpression searchRegex);
     int size();
     Result at(int index) const;
 
@@ -49,8 +48,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 private:
-    QString mSearchTerm;
-    bool mIsRegex;
+    QRegularExpression mSearchRegex;
     int mSize = 0;
     QHash<QString, QList<Result>> mResultHash;
 
