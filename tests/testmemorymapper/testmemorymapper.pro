@@ -18,12 +18,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += testcommonpaths \
-           testeditors \
-           testservicelocators \
-           testcheckforupdatewrapper \
-           testfilemapper \
-           testmemorymapper \
-           testblockcode
+include(../tests.pri)
+
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/editors
+
+HEADERS += \
+    $$SRCPATH/editors/memorymapper.h \
+    $$SRCPATH/editors/abstracttextmapper.h \
+    testmemorymapper.h
+
+SOURCES += \
+    $$SRCPATH/editors/memorymapper.cpp \
+    $$SRCPATH/editors/abstracttextmapper.cpp \
+    $$SRCPATH/exception.cpp \
+    $$SRCPATH/logger.cpp \
+    testmemorymapper.cpp

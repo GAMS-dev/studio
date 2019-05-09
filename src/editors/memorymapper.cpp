@@ -18,24 +18,21 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "memorymapper.h"
-#include "exception.h"
-#include "locators/settingslocator.h"
-#include "studiosettings.h"
+#include "file/dynamicfile.h"
+//#include "logparser.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
 
-static int cActiveChunks = 2;
-
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
-    startUnit();
 }
 
-void MemoryMapper::setLogParser(LogParser *parser)
-{
-    mLogParser = parser;
-}
+//void MemoryMapper::setLogParser(LogParser *parser)
+//{
+//    mLogParser = parser;
+//}
 
 void MemoryMapper::setLogFile(DynamicFile *logFile)
 {
@@ -47,46 +44,68 @@ qint64 MemoryMapper::size() const
     return mSize;
 }
 
-void MemoryMapper::startUnit()
+AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 {
-    if (!mChunks.size()) {
-        mUnits << Unit(0);
-        addChunk();
-        return;
+    if (!mChunks.size() ||  mChunks.last()->size() > 0) {
+        Chunk *chunk = new Chunk();
+        chunk->bArray.resize(chunkSize());
+        chunk->bStart = mChunks.size() ? mChunks.last()->bStart + mChunks.last()->size() : 0;
+        chunk->lineBytes << 0;
+        chunk->nr = chunkCount();
+        mChunks << chunk;
     }
-    Q_ASSERT_X(mUnits.size() > 0, QT_MESSAGELOG_FUNC, "Must have an entry in mUnits here");
-    Q_ASSERT_X(mChunks.size() > 0, QT_MESSAGELOG_FUNC, "Must have an entry in mChunks here");
-    if (!mUnits.size() || !mChunks.size()) return;
-
-    // If current unit isn't empty, start new unit
-    if (mUnits.last().firstChunkIndex == mChunks.size()-1 && mChunks.last()->size > 0) {
-        mUnits << Unit(mChunks.size());
-        addChunk();
+    if (!mUnits.size() || startUnit) {
+        mUnits << Unit(mChunks.last());
+        mShrunk = false;
     }
+    ++mUnits.last().chunkCount;
+    return mChunks.last();
 }
 
-AbstractTextMapper::Chunk *MemoryMapper::addChunk()
+void MemoryMapper::shrinkLog()
 {
-    Chunk *chunk = new Chunk();
-    chunk->bArray.resize(chunkSize());
-    chunk->start = mChunks.size() ? mChunks.last()->start + mChunks.last()->size : 0;
-    chunk->lineBytes << 0;
-    chunk->nr = chunkCount();
-    mChunks << chunk;
+    const QByteArray ellipsis(QString("\n...\n\n").toLatin1().data()); // generates platform-specific line-endings
+    const int lfSize = ellipsis.indexOf('.'); // for platform differences
+    qDebug() << "lfSize = " << lfSize;
 
-    int lastInactive = mUnits.size() ? mUnits.last().firstChunkIndex : 0;
-    if (mChunks.size() - lastInactive > cActiveChunks) {
+    Chunk * chunk = mUnits.last().firstChunk;
+    if (chunk->nr == mChunks.last()->nr || chunk->lineCount() < 2)
+        return; // only one chunk in current unit
 
-        // TODO(JM) handle 2nd chunk if too many active chunks are present
+    if (!mShrunk) {
+        mSize -= chunk->size();
 
-        // when deleting middle chunk:
-        //    a. mark last line of first active chunk with "..."
-        //    b. append new data at last chunk
-        //    c. reduce second active chunk
+        // the first chunk in the unit starts at bArray[0]
+        while (chunk->size()-5 >= chunkSize() && chunk->lineBytes.size()) {
+            chunk->lineBytes.removeLast();
+        }
+        // replace last line of first chunk by an ellipsis
+        chunk->bArray.replace(chunk->lineBytes.last(), ellipsis.length(), ellipsis);
+        chunk->lineBytes << (chunk->lineBytes.last() + ellipsis.length());
+
+        mSize -= chunk->size();
+        invalidateLineOffsets(mUnits.last().firstChunk);
+        mShrunk = true;
+    }
+
+    // If max-size-of-run reached (2*chunksize) reduce last/middle chunk by some lines
+    // after changing/removing a chunk: call invalidateLineOffsets() for changed and succeeding chunk
+    //
+    chunk = mChunks[chunk->nr+1];
+
+    // remove some lines
+    for (int i = 0; i < 5; ++i) {
 
     }
 
-    return chunk;
+    if (!chunk->size()) {
+        // remove the chunk
+    }
+
+    while (chunk) {
+        invalidateLineOffsets(chunk);
+        chunk = mChunks.size() > chunk->nr+1 ? mChunks[chunk->nr+1] : nullptr;
+    }
 }
 
 bool MemoryMapper::setMappingSizes(int bufferedLines, int chunkSizeInBytes, int chunkOverlap)
@@ -96,7 +115,7 @@ bool MemoryMapper::setMappingSizes(int bufferedLines, int chunkSizeInBytes, int 
 
 void MemoryMapper::startRun()
 {
-    startUnit();
+    addChunk(true);
 }
 
 void MemoryMapper::endRun()
@@ -108,66 +127,86 @@ void MemoryMapper::endRun()
 
 void MemoryMapper::addProcessData(const QByteArray &data)
 {
-    bool conceal = false;
-    int from = 0;
-    int to = 0;
-    int next = -1;
-    while (to < data.length()) {
+    int len = 0;
+    int start = 0;
+    Chunk *chunk = mChunks.last();
+    Q_ASSERT_X(chunk, Q_FUNC_INFO, "Need to call startRun() before adding data.");
 
-        // --- get kind of line-break (concealing / single(linux) / pair(win) / last-char)
-        if (data.at(to) == '\n') next = to+1;
-        else if (data.at(to) == '\r') {
-            if (to == data.length()-1)
-                next = to+1;
-            else if (data.at(to) != '\n') {
-                next = to+1;
-                conceal = true;
-            } else
-                next = to+2;
-        }
-        if (next < 0) {
-            ++to;
-            continue;
-        }
+    for (int i = 0 ; i < data.length() ; ++i) {
 
-        // --- line-break found: process line
-        int len = next - from;
-        Chunk *chunk = mChunks.last();
-
-        int pos = chunk->lineBytes.last();
-        if (pos == 0)
-            conceal = false;
-
-        if (conceal) {
-            pos = chunk->lineBytes.at(chunk->lineCount()-1);
-            mSize -= chunk->size;
-            chunk->lineBytes.removeLast();
-            chunk->size = mConcealPos+1;
-            mSize += chunk->size;
-            --mParsed.relLine;
-        }
-        if (pos + len > chunkSize()) {
-            chunk = addChunk();
-            pos = 0;
+        // check for line breaks
+        if (data.at(i) == '\r') {
+            len = i-start;
+            if (i+1 < data.size() && data.at(i+1) == '\n') {
+                // normal line
+                ++i;
+                len += 2;
+            } else {
+                if (start < i) {
+                    // conceal leading part of data
+                    start = i+1;
+                    len = 0;
+                    continue;
+                }
+                ++start; // skip the '\r'
+                // conceal previous line if it hasn't been closed (\n at the end)
+                if (chunk->lineBytes.last() > 0 && chunk->bArray.at(chunk->lineBytes.last()-1) != '\n') {
+                    mSize -= chunk->size();
+                    chunk->lineBytes.removeLast();
+                    mSize += chunk->size();
+                    --mParsed.relLine;
+                }
+            }
+        } else if (data.at(i) == '\n') {
+            len = i-start+1;
         }
 
-        QByteArray lineData;
-        lineData.setRawData(data.data()+from, static_cast<uint>(len));
-        chunk->bArray.replace(pos, lineData.length(), lineData);
-        chunk->lineBytes << pos + lineData.length();
-        mSize += lineData.length();
-        from = next;
-        to = next;
-        conceal = false;
+        // at end without line break?
+        if (i == data.length() - 1) {
+            len = i-start+1;
+        }
+
+        // line content found?
+        if (len > 0) {
+            QByteArray part;
+            // check if line fits into chunk
+            int lastLineEnd = chunk->lineBytes.last();
+            if (lastLineEnd + len > chunkSize()) {
+                Chunk *newChunk = addChunk();
+                // if previous line hasn't been finished (\r\n) it has to be extended, move it to the new chunk
+                if (chunk->bArray.at(lastLineEnd-1) != '\n') {
+                    int lastLineStart = chunk->lineBytes.at(chunk->lineCount()-1);
+                    part.setRawData(chunk->bArray.data() + lastLineStart, uint(lastLineEnd-lastLineStart));
+                    newChunk->bArray.replace(0, lastLineEnd-lastLineStart, part);
+                    chunk->lineBytes.removeLast();
+                    newChunk->lineBytes << (lastLineEnd-lastLineStart);
+                }
+                chunk = newChunk;
+                lastLineEnd = chunk->lineBytes.last();
+            }
+            part.setRawData(data.data() + start, uint(len));
+            chunk->bArray.replace(lastLineEnd, len, part);
+            if (lastLineEnd > 0 && chunk->bArray.at(lastLineEnd-1) != '\r' && chunk->bArray.at(lastLineEnd-1) != '\n') {
+                chunk->lineBytes.last() = (lastLineEnd+len);
+                if (mParsed.chunkNr == mChunks.size()-1 && mParsed.relLine == chunk->lineBytes.size()-1)
+                    --mParsed.relLine;
+            } else {
+                chunk->lineBytes << (lastLineEnd+len);
+            }
+            start = i+1;
+            len = 0;
+        }
     }
-    parseRemain();
+    if (mSize - mUnits.last().firstChunk->bStart > chunkSize() * 2)
+        shrinkLog();
+    else
+        invalidateLineOffsets(chunk);
 }
-
 
 QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
 {
     QByteArray data;
-    LogParser::ExtractionState state = LogParser::Outside;
+//    LogParser::ExtractionState state = LogParser::Outside;
 
     bool conceal = false;
     int from = 0;
@@ -193,7 +232,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
         if (len > 0) {
             bool hasError = false;
             QByteArray lineData = data.mid(from, len);
-            QStringList lines = mLogParser->parseLine(lineData, state, hasError, nullptr); // 1 line (2 lines on debugging)
+//            QStringList lines = mLogParser->parseLine(lineData, state, hasError, nullptr); // 1 line (2 lines on debugging)
 
 //            QTextCursor cursor(document());
 //            cursor.movePosition(QTextCursor::End);
@@ -224,6 +263,23 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
     return QString();
 }
 
+void MemoryMapper::dump()
+{
+    int iCh = 0;
+    for (Chunk *chunk : mChunks) {
+        for (int lineNr = 0; lineNr < chunk->lineBytes.size()-1; ++lineNr) {
+            QString line;
+            for (int i = chunk->lineBytes.at(lineNr); i < chunk->lineBytes.at(lineNr+1); ++i) {
+                if (chunk->bArray.at(i) == '\r') line += "\\r";
+                else if (chunk->bArray.at(i) == '\n') line += "\\n";
+                else line += chunk->bArray.at(i);
+            }
+            DEB() << iCh << " DATA: " << line;
+        }
+        ++iCh;
+    }
+}
+
 void MemoryMapper::setJumpToLogEnd(bool state)
 {
 
@@ -246,9 +302,7 @@ AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const
 
 QByteArray MemoryMapper::popNextLine()
 {
-    // if no chunks OR all chunks belong to recent runs -> skip
-    if (!mChunks.size() || mUnits.last().firstChunkIndex == mChunks.size()-1)
-        return QByteArray();
+    if (!mChunks.size()) return QByteArray();
 
     if (mParsed.chunkNr >= 0) {
         if (mParsed.relLine < mChunks.at(mParsed.chunkNr)->lineCount()-1) {
@@ -278,9 +332,9 @@ bool MemoryMapper::parseRemain()
         QByteArray data = popNextLine();
         if (data.isNull()) break;
         res = true;
-        LogParser::ExtractionState state = LogParser::Outside;
+//        LogParser::ExtractionState state = LogParser::Outside;
         bool hasError = false;
-        QStringList lines = mLogParser->parseLine(data, state, hasError, mState); // 1 line (2 lines on debugging)
+//        QStringList lines = mLogParser->parseLine(data, state, hasError, mState); // 1 line (2 lines on debugging)
 
         // TODO(JM) extract textMarks from mState
 

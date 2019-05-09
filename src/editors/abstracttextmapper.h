@@ -79,11 +79,11 @@ private:
 protected:
     struct Chunk {  // a mapped part of a file OR a standalone part of memory
         int nr = -1;
-        qint64 start = -1;
-        int size = 0;
+        qint64 bStart = -1;
         QByteArray bArray;
         QVector<int> lineBytes;
-        bool isValid() const { return start >= 0;}
+        int size() { return lineBytes.size() > 1 ? lineBytes.last() - lineBytes.first() : 0; }
+        bool isValid() const { return bStart >= 0;}
         int lineCount() const { return lineBytes.size()-1; }
     };
 
@@ -145,6 +145,7 @@ protected:
     void initDelimiter(Chunk *chunk) const;
     virtual bool updateMaxTop();
     virtual void chunkUncached(Chunk *&chunk) const;
+    void invalidateLineOffsets(Chunk *chunk, bool cutRemain = false) const;
     void updateLineOffsets(Chunk *chunk) const;
     bool isCached(Chunk *chunk);
     int chunkSize() const;
@@ -159,7 +160,7 @@ private:
     QString line(Chunk *chunk, int chunkLineNr) const;
     bool setTopOffset(qint64 byteNr);
     void updateBytesPerLine(const ChunkLines &chunkLines) const;
-    int maxChunks() const;
+    int maxChunksInCache() const;
     int findChunk(int lineNr);
     Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
     QPoint convertPos(const CursorPosition &pos) const;
@@ -182,7 +183,7 @@ private:
     int mFindChunk = 0;
 
     QTextCodec *mCodec = nullptr;
-    int mMaxChunks = 5;
+    int mMaxChunksInCache = 5;
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
 };

@@ -1927,7 +1927,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     process->execute();
     ui->toolBar->repaint();
 
-    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
+    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessDataX, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
     ui->dockLogView->raise();
 }

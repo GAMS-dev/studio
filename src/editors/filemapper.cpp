@@ -113,9 +113,9 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
     // mapping succeeded: initialise chunk
     Chunk *res = new Chunk();
     res->nr = chunkNr;
-    res->start = cStart;
-    res->size = int(cEnd - cStart);
-    res->bArray.setRawData(reinterpret_cast<char*>(map), uint(res->size));
+    res->bStart = cStart;
+    int bSize = int(cEnd - cStart);
+    res->bArray.setRawData(reinterpret_cast<char*>(map), uint(bSize));
 
     // if delimiter isn't initialized
     if (delimiter().isEmpty()) initDelimiter(res);
@@ -125,9 +125,9 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
         int lines = res->bArray.count(delimiter().at(0));
         res->lineBytes.reserve(lines+2);
         res->lineBytes << 0;
-        for (int i = 0; i < res->size; ++i) {
+        for (int i = 0; i < bSize; ++i) {
             if (res->bArray.at(i) == delimiter().at(0)) {
-                if (res->start+i+delimiter().size() <= chunkStart) {
+                if (res->bStart+i+delimiter().size() <= chunkStart) {
                     // first [lf] before chunkStart
                     res->lineBytes[0] = (i + delimiter().size());
                 } else {
@@ -136,8 +136,8 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
             }
         }
     }
-    if (res->start + res->size == size())
-        res->lineBytes << (res->size + delimiter().size());
+    if (cEnd == size())
+        res->lineBytes << (bSize + delimiter().size());
 
     updateLineOffsets(res);
     return res;

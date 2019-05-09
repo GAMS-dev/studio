@@ -21,21 +21,24 @@
 #define MEMORYMAPPER_H
 
 #include "abstracttextmapper.h"
-#include "logparser.h"
-#include "file/dynamicfile.h"
 
 namespace gams {
 namespace studio {
+
+class DynamicFile;
+class LogParser;
 
 class MemoryMapper : public AbstractTextMapper
 {
     Q_OBJECT
 private:
     struct Unit {
-        Unit(int idx = -1, QString text = QString()) : firstChunkIndex(idx), foldText(text), folded(true) {}
-        int firstChunkIndex;
+        Unit(Chunk *chunk = nullptr, QString text = QString())
+            : firstChunk(chunk), foldText(text) {}
+        Chunk *firstChunk;
         QString foldText;
-        bool folded;
+        int chunkCount = 0;
+        bool folded = false;
     };
     struct LineRef {
         int chunkNr = -1;
@@ -44,13 +47,14 @@ private:
 
 public:
     explicit MemoryMapper(QObject *parent = nullptr);
-    void setLogParser(LogParser *parser);
+//    void setLogParser(LogParser *parser);
     void setLogFile(DynamicFile *logFile);
     qint64 size() const override;
     bool setMappingSizes(int bufferedLines, int chunkSizeInBytes, int chunkOverlap) override;
     void startRun() override;
     void endRun() override;
     QString lines(int localLineNrFrom, int lineCount) const override;
+    void dump();
 
 signals:
 
@@ -66,16 +70,17 @@ protected:
 private:
     QByteArray popNextLine();
     bool parseRemain();
-    void startUnit();
-    Chunk *addChunk();
+    Chunk *addChunk(bool startUnit = false);
+    void shrinkLog();
 
 private:
     QVector<Chunk*> mChunks;
     QVector<Unit> mUnits;
     qint64 mSize = 0;
-    LogParser *mLogParser = nullptr;
+    bool mShrunk = false;
+//    LogParser *mLogParser = nullptr;
     DynamicFile *mLogFile = nullptr;
-    LogParser::MarksBlockState *mState = nullptr;
+//    LogParser::MarksBlockState *mState = nullptr;
     LineRef mParsed;
     int mConcealPos = 0;
 

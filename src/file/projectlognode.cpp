@@ -108,6 +108,25 @@ void ProjectLogNode::addProcessDataX(const QByteArray &data)
 {
     StudioSettings* settings = SettingsLocator::settings();
 
+    // ======= start debug data
+    QString test;
+    for (const char &b: data) {
+        if (b == '\r') test += "\\r";
+        else if (b == '\n') test += "\\n";
+        else test += b;
+    }
+    DEB() << "DATA: '" << test << "'";
+    QTextCursor c(document());
+    c.movePosition(QTextCursor::End);
+    QTextCharFormat cf;
+    cf.setForeground(Qt::darkMagenta);
+    c.setCharFormat(cf);
+    c.insertText("DATA: "+test);
+    c.setCharFormat(QTextCharFormat());
+    c.insertText("\n");
+    mConceal = false;
+    // ======= end debug data
+
     if (!mLogFile && settings->writeLog())
         mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
 
@@ -468,7 +487,6 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
 
     if (!document())
         EXCEPT() << "no log-document to add process data";
-
     LogParser::ExtractionState state = LogParser::Outside;
     bool conceal = false;
     int from = 0;
@@ -485,7 +503,7 @@ void ProjectLogNode::addProcessData(const QByteArray &data)
             } else
                 next = to+2;
         }
-        if (next < 0) {
+        if (next <= 0) {
             ++to;
             continue;
         }
