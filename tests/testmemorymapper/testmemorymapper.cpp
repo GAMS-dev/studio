@@ -48,10 +48,15 @@ void TestMemoryMapper::cleanup()
 void TestMemoryMapper::testAddLine()
 {
     QByteArray arr;
-    arr.append("FixedStart ################################################\r\n");
-    arr.append("FixedNext #################################################\r\n");
+//    arr.append("FixedStart ################################################\r\n");
+//    arr.append("FixedNext #################################################\r\n");
     arr.append("xyz");
-    arr.append("\rabcd\r\n");
+    DEB() << "IN: " << arr.size();
+    mMapper->addProcessData(arr);
+    arr = ("zz\r\n");
+    DEB() << "IN: " << arr.size();
+    mMapper->addProcessData(arr);
+    arr = ("\rabcd\r\n");
     DEB() << "IN: " << arr.size();
     mMapper->addProcessData(arr);
 //    arr = ("\rxyz\r\n");

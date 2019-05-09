@@ -64,7 +64,7 @@ AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 
 void MemoryMapper::shrinkLog()
 {
-    const QByteArray ellipsis(QString("\n...\n\n").toLatin1().data()); // generates platform-specific line-endings
+    const QByteArray ellipsis(QString("\n...\n\n").toLatin1().data());
     const int lfSize = ellipsis.indexOf('.'); // for platform differences
     qDebug() << "lfSize = " << lfSize;
 
@@ -127,10 +127,14 @@ void MemoryMapper::endRun()
 
 void MemoryMapper::addProcessData(const QByteArray &data)
 {
+    // different line-endings ("\r\n", "\n", "\r") are unified with "\n"
+    // remark: mac seems to use unix line-endings right now ("\n") - previously used "\r"
+    //
     int len = 0;
     int start = 0;
+    bool lf = false;
+    Q_ASSERT_X(mChunks.size(), Q_FUNC_INFO, "Need to call startRun() before adding data.");
     Chunk *chunk = mChunks.last();
-    Q_ASSERT_X(chunk, Q_FUNC_INFO, "Need to call startRun() before adding data.");
 
     for (int i = 0 ; i < data.length() ; ++i) {
 
@@ -140,15 +144,9 @@ void MemoryMapper::addProcessData(const QByteArray &data)
             if (i+1 < data.size() && data.at(i+1) == '\n') {
                 // normal line
                 ++i;
-                len += 2;
+                lf = true;
             } else {
-                if (start < i) {
-                    // conceal leading part of data
-                    start = i+1;
-                    len = 0;
-                    continue;
-                }
-                ++start; // skip the '\r'
+                ++start; // skip the leading '\r'
                 // conceal previous line if it hasn't been closed (\n at the end)
                 if (chunk->lineBytes.last() > 0 && chunk->bArray.at(chunk->lineBytes.last()-1) != '\n') {
                     mSize -= chunk->size();
@@ -158,11 +156,12 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 }
             }
         } else if (data.at(i) == '\n') {
-            len = i-start+1;
+            len = i-start;
+            lf = true;
         }
 
         // at end without line break?
-        if (i == data.length() - 1) {
+        if (i == data.length() - 1 && !lf) {
             len = i-start+1;
         }
 
@@ -173,7 +172,7 @@ void MemoryMapper::addProcessData(const QByteArray &data)
             int lastLineEnd = chunk->lineBytes.last();
             if (lastLineEnd + len > chunkSize()) {
                 Chunk *newChunk = addChunk();
-                // if previous line hasn't been finished (\r\n) it has to be extended, move it to the new chunk
+                // if previous line hasn't been finished (\n) it has to be extended, move it to the new chunk
                 if (chunk->bArray.at(lastLineEnd-1) != '\n') {
                     int lastLineStart = chunk->lineBytes.at(chunk->lineCount()-1);
                     part.setRawData(chunk->bArray.data() + lastLineStart, uint(lastLineEnd-lastLineStart));
@@ -186,15 +185,18 @@ void MemoryMapper::addProcessData(const QByteArray &data)
             }
             part.setRawData(data.data() + start, uint(len));
             chunk->bArray.replace(lastLineEnd, len, part);
-            if (lastLineEnd > 0 && chunk->bArray.at(lastLineEnd-1) != '\r' && chunk->bArray.at(lastLineEnd-1) != '\n') {
-                chunk->lineBytes.last() = (lastLineEnd+len);
+            if (lastLineEnd > 0 && chunk->bArray.at(lastLineEnd-1) != '\n') {
+                chunk->lineBytes.last() = (lastLineEnd+len+(lf?1:0));
+                if (lf) chunk->bArray[lastLineEnd+len] = '\n';
                 if (mParsed.chunkNr == mChunks.size()-1 && mParsed.relLine == chunk->lineBytes.size()-1)
                     --mParsed.relLine;
             } else {
-                chunk->lineBytes << (lastLineEnd+len);
+                chunk->lineBytes << (lastLineEnd+len+(lf?1:0));
+                if (lf) chunk->bArray[lastLineEnd+len] = '\n';
             }
             start = i+1;
             len = 0;
+            lf = false;
         }
     }
     if (mSize - mUnits.last().firstChunk->bStart > chunkSize() * 2)
