@@ -188,7 +188,6 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
     if (found) {
         mMapper.scrollToPosition();
         topLineMoved();
-        updatePosAndAnchor();
     }
     return found;
 }
