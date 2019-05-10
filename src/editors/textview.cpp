@@ -40,7 +40,11 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     setFocusPolicy(Qt::NoFocus);
     if (kind == FileText) mMapper = new FileMapper();
-    if (kind == MemoryText) mMapper = new MemoryMapper();
+    if (kind == MemoryText) {
+        MemoryMapper* mm = new MemoryMapper();
+        connect(this, &TextView::addProcessData, mm, &MemoryMapper::addProcessData);
+        mMapper = mm;
+    }
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
     QVBoxLayout *lay = new QVBoxLayout(this);

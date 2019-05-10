@@ -449,7 +449,7 @@ void ProjectLogNode::setJumpToLogEnd(bool state)
 
 void ProjectLogNode::repaint()
 {
-    ProcessLogEdit *ed = ViewHelper::toLogEdit(mFileMeta->topEditor());
+    TextView *ed = ViewHelper::toLogEdit(mFileMeta->topEditor());
     if (ed) {
         ed->viewport()->repaint();
     }
@@ -477,93 +477,100 @@ ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
     return mRunGroup;
 }
 
-void ProjectLogNode::addProcessData(const QByteArray &data)
+void ProjectLogNode::linkToProcess(GamsProcess *process)
 {
-
-    StudioSettings* settings = SettingsLocator::settings();
-
-    if (!mLogFile && settings->writeLog())
-        mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
-
-    if (!document())
-        EXCEPT() << "no log-document to add process data";
-    LogParser::ExtractionState state = LogParser::Outside;
-    bool conceal = false;
-    int from = 0;
-    int to = 0;
-    int next = -1;
-    while (to < data.length()) {
-        if (data.at(to) == '\n') next = to+1;
-        else if (data.at(to) == '\r') {
-            if (to == data.length()-1)
-                next = to+1;
-            else if (data.at(to) != '\n') {
-                next = to+1;
-                conceal = true;
-            } else
-                next = to+2;
-        }
-        if (next <= 0) {
-            ++to;
-            continue;
-        }
-        int len = to-from;
-        QString line;
-        if (len > 0) {
-            LogParser parser(textMarkRepo(), fileRepo(), file()->id(), mRunGroup, file()->codec());
-            parser.setDebugMode(debugMode());
-            bool hasError = false;
-            QByteArray lineData = data.mid(from, len);
-            QStringList lines = parser.parseLine(lineData, state, hasError, mbState); // 1 line (2 lines on debugging)
-
-            QList<int> scrollVal;
-            QList<QTextCursor> cursors;
-            for (QWidget* w: file()->editors()) {
-                AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
-                if (!ed) continue;
-                if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
-                    scrollVal << 0;
-                    cursors << QTextCursor();
-                } else {
-                    scrollVal << ed->verticalScrollBar()->value();
-                    cursors << ed->textCursor();
-                }
-            }
-            QTextCursor cursor(document());
-            cursor.movePosition(QTextCursor::End);
-            if (mConceal && !line.isNull()) {
-                cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
-                cursor.removeSelectedText();
-            }
-            if (lines.size() > 1) {
-                QTextCharFormat fmtk;
-                fmtk.setForeground(QColor(120,150,100));
-                cursor.insertText(lines.first(), fmtk);
-                QTextCharFormat fmt;
-                cursor.insertText("\n", fmt);
-            }
-            cursor.insertText(lines.last()+"\n");
-            if (mLogFile) mLogFile->appendLine(line);
-            int i = 0;
-            for (QWidget* w: file()->editors()) {
-                AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
-                if (!ed) continue;
-                if (mJumpToLogEnd || scrollVal[i] == 0) {
-                    mJumpToLogEnd = false;
-                    ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
-                }
-                ++i;
-            }
-        }
-        document()->setModified(false);
-
-        from = next;
-        to = next;
-        conceal = false;
-    }
-
-
+    QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
+    TextView *tv = ViewHelper::toLogEdit(wid);
+    if (tv) connect(process, &GamsProcess::newStdChannelData, tv, &TextView::addProcessData, Qt::UniqueConnection);
 }
+
+//void ProjectLogNode::addProcessData(const QByteArray &data)
+//{
+
+//    StudioSettings* settings = SettingsLocator::settings();
+
+//    if (!mLogFile && settings->writeLog())
+//        mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
+
+//    if (!document())
+//        EXCEPT() << "no log-document to add process data";
+//    LogParser::ExtractionState state = LogParser::Outside;
+//    bool conceal = false;
+//    int from = 0;
+//    int to = 0;
+//    int next = -1;
+//    while (to < data.length()) {
+//        if (data.at(to) == '\n') next = to+1;
+//        else if (data.at(to) == '\r') {
+//            if (to == data.length()-1)
+//                next = to+1;
+//            else if (data.at(to) != '\n') {
+//                next = to+1;
+//                conceal = true;
+//            } else
+//                next = to+2;
+//        }
+//        if (next <= 0) {
+//            ++to;
+//            continue;
+//        }
+//        int len = to-from;
+//        QString line;
+//        if (len > 0) {
+//            LogParser parser(textMarkRepo(), fileRepo(), file()->id(), mRunGroup, file()->codec());
+//            parser.setDebugMode(debugMode());
+//            bool hasError = false;
+//            QByteArray lineData = data.mid(from, len);
+//            QStringList lines = parser.parseLine(lineData, state, hasError, mbState); // 1 line (2 lines on debugging)
+
+//            QList<int> scrollVal;
+//            QList<QTextCursor> cursors;
+//            for (QWidget* w: file()->editors()) {
+//                AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
+//                if (!ed) continue;
+//                if (ed->verticalScrollBar()->value() >= ed->verticalScrollBar()->maximum()-1) {
+//                    scrollVal << 0;
+//                    cursors << QTextCursor();
+//                } else {
+//                    scrollVal << ed->verticalScrollBar()->value();
+//                    cursors << ed->textCursor();
+//                }
+//            }
+//            QTextCursor cursor(document());
+//            cursor.movePosition(QTextCursor::End);
+//            if (mConceal && !line.isNull()) {
+//                cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
+//                cursor.removeSelectedText();
+//            }
+//            if (lines.size() > 1) {
+//                QTextCharFormat fmtk;
+//                fmtk.setForeground(QColor(120,150,100));
+//                cursor.insertText(lines.first(), fmtk);
+//                QTextCharFormat fmt;
+//                cursor.insertText("\n", fmt);
+//            }
+//            cursor.insertText(lines.last()+"\n");
+//            if (mLogFile) mLogFile->appendLine(line);
+//            int i = 0;
+//            for (QWidget* w: file()->editors()) {
+//                AbstractEdit* ed = ViewHelper::toAbstractEdit(w);
+//                if (!ed) continue;
+//                if (mJumpToLogEnd || scrollVal[i] == 0) {
+//                    mJumpToLogEnd = false;
+//                    ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
+//                }
+//                ++i;
+//            }
+//        }
+//        document()->setModified(false);
+
+//        from = next;
+//        to = next;
+//        conceal = false;
+//    }
+
+
+//}
 
 } // namespace studio
 } // namespace gams

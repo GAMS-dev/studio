@@ -34,7 +34,7 @@ void TestMemoryMapper::init()
 {
     mMapper = new MemoryMapper();
     mMapper->setCodec(QTextCodec::codecForName("utf-8"));
-    mMapper->setMappingSizes(100, 128, 16);
+    mMapper->setMappingSizes(10, 128, 16);
     mMapper->startRun();
 }
 
@@ -48,21 +48,59 @@ void TestMemoryMapper::cleanup()
 void TestMemoryMapper::testAddLine()
 {
     QByteArray arr;
-//    arr.append("FixedStart ################################################\r\n");
-//    arr.append("FixedNext #################################################\r\n");
-    arr.append("xyz\r");
-    arr.append("xyz");
-    DEB() << "IN: " << arr.size();
+    arr.append("0 ###############\r\n");
+    arr.append("1 ###############\r\n");
+    arr.append("2 ###############\r\n");
+    arr.append("3 ###############\r\n");
     mMapper->addProcessData(arr);
-    arr = ("zz");
-    DEB() << "IN: " << arr.size();
+
+    arr = ("4 ###############\r\n");
     mMapper->addProcessData(arr);
-    arr = ("\rabcd\r\n");
-    DEB() << "IN: " << arr.size();
+    arr = ("5 ##############\r\n");
     mMapper->addProcessData(arr);
-//    arr = ("\rxyz\r\n");
-//    mMapper->addProcessData(arr);
+    arr = ("6 #############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("--\n");
+    mMapper->addProcessData(arr);
+    arr = ("--\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("-\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("7 ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("8 ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("9 ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("A ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("B ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("C ###############\r\n");
+    mMapper->addProcessData(arr);
     mMapper->dump();
+    arr = ("D ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("E ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("F ###############\r\n");
+    mMapper->addProcessData(arr);
+    mMapper->dump();
+    mMapper->startRun();
+    arr = ("G ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("H ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("I ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("J ###############\r\n");
+    mMapper->addProcessData(arr);
+    arr = ("K ###############\r\n");
+    mMapper->addProcessData(arr);
+    mMapper->dump();
+
+    mMapper->moveVisibleTopLine(10);
+    DEB() << "LINES:\n" << mMapper->lines(3,6);
 }
 
 //void TestMemoryMapper::testReadChunk0()

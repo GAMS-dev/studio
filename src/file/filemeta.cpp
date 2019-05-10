@@ -655,8 +655,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         // TODO: multiple ReferenceViewers share one Reference Object of the same file
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
+    } else if (kind() == FileKind::Log) {
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
+        res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
-        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, tabWidget));
+        EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLst;
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, tabWidget), type);
         res = tView;
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
@@ -664,13 +668,13 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        if (kind() == FileKind::Log) {
-            edit = ViewHelper::initEditorType(new ProcessLogEdit(tabWidget));
-        } else {
-            codeEdit  = new CodeEdit(tabWidget);
-            edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
-                                             : ViewHelper::initEditorType(codeEdit);
-        }
+//        if (kind() == FileKind::Log) {
+//            edit = ViewHelper::initEditorType(new ProcessLogEdit(tabWidget));
+//        } else {
+//        }
+        codeEdit  = new CodeEdit(tabWidget);
+        edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
+                                         : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);

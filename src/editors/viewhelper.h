@@ -34,14 +34,15 @@ public:
         if(w) w->setProperty("EditorType", int(EditorType::source));
         return w;
     }
-    inline static ProcessLogEdit* initEditorType(ProcessLogEdit* w) {
-        if(w) w->setProperty("EditorType", int(EditorType::log));
+    inline static TextView* initEditorType(TextView* w, EditorType type) {
+        Q_ASSERT(type == EditorType::txtRo || type == EditorType::lxiLst || type == EditorType::log);
+        if(w) w->setProperty("EditorType", int(type));
         return w;
     }
-    inline static TextView* initEditorType(TextView* w) {
-        if(w) w->setProperty("EditorType", int(EditorType::txtRo));
-        return w;
-    }
+//    inline static TextView* initEditorType(TextView* w) {
+//        if(w) w->setProperty("EditorType", int(EditorType::txtRo));
+//        return w;
+//    }
     inline static gdxviewer::GdxViewer* initEditorType(gdxviewer::GdxViewer* w) {
         if(w) w->setProperty("EditorType", int(EditorType::gdx));
         return w;
@@ -62,15 +63,15 @@ public:
 
     inline static AbstractEdit* toAbstractEdit(QWidget* w) {
         EditorType t = editorType(w);
-        return (t == EditorType::log || t == EditorType::syslog || t == EditorType::source || t == EditorType::txt)
+        return (t == EditorType::syslog || t == EditorType::source || t == EditorType::txt)
                 ? static_cast<AbstractEdit*>(w) : nullptr;
     }
     inline static CodeEdit* toCodeEdit(QWidget* w) {
         EditorType t = editorType(w);
         return (t == EditorType::source || t == EditorType::txt) ? static_cast<CodeEdit*>(w) : nullptr;
     }
-    inline static ProcessLogEdit* toLogEdit(QWidget* w) {
-        return (editorType(w) == EditorType::log) ? static_cast<ProcessLogEdit*>(w) : nullptr;
+    inline static TextView* toLogEdit(QWidget* w) {
+        return (editorType(w) == EditorType::log) ? static_cast<TextView*>(w) : nullptr;
     }
     inline static TextView* toTextView(QWidget* w) {
         EditorType t = editorType(w);

@@ -63,11 +63,13 @@ public:
     TextKind textKind() const;
 
 signals:
+    void addProcessData(const QByteArray &data);
     void blockCountChanged(int newBlockCount);
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
     void searchFindNextPressed();
     void searchFindPrevPressed();
+
 
 public slots:
     void updateExtraSelections();

@@ -1867,11 +1867,14 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-        if (ViewHelper::toCodeEdit(wid) || ViewHelper::toLogEdit(wid))
-            ViewHelper::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-        if (ViewHelper::toAbstractEdit(wid))
-            ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-                                                                                          : AbstractEdit::NoWrap);
+
+//        if (ViewHelper::toLogEdit(wid))
+//            v
+//        if (ViewHelper::toCodeEdit(wid) || ViewHelper::toLogEdit(wid))
+//            ViewHelper::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+//        if (ViewHelper::toAbstractEdit(wid))
+//            ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+//                                                                                          : AbstractEdit::NoWrap);
     }
     // cleanup bookmarks
     QVector<QString> cleanupKinds;
@@ -1927,7 +1930,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     process->execute();
     ui->toolBar->repaint();
 
-    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessDataX, Qt::UniqueConnection);
+    logNode->linkToProcess(process);
+//    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
     ui->dockLogView->raise();
 }
@@ -2038,7 +2042,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         }
     }
     if (logNode->file()->isOpen()) {
-        ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
+        TextView* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
         if (logEdit) {
             if (openOutput) setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
@@ -2046,9 +2050,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
                     ui->logTabs->setCurrentWidget(logEdit);
             }
             if (moveToEnd) {
-                QTextCursor cursor = logEdit->textCursor();
-                cursor.movePosition(QTextCursor::End);
-                logEdit->setTextCursor(cursor);
+                logEdit->jumpTo(logEdit->lineCount()-1, 0);
             }
         }
     }

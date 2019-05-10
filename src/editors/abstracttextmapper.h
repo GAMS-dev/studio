@@ -82,7 +82,9 @@ protected:
         qint64 bStart = -1;
         QByteArray bArray;
         QVector<int> lineBytes;
-        int size() { return lineBytes.size() > 1 ? lineBytes.last() - lineBytes.first() : 0; }
+        int size() {
+            return lineBytes.size() > 1 ? lineBytes.last() - lineBytes.first() : 0;
+        }
         bool isValid() const { return bStart >= 0;}
         int lineCount() const { return lineBytes.size()-1; }
     };

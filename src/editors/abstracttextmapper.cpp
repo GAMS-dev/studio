@@ -154,7 +154,15 @@ void AbstractTextMapper::invalidateLineOffsets(Chunk *chunk, bool cutRemain) con
     } else if (mChunkLineNrs[chunk->nr-1].lineOffset >= 0) {
         cl->lineOffset = mChunkLineNrs[chunk->nr-1].lineOffset + mChunkLineNrs[chunk->nr-1].lineCount;
     }
+    if (mLastChunkWithLineNr < cl->chunkNr) {
+        mLastChunkWithLineNr = cl->chunkNr;
+        updateBytesPerLine(*cl);
+    }
     if (cutRemain) {
+        if (mLastChunkWithLineNr > cl->chunkNr) {
+            mLastChunkWithLineNr = cl->chunkNr;
+            updateBytesPerLine(*cl);
+        }
         for (int i = chunk->nr + 1; i < mChunkLineNrs.size(); ++i) {
             ChunkLines *cl = &mChunkLineNrs[i];
             if (cl->lineCount < 0) break;

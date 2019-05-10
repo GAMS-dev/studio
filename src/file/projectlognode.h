@@ -42,9 +42,9 @@ public:
     const ProjectRootNode *root() const override;
     NodeId runGroupId() const override;
     ProjectRunGroupNode *assignedRunGroup() override;
+    void linkToProcess(GamsProcess *process);
 
 public slots:
-    void addProcessData(const QByteArray &data);
     void addProcessDataX(const QByteArray &data);
     void setJumpToLogEnd(bool state);
     void repaint();
