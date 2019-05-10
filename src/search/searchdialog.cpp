@@ -81,7 +81,7 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearching) {
-        if (createRegex().pattern().isEmpty()) return;
+        if (ui->combo_search->currentText().isEmpty()) return;
         mHasChanged = false;
 
         setSearchOngoing(true);
