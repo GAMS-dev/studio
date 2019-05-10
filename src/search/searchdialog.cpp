@@ -242,6 +242,8 @@ void SearchDialog::replaceAll()
 
     int matchedFiles = 0;
 
+    mHasChanged = false;
+
     // sort and filter FMs by editability and open state
     for (FileMeta* fm : fml) {
         // check if filtered by pattern (when not SearchScope == ThisFile)
@@ -291,8 +293,8 @@ void SearchDialog::replaceAll()
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
     QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
-    QPushButton *showCandidates = msgBox.addButton("Search", QMessageBox::RejectRole);
-    msgBox.setDefaultButton(showCandidates);
+    QPushButton *search = msgBox.addButton("Search", QMessageBox::RejectRole);
+    msgBox.setDefaultButton(search);
 
     int hits = 0;
     msgBox.exec();
@@ -313,7 +315,9 @@ void SearchDialog::replaceAll()
         }
 
         setSearchStatus(SearchStatus::Clear);
-    } else if (msgBox.clickedButton() == showCandidates) {
+    } else if (msgBox.clickedButton() == search) {
+        mShowResults = true;
+        mStepThroughResults = true;
         findInFiles(fml);
         return;
     } else if (msgBox.clickedButton() == cancel) {
