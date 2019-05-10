@@ -115,7 +115,7 @@ public:
             {"scip", "docs/S_SCIP.html"},
             {"selkie", "docs/S_SELKIE.html"},
             {"snopt", "docs/S_SNOPT.html"},
-            {"solveengine", "docs/S_SOVLEENGINE.html"},
+            {"solveengine", "docs/S_SOLVEENGINE.html"},
             {"soplex", "docs/S_SOPLEX.html"},
             {"xa", "docs/S_XA.html"},
             {"xpress", "docs/S_XPRESS.html"},
