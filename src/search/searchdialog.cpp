@@ -225,12 +225,15 @@ QList<FileMeta*> SearchDialog::getFilesByScope()
         break;
     }
 
+    auto file = mMain->fileRepo()->openFiles();
+
     // apply filter
+    QList<FileMeta*> res;
     for (FileMeta* fm : files) {
-        if (ui->combo_scope->currentIndex() != SearchScope::ThisFile && fileFilter.indexIn(fm->location()) == -1)
-            files.removeAll(fm);
+        if (ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1)
+            res.append(fm);
     }
-    return files;
+    return res;
 }
 
 void SearchDialog::replaceAll()

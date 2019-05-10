@@ -152,7 +152,7 @@ QVector<FileMeta*> FileMetaRepo::openFiles() const
     QHashIterator<FileId, FileMeta*> i(mFiles);
     while (i.hasNext()) {
         i.next();
-        if (i.value()->isOpen()) res << i.value();
+        if (i.value()->isOpen() && res.indexOf(i.value()) == -1) res << i.value();
     }
     return res;
 }
