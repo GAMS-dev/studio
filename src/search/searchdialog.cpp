@@ -107,10 +107,10 @@ void SearchDialog::intermediateUpdate()
 void SearchDialog::finalUpdate()
 {
     setSearchOngoing(false);
-    mFinalResults = mTempResults;
-    mTempResults = nullptr;
 
     if (mShowResults) {
+        mFinalResults = mTempResults;
+        mTempResults = nullptr;
         mMain->showResults(mFinalResults);
         resultsView()->resizeColumnsToContent();
     }
@@ -793,6 +793,11 @@ void SearchDialog::autofillSearchField()
     }
 
     ui->combo_search->setFocus();
+}
+
+void SearchDialog::activateResultStepping()
+{
+    mStepThroughResults = true;
 }
 
 void SearchDialog::updateMatchLabel(int current)

@@ -93,6 +93,7 @@ public slots:
     void finalUpdate();
     void intermediateUpdate();
     void updateMatchLabel(int current = 0);
+    void activateResultStepping();
 
 protected slots:
     void returnPressed();

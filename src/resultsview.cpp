@@ -63,6 +63,7 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 
     // jump to line
     node->file()->jumpTo(node->runGroupId(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+    emit activateResultStepping();
     emit updateMatchLabel(selectedRow+1);
 }
 

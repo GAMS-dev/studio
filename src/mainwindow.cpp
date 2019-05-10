@@ -2434,6 +2434,7 @@ void MainWindow::showResults(SearchResultList* results)
     // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));
     connect(searchDialog()->resultsView(), &ResultsView::updateMatchLabel, searchDialog(), &SearchDialog::updateMatchLabel, Qt::UniqueConnection);
+    connect(searchDialog()->resultsView(), &ResultsView::activateResultStepping, searchDialog(), &SearchDialog::activateResultStepping, Qt::UniqueConnection);
 
     QString nr;
     if (results->size() > 49999) nr = "50000+";
