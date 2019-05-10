@@ -235,6 +235,8 @@ QList<FileMeta*> SearchDialog::getFilesByScope()
 
 void SearchDialog::replaceAll()
 {
+    if (ui->combo_search->currentText().isEmpty()) return;
+
     QList<FileMeta*> fml = getFilesByScope();
 
     QList<FileMeta*> opened;
