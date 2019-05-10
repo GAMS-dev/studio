@@ -668,10 +668,7 @@ void FileMeta::setCodecMib(int mib)
         DEB() << "TextCodec not found for MIB " << mib;
         return;
     }
-    if (isReadOnly())
-        return;
-
-    if (codec != mCodec) {
+    if (!isReadOnly() && codec != mCodec) {
        setModified(true);
     }
     setCodec(codec);
