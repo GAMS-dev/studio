@@ -218,22 +218,6 @@ void ProjectContextMenu::onAddExisitingFile()
     }
     for (ProjectGroupNode *group: groups) {
         for (QString filePath: filePaths) {
-            if (QFileInfo(filePath).completeSuffix().startsWith("op", Qt::CaseInsensitive)) {
-                if (!mAvailableSolvers.contains(QFileInfo(filePath).completeBaseName())) {
-                    QMessageBox msgBox;
-                    msgBox.setWindowTitle("Unrecognized Solver Option File Name");
-                    msgBox.setText("Open " + filePath + " as text?");
-                    msgBox.setStandardButtons( QMessageBox::Cancel | QMessageBox::Ok);
-                    msgBox.setDefaultButton(QMessageBox::Ok);
-                    msgBox.setIcon(QMessageBox::Warning);
-                    if (QMessageBox::Cancel == msgBox.exec())
-                        continue;
-
-                    //  TODO (JP)
-                    qDebug() << "TODO opening the option file "<< filePath << " as text file...";
-                    continue;
-                }
-            }
             emit addExistingFile(group, filePath);
         }
     }

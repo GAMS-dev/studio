@@ -155,18 +155,19 @@ bool SolverOptionWidget::init()
     if (!mOptionTokenizer->getOption()->available())  {
         ui->solverOptionSearch->setReadOnly(true);
         ui->compactViewCheckBox->setEnabled(false);
-        ui->openAsTextButton->setEnabled(false);
 
-        QString msg = QString("%1 is not a valid solver name").arg(mSolverName);
-        mOptionTokenizer->logger()->append(msg, LogMsgType::Warning);
-        mOptionTokenizer->logger()->append(QString("Unable to load options from %1").arg(mLocation), LogMsgType::Warning);
+        QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
+        QString msg2 = QString("%1 is not a valid solver name").arg(mSolverName);
+        mOptionTokenizer->logger()->append(msg2, LogMsgType::Warning);
+        mOptionTokenizer->logger()->append(QString("Unable to load options from %1 properly.").arg(mLocation), LogMsgType::Warning);
 
         QMessageBox msgBox;
-        msgBox.setWindowTitle("Unable to open Option File");
-        msgBox.setText(QString("Unable to open %1 Properly.\nProblem: %2.").arg(mLocation).arg(msg));
+        msgBox.setWindowTitle("Problem openning Solver Option File");
+        msgBox.setText(QString("%1.\nProblem: %2.").arg(msg1).arg(msg2));
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
+
         return false;
     }
     else {

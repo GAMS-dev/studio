@@ -37,7 +37,6 @@
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
 #include <QScrollBar>
-#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -713,8 +712,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (kind() == FileKind::Gdx) {
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
-        // TODO: multiple ReferenceViewers share one Reference Object of the same file
-        //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
