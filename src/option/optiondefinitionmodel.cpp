@@ -278,7 +278,10 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         columnData.append(optdef.synonym);
         switch(optdef.dataType) {
         case optDataInteger:
-            columnData.append(optdef.defaultValue.toInt());
+            if (optdef.type == optTypeBoolean && optdef.subType == optsubNoValue)
+                columnData.append("");
+            else
+                columnData.append(optdef.defaultValue.toInt());
             break;
         case optDataDouble:
             columnData.append(optdef.defaultValue.toDouble());
@@ -311,8 +314,13 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
             break;
         }
         case optTypeBoolean : {
-            columnData.append("{0, 1}");
-            columnData.append("Boolean");
+            if (optdef.subType == optsubNoValue) {
+                columnData.append("");
+                columnData.append("Boolean (no Value)");
+            } else {
+                columnData.append("{0, 1}");
+                columnData.append("Boolean");
+            }
             break;
         }
         case optTypeEnumStr : {
