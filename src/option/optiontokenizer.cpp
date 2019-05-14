@@ -41,10 +41,10 @@ QString OptionTokenizer::keyGeneratedStr = QString("[KEY]");
 QString OptionTokenizer::valueGeneratedStr = QString("[VALUE]");
 QString OptionTokenizer::commentGeneratedStr = QString("[COMMENT]");
 
-OptionTokenizer::OptionTokenizer(const QString &optionFileName)
+OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
 {
     // option definition
-    mOption = new Option(CommonPaths::systemDir(), optionFileName);
+    mOption = new Option(CommonPaths::systemDir(), optionDefFileName);
     mOPTAvailable = mOption->available();
 
     // option parser
@@ -594,10 +594,8 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 int group = 0;
                 int helpContextNr;
                 optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
-
-                qDebug() << QString("%1: %2: %3 %4 %5 [%6 %7 %8]").arg(name).arg(i)
-                     .arg(idefined).arg(idefinedR).arg(irefnr).arg(itype).arg(iopttype).arg(ioptsubtype);
-
+//                qDebug() << QString("%1: %2: %3 %4 %5 [%6 %7 %8]").arg(name).arg(i)
+//                     .arg(idefined).arg(idefinedR).arg(irefnr).arg(itype).arg(iopttype).arg(ioptsubtype);
                 int ivalue;
                 double dvalue;
                 char svalue[GMS_SSSIZE];
@@ -608,7 +606,6 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                 key = getKeyFromStr(text, n);
                 switch(itype) {
                 case optDataInteger: {  // 1
-                     qDebug() << QString("%1: %2: dInt %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      QString iv = QString::number(ivalue);
                      value = getValueFromStr(text, itype, ioptsubtype, n, iv);
                      if (value.simplified().isEmpty() && iopttype == optTypeBoolean) {
@@ -623,13 +620,11 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                      break;
                 }
                 case optDataDouble: {  // 2
-                     qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      value = getDoubleValueFromStr(text, n, svalue);
                      valueRead = true;
                      break;
                 }
                 case optDataString: {  // 3
-                     qDebug() << QString("%1: %2: dString %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                      QString sv = QString(svalue);
                      value = getValueFromStr(text, itype, ioptsubtype, n, sv);
                      valueRead = true;
@@ -639,7 +634,6 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                      QStringList strList;
                      for (int j = 1; j <= optListCountStr(mOPTHandle, name ); ++j) {
                          optReadFromListStr( mOPTHandle, name, j, svalue );
-                         qDebug() << QString("%1: %2: dStrList #%4 %5").arg(name).arg(i).arg(j).arg(svalue);
                          strList << QString::fromLatin1(svalue);
                      }
                      QString sv = QString(svalue);
@@ -669,12 +663,13 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
            }
         }
         if (!valueRead)  { // indicator option or error
-            int commentCharIndex = getEOLCommentCharIndex(text);
-            bool isTextGenerated = isOptionTextGenerated(text);
-            item->optionId = -1;
-            item->key =  ( isTextGenerated ? keyGeneratedStr : ((commentCharIndex<0) ? text : text.mid(0, commentCharIndex).simplified()) );
-            item->value = ( isTextGenerated ? valueGeneratedStr : "" );
-            item->text = (commentCharIndex<0) ? "" : text.mid(commentCharIndex+1).simplified();
+            QString keyStr = "";
+            QString valueStr = "";
+            QString commentStr = "";
+            parseOptionString(text, keyStr, valueStr, commentStr);
+            item->key = keyStr;
+            item->value = valueStr;
+            item->text = commentStr;
             item->error = errorType;
             item->disabled = false;
        }
@@ -838,7 +833,6 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
             break;
         case optMsgUserError:
             if (messageType != UserDefined_Error) {
-                qDebug() << "messageType=" << messageType;
                messageType = UserDefined_Error;  //Invalid_Key;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
@@ -992,7 +986,7 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
     QString key = "";
     if (line.contains(hintKey, Qt::CaseInsensitive)) {
         if (hintKey.startsWith(".")) {
-            int idx = line.indexOf("=");
+            int idx = line.indexOf(mOption->getDefaultSeparator());
             if (idx==-1) idx = line.indexOf(" ");
             if (idx==-1)
                 return hintKey;
@@ -1005,13 +999,13 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
         for (QString synonym : mOption->getSynonymList(hintKey)) {
             if (line.contains(synonym, Qt::CaseInsensitive)) {
                 key = line.mid( line.indexOf(synonym, Qt::CaseInsensitive)).simplified();
-                if (key.endsWith("="))
-                   key = key.left(key.indexOf("=")).simplified();
+                if (key.endsWith(mOption->getDefaultSeparator()))
+                   key = key.left(key.indexOf(mOption->getDefaultSeparator())).simplified();
             }
         }
         if (key.isEmpty()) {
-            if (line.contains("=")) {
-                QVector<QStringRef> sref = line.splitRef("=", QString::SkipEmptyParts);
+            if (line.contains(mOption->getDefaultSeparator())) {
+                QVector<QStringRef> sref = line.splitRef(mOption->getDefaultSeparator(), QString::SkipEmptyParts);
                 key = sref.first().toString();
             } else if (line.contains(" ")) {
                 QVector<QStringRef> sref = line.splitRef(" ", QString::SkipEmptyParts);
@@ -1027,7 +1021,7 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
 QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QString &key, const QString &hintValue)
 {
     QString value = line.mid( key.length() ).simplified();
-    if (value.startsWith('='))
+    if (value.startsWith(mOption->getDefaultSeparator()))
         value = value.mid(1).simplified();
 
     if (value.contains(hintValue, Qt::CaseInsensitive))
@@ -1129,23 +1123,30 @@ int OptionTokenizer::getEOLCommentCharIndex(const QString &text)
     return commentCharIndex;
 }
 
-bool OptionTokenizer::isOptionTextGenerated(const QString &text)
+void OptionTokenizer::parseOptionString(const QString &text, QString &keyStr, QString &valueStr, QString &commentStr)
 {
-    QString key = keyGeneratedStr;
-    QString value = valueGeneratedStr;
-    if (!text.startsWith(key))
-        return false;
+    int commentCharIndex = getEOLCommentCharIndex(text);
+    if (commentCharIndex == 0 || text.startsWith("*")) {
+        keyStr = text.mid(1).simplified();
+        return;
+    }
+    if (commentCharIndex >= 0)
+        commentStr = text.mid(commentCharIndex+1).simplified();
 
-    QStringRef valueRef(&text, key.size(), text.size());
-    if (valueRef.startsWith("=") || valueRef.startsWith(" "))
-        valueRef = QStringRef(&text, key.size()+1, text.size());
-
-    if (!valueRef.startsWith(valueGeneratedStr))
-        return false;
-
-    valueRef = QStringRef(&text, key.size()+1+value.size(), text.size());
-
-    return true;
+    QString separator = mOption->getDefaultSeparator();
+    int separatorIndex = text.indexOf(separator, 0, Qt::CaseInsensitive);
+    if (separatorIndex >= 0) {
+        keyStr = text.left(separatorIndex).simplified();
+        if (commentCharIndex < 0) {
+            valueStr = text.mid(separatorIndex+separator.size()).simplified();
+        } else {
+            int valueStrSize = text.size() - (text.leftRef(separatorIndex).size() + separator.size() + text.midRef(commentCharIndex).size());
+            valueStr = text.mid(separatorIndex+separator.size(), valueStrSize).simplified();
+        }
+    } else {
+        keyStr = (commentCharIndex >= 0) ?  text.left(commentCharIndex).simplified() : text;
+    }
+    return;
 }
 
 QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QTextCodec* codec)

@@ -45,7 +45,7 @@ class OptionTokenizer : public QObject
 
 public:
 
-    OptionTokenizer(const QString &optionFileName);
+    OptionTokenizer(const QString &optionDefFileName);
     ~OptionTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);
@@ -116,7 +116,7 @@ private:
     QString getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue);
     QString getQuotedStringValue(const QString &line, const QString &value);
     int getEOLCommentCharIndex(const QString &text);
-    bool isOptionTextGenerated(const QString &text);
+    void parseOptionString(const QString &text, QString &keyStr, QString &valueStr, QString &commentStr);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
