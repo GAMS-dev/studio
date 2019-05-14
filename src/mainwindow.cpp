@@ -1275,14 +1275,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         mWp->historyChanged(history());
     } else if (!file->isReadOnly()) {
         if (file->exists(true)) return 0;
-        if (!file->isReadOnly() && file->document()) {
-             file->document()->setModified();
-        } else {
-            for (QWidget *e : file->editors()) {
-               option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
-               if (so) so->setModified(true);
-           }
-        }
+        file->setModified();
         mFileMetaRepo.unwatch(file);
     }
     return 0;
