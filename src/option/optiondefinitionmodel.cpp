@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QColor>
-#include <QDebug>
 #include "optiondefinitionmodel.h"
 
 namespace gams {
@@ -131,7 +130,6 @@ bool OptionDefinitionModel::removeRows(int row, int count, const QModelIndex &pa
 
 void OptionDefinitionModel::loadOptionFromGroup(const int group)
 {
-    qDebug() << "option from group " << group << " to be loaded!";
     mOptionGroup = group;
     beginResetModel();
 

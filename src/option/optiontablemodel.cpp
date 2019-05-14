@@ -19,7 +19,6 @@
  */
 #include <QMimeData>
 #include <QIcon>
-#include <QDebug>
 
 #include "optiontablemodel.h"
 
@@ -334,9 +333,6 @@ Qt::DropActions OptionTableModel::supportedDropActions() const
 bool OptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     Q_UNUSED(column);
-    for(QString f : mimedata->formats()) {
-       qDebug() << "format:" << f;
-    }
     if (action == Qt::IgnoreAction)
         return true;
 

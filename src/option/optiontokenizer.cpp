@@ -22,7 +22,6 @@
 #include <QTextStream>
 #include <QTextCodec>
 #include <QRegularExpression>
-#include <QDebug>
 
 #include "optiontokenizer.h"
 #include "gclgms.h"
@@ -792,7 +791,7 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
 
     for (int i = 1; i <= optMessageCount(OPTHandle); i++ ) {
         optGetMessage( OPTHandle, i, msg, &itype );
-        qDebug() << QString("#Message: %1 : %2 : %3").arg(i).arg(msg).arg(itype);
+//        qDebug() << QString("#Message: %1 : %2 : %3").arg(i).arg(msg).arg(itype);
 
         // remap error message type
         switch (itype) {

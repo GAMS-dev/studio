@@ -19,7 +19,6 @@
  */
 #include <QIcon>
 #include <QMessageBox>
-#include <QDebug>
 
 #include "solveroptiontablemodel.h"
 
@@ -381,7 +380,6 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     while (!stream.atEnd()) {
        QString text;
        stream >> text;
-       qDebug() << text;
        newItems << text;
        ++rows;
     }
@@ -603,11 +601,9 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
     while(row <= bottomRight.row()) {
         idx = index(row++, idx.column());
         if (idx.column()==columnEntryNumber) {
-            qDebug() << roles.first() << ", ignore update" << idx.row() << "," << idx.column();
             continue;
         }
         if (roles.first()==Qt::EditRole) {
-            qDebug() << roles.first() << ", edit update" << idx.row() << "," << idx.column();
           if (mOptionItem.at(idx.row())->disabled) {
               setHeaderData( idx.row(), Qt::Vertical,
                           Qt::CheckState(Qt::PartiallyChecked),
@@ -634,7 +630,6 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
           }
           emit solverOptionModelChanged(mOptionItem);
        } else if (roles.first()==Qt::CheckStateRole) {
-            qDebug() << roles.first() << ", checkstate update " << idx.row() << "," << idx.column();
                   emit solverOptionModelChanged(mOptionItem);
        }
     }
