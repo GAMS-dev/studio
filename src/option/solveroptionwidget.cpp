@@ -565,12 +565,10 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
 
 void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
 {
-    if (codec != mCodec) {
-        mCodec = codec;
-        mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
-        mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
-        setModified(false);
-    }
+    mCodec = codec;
+    mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+    mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
+    setModified(false);
 }
 
 void SolverOptionWidget::on_selectRow(int logicalIndex)
