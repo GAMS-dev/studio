@@ -210,10 +210,14 @@ QList<FileMeta*> SearchDialog::getFilesByScope()
             files.append(mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
         break;
     case SearchScope::ThisGroup:
-        for (ProjectFileNode* fn : mMain->projectRepo()->findFileNode(mMain->recent()->editor())->parentNode()->listFiles(true)) {
-            if (!files.contains(fn->file()))
-                files.append(fn->file());
+    {
+        ProjectFileNode* p = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+        if (!p) return files;
+        for (ProjectFileNode *c :p->parentNode()->listFiles(true)) {
+            if (!files.contains(c->file()))
+                files.append(c->file());
         }
+    }
         break;
     case SearchScope::OpenTabs:
         files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
