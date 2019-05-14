@@ -688,17 +688,17 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         QString key;
         if (mOptionItem.at(logicalIndex)->value.toString().isEmpty()) {
             if (mOption->isEOLCharDefined() && !mOptionItem.at(logicalIndex)->text.isEmpty())
-                key = QString("%1  %2 %3").arg(mOptionItem.at(logicalIndex)->key)
+                key = QString("%1 %2 %3").arg(mOptionItem.at(logicalIndex)->key)
                                           .arg(mOptionTokenizer->getEOLCommentChar())
                                           .arg(mOptionItem.at(logicalIndex)->text);
             else
                 key = QString("%1").arg(mOptionItem.at(logicalIndex)->key);
         } else {
             if (mOption->isEOLCharDefined() && !mOptionItem.at(logicalIndex)->text.isEmpty())
-                key = QString("%1 %2  %3 %4").arg(mOptionItem.at(logicalIndex)->key).arg(mOptionItem.at(logicalIndex)->value.toString())
-                                             .arg(mOptionTokenizer->getEOLCommentChar()).arg(mOptionItem.at(logicalIndex)->text);
+                key = QString("%1%2%3 %4 %5").arg(mOptionItem.at(logicalIndex)->key).arg(mOption->getDefaultSeparator()).arg(mOptionItem.at(logicalIndex)->value.toString())
+                                              .arg(mOptionTokenizer->getEOLCommentChar()).arg(mOptionItem.at(logicalIndex)->text);
             else
-                key = QString("%1 %2").arg(mOptionItem.at(logicalIndex)->key).arg(mOptionItem.at(logicalIndex)->value.toString());
+                key = QString("%1%2%3").arg(mOptionItem.at(logicalIndex)->key).arg(mOption->getDefaultSeparator()).arg(mOptionItem.at(logicalIndex)->value.toString());
        }
         mOptionItem.at(logicalIndex)->key = key;
         mOptionItem.at(logicalIndex)->value = "";
