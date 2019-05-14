@@ -3,7 +3,6 @@ pipeline {
 
     options {
         parallelsAlwaysFailFast()
-        buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '2'))
         disableConcurrentBuilds()
     }
 
