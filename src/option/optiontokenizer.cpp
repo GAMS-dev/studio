@@ -886,8 +886,8 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                int helpContextNr;
                optGetOptHelpNr(mOPTHandle, i, name, &helpContextNr, &group);
 
-               qDebug() << QString("%1: %2: %3 %4 %5 [%6 %7 %8]").arg(name).arg(i)
-                     .arg(idefined).arg(idefinedR).arg(irefnr).arg(itype).arg(iopttype).arg(ioptsubtype);
+//               qDebug() << QString("%1: %2: %3 %4 %5 [%6 %7 %8]").arg(name).arg(i)
+//                     .arg(idefined).arg(idefinedR).arg(irefnr).arg(itype).arg(iopttype).arg(ioptsubtype);
 
                int ivalue;
                double dvalue;
@@ -898,7 +898,6 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                definedKey = getKeyFromStr(str, n);
                switch(itype) {
                case optDataInteger: {  // 1
-                   qDebug() << QString("%1: %2: dInt %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    QString iv = QString::number(ivalue);
                    definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
                    if (definedValue.simplified().isEmpty() && iopttype == optTypeBoolean) {
@@ -913,13 +912,11 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    break;
                }
                case optDataDouble: {  // 2
-                   qDebug() << QString("%1: %2: dDouble %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    definedValue = getDoubleValueFromStr(str, definedKey, svalue);
                    valueRead = true;
                    break;
                }
                case optDataString: {  // 3
-                   qDebug() << QString("%1: %2: dString %3 %4 %5").arg(name).arg(i).arg(ivalue).arg(dvalue).arg(svalue);
                    QString sv = QString(svalue);
                    definedValue = getValueFromStr(str, itype, ioptsubtype, n, sv);
                    valueRead = true;
@@ -929,7 +926,6 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    QStringList strList;
                    for (int j = 1; j <= optListCountStr(mOPTHandle, name ); ++j) {
                       optReadFromListStr( mOPTHandle, name, j, svalue );
-                      qDebug() << QString("%1: %2: dStrList #%4 %5").arg(name).arg(i).arg(j).arg(svalue);
                       strList << QString::fromLatin1(svalue);
                    }
                    // TODO (JP)

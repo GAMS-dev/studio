@@ -182,10 +182,6 @@ bool SolverOptionWidget::init()
                 mOptionTokenizer->on_EOLCommentChar_changed(ch);
 //                setModified(true);
         });
-//        connect(settingEdit, &SolverOptionSetting::separatorCharChanged, [=](QChar ch){
-//                mOptionTokenizer->on_separatorChar_changed(ch);
-//                setModified(true);
-//        });
 
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectAndToggleRow);
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
