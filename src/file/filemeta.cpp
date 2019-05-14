@@ -602,14 +602,16 @@ void FileMeta::reloadDelayed()
 
 bool FileMeta::isModified() const
 {
-    if (kind() == FileKind::Opt) { // TODO (JP)
-        for (QWidget *wid: mEditors) {
-            option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
-            if (solverOptionWidget)
-                return solverOptionWidget->isModified();
-        }
+    if (mDocument) {
+        return  mDocument->isModified();
+    } else if (kind() == FileKind::Opt) {
+            for (QWidget *wid: mEditors) {
+                option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
+                if (solverOptionWidget)
+                    return solverOptionWidget->isModified();
+            }
     }
-    return mDocument ? mDocument->isModified() : false;
+    return false;
 }
 
 bool FileMeta::isReadOnly() const
