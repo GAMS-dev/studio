@@ -77,7 +77,7 @@ SearchResultList* ResultsView::searchResultList() const
 /// \param file file where the cursor is
 /// \param tc cursor to get position for jumping to next match
 /// \param backwards WiP not yet implemented
-/// \return returns selected row index +1 to make it "human readable"
+/// \return returns selected row index+1 to make it "human readable"
 ///
 int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwards)
 {
@@ -85,6 +85,10 @@ int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwa
 
     if (ui->tableView->selectionModel()->selectedRows(0).isEmpty())
         ui->tableView->selectRow(0);
+
+    // if still empty
+    if (ui->tableView->selectionModel()->selectedRows(0).isEmpty())
+        return 0; // no results
 
     // for non-document files just select next item in list
     if (lineNr == -1) {
