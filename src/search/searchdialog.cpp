@@ -115,8 +115,6 @@ void SearchDialog::finalUpdate()
         resultsView()->resizeColumnsToContent();
     }
 
-    updateEditHighlighting();
-
     if (mFinalResults && !mFinalResults->size()) setSearchStatus(SearchStatus::NoResults);
     else updateFindNextLabel(QTextCursor());
 }
@@ -615,8 +613,11 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
 
     if (matchSelection.isNull()) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+        TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
         if (edit) {
             matchSelection = edit->textCursor();
+        } else if (tv && mShowResults) { // show label for Find All
+            matchSelection = tv->edit()->textCursor();
         } else { // is large file using textview
             setSearchStatus(SearchStatus::Clear);
             return;
