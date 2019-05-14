@@ -1226,6 +1226,12 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
         }
         return 0;
     }
+    if (file->kind() == FileKind::Opt) {
+        for (QWidget *e : file->editors()) {
+            option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e);
+            if (sow) sow->setFileChangedExtern(true);
+        }
+    }
     int choice;
 
     if (file->isAutoReload() || file->isReadOnly()) {

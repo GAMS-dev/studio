@@ -561,10 +561,14 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
 
 void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
 {
-    mCodec = codec;
-    mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
-    mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
-    setModified(false);
+     if (mCodec != codec)
+         mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding").arg(mLocation).arg(QString(codec->name())), LogMsgType::Info);
+     else if (mFileHasChangedExtern)
+              mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+     mCodec = codec;
+     mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
+     mFileHasChangedExtern = false;
+     setModified(false);
 }
 
 void SolverOptionWidget::on_selectRow(int logicalIndex)
@@ -1152,6 +1156,11 @@ bool SolverOptionWidget::isEverySelectionARow() const
 void SolverOptionWidget::selectSearchField() const
 {
     ui->solverOptionSearch->setFocus();
+}
+
+void SolverOptionWidget::setFileChangedExtern(bool value)
+{
+    mFileHasChangedExtern = value;
 }
 
 void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)

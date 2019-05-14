@@ -65,6 +65,7 @@ public:
     bool isViewCompact() const;
 
     void selectSearchField() const;
+    void setFileChangedExtern(bool value);
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -111,6 +112,8 @@ private:
     FileId mFileId;
     QString mLocation;
     QString mSolverName;
+
+    bool mFileHasChangedExtern = false;
 
     bool overrideExistingOption = true;
     bool addCommentAbove = false;
