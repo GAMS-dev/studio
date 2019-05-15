@@ -89,10 +89,11 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->setDragDropOverwriteMode(true);
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
-    ui->solverOptionTableView->resizeColumnToContents(1);
-//    ui->solverOptionTableView->resizeColumnToContents(2);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true); //false);
+    ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
+    ui->solverOptionTableView->resizeColumnToContents(0);
+    ui->solverOptionTableView->resizeColumnToContents(1);
+    //    ui->solverOptionTableView->resizeColumnToContents(2);
 
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->solverOptionTableView->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -146,7 +147,7 @@ bool SolverOptionWidget::init()
     ui->solverOptionTreeView->setExpandsOnDoubleClick(false);
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
-    ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true); // false);
+    ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
@@ -181,7 +182,6 @@ bool SolverOptionWidget::init()
 
         connect(settingEdit, &SolverOptionSetting::EOLCharChanged, [=](QChar ch){
                 mOptionTokenizer->on_EOLCommentChar_changed(ch);
-//                setModified(true);
         });
 
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectAndToggleRow);
@@ -874,7 +874,7 @@ void SolverOptionWidget::insertComment()
         ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
                                                           Qt::CheckState(Qt::PartiallyChecked),
                                                           Qt::CheckStateRole );
-        ui->solverOptionTableView->model()->setData( insertKeyIndex, "[COMMENT]" , Qt::EditRole);
+        ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
@@ -888,7 +888,7 @@ void SolverOptionWidget::insertComment()
                                                           Qt::CheckState(Qt::PartiallyChecked),
                                                           Qt::CheckStateRole );
 
-        ui->solverOptionTableView->model()->setData( insertKeyIndex, "[COMMENT]" , Qt::EditRole);
+        ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
