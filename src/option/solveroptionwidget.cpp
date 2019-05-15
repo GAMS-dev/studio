@@ -432,7 +432,9 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
             switch(msgBox.exec()) {
             case 0: // delete and replace
+                disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                 deleteOption(true);
+                connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                 replaceExistingEntry = true;
                 indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                     Qt::DisplayRole,
