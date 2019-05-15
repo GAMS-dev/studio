@@ -449,10 +449,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
         } // else entry not exist
     }
-qDebug() << "rowToBeAdd=" << rowToBeAdded << (rowToBeAdded != ui->solverOptionTableView->model()->rowCount() ? ", no" : ", yes");
 //    QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
-qDebug() << "01";
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
