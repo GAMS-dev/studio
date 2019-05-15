@@ -96,7 +96,7 @@ bool SolverOptionWidget::init()
     //    ui->solverOptionTableView->resizeColumnToContents(2);
 
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
-    ui->solverOptionTableView->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(ui->solverOptionTableView->verticalHeader()->minimumSectionSize());
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;

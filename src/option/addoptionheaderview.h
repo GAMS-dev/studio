@@ -41,8 +41,8 @@ protected:
 
 private:
     const QString iconStr = ":/img/plus";
-    const double ICON_SCALE_FACTOR = 0.6;
-    const double ICON_MARGIN_FACTOR = 0.5;
+    const double ICON_SCALE_FACTOR = 0.7;
+    const double ICON_MARGIN_FACTOR = 0.3;
 
     mutable int mIconWidth;
     mutable int mIconX;

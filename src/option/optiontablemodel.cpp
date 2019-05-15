@@ -69,7 +69,6 @@ QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, in
             return QVariant::fromValue(QIcon(":/img/square-green"));
         }
     }
-
     return QVariant();
 }
 
@@ -110,7 +109,7 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
         break;
     }
     case Qt::TextAlignmentRole: {
-        return Qt::AlignLeft;
+        return Qt::AlignLeft + Qt::AlignVCenter;
     }
     case Qt::ToolTipRole: {
         switch (mOptionItem.at(row).error) {

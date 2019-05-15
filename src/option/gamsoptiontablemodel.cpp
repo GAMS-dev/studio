@@ -113,7 +113,7 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
         }
     }
     case Qt::TextAlignmentRole: {
-        return Qt::AlignLeft;
+        return Qt::AlignLeft+ Qt::AlignVCenter;
     }
 //    case Qt::DecorationRole
     case Qt::ToolTipRole: {

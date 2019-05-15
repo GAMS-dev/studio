@@ -82,11 +82,11 @@ void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int
     painter->restore();
     if (logicalIndex == 0) {
          QIcon icon(iconStr);
-         int iconWidth = rect.height()*ICON_SCALE_FACTOR;
-         int iconMargin = (rect.height() - iconWidth)*ICON_MARGIN_FACTOR;
+         int iconWidth = static_cast<int>(rect.height()*ICON_SCALE_FACTOR);
+         int iconMargin = static_cast<int>((rect.height() - iconWidth)*ICON_MARGIN_FACTOR);
          QPixmap pm = icon.pixmap(iconWidth, iconWidth);
 
-         int posX = rect.topLeft().x() + iconMargin;
+         int posX = rect.topLeft().x();
          int posY = rect.topLeft().y() + iconMargin;
 
          painter->drawImage(posX, posY, pm.toImage());

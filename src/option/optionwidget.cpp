@@ -68,6 +68,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->gamsOptionTableView->setAutoScroll(true);
     ui->gamsOptionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->gamsOptionTableView->setSortingEnabled(false);
 
     ui->gamsOptionTableView->setDragEnabled(true);
     ui->gamsOptionTableView->setAcceptDrops(true);
@@ -78,10 +79,14 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Stretch);
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
+    ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->gamsOptionTableView->resizeColumnToContents(0);
     ui->gamsOptionTableView->resizeColumnToContents(1);
-    ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->setColumnHidden(2, true); //false);
+    ui->gamsOptionTableView->setColumnHidden(2, true);
+
+    ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
+    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(ui->gamsOptionTableView->verticalHeader()->minimumSectionSize());
+
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, optionTableModel, &GamsOptionTableModel::on_optionTableModelChanged);
     connect(optionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
