@@ -81,6 +81,7 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->solverOptionTableView->setAutoScroll(true);
     ui->solverOptionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->solverOptionTableView->setSortingEnabled(false);
 
     ui->solverOptionTableView->viewport()->setAcceptDrops(true);
     ui->solverOptionTableView->setDropIndicatorShown(true);
