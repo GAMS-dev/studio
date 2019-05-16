@@ -440,7 +440,14 @@ void SearchDialog::findNext(SearchDirection direction)
         }
 
         int selection = mResultsView->selectNextItem(ViewHelper::location(edit), line, col, direction);
-        updateMatchLabel(selection);
+
+        if (selection != -1) {
+            updateMatchLabel(selection);
+        } else{
+            // if reached maximum index but there are more hits
+            mStepThroughResults = false;
+            selectNextMatch(direction);
+        }
 
     } else {
         if (!mCachedResults) updateSearchCache();

@@ -82,12 +82,13 @@ SearchResultList* ResultsView::searchResultList() const
 /// \param file file where the cursor is
 /// \param tc cursor to get position for jumping to next match
 /// \param backwards WiP not yet implemented
-/// \return returns selected row index+1 to make it "human readable"
+/// \return returns selected row index+1 to make it "human readable". returns -1 if the end of the list was reached but more results are expected.
 ///
 int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwards)
 {
     int direction = backwards ? -1 : 1;
 
+    // start with first item if no selection present
     if (ui->tableView->selectionModel()->selectedRows(0).isEmpty())
         ui->tableView->selectRow(0);
 
@@ -108,7 +109,6 @@ int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwa
     }
 
     QList<Result> resultList = mResultList->resultsAsList();
-
     int start = 0; // first index in current file (or last when searching backwards)
     if (backwards) {
         for (int s = resultList.size()-1; s >= 0 ; s--) {
@@ -127,6 +127,7 @@ int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwa
     }
 
     // from first (or last) result in a file to SIZE (or 0), either forwards or backwards
+    int rowIndex = 0;
     for (int i = start; i >= 0 && i < resultList.size(); i += direction) {
         Result r = resultList.at(i);
         if (file != r.filepath()) { // reset cursor if in next/prev file
@@ -148,12 +149,19 @@ int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwa
                 return i+1;
             }
         }
+        rowIndex = i;
     }
-    // start over when arriving here
-    int row = backwards ? ui->tableView->model()->rowCount()-1 : 0;
-    ui->tableView->selectRow(row);
-    on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-    return row+1;
+    // if list has max size and user reached end of list
+    if (rowIndex == 49999) {
+        ui->tableView->clearSelection();
+        return -1;
+    } else {
+        // start over when arriving here
+        int row = backwards ? ui->tableView->model()->rowCount()-1 : 0;
+        ui->tableView->selectRow(row);
+        on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+        return row+1;
+    }
 }
 
 }
