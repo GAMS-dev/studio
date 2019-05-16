@@ -62,9 +62,10 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView) );
     ui->gamsOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
+                       | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
-    ui->gamsOptionTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->gamsOptionTableView->setSelectionBehavior(QAbstractItemView::SelectItems);
     ui->gamsOptionTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->gamsOptionTableView->setAutoScroll(true);
     ui->gamsOptionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
