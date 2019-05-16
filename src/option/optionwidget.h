@@ -88,6 +88,8 @@ public slots:
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QStringList &history);
 
+    void selectSearchField();
+
 private slots:
     void on_newTableRowDropped(const QModelIndex &index);
     void on_optionTableNameChanged(const QString &from, const QString &to);

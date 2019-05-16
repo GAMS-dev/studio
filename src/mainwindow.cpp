@@ -2489,6 +2489,9 @@ void MainWindow::on_actionSearch_triggered()
 #ifdef QWEBENGINE
         mHelpWidget->on_searchHelp();
 #endif
+    } else if (mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::focusWidget()) ||
+               mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::activeWindow())) {
+                mGamsOptionWidget->selectSearchField();
     } else {
        ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
        if (fc) {

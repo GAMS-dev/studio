@@ -380,6 +380,11 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
     ui->gamsOptionCommandLine->setCurrentIndex(0);
 }
 
+void OptionWidget::selectSearchField()
+{
+    ui->gamsOptionSearch->setFocus();
+}
+
 void OptionWidget::setEditorExtended(bool extended)
 {
     if (extended) emit optionTableModelChanged(ui->gamsOptionCommandLine->currentText());
