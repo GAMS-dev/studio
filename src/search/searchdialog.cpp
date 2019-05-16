@@ -831,9 +831,9 @@ void SearchDialog::updateMatchLabel(int current)
         else
             ui->lbl_nrResults->setText(QString::number(list->size()) + " matches");
 
-        if (list->size() > 49999) {
-            ui->lbl_nrResults->setText("50000+ matches");
-            ui->lbl_nrResults->setToolTip("Search is limited to 50000 matches.");
+        if (list->size() > MAX_SEARCH_RESULTS-1) {
+            ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
+            ui->lbl_nrResults->setToolTip("Search is limited to " + QString::number(MAX_SEARCH_RESULTS) + " matches.");
         } else {
             ui->lbl_nrResults->setToolTip("");
         }

@@ -129,6 +129,8 @@ operator<<(QTextStream &dbg, T enumValue)
     return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
 }
 
+const int MAX_SEARCH_RESULTS = 50000;
+
 }
 }
 

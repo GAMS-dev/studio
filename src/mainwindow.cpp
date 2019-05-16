@@ -2437,7 +2437,7 @@ void MainWindow::showResults(SearchResultList* results)
     connect(searchDialog()->resultsView(), &ResultsView::activateResultStepping, searchDialog(), &SearchDialog::activateResultStepping, Qt::UniqueConnection);
 
     QString nr;
-    if (results->size() > 49999) nr = "50000+";
+    if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
     else nr = QString::number(results->size());
 
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");

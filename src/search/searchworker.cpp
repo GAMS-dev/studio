@@ -64,7 +64,7 @@ void SearchWorker::findInFiles()
                 }
 
                 // abort: too many results
-                if (mMatches->size() > 49999) break;
+                if (mMatches->size() > MAX_SEARCH_RESULTS-1) break;
 
                 // update periodically
                 if (lineCounter % 250000 == 0)

@@ -22,6 +22,7 @@
 #include "exception.h"
 #include "search/searchresultlist.h"
 #include "search/result.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -152,7 +153,7 @@ int ResultsView::selectNextItem(QString file, int lineNr, int colNr, bool backwa
         rowIndex = i;
     }
     // if list has max size and user reached end of list
-    if (rowIndex == 49999) {
+    if (rowIndex == MAX_SEARCH_RESULTS-1) {
         ui->tableView->clearSelection();
         return -1;
     } else {
