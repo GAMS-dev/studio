@@ -91,8 +91,6 @@ void SearchDialog::on_btn_FindAll_clicked()
         mShowResults = true;
         mStepThroughResults = true;
         findInFiles();
-
-        updateEditHighlighting();
     } else {
         setSearchOngoing(false);
         mThread.requestInterruption();
@@ -114,6 +112,8 @@ void SearchDialog::finalUpdate()
         mMain->showResults(mFinalResults);
         resultsView()->resizeColumnsToContent();
     }
+
+    updateEditHighlighting();
 
     if (mFinalResults && !mFinalResults->size()) setSearchStatus(SearchStatus::NoResults);
     else updateFindNextLabel(QTextCursor());
@@ -896,7 +896,7 @@ void SearchDialog::setSelectedScope(int index)
 
 SearchResultList* SearchDialog::results()
 {
-    if (resultsView())
+    if (resultsView() && mStepThroughResults)
         return resultsView()->searchResultList();
     else
         return mCachedResults;

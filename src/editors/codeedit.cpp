@@ -26,6 +26,7 @@
 #include "syntax.h"
 #include "keys.h"
 #include "editorhelper.h"
+#include "viewhelper.h"
 #include "locators/searchlocator.h"
 #include "locators/settingslocator.h"
 
@@ -1334,10 +1335,14 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     SearchDialog *searchDialog = SearchLocator::searchDialog();
-    if (!searchDialog) return;
-    QString searchTerm = searchDialog->searchTerm();
-    if (searchTerm.isEmpty()) return;
-    QRegularExpression regEx = searchDialog->createRegex();
+    if (!searchDialog || searchDialog->searchTerm().isEmpty()) return;
+
+    SearchResultList* list = searchDialog->results();
+    if (!list) return;
+
+    if (list->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
+
+    QRegularExpression regEx = list->searchRegex();
 
     QTextBlock block = firstVisibleBlock();
     int fromPos = block.position();
@@ -1352,11 +1357,9 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     QTextCursor lastItem = QTextCursor(document());
     lastItem.setPosition(firstVisibleBlock().position());
     QTextCursor item;
-    QFlags<QTextDocument::FindFlag> flags;
-    flags.setFlag(QTextDocument::FindCaseSensitively, searchDialog->caseSens());
 
     do {
-        item = document()->find(regEx, lastItem, flags);
+        item = document()->find(regEx, lastItem);
         if (lastItem == item) break;
         lastItem = item;
         if (!item.isNull()) {
