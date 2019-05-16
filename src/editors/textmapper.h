@@ -115,7 +115,7 @@ public:
     int knownLineNrs() const;
 
     QString lines(int localLineNrFrom, int lineCount) const;
-    bool findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
 
     QString selectedText() const;
     void copyToClipboard();
