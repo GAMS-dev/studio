@@ -57,6 +57,9 @@ private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
     SearchResultList* mResultList;
+
+protected:
+    void keyPressEvent(QKeyEvent* event);
 };
 
 }

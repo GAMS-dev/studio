@@ -73,6 +73,15 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     emit updateMatchLabel(selectedRow+1);
 }
 
+void ResultsView::keyPressEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+        on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+        e->accept();
+    }
+    QWidget::keyPressEvent(e);
+}
+
 SearchResultList* ResultsView::searchResultList() const
 {
     return mResultList;
