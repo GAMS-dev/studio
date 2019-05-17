@@ -362,12 +362,8 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
             this, &OptionWidget::updateOptionTableModel );
 
     ui->gamsOptionCommandLine->clear();
-    if (history.isEmpty()) {
-        ui->gamsOptionCommandLine->setCurrentIndex(0);
-        return;
-    }
     for (QString str: history) {
-      ui->gamsOptionCommandLine->insertItem(0, str );
+        ui->gamsOptionCommandLine->insertItem(0, str );
     }
 
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
@@ -377,6 +373,8 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             this, &OptionWidget::updateOptionTableModel );
 
+    if (history.isEmpty())
+        ui->gamsOptionCommandLine->insertItem(0, " ");
     ui->gamsOptionCommandLine->setCurrentIndex(0);
 }
 
