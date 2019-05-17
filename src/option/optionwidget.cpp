@@ -205,14 +205,19 @@ void OptionWidget::updateCommandLineStr(const QList<OptionItem> &optionItems)
 
 void OptionWidget::showOptionContextMenu(const QPoint &pos)
 {
+    QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
+    for(QModelIndex index : indexSelection) {
+        ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    }
+
     QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
 
     QMenu menu(this);
     QAction* addAction = menu.addAction(QIcon(":/img/plus"), "Add new option");
     QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "Insert new option");
     menu.addSeparator();
-    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "Move selected option up");
-    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "Move selected option down");
+    QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move Up");
+    QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move Dwn");
     menu.addSeparator();
     QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "Remove selected option");
     menu.addSeparator();
