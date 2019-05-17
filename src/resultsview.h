@@ -47,7 +47,6 @@ public:
     int selectNextItem(QString file, int lineNr, int colNr, bool backwards = false);
 
 signals:
-    void activateResultStepping();
     void updateMatchLabel(int row);
 
 private slots:

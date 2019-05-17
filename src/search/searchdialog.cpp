@@ -89,7 +89,6 @@ void SearchDialog::on_btn_FindAll_clicked()
         insertHistory();
 
         mShowResults = true;
-        mStepThroughResults = true;
         findInFiles();
     } else {
         setSearchOngoing(false);
@@ -324,7 +323,6 @@ void SearchDialog::replaceAll()
         setSearchStatus(SearchStatus::Clear);
     } else if (msgBox.clickedButton() == search) {
         mShowResults = true;
-        mStepThroughResults = true;
         findInFiles(fml);
         return;
     } else if (msgBox.clickedButton() == cancel) {
@@ -419,7 +417,8 @@ void SearchDialog::findNext(SearchDirection direction)
 
     mShowResults = false;
 
-    if (mResultsView && !mHasChanged && mStepThroughResults) {
+    // TODO(rogo): remove this and clean up
+    if (mResultsView && !mHasChanged) {
         QWidget* edit = mMain->recent()->editor();
 
         int line = -1;
@@ -445,7 +444,6 @@ void SearchDialog::findNext(SearchDirection direction)
             updateMatchLabel(selection);
         } else{
             // if reached maximum index but there are more hits
-            mStepThroughResults = false;
             selectNextMatch(direction);
         }
 
@@ -616,7 +614,6 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
 {
     setSearchOngoing(false);
-    SearchResultList* list = mStepThroughResults ? mFinalResults : mCachedResults;
 
     if (matchSelection.isNull()) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
@@ -631,6 +628,7 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
         }
     }
 
+    SearchResultList* list = mCachedResults;
     int count = 0;
     // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
     for (Result match: list->resultsAsList()) {
@@ -654,7 +652,6 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString)
 void SearchDialog::searchParameterChanged() {
     setSearchStatus(SearchDialog::Clear);
     invalidateCache();
-    mStepThroughResults = false;
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -729,7 +726,6 @@ void SearchDialog::clearResults()
         tc.clearSelection();
         edit->setTextCursor(tc);
     }
-    mStepThroughResults = false;
     mMain->closeResultsPage();
     updateEditHighlighting();
 }
@@ -816,14 +812,9 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->setFocus();
 }
 
-void SearchDialog::activateResultStepping()
-{
-    mStepThroughResults = true;
-}
-
 void SearchDialog::updateMatchLabel(int current)
 {
-    SearchResultList* list = mStepThroughResults ? mFinalResults : mCachedResults;
+    SearchResultList* list = mCachedResults;
 
     if (current == 0) {
         if (list->size() == 1)
@@ -903,10 +894,7 @@ void SearchDialog::setSelectedScope(int index)
 
 SearchResultList* SearchDialog::results()
 {
-    if (resultsView() && mStepThroughResults)
-        return resultsView()->searchResultList();
-    else
-        return mCachedResults;
+    return mCachedResults;
 }
 
 void SearchDialog::setActiveEditWidget(QWidget *edit)

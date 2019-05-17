@@ -2436,7 +2436,6 @@ void MainWindow::showResults(SearchResultList* results)
     // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));
     connect(searchDialog()->resultsView(), &ResultsView::updateMatchLabel, searchDialog(), &SearchDialog::updateMatchLabel, Qt::UniqueConnection);
-    connect(searchDialog()->resultsView(), &ResultsView::activateResultStepping, searchDialog(), &SearchDialog::activateResultStepping, Qt::UniqueConnection);
 
     QString nr;
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
