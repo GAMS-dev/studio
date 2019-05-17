@@ -28,9 +28,8 @@ namespace gams {
 namespace studio {
 
 SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list)
-    : mMutex(mutex), mRegex(regex), mFiles(fml)
+    : mMutex(mutex), mRegex(regex), mFiles(fml), mMatches(list)
 {
-    mMatches = list;
 }
 
 SearchWorker::~SearchWorker()

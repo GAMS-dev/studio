@@ -31,7 +31,7 @@ class SearchResultList : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    SearchResultList();
+    SearchResultList(QRegularExpression regex);
     virtual ~SearchResultList() override;
     QList<Result> resultsAsList() const;
     QMultiHash<QString, QList<Result> > resultHash() const;

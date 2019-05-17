@@ -89,7 +89,8 @@ void SearchDialog::on_btn_FindAll_clicked()
         insertHistory();
 
         mShowResults = true;
-        findInFiles();
+        mCachedResults = new SearchResultList(createRegex());
+        findInFiles(mCachedResults);
     } else {
         setSearchOngoing(false);
         mThread.requestInterruption();
@@ -106,8 +107,8 @@ void SearchDialog::finalUpdate()
     setSearchOngoing(false);
 
     if (mShowResults) {
-        mFinalResults = mTempResults;
-        mTempResults = nullptr;
+        mFinalResults = mCachedResults;
+        mCachedResults = nullptr;
         mMain->showResults(mFinalResults);
         resultsView()->resizeColumnsToContent();
     }
@@ -135,7 +136,7 @@ void SearchDialog::setSearchOngoing(bool searching)
 /// \param fml list of files to search
 /// \param skipFilters enable for result caching (find next/prev)
 ///
-void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
+void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fml, bool skipFilters)
 {
     QList<FileMeta*> umodified;
     QList<FileMeta*> modified; // need to be treated differently
@@ -156,16 +157,12 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
             umodified << fm;
     }
 
-    if (mTempResults) delete mTempResults;
-    mTempResults = new SearchResultList();
-    mTempResults->setSearchRegex(createRegex());
-
 
     // non-parallel first
     for (FileMeta* fm : modified)
-        findInDoc(createRegex(), fm);
+        findInDoc(createRegex(), fm, collection);
 
-    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), umodified, mTempResults);
+    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), umodified, collection);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -177,7 +174,7 @@ void SearchDialog::findInFiles(QList<FileMeta*> fml, bool skipFilters)
     emit startSearch();
 }
 
-void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
+void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, SearchResultList* collection)
 {
     QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
@@ -188,10 +185,10 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm)
         else break;
 
         if (!item.isNull()) {
-            mTempResults->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
-                                    item.selectedText().length(), fm->location(), item.block().text().trimmed());
+            collection->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
+                                  item.selectedText().length(), fm->location(), item.block().text().trimmed());
         }
-        if (mTempResults->size() > 49000) break;
+        if (collection->size() > MAX_SEARCH_RESULTS-1) break;
     } while (!item.isNull());
 }
 
@@ -323,7 +320,7 @@ void SearchDialog::replaceAll()
         setSearchStatus(SearchStatus::Clear);
     } else if (msgBox.clickedButton() == search) {
         mShowResults = true;
-        findInFiles(fml);
+        findInFiles(mCachedResults, fml);
         return;
     } else if (msgBox.clickedButton() == cancel) {
         return;
@@ -400,57 +397,54 @@ void SearchDialog::updateSearchCache()
     QApplication::sendPostedEvents();
 
     if (mCachedResults) delete mCachedResults;
+    mCachedResults = new SearchResultList(createRegex());
 
-    mCachedResults = new SearchResultList();
-    mCachedResults->setSearchRegex(createRegex());
-    findInFiles(QList<FileMeta*>() << mMain->fileRepo()->fileMeta(mMain->recent()->editor()), true);
-
-    mCachedResults = mTempResults;
-    mTempResults = nullptr;
-
+    mShowResults = false;
+    findInFiles(mCachedResults, getFilesByScope(), true);
     mHasChanged = false;
 }
 
 void SearchDialog::findNext(SearchDirection direction)
 {
-    if (!mMain->recent()->editor() || ui->combo_search->currentText() == "") return;
+    if (ui->combo_search->currentText() == "") return;
 
-    mShowResults = false;
+    if (!mCachedResults || mHasChanged || mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty())
+        updateSearchCache();
 
-    // TODO(rogo): remove this and clean up
-    if (mResultsView && !mHasChanged) {
-        QWidget* edit = mMain->recent()->editor();
+    selectNextMatch(direction);
 
-        int line = -1;
-        int col = -1;
+// TODO(rogo): remove two find next modes
+//    if (mResultsView && !mHasChanged) {
+//        QWidget* edit = mMain->recent()->editor();
 
-        if (CodeEdit* ce = ViewHelper::toCodeEdit(edit)) {
-            line = ce->textCursor().blockNumber()+1;
-            col = ce->textCursor().positionInBlock();
-            QTextCursor tc = ce->textCursor();
-            tc.clearSelection();
-            ce->setTextCursor(tc);
-        } else if (TextView* tv = ViewHelper::toTextView(edit)) {
-            line = tv->position().y()+1;
-            col = tv->position().x();
-            QTextCursor tc = tv->edit()->textCursor();
-            tc.clearSelection();
-            tv->edit()->setTextCursor(tc);
-        }
+//        int line = -1;
+//        int col = -1;
 
-        int selection = mResultsView->selectNextItem(ViewHelper::location(edit), line, col, direction);
+//        if (CodeEdit* ce = ViewHelper::toCodeEdit(edit)) {
+//            line = ce->textCursor().blockNumber()+1;
+//            col = ce->textCursor().positionInBlock();
+//            QTextCursor tc = ce->textCursor();
+//            tc.clearSelection();
+//            ce->setTextCursor(tc);
+//        } else if (TextView* tv = ViewHelper::toTextView(edit)) {
+//            line = tv->position().y()+1;
+//            col = tv->position().x();
+//            QTextCursor tc = tv->edit()->textCursor();
+//            tc.clearSelection();
+//            tv->edit()->setTextCursor(tc);
+//        }
 
-        if (selection != -1) {
-            updateMatchLabel(selection);
-        } else{
-            // if reached maximum index but there are more hits
-            selectNextMatch(direction);
-        }
+//        int selection = mResultsView->selectNextItem(ViewHelper::location(edit), line, col, direction);
 
-    } else {
-        if (!mCachedResults) updateSearchCache();
-        selectNextMatch(direction);
-    }
+//        if (selection != -1) {
+//            updateMatchLabel(selection);
+//        } else{
+//            // if reached maximum index but there are more hits
+//            selectNextMatch(direction);
+//        }
+
+//    } else {
+//    }
 }
 
 ///
@@ -628,10 +622,9 @@ void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
         }
     }
 
-    SearchResultList* list = mCachedResults;
     int count = 0;
     // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
-    for (Result match: list->resultsAsList()) {
+    for (Result match: results()->resultsAsList()) {
         if (match.lineNr() == matchSelection.blockNumber()+1
                 && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
             updateMatchLabel(count+1);
@@ -687,10 +680,6 @@ void SearchDialog::updateReplaceActionAvailability()
     ui->cb_wholeWords->setEnabled(activateSearch);
 
     ui->combo_filePattern->setEnabled(activateSearch && (ui->combo_scope->currentIndex() != SearchScope::ThisFile));
-
-    // tab was switched and cache was created for last file focussed
-    invalidateCache(false);
-    if (!resultsView()) setSearchStatus(SearchStatus::Clear);
 }
 
 void SearchDialog::clearSearch()
@@ -814,7 +803,7 @@ void SearchDialog::autofillSearchField()
 
 void SearchDialog::updateMatchLabel(int current)
 {
-    SearchResultList* list = mCachedResults;
+    SearchResultList* list = results();
 
     if (current == 0) {
         if (list->size() == 1)
@@ -849,17 +838,11 @@ QRegularExpression SearchDialog::createRegex()
     return searchRegex;
 }
 
-void SearchDialog::invalidateCache(bool hasChanged)
+void SearchDialog::invalidateCache()
 {
-    // if cache is also used in ui dont delete list
-    if (resultsView() && mCachedResults == resultsView()->searchResultList())
-        mCachedResults = nullptr;
-    else {
-        delete mCachedResults;
-        mCachedResults = nullptr;
-    }
-
-    if (hasChanged) mHasChanged = true;
+    delete mCachedResults;
+    mCachedResults = nullptr;
+    mHasChanged = true;
 }
 
 bool SearchDialog::regex()
@@ -892,9 +875,13 @@ void SearchDialog::setSelectedScope(int index)
     ui->combo_scope->setCurrentIndex(index);
 }
 
+///
+/// \brief SearchDialog::results returns either cache or if available (and up to date) final results
+/// \return SearchResultList*
+///
 SearchResultList* SearchDialog::results()
 {
-    return mCachedResults;
+    return resultsView() ? resultsView()->searchResultList() : mCachedResults;
 }
 
 void SearchDialog::setActiveEditWidget(QWidget *edit)

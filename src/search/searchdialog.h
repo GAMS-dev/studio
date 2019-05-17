@@ -76,7 +76,7 @@ public:
     void autofillSearchField();
 
     void clearSearch();
-    void invalidateCache(bool hasChanged = true);
+    void invalidateCache();
 
     SearchResultList* results();
     void setActiveEditWidget(QWidget *edit);
@@ -134,14 +134,14 @@ private:
     };
 
     void replaceAll();
-    void findInFiles(QList<FileMeta *> fml = QList<FileMeta*>(), bool skipFilters = false);
+    void findInFiles(SearchResultList* collection, QList<FileMeta *> fml = QList<FileMeta*>(), bool skipFilters = false);
     QList<FileMeta*> getFilesByScope();
     void updateFindNextLabel(QTextCursor matchSelection);
     void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
     void searchParameterChanged();
-    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList *matches);
-    void findInDoc(QRegularExpression searchRegex, FileMeta *fm);
+    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList* collection);
+    void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList* collection);
     void updateEditHighlighting();
     void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);
@@ -153,7 +153,6 @@ private:
     MainWindow *mMain;
     ResultsView *mResultsView = nullptr;
     SearchResultList *mCachedResults = nullptr;
-    SearchResultList *mTempResults = nullptr;
     SearchResultList *mFinalResults = nullptr;
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = true;

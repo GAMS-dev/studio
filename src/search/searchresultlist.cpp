@@ -23,7 +23,7 @@
 namespace gams {
 namespace studio {
 
-SearchResultList::SearchResultList()
+SearchResultList::SearchResultList(QRegularExpression regex) : mSearchRegex(regex)
 {
 }
 
