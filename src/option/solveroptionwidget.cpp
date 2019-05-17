@@ -804,32 +804,33 @@ void SolverOptionWidget::insertOption()
         return;
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+    int rowToBeInserted = -1;
     if (isThereARowSelection() ) {
         QModelIndex index = ui->solverOptionTableView->selectionModel()->selectedRows().at(0);
-        ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(index.row(), mOptionTableModel->getColumnEntryNumber());
+        rowToBeInserted = index.row();
+        ui->solverOptionTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
+        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
 
-        ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
+        ui->solverOptionTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                         Qt::CheckState(Qt::Checked),
                                                         Qt::CheckStateRole );
 
         ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::keyGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, OptionTokenizer::valueGeneratedStr, Qt::EditRole);
         if (mOptionTableModel->getColumnEntryNumber() > SolverOptionTableModel::COLUMN_EOL_COMMENT) {
-            QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(index.row(), SolverOptionTableModel::COLUMN_EOL_COMMENT);
+            QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         }
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
 
-        ui->solverOptionTableView->clearSelection();
-        ui->solverOptionTableView->selectRow(index.row());
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, mOptionTableModel->getColumnEntryNumber());
+        rowToBeInserted = mOptionTableModel->rowCount()-1;
+        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
 
         ui->solverOptionTableView->model()->setHeaderData(ui->solverOptionTableView->model()->rowCount()-1, Qt::Vertical,
                                                           Qt::CheckState(Qt::Checked),
@@ -838,18 +839,19 @@ void SolverOptionWidget::insertOption()
         ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::keyGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, OptionTokenizer::valueGeneratedStr, Qt::EditRole);
         if (mOptionTableModel->getColumnEntryNumber() > SolverOptionTableModel::COLUMN_EOL_COMMENT) {
-            QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+            QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         }
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
-
-        ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
     }
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     updateTableColumnSpan();
     setModified(true);
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 
+    ui->solverOptionTableView->clearSelection();
+    ui->solverOptionTableView->selectRow(rowToBeInserted);
+    ui->solverOptionTableView->edit( mOptionTableModel->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY));
 }
 
 void SolverOptionWidget::insertComment()
@@ -863,41 +865,43 @@ void SolverOptionWidget::insertComment()
         return;
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+    int rowToBeInserted = -1;
     if (isThereARowSelection() ) {
-
         QModelIndex index = ui->solverOptionTableView->selectionModel()->selectedRows().at(0);
-        ui->solverOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(index.row(), mOptionTableModel->getColumnEntryNumber());
+        rowToBeInserted = index.row();
+        ui->solverOptionTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
+        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
 
-        ui->solverOptionTableView->model()->setHeaderData(index.row(), Qt::Vertical,
+        ui->solverOptionTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                           Qt::CheckState(Qt::PartiallyChecked),
                                                           Qt::CheckStateRole );
         ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
-
-        ui->solverOptionTableView->selectRow(index.row());
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
-        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_KEY);
-        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, SolverOptionTableModel::COLUMN_OPTION_VALUE);
-        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(ui->solverOptionTableView->model()->rowCount()-1, mOptionTableModel->getColumnEntryNumber());
-        ui->solverOptionTableView->model()->setHeaderData(ui->solverOptionTableView->model()->rowCount()-1, Qt::Vertical,
+        rowToBeInserted = ui->solverOptionTableView->model()->rowCount()-1;
+        QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, mOptionTableModel->getColumnEntryNumber());
+        ui->solverOptionTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
                                                           Qt::CheckState(Qt::PartiallyChecked),
                                                           Qt::CheckStateRole );
 
         ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
-
-        ui->solverOptionTableView->selectRow(ui->solverOptionTableView->model()->rowCount()-1);
     }
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     updateTableColumnSpan();
     setModified(true);
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
+
+    ui->solverOptionTableView->clearSelection();
+    ui->solverOptionTableView->selectRow(rowToBeInserted);
+    ui->solverOptionTableView->edit(mOptionTableModel->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY));
 }
 
 void SolverOptionWidget::deleteOption(bool keepFirstOne)
