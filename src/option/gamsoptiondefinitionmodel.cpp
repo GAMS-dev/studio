@@ -55,9 +55,14 @@ QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) c
 
             if (parentItem == rootItem) {
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
-                text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(defValueIndex, Qt::DisplayRole).toString());
+                QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+                text = QString("%1=%2=%3").arg(data(index, Qt::DisplayRole).toString())
+                                          .arg(data(defValueIndex, Qt::DisplayRole).toString())
+                                          .arg(data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
-                text = QString("%1=%2").arg(parentItem->data(index.column()).toString()).arg(data(index, Qt::DisplayRole).toString());
+                text = QString("%1=%2=%3").arg(parentItem->data(index.column()).toString())
+                                          .arg(data(index, Qt::DisplayRole).toString())
+                                          .arg(parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
             }
             stream << text;
         }

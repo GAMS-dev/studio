@@ -1184,8 +1184,7 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 
-    ui->solverOptionTableView->edit( ui->solverOptionTableView->model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE ));
-
+    ui->solverOptionTableView->edit( mOptionTableModel->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE ));
 }
 
 void SolverOptionWidget::setModified(bool modified)

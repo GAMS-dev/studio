@@ -26,6 +26,7 @@
 #include "option.h"
 #include "commandlineoption.h"
 #include "optiontokenizer.h"
+#include "gamsoptiontablemodel.h"
 
 namespace gams {
 namespace studio {
@@ -114,6 +115,7 @@ private:
     MainWindow* main;
 
     OptionTokenizer* mOptionTokenizer;
+    GamsOptionTableModel* mOptionTableModel;
 };
 
 }

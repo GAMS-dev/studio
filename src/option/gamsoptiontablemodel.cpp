@@ -367,14 +367,16 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
         QList<int> insertRowList;
         insertRows(beginRow, rows, QModelIndex());
 
-        for (const QString &text : newItems) {
+        for (const QString &text : newItems) {          
             insertRowList.append( beginRow );
 
             QStringList textList = text.split("=");
-            QModelIndex idx = index(beginRow, 0, QModelIndex());
+            QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY, QModelIndex());
             setData(idx, textList.at(0), Qt::EditRole);
-            idx = index(beginRow, 1, QModelIndex());
+            idx = index(beginRow, COLUMN_OPTION_VALUE, QModelIndex());
             setData(idx, textList.at(1), Qt::EditRole);
+            idx = index(beginRow, COLUMN_ENTRY_NUMBER, QModelIndex());
+            setData(idx, textList.at(2), Qt::EditRole);
             emit newTableRowDropped(index(beginRow, 0, QModelIndex()));
             beginRow++;
         }
@@ -386,33 +388,16 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
                 if (insertRowList.contains(i))
                     continue;
 
-                idx = index(i, 0, QModelIndex());
+                idx = index(i, COLUMN_OPTION_KEY, QModelIndex());
                 QString key = data(idx, Qt::DisplayRole).toString();
                 if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
                     break;
             }
             if (idx.row() == rowCount())
-               removeRows(idx.row(), 1, QModelIndex());
+               removeRows(idx.row(), COLUMN_OPTION_VALUE, QModelIndex());
         }
         return true;
 
-    }  else if (action == Qt::MoveAction ) {
-
-        for (const QString &text : newItems) {
-            QStringList textList = text.split("=");
-            QModelIndex idx;
-            for(int i=0; i<rowCount(QModelIndex()); ++i) {
-                idx = index(i, 0, QModelIndex());
-                QString key = data(idx, Qt::DisplayRole).toString();
-                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
-                    break;
-            }
-            if (idx.row() < beginRow)
-                moveRows(QModelIndex(), idx.row(), 1, QModelIndex(), beginRow+1 );
-            else
-                moveRows(QModelIndex(), idx.row(), 1, QModelIndex(), beginRow );
-        }
-        return true;
     }
 
     return false;
