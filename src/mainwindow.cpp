@@ -1763,7 +1763,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0))
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
-    if (event->key() == Qt::Key_Escape && mSearchDialog->isAncestorOf(QApplication::focusWidget())) {
+    if (event->key() == Qt::Key_Escape) {
         mSearchDialog->hide();
         mSearchDialog->clearSearch();
     }
