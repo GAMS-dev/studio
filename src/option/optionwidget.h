@@ -63,6 +63,7 @@ public:
 
     OptionTokenizer *getOptionTokenizer() const;
     bool isAnOptionWidgetFocused(QWidget* focusWidget) const;
+    bool isAnOptionTableFocused(QWidget* focusWidget) const;
 
     QString getSelectedOptionName(QWidget* widget) const;
 
@@ -91,7 +92,14 @@ public slots:
 
     void selectSearchField();
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 private slots:
+    void showOptionDefinition();
+    void deleteOption();
+    void insertOption();
+
     void on_newTableRowDropped(const QModelIndex &index);
     void on_optionTableNameChanged(const QString &from, const QString &to);
 
