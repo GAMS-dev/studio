@@ -308,6 +308,7 @@ void GdxSymbolView::showTableView()
     ui->tvListView->hide();
     ui->tvTableView->show();
     mTableView = true;
+    ui->tvTableView->resizeColumnsToContents();
 }
 
 void GdxSymbolView::toggleView()
