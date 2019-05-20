@@ -44,7 +44,7 @@ bool AddOptionHeaderView::event(QEvent *event)
     if (event->type() == QEvent::ToolTip) {
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
         if (isAddOptionCoordinate(helpEvent->pos())) {
-            QToolTip::showText(helpEvent->globalPos(), "add new option");
+            QToolTip::showText(helpEvent->globalPos(), "Add/Append new option ");
         } else {
             QToolTip::hideText();
             event->ignore();
@@ -60,6 +60,10 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
     if (Qt::LeftButton == event->button() && isAddOptionCoordinate(event->pos())) {
         QTableView* tableView = static_cast<QTableView*>(this->parent());
         tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
+
+        QModelIndex index = tableView->model()->index(tableView->model()->rowCount()-1, 0);
+        tableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+        tableView->edit( index );
     }
 
    QHeaderView::mousePressEvent(event);
