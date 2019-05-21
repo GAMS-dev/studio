@@ -557,6 +557,8 @@ void SolverOptionTableModel::setColumnEntryNumber(int column)
 
 void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem)
 {
+    disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+
     beginResetModel();
 
     qDeleteAll(mOptionItem);
@@ -592,6 +594,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
     }
     emit solverOptionModelChanged(mOptionItem);
     endResetModel();
+    connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
 }
 
 void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)

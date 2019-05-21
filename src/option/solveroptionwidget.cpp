@@ -569,6 +569,8 @@ void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
          mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding").arg(mLocation).arg(QString(codec->name())), LogMsgType::Info);
      else if (mFileHasChangedExtern)
               mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+     else
+         return;
      mCodec = codec;
      mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
      mFileHasChangedExtern = false;
