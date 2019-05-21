@@ -22,6 +22,7 @@
 #include <QMouseEvent>
 #include <QToolTip>
 
+#include "optiontokenizer.h"
 #include "addoptionheaderview.h"
 
 namespace gams {
@@ -61,9 +62,21 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
         QTableView* tableView = static_cast<QTableView*>(this->parent());
         tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
 
-        QModelIndex index = tableView->model()->index(tableView->model()->rowCount()-1, 0);
-        tableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
-        tableView->edit( index );
+        QModelIndex keyIndex = tableView->model()->index(tableView->model()->rowCount()-1, 0);
+        QModelIndex valueIndex = tableView->model()->index(tableView->model()->rowCount()-1, 1);
+        tableView->model()->setData( keyIndex, OptionTokenizer::keyGeneratedStr, Qt::EditRole );
+        tableView->model()->setData( valueIndex, OptionTokenizer::valueGeneratedStr, Qt::EditRole );
+        if (tableView->model()->columnCount() > 3) {
+            tableView->model()->setData( tableView->model()->index(tableView->model()->rowCount()-1, 2),
+                                         OptionTokenizer::commentGeneratedStr, Qt::EditRole );
+            tableView->model()->setData( tableView->model()->index(tableView->model()->rowCount()-1, 3),
+                                         QVariant("-1"), Qt::EditRole );
+        } else if (tableView->model()->columnCount() == 3) {
+            tableView->model()->setData( tableView->model()->index(tableView->model()->rowCount()-1, 2),
+                                         QVariant("-1"), Qt::EditRole );
+        }
+        tableView->selectionModel()->select( keyIndex, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+        tableView->edit( keyIndex );
     }
 
    QHeaderView::mousePressEvent(event);

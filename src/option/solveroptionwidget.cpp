@@ -26,6 +26,7 @@
 #include "solveroptionwidget.h"
 #include "ui_solveroptionwidget.h"
 
+#include "addoptionheaderview.h"
 #include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"
@@ -89,6 +90,9 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->setDragDropOverwriteMode(true);
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
+    AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->solverOptionTableView);
+    headerView->setSectionResizeMode(QHeaderView::Stretch);
+    ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
     ui->solverOptionTableView->resizeColumnToContents(0);
