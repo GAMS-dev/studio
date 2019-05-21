@@ -95,9 +95,8 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
-    ui->solverOptionTableView->resizeColumnToContents(0);
-    ui->solverOptionTableView->resizeColumnToContents(1);
-    //    ui->solverOptionTableView->resizeColumnToContents(2);
+    ui->solverOptionTableView->resizeColumnToContents(SolverOptionTableModel::COLUMN_OPTION_KEY);
+    ui->solverOptionTableView->resizeColumnToContents(SolverOptionTableModel::COLUMN_OPTION_VALUE);
 
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(ui->solverOptionTableView->verticalHeader()->minimumSectionSize());

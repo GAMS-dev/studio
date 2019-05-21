@@ -253,9 +253,9 @@ bool GamsOptionTableModel::insertRows(int row, int count, const QModelIndex &par
 
      beginInsertRows(QModelIndex(), row, row + count - 1);
      if (mOptionItem.size() == row)
-         mOptionItem.append(OptionItem("[KEY]", "[VALUE]", -1, -1));
+         mOptionItem.append(OptionItem(OptionTokenizer::keyGeneratedStr, OptionTokenizer::valueGeneratedStr, -1, -1));
      else
-         mOptionItem.insert(row, OptionItem(OptionItem("[KEY]", "[VALUE]", -1, -1)));
+         mOptionItem.insert(row, OptionItem(OptionItem(OptionTokenizer::keyGeneratedStr,  OptionTokenizer::valueGeneratedStr, -1, -1)));
 
     endInsertRows();
     emit optionModelChanged(mOptionItem);

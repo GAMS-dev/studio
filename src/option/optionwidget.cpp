@@ -81,9 +81,9 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     headerView->setSectionResizeMode(QHeaderView::Stretch);
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->resizeColumnToContents(0);
-    ui->gamsOptionTableView->resizeColumnToContents(1);
-    ui->gamsOptionTableView->setColumnHidden(2, true);
+    ui->gamsOptionTableView->resizeColumnToContents(GamsOptionTableModel::COLUMN_OPTION_KEY);
+    ui->gamsOptionTableView->resizeColumnToContents(GamsOptionTableModel::COLUMN_OPTION_VALUE);
+    ui->gamsOptionTableView->setColumnHidden(GamsOptionTableModel::COLUMN_ENTRY_NUMBER, true);
 
     ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(ui->gamsOptionTableView->verticalHeader()->minimumSectionSize());
@@ -430,7 +430,6 @@ void OptionWidget::showOptionDefinition()
 
 void OptionWidget::deleteOption()
 {
-     qDebug() << __FUNCTION__;
      QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
      for(QModelIndex index : indexSelection) {
          ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
