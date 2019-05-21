@@ -65,7 +65,6 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     lineEdit->adjustSize();
 
     connect( lineEdit, &QLineEdit::editingFinished, this, &OptionCompleterDelegate::commitAndCloseEditor) ;
-    connect(lineEdit, &QLineEdit::textChanged, this, &OptionCompleterDelegate::on_lineEdit_textChanged);
     return lineEdit;
 }
 
@@ -88,15 +87,6 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
         return;
     }
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-void OptionCompleterDelegate::on_lineEdit_textChanged(const QString &text)
-{
-    if (text.simplified().isEmpty()) {
-        for (QWidget* widget: qApp->topLevelWidgets())
-            if (QMainWindow*  mainWindow = qobject_cast<QMainWindow *>(widget))
-                QApplication::postEvent(mainWindow, new LineEditCompleteEvent(static_cast<QLineEdit*>(sender())));
-    }
 }
 
 void OptionCompleterDelegate::commitAndCloseEditor()

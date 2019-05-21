@@ -43,7 +43,6 @@ protected:
     virtual bool eventFilter(QObject * editor, QEvent * event) override;
 
 private slots:
-    void on_lineEdit_textChanged(const QString &text);
     void commitAndCloseEditor();
 
 private:
