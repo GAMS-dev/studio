@@ -60,6 +60,7 @@ public slots:
 
 private slots:
     void showContextMenu(QPoint p);
+    void autoResizeColumns();
 
 private:
     Ui::GdxSymbolView *ui;

@@ -53,6 +53,13 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     mContextMenu.addSeparator();
 
+    QAction* aResizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { autoResizeColumns(); });
+    aResizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    aResizeColumn->setShortcutVisibleInContextMenu(true);
+    ui->tvListView->addAction(aResizeColumn);
+
+    mContextMenu.addSeparator();
+
     QAction* aSelectAll = mContextMenu.addAction("Select All\tCtrl+A", [this]() { selectAll(); });
     aSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aSelectAll->setShortcutVisibleInContextMenu(true);
@@ -79,7 +86,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 
     ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
     ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
@@ -285,6 +291,14 @@ void GdxSymbolView::showContextMenu(QPoint p)
         mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
 }
 
+void GdxSymbolView::autoResizeColumns()
+{
+    if (mTableView)
+        ui->tvTableView->resizeColumnsToContents();
+    else
+        ui->tvListView->resizeColumnsToContents();
+}
+
 void GdxSymbolView::showListView()
 {
     mTableView = false;
@@ -326,7 +340,6 @@ void GdxSymbolView::selectAll()
         ui->tvTableView->selectAll();
     else
         ui->tvListView->selectAll();
-
 }
 
 void GdxSymbolView::enableControls()
