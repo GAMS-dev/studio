@@ -92,7 +92,7 @@ public slots:
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate();
-    void updateMatchLabel(int current = 0);
+    void updateNrMatches(int current = 0);
 
 protected slots:
     void returnPressed();
@@ -136,7 +136,7 @@ private:
     void replaceAll();
     void findInFiles(SearchResultList* collection, QList<FileMeta *> fml = QList<FileMeta*>(), bool skipFilters = false);
     QList<FileMeta*> getFilesByScope();
-    void updateFindNextLabel(QTextCursor matchSelection);
+    void updateFindNextLabel(int lineNr, int colNr);
     void selectNextMatch(SearchDirection direction, bool second = false);
     void insertHistory();
     void searchParameterChanged();

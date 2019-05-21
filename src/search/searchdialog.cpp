@@ -116,7 +116,7 @@ void SearchDialog::finalUpdate()
     updateEditHighlighting();
 
     if (mFinalResults && !mFinalResults->size()) setSearchStatus(SearchStatus::NoResults);
-    else updateFindNextLabel(QTextCursor());
+    else updateFindNextLabel(0, 0);
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
@@ -470,7 +470,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 
             QTextCursor tc(edit->document()); // set to top
             if (direction == SearchDirection::Backward)
-                tc.movePosition(QTextCursor::End); // move to bottom
+                tc.movePosition(QTextCursor::End); // if reverse, move to bottom
             edit->setTextCursor(tc);
 
             // try once more to start over
@@ -481,6 +481,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
             edit->jumpTo(matchSelection);
             edit->setTextCursor(matchSelection);
         }
+        updateFindNextLabel(matchSelection.blockNumber()+1, matchSelection.columnNumber());
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
 
         mSplitSearchView = tv;
@@ -488,7 +489,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
         mSplitSearchContinue = false;
         searchResume();
     }
-    updateFindNextLabel(matchSelection);
 }
 
 void SearchDialog::showEvent(QShowEvent *event)
@@ -551,15 +551,13 @@ void SearchDialog::searchResume()
 {
     if (mSplitSearchView && mSplitSearchView == ViewHelper::toTextView(mMain->recent()->editor())) {
         bool found = mSplitSearchView->findText(createRegex(), mSplitSearchFlags, mSplitSearchContinue);
-        if (found) {
-            setSearchStatus(SearchStatus::Clear);
-        }
+        if (found) updateFindNextLabel(mSplitSearchView->position().y()+1, mSplitSearchView->position().x());
+
         if (mSplitSearchContinue) {
             setSearchStatus(SearchStatus::Searching);
             QTimer::singleShot(50, this, &SearchDialog::searchResume);
         } else {
-            if (!found)
-                setSearchStatus(SearchStatus::NoResults);
+            if (!found) setSearchStatus(SearchStatus::NoResults);
             mSplitSearchView = nullptr;
         }
     }
@@ -605,35 +603,35 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 /// \brief SearchDialog::updateFindNextLabel counts from selection to results list and updates label
 /// \param matchSelection cursor position to calculate result number
 ///
-void SearchDialog::updateFindNextLabel(QTextCursor matchSelection)
+void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
 {
     setSearchOngoing(false);
 
-    if (matchSelection.isNull()) {
+    QString file = ViewHelper::location(mMain->recent()->editor());
+
+    if (lineNr == 0 || colNr == 0) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
-        if (edit) {
-            matchSelection = edit->textCursor();
-        } else if (tv && mShowResults) { // show label for Find All
-            matchSelection = tv->edit()->textCursor();
-        } else { // is large file using textview
-            setSearchStatus(SearchStatus::Clear);
-            return;
-        }
+        QTextCursor tc;
+        if (edit) tc = edit->textCursor();
+        else if (tv) tc = tv->edit()->textCursor();
+
+        lineNr = tc.blockNumber()+1;
+        colNr = tc.columnNumber();
     }
 
-    int count = 0;
     // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
-    for (Result match: results()->resultsAsList()) {
-        if (match.lineNr() == matchSelection.blockNumber()+1
-                && match.colNr() == matchSelection.columnNumber() - matchSelection.selectedText().length()) {
-            updateMatchLabel(count+1);
+    QList<Result> list = results()->resultsAsList();
+    for (int i = 0; i < list.size(); i++) {
+        Result match = list.at(i);
+
+        if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
+            updateNrMatches(list.indexOf(match) + 1);
+            // TODO(rogo): select match here
             return;
-        } else {
-            count++;
         }
     }
-    updateMatchLabel();
+    updateNrMatches();
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
@@ -801,7 +799,7 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->setFocus();
 }
 
-void SearchDialog::updateMatchLabel(int current)
+void SearchDialog::updateNrMatches(int current)
 {
     SearchResultList* list = results();
 
