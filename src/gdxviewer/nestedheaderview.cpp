@@ -191,6 +191,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
 void NestedHeaderView::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
+        ddEnabled = true;
         mDragStartPosition = event->pos();
         dimIdxStart = pointToDimension(event->pos());
     }
@@ -199,8 +200,6 @@ void NestedHeaderView::mousePressEvent(QMouseEvent *event)
 
 void NestedHeaderView::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-        ddEnabled = true;
     QHeaderView::mouseReleaseEvent(event);
 }
 
@@ -307,7 +306,6 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     dimIdxStart = -1;
 
     static_cast<QTableView*>(parent())->resizeColumnsToContents();
-    static_cast<NestedHeaderView*>((static_cast<QTableView*>(this->parent()))->horizontalHeader())->setDdEnabled(true); // this is required to enabled drag and drop after the resizeColumnsToContents call
 }
 
 void NestedHeaderView::dragLeaveEvent(QDragLeaveEvent *event)
