@@ -378,8 +378,8 @@ void OptionWidget::selectSearchField()
 }
 
 void OptionWidget::keyPressEvent(QKeyEvent *event)
-{       
-    if (mExtendedEditor->isVisible() && event->modifiers() & Qt::ControlModifier) {
+{
+    if (event->modifiers() & Qt::ControlModifier) {
         switch (event->key()) {
         case Qt::Key_F1 : showOptionDefinition(); return;
         case Qt::Key_Insert : insertOption(); return;
@@ -393,6 +393,9 @@ void OptionWidget::keyPressEvent(QKeyEvent *event)
 
 void OptionWidget::showOptionDefinition()
 {
+   if (!mExtendedEditor->isVisible())
+       return;
+
     QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
         ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -430,6 +433,9 @@ void OptionWidget::showOptionDefinition()
 
 void OptionWidget::deleteOption()
 {
+    if (!mExtendedEditor->isVisible())
+        return;
+
      QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
      for(QModelIndex index : indexSelection) {
          ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -464,7 +470,9 @@ void OptionWidget::deleteOption()
 
 void OptionWidget::insertOption()
 {
-    qDebug() << __FUNCTION__;
+    if (!mExtendedEditor->isVisible())
+        return;
+
     QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
         ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
