@@ -109,11 +109,11 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
              emit closeEditor(lineEdit);
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter)) {
              emit commitData(lineEdit);
-             emit closeEditor(lineEdit, QAbstractItemDelegate::EditNextItem);
+             emit closeEditor(lineEdit );
        }
        return false;
     }
-   return QStyledItemDelegate::eventFilter(editor, event);
+    return QStyledItemDelegate::eventFilter(editor, event);
 }
 
 } // namespace option
