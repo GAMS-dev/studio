@@ -1218,6 +1218,8 @@ bool SolverOptionWidget::saveAs(const QString &location)
         if (!warning)
             mOptionTokenizer->logger()->append(QString("Saved options into %1").arg(location), LogMsgType::Info);
         mLocation = location;
+    } else {
+        mOptionTokenizer->logger()->append(QString("Saved options into %1").arg(mLocation), LogMsgType::Info);
     }
     return success;
 }
