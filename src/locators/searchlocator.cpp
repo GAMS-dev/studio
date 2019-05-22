@@ -32,14 +32,6 @@ void SearchLocator::provide(SearchDialog *sd)
     mSd = sd;
 }
 
-SearchResultList* SearchLocator::searchResults()
-{
-    if (mSd)
-        return mSd->results();
-    else
-        return nullptr;
-}
-
 SearchDialog* SearchLocator::searchDialog()
 {
     return mSd;

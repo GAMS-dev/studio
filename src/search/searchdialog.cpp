@@ -107,15 +107,14 @@ void SearchDialog::finalUpdate()
     setSearchOngoing(false);
 
     if (mShowResults) {
-        mFinalResults = mCachedResults;
-        mCachedResults = nullptr;
-        mMain->showResults(mFinalResults);
+        mResultList = mCachedResults;
+        mMain->showResults(mResultList);
         resultsView()->resizeColumnsToContent();
     }
 
     updateEditHighlighting();
 
-    if (mFinalResults && !mFinalResults->size()) setSearchStatus(SearchStatus::NoResults);
+    if (mResultList && !mResultList->size()) setSearchStatus(SearchStatus::NoResults);
     else updateFindNextLabel(0, 0);
 }
 
@@ -624,7 +623,7 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
 
     // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
     // find match by cursor position
-    QList<Result> list = results()->resultsAsList();
+    QList<Result> list = mCachedResults->resultsAsList();
     for (int i = 0; i < list.size(); i++) {
         Result match = list.at(i);
 
@@ -807,7 +806,7 @@ void SearchDialog::autofillSearchField()
 
 void SearchDialog::updateNrMatches(int current)
 {
-    SearchResultList* list = results();
+    SearchResultList* list = mCachedResults;
 
     if (current == 0) {
         if (list->size() == 1)
