@@ -706,11 +706,6 @@ void OptionTokenizer::on_EOLCommentChar_changed(const QChar ch)
     mEOLCommentChar = ch;
 }
 
-//void OptionTokenizer::on_separatorChar_changed(const QChar ch)
-//{
-//    mSeparatorChar = ch;
-//}
-
 OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
 {
     OptionErrorType type = No_Error;

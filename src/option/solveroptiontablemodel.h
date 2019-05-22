@@ -20,7 +20,11 @@
 #ifndef SOLVEROPTIONTABLEMODEL_H
 #define SOLVEROPTIONTABLEMODEL_H
 
-#include "optiontablemodel.h"
+#include <QAbstractItemModel>
+#include <QMimeData>
+
+#include "optiontokenizer.h"
+#include "option.h"
 
 namespace gams {
 namespace studio {

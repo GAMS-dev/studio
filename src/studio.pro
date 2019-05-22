@@ -119,7 +119,6 @@ SOURCES += \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
-    option/optiontablemodel.cpp \
     option/optiontokenizer.cpp \
     option/optionwidget.cpp \
     option/solveroptiondefinitionmodel.cpp \
@@ -236,7 +235,6 @@ HEADERS += \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
-    option/optiontablemodel.h \
     option/optiontokenizer.h \
     option/optionwidget.h \
     option/solveroptiondefinitionmodel.h \
