@@ -546,8 +546,10 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 
-    if (parentIndex.row()<0)
-        ui->solverOptionTableView->edit(insertValueIndex);
+    if (parentIndex.row()<0) {
+        if (mOptionTokenizer->getOption()->getOptionSubType(optionNameData) != optsubNoValue)
+            ui->solverOptionTableView->edit(insertValueIndex);
+   }
 }
 
 
@@ -1189,7 +1191,10 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 
-    ui->solverOptionTableView->edit( mOptionTableModel->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE ));
+    if (mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumStr &&
+        mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
+        mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
+        ui->solverOptionTableView->edit( mOptionTableModel->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE ));
 }
 
 void SolverOptionWidget::setModified(bool modified)

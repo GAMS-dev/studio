@@ -523,7 +523,10 @@ void OptionWidget::on_newTableRowDropped(const QModelIndex &index)
         ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
-    ui->gamsOptionTableView->edit( mOptionTableModel->index(index.row(), GamsOptionTableModel::COLUMN_OPTION_VALUE) );
+    if (mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumStr &&
+        mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
+        mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
+        ui->gamsOptionTableView->edit( mOptionTableModel->index(index.row(), GamsOptionTableModel::COLUMN_OPTION_VALUE) );
 }
 
 void OptionWidget::on_optionTableNameChanged(const QString &from, const QString &to)
