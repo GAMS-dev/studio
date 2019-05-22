@@ -412,39 +412,6 @@ void SearchDialog::findNext(SearchDirection direction)
         updateSearchCache();
 
     selectNextMatch(direction);
-
-// TODO(rogo): remove two find next modes
-//    if (mResultsView && !mHasChanged) {
-//        QWidget* edit = mMain->recent()->editor();
-
-//        int line = -1;
-//        int col = -1;
-
-//        if (CodeEdit* ce = ViewHelper::toCodeEdit(edit)) {
-//            line = ce->textCursor().blockNumber()+1;
-//            col = ce->textCursor().positionInBlock();
-//            QTextCursor tc = ce->textCursor();
-//            tc.clearSelection();
-//            ce->setTextCursor(tc);
-//        } else if (TextView* tv = ViewHelper::toTextView(edit)) {
-//            line = tv->position().y()+1;
-//            col = tv->position().x();
-//            QTextCursor tc = tv->edit()->textCursor();
-//            tc.clearSelection();
-//            tv->edit()->setTextCursor(tc);
-//        }
-
-//        int selection = mResultsView->selectNextItem(ViewHelper::location(edit), line, col, direction);
-
-//        if (selection != -1) {
-//            updateMatchLabel(selection);
-//        } else{
-//            // if reached maximum index but there are more hits
-//            selectNextMatch(direction);
-//        }
-
-//    } else {
-//    }
 }
 
 ///
@@ -452,7 +419,7 @@ void SearchDialog::findNext(SearchDirection direction)
 /// \param direction
 /// \param second is second time entering this function, to avoid too deep recursion
 ///
-void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
+void SearchDialog::selectNextMatch(SearchDirection direction)
 {
     QTextCursor matchSelection;
     QRegularExpression searchRegex = createRegex();
@@ -461,34 +428,68 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool second)
 
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;
-    QFlags<QTextDocument::FindFlag> flags = setFlags(direction);
 
-    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        matchSelection = fc->document()->find(searchRegex, edit->textCursor(), flags);
+    int lineNr = 0;
+    int colNr = 0;
+    bool backwards = direction == SearchDirection::Backward;
 
-        if (matchSelection.isNull()) { // empty selection == reached end of document
-
-            QTextCursor tc(edit->document()); // set to top
-            if (direction == SearchDirection::Backward)
-                tc.movePosition(QTextCursor::End); // if reverse, move to bottom
-            edit->setTextCursor(tc);
-
-            // try once more to start over
-            if (!second) selectNextMatch(direction, true);
-            else setSearchStatus(SearchStatus::NoResults);
-
-        } else { // found next match
-            edit->jumpTo(matchSelection);
-            edit->setTextCursor(matchSelection);
-        }
-        updateFindNextLabel(matchSelection.blockNumber()+1, matchSelection.columnNumber());
-    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-
-        mSplitSearchView = tv;
-        mSplitSearchFlags = flags;
-        mSplitSearchContinue = false;
-        searchResume();
+    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        lineNr = e->textCursor().blockNumber()+1;
+        colNr = e->textCursor().columnNumber();
+    } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
+        lineNr = t->edit()->textCursor().blockNumber()+1;
+        colNr = t->edit()->textCursor().columnNumber();
     }
+    QString file = ViewHelper::location(mMain->recent()->editor());
+    QList<Result> resultList = mCachedResults->resultsAsList();
+    if (resultList.size() == 0) return;
+
+    Result* res = nullptr;
+    int interator = backwards ? -1 : 1;
+    int start = backwards ? resultList.size()-1 : 0;
+    bool allowJumping = false;
+    int matchNr = -1;
+
+    for (int i = start; i >= 0 && i < resultList.size(); i += interator) {
+        matchNr = i;
+        Result r = resultList.at(i);
+
+        // check if is in same line but behind the cursor
+        if (file == r.filepath()) {
+            allowJumping = true;
+            if (backwards) {
+                if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
+                    res = &r;
+                    break;
+                }
+            } else {
+                if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
+                    res = &r;
+                    break;
+                }
+            }
+        } else if (file != r.filepath() && allowJumping) {
+            // first match in next file
+            res = &r;
+            break;
+        }
+    }
+
+    if (!res) {
+        if (backwards) res = &resultList.last();
+        else res = &resultList.first();
+
+        matchNr = resultList.indexOf(*res);
+    }
+
+    // jump to
+    ProjectFileNode *node = mMain->projectRepo()->findFile(res->filepath());
+    if (!node) EXCEPT() << "File not found: " << res->filepath();
+    node->file()->jumpTo(node->runGroupId(), true, res->lineNr()-1, qMax(res->colNr(), 0), res->length());
+
+    // update ui
+    if (resultsView() && !mHasChanged) resultsView()->selectItem(matchNr);
+    updateNrMatches(matchNr+1);
 }
 
 void SearchDialog::showEvent(QShowEvent *event)
@@ -600,7 +601,7 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 }
 
 ///
-/// \brief SearchDialog::updateFindNextLabel counts from selection to results list and updates label
+/// \brief SearchDialog::updateFindNextLabel calculates match number from cursor position and updates label
 /// \param matchSelection cursor position to calculate result number
 ///
 void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
@@ -609,6 +610,7 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
 
     QString file = ViewHelper::location(mMain->recent()->editor());
 
+    // if unknown get cursor from current editor
     if (lineNr == 0 || colNr == 0) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
@@ -621,13 +623,17 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
     }
 
     // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
+    // find match by cursor position
     QList<Result> list = results()->resultsAsList();
     for (int i = 0; i < list.size(); i++) {
         Result match = list.at(i);
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
             updateNrMatches(list.indexOf(match) + 1);
-            // TODO(rogo): select match here
+
+            if (resultsView() && !mHasChanged)
+                resultsView()->selectItem(i);
+
             return;
         }
     }
@@ -879,7 +885,7 @@ void SearchDialog::setSelectedScope(int index)
 ///
 SearchResultList* SearchDialog::results()
 {
-    return resultsView() ? resultsView()->searchResultList() : mCachedResults;
+    return resultsView() && !mHasChanged ? resultsView()->searchResultList() : mCachedResults;
 }
 
 void SearchDialog::setActiveEditWidget(QWidget *edit)

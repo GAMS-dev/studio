@@ -44,7 +44,7 @@ public:
     ~ResultsView();
     void resizeColumnsToContent();
     SearchResultList* searchResultList() const;
-    int selectNextItem(QString file, int lineNr, int colNr, bool backwards = false);
+    void selectItem(int index);
 
 signals:
     void updateMatchLabel(int row);
