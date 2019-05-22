@@ -246,6 +246,11 @@ optOptionType Option::getOptionType(const QString &optionName) const
     return mOption[optionName.toUpper()].type;
 }
 
+optOptionSubType Option::getOptionSubType(const QString &optionName) const
+{
+    return mOption[optionName.toUpper()].subType;
+}
+
 optDataType Option::getDataType(const QString &optionName) const
 {
     return mOption[optionName.toUpper()].dataType;

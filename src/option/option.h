@@ -138,6 +138,7 @@ public:
 
     QString getNameFromSynonym(const QString &synonym) const;
     optOptionType getOptionType(const QString &optionName) const;
+    optOptionSubType getOptionSubType(const QString &optionName) const;
     optDataType getDataType(const QString &optionName) const;
     QVariant getUpperBound(const QString &optionName) const;
     QVariant getLowerBound(const QString &optionName) const;
