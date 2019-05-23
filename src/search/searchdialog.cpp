@@ -67,7 +67,7 @@ void SearchDialog::on_btn_Replace_clicked()
     QString replaceTerm = ui->txt_replace->text();
     if (edit->textCursor().hasSelection()) {
         edit->textCursor().insertText(replaceTerm);
-        invalidateCache();
+        updateSearchCache();
     }
 
     findNext(SearchDialog::Forward);
@@ -109,6 +109,12 @@ void SearchDialog::finalUpdate()
     if (mShowResults) {
         mMain->showResults(mCachedResults);
         resultsView()->resizeColumnsToContent();
+    } else {
+        AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+        if (edit && !edit->textCursor().hasSelection())
+            selectNextMatch(SearchDirection::Forward);
+        else if (edit)
+            edit->textCursor().clearSelection();
     }
 
     updateEditHighlighting();
