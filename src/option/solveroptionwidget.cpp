@@ -805,17 +805,17 @@ void SolverOptionWidget::selectAnOption()
 
 void SolverOptionWidget::insertOption()
 {
+    if (isViewCompact())
+        return;
+
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    if  (isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()))
-        return;
-
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     int rowToBeInserted = -1;
-    if (isThereARowSelection() ) {
+    if (isThereARowSelection())  {
         QModelIndex index = ui->solverOptionTableView->selectionModel()->selectedRows().at(0);
         rowToBeInserted = index.row();
         ui->solverOptionTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
@@ -833,8 +833,8 @@ void SolverOptionWidget::insertOption()
             QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         }
+        ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::PositionAtCenter);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
-
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
         rowToBeInserted = mOptionTableModel->rowCount()-1;
@@ -852,6 +852,7 @@ void SolverOptionWidget::insertOption()
             QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         }
+        ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::PositionAtCenter);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
     }
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);

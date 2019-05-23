@@ -1768,7 +1768,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         case Qt::Key_Insert :
         case Qt::Key_Delete :
         case Qt::Key_F1 :
-            if (mGamsOptionWidget->isAnOptionTableFocused(QApplication::focusWidget()))
+            if (mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::focusWidget()))
                 QApplication::sendEvent(mGamsOptionWidget, event);
             break;
         }

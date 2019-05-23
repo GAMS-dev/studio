@@ -483,16 +483,20 @@ void OptionWidget::insertOption()
 
     QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
 
-    if (mOptionTableModel->rowCount() <= 0) {
+    if (mOptionTableModel->rowCount() <= 0 || selection.count() <= 0) {
         mOptionTableModel->insertRows(mOptionTableModel->rowCount(), 1, QModelIndex());
         QModelIndex index = mOptionTableModel->index( mOptionTableModel->rowCount()-1, GamsOptionTableModel::COLUMN_OPTION_KEY);
         ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->gamsOptionTableView->edit( index );
+
+        ui->gamsOptionTableView->scrollTo(index, QAbstractItemView::PositionAtCenter);
     } else if (selection.count() > 0) {
         QModelIndex index = selection.at(0);
         ui->gamsOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
         ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->gamsOptionTableView->edit( mOptionTableModel->index(index.row(), GamsOptionTableModel::COLUMN_OPTION_KEY) );
+
+        ui->gamsOptionTableView->scrollTo(index, QAbstractItemView::PositionAtCenter);
     }
 }
 

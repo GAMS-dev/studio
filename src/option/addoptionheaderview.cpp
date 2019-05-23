@@ -45,7 +45,7 @@ bool AddOptionHeaderView::event(QEvent *event)
     if (event->type() == QEvent::ToolTip) {
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
         if (isAddOptionCoordinate(helpEvent->pos())) {
-            QToolTip::showText(helpEvent->globalPos(), "Add/Append new option ");
+            QToolTip::showText(helpEvent->globalPos(), "Add/Append new option");
         } else {
             QToolTip::hideText();
             event->ignore();
