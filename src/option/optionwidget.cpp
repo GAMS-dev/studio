@@ -103,6 +103,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
     ui->gamsOptionTreeView->setModel( proxymodel );
+    ui->gamsOptionTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->gamsOptionTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->gamsOptionTreeView->setDragEnabled(true);
     ui->gamsOptionTreeView->setDragDropMode(QAbstractItemView::DragOnly);
@@ -682,7 +683,15 @@ QString OptionWidget::getCurrentCommandLineData() const
 
 void OptionWidget::focus()
 {
-    ui->gamsOptionCommandLine->setFocus(Qt::ShortcutFocusReason);
+    if (isEditorExtended())
+        if (ui->gamsOptionTableView->hasFocus())
+            ui->gamsOptionSearch->setFocus(Qt::ShortcutFocusReason);
+        else if (ui->gamsOptionSearch->hasFocus())
+            ui->gamsOptionTreeView->setFocus(Qt::ShortcutFocusReason);
+        else
+           ui->gamsOptionTableView->setFocus(Qt::TabFocusReason);
+    else
+        ui->gamsOptionCommandLine->setFocus(Qt::ShortcutFocusReason);
 }
 
 }
