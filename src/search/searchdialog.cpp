@@ -251,20 +251,17 @@ void SearchDialog::replaceAll()
 
     mHasChanged = false;
 
-    // sort and filter FMs by editability and open state
+    // sort and filter FMs by editability and midification state
     for (FileMeta* fm : fml) {
-        // check if filtered by pattern (when not SearchScope == ThisFile)
         if (fm->isReadOnly()) {
             fml.removeOne(fm);
             continue;
         }
 
         if (fm->document()) {
-            if (!opened.contains(fm))
-                opened << fm;
+            if (!opened.contains(fm)) opened << fm;
         } else {
-            if (!unopened.contains(fm))
-                unopened << fm;
+            if (!unopened.contains(fm)) unopened << fm;
         }
 
         matchedFiles++;
@@ -324,6 +321,8 @@ void SearchDialog::replaceAll()
         setSearchStatus(SearchStatus::Clear);
     } else if (msgBox.clickedButton() == search) {
         mShowResults = true;
+        invalidateCache();
+        mCachedResults = new SearchResultList(createRegex());
         findInFiles(mCachedResults, fml);
         return;
     } else if (msgBox.clickedButton() == cancel) {
