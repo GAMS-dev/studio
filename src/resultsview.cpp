@@ -28,14 +28,17 @@ namespace gams {
 namespace studio {
 
 ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
-    QWidget(parent), ui(new Ui::ResultsView), mMain(parent)
+    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList->searchRegex())
 {
     ui->setupUi(this);
-    mResultList = resultList;
-    ui->tableView->setModel(mResultList);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
     ui->tableView->setTextElideMode(Qt::ElideLeft);
+
+    for (Result r : resultList->resultsAsList()) {
+        mResultList.addResult(r.lineNr(), r.colNr(), r.length(), r.filepath(), r.context());
+    }
+    ui->tableView->setModel(&mResultList);
 
     QPalette palette;
     palette.setColor(QPalette::Highlight, ui->tableView->palette().highlight().color());
@@ -46,7 +49,6 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
 ResultsView::~ResultsView()
 {
     delete ui;
-    delete mResultList;
 }
 
 void ResultsView::resizeColumnsToContent()
@@ -58,7 +60,7 @@ void ResultsView::resizeColumnsToContent()
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
     int selectedRow = index.row();
-    Result r = mResultList->at(selectedRow);
+    Result r = mResultList.at(selectedRow);
 
     // open so we have a document of the file
     if (QFileInfo(r.filepath()).exists())
@@ -81,14 +83,19 @@ void ResultsView::keyPressEvent(QKeyEvent* e)
     QWidget::keyPressEvent(e);
 }
 
-SearchResultList* ResultsView::searchResultList() const
-{
-    return mResultList;
-}
-
 void ResultsView::selectItem(int index)
 {
     ui->tableView->selectRow(index);
+}
+
+void ResultsView::setOutdated()
+{
+    mOutdated = true;
+}
+
+bool ResultsView::isOutdated()
+{
+    return mOutdated;
 }
 
 }

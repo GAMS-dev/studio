@@ -107,14 +107,13 @@ void SearchDialog::finalUpdate()
     setSearchOngoing(false);
 
     if (mShowResults) {
-        mResultList = mCachedResults;
-        mMain->showResults(mResultList);
+        mMain->showResults(mCachedResults);
         resultsView()->resizeColumnsToContent();
     }
 
     updateEditHighlighting();
 
-    if (mResultList && !mResultList->size()) setSearchStatus(SearchStatus::NoResults);
+    if (mCachedResults && !mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
     else updateFindNextLabel(0, 0);
 }
 
@@ -487,7 +486,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     node->file()->jumpTo(node->runGroupId(), true, res->lineNr()-1, qMax(res->colNr(), 0), res->length());
 
     // update ui
-    if (resultsView() && !mHasChanged) resultsView()->selectItem(matchNr);
+    if (resultsView() && !resultsView()->isOutdated()) resultsView()->selectItem(matchNr);
     updateNrMatches(matchNr+1);
 }
 
@@ -846,6 +845,7 @@ void SearchDialog::invalidateCache()
     delete mCachedResults;
     mCachedResults = nullptr;
     mHasChanged = true;
+    if (resultsView()) resultsView()->setOutdated();
 }
 
 bool SearchDialog::regex()
@@ -879,12 +879,12 @@ void SearchDialog::setSelectedScope(int index)
 }
 
 ///
-/// \brief SearchDialog::results returns either cache or if available (and up to date) final results
+/// \brief SearchDialog::results returns cached results
 /// \return SearchResultList*
 ///
 SearchResultList* SearchDialog::results()
 {
-    return resultsView() && !mHasChanged ? resultsView()->searchResultList() : mCachedResults;
+    return mCachedResults;
 }
 
 void SearchDialog::setActiveEditWidget(QWidget *edit)

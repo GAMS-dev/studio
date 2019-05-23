@@ -43,8 +43,9 @@ public:
     explicit ResultsView(SearchResultList* searchResultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
-    SearchResultList* searchResultList() const;
     void selectItem(int index);
+    void setOutdated();
+    bool isOutdated();
 
 signals:
     void updateMatchLabel(int row);
@@ -55,7 +56,8 @@ private slots:
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList* mResultList;
+    SearchResultList mResultList;
+    bool mOutdated = false;
 
 protected:
     void keyPressEvent(QKeyEvent* event);

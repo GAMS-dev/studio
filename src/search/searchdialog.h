@@ -153,7 +153,6 @@ private:
     MainWindow *mMain;
     ResultsView *mResultsView = nullptr;
     SearchResultList *mCachedResults = nullptr;
-    SearchResultList *mResultList = nullptr;
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = true;
     bool mFirstReturn = false;
