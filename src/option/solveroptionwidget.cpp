@@ -696,7 +696,7 @@ void SolverOptionWidget::showOptionDefinition()
                 ui->solverOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
             }
             if (indices.size() > 0) {
-                ui->solverOptionTreeView->scrollTo(indices.first(), QAbstractItemView::PositionAtCenter);
+                ui->solverOptionTreeView->scrollTo(indices.first(), QAbstractItemView::EnsureVisible);
                 const QRect r = ui->solverOptionTreeView->visualRect(indices.first());
                 ui->solverOptionTreeView->horizontalScrollBar()->setValue(r.x());
             }
@@ -833,7 +833,7 @@ void SolverOptionWidget::insertOption()
             QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         }
-        ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::PositionAtCenter);
+        ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::EnsureVisible);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
     } else {
         ui->solverOptionTableView->model()->insertRows(ui->solverOptionTableView->model()->rowCount(), 1, QModelIndex());
@@ -852,7 +852,7 @@ void SolverOptionWidget::insertOption()
             QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
             ui->solverOptionTableView->model()->setData( eolCommentIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         }
-        ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::PositionAtCenter);
+        ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::EnsureVisible);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
     }
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);

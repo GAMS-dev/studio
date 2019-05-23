@@ -431,7 +431,7 @@ void OptionWidget::showOptionDefinition()
                 ui->gamsOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
             }
             if (indices.size() > 0) {
-                ui->gamsOptionTreeView->scrollTo(indices.first(), QAbstractItemView::PositionAtCenter);
+                ui->gamsOptionTreeView->scrollTo(indices.first(), QAbstractItemView::EnsureVisible);
                 const QRect r = ui->gamsOptionTreeView->visualRect(indices.first());
                 ui->gamsOptionTreeView->horizontalScrollBar()->setValue(r.x());
             }
@@ -493,14 +493,14 @@ void OptionWidget::insertOption()
         ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->gamsOptionTableView->edit( index );
 
-        ui->gamsOptionTableView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+        ui->gamsOptionTableView->scrollTo(index, QAbstractItemView::EnsureVisible);
     } else if (selection.count() > 0) {
         QModelIndex index = selection.at(0);
         ui->gamsOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
         ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->gamsOptionTableView->edit( mOptionTableModel->index(index.row(), GamsOptionTableModel::COLUMN_OPTION_KEY) );
 
-        ui->gamsOptionTableView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+        ui->gamsOptionTableView->scrollTo(index, QAbstractItemView::EnsureVisible);
     }
 }
 
