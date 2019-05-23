@@ -426,8 +426,11 @@ void OptionWidget::showOptionDefinition()
                                  ui->gamsOptionTreeView->model()->index(idx.row(), ui->gamsOptionTreeView->model()->columnCount()-1));
                 ui->gamsOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
             }
-            if (indices.size() > 0)
+            if (indices.size() > 0) {
                 ui->gamsOptionTreeView->scrollTo(indices.first(), QAbstractItemView::PositionAtCenter);
+                const QRect r = ui->gamsOptionTreeView->visualRect(indices.first());
+                ui->gamsOptionTreeView->horizontalScrollBar()->setValue(r.x());
+            }
     }
 }
 

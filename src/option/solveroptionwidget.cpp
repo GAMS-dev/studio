@@ -695,8 +695,11 @@ void SolverOptionWidget::showOptionDefinition()
                                 ui->solverOptionTreeView->model()->index(idx.row(), ui->solverOptionTreeView->model()->columnCount()-1));
                 ui->solverOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
             }
-            if (indices.size() > 0)
+            if (indices.size() > 0) {
                 ui->solverOptionTreeView->scrollTo(indices.first(), QAbstractItemView::PositionAtCenter);
+                const QRect r = ui->solverOptionTreeView->visualRect(indices.first());
+                ui->solverOptionTreeView->horizontalScrollBar()->setValue(r.x());
+            }
         }
     }
 }
