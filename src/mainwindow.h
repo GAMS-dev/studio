@@ -280,6 +280,7 @@ private slots:
     void on_referenceJumpTo(reference::ReferenceItem item);
 
     void focusCmdLine();
+    void toggleOptionEditorExpansion();
     void focusProjectExplorer();
 
     void on_actionToggleBookmark_triggered();

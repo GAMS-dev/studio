@@ -59,6 +59,8 @@ void CommandLineOption::keyPressEvent(QKeyEvent *event)
     QComboBox::keyPressEvent(event);
     if ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return)) {
         emit optionRunChanged();
+    } else if (event->key() == Qt::Key_Escape) {
+              emit optionEditCancelled();
     }
 }
 

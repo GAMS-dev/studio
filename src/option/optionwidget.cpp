@@ -46,11 +46,14 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
     setInterruptActionGroup(aInterrupt, actionStop);
 
+    setFocusPolicy(Qt::StrongFocus);
+
     ui->gamsOptionWidget->hide();
     connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged, main, &MainWindow::optionRunChanged);
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged, ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, this, &OptionWidget::updateOptionTableModel );
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionEditCancelled, this, [this]() { ui->gamsOptionCommandLine->clearFocus(); });
 
     QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
     QString normalizedText = mOptionTokenizer->normalize(optionItem);
@@ -687,9 +690,9 @@ void OptionWidget::focus()
         if (ui->gamsOptionTableView->hasFocus())
             ui->gamsOptionSearch->setFocus(Qt::ShortcutFocusReason);
         else if (ui->gamsOptionSearch->hasFocus())
-            ui->gamsOptionTreeView->setFocus(Qt::ShortcutFocusReason);
+                ui->gamsOptionTreeView->setFocus(Qt::ShortcutFocusReason);
         else
-           ui->gamsOptionTableView->setFocus(Qt::TabFocusReason);
+            ui->gamsOptionTableView->setFocus(Qt::TabFocusReason);
     else
         ui->gamsOptionCommandLine->setFocus(Qt::ShortcutFocusReason);
 }
