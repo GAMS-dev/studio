@@ -65,12 +65,10 @@ void SearchDialog::on_btn_Replace_clicked()
     if (!edit || edit->isReadOnly()) return;
 
     QString replaceTerm = ui->txt_replace->text();
-    if (edit->textCursor().hasSelection()) {
+    if (edit->textCursor().hasSelection())
         edit->textCursor().insertText(replaceTerm);
-        updateSearchCache();
-    }
 
-    findNext(SearchDialog::Forward);
+    findNext(SearchDialog::Forward, true);
 }
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
@@ -90,7 +88,7 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         mShowResults = true;
         mCachedResults = new SearchResultList(createRegex());
-        findInFiles(mCachedResults);
+        findInFiles(mCachedResults, getFilesByScope());
     } else {
         setSearchOngoing(false);
         mThread.requestInterruption();
@@ -140,13 +138,10 @@ void SearchDialog::setSearchOngoing(bool searching)
 /// \param fml list of files to search
 /// \param skipFilters enable for result caching (find next/prev)
 ///
-void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fml, bool skipFilters)
+void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fml)
 {
-    QList<FileMeta*> umodified;
+    QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
-
-    if (fml.isEmpty() && skipFilters) fml = mMain->fileRepo()->fileMetas();
-    else if (fml.isEmpty()) fml = getFilesByScope();
 
     for(FileMeta* fm : fml) {
 
@@ -155,10 +150,8 @@ void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fm
             continue;
 
         // sort files by modified
-        if (fm->isModified())
-            modified << fm;
-        else
-            umodified << fm;
+        if (fm->isModified()) modified << fm;
+        else unmodified << fm;
     }
 
 
@@ -166,7 +159,7 @@ void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fm
     for (FileMeta* fm : modified)
         findInDoc(createRegex(), fm, collection);
 
-    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), umodified, collection);
+    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), unmodified, collection);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -196,7 +189,7 @@ void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, Searc
     } while (!item.isNull());
 }
 
-QList<FileMeta*> SearchDialog::getFilesByScope()
+QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
 {
     QList<FileMeta*> files;
     QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
@@ -227,12 +220,10 @@ QList<FileMeta*> SearchDialog::getFilesByScope()
         break;
     }
 
-    auto file = mMain->fileRepo()->openFiles();
-
     // apply filter
     QList<FileMeta*> res;
     for (FileMeta* fm : files) {
-        if (ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1)
+        if ((ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1) && (!ignoreReadOnly || !fm->isReadOnly()))
             res.append(fm);
     }
     return res;
@@ -242,7 +233,7 @@ void SearchDialog::replaceAll()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
 
-    QList<FileMeta*> fml = getFilesByScope();
+    QList<FileMeta*> fml = getFilesByScope(true);
 
     QList<FileMeta*> opened;
     QList<FileMeta*> unopened;
@@ -251,7 +242,7 @@ void SearchDialog::replaceAll()
 
     mHasChanged = false;
 
-    // sort and filter FMs by editability and midification state
+    // sort and filter FMs by editability and modification state
     for (FileMeta* fm : fml) {
         if (fm->isReadOnly()) {
             fml.removeOne(fm);
@@ -291,8 +282,8 @@ void SearchDialog::replaceAll()
         for (FileMeta* fm : fml)
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
-                            "This is just a representation of the selected scope in the search window.");
-
+                            "This is just a representation of the selected scope in the search window."
+                            "Press \"Search\" to see actual matches that will be replaced.");
         msgBox.setDetailedText(detailedText);
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
@@ -395,7 +386,7 @@ int SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString 
     return hits;
 }
 
-void SearchDialog::updateSearchCache()
+void SearchDialog::updateSearchCache(bool ignoreReadOnly)
 {
     QApplication::sendPostedEvents();
 
@@ -403,17 +394,18 @@ void SearchDialog::updateSearchCache()
     mCachedResults = new SearchResultList(createRegex());
 
     mShowResults = false;
-    findInFiles(mCachedResults, getFilesByScope(), true);
+    findInFiles(mCachedResults, getFilesByScope(ignoreReadOnly));
     mHasChanged = false;
 }
 
-void SearchDialog::findNext(SearchDirection direction)
+void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
 {
     if (ui->combo_search->currentText() == "") return;
 
-    if (!mCachedResults || mHasChanged || mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty())
-        updateSearchCache();
-
+    if (!mCachedResults || mHasChanged || mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty()) {
+        updateSearchCache(ignoreReadOnly);
+        QApplication::processEvents(QEventLoop::AllEvents, 50);
+    }
     selectNextMatch(direction);
 }
 

@@ -69,7 +69,7 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    void findNext(SearchDialog::SearchDirection direction);
+    void findNext(SearchDialog::SearchDirection direction, bool ignoreReadOnly = false);
     void clearResults();
     void updateReplaceActionAvailability();
 
@@ -84,7 +84,7 @@ public:
     ResultsView *resultsView() const;
     void setResultsView(ResultsView *resultsView);
 
-    void updateSearchCache();
+    void updateSearchCache(bool ignoreReadOnly = false);
 
 public slots:
     void on_searchNext();
@@ -134,8 +134,8 @@ private:
     };
 
     void replaceAll();
-    void findInFiles(SearchResultList* collection, QList<FileMeta *> fml = QList<FileMeta*>(), bool skipFilters = false);
-    QList<FileMeta*> getFilesByScope();
+    void findInFiles(SearchResultList* collection, QList<FileMeta *> fml);
+    QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
     void updateFindNextLabel(int lineNr, int colNr);
     void selectNextMatch(SearchDirection direction);
     void insertHistory();
