@@ -392,12 +392,18 @@
  <layoutdefault spacing="6" margin="9"/>
  <tabstops>
   <tabstop>combo_search</tabstop>
+  <tabstop>txt_replace</tabstop>
   <tabstop>btn_FindAll</tabstop>
   <tabstop>btn_back</tabstop>
   <tabstop>btn_forward</tabstop>
-  <tabstop>txt_replace</tabstop>
   <tabstop>btn_ReplaceAll</tabstop>
   <tabstop>btn_Replace</tabstop>
+  <tabstop>btn_clear</tabstop>
+  <tabstop>cb_wholeWords</tabstop>
+  <tabstop>cb_caseSens</tabstop>
+  <tabstop>cb_regex</tabstop>
+  <tabstop>combo_filePattern</tabstop>
+  <tabstop>combo_scope</tabstop>
  </tabstops>
  <resources/>
  <connections/>
