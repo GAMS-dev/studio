@@ -1079,6 +1079,8 @@ void SolverOptionWidget::addActions()
         findAndSelectionOptionFromDefinition();
     });
     findThisOptionAction->setObjectName("actionFindThisOption");
+    findThisOptionAction->setShortcut( tr("Ctrl+Shift+F1") );
+    findThisOptionAction->setShortcutVisibleInContextMenu(true);
     findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(findThisOptionAction);
 
@@ -1096,6 +1098,8 @@ void SolverOptionWidget::addActions()
         deleteOption();
     });
     deleteThisOptionAction->setObjectName("actionDeleteThisOption");
+    deleteThisOptionAction->setShortcut( tr("Ctrl+Shift+Delete") );
+    deleteThisOptionAction->setShortcutVisibleInContextMenu(true);
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(deleteThisOptionAction);
 
