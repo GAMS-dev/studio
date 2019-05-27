@@ -91,6 +91,8 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(ui->gamsOptionTableView->verticalHeader()->minimumSectionSize());
 
+    ui->gamsOptionTableView->setTabKeyNavigation(false);
+
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, mOptionTableModel, &GamsOptionTableModel::on_optionTableModelChanged);
     connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);

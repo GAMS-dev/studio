@@ -157,6 +157,14 @@ bool SolverOptionWidget::init()
 
     setModified(false);
 
+    ui->solverOptionTableView->setTabKeyNavigation(false);
+
+    setTabOrder(ui->solverOptionGroup, ui->solverOptionSearch);
+    setTabOrder(ui->solverOptionSearch, ui->solverOptionTreeView);
+    setTabOrder(ui->solverOptionTreeView, ui->compactViewCheckBox);
+    setTabOrder(ui->compactViewCheckBox, ui->openAsTextButton);
+    setTabOrder(ui->openAsTextButton, ui->SolverOptionMessageWidget);
+
     if (!mOptionTokenizer->getOption()->available())  {
         ui->solverOptionSearch->setReadOnly(true);
         ui->compactViewCheckBox->setEnabled(false);
@@ -1109,7 +1117,6 @@ void SolverOptionWidget::addActions()
     copyDefinitionOptionDescriptionAction->setShortcutVisibleInContextMenu(true);
     copyDefinitionOptionDescriptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(copyDefinitionOptionDescriptionAction);
-
 }
 
 void SolverOptionWidget::updateEditActions(bool modified)
