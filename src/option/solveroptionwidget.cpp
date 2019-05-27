@@ -1097,6 +1097,8 @@ void SolverOptionWidget::addActions()
             addOptionFromDefinition(selection.at(0));
     });
     addThisOptionAction->setObjectName("actionAddThisOption");
+    addThisOptionAction->setShortcut( tr("Ctrl+Shift+Insert") );
+    addThisOptionAction->setShortcutVisibleInContextMenu(true);
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(addThisOptionAction);
 
