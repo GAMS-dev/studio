@@ -94,6 +94,8 @@ public slots:
     void on_addCommentAboveChanged(int checkState);
     void on_addEOLCommentChanged(int checkState);
 
+    void copyAction();
+
 private slots:
     void showOptionDefinition();
     void copyDefinitionToClipboard(int column);

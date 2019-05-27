@@ -668,6 +668,11 @@ void SolverOptionWidget::on_addEOLCommentChanged(int checkState)
     addEOLComment = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
+void SolverOptionWidget::copyAction()
+{
+    copyDefinitionToClipboard(-1);
+}
+
 void SolverOptionWidget::showOptionDefinition()
 {
     if (ui->solverOptionTableView->model()->rowCount() <= 0)
@@ -718,6 +723,8 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
         return;
 
     QModelIndex index = ui->solverOptionTreeView->selectionModel()->selectedRows().at(0);
+    if (!index.isValid())
+        return;
 
     QString text = "";
     QModelIndex parentIndex = ui->solverOptionTreeView->model()->parent(index);
@@ -1103,10 +1110,11 @@ void SolverOptionWidget::addActions()
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(deleteThisOptionAction);
 
-    QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy Definition Text",
+    QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy Definition Text\tCtrl+C",
                                                                [this]() { copyDefinitionToClipboard( -1 ); });
     copyDefinitionTextAction->setObjectName("actionCopyDefinitionText");
-    copyDefinitionTextAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    copyDefinitionTextAction->setShortcutVisibleInContextMenu(true);
+    copyDefinitionTextAction->setShortcutContext(Qt::WidgetShortcut);
     addAction(copyDefinitionTextAction);
 
     QAction* copyDefinitionOptionNameAction = mContextMenu.addAction("Copy Definition Option Name",

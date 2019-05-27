@@ -2715,6 +2715,9 @@ void MainWindow::on_actionCopy_triggered()
     if (fm->kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
         gdx->copyAction();
+    } else if (fm->kind() == FileKind::Opt) {
+        option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor());
+        sow->copyAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->copy();
     } else if (CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget())) {
