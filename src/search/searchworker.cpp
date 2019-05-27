@@ -48,8 +48,11 @@ void SearchWorker::findInFiles()
             in.setCodec(fm->codec());
 
             while (!in.atEnd()) { // read file
-                lineCounter++;
 
+                // abort: too many results
+                if (mMatches->size() > MAX_SEARCH_RESULTS-1) break;
+
+                lineCounter++;
                 if (lineCounter % 1000 == 0 && thread()->isInterruptionRequested()) break;
 
                 QString line = in.readLine();
@@ -61,9 +64,6 @@ void SearchWorker::findInFiles()
                     mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
                                        file.fileName(), line.trimmed());
                 }
-
-                // abort: too many results
-                if (mMatches->size() > MAX_SEARCH_RESULTS-1) break;
 
                 // update periodically
                 if (lineCounter % 250000 == 0)
