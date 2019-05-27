@@ -2416,11 +2416,14 @@ void MainWindow::on_actionSearch_triggered()
 
            QPoint c = mapToGlobal(centralWidget()->pos());
 
-           QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
            int wDiff = frameGeometry().width() - geometry().width();
            int hDiff = frameGeometry().height() - geometry().height();
-           QPoint p(qMin(c.x() + (centralWidget()->width() - sbs), screen.width()) - mSearchDialog->width() - wDiff,
-                    qMin(c.y() + centralWidget()->height(), screen.height()) - mSearchDialog->height() - hDiff
+
+           int wSize = mSearchDialog->width() + wDiff;
+           int hSize = mSearchDialog->height() + hDiff;
+
+           QPoint p(qMin(c.x() + (centralWidget()->width() - sbs), QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
+                    qMin(c.y() + centralWidget()->height(), QGuiApplication::primaryScreen()->virtualGeometry().height()) - hSize
                    );
 
            mSearchDialog->move(p);
