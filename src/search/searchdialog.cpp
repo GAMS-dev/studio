@@ -282,7 +282,7 @@ void SearchDialog::replaceAll()
         for (FileMeta* fm : fml)
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
-                            "This is just a representation of the selected scope in the search window."
+                            "This is just a representation of the selected scope in the search window. "
                             "Press \"Search\" to see actual matches that will be replaced.");
         msgBox.setDetailedText(detailedText);
     }
