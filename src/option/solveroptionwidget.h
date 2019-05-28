@@ -109,6 +109,8 @@ private slots:
     void moveOptionUp();
     void moveOptionDown();
 
+    void resizeColumnsToContents();
+
 private:
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
