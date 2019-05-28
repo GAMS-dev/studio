@@ -45,11 +45,13 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     cpComma->setShortcutVisibleInContextMenu(true);
     cpComma->setShortcutContext(Qt::WidgetShortcut);
     ui->tvListView->addAction(cpComma);
+    ui->tvTableView->addAction(cpComma);
 
     QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(cpTab);
+    ui->tvTableView->addAction(cpTab);
 
     mContextMenu.addSeparator();
 
@@ -57,6 +59,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     aResizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aResizeColumn->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(aResizeColumn);
+    ui->tvTableView->addAction(aResizeColumn);
 
     mContextMenu.addSeparator();
 
@@ -64,6 +67,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     aSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aSelectAll->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(aSelectAll);
+    ui->tvTableView->addAction(aSelectAll);
 
     //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
