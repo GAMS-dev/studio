@@ -45,11 +45,21 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     cpComma->setShortcutVisibleInContextMenu(true);
     cpComma->setShortcutContext(Qt::WidgetShortcut);
     ui->tvListView->addAction(cpComma);
+    ui->tvTableView->addAction(cpComma);
 
     QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(cpTab);
+    ui->tvTableView->addAction(cpTab);
+
+    mContextMenu.addSeparator();
+
+    QAction* aResizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { autoResizeColumns(); }, QKeySequence("Ctrl+R"));
+    aResizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    aResizeColumn->setShortcutVisibleInContextMenu(true);
+    ui->tvListView->addAction(aResizeColumn);
+    ui->tvTableView->addAction(aResizeColumn);
 
     mContextMenu.addSeparator();
 
@@ -57,6 +67,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     aSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aSelectAll->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(aSelectAll);
+    ui->tvTableView->addAction(aSelectAll);
 
     //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
@@ -79,7 +90,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
 
     ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
     ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
@@ -183,8 +193,10 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;
-    if (mSym->recordCount()>0) //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
+    if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
+        connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+    }
     ui->tvListView->setModel(mSym);
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
@@ -285,6 +297,14 @@ void GdxSymbolView::showContextMenu(QPoint p)
         mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
 }
 
+void GdxSymbolView::autoResizeColumns()
+{
+    if (mTableView)
+        ui->tvTableView->resizeColumnsToContents();
+    else
+        ui->tvListView->resizeColumnsToContents();
+}
+
 void GdxSymbolView::showListView()
 {
     mTableView = false;
@@ -308,6 +328,7 @@ void GdxSymbolView::showTableView()
     ui->tvListView->hide();
     ui->tvTableView->show();
     mTableView = true;
+    ui->tvTableView->resizeColumnsToContents();
 }
 
 void GdxSymbolView::toggleView()
@@ -325,7 +346,6 @@ void GdxSymbolView::selectAll()
         ui->tvTableView->selectAll();
     else
         ui->tvListView->selectAll();
-
 }
 
 void GdxSymbolView::enableControls()
