@@ -81,15 +81,18 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
-    headerView->setSectionResizeMode(QHeaderView::Stretch);
+    headerView->setSectionResizeMode(QHeaderView::Interactive);
+    headerView->setDefaultSectionSize( static_cast<int>(ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1)) );
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
-    ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->resizeColumnToContents(GamsOptionTableModel::COLUMN_OPTION_KEY);
-    ui->gamsOptionTableView->resizeColumnToContents(GamsOptionTableModel::COLUMN_OPTION_VALUE);
     ui->gamsOptionTableView->setColumnHidden(GamsOptionTableModel::COLUMN_ENTRY_NUMBER, true);
 
-    ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(ui->gamsOptionTableView->verticalHeader()->minimumSectionSize());
+    ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
+    if (ui->gamsOptionTableView->model()->rowCount()<=0)
+         ui->gamsOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1) );
+    else
+        ui->gamsOptionTableView->resizeColumnsToContents();
 
     ui->gamsOptionTableView->setTabKeyNavigation(false);
 

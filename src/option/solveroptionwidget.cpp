@@ -91,15 +91,17 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->setDefaultDropAction(Qt::CopyAction);
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->solverOptionTableView);
-    headerView->setSectionResizeMode(QHeaderView::Stretch);
+    headerView->setSectionResizeMode(QHeaderView::Interactive);
     ui->solverOptionTableView->setHorizontalHeader(headerView);
-    ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
-    ui->solverOptionTableView->resizeColumnToContents(SolverOptionTableModel::COLUMN_OPTION_KEY);
-    ui->solverOptionTableView->resizeColumnToContents(SolverOptionTableModel::COLUMN_OPTION_VALUE);
 
-    ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(ui->solverOptionTableView->verticalHeader()->minimumSectionSize());
+    ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
+    if (ui->solverOptionTableView->model()->rowCount()<=0)
+         ui->solverOptionTableView->horizontalHeader()->setDefaultSectionSize( static_cast<int>(ui->solverOptionTableView->sizeHint().width()/(ui->solverOptionTableView->model()->columnCount()-1)) );
+    else
+        ui->solverOptionTableView->resizeColumnsToContents();
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
