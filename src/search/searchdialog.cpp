@@ -432,8 +432,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         lineNr = e->textCursor().blockNumber()+1;
         colNr = e->textCursor().columnNumber();
     } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-        lineNr = t->edit()->textCursor().blockNumber()+1;
-        colNr = t->edit()->textCursor().columnNumber();
+        lineNr = t->position().y()+1;
+        colNr = t->position().x();
     }
     QString file = ViewHelper::location(mMain->recent()->editor());
     QList<Result> resultList = mCachedResults->resultsAsList();
