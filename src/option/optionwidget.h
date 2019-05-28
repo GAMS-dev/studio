@@ -22,6 +22,7 @@
 
 #include <QDockWidget>
 #include <QWidget>
+#include <QMenu>
 
 #include "option.h"
 #include "commandlineoption.h"
@@ -92,22 +93,27 @@ public slots:
 
     void selectSearchField();
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
-
 private slots:
     void showOptionDefinition();
     void deleteOption();
+    void deleteAllOptions();
     void insertOption();
+
+    void moveOptionUp();
+    void moveOptionDown();
 
     void on_newTableRowDropped(const QModelIndex &index);
     void on_optionTableNameChanged(const QString &from, const QString &to);
+
+    void resizeColumnsToContents();
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX);
     void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
+
+    void addActions();
 
     Ui::OptionWidget *ui;
     QDockWidget *mExtendedEditor = nullptr;
@@ -119,6 +125,8 @@ private:
 
     QAction* actionInterrupt;
     QAction* actionStop;
+
+    QMenu mContextMenu;
 
     MainWindow* main;
 

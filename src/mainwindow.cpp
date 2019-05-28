@@ -1767,19 +1767,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    if (event->modifiers() & Qt::ControlModifier) {
-        switch (event->key()) {
-        case Qt::Key_0 :
-            updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
-            break;
-        case Qt::Key_Insert :
-        case Qt::Key_Delete :
-        case Qt::Key_F1 :
-            if (mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::focusWidget()))
-                QApplication::sendEvent(mGamsOptionWidget, event);
-            break;
-        }
-    }
+    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0))
+        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     if (event->key() == Qt::Key_Escape) {
         mSearchDialog->hide();
