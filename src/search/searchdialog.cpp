@@ -402,7 +402,7 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
 {
     if (ui->combo_search->currentText() == "") return;
 
-    if (!mCachedResults || mHasChanged || mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty()) {
+    if (!mCachedResults || mHasChanged || (mMain->recent()->editor() && mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty())) {
         updateSearchCache(ignoreReadOnly);
         QApplication::processEvents(QEventLoop::AllEvents, 50);
     }
@@ -421,9 +421,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
 
     setSearchStatus(SearchStatus::Searching);
 
-    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
-    if (!fc) return;
-
     int lineNr = 0;
     int colNr = 0;
     bool backwards = direction == SearchDirection::Backward;
@@ -435,7 +432,6 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         lineNr = t->position().y()+1;
         colNr = t->position().x();
     }
-    QString file = ViewHelper::location(mMain->recent()->editor());
     QList<Result> resultList = mCachedResults->resultsAsList();
     if (resultList.size() == 0) return;
 
@@ -445,28 +441,31 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     bool allowJumping = false;
     int matchNr = -1;
 
-    for (int i = start; i >= 0 && i < resultList.size(); i += interator) {
-        matchNr = i;
-        Result r = resultList.at(i);
+    if (mMain->recent()->editor()) {
+        QString file = ViewHelper::location(mMain->recent()->editor());
+        for (int i = start; i >= 0 && i < resultList.size(); i += interator) {
+            matchNr = i;
+            Result r = resultList.at(i);
 
-        // check if is in same line but behind the cursor
-        if (file == r.filepath()) {
-            allowJumping = true;
-            if (backwards) {
-                if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
-                    res = &r;
-                    break;
+            // check if is in same line but behind the cursor
+            if (file == r.filepath()) {
+                allowJumping = true;
+                if (backwards) {
+                    if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
+                        res = &r;
+                        break;
+                    }
+                } else {
+                    if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
+                        res = &r;
+                        break;
+                    }
                 }
-            } else {
-                if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
-                    res = &r;
-                    break;
-                }
+            } else if (file != r.filepath() && allowJumping) {
+                // first match in next file
+                res = &r;
+                break;
             }
-        } else if (file != r.filepath() && allowJumping) {
-            // first match in next file
-            res = &r;
-            break;
         }
     }
 
@@ -603,7 +602,8 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
 {
     setSearchOngoing(false);
 
-    QString file = ViewHelper::location(mMain->recent()->editor());
+    QString file = "";
+    if(mMain->recent()->editor()) file = ViewHelper::location(mMain->recent()->editor());
 
     // if unknown get cursor from current editor
     if (lineNr == 0 || colNr == 0) {
