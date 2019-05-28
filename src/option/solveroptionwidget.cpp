@@ -253,7 +253,6 @@ bool SolverOptionWidget::isModified() const
 void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    bool thereIsAnIndexSelection = indexSelection.count();
 
     for(QModelIndex index : indexSelection) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -289,7 +288,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setVisible( thereIsAnIndexSelection );
+            action->setVisible( true );
             menu.addAction(action);
         } else if (action->objectName().compare("actionResize_columns")==0) {
             action->setVisible( isThereARow() );
