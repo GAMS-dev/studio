@@ -53,7 +53,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     mContextMenu.addSeparator();
 
-    QAction* aResizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { autoResizeColumns(); });
+    QAction* aResizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { autoResizeColumns(); }, QKeySequence("Ctrl+R"));
     aResizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aResizeColumn->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(aResizeColumn);
