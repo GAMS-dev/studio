@@ -1029,56 +1029,56 @@ void SolverOptionWidget::addActions()
 {
     QAction* commentAction = mContextMenu.addAction("Toggle comment/option selection", [this]() { toggleCommentOption(); });
     commentAction->setObjectName("actionToggle_comment");
-    commentAction->setShortcut( tr("Ctrl+T") );
+    commentAction->setShortcut( QKeySequence("Ctrl+T") );
     commentAction->setShortcutVisibleInContextMenu(true);
     commentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(commentAction);
 
     QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Option", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
-    insertOptionAction->setShortcut( tr("Ctrl+Insert") );
+    insertOptionAction->setShortcut( QKeySequence("Ctrl+Insert") );
     insertOptionAction->setShortcutVisibleInContextMenu(true);
     insertOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(insertOptionAction);
 
     QAction* insertCommentAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Comment", [this]() { insertComment(); });
     insertCommentAction->setObjectName("actionInsert_comment");
-    insertCommentAction->setShortcut( tr("Ctrl+Alt+Insert") );
+    insertCommentAction->setShortcut( QKeySequence("Ctrl+Alt+Insert") );
     insertCommentAction->setShortcutVisibleInContextMenu(true);
     insertCommentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(insertCommentAction);
 
     QAction* deleteAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete Selection", [this]() { deleteOption(); });
     deleteAction->setObjectName("actionDelete_option");
-    deleteAction->setShortcut( tr("Ctrl+Delete") );
+    deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
     deleteAction->setShortcutVisibleInContextMenu(true);
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(deleteAction);
 
     QAction* moveUpAction = mContextMenu.addAction(QIcon(":/img/move-up"), "move Up", [this]() { moveOptionUp(); });
     moveUpAction->setObjectName("actionMoveUp_option");
-    moveUpAction->setShortcut( tr("Ctrl+Up") );
+    moveUpAction->setShortcut( QKeySequence("Ctrl+Up") );
     moveUpAction->setShortcutVisibleInContextMenu(true);
     moveUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(moveUpAction);
 
     QAction* moveDownAction = mContextMenu.addAction(QIcon(":/img/move-down"), "move Down", [this]() { moveOptionDown(); });
     moveDownAction->setObjectName("actionMoveDown_option");
-    moveDownAction->setShortcut( tr("Ctrl+Down") );
+    moveDownAction->setShortcut( QKeySequence("Ctrl+Down") );
     moveDownAction->setShortcutVisibleInContextMenu(true);
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(moveDownAction);
 
     QAction* selectAll = mContextMenu.addAction("Select All", ui->solverOptionTableView, &QTableView::selectAll);
     selectAll->setObjectName("actionSelect_all");
-    selectAll->setShortcut( tr("Ctrl+A") );
+    selectAll->setShortcut( QKeySequence("Ctrl+A") );
     selectAll->setShortcutVisibleInContextMenu(true);
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(selectAll);
 
     QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
     showDefinitionAction->setObjectName("actionShowDefinition_option");
-    showDefinitionAction->setShortcut( tr("Ctrl+F1") );
+    showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(showDefinitionAction);
@@ -1088,7 +1088,7 @@ void SolverOptionWidget::addActions()
         findAndSelectionOptionFromDefinition();
     });
     findThisOptionAction->setObjectName("actionFindThisOption");
-    findThisOptionAction->setShortcut( tr("Ctrl+Shift+F1") );
+    findThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+F1") );
     findThisOptionAction->setShortcutVisibleInContextMenu(true);
     findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(findThisOptionAction);
@@ -1099,7 +1099,7 @@ void SolverOptionWidget::addActions()
             addOptionFromDefinition(selection.at(0));
     });
     addThisOptionAction->setObjectName("actionAddThisOption");
-    addThisOptionAction->setShortcut( tr("Ctrl+Shift+Insert") );
+    addThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Insert") );
     addThisOptionAction->setShortcutVisibleInContextMenu(true);
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(addThisOptionAction);
@@ -1109,7 +1109,7 @@ void SolverOptionWidget::addActions()
         deleteOption();
     });
     deleteThisOptionAction->setObjectName("actionDeleteThisOption");
-    deleteThisOptionAction->setShortcut( tr("Ctrl+Shift+Delete") );
+    deleteThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Delete") );
     deleteThisOptionAction->setShortcutVisibleInContextMenu(true);
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(deleteThisOptionAction);
@@ -1117,6 +1117,7 @@ void SolverOptionWidget::addActions()
     QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy Definition Text\tCtrl+C",
                                                                [this]() { copyDefinitionToClipboard( -1 ); });
     copyDefinitionTextAction->setObjectName("actionCopyDefinitionText");
+    copyDefinitionTextAction->setShortcut( QKeySequence("Ctrl+C") );
     copyDefinitionTextAction->setShortcutVisibleInContextMenu(true);
     copyDefinitionTextAction->setShortcutContext(Qt::WidgetShortcut);
     addAction(copyDefinitionTextAction);

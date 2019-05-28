@@ -223,22 +223,23 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
     QMenu menu(this);
     QAction* insertAction = menu.addAction(QIcon(":/img/insert"), "insert new option", [this]() { insertOption(); });
-    insertAction->setShortcut( tr("Ctrl+Insert") );
+    insertAction->setShortcut( QKeySequence("Ctrl+Insert") );
     insertAction->setShortcutVisibleInContextMenu(true);
     insertAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->gamsOptionTableView->addAction(insertAction);
     menu.addSeparator();
     QAction* moveUpAction = menu.addAction(QIcon(":/img/move-up"), "move Up");
     QAction* moveDownAction = menu.addAction(QIcon(":/img/move-down"), "move Down");
     menu.addSeparator();
     QAction* deleteAction = menu.addAction(QIcon(":/img/delete"), "delete selected option", [this]() { deleteOption(); });
-    deleteAction->setShortcut( tr("Ctrl+Delete") );
+    deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
     deleteAction->setShortcutVisibleInContextMenu(true);
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     menu.addSeparator();
     QAction* deleteAllActions = menu.addAction(QIcon(":/img/delete-all"), "delete all options");
     menu.addSeparator();
     QAction* showDefinitionAction = menu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
-    showDefinitionAction->setShortcut( tr("Ctrl+F1") );
+    showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
