@@ -1340,10 +1340,8 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     QRegularExpression regEx = list->searchRegex();
 
     QTextBlock block = firstVisibleBlock();
-    int toPos = block.position();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
     while (block.isValid() && top < viewport()->height()) {
-        toPos = block.position() + block.length();
         top += qRound(blockBoundingRect(block).height());
 
         QRegularExpressionMatchIterator i = regEx.globalMatch(block.text());
