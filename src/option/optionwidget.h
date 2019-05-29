@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -86,7 +86,10 @@ signals:
 public slots:
     void updateOptionTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
+
     void showOptionContextMenu(const QPoint &pos);
+    void showDefinitionContextMenu(const QPoint &pos);
+
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QStringList &history);
@@ -94,6 +97,8 @@ public slots:
     void selectSearchField();
 
 private slots:
+    void findAndSelectionOptionFromDefinition();
+
     void showOptionDefinition();
     void deleteOption();
     void deleteAllOptions();

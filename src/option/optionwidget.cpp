@@ -126,8 +126,11 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setAlternatingRowColors(true);
     ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
     ui->gamsOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
+    ui->gamsOptionTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
+    connect(ui->gamsOptionTreeView, &QTreeView::customContextMenuRequested, this, &OptionWidget::showDefinitionContextMenu);
+
     connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, optdefmodel, &GamsOptionDefinitionModel::modifyOptionDefinition);
 
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
@@ -269,6 +272,47 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
     menu.exec(ui->gamsOptionTableView->viewport()->mapToGlobal(pos));
 }
 
+void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
+{
+    qDebug() << __FUNCTION__;
+    QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
+    if (selection.count() <= 0)
+        return;
+
+    bool hasSelectionBeenAdded = (selection.size()>0);
+    // assume single selection
+    for (QModelIndex idx : selection) {
+        QModelIndex parentIdx = ui->gamsOptionTreeView->model()->parent(idx);
+        QVariant data = (parentIdx.row() < 0) ? ui->gamsOptionTreeView->model()->data(idx, Qt::CheckStateRole)
+                                              : ui->gamsOptionTreeView->model()->data(parentIdx, Qt::CheckStateRole);
+        hasSelectionBeenAdded = (Qt::CheckState(data.toInt()) == Qt::Checked);
+    }
+
+    QMenu menu(this);
+    for(QAction* action : ui->gamsOptionTreeView->actions()) {
+        if (action->objectName().compare("actionFindThisOption")==0) {
+            action->setVisible(  hasSelectionBeenAdded );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionAddThisOption")==0) {
+            action->setVisible( !hasSelectionBeenAdded );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionDeleteThisOption")==0) {
+            action->setVisible( hasSelectionBeenAdded  );
+            menu.addAction(action);
+            menu.addSeparator();
+        } else if (action->objectName().compare("actionResize_columns")==0) {
+            action->setVisible( ui->gamsOptionTreeView->model()->rowCount()>0 );
+            menu.addAction(action);
+            menu.addSeparator();
+        }
+    }
+
+    menu.exec(ui->gamsOptionTreeView->viewport()->mapToGlobal(pos));
+
+}
+
 void OptionWidget::updateRunState(bool isRunnable, bool isRunning)
 {
     bool activate = isRunnable && !isRunning;
@@ -364,6 +408,31 @@ void OptionWidget::selectSearchField()
     ui->gamsOptionSearch->setFocus();
 }
 
+void OptionWidget::findAndSelectionOptionFromDefinition()
+{
+    ui->gamsOptionTableView->selectionModel()->clearSelection();
+    QModelIndex index = ui->gamsOptionTreeView->selectionModel()->currentIndex();
+    QModelIndex parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
+
+    QModelIndex idx = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
+                                            : ui->gamsOptionTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
+    QVariant data = ui->gamsOptionTreeView->model()->data( idx, Qt::DisplayRole );
+    QModelIndexList indices = ui->gamsOptionTableView->model()->match(ui->gamsOptionTableView->model()->index(0, GamsOptionTableModel::COLUMN_ENTRY_NUMBER),
+                                                                       Qt::DisplayRole,
+                                                                       data.toString(), Qt::MatchRecursive);
+    ui->gamsOptionTableView->clearSelection();
+    QItemSelection selection;
+    for(QModelIndex i :indices) {
+        QModelIndex leftIndex  = ui->gamsOptionTableView->model()->index(i.row(), 0);
+        QModelIndex rightIndex = ui->gamsOptionTableView->model()->index(i.row(), ui->gamsOptionTableView->model()->columnCount() -1);
+
+        QItemSelection rowSelection(leftIndex, rightIndex);
+        selection.merge(rowSelection, QItemSelectionModel::Select);
+    }
+
+    ui->gamsOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
+}
+
 void OptionWidget::showOptionDefinition()
 {
    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
@@ -409,7 +478,7 @@ void OptionWidget::showOptionDefinition()
 
 void OptionWidget::deleteOption()
 {
-    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
+    if (!mExtendedEditor->isVisible())
         return;
 
      QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
@@ -722,6 +791,36 @@ void OptionWidget::addActions()
     resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(resizeColumns);
     ui->gamsOptionTreeView->addAction(resizeColumns);
+
+    QAction* findThisOptionAction = mContextMenu.addAction("show Selection of This Option", [this]() {
+        findAndSelectionOptionFromDefinition();
+    });
+    findThisOptionAction->setObjectName("actionFindThisOption");
+    findThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+F1") );
+    findThisOptionAction->setShortcutVisibleInContextMenu(true);
+    findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->gamsOptionTreeView->addAction(findThisOptionAction);
+
+    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Option", [this]() {
+        QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
+        if (selection.size()>0)
+            addOptionFromDefinition(selection.at(0));
+    });
+    addThisOptionAction->setObjectName("actionAddThisOption");
+    addThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Insert") );
+    addThisOptionAction->setShortcutVisibleInContextMenu(true);
+    addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->gamsOptionTreeView->addAction(addThisOptionAction);
+
+    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "remove This Option", [this]() {
+        findAndSelectionOptionFromDefinition();
+        deleteOption();
+    });
+    deleteThisOptionAction->setObjectName("actionDeleteThisOption");
+    deleteThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Delete") );
+    deleteThisOptionAction->setShortcutVisibleInContextMenu(true);
+    deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->gamsOptionTreeView->addAction(deleteThisOptionAction);
 }
 
 QDockWidget* OptionWidget::extendedEditor() const
