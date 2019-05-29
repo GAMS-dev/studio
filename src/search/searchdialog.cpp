@@ -403,6 +403,7 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
     if (ui->combo_search->currentText() == "") return;
 
     if (!mCachedResults || mHasChanged || (mMain->recent()->editor() && mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty())) {
+        invalidateCache();
         updateSearchCache(ignoreReadOnly);
         QApplication::processEvents(QEventLoop::AllEvents, 50);
     }
