@@ -222,11 +222,12 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
     QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
     bool thereIsARowSelection = (selection.count() > 0);
+    bool thereIsARow = (ui->gamsOptionTableView->model()->rowCount() > 0);
 
     QMenu menu(this);
     for(QAction* action : ui->gamsOptionTableView->actions()) {
         if (action->objectName().compare("actionInsert_option")==0) {
-            action->setVisible( (ui->gamsOptionTableView->model()->rowCount() <= 0) || thereIsARowSelection );
+            action->setVisible( !thereIsARow || thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
@@ -244,7 +245,7 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setVisible( true );
+            action->setVisible( thereIsARow );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
@@ -260,7 +261,7 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
             action->setVisible( thereIsAnOptionSelection );
             menu.addAction(action);
         } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setVisible( true );
+            action->setVisible( thereIsARow );
             menu.addAction(action);
             menu.addSeparator();
         }
@@ -597,6 +598,8 @@ void OptionWidget::on_optionTableNameChanged(const QString &from, const QString 
 void OptionWidget::resizeColumnsToContents()
 {
     if (ui->gamsOptionTableView->hasFocus()) {
+        if (ui->gamsOptionTableView->model()->rowCount()<=0)
+            return;
         ui->gamsOptionTableView->resizeColumnToContents(GamsOptionTableModel::COLUMN_OPTION_KEY);
         ui->gamsOptionTableView->resizeColumnToContents(GamsOptionTableModel::COLUMN_OPTION_VALUE);
     } else  if (ui->gamsOptionTreeView->hasFocus()) {

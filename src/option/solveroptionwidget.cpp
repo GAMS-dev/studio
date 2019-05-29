@@ -288,7 +288,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setVisible( true );
+            action->setVisible( isThereARow() );
             menu.addAction(action);
         } else if (action->objectName().compare("actionResize_columns")==0) {
             action->setVisible( isThereARow() );
@@ -1035,6 +1035,8 @@ void SolverOptionWidget::moveOptionDown()
 void SolverOptionWidget::resizeColumnsToContents()
 {
     if (focusWidget()==ui->solverOptionTableView) {
+        if (ui->solverOptionTableView->model()->rowCount()<=0)
+            return;
         ui->solverOptionTableView->resizeColumnToContents(SolverOptionTableModel::COLUMN_OPTION_KEY);
         ui->solverOptionTableView->resizeColumnToContents(SolverOptionTableModel::COLUMN_OPTION_VALUE);
     } else  if (focusWidget()==ui->solverOptionTreeView) {
