@@ -23,30 +23,15 @@
 namespace gams {
 namespace studio {
 
-SearchResultList::SearchResultList()
+SearchResultList::SearchResultList(QRegularExpression regex) : mSearchRegex(regex)
 {
-}
-
-SearchResultList::SearchResultList(SearchResultList &searchResultList)
-    : QAbstractTableModel(searchResultList.parent()),
-      mSearchTerm(searchResultList.searchTerm()),
-      mSize(searchResultList.size()),
-      mResultHash(searchResultList.resultHash())
-{
-}
-
-SearchResultList::SearchResultList(const QString &searchTerm, QObject *parent) :
-     QAbstractTableModel(parent), mSearchTerm(searchTerm)
-{
-    useRegex(false); // set default
-    mResultHash.empty();
 }
 
 SearchResultList::~SearchResultList()
 {
 }
 
-QList<Result> SearchResultList::resultList() const
+QList<Result> SearchResultList::resultsAsList() const
 {
     QList<Result> result;
     for (QList<Result> rl : mResultHash.values())
@@ -64,28 +49,22 @@ void SearchResultList::addResult(int lineNr, int colNr, int length, QString file
 
 QList<Result> SearchResultList::filteredResultList(QString fileLocation)
 {
-    return mResultHash[fileLocation];
+    return mResultHash.value(fileLocation);
 }
 
-QString SearchResultList::searchTerm() const
+void SearchResultList::setSearchRegex(QRegularExpression searchRegex)
 {
-    return mSearchTerm;
+    mSearchRegex = searchRegex;
 }
 
-void SearchResultList::useRegex(bool regex)
+QRegularExpression SearchResultList::searchRegex()
 {
-    mIsRegex = regex;
+    return mSearchRegex;
 }
 
 int SearchResultList::size()
 {
     return mSize;
-}
-
-void SearchResultList::clear()
-{
-    mResultHash.clear();
-    mSize = 0;
 }
 
 int SearchResultList::rowCount(const QModelIndex &parent) const
@@ -161,16 +140,6 @@ Result SearchResultList::at(int index) const
 QMultiHash<QString, QList<Result>> SearchResultList::resultHash() const
 {
     return mResultHash;
-}
-
-void SearchResultList::setSearchTerm(const QString &searchTerm)
-{
-    mSearchTerm = searchTerm;
-}
-
-bool SearchResultList::isRegex() const
-{
-    return mIsRegex;
 }
 
 }

@@ -62,7 +62,7 @@ QString GAMSLibProcess::modelName() const
 }
 
 void GAMSLibProcess::execute()
-{// TODO(AF) improve the gamslib output messages... currently they don't make sense for the GAMS Studio!
+{
     QStringList args;
     args << "-lib";
     args << QDir::toNativeSeparators(mGlbFile);
