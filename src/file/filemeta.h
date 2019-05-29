@@ -88,7 +88,7 @@ public:
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
-    void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0);
+    void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0, int length = 0);
     void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     syntax::SyntaxHighlighter *highlighter() const;

@@ -116,7 +116,7 @@ void TextView::zoomOut(int range)
     mEdit->zoomOut(range);
 }
 
-bool TextView::jumpTo(int lineNr, int charNr)
+bool TextView::jumpTo(int lineNr, int charNr, int length)
 {
     if (lineNr > mMapper.knownLineNrs()) return false;
     int vTop = mMapper.absTopLine()+mMapper.visibleOffset();
@@ -127,6 +127,8 @@ bool TextView::jumpTo(int lineNr, int charNr)
         vTop = mMapper.absTopLine()+mMapper.visibleOffset();
     }
     mMapper.setPosRelative(lineNr - mMapper.absTopLine(), charNr);
+    if (length != 0)
+        mMapper.setPosRelative(lineNr - mMapper.absTopLine(), charNr + length, QTextCursor::KeepAnchor);
     updatePosAndAnchor();
     emit selectionChanged();
     setFocus();
