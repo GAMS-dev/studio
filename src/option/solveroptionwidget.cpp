@@ -266,7 +266,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QAction* moveDownAction = nullptr;
     for(QAction* action : ui->solverOptionTableView->actions()) {
         if (action->objectName().compare("actionToggle_comment")==0) {
-            action->setEnabled( !viewIsCompact && thereIsARowSelection );
+            action->setEnabled( thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionInsert_option")==0) {
@@ -615,12 +615,12 @@ void SolverOptionWidget::on_selectAndToggleRow(int logicalIndex)
 
 void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 {
-    if (ui->compactViewCheckBox->isChecked())
-        return;
-
     mOptionTableModel->on_toggleRowHeader(logicalIndex);
     updateTableColumnSpan();
     setModified(true);
+
+    if (ui->compactViewCheckBox->isChecked())
+        on_compactViewCheckBox_stateChanged(Qt::Checked);
 }
 
 void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
@@ -798,9 +798,8 @@ void SolverOptionWidget::toggleCommentOption()
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    if ( isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()) )
+    if ( isThereARow() && !isThereARowSelection() && !isEverySelectionARow() )
         return;
-//(mOptionTableModel->headerData( index.row(), Qt::Vertical, Qt::CheckStateRole ).toInt()!=Qt::PartiallyChecked )
 
     bool modified = false;
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
