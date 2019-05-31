@@ -102,6 +102,7 @@ private slots:
 
     void findAndSelectionOptionFromDefinition();
     void toggleCommentOption();
+    void selectAllOptions();
     void selectAnOption();
     void insertOption();
     void insertComment();

@@ -266,34 +266,34 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     QAction* moveDownAction = nullptr;
     for(QAction* action : ui->solverOptionTableView->actions()) {
         if (action->objectName().compare("actionToggle_comment")==0) {
-            action->setVisible( !viewIsCompact && thereIsARowSelection );
+            action->setEnabled( !viewIsCompact && thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionInsert_option")==0) {
-            action->setVisible( !viewIsCompact && (!isThereARow() || isThereARowSelection()) );
+            action->setEnabled( !viewIsCompact && (!isThereARow() || isThereARowSelection()) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
-            action->setVisible( !viewIsCompact && (!isThereARow() || isThereARowSelection()) );
+            action->setEnabled( !viewIsCompact && (!isThereARow() || isThereARowSelection()) );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
-            action->setVisible( !viewIsCompact && thereIsARowSelection );
+            action->setEnabled( thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            action->setVisible( !viewIsCompact && thereIsARowSelection && (selection.first().row() > 0) );
+            action->setEnabled( !viewIsCompact && thereIsARowSelection && (selection.first().row() > 0) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setVisible( !viewIsCompact && thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            action->setEnabled( !viewIsCompact && thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setVisible( isThereARow() );
-            menu.addAction(action);
-        } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setVisible( isThereARow() );
+            action->setEnabled( !viewIsCompact && isThereARow() );
             menu.addAction(action);
             menu.addSeparator();
+        } else if (action->objectName().compare("actionResize_columns")==0) {
+            action->setEnabled( isThereARow() );
+            menu.addAction(action);
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
 
             bool thereIsAnOptionSelection = false;
@@ -304,7 +304,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                     break;
                 }
             }
-            action->setVisible( thereIsAnOptionSelection );
+            action->setEnabled( thereIsAnOptionSelection );
             menu.addAction(action);
         }
     }
@@ -314,9 +314,9 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         QList<SolverOptionItem*> items = mOptionTableModel->getCurrentListOfOptionItems();
         QModelIndex index = selection.at(0);
         if (index.row()==0 && moveUpAction)
-            moveUpAction->setVisible(false);
+            moveUpAction->setEnabled(false);
         if (index.row()+1 == ui->solverOptionTableView->model()->rowCount() && moveDownAction)
-            moveDownAction->setVisible(false);
+            moveDownAction->setEnabled(false);
 
         int row = index.row();
         int i = 1;
@@ -329,9 +329,9 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
         }
         if (i != selection.count()) {
            if (moveUpAction)
-               moveUpAction->setVisible(false);
+               moveUpAction->setEnabled(false);
            if (moveDownAction)
-               moveDownAction->setVisible(false);
+               moveDownAction->setEnabled(false);
         }
     }
 
@@ -344,7 +344,7 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
     if (selection.count() <= 0)
         return;
 
-    bool viewIsCompact = isViewCompact();
+//    bool viewIsCompact = isViewCompact();
     bool hasSelectionBeenAdded = (selection.size()>0);
     // assume single selection
     for (QModelIndex idx : selection) {
@@ -357,19 +357,15 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
     QMenu menu(this);
     for(QAction* action : ui->solverOptionTreeView->actions()) {
         if (action->objectName().compare("actionFindThisOption")==0) {
-            action->setVisible(  hasSelectionBeenAdded );
+            action->setEnabled( hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionAddThisOption")==0) {
-            action->setVisible( !hasSelectionBeenAdded && !viewIsCompact );
+            action->setEnabled( !hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            action->setVisible( hasSelectionBeenAdded && !viewIsCompact );
-            menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setVisible( ui->solverOptionTreeView->model()->rowCount()>0 );
+            action->setEnabled( hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionCopyDefinitionOptionName")==0) {
@@ -377,6 +373,10 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
         } else if (action->objectName().compare("actionCopyDefinitionOptionDescription")==0) {
             menu.addAction(action);
         } else if (action->objectName().compare("actionCopyDefinitionText")==0) {
+            menu.addAction(action);
+            menu.addSeparator();
+        }  else if (action->objectName().compare("actionResize_columns")==0) {
+            action->setEnabled( ui->solverOptionTreeView->model()->rowCount()>0 );
             menu.addAction(action);
         }
     }
@@ -800,6 +800,7 @@ void SolverOptionWidget::toggleCommentOption()
 
     if ( isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()) )
         return;
+//(mOptionTableModel->headerData( index.row(), Qt::Vertical, Qt::CheckStateRole ).toInt()!=Qt::PartiallyChecked )
 
     bool modified = false;
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
@@ -810,6 +811,14 @@ void SolverOptionWidget::toggleCommentOption()
     if (modified) {
         setModified(modified);
     }
+}
+
+void SolverOptionWidget::selectAllOptions()
+{
+    if (isViewCompact())
+        return;
+
+    ui->solverOptionTableView->selectAll();
 }
 
 void SolverOptionWidget::selectAnOption()
@@ -946,7 +955,7 @@ void SolverOptionWidget::deleteOption(bool keepFirstOne)
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    if  (isViewCompact() || !isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
+    if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
     if (isThereARowSelection() && isEverySelectionARow()) {
@@ -1093,7 +1102,7 @@ void SolverOptionWidget::addActions()
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(moveDownAction);
 
-    QAction* selectAll = mContextMenu.addAction("Select All", ui->solverOptionTableView, &QTableView::selectAll);
+    QAction* selectAll = mContextMenu.addAction("Select All", ui->solverOptionTableView, [this]() { selectAllOptions(); });
     selectAll->setObjectName("actionSelect_all");
     selectAll->setShortcut( QKeySequence("Ctrl+A") );
     selectAll->setShortcutVisibleInContextMenu(true);
@@ -1107,16 +1116,7 @@ void SolverOptionWidget::addActions()
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(showDefinitionAction);
 
-
-    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
-    resizeColumns->setObjectName("actionResize_columns");
-    resizeColumns->setShortcut( QKeySequence("Ctrl+R") );
-    resizeColumns->setShortcutVisibleInContextMenu(true);
-    resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->solverOptionTableView->addAction(resizeColumns);
-    ui->solverOptionTreeView->addAction(resizeColumns);
-
-    QAction* findThisOptionAction = mContextMenu.addAction("show Selection of This Option", [this]() {
+    QAction* findThisOptionAction = mContextMenu.addAction("show Option of this definition", [this]() {
         findAndSelectionOptionFromDefinition();
     });
     findThisOptionAction->setObjectName("actionFindThisOption");
@@ -1167,6 +1167,14 @@ void SolverOptionWidget::addActions()
     copyDefinitionTextAction->setShortcutVisibleInContextMenu(true);
     copyDefinitionTextAction->setShortcutContext(Qt::WidgetShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionTextAction);
+
+    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
+    resizeColumns->setObjectName("actionResize_columns");
+    resizeColumns->setShortcut( QKeySequence("Ctrl+R") );
+    resizeColumns->setShortcutVisibleInContextMenu(true);
+    resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->solverOptionTableView->addAction(resizeColumns);
+    ui->solverOptionTreeView->addAction(resizeColumns);
 }
 
 void SolverOptionWidget::updateEditActions(bool modified)
