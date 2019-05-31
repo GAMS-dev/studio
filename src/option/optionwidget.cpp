@@ -230,25 +230,25 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
     QMenu menu(this);
     for(QAction* action : ui->gamsOptionTableView->actions()) {
         if (action->objectName().compare("actionInsert_option")==0) {
-            action->setVisible( !thereIsARow || thereIsARowSelection );
+            action->setEnabled( !thereIsARow || thereIsARowSelection );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
-            action->setVisible( thereIsARowSelection );
+            action->setEnabled( thereIsARowSelection );
             menu.addAction(action);
         } else if (action->objectName().compare("actionDeleteAll_option")==0) {
-            action->setVisible( ui->gamsOptionTableView->model()->rowCount() > 0 );
+            action->setEnabled( ui->gamsOptionTableView->model()->rowCount() > 0 );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            action->setVisible( thereIsARowSelection && (selection.first().row() > 0) );
+            action->setEnabled( thereIsARowSelection && (selection.first().row() > 0) );
             menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setVisible( thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
+            action->setEnabled( thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setVisible( thereIsARow );
+            action->setEnabled( thereIsARow );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
@@ -261,10 +261,10 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
                     break;
                 }
             }
-            action->setVisible( thereIsAnOptionSelection );
+            action->setEnabled( thereIsAnOptionSelection );
             menu.addAction(action);
         } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setVisible( thereIsARow );
+            action->setEnabled( thereIsARow );
             menu.addAction(action);
             menu.addSeparator();
         }
@@ -291,19 +291,19 @@ void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
     QMenu menu(this);
     for(QAction* action : ui->gamsOptionTreeView->actions()) {
         if (action->objectName().compare("actionFindThisOption")==0) {
-            action->setVisible(  hasSelectionBeenAdded );
+            action->setEnabled(  hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionAddThisOption")==0) {
-            action->setVisible( !hasSelectionBeenAdded );
+            action->setEnabled( !hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            action->setVisible( hasSelectionBeenAdded  );
+            action->setEnabled( hasSelectionBeenAdded  );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setVisible( ui->gamsOptionTreeView->model()->rowCount()>0 );
+            action->setEnabled( ui->gamsOptionTreeView->model()->rowCount()>0 );
             menu.addAction(action);
             menu.addSeparator();
         }
@@ -784,14 +784,6 @@ void OptionWidget::addActions()
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(showDefinitionAction);
 
-    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
-    resizeColumns->setObjectName("actionResize_columns");
-    resizeColumns->setShortcut( QKeySequence("Ctrl+R") );
-    resizeColumns->setShortcutVisibleInContextMenu(true);
-    resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->gamsOptionTableView->addAction(resizeColumns);
-    ui->gamsOptionTreeView->addAction(resizeColumns);
-
     QAction* findThisOptionAction = mContextMenu.addAction("show Selection of This Option", [this]() {
         findAndSelectionOptionFromDefinition();
     });
@@ -821,6 +813,14 @@ void OptionWidget::addActions()
     deleteThisOptionAction->setShortcutVisibleInContextMenu(true);
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTreeView->addAction(deleteThisOptionAction);
+
+    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
+    resizeColumns->setObjectName("actionResize_columns");
+    resizeColumns->setShortcut( QKeySequence("Ctrl+R") );
+    resizeColumns->setShortcutVisibleInContextMenu(true);
+    resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->gamsOptionTableView->addAction(resizeColumns);
+    ui->gamsOptionTreeView->addAction(resizeColumns);
 }
 
 QDockWidget* OptionWidget::extendedEditor() const
