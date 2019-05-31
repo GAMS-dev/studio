@@ -344,7 +344,6 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
     if (selection.count() <= 0)
         return;
 
-//    bool viewIsCompact = isViewCompact();
     bool hasSelectionBeenAdded = (selection.size()>0);
     // assume single selection
     for (QModelIndex idx : selection) {
@@ -386,9 +385,6 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
 
 void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
-    if (isViewCompact())
-        return;
-
     setModified(true);
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
@@ -1125,6 +1121,8 @@ void SolverOptionWidget::addActions()
     ui->solverOptionTreeView->addAction(findThisOptionAction);
 
     QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Option", [this]() {
+        qDebug() << "addThisOption";
+        ui->solverOptionTableView->selectionModel()->clearSelection();
         QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
             addOptionFromDefinition(selection.at(0));
