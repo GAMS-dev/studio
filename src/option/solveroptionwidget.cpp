@@ -291,9 +291,6 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             action->setEnabled( !viewIsCompact && isThereARow() );
             menu.addAction(action);
             menu.addSeparator();
-        } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setEnabled( isThereARow() );
-            menu.addAction(action);
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
 
             bool thereIsAnOptionSelection = false;
@@ -305,6 +302,9 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
                 }
             }
             action->setEnabled( thereIsAnOptionSelection );
+            menu.addAction(action);
+        } else if (action->objectName().compare("actionResize_columns")==0) {
+            action->setEnabled( isThereARow() );
             menu.addAction(action);
         }
     }
@@ -532,6 +532,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
     ui->solverOptionTableView->selectRow(rowToBeAdded);
+    selectAnOption();
 
     QString text = mOptionTableModel->getOptionTableEntry(insertNumberIndex.row());
     if (replaceExistingEntry)
@@ -551,8 +552,6 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                   {Qt::EditRole});
 
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
-
-    updateTableColumnSpan();
 
     showOptionDefinition();
 
@@ -1104,13 +1103,6 @@ void SolverOptionWidget::addActions()
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(selectAll);
 
-    QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
-    showDefinitionAction->setObjectName("actionShowDefinition_option");
-    showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
-    showDefinitionAction->setShortcutVisibleInContextMenu(true);
-    showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->solverOptionTableView->addAction(showDefinitionAction);
-
     QAction* findThisOptionAction = mContextMenu.addAction("show Option of this definition", [this]() {
         findAndSelectionOptionFromDefinition();
     });
@@ -1121,11 +1113,12 @@ void SolverOptionWidget::addActions()
     ui->solverOptionTreeView->addAction(findThisOptionAction);
 
     QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Option", [this]() {
-        qDebug() << "addThisOption";
-        ui->solverOptionTableView->selectionModel()->clearSelection();
         QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
-        if (selection.size()>0)
+        if (selection.size()>0) {
+            ui->solverOptionTableView->clearSelection();
+            ui->solverOptionTreeView->clearSelection();
             addOptionFromDefinition(selection.at(0));
+        }
     });
     addThisOptionAction->setObjectName("actionAddThisOption");
     addThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Insert") );
@@ -1164,6 +1157,13 @@ void SolverOptionWidget::addActions()
     copyDefinitionTextAction->setShortcutVisibleInContextMenu(true);
     copyDefinitionTextAction->setShortcutContext(Qt::WidgetShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionTextAction);
+
+    QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
+    showDefinitionAction->setObjectName("actionShowDefinition_option");
+    showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
+    showDefinitionAction->setShortcutVisibleInContextMenu(true);
+    showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->solverOptionTableView->addAction(showDefinitionAction);
 
     QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
     resizeColumns->setObjectName("actionResize_columns");
