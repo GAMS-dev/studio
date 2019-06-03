@@ -39,14 +39,12 @@ public:
     ~SolverOptionSetting();
 
     QChar getDefaultEOLCharacter() const;
-//    QChar getDefaultSeparatorCharacter() const;
 
 signals:
     void overrideExistingOptionChanged(int checkState);
     void addCommentAboveChanged(int checkState);
     void addOptionDescriptionAsComment(int checkState);
     void EOLCharChanged(QChar ch);
-//    void separatorCharChanged(QChar ch);
 
 private slots:
     void on_overrideExistingOptionCheckBox_stateChanged(int checkState);

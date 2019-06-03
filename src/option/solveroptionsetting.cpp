@@ -34,36 +34,19 @@ SolverOptionSetting::SolverOptionSetting(QString eolchars, QString separator, QS
 {
     ui->setupUi(this);
 
-    ui->tabWidget->tabBar()->setStyle( new reference::ReferenceTabStyle );
-
     ui->overrideExistingOptionCheckBox->setCheckState(Qt::Checked);
-
-    ui->eolCommentWidget->setVisible(!eolchars.isEmpty());
     ui->addEOLCommentCheckBox->setVisible(!eolchars.isEmpty());
     if (!eolchars.isEmpty()) {
-        for(int i=0; i<eolchars.size(); i++)
-           ui->eolCommentCharComboBox->addItem(eolchars.at(i));
         mDefaultEOLChar = mEOLChars.at(0);
     } else {
         mDefaultEOLChar = QChar();
     }
-    ui->defaultSeparatorLineEdit->setText(mDefaultSeparator);
-    ui->defaultStringquoteLineEdit->setText(mDefaultStringQute);
-    connect(ui->eolCommentCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-        [=](int index){ emit EOLCharChanged(ui->eolCommentCharComboBox->itemText(index).at(0)); });
-//    connect(ui->separatorCharComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-//        [=](int index){ emit separatorCharChanged(ui->separatorCharComboBox->itemText(index).at(0)); });
 }
 
 SolverOptionSetting::~SolverOptionSetting()
 {
     delete ui;
 }
-
-//QChar SolverOptionSetting::getDefaultSeparatorCharacter() const
-//{
-//    return mDefaultSeparator;
-//}
 
 QChar SolverOptionSetting::getDefaultEOLCharacter() const
 {
