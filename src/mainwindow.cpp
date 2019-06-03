@@ -1681,10 +1681,12 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
     if (event->key() == Qt::Key_Escape) {
-        mSearchDialog->hide();
-
         if (mSearchDialog->isHidden()) mSearchDialog->clearSearch();
+        else mSearchDialog->hide();
     }
+
+    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_H))
+        if (mRecent.editor()) mRecent.editor()->setFocus();
 
     QMainWindow::keyPressEvent(event);
 }
