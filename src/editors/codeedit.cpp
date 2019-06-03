@@ -26,6 +26,7 @@
 #include "syntax.h"
 #include "keys.h"
 #include "editorhelper.h"
+#include "viewhelper.h"
 #include "locators/searchlocator.h"
 #include "locators/settingslocator.h"
 
@@ -1231,14 +1232,9 @@ void CodeEdit::updateExtraSelections()
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
-        QString searchTerm = SearchLocator::searchDialog()->searchTerm();
-        bool regex = SearchLocator::searchDialog()->regex();
-
-        QRegularExpression regexp;
-        regexp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-        if (regex) regexp.setPattern(searchTerm);                      // treat as regex
-        else regexp.setPattern(QRegularExpression::escape(searchTerm));// take literally
-        regexp.setPattern(regexp.pattern() + "\\b");           // only match whole selection
+        QRegularExpression regexp = SearchLocator::searchDialog()->results()
+                                    ? SearchLocator::searchDialog()->results()->searchRegex()
+                                    : QRegularExpression();
 
         // word boundary (\b) only matches start-of-string when first character is \w
         // so \b will only be added when first character of selectedText is a \w
@@ -1333,29 +1329,33 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    SearchResultList *matches = SearchLocator::searchResults();
+    SearchDialog *searchDialog = SearchLocator::searchDialog();
+    if (!searchDialog || searchDialog->searchTerm().isEmpty()) return;
+
+    SearchResultList* list = searchDialog->results();
+    if (!list) return;
+
+    if (list->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
+
+    QRegularExpression regEx = list->searchRegex();
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
-
-    QList<Result> fileResults = matches->filteredResultList(property("location").toString());
-
     while (block.isValid() && top < viewport()->height()) {
-        QList<Result> rowResults;
-        for (Result r : fileResults) {
-            if (r.lineNr() == block.blockNumber()+1)
-                rowResults << r;
-        }
+        top += qRound(blockBoundingRect(block).height());
 
-        for (Result r: rowResults) {
+        QRegularExpressionMatchIterator i = regEx.globalMatch(block.text());
+        while (i.hasNext()) {
+            QRegularExpressionMatch m = i.next();
             QTextEdit::ExtraSelection selection;
-            selection.cursor = textCursor();
-            selection.cursor.setPosition(block.position() + r.colNr());
-            selection.cursor.setPosition(block.position() + r.colNr() + r.length(), QTextCursor::KeepAnchor);
+            QTextCursor tc(document());
+            tc.setPosition(block.position() + m.capturedStart(0));
+            tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
+            selection.cursor = tc;
             selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
             selections << selection;
         }
-        top += qRound(blockBoundingRect(block).height());
+
         block = block.next();
     }
 }

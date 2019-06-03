@@ -31,28 +31,36 @@ void NestedHeaderView::setModel(QAbstractItemModel *model)
 
 void NestedHeaderView::reset()
 {
-    if (this->model() && orientation() == Qt::Vertical) {
-        int dimension = dim();
-        vhSectionWidth.clear();
-        vhSectionWidth.resize(dimension);
-
+    if (this->model()) {
+        int borderWidth = 10;
         QFont fnt = font();
         fnt.setBold(true);
-
         QFontMetrics fm(fnt);
-
-        for (int i=0; i<dimension; i++) {
-            QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
-            for (QString label : labelsInRows.at(i))
-                vhSectionWidth.replace(i, qMax(vhSectionWidth.at(i), fm.width(label)));
+        int dimension = dim();
+        sectionWidth.clear();
+        if (orientation() == Qt::Vertical) {
+            sectionWidth.resize(dimension);
+            for (int i=0; i<dimension; i++) {
+                QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
+                for (QString label : labelsInRows.at(i))
+                    sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.width(label)));
+            }
+            //TODO CW: The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
+            for (int i=0; i<dimension; i++)
+                sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
+        } else {
+            QMap<QString, int> labelWidth;
+            sectionWidth.resize(this->model()->columnCount());
+            for (int i=0; i<this->model()->columnCount(); i++) {
+                for (QString label : model()->headerData(i, Qt::Horizontal).toStringList()) {
+                    if (!labelWidth.contains(label))
+                        labelWidth.insert(label, fm.width(label));
+                    sectionWidth.replace(i, qMax(sectionWidth.at(i), labelWidth[label]));
+                }
+            }
+            for (int i=0; i<this->model()->columnCount(); i++)
+                sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
         }
-
-        QStyleOptionHeader opt;
-        initStyleOption(&opt);
-        //TODO CW: The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
-        int borderWidth = 10;
-        for (int i=0; i<dimension; i++)
-            vhSectionWidth.replace(i, vhSectionWidth.at(i) + borderWidth);
     }
     QHeaderView::reset();
 }
@@ -71,6 +79,11 @@ int NestedHeaderView::dim() const
             return d+1;
         return d;
     }
+}
+
+void NestedHeaderView::setDdEnabled(bool value)
+{
+    ddEnabled = value;
 }
 
 void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
@@ -110,7 +123,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Enabled;
             if (window()->isActiveWindow())
                 state |= QStyle::State_Active;
-            int rowWidth = vhSectionWidth.at(i);
+            int rowWidth = sectionWidth.at(i);
 
             if (labelPrevSection[i] != labelCurSection[i])
                 opt.text = labelCurSection[i];
@@ -178,6 +191,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
 void NestedHeaderView::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
+        ddEnabled = true;
         mDragStartPosition = event->pos();
         dimIdxStart = pointToDimension(event->pos());
     }
@@ -186,8 +200,6 @@ void NestedHeaderView::mousePressEvent(QMouseEvent *event)
 
 void NestedHeaderView::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-        ddEnabled = true;
     QHeaderView::mouseReleaseEvent(event);
 }
 
@@ -292,6 +304,8 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
 
     dimIdxEnd = -1;
     dimIdxStart = -1;
+
+    static_cast<QTableView*>(parent())->resizeColumnsToContents();
 }
 
 void NestedHeaderView::dragLeaveEvent(QDragLeaveEvent *event)
@@ -312,7 +326,7 @@ int NestedHeaderView::pointToDimension(QPoint p)
     if (orientation() == Qt::Vertical) {
         int totWidth = 0;
         for(int i=0; i<dim(); i++) {
-            totWidth += vhSectionWidth.at(i);
+            totWidth += sectionWidth.at(i);
             if (p.x() < totWidth)
                 return i;
         }
@@ -359,7 +373,7 @@ int NestedHeaderView::pointToDropDimension(QPoint p)
             return 0;
         int totWidth = 0;
         for(int i=0; i<dim(); i++) {
-            int curWidth = vhSectionWidth.at(i);
+            int curWidth = sectionWidth.at(i);
             totWidth += curWidth;
             if (p.x() < totWidth) {
                 int relX = p.x() - totWidth + curWidth;
@@ -406,12 +420,13 @@ QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
         QSize s(0,sectionSize(logicalIndex));
         int totWidth = 0;
         for (int i=0; i<dim(); i++)
-            totWidth += vhSectionWidth.at(i);
+            totWidth += sectionWidth.at(i);
         s.setWidth(totWidth);
         return s;
     } else {
         QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);
         s.setHeight(s.height()*dim());
+        s.setWidth(sectionWidth.at(logicalIndex));
         return s;
     }
 }

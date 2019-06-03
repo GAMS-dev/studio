@@ -1162,11 +1162,10 @@ void MainWindow::activeTabChanged(int index)
     }
 
     searchDialog()->updateReplaceActionAvailability();
+    updateToolbar(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
-    updateToolbar(mainTabs()->currentWidget());
-
     updateEditorMode();
 }
 
@@ -1563,8 +1562,7 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
-    if (isResults)
-        mSearchDialog->clearResults();
+    if (isResults) mSearchDialog->clearResults();
 
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
@@ -1772,7 +1770,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     if (event->key() == Qt::Key_Escape) {
         mSearchDialog->hide();
-        mSearchDialog->clearSearch();
+
+        if (mSearchDialog->isHidden()) mSearchDialog->clearSearch();
     }
 
     QMainWindow::keyPressEvent(event);
@@ -2475,8 +2474,11 @@ void MainWindow::on_mainTab_currentChanged(int index)
     }
     changeToLog(fc, false, false);
 
-    CodeEdit* ce = ViewHelper::toCodeEdit(edit);
-    if (ce) ce->updateExtraSelections();
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(edit))
+        ce->updateExtraSelections();
+    else if (TextView* tv = ViewHelper::toTextView(edit))
+        tv->updateExtraSelections();
+
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -2529,12 +2531,26 @@ void MainWindow::on_actionSearch_triggered()
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
-           QPoint p(0,0);
-           QPoint newP(this->mapToGlobal(p));
+           int sbs;
+           if (mRecent.editor() && ViewHelper::toAbstractEdit(mRecent.editor())
+                   && ViewHelper::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
+               sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
+           else
+               sbs = 2;
 
-           if (ui->mainTab->currentWidget())
-               mSearchDialog->move(newP.x(), newP.y());
+           QPoint c = mapToGlobal(centralWidget()->pos());
 
+           int wDiff = frameGeometry().width() - geometry().width();
+           int hDiff = frameGeometry().height() - geometry().height();
+
+           int wSize = mSearchDialog->width() + wDiff;
+           int hSize = mSearchDialog->height() + hDiff;
+
+           QPoint p(qMin(c.x() + (centralWidget()->width() - sbs), QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
+                    qMin(c.y() + centralWidget()->height(), QGuiApplication::primaryScreen()->virtualGeometry().height()) - hSize
+                   );
+
+           mSearchDialog->move(p);
            mSearchDialog->show();
        }
     }
@@ -2546,9 +2562,10 @@ void MainWindow::showResults(SearchResultList* results)
 
     // only update if new results available
     searchDialog()->setResultsView(new ResultsView(results, this));
+    connect(searchDialog()->resultsView(), &ResultsView::updateMatchLabel, searchDialog(), &SearchDialog::updateNrMatches, Qt::UniqueConnection);
 
     QString nr;
-    if (results->size() > 49999) nr = "50000+";
+    if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
     else nr = QString::number(results->size());
 
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
@@ -2565,6 +2582,7 @@ void MainWindow::closeResultsPage()
 {
     int index = ui->logTabs->indexOf(searchDialog()->resultsView());
     if (index != -1) ui->logTabs->removeTab(index);
+    mSearchDialog->setResultsView(nullptr);
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
@@ -3025,7 +3043,6 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 
         window->searchDialog()->setActiveEditWidget(tv);
     }
-    window->searchDialog()->invalidateCache();
     window->updateEditorMode();
     window->updateEditorPos();
 }

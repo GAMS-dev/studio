@@ -170,8 +170,6 @@ void FileMeta::linkDocument(QTextDocument *doc)
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
     }
-//    if (mHighlighter)
-//        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
 void FileMeta::unlinkAndFreeDocument()
@@ -543,16 +541,20 @@ FileMeta::FileDifferences FileMeta::compare(QString fileName)
     return res;
 }
 
-void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
+void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int length)
 {
     emit mFileRepo->openFile(this, groupId, focus, codecMib());
     if (!mEditors.size()) return;
+
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
         QTextCursor tc = QTextCursor(block);
-        tc.setPosition(block.position()+qMin(column, block.length()-1));
+
+        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(column, block.length()-1));
+        tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, length);
         edit->setTextCursor(tc);
+
         // center line vertically
         qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
         qreal line = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
@@ -562,7 +564,7 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
         return;
     }
     if (TextView *tv = ViewHelper::toTextView(mEditors.first())) {
-        tv->jumpTo(line, column);
+        tv->jumpTo(line, column, length);
     }
 }
 

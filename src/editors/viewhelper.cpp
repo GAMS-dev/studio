@@ -60,10 +60,11 @@ QString ViewHelper::location(QWidget *widget)
 void ViewHelper::setLocation(QWidget *widget, QString location)
 {
     widget->setProperty("location", location);
+    // if there is an inner edit: set the property additionally
     if (AbstractEdit *ed = toAbstractEdit(widget)) {
-        // if there is an inner edit: set the property additionally
-        if (ed != widget)
-            ed->setProperty("location", location);
+        if (ed != widget) ed->setProperty("location", location);
+    } else if (TextView* tv = toTextView(widget)) {
+        if (tv != widget) tv->edit()->setProperty("location", location);
     }
 }
 

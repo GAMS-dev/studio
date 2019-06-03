@@ -89,8 +89,7 @@ enum class FileKind {
     Log,
     Gdx,
     Ref,
-    Opt,
-    Dir
+    Opt
 };
 Q_ENUM_NS(FileKind)
 
@@ -131,6 +130,8 @@ operator<<(QTextStream &dbg, T enumValue)
     int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
     return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
 }
+
+const int MAX_SEARCH_RESULTS = 50000;
 
 }
 }
