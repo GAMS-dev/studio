@@ -41,13 +41,13 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
     if (ignoreSettings && !mResetSettings) {
         mAppSettings = new QSettings();
         mUserSettings = new QSettings();
+        initDefaultColors();
     }
     else if (mAppSettings == nullptr) {
         initSettingsFiles();
         initDefaultColors();
     }
-    if (resetViews)
-        resetViewSettings();
+    if (resetViews) resetViewSettings();
 }
 
 StudioSettings::~StudioSettings()
