@@ -90,7 +90,7 @@ void OptionCompleterDelegate::commitAndCloseEditor()
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( sender() ) ;
 
     emit commitData(lineEdit);
-    emit closeEditor(lineEdit);
+    emit closeEditor(lineEdit, QAbstractItemDelegate::NoHint);
 }
 
 bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
@@ -104,8 +104,7 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
        if (keyEvent->key() == Qt::Key_Escape) {
              emit closeEditor(lineEdit);
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter)) {
-             emit commitData(lineEdit);
-             emit closeEditor(lineEdit );
+                  emit lineEdit->editingFinished();
        }
        return false;
     }

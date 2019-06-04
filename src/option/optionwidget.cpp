@@ -98,7 +98,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->setTabKeyNavigation(false);
 
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
-    connect(this, &OptionWidget::optionTableModelChanged, mOptionTableModel, &GamsOptionTableModel::on_optionTableModelChanged);
+    connect(this, &OptionWidget::optionTableModelChanged, this, &OptionWidget::on_optionTableModelChanged);
     connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
     connect(mOptionTableModel, &GamsOptionTableModel::optionNameChanged, this, &OptionWidget::on_optionTableNameChanged);
 
@@ -274,7 +274,6 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
 
 void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
 {
-    qDebug() << __FUNCTION__;
     QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
     if (selection.count() <= 0)
         return;
@@ -380,6 +379,8 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
             mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
     disconnect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             this, &OptionWidget::updateOptionTableModel );
+    disconnect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
+    disconnect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 
     ui->gamsOptionTreeView->clearSelection();
     ui->gamsOptionTreeView->collapseAll();
@@ -394,6 +395,8 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
             mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
             this, &OptionWidget::updateOptionTableModel );
+    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 
     if (history.isEmpty()) {
         ui->gamsOptionCommandLine->insertItem(0, " ");
@@ -662,6 +665,21 @@ void OptionWidget::on_optionTableNameChanged(const QString &from, const QString 
         QModelIndex index = ui->gamsOptionTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
         ui->gamsOptionTreeView->model()->setData(index, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
+}
+
+void OptionWidget::on_optionTableModelChanged(const QString &commandLineStr)
+{
+    disconnect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+            this, &OptionWidget::updateOptionTableModel );
+    disconnect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
+    disconnect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+
+    mOptionTableModel->on_optionTableModelChanged(commandLineStr);
+
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
+            this, &OptionWidget::updateOptionTableModel );
+    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 }
 
 void OptionWidget::resizeColumnsToContents()
