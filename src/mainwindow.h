@@ -280,7 +280,7 @@ private slots:
 
 protected:
     void closeEvent(QCloseEvent *event);
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *e);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);

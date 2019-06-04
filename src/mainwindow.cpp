@@ -1675,20 +1675,50 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
 }
 
-void MainWindow::keyPressEvent(QKeyEvent* event)
+void MainWindow::keyPressEvent(QKeyEvent* e)
 {
-    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_0))
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0))
         updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
 
-    if (event->key() == Qt::Key_Escape) {
+    // escape is the close button for focussed widgets
+    if (e->key() == Qt::Key_Escape) {
+
+        // help widget
+        if (mHelpWidget->isVisible()) {
+            closeHelpView();
+            e->accept(); return;
+        }
+
+        // log widgets
+        if (focusWidget() == mSyslog) {
+            setOutputViewVisibility(false);
+            e->accept(); return;
+        } else if (focusWidget() == ui->logTabs->currentWidget()) {
+            on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
+            ui->logTabs->currentWidget()->setFocus();
+            e->accept(); return;
+        }
+
+        // search widget
         if (mSearchDialog->isHidden()) mSearchDialog->clearSearch();
         else mSearchDialog->hide();
+
+        e->accept(); return;
     }
 
-    if ((event->modifiers() & Qt::ControlModifier) && (event->key() == Qt::Key_H))
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_H)) {
         if (mRecent.editor()) mRecent.editor()->setFocus();
 
-    QMainWindow::keyPressEvent(event);
+        e->accept(); return;
+    }
+
+    if ((e->modifiers() & Qt::ControlModifier | Qt::ShiftModifier) && (e->key() == Qt::Key_G)) {
+        if (outputViewVisibility() == false) setOutputViewVisibility(true);
+        ui->logTabs->currentWidget()->setFocus();
+        e->accept(); return;
+    }
+
+    QMainWindow::keyPressEvent(e);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)

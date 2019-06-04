@@ -541,9 +541,10 @@ void HelpWidget::keyPressEvent(QKeyEvent *event)
            clearStatusBar();
            ui->webEngineView->setFocus();
         } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-                  on_forwardButtonTriggered();
+            on_forwardButtonTriggered();
         }
     }
+
     QWidget::keyPressEvent(event);
 }
 
