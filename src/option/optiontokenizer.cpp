@@ -954,9 +954,9 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
        if (!valueRead) {
            if (errorType == No_Error) { // eg. indicator option
                item->optionId = -1;
-               item->key = str;
-               item->value = "";
-               item->text = "";
+               item->key = key;
+               item->value = value;
+               item->text = text;
                item->error = errorType;
                item->disabled = false;
            } else { // error
