@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -37,17 +37,23 @@ public:
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
-//    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelInd*/ex &index) const;
+
+    QModelIndex currentEditedIndex() const;
 
 protected:
     virtual bool eventFilter(QObject * editor, QEvent * event) override;
 
+signals:
+    void currentEditedIndexChanged(const QModelIndex &index) const;
+
 private slots:
     void commitAndCloseEditor();
+    void updateCurrentEditedIndex(const QModelIndex &index);
 
 private:
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
+    QModelIndex mCurrentEditedIndex;
 };
 
 } // namespace option

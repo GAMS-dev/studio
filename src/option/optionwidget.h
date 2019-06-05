@@ -28,6 +28,7 @@
 #include "commandlineoption.h"
 #include "optiontokenizer.h"
 #include "gamsoptiontablemodel.h"
+#include "optioncompleterdelegate.h"
 
 namespace gams {
 namespace studio {
@@ -95,6 +96,7 @@ public slots:
     void loadCommandLineOption(const QStringList &history);
 
     void selectSearchField();
+    void optionItemCommitted(QWidget *editor);
 
 private slots:
     void findAndSelectionOptionFromDefinition();
@@ -133,6 +135,7 @@ private:
     QAction* actionStop;
 
     QMenu mContextMenu;
+    OptionCompleterDelegate* mOptionCompleter;
 
     MainWindow* main;
 

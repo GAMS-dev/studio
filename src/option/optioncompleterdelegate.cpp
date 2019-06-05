@@ -33,6 +33,8 @@ namespace option {
 OptionCompleterDelegate::OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent) :
     QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mOption(tokenizer->getOption())
 {
+    mCurrentEditedIndex = QModelIndex();
+    connect( this, &OptionCompleterDelegate::currentEditedIndexChanged, this, &OptionCompleterDelegate::updateCurrentEditedIndex) ;
 }
 
 QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -61,11 +63,13 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     lineEdit->adjustSize();
 
     connect( lineEdit, &QLineEdit::editingFinished, this, &OptionCompleterDelegate::commitAndCloseEditor) ;
+    emit currentEditedIndexChanged(index);
     return lineEdit;
 }
 
 void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
+    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
@@ -77,6 +81,7 @@ void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &
 
 void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
+    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         model->setData( index, lineEdit->text() ) ;
@@ -90,7 +95,17 @@ void OptionCompleterDelegate::commitAndCloseEditor()
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( sender() ) ;
 
     emit commitData(lineEdit);
-    emit closeEditor(lineEdit, QAbstractItemDelegate::NoHint);
+    emit closeEditor(lineEdit);
+}
+
+void OptionCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
+{
+    mCurrentEditedIndex = index;
+}
+
+QModelIndex OptionCompleterDelegate::currentEditedIndex() const
+{
+    return mCurrentEditedIndex;
 }
 
 bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)

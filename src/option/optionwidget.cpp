@@ -24,7 +24,6 @@
 
 #include "addoptionheaderview.h"
 #include "commonpaths.h"
-#include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "gamsoptiondefinitionmodel.h"
 #include "mainwindow.h"
@@ -63,7 +62,9 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
     connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 
-    ui->gamsOptionTableView->setItemDelegate( new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView) );
+    mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView);
+    ui->gamsOptionTableView->setItemDelegate( mOptionCompleter );
+    connect(mOptionCompleter, &QStyledItemDelegate::commitData, this, &OptionWidget::optionItemCommitted);
     ui->gamsOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
@@ -409,6 +410,16 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
 void OptionWidget::selectSearchField()
 {
     ui->gamsOptionSearch->setFocus();
+}
+
+void OptionWidget::optionItemCommitted(QWidget *editor)
+{
+    Q_UNUSED(editor);
+    if (mOptionCompleter->currentEditedIndex().isValid()) {
+        ui->gamsOptionTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
+        ui->gamsOptionTableView->setCurrentIndex( mOptionCompleter->currentEditedIndex() );
+        ui->gamsOptionTableView->setFocus();
+    }
 }
 
 void OptionWidget::findAndSelectionOptionFromDefinition()
