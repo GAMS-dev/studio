@@ -71,6 +71,8 @@
         <file alias="camera">camera.png</file>
         <file alias="show">angle-double-down.svg</file>
         <file alias="hide">angle-double-up.svg</file>
+        <file alias="square-darkyellow">square-darkyellow.svg</file>
+        <file alias="option-file">option.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

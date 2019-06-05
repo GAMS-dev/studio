@@ -79,12 +79,12 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
     delete mReferenceTreeModel;
 }
 
-void SymbolReferenceWidget::selectSearchField()
+void SymbolReferenceWidget::selectSearchField() const
 {
     ui->symbolSearchLineEdit->setFocus();
 }
 
-bool SymbolReferenceWidget::isModelLoaded()
+bool SymbolReferenceWidget::isModelLoaded() const
 {
     return mSymbolTableModel->isModelLoaded();
 }

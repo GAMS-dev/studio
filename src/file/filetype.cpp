@@ -17,6 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+
 #include "filetype.h"
 #include "exception.h"
 
@@ -32,7 +35,8 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Lxi, {"lxi"}, "GAMS List File Index", true),
     new FileType(FileKind::Gdx, {"gdx"}, "GAMS Data", true),
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
-    new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true)
+    new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true),
+    new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false)
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
@@ -92,6 +96,13 @@ FileType &FileType::from(QString suffix)
         if (ft->mSuffix.contains(suffix, Qt::CaseInsensitive))
             return *ft;
     }
+
+    QString pattern("[oO][pP][2-9]|[oO][1-9]\\d|[1-9]\\d\\d+");
+    QRegularExpression rx("\\A(?:" + pattern + ")\\z" );
+    QRegularExpressionMatch match = rx.match(suffix, 0, QRegularExpression::NormalMatch);
+    if (match.hasMatch())
+        return FileType::from(FileKind::Opt);
+
     return *mNone;
 }
 

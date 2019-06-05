@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionDefinitionItem::OptionDefinitionItem(const QList<QVariant>& data, OptionDefinitionItem* parent)
 {
@@ -41,6 +42,11 @@ void OptionDefinitionItem::appendChild(OptionDefinitionItem *item)
 OptionDefinitionItem *OptionDefinitionItem::child(int row)
 {
     return mChildItems.value(row);
+}
+
+OptionDefinitionItem *OptionDefinitionItem::parent()
+{
+    return mParentItem;
 }
 
 int OptionDefinitionItem::childCount() const
@@ -71,6 +77,47 @@ OptionDefinitionItem *OptionDefinitionItem::parentItem()
     return mParentItem;
 }
 
+bool OptionDefinitionItem::setData(int column, const QVariant &value)
+{
+    if (column < 0 || column >= mItemData.size())
+        return false;
 
+    mItemData[column] = value;
+    return true;
+}
+
+void OptionDefinitionItem::setParent(OptionDefinitionItem *parent)
+{
+    mParentItem = parent;
+}
+
+void OptionDefinitionItem::insertChild(int row, OptionDefinitionItem* item)
+{
+    item->setParent(this);
+    mChildItems.insert(row, item);
+}
+
+bool OptionDefinitionItem::removeChildren(int position, int count)
+{
+    if (position < 0 || position + count > mChildItems.size())
+        return false;
+
+    for (int row = 0; row < count; ++row)
+        delete mChildItems.takeAt(position);
+
+    return true;
+}
+
+bool OptionDefinitionItem::modified() const
+{
+    return mModified;
+}
+
+void OptionDefinitionItem::setModified(bool modified)
+{
+    mModified = modified;
+}
+
+} // namespace option
 } // namespace studio
 } // namespace gams

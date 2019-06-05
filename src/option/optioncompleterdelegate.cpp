@@ -24,13 +24,17 @@
 #include <QMainWindow>
 #include "lineeditcompleteevent.h"
 #include "optioncompleterdelegate.h"
+#include "solveroptiontablemodel.h"
 
 namespace gams {
 namespace studio {
+namespace option {
 
-OptionCompleterDelegate::OptionCompleterDelegate(CommandLineTokenizer* tokenizer, QObject* parent) :
-    QStyledItemDelegate(parent), commandLineTokenizer(tokenizer), gamsOption(tokenizer->getGamsOption())
+OptionCompleterDelegate::OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent) :
+    QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mOption(tokenizer->getOption())
 {
+    mCurrentEditedIndex = QModelIndex();
+    connect( this, &OptionCompleterDelegate::currentEditedIndexChanged, this, &OptionCompleterDelegate::updateCurrentEditedIndex) ;
 }
 
 QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -38,16 +42,18 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     Q_UNUSED(option);
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
-    if (index.column()==0) {
-        completer->setModel(new QStringListModel(gamsOption->getValidNonDeprecatedKeyList()));
-    } else {
-        QVariant key = index.model()->data( index.model()->index(index.row(), 0) );
-        if (gamsOption->isValid(key.toString())) {
-            completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(key.toString())) );
-        } else {
-            QString keyStr = gamsOption->getNameFromSynonym(key.toString());
-            completer->setModel(new QStringListModel(gamsOption->getNonHiddenValuesList(keyStr)) );
-        }
+    if (index.column()==SolverOptionTableModel::COLUMN_OPTION_KEY) {
+        completer->setModel(new QStringListModel(mOption->getValidNonDeprecatedKeyList()));
+    } else  if (index.column()==SolverOptionTableModel::COLUMN_OPTION_VALUE) {
+        QString key = index.model()->data( index.model()->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_KEY) ).toString();
+        if (!mOption->isValid(key))
+            key = mOption->getNameFromSynonym(key);
+
+        if ( mOption->getOptionType(key) == optTypeBoolean &&
+             mOption->getOptionSubType(key) != optsubNoValue )
+            completer->setModel(new QStringListModel( { "0", "1" } ));
+        else
+            completer->setModel(new QStringListModel(mOption->getNonHiddenValuesList(key)) );
     }
     completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
@@ -57,12 +63,13 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     lineEdit->adjustSize();
 
     connect( lineEdit, &QLineEdit::editingFinished, this, &OptionCompleterDelegate::commitAndCloseEditor) ;
-    connect(lineEdit, &QLineEdit::textChanged, this, &OptionCompleterDelegate::on_lineEdit_textChanged);
+    emit currentEditedIndexChanged(index);
     return lineEdit;
 }
 
 void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
+    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
@@ -74,6 +81,7 @@ void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &
 
 void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
+    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         model->setData( index, lineEdit->text() ) ;
@@ -82,21 +90,22 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
     QStyledItemDelegate::setModelData(editor, model, index);
 }
 
-void OptionCompleterDelegate::on_lineEdit_textChanged(const QString &text)
-{
-    if (text.simplified().isEmpty()) {
-        for (QWidget* widget: qApp->topLevelWidgets())
-            if (QMainWindow*  mainWindow = qobject_cast<QMainWindow *>(widget))
-                QApplication::postEvent(mainWindow, new LineEditCompleteEvent(static_cast<QLineEdit*>(sender())));
-    }
-}
-
 void OptionCompleterDelegate::commitAndCloseEditor()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( sender() ) ;
 
     emit commitData(lineEdit);
     emit closeEditor(lineEdit);
+}
+
+void OptionCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
+{
+    mCurrentEditedIndex = index;
+}
+
+QModelIndex OptionCompleterDelegate::currentEditedIndex() const
+{
+    return mCurrentEditedIndex;
 }
 
 bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
@@ -110,13 +119,13 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
        if (keyEvent->key() == Qt::Key_Escape) {
              emit closeEditor(lineEdit);
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter)) {
-             emit commitData(lineEdit);
-             emit closeEditor(lineEdit, QAbstractItemDelegate::EditNextItem);
+                  emit lineEdit->editingFinished();
        }
        return false;
     }
-   return QStyledItemDelegate::eventFilter(editor, event);
+    return QStyledItemDelegate::eventFilter(editor, event);
 }
 
+} // namespace option
 } // namespace studio
 } // namespace gams
