@@ -202,7 +202,6 @@ MainWindow::MainWindow(QWidget *parent)
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleDebugMode()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
-    new QShortcut(QKeySequence(Qt::SHIFT + Qt::Key_L), this, SLOT(toggleOptionEditorExpansion()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
@@ -697,11 +696,6 @@ void MainWindow::focusCmdLine()
     mGamsOptionWidget->focus();
 }
 
-void MainWindow::toggleOptionEditorExpansion()
-{
-    setOptionEditorVisibility(!optionEditorVisibility());
-}
-
 void MainWindow::focusProjectExplorer()
 {
     setProjectViewVisibility(true);
@@ -1150,7 +1144,6 @@ void MainWindow::activeTabChanged(int index)
                 mStatusWidgets->setLineCount(solverOptionEditor->getItemCount());
                 node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
-                solverOptionEditor->setFocus(Qt::ShortcutFocusReason);
             }
         }
         updateMenuToCodec(node->file()->codecMib());
