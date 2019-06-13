@@ -845,7 +845,6 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
         return false;
 
     QString str = "";
-
     QString separator = " ";
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
        str = QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text);
@@ -893,13 +892,13 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                switch(itype) {
                case optDataInteger: {  // 1
                    QString iv = QString::number(ivalue);
-                   definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                   definedValue = getValueFromStr(str, itype, ioptsubtype, definedKey, iv);
                    if (definedValue.simplified().isEmpty() && iopttype == optTypeBoolean) {
                        iv = (ivalue == 0) ? "no" : "yes";
-                       definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                       definedValue = getValueFromStr(str, itype, ioptsubtype, definedKey, iv);
                        if (definedValue.simplified().isEmpty()) {
                            iv = (ivalue == 0) ? "false" : "true";
-                           definedValue = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                           definedValue = getValueFromStr(str, itype, ioptsubtype, definedKey, iv);
                        }
                    }
                    valueRead = true;
@@ -912,7 +911,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                }
                case optDataString: {  // 3
                    QString sv = QString(svalue);
-                   definedValue = getValueFromStr(str, itype, ioptsubtype, n, sv);
+                   definedValue = getValueFromStr(str, itype, ioptsubtype, definedKey, sv);
                    valueRead = true;
                    break;
                }
@@ -924,7 +923,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    }
                    // TODO (JP)
                    QString sv = QString(svalue);
-                   definedValue = getValueFromStr(str, itype, ioptsubtype, n, sv);
+                   definedValue = getValueFromStr(str, itype, ioptsubtype, definedKey, sv);
                    valueRead = true;
                    break;
                }
@@ -1031,34 +1030,36 @@ QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QStrin
         return value;
 }
 
-QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, const int ioptsubtype, const QString &hintKey, const QString &hintValue)
+QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, const int ioptsubtype, const QString &key, const QString &hintValue)
 {
+    QString value = line.mid( key.length() ).simplified();
+    if (value.startsWith(mOption->getDefaultSeparator()))
+        value = value.mid(1).simplified();
 
     if (hintValue.isEmpty()) {
         if (itype==optDataString && ioptsubtype == optsubNoValue)
             return hintValue;
-       QString key = getKeyFromStr(line, hintKey);
-       QString value = line.mid( key.length() ).simplified();
-       if (value.startsWith('='))
-           value = value.mid(1).simplified();
-       return value;
     } else if (itype==optDataString) {
         if (line.contains(hintValue))
            return getQuotedStringValue(line, hintValue);
         else if (line.contains(hintValue, Qt::CaseInsensitive))
                  return getQuotedStringValue(line.toUpper(), hintValue.toUpper());
-        else
-            return "";
     } else {
         if (line.contains(hintValue)) {
             return  line.mid( line.indexOf(hintValue), hintValue.size() );
         } else if (line.contains(hintValue, Qt::CaseInsensitive)) {
             int idx = line.toUpper().indexOf(hintValue.toUpper(), Qt::CaseInsensitive);
             return  line.mid( idx, hintValue.size() );
-        } else {
-            return "";
         }
     }
+
+    for(QChar ch : mOption->getEOLChars()) {
+        if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
+            value = value.split(getEOLCommentChar(), QString::SkipEmptyParts).at(0).simplified();
+            break;
+        }
+    }
+    return value;
 }
 
 QString OptionTokenizer::getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue)
