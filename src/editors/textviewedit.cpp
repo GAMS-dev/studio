@@ -35,7 +35,7 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
 }
 
@@ -194,6 +194,48 @@ void TextViewEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             selections << selection;
         }
     } while (!item.isNull());
+}
+
+void TextViewEdit::mousePressEvent(QMouseEvent *e)
+{
+    CodeEdit::mousePressEvent(e);
+    if (!marks() || marks()->isEmpty()) {
+        QTextCursor cursor = cursorForPosition(e->pos());
+        if (existHRef(cursor.charFormat().anchorHref())) {
+            mHRefClickPos = e->pos();
+        }
+    }
+}
+
+void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
+{
+    CodeEdit::mousePressEvent(e);
+    if (!marks() || marks()->isEmpty()) {
+        if ((mHRefClickPos-e->pos()).manhattanLength() >= 4) return;
+        QTextCursor cursor = cursorForPosition(e->pos());
+        if (!existHRef(cursor.charFormat().anchorHref())) return;
+        emit jumpToHRef(cursor.charFormat().anchorHref());
+    }
+}
+
+void TextViewEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
+{
+    Qt::CursorShape shape = defaultShape;
+    if (!marks() || marks()->isEmpty()) {
+        QPoint pos = mapFromGlobal(QCursor::pos());
+        QTextCursor cursor = cursorForPosition(pos);
+        if (!cursor.charFormat().anchorHref().isEmpty()) {
+            shape = (existHRef(cursor.charFormat().anchorHref())) ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
+        }
+    }
+    viewport()->setCursor(shape);
+}
+
+bool TextViewEdit::existHRef(QString href)
+{
+    bool exist = false;
+    emit hasHRef(href, exist);
+    return exist;
 }
 
 int TextViewEdit::topVisibleLine()

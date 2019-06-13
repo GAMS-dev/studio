@@ -19,21 +19,52 @@
  */
 #include "memorymapper.h"
 #include "file/dynamicfile.h"
-//#include "logparser.h"
 #include "logger.h"
 
 namespace gams {
 namespace studio {
 
+enum BaseFormat {old, debug, error, lstLink, fileLink};
+static int CErrorBound = 2;
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
+    mState.deep = true;
+    mMarksTail.setCapacity(CErrorBound);
+    // old
+    QTextCharFormat fmt;
+    fmt.setForeground(QColor(165,165,165));
+    mBaseFormat << fmt;
+    // debug
+    fmt = QTextCharFormat();
+    fmt.setForeground(QColor(120,150,100));
+    mBaseFormat << fmt;
+    // error
+    fmt = QTextCharFormat();
+    fmt.setAnchor(true);
+    fmt.setForeground(Qt::darkRed);
+    fmt.setUnderlineColor(Qt::darkRed);
+    fmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+    mBaseFormat << fmt;
+    // lstLink
+    fmt = QTextCharFormat();
+    fmt.setForeground(Qt::blue);
+    fmt.setUnderlineColor(Qt::blue);
+    fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    mBaseFormat << fmt;
+    // fileLink
+    fmt = QTextCharFormat();
+    fmt.setForeground(Qt::darkGreen);
+    fmt.setUnderlineColor(Qt::darkGreen);
+    fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    mBaseFormat << fmt;
+
     startRun();
 }
 
-//void MemoryMapper::setLogParser(LogParser *parser)
-//{
-//    mLogParser = parser;
-//}
+void MemoryMapper::setLogParser(LogParser *parser)
+{
+    mLogParser = parser;
+}
 
 void MemoryMapper::setLogFile(DynamicFile *logFile)
 {
@@ -47,16 +78,26 @@ qint64 MemoryMapper::size() const
 
 AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 {
-    if (!mChunks.size() ||  mChunks.last()->size() > 0) {
-        Chunk *chunk = new Chunk();
-        chunk->bArray.resize(chunkSize());
-        chunk->bStart = mChunks.size() ? mChunks.last()->bStart + mChunks.last()->size() : 0;
-        chunk->lineBytes << 0;
-        chunk->nr = chunkCount();
-        mChunks << chunk;
-        invalidateLineOffsets(chunk);
+    // IF we already have an empty chunk at the end, take it
+    if (mChunks.size() && !mChunks.last()->size()) {
+        // IF the Unit contains more than this empty chunk, cut it and append a new Unit
+        if (startUnit && mUnits.size() && mUnits.last().chunkCount > 1) {
+            --mUnits.last().chunkCount;
+            mUnits << Unit(mChunks.last());
+            ++mUnits.last().chunkCount;
+        }
+        return mChunks.last();
     }
-    if (!mUnits.size() || startUnit) {
+    // create the new chunk
+    Chunk *chunk = new Chunk();
+    chunk->bArray.resize(chunkSize());
+    chunk->bStart = mChunks.size() ? mChunks.last()->bStart + mChunks.last()->size() : 0;
+    chunk->lineBytes << 0;
+    chunk->nr = chunkCount();
+    mChunks << chunk;
+    invalidateLineOffsets(chunk);
+
+    if (startUnit || !mUnits.size()) {
         mUnits << Unit(mChunks.last());
         mShrunk = false;
     }
@@ -110,22 +151,51 @@ void MemoryMapper::shrinkLog()
         invalidateLineOffsets(chunk);
         chunk = mChunks.size() > chunk->nr+1 ? mChunks[chunk->nr+1] : nullptr;
     }
-    emit blockCountChanged(lineCount());
+    updateMaxTop();
+    recalcLineCount();
 }
 
-bool MemoryMapper::setMappingSizes(int bufferedLines, int chunkSizeInBytes, int chunkOverlap)
+void MemoryMapper::recalcLineCount()
 {
-    return AbstractTextMapper::setMappingSizes(bufferedLines, chunkSizeInBytes, chunkOverlap);
+    mLineCount = 0;
+    for (const Unit &u: mUnits) {
+        if (u.folded) ++mLineCount;
+        else {
+            for (int i = 0; i < u.chunkCount; ++i) {
+                mLineCount += mChunks.at(u.firstChunk->nr + i)->lineCount();
+            }
+        }
+    }
+    emitBlockCountChanged();
+}
+
+int MemoryMapper::lineCount() const
+{
+    return mLineCount * (debugMode() ? 2 : 1);
 }
 
 void MemoryMapper::startRun()
 {
     addChunk(true);
+    mMarkCount = 0;
+    mMarksTail.clear();
 }
 
 void MemoryMapper::endRun()
 {
+    addProcessData("\n");
+    mMarksTail.normalizeIndexes();
+    for (int i = mMarksTail.firstIndex(); i <= mMarksTail.lastIndex(); ++i) {
+        emit createMarks(mMarksTail.at(i));
+    }
+    mMarksTail.clear();
+}
 
+int MemoryMapper::visibleLineCount() const
+{
+    if (debugMode())
+        return (AbstractTextMapper::visibleLineCount()+1) / 2;
+    return AbstractTextMapper::visibleLineCount();
 }
 
 // addProcessData appends to last chunk
@@ -139,6 +209,7 @@ void MemoryMapper::addProcessData(const QByteArray &data)
     int len = 0;
     int start = 0;
     bool lf = false;
+    int lineAddCount = 0;
     Q_ASSERT_X(mChunks.size(), Q_FUNC_INFO, "Need to call startRun() before adding data.");
     Chunk *chunk = mChunks.last();
 
@@ -211,22 +282,45 @@ void MemoryMapper::addProcessData(const QByteArray &data)
             start = i+1;
             len = 0;
             lf = false;
+            ++lineAddCount;
         }
     }
     if (mSize - mUnits.last().firstChunk->bStart > chunkSize() * 2)
         shrinkLog();
     else
         invalidateLineOffsets(chunk);
-    emit blockCountChanged(lineCount());
+    updateMaxTop();
+    recalcLineCount();
+    QTimer::singleShot(0, this, &MemoryMapper::parseRemain);
+    emit linesAdded(lineAddCount);
+//    emit contentChanged();
 }
 
 QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
 {
     return AbstractTextMapper::lines(localLineNrFrom, lineCount);
-    QByteArray data;
-//    LogParser::ExtractionState state = LogParser::Outside;
+}
 
-    bool conceal = false;
+
+QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
+{
+    formats.reserve(lineCount);
+    if (debugMode()) {
+        localLineNrFrom /= 2;
+        lineCount /= 2;
+    }
+    int activationLine;
+    QByteArray data = rawLines(localLineNrFrom, lineCount, mUnits.last().firstChunk->nr, activationLine);
+    if (debugMode()) activationLine *= 2;
+    QStringList res;
+
+    int debErr = 0;
+    int debLin = 0;
+    int errInd = -1;
+
+    LogParser::MarksBlockState mbState;
+    mbState.deep = false;
+    mbState.debugMode = debugMode();
     int from = 0;
     int to = 0;
     int next = -1;
@@ -237,7 +331,6 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
                 next = to+1;
             else if (data.at(to) != '\n') {
                 next = to+1;
-                conceal = true;
             } else
                 next = to+2;
         }
@@ -247,10 +340,42 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
         }
         int len = to-from;
         QString line;
-        if (len > 0) {
+        if (len == 0) {
+            if (debugMode()) {
+                res << "";
+                formats << LineFormat();
+            }
+            res << "";
+            formats << LineFormat();
+        } else {
             bool hasError = false;
             QByteArray lineData = data.mid(from, len);
-//            QStringList lines = mLogParser->parseLine(lineData, state, hasError, nullptr); // 1 line (2 lines on debugging)
+            QStringList lines = mLogParser->parseLine(lineData, hasError, mbState); // 1 line (2 lines on debugging)
+            res << lines;
+            if (debugMode()) {
+                formats << LineFormat(0, lines.first().length(),mBaseFormat.at(debug));
+            }
+//            if (errInd >= 0 && !mbState.inErrorText && res.size() >= activationLine) {
+//                formats[errInd].format.setToolTip(mbState.errData.text);
+//                errInd = -1;
+//            }
+            if (res.size() < activationLine) {
+                formats << LineFormat(0, lines.last().length(), mBaseFormat.at(old));
+            } else if (mbState.marks.hasMark()) {
+                if (mbState.marks.hasErr()) {
+//                    errInd = formats.size();
+                    formats << LineFormat(4, lines.last().length(), mBaseFormat.at(error), mbState.errData.text, mbState.marks.errRef);
+                } else if (mbState.marks.hRef.startsWith("FIL:")) {
+                    formats << LineFormat(4, lines.last().length(), mBaseFormat.at(fileLink), mbState.errData.text, mbState.marks.hRef);
+                } else if (mbState.marks.hRef.startsWith("LST:")) {
+                    formats << LineFormat(4, lines.last().length(), mBaseFormat.at(lstLink), mbState.errData.text, mbState.marks.hRef);
+                }
+            } else if (hasError) {
+                formats << LineFormat(0, lines.last().length(),mBaseFormat.at(error));
+                ++debErr;
+            } else
+                formats << LineFormat();
+            ++debLin;
 
 //            QTextCursor cursor(document());
 //            cursor.movePosition(QTextCursor::End);
@@ -276,44 +401,47 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
 
         from = next;
         to = next;
-        conceal = false;
+        next = -1;
     }
-    return QString();
+    res << "";
+    return res.join("\n");
 }
 
 void MemoryMapper::dump()
 {
-    int iCh = 0;
+//    int iCh = 0;
     DEB() << "\n";
     DEB() << "---- size: " << mSize ;
-    int sum = 0;
-    for (Chunk *chunk : mChunks) {
-        for (int lineNr = 0; lineNr < chunk->lineBytes.size()-1; ++lineNr) {
-            QString line;
-            for (int i = chunk->lineBytes.at(lineNr); i < chunk->lineBytes.at(lineNr+1); ++i) {
-                if (chunk->bArray.at(i) == '\r') line += "\\r";
-                else if (chunk->bArray.at(i) == '\n') line += "\\n";
-                else line += chunk->bArray.at(i);
-            }
-            DEB() << iCh << " DATA: " << line;
-        }
-        DEB() << iCh << " size: " << chunk->size();
-        sum += chunk->size();
-        ++iCh;
-    }
+//    int sum = 0;
+//    for (Chunk *chunk : mChunks) {
+//        for (int lineNr = 0; lineNr < chunk->lineBytes.size()-1; ++lineNr) {
+//            QString line;
+//            for (int i = chunk->lineBytes.at(lineNr); i < chunk->lineBytes.at(lineNr+1); ++i) {
+//                if (chunk->bArray.at(i) == '\r') line += "\\r";
+//                else if (chunk->bArray.at(i) == '\n') line += "\\n";
+//                else line += chunk->bArray.at(i);
+//            }
+//            DEB() << iCh << " DATA: " << line;
+//        }
+//        DEB() << iCh << " size: " << chunk->size();
+//        sum += chunk->size();
+//        ++iCh;
+//    }
     for (const Unit &u : mUnits) {
-        DEB() << "  UNIT: from " << u.firstChunk->nr << "  size " << u.chunkCount;
+        DEB() << "  UNIT: from " << u.firstChunk->nr << "+" << u.chunkCount-1 << "  size1: " << u.firstChunk->size();
     }
+    dumpPos();
 }
 
-void MemoryMapper::setJumpToLogEnd(bool state)
+int MemoryMapper::knownLineNrs() const
 {
-
+    return lineCount();
 }
 
-void MemoryMapper::repaint()
+void MemoryMapper::setDebugMode(bool debug)
 {
-
+    AbstractTextMapper::setDebugMode(debug);
+    emit contentChanged();
 }
 
 int MemoryMapper::chunkCount() const
@@ -351,21 +479,29 @@ QByteArray MemoryMapper::popNextLine()
     return chunk->bArray.mid(byteFrom, byteTo - byteFrom);
 }
 
-bool MemoryMapper::parseRemain()
+void MemoryMapper::parseRemain()
 {
-    bool res = false;
-    while (true) {
-        QByteArray data = popNextLine();
-        if (data.isNull()) break;
-        res = true;
-//        LogParser::ExtractionState state = LogParser::Outside;
-        bool hasError = false;
-//        QStringList lines = mLogParser->parseLine(data, state, hasError, mState); // 1 line (2 lines on debugging)
+    if (mSkipper.tryLock()) {
+        int lineAddCount = 0;
+        while (lineAddCount < 20) {
+            QByteArray data = popNextLine();
+            if (data.isNull()) break;
+            bool hasError = false;
+            DEB() << "parsing " << lineAddCount;
+            QStringList lines = mLogParser->parseLine(data, hasError, mState); // 1 line (2 lines on debugging)
+            if (mState.marks.hasErr()) {
+                if (mMarkCount < CErrorBound)
+                    emit createMarks(mState.marks);
+                else {
+                    mMarksTail.append(mState.marks);
+                }
+            }
 
-        // TODO(JM) extract textMarks from mState
-
+            ++lineAddCount;
+        }
+        mSkipper.unlock();
+        if (lineAddCount == 20) QTimer::singleShot(0, this, &MemoryMapper::parseRemain);
     }
-    return res;
 }
 
 } // namespace studio

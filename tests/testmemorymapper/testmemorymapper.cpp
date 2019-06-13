@@ -100,7 +100,7 @@ void TestMemoryMapper::testAddLine()
     mMapper->dump();
 
     mMapper->moveVisibleTopLine(10);
-    DEB() << "LINES:\n" << mMapper->lines(3,6);
+    DEB() << "LINES:\n" << mMapper->lines(3,7);
 }
 
 //void TestMemoryMapper::testReadChunk0()

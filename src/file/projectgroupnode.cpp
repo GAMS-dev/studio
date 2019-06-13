@@ -192,6 +192,11 @@ void ProjectGroupNode::moveChildNode(int from, int to)
     mChildNodes.move(from, to);
 }
 
+void ProjectGroupNode::hasFile(QString fName, bool &exists)
+{
+    exists = findFile(fName);
+}
+
 ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
     : ProjectGroupNode(name, path, NodeType::runGroup)
     , mGamsProcess(new GamsProcess())
@@ -235,6 +240,28 @@ void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
         for (const QString &file: files) {
             mParameterHash.remove(file);
         }
+    }
+}
+
+void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create)
+{
+    exist = false;
+    node = nullptr;
+    line = 0;
+    col = 0;
+    if (href.length() < 5) return;
+    QStringRef code = href.leftRef(3);
+    QVector<QStringRef> parts = href.rightRef(href.length()-4).split(',');
+    if (code.compare(QString("LST")) == 0) {
+        QString lstFile = parameter("lst");
+        exist = QFile(lstFile).exists();
+        if (!create) return;
+        line = parts.first().toInt();
+    } else if (parts.first().startsWith('"')) {
+        exist = QFile( parts.first().mid(1, parts.first().length()-2).toString() ).exists();
+        if (!create) return;
+        if (parts.size() > 1) line = parts.at(1).toInt();
+        if (parts.size() > 2) col = parts.at(2).toInt();
     }
 }
 
@@ -320,6 +347,24 @@ void ProjectRunGroupNode::setLstErrorText(int line, QString text)
         DEB() << "Empty LST-text ignored for line " << line;
     else
         mLstErrorTexts.insert(line, text);
+}
+
+void ProjectRunGroupNode::hasHRef(const QString &href, bool &exist)
+{
+    ProjectFileNode *node;
+    int line;
+    int column;
+    resolveHRef(href, exist, node, line, column);
+}
+
+void ProjectRunGroupNode::jumpToHRef(const QString &href)
+{
+    bool exist;
+    ProjectFileNode *node;
+    int line;
+    int column;
+    resolveHRef(href, exist, node, line, column, true);
+    if (node) node->file()->jumpTo(node->runGroupId(), true, line, column);
 }
 
 void ProjectRunGroupNode::clearLstErrorTexts()
@@ -541,11 +586,20 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     return false;
 }
 
-void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &result)
+//void ProjectRunGroupNode::markTexts(const QList<TextMark *> &marks, QStringList &result)
+//{
+//    for (TextMark* mark: marks) {
+//        int lstLine = mark->value();
+//        if (lstLine < 0 && mark->refMark()) lstLine = mark->refMark()->value();
+//        QString newTip = lstErrorText(lstLine);
+//        if (!result.contains(newTip))
+//            result << newTip;
+//    }
+//}
+
+void ProjectRunGroupNode::lstTexts(const QVector<int> &lstLines, QStringList &result)
 {
-    for (TextMark* mark: marks) {
-        int lstLine = mark->value();
-        if (lstLine < 0 && mark->refMark()) lstLine = mark->refMark()->value();
+    for (int lstLine: lstLines) {
         QString newTip = lstErrorText(lstLine);
         if (!result.contains(newTip))
             result << newTip;
@@ -564,12 +618,12 @@ bool ProjectRunGroupNode::hasParameter(const QString &kind) const
 
 void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
-    FileMeta* runNode = runnableGms();
+    FileMeta* runFile = runnableGms();
     for (QString loc : mParameterHash.values()) {
 
         if (QFileInfo::exists(loc)) {
             ProjectFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
-            if (runNode) node->file()->setCodec(runNode->codec());
+            if (runFile) node->file()->setCodec(runFile->codec());
         } else {
             SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
         }

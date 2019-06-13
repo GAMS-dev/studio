@@ -101,7 +101,8 @@ void ProjectLogNode::logDone()
     mRepaintCount = -1;
     mErrorCount = 0;
     for (QWidget *edit: file()->editors())
-        if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
+        if (TextView* tv = ViewHelper::toTextView(edit))
+            tv->endRun();
 }
 
 void ProjectLogNode::addProcessDataX(const QByteArray &data)
@@ -449,8 +450,7 @@ void ProjectLogNode::setJumpToLogEnd(bool state)
 
 void ProjectLogNode::repaint()
 {
-    TextView *ed = ViewHelper::toLogEdit(mFileMeta->topEditor());
-    if (ed) {
+    if (TextView *ed = ViewHelper::toTextView(mFileMeta->topEditor())) {
         ed->viewport()->repaint();
     }
 }
@@ -480,7 +480,7 @@ ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
 void ProjectLogNode::linkToProcess(GamsProcess *process)
 {
     QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
-    TextView *tv = ViewHelper::toLogEdit(wid);
+    TextView *tv = ViewHelper::toTextView(wid);
     if (tv) connect(process, &GamsProcess::newStdChannelData, tv, &TextView::addProcessData, Qt::UniqueConnection);
 }
 

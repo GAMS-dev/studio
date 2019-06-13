@@ -29,6 +29,8 @@
 namespace gams {
 namespace studio {
 
+class GamsProcess;
+
 class ProjectLogNode final: public ProjectFileNode
 {
 public:

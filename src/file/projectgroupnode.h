@@ -60,6 +60,9 @@ public:
     void moveChildNode(int from, int to);
     const QList<ProjectAbstractNode*> &childNodes() const { return mChildNodes; }
 
+public slots:
+    void hasFile(QString fName, bool &exists);
+
 protected:
     friend class ProjectRepo;
     friend class ProjectAbstractNode;
@@ -87,7 +90,6 @@ public:
     void setRunnableGms(FileMeta *gmsFile = nullptr);
     QString tooltip() override;
     QString lstErrorText(int line) override;
-    void setLstErrorText(int line, QString text);
     void clearLstErrorTexts();
     bool hasLstErrorText( int line = -1);
     void addRunParametersHistory(QString option);
@@ -108,6 +110,11 @@ public:
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
 
+public slots:
+    void setLstErrorText(int line, QString text);
+    void hasHRef(const QString &href, bool &exist);
+    void jumpToHRef(const QString &href);
+
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
 
@@ -118,9 +125,11 @@ protected:
     friend class ProjectFileNode;
 
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
-    void lstTexts(const QList<TextMark*> &marks, QStringList &result);
+//    void markTexts(const QList<TextMark*> &marks, QStringList &result);
+    void lstTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
     void removeChild(ProjectAbstractNode *child);
+    void resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create = false);
 
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;

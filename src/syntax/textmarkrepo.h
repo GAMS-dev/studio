@@ -52,7 +52,7 @@ public:
 private:
     FileMetaRepo* mFileRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
-    QHash<FileId, LineMarks*> mMarks;
+    QHash<FileId, LineMarks*> mMarks; // TODO(JM) LineMarks should be protected by smartpointer
     QVector<FileId> mBookmarkedFiles;
     bool mDebug = false;
 

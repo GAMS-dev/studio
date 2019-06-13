@@ -414,12 +414,14 @@ QWidgetList MainWindow::openEditors()
     return res;
 }
 
-QList<AbstractEdit*> MainWindow::openLogs()
+QList<QWidget*> MainWindow::openLogs()
 {
-    QList<AbstractEdit*> resList;
+    QList<QWidget*> resList;
     for (int i = 0; i < ui->logTabs->count(); i++) {
-        AbstractEdit* ed = ViewHelper::toAbstractEdit(ui->logTabs->widget(i));
-        if (ed) resList << ed;
+        if (AbstractEdit* ed = ViewHelper::toAbstractEdit(ui->logTabs->widget(i)))
+            resList << ed;
+        if (TextView* tv = ViewHelper::toTextView(ui->logTabs->widget(i)))
+            resList << tv;
     }
     return resList;
 }
@@ -1346,8 +1348,18 @@ void MainWindow::postGamsRun(NodeId origin)
         if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
     }
-    if (groupNode && groupNode->hasLogNode())
-        groupNode->logNode()->logDone();
+    if (groupNode && groupNode->hasLogNode()) {
+        ProjectLogNode *logNode = groupNode->logNode();
+        logNode->logDone();
+        if (logNode->file()->editors().size()) {
+            if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().last())) {
+                MainWindow::disconnect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos);
+                MainWindow::disconnect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount);
+                MainWindow::disconnect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount);
+            }
+        }
+
+    }
 }
 
 void MainWindow::postGamsLibRun()
@@ -1483,8 +1495,12 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
+
+        // keeps internal data of syslog
         AbstractEdit* ed = ViewHelper::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
+
+        // remark to keep process-logs remove the TextView from the tab-bar without deleting
 
         // dont remove syslog and dont delete resultsView
         if (!(edit == mSyslog || isResults))
@@ -1867,14 +1883,15 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-
-//        if (ViewHelper::toLogEdit(wid))
-//            v
-//        if (ViewHelper::toCodeEdit(wid) || ViewHelper::toLogEdit(wid))
-//            ViewHelper::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-//        if (ViewHelper::toAbstractEdit(wid))
-//            ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-//                                                                                          : AbstractEdit::NoWrap);
+        wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        if (ViewHelper::toTextView(wid))
+            ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+                                                                                      : AbstractEdit::NoWrap);
+    }
+    if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().last())) {
+        MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
     }
     // cleanup bookmarks
     QVector<QString> cleanupKinds;
@@ -2033,17 +2050,18 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
             wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-            if (ViewHelper::toAbstractEdit(wid))
-                ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-                                                                                              : AbstractEdit::NoWrap);
-//            if (ViewHelper::toTextView(wid))
-//                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-//                                                                                          : AbstractEdit::NoWrap);
+            if (ViewHelper::toTextView(wid))
+                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+                                                                                          : AbstractEdit::NoWrap);
+        }
+        if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().last())) {
+            MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
         }
     }
     if (logNode->file()->isOpen()) {
-        TextView* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
-        if (logEdit) {
+        if (TextView* logEdit = ViewHelper::toTextView(logNode->file()->editors().first())) {
             if (openOutput) setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
@@ -2167,7 +2185,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
             connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
         }
-        if (ViewHelper::toCodeEdit(edit) || ViewHelper::toLogEdit(edit)) {
+        if (ViewHelper::toCodeEdit(edit)) {
             AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (!ae->isReadOnly())
@@ -2449,7 +2467,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     for (QWidget* edit: openEditors()) {
-        if (ViewHelper::toCodeEdit(edit) || ViewHelper::toLogEdit(edit))
+        if (ViewHelper::toCodeEdit(edit))
             ViewHelper::toAbstractEdit(edit)->setFont(font);
         else if (ViewHelper::toTextView(edit))
             ViewHelper::toTextView(edit)->edit()->setFont(font);
@@ -2470,11 +2488,13 @@ void MainWindow::updateEditorLineWrapping()
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
             ed->blockCountChanged(0); // force redraw for line number area
-            ed->setLineWrapMode(ViewHelper::toLogEdit(ed) ? wrapModeProcess : wrapModeEditor);
+            ed->setLineWrapMode(ViewHelper::editorType(ed) == EditorType::syslog ? wrapModeProcess
+                                                                                 : wrapModeEditor);
         }
         if (TextView* tv = ViewHelper::toTextView(editList.at(i))) {
-            tv->blockCountChanged(0); // force redraw for line number area
-            tv->setLineWrapMode(ViewHelper::toLogEdit(tv) ? wrapModeProcess : wrapModeEditor);
+            tv->blockCountChanged(); // force redraw for line number area
+            tv->setLineWrapMode(ViewHelper::editorType(tv) == EditorType::log ? wrapModeProcess
+                                                                              : wrapModeEditor);
         }
     }
 }
@@ -2887,10 +2907,10 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         window->searchDialog()->setActiveEditWidget(edit);
     }
     if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos, Qt::UniqueConnection);
 //        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
+        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
 
         window->searchDialog()->setActiveEditWidget(tv);
     }

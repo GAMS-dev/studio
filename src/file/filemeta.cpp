@@ -329,6 +329,7 @@ void FileMeta::addEditor(QWidget *edit)
 
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
+        connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
@@ -656,7 +657,13 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         //       instead of holding individual Reference Object
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::Log) {
+        LogParser *parser = new LogParser(mCodec);
+        connect(parser, &LogParser::setLstErrorText, runGroup, &ProjectRunGroupNode::setLstErrorText);
+        connect(parser, &LogParser::hasFile, runGroup, &ProjectRunGroupNode::hasFile);
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
+        connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
+        connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
+        tView->setLogParser(parser);
         res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLst;

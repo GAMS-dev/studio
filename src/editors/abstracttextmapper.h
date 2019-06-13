@@ -33,6 +33,20 @@
 namespace gams {
 namespace studio {
 
+struct LineFormat {
+    LineFormat() {}
+    LineFormat(int _start, int _end, QTextCharFormat _format)
+        : start(_start), end(_end), format(_format) {}
+    LineFormat(int _start, int _end, QTextCharFormat _format, QString tip, QString ref)
+        : start(_start), end(_end), format(_format) {
+        format.setAnchorHref(ref);
+        format.setToolTip(tip);
+    }
+    int start = -1;
+    int end = -1;
+    QTextCharFormat format;
+};
+
 ///
 /// class AbstractTextMapper
 /// Maps text data into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
@@ -47,7 +61,7 @@ private:
         int chunkNr = 0;
         qint64 absStart = 0;
         int localLine = 0;
-        int lineCount = 0;
+//        int lineCount = 0;
     };
 
     struct CursorPosition {
@@ -66,14 +80,24 @@ private:
 
     struct ChunkLines {
         ChunkLines(int nr = 0, int lines = -1, int lineOffset = -1)
-            : chunkNr(nr), lineCount(lines), lineOffset(lineOffset) {}
+            : chunkNr(nr), lineCount(lines), startLineNr(lineOffset) {}
         inline bool isKnown() const { return lineCount >= 0; }
-        inline bool hasLineNrs() const { return lineCount >= 0 && lineOffset >= 0; }
+        inline bool hasLineNrs() const { return lineCount >= 0 && startLineNr >= 0; }
+        inline qint64 linesEndPos() const { return linesStartPos + linesByteSize; }
         int chunkNr = 0;
         qint64 linesStartPos = 0;
         int linesByteSize = 0;
         int lineCount = -1;
-        int lineOffset = -1;
+        int startLineNr = -1;
+    };
+
+    struct BufferMeter {
+        BufferMeter(int _visibleLines = 0, int _linesTotal = 0): visibleLines(_visibleLines), linesTotal(_linesTotal) {}
+        int size() { return qMin(visibleLines*3, linesTotal); }
+        int centerTop() { return (size()-visibleLines)/2; }
+        int maxTop() { return qMax(size()-visibleLines, 0); }
+        int visibleLines;
+        int linesTotal;
     };
 
 protected:
@@ -102,9 +126,9 @@ public:
     virtual qint64 size() const;                                    // share FM + MM
     virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
 
-    virtual bool setMappingSizes(int bufferedLines = 60, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
+    virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
     virtual void setVisibleLineCount(int visibleLines);                 // share FM + MM
-    virtual int visibleLineCount() { return mVisibleLineCount; }        // share FM + MM
+    virtual int visibleLineCount() const { return mVisibleLineCount; }  // share FM + MM
     virtual bool setVisibleTopLine(double region);                      // share FM + MM
     virtual bool setVisibleTopLine(int lineNr);                         // share FM + MM
     virtual int moveVisibleTopLine(int lineDelta);                      // share FM + MM
@@ -118,6 +142,7 @@ public:
     virtual int knownLineNrs() const;                                   // share FM + MM
 
     virtual QString lines(int localLineNrFrom, int lineCount) const;    // share FM + MM    //    CC?
+    virtual QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const;
     virtual bool findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind);   // share FM + MM
 
     virtual QString selectedText() const;                               // share FM + MM    //    CC?
@@ -129,17 +154,25 @@ public:
     virtual QPoint anchor(bool local = false) const;                    // share FM + MM
     virtual bool hasSelection() const;                                  // share FM + MM
     virtual int selectionSize() const;                                  // share FM + MM
+    bool isAtEnd();
+    int bufferedLines() const;
+    virtual void setDebugMode(bool debug);
+    bool debugMode() const { return mDebugMode; }
+    void dumpMetrics();
 
 signals:
-    void blockCountChanged(int newBlockCount);
+    void blockCountChanged();
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
+    void contentChanged();
+    void linesAdded(int count);
 
 protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
-    virtual void reset();
     virtual int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
+    virtual void reset();
+    virtual QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
     Chunk *setActiveChunk(int chunkNr) const;
     Chunk *activeChunk();
     void uncacheChunk(Chunk *&chunk);
@@ -156,11 +189,14 @@ protected:
     int lastChunkWithLineNr() const;
     void initTopLine();
     void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC
+    void emitBlockCountChanged();
+
+    void dumpPos();
 
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;
     QString line(Chunk *chunk, int chunkLineNr) const;
-    bool setTopOffset(qint64 byteNr);
+    bool setTopOffset(qint64 absPos);
     void updateBytesPerLine(const ChunkLines &chunkLines) const;
     int maxChunksInCache() const;
     int findChunk(int lineNr);
@@ -177,8 +213,7 @@ private:
 
     LinePosition mTopLine;
     LinePosition mMaxTopLine;
-    int mVisibleTopLine = 0;
-    int mBufferedLineCount = 0;
+    int mVisibleOffset = 0;
     int mVisibleLineCount = 0;
     CursorPosition mAnchor;
     CursorPosition mPosition;
@@ -188,6 +223,7 @@ private:
     int mMaxChunksInCache = 5;
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
+    bool mDebugMode = false;
 };
 
 } // namespace studio

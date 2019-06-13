@@ -176,6 +176,36 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
+void AbstractEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
+{
+    Qt::CursorShape shape = defaultShape;
+    viewport()->setCursor(shape);
+}
+
+QPoint AbstractEdit::toolTipPos()
+{
+    QPoint pos;
+    if (!mMarksAtMouse.isEmpty()) {
+        QTextCursor cursor(document()->findBlockByNumber(mMarksAtMouse.first()->line()));
+                //(marks.first()->textCursor());
+        cursor.setPosition(cursor.position() + mMarksAtMouse.first()->column(), QTextCursor::MoveAnchor);
+        pos = cursorRect(cursor).bottomLeft();
+        if (pos.x() < 10) pos.setX(10);
+    }
+    return pos;
+}
+
+QVector<int> AbstractEdit::toolTipLstNumbers()
+{
+    QVector<int> lstLines;
+    for (TextMark *mark: mMarksAtMouse) {
+        int lstLine = mark->value();
+        if (lstLine < 0 && mark->refMark()) lstLine = mark->refMark()->value();
+        if (lstLine >= 0) lstLines << lstLine;
+    }
+    return lstLines;
+}
+
 void AbstractEdit::internalExtraSelUpdate()
 {
     QList<QTextEdit::ExtraSelection> selections;
@@ -184,18 +214,20 @@ void AbstractEdit::internalExtraSelUpdate()
     setExtraSelections(selections);
 }
 
-void AbstractEdit::showToolTip(const QList<TextMark*> marks)
+//void AbstractEdit::showToolTip(const QList<TextMark*> &marks, const QPoint &pos)
+//{
+//    if (marks.size() > 0) {
+//        QStringList tips;
+//        emit requestMarkTexts(groupId(), marks, tips);
+//        QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
+//    }
+//}
+
+void AbstractEdit::showToolTip(const QVector<int> &lstNumbers, const QPoint &pos)
 {
-    if (marks.size() > 0) {
-        QTextCursor cursor(document()->findBlockByNumber(marks.first()->line()));
-                //(marks.first()->textCursor());
-        cursor.setPosition(cursor.position() + marks.first()->column(), QTextCursor::MoveAnchor);
-        QPoint pos = cursorRect(cursor).bottomLeft();
-        if (pos.x() < 10) pos.setX(10);
-        QStringList tips;
-        emit requestLstTexts(groupId(), marks, tips);
-        QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
-    }
+    QStringList tips;
+    emit requestLstTexts(groupId(), lstNumbers, tips);
+    QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
 }
 
 bool AbstractEdit::event(QEvent *e)
@@ -216,10 +248,12 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
     Q_UNUSED(o);
     if (e->type() == QEvent::ToolTip) {
         QHelpEvent* helpEvent = static_cast<QHelpEvent*>(e);
-        if (!mMarksAtMouse.isEmpty())
-            showToolTip(mMarksAtMouse);
+        QVector<int> lstLines = toolTipLstNumbers();
+        QPoint pos = toolTipPos();
+        if (!lstLines.isEmpty())
+            showToolTip(lstLines, pos);
         mTipPos = helpEvent->pos();
-        return !mMarksAtMouse.isEmpty();
+        return !lstLines.isEmpty();
     }
     return QPlainTextEdit::eventFilter(o, e);
 }
@@ -243,7 +277,7 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
     if (e->modifiers() & Qt::ControlModifier) {
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
     }
-    viewport()->setCursor(shape);
+    updateCursorShape(shape);
 }
 
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
@@ -253,7 +287,7 @@ void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
     if (e->modifiers() & Qt::ControlModifier) {
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
     }
-    viewport()->setCursor(shape);
+    updateCursorShape(shape);
 }
 
 void AbstractEdit::mousePressEvent(QMouseEvent *e)
@@ -287,7 +321,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (!mMarks || mMarks->isEmpty()) {
         // No marks or the text is editable
-        viewport()->setCursor(shape);
+        updateCursorShape(shape);
         return;
     }
     QTextCursor cursor = cursorForPosition(e->pos());
@@ -301,7 +335,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
     }
     if (!mMarksAtMouse.isEmpty() && (isReadOnly() || e->x() < 0))
         shape = mMarksAtMouse.first()->cursorShape(&shape, true);
-    viewport()->setCursor(shape);
+    updateCursorShape(shape);
 }
 
 void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)

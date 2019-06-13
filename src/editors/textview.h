@@ -33,6 +33,7 @@ namespace gams {
 namespace studio {
 
 class TextViewEdit;
+class LogParser;
 
 class TextView : public QAbstractScrollArea
 {
@@ -61,18 +62,24 @@ public:
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
     TextKind textKind() const;
+    void setLogParser(LogParser *logParser);
+    void setDebugMode(bool debug);
 
 signals:
     void addProcessData(const QByteArray &data);
-    void blockCountChanged(int newBlockCount);
+    void blockCountChanged();
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
     void searchFindNextPressed();
     void searchFindPrevPressed();
-
+    void linesAdded(int lineCount);
+    void hasHRef(const QString &href, bool &exist);
+    void jumpToHRef(const QString &href);
 
 public slots:
     void updateExtraSelections();
+    void contentChanged();
+    void sendAddedLines();
 
 private slots:
     void editScrollChanged();
@@ -82,6 +89,7 @@ private slots:
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
+    void mapperLinesAdded(int lineAddCount);
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
@@ -92,6 +100,7 @@ protected:
     const LineMarks* marks() const;
 
     void resizeEvent(QResizeEvent *event) override;
+    void recalcVisibleLines();
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
     inline FileId fileId() {
@@ -110,11 +119,10 @@ private:
     void updateVScrollZone();
     void syncVScroll();
     void topLineMoved();
+    void topLineMoved(int offset);
 
 private:
     TextKind mTextKind;
-    int mTopLine = 0;
-    int mTopVisibleLine = 0;
     int mVisibleLines = 0;
     const int mDocChanging = 0;
     bool mInit = true;
@@ -124,9 +132,11 @@ private:
     TextViewEdit *mEdit;
     QTextCodec *mCodec = nullptr;
     int mLineToFind = -1;
-    int mTopBufferLines = 100;
     QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
     LineMarks *mMarks = nullptr;
+    QTimer mLinesAddedTimer;
+    bool mStayAtTail = false;
+    int mLinesAddedCount = 0;
 
 private:
 

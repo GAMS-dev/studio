@@ -22,13 +22,13 @@
 
 #include <QString>
 #include "syntax/textmarkrepo.h"
-#include "file/projectgroupnode.h"
 
 namespace gams {
 namespace studio {
 
-class LogParser
+class LogParser: public QObject
 {
+    Q_OBJECT
 public:
     enum ExtractionState {
         Outside,
@@ -40,43 +40,30 @@ public:
     Q_ENUM(ExtractionState)
 
     struct ErrorData {
+        QString text;
         int lstLine = 0;
         int errNr = 0;
-        QString text;
     };
 
     struct MarkData {
-        void setMark(QString f, TextMark::Type t, int v, int l, int c, int s) {
-            file = f; type = t; value = v; line = l; col = c; size = s; fileId = -1;
-        }
-        void setMark(FileId f, TextMark::Type t, int v, int l, int c, int s) {
-            fileId = f; type = t; value = v; line = l; col = c; size = s; file = QString();
-        }
-        void setLogPos(int col1, int col2) {
-            logCol = col1; logSize = col2 - col1;
-        }
-        QString file;
-        FileId fileId = -1;
-        TextMark::Type type = TextMark::none;
-        int value = 0;
-        int line = 0;
-        int col = 0;
-        int size = 1;
-        int logCol = 0;
-        int logSize = 1;
+        void setMark(const QString &href, int lstline = 0) { hRef = href; lstLine = lstline; }
+        void setErrMark(const QString &href, int errnr) { errRef = href; errNr = errnr; }
+        bool hasMark() { return !hRef.isEmpty() || hasErr(); }
+        bool hasErr() { return !errRef.isEmpty() || errNr; }
+        QString hRef;
+        int lstLine = 0;
+        QString errRef;
+        int errNr = 0;
     };
+
     struct MarksBlockState {
-        QVector<MarkData> marks;
+        MarkData marks;
         ErrorData errData;
+        ExtractionState exState = LogParser::Outside;
         bool inErrorText = false;
         QString lastSourceFile;
-        bool spreadLst = false;
-        int spreadedLines = 1;
-    };
-    struct LinkData {
-        TextMark* textMark = nullptr;
-        int col = 0;
-        int size = 1;
+        bool deep = false;
+        bool debugMode = false;
     };
 
 public:
@@ -85,20 +72,25 @@ public:
     //  - conceal lines that only break with '\r'
     //  - create textmarks for all MarkData and link them together
 
-    LogParser(TextMarkRepo* tmRepo, FileMetaRepo* fmRepo, FileId fileId, ProjectRunGroupNode* runGroup, QTextCodec *codec);
-    QStringList parseLine(const QByteArray &data, ExtractionState state, bool &hasError, MarksBlockState *mbState = nullptr);
-    void setDebugMode(bool debug) { mDebugMode = debug; }
+    LogParser(QTextCodec *codec);
+    void setDirectory(QString dir);
+    QStringList parseLine(const QByteArray &data, bool &hasError, MarksBlockState &mbState);
+
+signals:
+    void setLstErrorText(int line, QString text);
+    void hasFile(QString fName, bool &exists);
 
 private:
-    QString extractLinks(const QString &text, ExtractionState &state, MarksBlockState *mbState, bool &hasError);
+    QString extractLinks(const QString &line, bool &hasError, MarksBlockState &mbState);
+    QString extractLinksX(const QString &line, bool &hasError, MarksBlockState &mbState);
 
-    TextMarkRepo* mMarkRepo;
-    FileMetaRepo* mMetaRepo;
-    FileId mFileId;
-    ProjectRunGroupNode *mRunGroup;
+//    TextMarkRepo* mMarkRepo;
+//    FileMetaRepo* mMetaRepo;
+//    ProjectRunGroupNode *mRunGroup;
+//    FileId mFileId;
+//    ProjectFileNode *mLstNode = nullptr;
+    QString mDirectory;
     QTextCodec *mCodec;
-    ProjectFileNode *mLstNode = nullptr; // TODO(JM) create this at start!
-    bool mDebugMode = false;
 };
 
 } // namespace studio

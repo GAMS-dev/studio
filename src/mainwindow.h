@@ -117,7 +117,7 @@ public:
     TextMarkRepo* textMarkRepo();
 
     QWidgetList openEditors();
-    QList<AbstractEdit*> openLogs();
+    QList<QWidget *> openLogs();
     SearchDialog* searchDialog() const;
     void showResults(SearchResultList* results);
     void closeResultsPage();

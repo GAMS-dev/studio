@@ -39,10 +39,6 @@ public:
         if(w) w->setProperty("EditorType", int(type));
         return w;
     }
-//    inline static TextView* initEditorType(TextView* w) {
-//        if(w) w->setProperty("EditorType", int(EditorType::txtRo));
-//        return w;
-//    }
     inline static gdxviewer::GdxViewer* initEditorType(gdxviewer::GdxViewer* w) {
         if(w) w->setProperty("EditorType", int(EditorType::gdx));
         return w;
@@ -70,16 +66,17 @@ public:
         EditorType t = editorType(w);
         return (t == EditorType::source || t == EditorType::txt) ? static_cast<CodeEdit*>(w) : nullptr;
     }
-    inline static TextView* toLogEdit(QWidget* w) {
-        return (editorType(w) == EditorType::log) ? static_cast<TextView*>(w) : nullptr;
-    }
     inline static TextView* toTextView(QWidget* w) {
+        if (!w) return nullptr;
         EditorType t = editorType(w);
         if (t == EditorType::lxiLst)
             return toLxiViewer(w)->textView();
-        return (t == EditorType::txtRo) ? static_cast<TextView*>(w)
-                                        : (w && editorType(w->parentWidget()) == EditorType::txtRo)
-                                          ? static_cast<TextView*>(w->parentWidget())  : nullptr;
+        if (t == EditorType::txtRo || t == EditorType::log)
+            return static_cast<TextView*>(w);
+        EditorType pt = editorType(w->parentWidget());
+        if (pt == EditorType::txtRo || pt == EditorType::log)
+            return static_cast<TextView*>(w->parentWidget());
+        return nullptr;
     }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;

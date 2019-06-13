@@ -21,12 +21,16 @@
 #define MEMORYMAPPER_H
 
 #include "abstracttextmapper.h"
+#include "logparser.h"
+#include <QMutex>
+#include <QContiguousCache>
 
 namespace gams {
 namespace studio {
 
 class DynamicFile;
-class LogParser;
+//struct LogParser_MarksBlockState;
+//class LogParser;
 
 class MemoryMapper : public AbstractTextMapper
 {
@@ -47,43 +51,54 @@ private:
 
 public:
     explicit MemoryMapper(QObject *parent = nullptr);
-//    void setLogParser(LogParser *parser);
+    void setLogParser(LogParser *parser);
     void setLogFile(DynamicFile *logFile);
     qint64 size() const override;
-    bool setMappingSizes(int bufferedLines, int chunkSizeInBytes, int chunkOverlap) override;
     void startRun() override;
     void endRun() override;
+    int visibleLineCount() const override;
     QString lines(int localLineNrFrom, int lineCount) const override;
+    QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
+    int lineCount() const override;
+    int knownLineNrs() const override;
+    void setDebugMode(bool debug) override;
     void dump();
 
+
 signals:
+    void createMarks(const LogParser::MarkData &marks);
 
 public slots:
     void addProcessData(const QByteArray &data);
-    void setJumpToLogEnd(bool state);
-    void repaint();
 
 protected:
-    int chunkCount() const override;
     Chunk *getChunk(int chunkNr) const override;
+    int chunkCount() const override;
+
+private slots:
+    void parseRemain();
 
 private:
     QByteArray popNextLine();
-    bool parseRemain();
     Chunk *addChunk(bool startUnit = false);
     void shrinkLog();
+    void recalcLineCount();
 
 private:
+    QMutex mSkipper;
     QVector<Chunk*> mChunks;
     QVector<Unit> mUnits;
+    QVector<QTextCharFormat> mBaseFormat;
     qint64 mSize = 0;
+    int mLineCount = 0;
     bool mShrunk = false;
-//    LogParser *mLogParser = nullptr;
+    LogParser *mLogParser = nullptr;
     DynamicFile *mLogFile = nullptr;
-//    LogParser::MarksBlockState *mState = nullptr;
+    LogParser::MarksBlockState mState;
+    int mMarkCount = 0;
+    QContiguousCache<LogParser::MarkData> mMarksTail;
     LineRef mParsed;
     int mConcealPos = 0;
-
 };
 
 } // namespace studio

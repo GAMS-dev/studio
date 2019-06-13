@@ -40,6 +40,8 @@ public:
 signals:
     void keyPressed(QKeyEvent *event);
     void updatePosAndAnchor();
+    void hasHRef(const QString &href, bool &exist);
+    void jumpToHRef(const QString &href);
 
 public slots:
     void copySelection() override;
@@ -54,6 +56,9 @@ protected:
     int effectiveBlockNr(const int &localBlockNr) const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
     void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+    void updateCursorShape(const Qt::CursorShape &defaultShape) override;
 
 //    void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections) override;
 
@@ -68,11 +73,13 @@ protected:
 
 private:
     int topVisibleLine() override;
+    bool existHRef(QString href);
 
 private:
     AbstractTextMapper &mMapper;
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
+    QPoint mHRefClickPos;
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;

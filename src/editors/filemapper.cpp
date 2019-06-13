@@ -58,6 +58,7 @@ bool FileMapper::openFile(const QString &fileName, bool initAnchor)
         initChunkCount(chunkCount);
         Chunk *chunk = setActiveChunk(0);
         if (chunk && chunk->isValid()) {
+            emitBlockCountChanged();
             if (initAnchor) initTopLine();
             updateMaxTop();
             mPeekTimer.start(100);
@@ -153,6 +154,7 @@ void FileMapper::chunkUncached(AbstractTextMapper::Chunk *&chunk) const
 void FileMapper::startRun()
 {
     closeAndReset();
+    setMappingSizes();
 }
 
 void FileMapper::endRun()
@@ -195,7 +197,7 @@ void FileMapper::peekChunksForLineNrs()
     mPeekTimer.setProperty("val", val);
     emit loadAmountChanged(knownLineNrs());
     if (val.toInt() == 0 || knownLineNrs() == lineCount()) {
-        emit blockCountChanged(lineCount());
+        emitBlockCountChanged();
         emit selectionChanged();
     }
 }
