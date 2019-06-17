@@ -259,7 +259,7 @@ void MainWindow::initToolBar()
     ui->toolBar->insertSeparator(ui->actionSettings);
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
     ui->toolBar->insertWidget(ui->actionToggle_Extended_Option_Editor, mGamsOptionWidget);
-    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
+    ui->toolBar->insertSeparator(ui->actionProject_View);
 }
 
 void MainWindow::updateToolbar(QWidget* current)

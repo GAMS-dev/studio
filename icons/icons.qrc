@@ -47,11 +47,13 @@
         <file alias="minus">minus.svg</file>
         <file alias="move-up">move-up.svg</file>
         <file alias="move-down">move-down.svg</file>
+        <file alias="output">comment-alt-lines.svg</file>
         <file alias="paste">paste.svg</file>
         <file alias="pause">pause.svg</file>
         <file alias="pen">pen-alt.svg</file>
         <file alias="play">play.svg</file>
         <file alias="plus">plus.svg</file>
+        <file alias="project">clipboard-list.svg</file>
         <file alias="question">question.svg</file>
         <file alias="redo">redo.svg</file>
         <file alias="ref-file">ref-file.svg</file>

@@ -437,6 +437,8 @@
    <addaction name="actionSettings"/>
    <addaction name="actionGAMS_Library"/>
    <addaction name="actionToggle_Extended_Option_Editor"/>
+   <addaction name="actionProject_View"/>
+   <addaction name="actionOutput_View"/>
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -485,6 +487,10 @@
    <property name="enabled">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/output</normaloff>:/img/output</iconset>
+   </property>
    <property name="text">
     <string>&amp;Output</string>
    </property>
@@ -495,6 +501,10 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/project</normaloff>:/img/project</iconset>
    </property>
    <property name="text">
     <string>&amp;Explorer</string>
