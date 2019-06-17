@@ -1795,6 +1795,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
     if ((e->modifiers() & Qt::ControlModifier | Qt::ShiftModifier) && (e->key() == Qt::Key_G)) {
         if (outputViewVisibility() == false) setOutputViewVisibility(true);
+        ui->dockLogView->raise();
         ui->logTabs->currentWidget()->setFocus();
         e->accept(); return;
     }
