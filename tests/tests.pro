@@ -33,5 +33,5 @@ SUBDIRS += testcommonpaths              \
            testminosoption              \
            testgurobioption             \
            testoptionapi                \
-           testdoclocation
-
+           testdoclocation              \
+           testui
