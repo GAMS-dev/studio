@@ -718,7 +718,6 @@ void MainWindow::updateEditorPos()
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         pos = tv->position() + QPoint(1,1);
         anchor = tv->anchor() + QPoint(1,1);
-//        if (pos == anchor)
     }
     mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
@@ -1764,11 +1763,13 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     // escape is the close button for focussed widgets
     if (e->key() == Qt::Key_Escape) {
 
+#ifdef QWEBENGINE
         // help widget
         if (mHelpWidget->isVisible()) {
             closeHelpView();
             e->accept(); return;
         }
+#endif
 
         // log widgets
         if (focusWidget() == mSyslog) {
