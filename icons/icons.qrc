@@ -54,7 +54,7 @@
         <file alias="play">play.svg</file>
         <file alias="plus">plus.svg</file>
         <file alias="project">clipboard-list.svg</file>
-        <file alias="question">question.svg</file>
+        <file alias="question">question-square.svg</file>
         <file alias="redo">redo.svg</file>
         <file alias="ref-file">ref-file.svg</file>
         <file alias="run-gdx">play-gdx.svg</file>
