@@ -676,9 +676,9 @@ void MainWindow::showLogTabsMenu()
 
 void MainWindow::showTabsMenu()
 {
-    QWidget * wid = focusWidget();
+    QWidget *wid = focusWidget();
 
-    if (wid->parent()->parent() == ui->logTabs)
+    if (wid && wid->parent()->parent() == ui->logTabs)
         showLogTabsMenu();
     else
         showMainTabsMenu();
@@ -1697,6 +1697,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
             ui->logTabs->currentWidget()->setFocus();
             e->accept(); return;
+        } else if (focusWidget() == ui->projectView) {
+            setProjectViewVisibility(false);
         }
 
         // search widget
