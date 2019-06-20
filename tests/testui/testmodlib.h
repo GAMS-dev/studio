@@ -21,6 +21,9 @@
 #define TEST_MODLIB_H
 
 #include <QtTest/QTest>
+#include "mainwindow.h"
+
+using namespace gams::studio;
 
 class testmodlib : public QObject
 {
@@ -31,6 +34,9 @@ private Q_SLOTS:
     void cleanupTestCase();
 
     void test_openAndLoad();
+
+private:
+    MainWindow* mMw = nullptr;
 };
 
 #endif // TEST_MODLIB_H

@@ -22,15 +22,13 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-QT += concurrent
+QT += concurrent network
 
 INCLUDEPATH += $$SRCPATH \
                $$SRCPATH/../tests
 
-HEADERS += $$files(*.h)
+HEADERS += $$files(*.h, true)
 
-SOURCES += \
-    testmodlib.cpp
-    ../../src/mainwindow.cpp
+SOURCES += $$files(*.cpp, true)
 
-FORMS += $$SRCPATH/mainwindow.ui
+FORMS += $$files(*.ui, true)

@@ -74,10 +74,6 @@ private:
 
 struct HistoryData {
     QStringList lastOpenedFiles;
-
-    // TODO: implement projects & sessions
-    // QStringList mLastOpenedProjects;
-    // QStringList mLastOpenedSessions;
 };
 
 class MainWindow : public QMainWindow
@@ -90,9 +86,7 @@ class MainWindow : public QMainWindow
 public:
     ///
     /// \brief Constructs the GAMS Stuido main windows based on the given settings.
-    /// \param settings The GAMS Studio settings.
     /// \param parent The parent widget.
-    /// \remark <c>MainWindow</c> takes control of the <c>StudioSettings</c> pointer.
     ///
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();

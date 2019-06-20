@@ -18,13 +18,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testmodlib.h"
-#include "mainwindow.h"
+
+#include "mainwindow.cpp" // this has to be?!
+
+#include "file/filemetarepo.h"
+#include "file/projectrepo.h"
+#include "autosavehandler.h"
 
 using namespace gams::studio;
 
 void testmodlib::initTestCase()
 {
-    // empty
+    mMw = new MainWindow();
 }
 
 void testmodlib::cleanupTestCase()
@@ -34,7 +39,13 @@ void testmodlib::cleanupTestCase()
 
 void testmodlib::test_openAndLoad()
 {
-    Q_ASSERT(true);
+    // test menu entry
+
+    // test toolbar button
+
+    // test load
+
+    // test replace
 }
 
 QTEST_MAIN(testmodlib)
