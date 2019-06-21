@@ -21,6 +21,8 @@
 #include <QMessageBox>
 
 #include "solveroptiontablemodel.h"
+#include "locators/settingslocator.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
@@ -393,6 +395,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     else
         beginRow = rowCount(QModelIndex());
 
+    StudioSettings* settings = SettingsLocator::settings();
     if (action ==  Qt::CopyAction) {
 
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
@@ -413,7 +416,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                                                      false));
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
-                if (overrideExistingOption) {
+                if (settings && settings->overridExistingOption()) {
                     for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
                 }
             }
@@ -498,7 +501,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
                 setData(idx, item->key, Qt::EditRole);
                 setData( index(beginRow, COLUMN_OPTION_VALUE), item->value, Qt::EditRole);
-                if (addEOLComment) {
+                if (settings && settings->addEOLCommentDescriptionOption()) { //addEOLComment) {
                     setData(index(beginRow, COLUMN_EOL_COMMENT), item->text, Qt::EditRole);
                 }
                 setData(index(beginRow, columnEntryNumber), item->optionId, Qt::EditRole);
@@ -714,21 +717,6 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
-}
-
-void SolverOptionTableModel::on_overrideExistingOptionChanged(int checkState)
-{
-    overrideExistingOption = (Qt::CheckState(checkState) == Qt::Checked);
-}
-
-void SolverOptionTableModel::on_addCommentAbove_stateChanged(int checkState)
-{
-    addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
-}
-
-void SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged(int checkState)
-{
-    addEOLComment = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
 void SolverOptionTableModel::setRowCount(int rows)

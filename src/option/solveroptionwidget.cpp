@@ -33,6 +33,8 @@
 #include "solveroptionsetting.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
+#include "locators/settingslocator.h"
+#include "studiosettings.h"
 
 namespace gams {
 namespace studio {
@@ -219,15 +221,6 @@ bool SolverOptionWidget::init()
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
         connect(mOptionTableModel, &SolverOptionTableModel::optionDefinitionSelected, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
 
-        connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, this, &SolverOptionWidget::on_addEOLCommentChanged);
-        connect(settingEdit, &SolverOptionSetting::addOptionDescriptionAsComment, mOptionTableModel, &SolverOptionTableModel::on_addEOLCommentCheckBox_stateChanged);
-
-        connect(settingEdit, &SolverOptionSetting::overrideExistingOptionChanged, this, &SolverOptionWidget::on_overrideExistingOptionChanged);
-        connect(settingEdit, &SolverOptionSetting::overrideExistingOptionChanged, mOptionTableModel, &SolverOptionTableModel::on_overrideExistingOptionChanged);
-        connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, this, &SolverOptionWidget::on_addCommentAboveChanged);
-        connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, mOptionTableModel, &SolverOptionTableModel::on_addCommentAbove_stateChanged);
-        connect(settingEdit, &SolverOptionSetting::addCommentAboveChanged, optdefmodel, &SolverOptionDefinitionModel::on_addCommentAbove_stateChanged);
-
         connect(this, &SolverOptionWidget::compactViewChanged, optdefmodel, &SolverOptionDefinitionModel::on_compactViewChanged);
 
         mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
@@ -411,7 +404,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QString optionIdData = ui->solverOptionTreeView->model()->data(optionIdIndex).toString();
 
     int rowToBeAdded = ui->solverOptionTableView->model()->rowCount();
-    if (overrideExistingOption) {
+    StudioSettings* settings = SettingsLocator::settings();
+    if (settings && settings->overridExistingOption()) {
         QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                             Qt::DisplayRole,
                                                                             optionIdData, Qt::MatchRecursive);
@@ -470,7 +464,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
     bool firstTime = (ui->solverOptionTableView->model()->rowCount()==0);
-    if (addCommentAbove) { // insert comment description row
+    if (settings && settings->addCommentDescriptionAboveOption()) { // insert comment description row
         int indexRow = index.row();
         int parentIndexRow = parentIndex.row();
         QModelIndex descriptionIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION):
@@ -522,7 +516,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
     ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
-    if (addEOLComment) {
+    if (settings && settings->addEOLCommentDescriptionOption()) {
         QModelIndex commentIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION)
                                                          : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
         QString commentData = ui->solverOptionTreeView->model()->data(commentIndex).toString();
@@ -542,8 +536,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
     int lastRow = rowToBeAdded;
-    int firstRow = (addCommentAbove ? lastRow-2 : lastRow);
-    if (addCommentAbove && firstTime) {
+    int firstRow = ((settings && settings->addCommentDescriptionAboveOption())? lastRow-2 : lastRow);
+    if (settings && settings->addCommentDescriptionAboveOption() && firstTime) {
         firstRow = 0;
         lastRow = 2;
     }
@@ -654,21 +648,6 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
     ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
 
     emit main->projectRepo()->openFile(fileMeta, true, runGroup, -1, true);
-}
-
-void SolverOptionWidget::on_overrideExistingOptionChanged(int checkState)
-{
-    overrideExistingOption = (Qt::CheckState(checkState) == Qt::Checked);
-}
-
-void SolverOptionWidget::on_addCommentAboveChanged(int checkState)
-{
-    addCommentAbove = (Qt::CheckState(checkState) == Qt::Checked);
-}
-
-void SolverOptionWidget::on_addEOLCommentChanged(int checkState)
-{
-    addEOLComment = (Qt::CheckState(checkState) == Qt::Checked);
 }
 
 void SolverOptionWidget::copyAction()

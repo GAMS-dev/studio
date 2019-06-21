@@ -90,10 +90,6 @@ public slots:
     void on_compactViewCheckBox_stateChanged(int checkState);
     void on_openAsTextButton_clicked(bool checked = false);
 
-    void on_overrideExistingOptionChanged(int checkState);
-    void on_addCommentAboveChanged(int checkState);
-    void on_addEOLCommentChanged(int checkState);
-
     void copyAction();
 
 private slots:
@@ -119,10 +115,6 @@ private:
     QString mSolverName;
 
     bool mFileHasChangedExtern = false;
-
-    bool overrideExistingOption = true;
-    bool addCommentAbove = false;
-    bool addEOLComment = false;
 
     QTextCodec* mCodec;
     SolverOptionTableModel* mOptionTableModel;
