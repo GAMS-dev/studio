@@ -923,10 +923,25 @@ void SolverOptionWidget::deleteOption(bool keepFirstOne)
         QItemSelection selection( ui->solverOptionTableView->selectionModel()->selection() );
 
         QList<int> rows;
-        for( const QModelIndex & index : selection.indexes() ) {
-            if (!rows.contains(index.row()))
-                rows.append( index.row() );
+        for(const QModelIndex & index : ui->solverOptionTableView->selectionModel()->selectedRows()) {
+            rows.append( index.row() );
         }
+
+        StudioSettings* settings = SettingsLocator::settings();
+        if (settings && settings->deleteAllCommentsAboveOption()) {
+            for(const QModelIndex & index : ui->solverOptionTableView->selectionModel()->selectedRows()) {
+                if (mOptionTableModel->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt()!=Qt::PartiallyChecked) {
+                   for(int row=index.row()-1; row>=0; row--) {
+                       if (mOptionTableModel->headerData(row, Qt::Vertical, Qt::CheckStateRole).toUInt()==Qt::PartiallyChecked) {
+                           rows.append( row );
+                       } else {
+                           break;
+                       }
+                   }
+                }
+            }
+        }
+
         std::sort(rows.begin(), rows.end());
         int prev = -1;
         for(int i=rows.count()-1; i>=0; i--) {
