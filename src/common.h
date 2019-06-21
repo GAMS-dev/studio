@@ -130,6 +130,7 @@ operator<<(QTextStream &dbg, T enumValue)
 }
 
 const int MAX_SEARCH_RESULTS = 50000;
+const double TABLE_ROW_HEIGHT = 1.6;
 
 }
 }
