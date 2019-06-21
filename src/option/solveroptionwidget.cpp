@@ -33,6 +33,7 @@
 #include "solveroptionsetting.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -96,12 +97,12 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
 
     ui->solverOptionTableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.6));
+    ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     if (ui->solverOptionTableView->model()->rowCount()<=0) {
         ui->solverOptionTableView->verticalHeader()->setMinimumSectionSize(1);
-        ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.6));
+        ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     } else {
         ui->solverOptionTableView->resizeColumnsToContents();
     }
