@@ -1764,11 +1764,14 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     // escape is the close button for focussed widgets
     if (e->key() == Qt::Key_Escape) {
 
+
+#ifdef QWEBENGINE
         // help widget
         if (mHelpWidget->isVisible()) {
             closeHelpView();
             e->accept(); return;
         }
+#endif
 
         // log widgets
         if (focusWidget() == mSyslog) {

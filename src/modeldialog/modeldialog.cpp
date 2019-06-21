@@ -145,7 +145,8 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     tableView->horizontalHeader()->setHighlightSections(false);
     tableView->setAlternatingRowColors(true);
     tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
+    tableView->verticalHeader()->setMinimumSectionSize(1);
+    tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.6));
 
     proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setFilterKeyColumn(-1);
