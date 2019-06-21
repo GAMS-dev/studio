@@ -30,7 +30,6 @@
 #include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"
-#include "solveroptionsetting.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
 #include "locators/settingslocator.h"
@@ -188,17 +187,6 @@ bool SolverOptionWidget::init()
         return false;
     }
     else {
-        SolverOptionSetting* settingEdit = new SolverOptionSetting(mOptionTokenizer->getOption()->getEOLChars(),
-                                                                   mOptionTokenizer->getOption()->getDefaultSeparator(),
-                                                                   mOptionTokenizer->getOption()->getDefaultStringquote(),
-                                                                   this);
-        mOptionTokenizer->on_EOLCommentChar_changed( settingEdit->getDefaultEOLCharacter() );
-        ui->solverOptionTabWidget->addTab( settingEdit, "Setting" );
-
-        connect(settingEdit, &SolverOptionSetting::EOLCharChanged, [=](QChar ch){
-                mOptionTokenizer->on_EOLCommentChar_changed(ch);
-        });
-
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectAndToggleRow);
         connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
         connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
