@@ -156,7 +156,7 @@ bool SolverOptionWidget::init()
     ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
-    ui->solverOptionVSplitter->setSizes(QList<int>({80, 20}));
+    ui->solverOptionVSplitter->setSizes(QList<int>({75, 25}));
 
     setModified(false);
 
@@ -410,8 +410,14 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
             switch(msgBox.exec()) {
             case 0: // replace
+                disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
+                deleteCommentsBeforeOption(indices.at(0).row());
+                connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                 replaceExistingEntry = true;
-                rowToBeAdded = indices.at(0).row();
+                indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
+                                                                    Qt::DisplayRole,
+                                                                    optionIdData, Qt::MatchRecursive);
+                rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
             case 1: // add
                 break;
@@ -436,7 +442,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                 indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                     Qt::DisplayRole,
                                                                     optionIdData, Qt::MatchRecursive);
-                rowToBeAdded = indices.at(0).row();
+                rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
             case 1: // add
                 break;
@@ -451,7 +457,6 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
-    bool firstTime = (ui->solverOptionTableView->model()->rowCount()==0);
     if (settings && settings->addCommentDescriptionAboveOption()) { // insert comment description row
         int indexRow = index.row();
         int parentIndexRow = parentIndex.row();
@@ -513,6 +518,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     }
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->solverOptionTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
+    ui->solverOptionTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
     ui->solverOptionTableView->selectRow(rowToBeAdded);
     selectAnOption();
 
@@ -525,7 +531,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
     int lastRow = rowToBeAdded;
     int firstRow = ((settings && settings->addCommentDescriptionAboveOption())? lastRow-2 : lastRow);
-    if (settings && settings->addCommentDescriptionAboveOption() && firstTime) {
+    if (settings && settings->addCommentDescriptionAboveOption() && lastRow<0) {
         firstRow = 0;
         lastRow = 2;
     }
@@ -534,7 +540,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                   {Qt::EditRole});
 
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
-
+    updateTableColumnSpan();
     showOptionDefinition();
 
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
@@ -640,7 +646,6 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
 
 void SolverOptionWidget::copyAction()
 {
-    qDebug() << __FUNCTION__;
     copyDefinitionToClipboard(SolverOptionDefinitionModel::COLUMN_OPTION_NAME);
 }
 
@@ -907,6 +912,32 @@ void SolverOptionWidget::insertComment()
     ui->solverOptionTableView->clearSelection();
     ui->solverOptionTableView->selectRow(rowToBeInserted);
     ui->solverOptionTableView->edit(mOptionTableModel->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY));
+}
+
+void SolverOptionWidget::deleteCommentsBeforeOption(int row)
+{
+    QList<int> rows;
+    for(int r=row-1; r>=0; r--) {
+       if (mOptionTableModel->headerData(r, Qt::Vertical, Qt::CheckStateRole).toUInt()==Qt::PartiallyChecked) {
+           rows.append( r );
+       } else {
+           break;
+       }
+    }
+
+    std::sort(rows.begin(), rows.end());
+
+    int prev = -1;
+    for(int i=rows.count()-1; i>=0; i--) {
+        int current = rows[i];
+        if (current != prev) {
+            QString text = mOptionTableModel->getOptionTableEntry(current);
+            ui->solverOptionTableView->model()->removeRows( current, 1 );
+            mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
+            prev = current;
+        }
+    }
+    updateTableColumnSpan();
 }
 
 void SolverOptionWidget::deleteOption(bool keepFirstOne)
