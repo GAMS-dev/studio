@@ -32,8 +32,7 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
 {
     ui->setupUi(this);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
     ui->tableView->setTextElideMode(Qt::ElideLeft);
 
     for (Result r : resultList->resultsAsList()) {

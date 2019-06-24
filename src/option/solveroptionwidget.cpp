@@ -33,7 +33,6 @@
 #include "solveroptionsetting.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
-#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -96,16 +95,13 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
 
-    ui->solverOptionTableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(ui->solverOptionTableView->verticalHeader()->minimumSectionSize());
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
-    if (ui->solverOptionTableView->model()->rowCount()<=0) {
-        ui->solverOptionTableView->verticalHeader()->setMinimumSectionSize(1);
-        ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-    } else {
+    if (ui->solverOptionTableView->model()->rowCount()<=0)
+         ui->solverOptionTableView->horizontalHeader()->setDefaultSectionSize( static_cast<int>(ui->solverOptionTableView->sizeHint().width()/(ui->solverOptionTableView->model()->columnCount()-1)) );
+    else
         ui->solverOptionTableView->resizeColumnsToContents();
-    }
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
