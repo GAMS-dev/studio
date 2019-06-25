@@ -22,12 +22,6 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-QWEBENGINE=true
-equals(QWEBENGINE, "true") {
-DEFINES += QWEBENGINE
-greaterThan(QT_MAJOR_VERSION, 4): QT += webenginewidgets
-}
-
 INCLUDEPATH += $$SRCPATH                \
                $$SRCPATH/modeldialog
 

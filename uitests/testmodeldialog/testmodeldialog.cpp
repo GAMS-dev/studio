@@ -18,19 +18,26 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testmodeldialog.h"
+#include "commonpaths.h"
+
+#include <QTabWidget>
 
 void testmodeldialog::initTestCase()
 {
-    mDialog = new ModelDialog;
+    mDialog = new ModelDialog();
 }
 
 void testmodeldialog::cleanupTestCase()
 {
-    // empty
+    delete mDialog;
 }
 
 void testmodeldialog::test_openAndLoad()
 {
+    // test search
+    QTabWidget* tabs = mDialog->findChild<QTabWidget*>("tabWidget");
+    QVERIFY(tabs);
+
     // test menu entry
 
     // test toolbar button
