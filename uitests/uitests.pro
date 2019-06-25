@@ -20,4 +20,4 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += testmodlib
+SUBDIRS += testmodeldialog

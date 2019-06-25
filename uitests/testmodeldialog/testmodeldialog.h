@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TEST_MODLIB_H
-#define TEST_MODLIB_H
+#ifndef TEST_MODEL_DIALOG_H
+#define TEST_MODEL_DIALOG_H
 
 #include <QtTest/QTest>
 #include "modeldialog.h"
 
 using namespace gams::studio;
 
-class testmodlib : public QObject
+class testmodeldialog : public QObject
 {
     Q_OBJECT
 
@@ -39,4 +39,4 @@ private:
     ModelDialog* mDialog = nullptr;
 };
 
-#endif // TEST_MODLIB_H
+#endif // TEST_MODEL_DIALOG_H

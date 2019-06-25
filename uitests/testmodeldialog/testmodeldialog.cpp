@@ -17,19 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "testmodlib.h"
+#include "testmodeldialog.h"
 
-void testmodlib::initTestCase()
+void testmodeldialog::initTestCase()
 {
     mDialog = new ModelDialog;
 }
 
-void testmodlib::cleanupTestCase()
+void testmodeldialog::cleanupTestCase()
 {
     // empty
 }
 
-void testmodlib::test_openAndLoad()
+void testmodeldialog::test_openAndLoad()
 {
     // test menu entry
 
@@ -40,4 +40,4 @@ void testmodlib::test_openAndLoad()
     // test replace
 }
 
-QTEST_MAIN(testmodlib)
+QTEST_MAIN(testmodeldialog)
