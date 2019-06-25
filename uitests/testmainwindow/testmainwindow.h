@@ -21,8 +21,9 @@
 #define TEST_MAIN_WINDOW_H
 
 #include <QtTest/QTest>
+#include "mainwindow.h"
 
-class MainWindow;
+using namespace gams::studio;
 
 class testmainwindow : public QObject
 {
