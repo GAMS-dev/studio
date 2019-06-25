@@ -19,17 +19,9 @@
  */
 #include "testmodlib.h"
 
-#include "mainwindow.cpp" // this has to be?!
-
-#include "file/filemetarepo.h"
-#include "file/projectrepo.h"
-#include "autosavehandler.h"
-
-using namespace gams::studio;
-
 void testmodlib::initTestCase()
 {
-    mMw = new MainWindow();
+    mDialog = new ModelDialog;
 }
 
 void testmodlib::cleanupTestCase()

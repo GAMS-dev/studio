@@ -21,7 +21,7 @@
 #define TEST_MODLIB_H
 
 #include <QtTest/QTest>
-#include "mainwindow.h"
+#include "modeldialog.h"
 
 using namespace gams::studio;
 
@@ -36,7 +36,7 @@ private Q_SLOTS:
     void test_openAndLoad();
 
 private:
-    MainWindow* mMw = nullptr;
+    ModelDialog* mDialog = nullptr;
 };
 
 #endif // TEST_MODLIB_H
