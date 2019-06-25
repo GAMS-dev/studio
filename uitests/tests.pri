@@ -18,19 +18,33 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+QT += core testlib gui widgets
 
-SUBDIRS += testcommonpaths              \
-           testeditors                  \
-           testservicelocators          \
-           testgamslicenseinfo          \
-           testcheckforupdatewrapper    \
-           testtextmapper               \
-           testblockcode                \
-           testgamsoption               \
-           testcplexoption              \
-           testconopt4option            \
-           testminosoption              \
-           testgurobioption             \
-           testoptionapi                \
-           testdoclocation
+CONFIG += c++14
+CONFIG -= app_bundle
+
+DESTDIR = ../bin
+
+#include(../gamsdependency.pri)
+
+#unix : LIBS += -ldl -L../../bin
+#win32: LIBS += -L../../bin/
+
+# Setup and include the GAMS distribution
+include(../gamsdependency.pri)
+
+macx {
+# ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
+# ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
+#    ICON = studio.icns
+#    QMAKE_INFO_PLIST=Info.plist
+}
+unix {
+    LIBS += -ldl
+}
+win32 {
+    LIBS += -luser32
+}
+
+TESTSROOT = $$_PRO_FILE_PWD_/..
+SRCPATH = $$TESTSROOT/../src
