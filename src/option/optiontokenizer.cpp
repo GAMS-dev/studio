@@ -564,7 +564,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         item->text = "";
         item->error = No_Error;
         item->disabled = true;
-    } else if (mLineComments.contains(text.at(0)) && firstTime) {
+    } else if (isValidLineCommentChar(text.at(0)) && firstTime) {
         item->optionId = -1;
         item->key = text;
         item->value = "";
@@ -1277,6 +1277,16 @@ void OptionTokenizer::provideLogger(AbstractSystemLogger *optionLogEdit)
 QChar OptionTokenizer::getEOLCommentChar() const
 {
     return mEOLCommentChar;
+}
+
+bool OptionTokenizer::isValidLineCommentChar(const QChar &ch)
+{
+    return mLineComments.contains(ch);
+}
+
+bool OptionTokenizer::isValidEOLCommentChar(const QChar &ch)
+{
+    return mOption->getEOLChars().contains(ch);
 }
 
 void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {

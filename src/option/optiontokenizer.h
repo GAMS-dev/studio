@@ -79,10 +79,12 @@ public:
     void provideLogger(AbstractSystemLogger* optionLogEdit);
 
     QChar getEOLCommentChar() const;
+    bool isValidLineCommentChar(const QChar& ch);
+    bool isValidEOLCommentChar(const QChar& ch);
 
-   static QString keyGeneratedStr;
-   static QString valueGeneratedStr;
-   static QString commentGeneratedStr;
+    static QString keyGeneratedStr;
+    static QString valueGeneratedStr;
+    static QString commentGeneratedStr;
 
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
