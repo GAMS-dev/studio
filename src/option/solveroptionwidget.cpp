@@ -438,8 +438,9 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             switch(msgBox.exec()) {
             case 0: // delete and replace
                 disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
-                if (settings && settings->deleteAllCommentsAboveOption() && indices.size()>0)
-                   deleteCommentsBeforeOption(indices.at(0).row());
+                for(QModelIndex index : indices) {
+                    ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+                }
                 deleteOption(true);
                 connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                 replaceExistingEntry = true;
