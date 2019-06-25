@@ -606,9 +606,6 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
     int row = idx.row();
     while(row <= bottomRight.row()) {
         idx = index(row++, idx.column());
-        if (idx.column()==columnEntryNumber) {
-            continue;
-        }
         if (roles.first()==Qt::EditRole) {
           if (mOptionItem.at(idx.row())->disabled) {
               setHeaderData( idx.row(), Qt::Vertical,
