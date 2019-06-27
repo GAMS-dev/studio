@@ -438,10 +438,12 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             switch(msgBox.exec()) {
             case 0: // delete and replace
                 disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
-                for(QModelIndex index : indices) {
-                    ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
+                ui->solverOptionTableView->selectionModel()->clearSelection();
+                for(int i=1; i<indices.size(); i++) {
+                    ui->solverOptionTableView->selectionModel()->select( indices.at(i), QItemSelectionModel::Select|QItemSelectionModel::Rows );
                 }
-                deleteOption(true);
+                deleteOption();
+                deleteCommentsBeforeOption(indices.at(0).row());
                 connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                 replaceExistingEntry = true;
                 indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
@@ -957,7 +959,7 @@ void SolverOptionWidget::deleteCommentsBeforeOption(int row)
     updateTableColumnSpan();
 }
 
-void SolverOptionWidget::deleteOption(bool keepFirstOne)
+void SolverOptionWidget::deleteOption()
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
@@ -994,8 +996,6 @@ void SolverOptionWidget::deleteOption(bool keepFirstOne)
         int prev = -1;
         for(int i=rows.count()-1; i>=0; i--) {
             int current = rows[i];
-            if (keepFirstOne && i==0)
-                continue;
             if (current != prev) {
                 QString text = mOptionTableModel->getOptionTableEntry(current);
                 ui->solverOptionTableView->model()->removeRows( current, 1 );

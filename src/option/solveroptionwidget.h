@@ -104,7 +104,7 @@ private slots:
     void insertOption();
     void insertComment();
     void deleteCommentsBeforeOption(int row);
-    void deleteOption(bool keepFirstOne = false);
+    void deleteOption();
     void moveOptionUp();
     void moveOptionDown();
 
