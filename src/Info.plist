@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
+    <dict>
+        <key>UTExportedTypeDeclarations</key>
+        <array>
+            <dict>
+                <key>UTTypeIdentifier</key>
+                <string>public.gdx</string>
+                <key>UTTypeReferenceURL</key>
+                <string>https://www.gams.com/latest/docs/UG_GDX.html</string>
+                <key>UTTypeDescription</key>
+                <string>GAMS Data eXchange (GDX) File</string>
+                <key>UTTypeIconFile</key>
+                <string>database.icns</string>
+                <key>UTTypeConformsTo</key>
+                <array>
+                    <string>public.data</string>
+                    <string>public.item</string>
+                </array>
+                <key>UTTypeTagSpecification</key>
+                <dict>
+                    <key>com.gams.gdx</key>
+                    <string>GDX</string>
+                    <key>public.filename-extension</key>
+                    <array>
+                        <string>gdx</string>
+                    </array>
+                    <key>public.mime-type</key>
+                    <string>application/octet-stream</string>
+                </dict>
+            </dict>
+        </array>
         <key>CFBundleDocumentTypes</key>
         <array>
             <dict>
                 <key>CFBundleTypeName</key>
-                <string>GAMS Modeling System</string>
+                <string>GAMS Model Source</string>
                 <key>CFBundleTypeExtensions</key>
                 <array>
                     <string>gms</string>
@@ -17,8 +46,22 @@
                 <string>Editor</string>
                 <key>LSTypeIsPackage</key>
                 <false />
-                <key>NSPersistentStoreTypeKey</key>
-                <string>Binary</string>
+            </dict>
+            <dict>
+                <key>CFBundleTypeName</key>
+                <string>GAMS Data eXchange (GDX) File</string>
+                <key>CFBundleTypeExtensions</key>
+                <array>
+                    <string>gdx</string>
+                </array>
+                <key>CFBundleTypeIconFile</key>
+                <string>database.icns</string>
+                <key>CFBundleTypeRole</key>
+                <string>Editor</string>
+                <key>LSItemContentTypes</key>
+                <array>
+                    <string>public.gdx</string>
+                </array>
             </dict>
         </array>
         <key>CFBundleExecutable</key>
@@ -43,5 +86,5 @@
         <true/>
         <key>NSRequiresAquaSystemAppearance</key>
         <true/>
-</dict>
+    </dict>
 </plist>
