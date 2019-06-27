@@ -67,7 +67,7 @@ bool SolverOptionWidget::init()
 
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
-    ui->solverOptionTabWidget->addTab( logEdit, "Message" );
+    ui->solverOptionTabWidget->addTab( logEdit, "Messages" );
 
     QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mCodec);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
@@ -635,6 +635,15 @@ void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
        }
     }
     emit compactViewChanged(isViewCompact);
+}
+
+void SolverOptionWidget::on_messageViewCheckBox_stateChanged(int checkState)
+{
+    if (Qt::CheckState(checkState) == Qt::Checked)
+        ui->solverOptionVSplitter->setSizes(QList<int>({75, 25}));
+    else
+        ui->solverOptionVSplitter->setSizes(QList<int>({100, 0}));
+    ui->solverOptionTabWidget->setVisible(Qt::CheckState(checkState) == Qt::Checked);
 }
 
 void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
