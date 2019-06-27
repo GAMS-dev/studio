@@ -535,11 +535,14 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
     int lastRow = rowToBeAdded;
-    int firstRow = ((settings && settings->addCommentDescriptionAboveOption())? lastRow-2 : lastRow);
-    if (settings && settings->addCommentDescriptionAboveOption() && lastRow<0) {
-        firstRow = 0;
-        lastRow = 2;
+    int firstRow = lastRow;
+    if (settings && settings->addCommentDescriptionAboveOption()) {
+        firstRow--;
+        if (parentIndex.row() >=0)
+            firstRow--;
     }
+    if (firstRow<0)
+        firstRow = 0;
     mOptionTableModel->on_updateSolverOptionItem( ui->solverOptionTableView->model()->index(firstRow, lastColumn),
                                                   ui->solverOptionTableView->model()->index(lastRow, lastColumn),
                                                   {Qt::EditRole});
