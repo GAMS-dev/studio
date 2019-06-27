@@ -18,26 +18,28 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testmainwindow.h"
+#include "studiosettings.h"
+#include "locators/settingslocator.h"
+#include "modeldialog/modeldialog.h"
+
+#include <QDialog>
+#include <QToolBar>
 
 void testmainwindow::initTestCase()
 {
-    mMainWindow = new MainWindow;
+    mSettings = new StudioSettings(true, false, false);
+    SettingsLocator::provide(mSettings);
+
+    mMainWindow = new MainWindow();
+    QVERIFY(mMainWindow);
+
 }
 
 void testmainwindow::cleanupTestCase()
 {
-    // empty
+    delete mMainWindow;
+    delete mSettings;
 }
 
-void testmainwindow::test_openAndLoad()
-{
-    // test menu entry
-
-    // test toolbar button
-
-    // test load
-
-    // test replace
-}
 
 QTEST_MAIN(testmainwindow)

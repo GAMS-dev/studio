@@ -105,6 +105,14 @@ void ModelDialog::changeHeader()
     }
 }
 
+QTableView* ModelDialog::tableAt(int i)
+{
+    if (i >= 0 && i < tableViewList.size())
+        return tableViewList.at(i);
+    else
+        return nullptr;
+}
+
 void ModelDialog::updateSelectedLibraryItem()
 {
     int idx = ui->tabWidget->currentIndex();

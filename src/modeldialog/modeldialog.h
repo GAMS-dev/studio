@@ -42,6 +42,7 @@ public:
     explicit ModelDialog(QString userLibPath, QWidget* parent = nullptr);
     ~ModelDialog();
     LibraryItem *selectedLibraryItem() const;
+    QTableView* tableAt(int i);
 
 public slots:
     void changeHeader();

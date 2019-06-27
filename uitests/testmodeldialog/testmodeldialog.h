@@ -33,7 +33,8 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
 
-    void test_openAndLoad();
+    void test_fileLoad();
+    void test_tabWidget();
 
 private:
     ModelDialog* mDialog = nullptr;

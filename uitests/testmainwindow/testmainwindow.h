@@ -33,10 +33,10 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
 
-    void test_openAndLoad();
 
 private:
     MainWindow* mMainWindow = nullptr;
+    StudioSettings* mSettings = nullptr;
 };
 
 #endif // TEST_MAIN_WINDOW_H

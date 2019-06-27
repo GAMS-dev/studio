@@ -19,8 +19,11 @@
  */
 #include "testmodeldialog.h"
 #include "commonpaths.h"
+#include "mainwindow.h"
 
 #include <QTabWidget>
+#include <QLineEdit>
+#include <QTableView>
 
 void testmodeldialog::initTestCase()
 {
@@ -32,19 +35,37 @@ void testmodeldialog::cleanupTestCase()
     delete mDialog;
 }
 
-void testmodeldialog::test_openAndLoad()
+void testmodeldialog::test_tabWidget()
 {
     // test search
     QTabWidget* tabs = mDialog->findChild<QTabWidget*>("tabWidget");
-    QVERIFY(tabs);
+    QVERIFY2(tabs, "Model Library tab widget not found.");
 
-    // test menu entry
+    QVERIFY2(tabs->count() >= 8, "Not all default libraries loaded.");
 
-    // test toolbar button
+    QLineEdit* search = mDialog->findChild<QLineEdit*>("lineEdit");
+    QVERIFY2(search, "Model Library search bar not found.");
 
-    // test load
+    search->setText("trnsport");
+    QTableView* tv = mDialog->tableAt(tabs->currentIndex());
+    QVERIFY2(tv, "Model Library Table not found.");
 
-    // test replace
+    QCOMPARE(tv->model()->rowCount(), 1);
+
+}
+
+void testmodeldialog::test_fileLoad()
+{
+    QTabWidget* tabs = mDialog->findChild<QTabWidget*>("tabWidget");
+    QVERIFY2(tabs, "Model Library tab widget not found.");
+
+    QTableView* tv = mDialog->tableAt(tabs->currentIndex());
+    QVERIFY2(tv, "Model Library Table not found.");
+
+//    following part needs mainwindow:
+//    tv->selectRow(0);
+//    LibraryItem *item = mDialog->selectedLibraryItem();
+//    mMainWindow.triggerGamsLibFileCreation(item);
 }
 
 QTEST_MAIN(testmodeldialog)
