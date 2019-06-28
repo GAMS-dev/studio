@@ -389,14 +389,14 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
     QModelIndex optionIdIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
                                                         ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
-    QString optionIdData = ui->solverOptionTreeView->model()->data(optionIdIndex).toString();
+    QVariant optionIdData = ui->solverOptionTreeView->model()->data(optionIdIndex);
 
     int rowToBeAdded = ui->solverOptionTableView->model()->rowCount();
     StudioSettings* settings = SettingsLocator::settings();
     if (settings && settings->overridExistingOption()) {
         QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                             Qt::DisplayRole,
-                                                                            optionIdData, Qt::MatchRecursive);
+                                                                            optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
         bool singleEntryExisted = (indices.size()==1);
         bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
@@ -418,7 +418,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                 replaceExistingEntry = true;
                 indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                     Qt::DisplayRole,
-                                                                    optionIdData, Qt::MatchRecursive);
+                                                                    optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
             case 1: // add
@@ -448,7 +448,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                 replaceExistingEntry = true;
                 indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                     Qt::DisplayRole,
-                                                                    optionIdData, Qt::MatchRecursive);
+                                                                    optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
             case 1: // add
@@ -683,7 +683,7 @@ void SolverOptionWidget::showOptionDefinition()
             QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), mOptionTableModel->getColumnEntryNumber()), Qt::DisplayRole);
             QModelIndexList indices = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
-                                                                               optionId.toString(), 1); //, Qt::MatchRecursive);
+                                                                               optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
             for(QModelIndex idx : indices) {
                 QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(index);
 
@@ -754,7 +754,7 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
     QVariant data = ui->solverOptionTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                        Qt::DisplayRole,
-                                                                       data.toString(), Qt::MatchRecursive);
+                                                                       data.toString(), -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->solverOptionTableView->clearSelection();
     QItemSelection selection;
     for(QModelIndex i :indices) {

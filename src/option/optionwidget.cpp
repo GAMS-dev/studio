@@ -433,7 +433,7 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
     QVariant data = ui->gamsOptionTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->gamsOptionTableView->model()->match(ui->gamsOptionTableView->model()->index(0, GamsOptionTableModel::COLUMN_ENTRY_NUMBER),
                                                                        Qt::DisplayRole,
-                                                                       data.toString(), Qt::MatchRecursive);
+                                                                       data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->gamsOptionTableView->clearSelection();
     QItemSelection selection;
     for(QModelIndex i :indices) {
@@ -471,7 +471,7 @@ void OptionWidget::showOptionDefinition()
             QVariant optionId = ui->gamsOptionTableView->model()->data( index.sibling(index.row(), ui->gamsOptionTableView->model()->columnCount()-1), Qt::DisplayRole);
             QModelIndexList indices = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
-                                                                               optionId.toString(), 1); //, Qt::MatchRecursive);
+                                                                               optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
             for(QModelIndex idx : indices) {
                 QModelIndex  parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
 
