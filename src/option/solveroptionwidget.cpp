@@ -551,6 +551,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     updateTableColumnSpan();
+    if (isViewCompact())
+        refreshOptionTableModel(true);
     showOptionDefinition();
 
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
@@ -619,22 +621,11 @@ void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
 {
     bool isViewCompact = (Qt::CheckState(checkState) == Qt::Checked);
+    refreshOptionTableModel(isViewCompact);
     if (isViewCompact) {
-        mOptionTokenizer->logger()->append(QString("Compact View is activated, comments are hidden and only edit action is allowed"), LogMsgType::Info);
-        if (mOptionTokenizer->getOption()->isEOLCharDefined())
-           ui->solverOptionTableView->hideColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
+        mOptionTokenizer->logger()->append(QString("activated Compact View, comments are hidden and actions related to comments are either not visible or forbidden"), LogMsgType::Info);
     } else {
-        mOptionTokenizer->logger()->append(QString("Compact View is deactivated, comments are now visible and all actions are allowed"), LogMsgType::Info);
-        if (mOptionTokenizer->getOption()->isEOLCharDefined())
-           ui->solverOptionTableView->showColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
-    }
-    for(int i = 0; i < mOptionTableModel->rowCount(); ++i) {
-       if (mOptionTableModel->headerData(i, Qt::Vertical, Qt::CheckStateRole).toUInt()==Qt::PartiallyChecked) {
-          if (isViewCompact)
-              ui->solverOptionTableView->hideRow(i);
-          else
-             ui->solverOptionTableView->showRow(i);
-       }
+        mOptionTokenizer->logger()->append(QString("deactivated Compact View, comments are now visible and all actions are allowed"), LogMsgType::Info);
     }
     emit compactViewChanged(isViewCompact);
 }
@@ -1078,6 +1069,25 @@ void SolverOptionWidget::resizeColumnsToContents()
         ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_DEF_VALUE);
         ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_RANGE);
         ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_TYPE);
+    }
+}
+
+void SolverOptionWidget::refreshOptionTableModel(bool hideAllComments)
+{
+    if (hideAllComments) {
+        if (mOptionTokenizer->getOption()->isEOLCharDefined())
+           ui->solverOptionTableView->hideColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
+    } else {
+        if (mOptionTokenizer->getOption()->isEOLCharDefined())
+           ui->solverOptionTableView->showColumn(SolverOptionTableModel::COLUMN_EOL_COMMENT);
+    }
+    for(int i = 0; i < mOptionTableModel->rowCount(); ++i) {
+       if (mOptionTableModel->headerData(i, Qt::Vertical, Qt::CheckStateRole).toUInt()==Qt::PartiallyChecked) {
+          if (hideAllComments)
+              ui->solverOptionTableView->hideRow(i);
+          else
+             ui->solverOptionTableView->showRow(i);
+       }
     }
 }
 

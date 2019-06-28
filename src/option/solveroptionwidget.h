@@ -125,6 +125,8 @@ private:
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
 
+    void refreshOptionTableModel(bool hideAllComments);
+
     void addActions();
     void updateEditActions(bool modified);
     void updateTableColumnSpan();
