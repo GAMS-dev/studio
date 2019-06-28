@@ -6,6 +6,7 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -116,7 +117,11 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
     int lastRowWidth = 0;
     int lastHeight = 0;
 
+    int fontVerticalOffset = opt.rect.top() + opt.rect.height() - fontMetrics().descent()
+            - (opt.rect.height()-fontMetrics().height()) / 2;
+
     if(orientation() == Qt::Vertical) {
+        opt.text = "";
         for(int i=0; i<dim(); i++) {
             QStyle::State state = QStyle::State_None;
             if (isEnabled())
@@ -125,11 +130,10 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Active;
             int rowWidth = sectionWidth.at(i);
 
+            QString text;
             if (labelPrevSection[i] != labelCurSection[i])
-                opt.text = labelCurSection[i];
-            else
-                opt.text = "";
-            opt.rect.setLeft(opt.rect.left()+ lastRowWidth);\
+                text = " "+labelCurSection[i];
+            opt.rect.setLeft(opt.rect.left()+ lastRowWidth);
             lastRowWidth = rowWidth;
             opt.rect.setWidth(rowWidth);
 
@@ -138,17 +142,18 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             opt.state = state;
             opt.textAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             style()->drawControl(QStyle::CE_Header, &opt, painter, this);
+            painter->restore();
+            QPen pen(painter->pen());
+            pen.setColor(palette().text().color());
+            painter->setPen(pen);
+            painter->drawText(opt.rect.left(), fontVerticalOffset, text);
             if (dimIdxEnd>-1) {
-                painter->restore();
-                QPen pen(painter->pen());
-                pen.setColor(palette().text().color());
-                painter->setPen(pen);
                 if (dimIdxEnd == i)
                     painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.left(), opt.rect.bottom());
                 else if (dimIdxEnd-1 == i && dimIdxEnd == dim())
                     painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
-                painter->save();
             }
+            painter->save();
         }
     } else {
         for(int i=0; i<dim(); i++) {

@@ -17,22 +17,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OPTIONTABLEMODEL_H
-#define OPTIONTABLEMODEL_H
+#ifndef GAMSOPTIONTABLEMODEL_H
+#define GAMSOPTIONTABLEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QMimeData>
 
-#include "commandlinetokenizer.h"
+#include "optiontokenizer.h"
 #include "option.h"
 
 namespace gams {
 namespace studio {
+namespace option {
 
-class OptionTableModel : public QAbstractTableModel
+class GamsOptionTableModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    OptionTableModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject *parent = 0);
+    GamsOptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    GamsOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -48,10 +51,23 @@ public:
     virtual bool removeRows(int row, int count, const QModelIndex &parent) override;
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList & indexes) const override;
+
+    Qt::DropActions supportedDragActions() const override;
+    Qt::DropActions supportedDropActions() const override;
+    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
+
     QList<OptionItem> getCurrentListOfOptionItems();
 
+    static const int COLUMN_OPTION_KEY = 0;
+    static const int COLUMN_OPTION_VALUE = 1;
+    static const int COLUMN_ENTRY_NUMBER = 2;
+
 signals:
+    void newTableRowDropped(const QModelIndex &index);
     void optionModelChanged(const QList<OptionItem> &optionItem);
+    void optionNameChanged(const QString &from, const QString &to);
 
 public slots:
     void toggleActiveOptionItem(int index);
@@ -62,15 +78,17 @@ private:
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
 
-    CommandLineTokenizer* commandLineTokenizer;
-    Option* gamsOption;
+    OptionTokenizer* mOptionTokenizer;
+    Option* mOption;
+
+    bool mTokenizerUsed;
 
     void setRowCount(int rows);
     void itemizeOptionFromCommandLineStr(const QString text);
-    void validateOption();
 };
 
+} // namepsace option
 } // namespace studio
 } // namespace gams
 
-#endif // OPTIONTABLEMODEL_H
+#endif // GAMSOPTIONTABLEMODEL_H

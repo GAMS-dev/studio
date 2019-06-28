@@ -88,7 +88,8 @@ enum class FileKind {
     Lxi,
     Log,
     Gdx,
-    Ref
+    Ref,
+    Opt
 };
 Q_ENUM_NS(FileKind)
 
@@ -107,6 +108,7 @@ enum class EditorType {
     lxiLst = 6,
     gdx = 7,
     ref = 8,
+    opt = 9,
 };
 Q_ENUM_NS(EditorType)
 
@@ -130,6 +132,7 @@ operator<<(QTextStream &dbg, T enumValue)
 }
 
 const int MAX_SEARCH_RESULTS = 50000;
+const double TABLE_ROW_HEIGHT = 1.6;
 
 }
 }

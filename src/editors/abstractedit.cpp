@@ -244,6 +244,8 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
     }
     viewport()->setCursor(shape);
+
+    QWidget::keyPressEvent(e);
 }
 
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)

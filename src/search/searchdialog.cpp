@@ -109,10 +109,13 @@ void SearchDialog::finalUpdate()
         resultsView()->resizeColumnsToContent();
     } else {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+        TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
         if (edit && !edit->textCursor().hasSelection())
             selectNextMatch(SearchDirection::Forward);
         else if (edit)
             edit->textCursor().clearSelection();
+        else if (tv)
+            selectNextMatch(SearchDirection::Forward);
     }
 
     updateEditHighlighting();

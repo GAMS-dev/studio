@@ -111,15 +111,20 @@ SOURCES += \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
     option/commandlineoption.cpp \
-    option/commandlinetokenizer.cpp \
+    option/gamsoptiondefinitionmodel.cpp \
+    option/gamsoptiontablemodel.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
     option/optioncompleterdelegate.cpp \
     option/optiondefinitionitem.cpp \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
-    option/optiontablemodel.cpp \
+    option/optiontokenizer.cpp \
     option/optionwidget.cpp \
+    option/solveroptiondefinitionmodel.cpp \
+    option/solveroptionsetting.cpp \
+    option/solveroptiontablemodel.cpp \
+    option/solveroptionwidget.cpp \
     reference/reference.cpp \
     reference/referencetabstyle.cpp \
     reference/referencedatatype.cpp \
@@ -222,15 +227,20 @@ HEADERS += \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
     option/commandlineoption.h \
-    option/commandlinetokenizer.h \
+    option/gamsoptiondefinitionmodel.h \
+    option/gamsoptiontablemodel.h \
     option/lineeditcompleteevent.h \
     option/option.h \
     option/optioncompleterdelegate.h \
     option/optiondefinitionitem.h \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
-    option/optiontablemodel.h \
+    option/optiontokenizer.h \
     option/optionwidget.h \
+    option/solveroptiondefinitionmodel.h \
+    option/solveroptionsetting.h \
+    option/solveroptiontablemodel.h \
+    option/solveroptionwidget.h \
     reference/reference.h \
     reference/referencetabstyle.h \
     reference/referencedatatype.h \
@@ -295,6 +305,8 @@ FORMS += \
     mainwindow.ui \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
+    option/solveroptionwidget.ui \
+    option/solveroptionsetting.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     resultsview.ui \
@@ -322,6 +334,7 @@ SOURCES += help/bookmarkdialog.cpp \
     help/helpview.cpp \
     help/helpwidget.cpp
 HEADERS += help/bookmarkdialog.h \
+    help/helpdata.h \
     help/helppage.h \
     help/helptoolbar.h \
     help/helpview.h \

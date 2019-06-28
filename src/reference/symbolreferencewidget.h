@@ -47,9 +47,9 @@ class SymbolReferenceWidget : public QWidget
 public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
     ~SymbolReferenceWidget();
-    void selectSearchField();
+    void selectSearchField() const;
 
-    bool isModelLoaded();
+    bool isModelLoaded() const;
 
 public slots:
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);

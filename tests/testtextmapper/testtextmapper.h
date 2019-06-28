@@ -48,6 +48,7 @@ private slots:
 
 private:
     TextMapper *mMapper;
+    QDir mCurrentPath;
 };
 
 #endif // TESTTEXTMAPPER_H

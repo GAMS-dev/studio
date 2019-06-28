@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class CommandLineOption : public QComboBox
 {
@@ -39,6 +40,7 @@ public:
 
 signals:
     void optionRunChanged();
+    void optionEditCancelled();
     void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
 
 public slots:
@@ -52,6 +54,7 @@ private:
     int mCurrentIndex;
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 
