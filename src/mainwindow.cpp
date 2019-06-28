@@ -1766,10 +1766,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Escape) {
 
         // help widget
+#ifdef QWEBENGINE
         if (mHelpWidget->isVisible()) {
             closeHelpView();
             e->accept(); return;
         }
+#endif
 
         // log widgets
         if (focusWidget() == mSyslog) {
