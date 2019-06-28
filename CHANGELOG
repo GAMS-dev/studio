@@ -1,22 +1,15 @@
-Version 0.11.3
+Version 0.11.4
 ========================
 
-# General
-- fixed status bar cursor position not updating in lst files
+## General
+- fixed crash when running studio with --ignore-settings and double clicking a word (fixes #1031)
+- fixed freeze when exiting studio during startup procedure
+- added Ctrl+H to focus main editor
+- added Ctrl+Shift+G to focus logs
+- added Esc to close several widgets
+- added icons to toolbar to show/hide project explorer, logs, and help
+- adjusted row height of all tables to be equal (#1002)
+- discarded file stays marked as modified (fixes #1018)
 
-# GDX Viewer
-- added column auto-shrink for table view
-- added shortcut for auto-shrink (Ctrl+R)
-
-# Search
-- many improvements and bug fixes to highlighting of search results
-- general fixes of bugs, crashes, etc.
-- added shortcut Ctrl+Enter for "Search All"
-- improved tab order in search dialog. now repolace textfield comes right after search textfield
-- added ability to replace in more than one file at a time. there is a safety dialog showing how many files are being affected and the user can start a search to find all matches being affected.
-- Find Next/Previous now respects all search options and will jump to the next file if there are also matches
-- lst files now also have a match counter when stepping through with Find Next/Previous
-- results view now supports enter key to select and jump to a result
-- changed position of search dialog
-- minor layout adjustments to search dialog
-
+## Search
+- fixed cursor not jumping to first match on first try in lst file (fixes #1039)
