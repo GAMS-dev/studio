@@ -292,7 +292,7 @@ QModelIndex SolverOptionTableModel::index(int row, int column, const QModelIndex
 
 bool SolverOptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size())
          return false;
 
@@ -310,7 +310,7 @@ bool SolverOptionTableModel::insertRows(int row, int count, const QModelIndex &p
 
 bool SolverOptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
          return false;
 
@@ -330,7 +330,8 @@ bool SolverOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourc
     if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
 
-    Q_UNUSED(sourceParent); Q_UNUSED(destinationParent);
+    Q_UNUSED(sourceParent)
+    Q_UNUSED(destinationParent)
     beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count -1 , QModelIndex(), destinationChild);
 //    mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
 //    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
@@ -367,7 +368,7 @@ Qt::DropActions SolverOptionTableModel::supportedDropActions() const
 
 bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
-    Q_UNUSED(column);
+    Q_UNUSED(column)
     if (action == Qt::IgnoreAction)
         return true;
 

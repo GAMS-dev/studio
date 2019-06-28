@@ -566,8 +566,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
 void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
-    Q_UNUSED(topLeft);
-    Q_UNUSED(bottomRight);
+    Q_UNUSED(topLeft)
+    Q_UNUSED(bottomRight)
     setModified(true);
 }
 
@@ -641,7 +641,7 @@ void SolverOptionWidget::on_messageViewCheckBox_stateChanged(int checkState)
 
 void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
 {
-    Q_UNUSED(checked);
+    Q_UNUSED(checked)
     MainWindow* main = getMainWindow();
     if (!main) return;
 

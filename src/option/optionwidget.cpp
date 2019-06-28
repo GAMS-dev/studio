@@ -203,7 +203,7 @@ void OptionWidget::on_stopAction()
 
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
-    Q_UNUSED(lineEdit);
+    Q_UNUSED(lineEdit)
     if (mExtendedEditor->isHidden()) return;
 
     emit optionTableModelChanged(commandLineStr);
@@ -414,7 +414,7 @@ void OptionWidget::selectSearchField()
 
 void OptionWidget::optionItemCommitted(QWidget *editor)
 {
-    Q_UNUSED(editor);
+    Q_UNUSED(editor)
     if (mOptionCompleter->currentEditedIndex().isValid()) {
         ui->gamsOptionTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
         ui->gamsOptionTableView->setCurrentIndex( mOptionCompleter->currentEditedIndex() );
