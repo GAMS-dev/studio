@@ -93,6 +93,7 @@ bool SolverOptionWidget::init()
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->solverOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
+    headerView->setDefaultSectionSize( static_cast<int>(ui->solverOptionTableView->sizeHint().width()/(ui->solverOptionTableView->model()->columnCount()-1)) );
     ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
 
