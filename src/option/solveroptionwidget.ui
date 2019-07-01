@@ -86,6 +86,9 @@
            </item>
            <item>
             <widget class="QCheckBox" name="messageViewCheckBox">
+             <property name="toolTip">
+              <string>Show message log</string>
+             </property>
              <property name="text">
               <string>Show Messages</string>
              </property>
