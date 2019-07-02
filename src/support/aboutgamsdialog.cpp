@@ -45,6 +45,8 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     auto sortModel = new QSortFilterProxyModel(this);
     sortModel->setSourceModel(dataModel);
     ui->solverTable->setModel(sortModel);
+    ui->solverTable->verticalHeader()->setMinimumSectionSize(1);
+    ui->solverTable->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 }
 
 AboutGAMSDialog::~AboutGAMSDialog()

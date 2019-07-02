@@ -25,7 +25,6 @@
 #include <QStandardPaths>
 #include <QClipboard>
 #include <QApplication>
-//#include <QThread>
 
 using gams::studio::TextMapper;
 
@@ -33,8 +32,8 @@ const QString testFileName("testtextmapper.tmp");
 
 void TestTextMapper::initTestCase()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
+    mCurrentPath = QDir::current();
+    QFile file(mCurrentPath.absoluteFilePath(testFileName));
     QString message("Error on opening test file '%1'.");
     bool opened = file.open(QIODevice::WriteOnly);
     if (!opened) {
@@ -49,10 +48,13 @@ void TestTextMapper::initTestCase()
 
     int maxLine = 50000;
     int nrChars = QString::number(maxLine).length();
-    stream << "This is line " << QString(nrChars-1, ' ').toLatin1() << 1 << " of the testfile. And here are additional characters to get sufficient long lines." << endl << flush;
+    stream << "This is line " << QString(nrChars-1, ' ').toLatin1() << 1
+           << " of the testfile. And here are additional characters to get sufficient long lines."
+           << endl << flush;
     for (int line = 1; line < maxLine-1; ++line) {
         int nrCurrent = QString::number(line+1).length();
-        stream << "This is line "<< QString(nrChars-nrCurrent, ' ').toLatin1() << line+1 << " of the testfile. And here are additional characters to get sufficient long lines." << endl;
+        stream << "This is line "<< QString(nrChars-nrCurrent, ' ').toLatin1() << line+1
+               << " of the testfile. And here are additional characters to get sufficient long lines." << endl;
     }
     stream << "This is line " << maxLine << trUtf8(" of the testfile - the last numerated.") << endl;
     stream << trUtf8("Some characters 'äüößÄÜÖê€µ@' to test the codec.") << flush;
@@ -60,8 +62,7 @@ void TestTextMapper::initTestCase()
 }
 void TestTextMapper::cleanupTestCase()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
+    QFile file(mCurrentPath.absoluteFilePath(testFileName));
     file.remove();
 }
 
@@ -71,7 +72,7 @@ void TestTextMapper::init()
     mMapper = new TextMapper();
     mMapper->setCodec(QTextCodec::codecForName("utf-8"));
     mMapper->setMappingSizes(100, 1024*16, 512);
-    QVERIFY2(mMapper->openFile(QDir(QDir::tempPath()).absoluteFilePath(testFileName), true),
+    QVERIFY2(mMapper->openFile(mCurrentPath.absoluteFilePath(testFileName), true),
              "TextMapper: Error on opening test file.");
 }
 
@@ -84,8 +85,7 @@ void TestTextMapper::cleanup()
 
 void TestTextMapper::testFile()
 {
-    QDir tempDir = QDir::tempPath();
-    QFile file(tempDir.absoluteFilePath(testFileName));
+    QFile file(mCurrentPath.absoluteFilePath(testFileName));
     qint64 size = file.size();
     QCOMPARE(mMapper->size(), size);
 }

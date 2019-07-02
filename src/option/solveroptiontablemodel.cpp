@@ -128,8 +128,11 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         if (col==COLUMN_OPTION_KEY) {
             QString text = mOptionItem.at(row)->key;
             QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
-            if (mOptionItem.at(row)->key.startsWith(lineComment))
-                text = mOptionItem.at(row)->key.mid(1);
+            if (!text.isEmpty()) {
+                if (mOptionTokenizer->isValidLineCommentChar(text.at(0)))
+                    text = mOptionItem.at(row)->key.mid(1);
+
+            }
             return QVariant(text);
         } else if (col==COLUMN_OPTION_VALUE) {
                    return mOptionItem.at(row)->value;

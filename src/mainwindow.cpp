@@ -1535,6 +1535,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        fc->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;
@@ -1765,10 +1766,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Escape) {
 
         // help widget
+#ifdef QWEBENGINE
         if (mHelpWidget->isVisible()) {
             closeHelpView();
             e->accept(); return;
         }
+#endif
 
         // log widgets
         if (focusWidget() == mSyslog) {
@@ -1795,7 +1798,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         e->accept(); return;
     }
 
-    if ((e->modifiers() & Qt::ControlModifier | Qt::ShiftModifier) && (e->key() == Qt::Key_G)) {
+    if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
         if (outputViewVisibility() == false) setOutputViewVisibility(true);
         ui->dockLogView->raise();
         ui->logTabs->currentWidget()->setFocus();

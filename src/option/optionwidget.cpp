@@ -84,15 +84,17 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
-    headerView->setDefaultSectionSize( static_cast<int>(ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1)) );
+    headerView->setMinimumSectionSize(1);
+    headerView->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->setColumnHidden(GamsOptionTableModel::COLUMN_ENTRY_NUMBER, true);
 
-    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(ui->gamsOptionTableView->verticalHeader()->minimumSectionSize());
+    ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
     if (ui->gamsOptionTableView->model()->rowCount()<=0)
-         ui->gamsOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1) );
+        ui->gamsOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1) );
     else
         ui->gamsOptionTableView->resizeColumnsToContents();
 
