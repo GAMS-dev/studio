@@ -409,9 +409,9 @@ void NestedHeaderView::bindScrollMechanism()
 {
     // need to update the first visible sections when scrolling in order to trigger the repaint for showing all labels for the first section
     if (orientation() == Qt::Vertical)
-        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(this->orientation(), 0, 2); });
+        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { if (model())model()->headerDataChanged(this->orientation(), 0, 2); });
     else
-        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { model()->headerDataChanged(this->orientation(), 0, 2); });
+        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { if (model())model()->headerDataChanged(this->orientation(), 0, 2); });
 }
 
 TableViewModel *NestedHeaderView::sym() const
