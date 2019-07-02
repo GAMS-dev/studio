@@ -31,10 +31,9 @@ LogParser::LogParser(QTextCodec *codec)
 {
 }
 
-QStringList LogParser::parseLine(const QByteArray &data, bool &hasError, MarksBlockState &mbState)
+QString LogParser::parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState)
 {
     QTextCodec::ConverterState convState;
-    QString line(mCodec->toUnicode(data.constData(), data.size(), &convState));
     if (mCodec) {
         line = mCodec->toUnicode(data.constData(), data.size(), &convState);
     }
@@ -46,6 +45,7 @@ QStringList LogParser::parseLine(const QByteArray &data, bool &hasError, MarksBl
     hasError = false;
     mbState.marks = MarkData();
     QString newLine;
+
     if (mbState.inErrorText) {
         if (line.startsWith(" ")) {
             if (mbState.deep) {
@@ -71,11 +71,69 @@ QStringList LogParser::parseLine(const QByteArray &data, bool &hasError, MarksBl
         newLine = extractLinks(line, hasError, mbState);
         if (mbState.errData.errNr) mbState.inErrorText = true;
     }
+    return newLine;
+}
 
-    QStringList res;
-    if (mbState.debugMode) res << line;
-    res << newLine;
-    return res;
+void LogParser::quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart)
+{
+    linkStart = -1;
+    if (end < start+7 || data.at(end-1) != ']') { // 7 = minimal size of a link [LST:1]
+        line = data.mid(start, end-start);
+        return;
+    }
+    // To be fast, this algorithm assumes that TWO links are always ERR followed by LST
+    int inQuote = 0;
+    for (int i = end-1 ; i > start; --i) {
+        // backwards-search to find first '[' of the link(s)
+        switch (data.at(i)) {
+        case '\'': if (inQuote != 2) inQuote = inQuote? 0 : 1; break;
+        case '\"': if (inQuote != 1) inQuote = inQuote? 0 : 2; break;
+        case '[':
+            if (!inQuote) {
+                if (data.at(i+4) == ':') {
+                    end = i;
+                    if (linkStart < 0) linkStart = i;
+                    if (i-1 > start && data.at(i-1) == ']') --i; // another link found
+                    else inQuote = -1;
+                } else {
+                    inQuote = -1;
+                }
+            }
+            break;
+        default:
+            break;
+        }
+        if (inQuote < 0) break;
+    }
+    line = data.mid(start, end-start);
+
+}
+
+
+
+QString LogParser::quickParse2(const QByteArray &data, QString &line, bool &hasLink, bool &hasErr)
+{
+    line = data;
+    if (data.length() < 3) return line;
+
+    // link-lines start with *** or with ---
+    if ((data.at(0) != '*' && data.at(0) != '-') || data.at(0) != data.at(1) || data.at(0) != data.at(2))
+        return line;
+
+    hasLink = false;
+    bool inQuote = false;
+    for (int i = 3; i < data.length(); ++i) {
+        if (data.at(i) == '\"')
+            inQuote = !inQuote;
+        if (inQuote)
+            continue;
+        if (data.at(i) == '[') {
+            hasLink = true;
+            hasErr = (data.length() > i+2 && data.at(i+1) == 'E' && data.at(i+2) == 'R' && data.at(i+3) == 'R');
+            return data.left(i);
+        }
+    }
+    return line;
 }
 
 inline QStringRef capture(const QString &line, int &a, int &b, const int offset, const QChar ch)
@@ -95,6 +153,7 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
     bool isRuntimeError = false;
     int posA = 0;
     int posB = 0;
+
     if (line.startsWith("*** Error ")) {
         hasError = true;
         errFound = true;
@@ -139,12 +198,10 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
 
             // LST:
             if (line.midRef(posB+1,4) == "LST:") {
-                int lineNr = capture(line, posA, posB, 5, ']').toInt()-1;
+                int lineNr = capture(line, posA, posB, 5, ']').toInt();
 
                 mbState.errData.lstLine = lineNr;
                 mbState.marks.setMark(line.mid(start, posB-start), mbState.errData.lstLine);
-                if (errFound && mbState.marks.hasErr())
-                    mbState.marks.lstLine = mbState.errData.lstLine;
                 errFound = false;
                 ++posB;
 
@@ -158,8 +215,6 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
                 emit hasFile(fName, fileExists);
                 if (fileExists)         // if (mRunGroup->findFile(fName))
                     errFound = false;
-                else
-                    mbState.exState = Outside;
                 capture(line, posA, posB, 1, ']');
                 ++posB;
 

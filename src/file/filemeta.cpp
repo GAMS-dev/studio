@@ -663,6 +663,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
         connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
         connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
+        connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);
         tView->setLogParser(parser);
         res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {

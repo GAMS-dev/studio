@@ -23,6 +23,7 @@
 #include "abstracttextmapper.h"
 #include "syntax/textmarkrepo.h"
 #include "editors/abstractedit.h"
+#include "editors/logparser.h"
 #include <QAbstractScrollArea>
 #include <QPlainTextEdit>
 #include <QStringBuilder>
@@ -46,14 +47,14 @@ public:
     void prepareRun();
     void endRun();
     qint64 size() const;
-    int lineCount() const;
+    int lineCount() const;                  // JM: changes on Debug
     int knownLines() const;
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
     bool jumpTo(int lineNr, int charNr);
-    QPoint position() const;
-    QPoint anchor() const;
-    bool hasSelection() const;
+    QPoint position() const;                // JM: changes on Debug / pos only in regular lines
+    QPoint anchor() const;                  // JM: changes on Debug / no selection
+    bool hasSelection() const;              // JM: changes on Debug / no selection
 //    int findLine(int lineNr);
     void copySelection();
     QString selectedText() const;
@@ -63,6 +64,7 @@ public:
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
     TextKind textKind() const;
     void setLogParser(LogParser *logParser);
+    void reset();
     void setDebugMode(bool debug);
 
 signals:
@@ -72,9 +74,10 @@ signals:
     void selectionChanged();
     void searchFindNextPressed();
     void searchFindPrevPressed();
-    void linesAdded(int lineCount);
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
+    void createMarks(const LogParser::MarkData &marks);
+    void appendLines(const QStringList &lines);
 
 public slots:
     void updateExtraSelections();
@@ -89,10 +92,10 @@ private slots:
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
-    void mapperLinesAdded(int lineAddCount);
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
+    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QMap<int, LineFormat> &formats);
 
 protected:
     friend class FileMeta;
@@ -100,7 +103,7 @@ protected:
     const LineMarks* marks() const;
 
     void resizeEvent(QResizeEvent *event) override;
-    void recalcVisibleLines();
+    void recalcVisibleLines();                          // JM: changes on Debug
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
     inline FileId fileId() {

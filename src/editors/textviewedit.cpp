@@ -209,8 +209,9 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
 
 void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
 {
-    CodeEdit::mousePressEvent(e);
+    CodeEdit::mouseReleaseEvent(e);
     if (!marks() || marks()->isEmpty()) {
+        // no regular marks, check for temporary hrefs
         if ((mHRefClickPos-e->pos()).manhattanLength() >= 4) return;
         QTextCursor cursor = cursorForPosition(e->pos());
         if (!existHRef(cursor.charFormat().anchorHref())) return;

@@ -30,15 +30,6 @@ class LogParser: public QObject
 {
     Q_OBJECT
 public:
-    enum ExtractionState {
-        Outside,
-        Entering,
-        Inside,
-        Exiting,
-        FollowupError,
-    };
-    Q_ENUM(ExtractionState)
-
     struct ErrorData {
         QString text;
         int lstLine = 0;
@@ -48,8 +39,8 @@ public:
     struct MarkData {
         void setMark(const QString &href, int lstline = 0) { hRef = href; lstLine = lstline; }
         void setErrMark(const QString &href, int errnr) { errRef = href; errNr = errnr; }
-        bool hasMark() { return !hRef.isEmpty() || hasErr(); }
-        bool hasErr() { return !errRef.isEmpty() || errNr; }
+        bool hasMark() const { return !hRef.isEmpty() || hasErr(); }
+        bool hasErr() const { return !errRef.isEmpty() || errNr; }
         QString hRef;
         int lstLine = 0;
         QString errRef;
@@ -59,11 +50,8 @@ public:
     struct MarksBlockState {
         MarkData marks;
         ErrorData errData;
-        ExtractionState exState = LogParser::Outside;
         bool inErrorText = false;
-        QString lastSourceFile;
         bool deep = false;
-        bool debugMode = false;
     };
 
 public:
@@ -74,7 +62,9 @@ public:
 
     LogParser(QTextCodec *codec);
     void setDirectory(QString dir);
-    QStringList parseLine(const QByteArray &data, bool &hasError, MarksBlockState &mbState);
+    QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);
+    void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart);
+    QString quickParse2(const QByteArray &data, QString &line, bool &hasLink, bool &hasErr);
 
 signals:
     void setLstErrorText(int line, QString text);

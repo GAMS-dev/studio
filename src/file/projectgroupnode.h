@@ -25,6 +25,7 @@
 #include <memory>
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
+#include "editors/logparser.h"
 #include "gamsprocess.h"
 
 namespace gams {
@@ -114,6 +115,7 @@ public slots:
     void setLstErrorText(int line, QString text);
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
+    void createMarks(const LogParser::MarkData &marks);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);

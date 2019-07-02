@@ -97,7 +97,8 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     Chunk *chunk = setActiveChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
 
-    int remainingLines = bufferedLines();
+    int remainingLines = debugMode() ? (bufferedLines()+1)/2 : bufferedLines();
+    // TODO(JM) simulate visibleLineCount/2 for debug mode
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -303,7 +304,7 @@ bool AbstractTextMapper::setVisibleTopLine(int lineNr)
         lineNr = maxVisLineNr;
     }
     int tl = absTopLine();
-    if (mVisibleOffset >= 0 && tl >= 0 && lineNr == tl + mVisibleOffset)
+    if (visibleOffset() >= 0 && tl >= 0 && lineNr == tl + visibleOffset())
         return true; // nothing changed
 
     // calculate the topLine for this visibleTopLine
@@ -324,6 +325,8 @@ bool AbstractTextMapper::setVisibleTopLine(int lineNr)
 int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
 {
     if (!lineDelta) return 0;
+    if (debugMode())
+        lineDelta /= 2;
     Chunk *chunk = setActiveChunk(mTopLine.chunkNr);
     if (!chunk) return 0;
     if (mTopLine.absStart == 0) {
@@ -333,7 +336,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         int localTop = qBound(0, mVisibleOffset+lineDelta, max);
         lineDelta += mVisibleOffset-localTop;
         mVisibleOffset = localTop;
-        DEB() << "at abs top, offset " << mVisibleOffset;
         if (!lineDelta) return mVisibleOffset;
     }
 
@@ -344,7 +346,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         lineDelta += mVisibleOffset-localTop;
         mVisibleOffset = localTop;
         if (!lineDelta) {
-            DEB() << "at abs end, offset " << mVisibleOffset;
             return mVisibleOffset;
         }
     }
@@ -357,7 +358,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
                 mTopLine.absStart = chunk->bStart;
                 mTopLine.localLine = 0;
                 mVisibleOffset = qMax(0, mVisibleOffset + lineDelta);
-                DEB() << "upwards, at top chunk, offset" << mVisibleOffset;
                 return mVisibleOffset;
             } else {
                 // continue with previous chunk
@@ -371,7 +371,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         } else {
             mTopLine.localLine = lineDelta;
             mTopLine.absStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
-            DEB() << "upwards, offset " << mVisibleOffset;
             return mVisibleOffset;
         }
     }
@@ -383,7 +382,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
             mTopLine = mMaxTopLine;
             // avoid scrolling to the end (keep some lines visible)
             mVisibleOffset = qMin(lineDelta + mVisibleOffset, bufferedLines() - visibleLineCount());
-            DEB() << "downwards, at max pos, offset" << mVisibleOffset;
             return mVisibleOffset;
         }
         lineDelta -= mChunkLineNrs.at(mTopLine.chunkNr).lineCount - mTopLine.localLine; // subtract remaining line-count
@@ -391,7 +389,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
             // delta is in this chunk
             mTopLine.localLine = mChunkLineNrs.at(mTopLine.chunkNr).lineCount + lineDelta;
             mTopLine.absStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
-            DEB() << "downwards, offset" << mVisibleOffset;
             return mVisibleOffset;
         } else if (chunk->nr < chunkCount()-1) {
             // switch to next chunk
@@ -403,7 +400,6 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
             mTopLine.absStart = chunk->bStart;
         }
     }
-    DEB() << "zero-delta, offset" << mVisibleOffset;
     return mVisibleOffset;
 }
 
@@ -721,7 +717,7 @@ QString AbstractTextMapper::lines(Chunk *chunk, int startLine, int &lineCount) c
 
 int AbstractTextMapper::visibleOffset() const
 {
-    return mVisibleOffset;
+    return debugMode() ? mVisibleOffset*2 : mVisibleOffset;
 }
 
 int AbstractTextMapper::findChunk(int lineNr)
@@ -746,6 +742,7 @@ int AbstractTextMapper::findChunk(int lineNr)
 void AbstractTextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode)
 {
     int lineInChunk;
+    if (debugMode()) localLineNr = localLineNr / 2;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
     setPosAbsolute(chunk, lineInChunk, charNr, mode);
 }
@@ -837,11 +834,13 @@ int AbstractTextMapper::bufferedLines() const
 void AbstractTextMapper::setDebugMode(bool debug)
 {
     mDebugMode = debug;
+    updateMaxTop();
 }
 
 QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
 {
     if (pos.chunkNr < 0) return QPoint(0,0);
+    int debLine = debugMode() ? 1 : 0;
     const ChunkLines &cl = mChunkLineNrs.at(pos.chunkNr);
     int line = 0;
     if (cl.startLineNr < 0) {
@@ -852,7 +851,7 @@ QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
         line = cl.startLineNr + pos.localLine;
     }
     QPoint res;
-    res.setY(line);
+    res.setY(line + debLine);
     res.setX(pos.charNr);
     return res;
 }
@@ -860,7 +859,7 @@ QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
 QPoint AbstractTextMapper::position(bool local) const
 {
     if (mPosition.chunkNr < 0) return QPoint(-1,-1);
-    return local ? convertPosLocal(mPosition) : convertPos(mPosition);
+    return (local ? convertPosLocal(mPosition) : convertPos(mPosition));
 }
 
 
@@ -883,15 +882,6 @@ int AbstractTextMapper::selectionSize() const
                            - qAbs(mAnchor.absLinePos)+mAnchor.effectiveCharNr() );
     if (selSize >= std::numeric_limits<int>::max() / 20) return -1;
     return int(selSize);
-}
-
-bool AbstractTextMapper::isAtEnd()
-{
-    if (mTopLine.absStart == mMaxTopLine.absStart && mVisibleOffset >= bufferedLines()-visibleLineCount()) {
-        return true;
-    }
-    // TODO(JM)
-    return false;
 }
 
 void AbstractTextMapper::chunkUncached(Chunk *&chunk) const

@@ -255,11 +255,14 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
     if (code.compare(QString("LST")) == 0) {
         QString lstFile = parameter("lst");
         exist = QFile(lstFile).exists();
-        if (!create) return;
+        if (!create || !exist) return;
         line = parts.first().toInt();
+        node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
     } else if (parts.first().startsWith('"')) {
-        exist = QFile( parts.first().mid(1, parts.first().length()-2).toString() ).exists();
-        if (!create) return;
+        QString fName = parts.first().mid(1, parts.first().length()-2).toString();
+        exist = QFile(fName).exists();
+        if (!create || !exist) return;
+        node = projectRepo()->findOrCreateFileNode(fName, this);
         if (parts.size() > 1) line = parts.at(1).toInt();
         if (parts.size() > 2) col = parts.at(2).toInt();
     }
@@ -364,7 +367,33 @@ void ProjectRunGroupNode::jumpToHRef(const QString &href)
     int line;
     int column;
     resolveHRef(href, exist, node, line, column, true);
-    if (node) node->file()->jumpTo(node->runGroupId(), true, line, column);
+    if (node) node->file()->jumpTo(node->runGroupId(), true, line-1, column);
+}
+
+void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
+{
+    if (marks.hasErr() && !marks.hRef.isEmpty()) {
+        bool exist;
+        int col;
+        ProjectFileNode *errNode;
+        int errLine;
+        ProjectFileNode *lstNode;
+        int lstLine;
+        resolveHRef(marks.hRef, exist, lstNode, lstLine, col, true);
+        resolveHRef(marks.errRef, exist, errNode, errLine, col, true);
+        TextMark *errMark = nullptr;
+        TextMark *lstMark = nullptr;
+        if (errNode)
+            errMark = textMarkRepo()->createMark(errNode->file()->id(), id(), TextMark::error, lstLine, errLine-1, col-1, 1);
+        if (lstNode) {
+            lstMark = textMarkRepo()->createMark(lstNode->file()->id(), id(), TextMark::link, lstLine, lstLine-1, -1, 1);
+            if (errMark) {
+                errMark->setValue(lstLine);
+                errMark->setRefMark(lstMark);
+                lstMark->setRefMark(errMark);
+            }
+        }
+    }
 }
 
 void ProjectRunGroupNode::clearLstErrorTexts()

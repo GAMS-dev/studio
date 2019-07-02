@@ -37,7 +37,7 @@ public:
     ~ProjectLogNode() override;
     void resetLst();
     void clearLog();
-    void markOld();
+    void prepareRun();
     void logDone();
 
     ProjectFileNode *lstNode() const;
@@ -47,9 +47,13 @@ public:
     void linkToProcess(GamsProcess *process);
 
 public slots:
-    void addProcessDataX(const QByteArray &data);
+//    void addProcessDataX(const QByteArray &data);
     void setJumpToLogEnd(bool state);
     void repaint();
+    void closeLog();
+
+private slots:
+    void saveLines(const QStringList &lines);
 
 protected:
     friend class ProjectRepo;
@@ -66,9 +70,13 @@ protected:
         int line;
         QString text;
     };
-    QString extractLinks(const QString &text, ExtractionState &state, QVector<LinkData> &marks, bool createMarks, bool &hasError);
+//    QString extractLinks(const QString &text, ExtractionState &state, QVector<LinkData> &marks, bool createMarks, bool &hasError);
 
 private:
+    enum LogFinish { logNone=0, logWritten=1, logEnd=2, llReady=3 };
+    Q_FLAG(LogFinish)
+    Q_DECLARE_FLAGS(LogFinishes, LogFinish)
+    Q_FLAG(LogFinishes)
     ProjectRunGroupNode *mRunGroup = nullptr;
     ProjectFileNode *mLstNode = nullptr;
     struct ErrorData {
@@ -85,6 +93,8 @@ private:
     bool mConceal = false;
     QString mLastSourceFile;
     DynamicFile *mLogFile = nullptr;
+    QTimer mLogCloser;
+    bool mLogFinished = false;
     int mRepaintCount = -1;
     QVector<QTextCharFormat> mFormat;
     int mErrorCount = 0;

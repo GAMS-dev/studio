@@ -56,17 +56,20 @@ public:
     qint64 size() const override;
     void startRun() override;
     void endRun() override;
-    int visibleLineCount() const override;
+//    int visibleLineCount() const override;
     QString lines(int localLineNrFrom, int lineCount) const override;
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
     int lineCount() const override;
     int knownLineNrs() const override;
     void setDebugMode(bool debug) override;
+    void reset() override;
     void dump();
 
 
 signals:
     void createMarks(const LogParser::MarkData &marks);
+    void appendLines(const QStringList &lines);
+    void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QMap<int, LineFormat> &formats);
 
 public slots:
     void addProcessData(const QByteArray &data);
@@ -76,15 +79,28 @@ protected:
     int chunkCount() const override;
 
 private slots:
-    void parseRemain();
+    void runFinished();
 
 private:
+    void appendLineData(const QByteArray &data, Chunk *&chunk);
+    void appendEmptyLine();
+    void clearLastLine();
+//    void logLastLine();
+    void updateOutputCache();
+    void fetchLog();
+    void fetchDisplay();
     QByteArray popNextLine();
     Chunk *addChunk(bool startUnit = false);
     void shrinkLog();
     void recalcLineCount();
 
 private:
+    struct InputState {
+        int inQuote = 0;        // 0: outside    1: in single quotes    2: in double quotes
+        int refStart = -1;      // index of possible reference start
+        int lineState = 0;      // 0: content    1: line-end (\n or \r\n)    2: conceal-prev-line (\r)
+    };
+
     QMutex mSkipper;
     QVector<Chunk*> mChunks;
     QVector<Unit> mUnits;
@@ -93,12 +109,23 @@ private:
     int mLineCount = 0;
     bool mShrunk = false;
     LogParser *mLogParser = nullptr;
-    DynamicFile *mLogFile = nullptr;
     LogParser::MarksBlockState mState;
     int mMarkCount = 0;
-    QContiguousCache<LogParser::MarkData> mMarksTail;
+    QVector<LogParser::MarkData> mMarksHead;
+    QContiguousCache<LineRef> mMarksTail;
+    QTimer mRunFinishedTimer;
     LineRef mParsed;
+
+    bool mLastLineIsOpen = false;
+    int mLastLineLen = 0;
+    QStringList mNewLogLines;
+    QStringList mNewDisplayLines;
+    QMap<int, LineFormat> mDisplayQuickFormats;
+    int mDisplayLastLineLen = 0;
+    bool mDisplayLinesOverwrite = false;
     int mConcealPos = 0;
+    int mAddedLines = 0;
+    InputState mInputState;
 };
 
 } // namespace studio

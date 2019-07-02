@@ -26,15 +26,17 @@ INCLUDEPATH += $$SRCPATH \
                $$SRCPATH/editors
 
 HEADERS += \
-    $$SRCPATH/editors/memorymapper.h \
-    $$SRCPATH/editors/logparser.h \
     $$SRCPATH/editors/abstracttextmapper.h \
+    $$SRCPATH/editors/logparser.h \
+    $$SRCPATH/editors/memorymapper.h \
+    $$SRCPATH/file/dynamicfile.h \
     testmemorymapper.h
 
 SOURCES += \
-    $$SRCPATH/editors/memorymapper.cpp \
     $$SRCPATH/editors/abstracttextmapper.cpp \
     $$SRCPATH/editors/logparser.cpp \
+    $$SRCPATH/editors/memorymapper.cpp \
+    $$SRCPATH/file/dynamicfile.cpp \
     $$SRCPATH/exception.cpp \
     $$SRCPATH/logger.cpp \
     testmemorymapper.cpp

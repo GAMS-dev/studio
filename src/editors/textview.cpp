@@ -47,10 +47,13 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
         connect(this, &TextView::addProcessData, mm, &MemoryMapper::addProcessData);
         mMapper = mm;
         mMapper->setMappingSizes();
-        mLinesAddedTimer.setSingleShot(true);
-        mLinesAddedTimer.setInterval(0);
-        connect(&mLinesAddedTimer, &QTimer::timeout, this, &TextView::contentChanged);
+//        mLinesAddedTimer.setSingleShot(true);
+//        mLinesAddedTimer.setInterval(0);
+//        connect(&mLinesAddedTimer, &QTimer::timeout, this, &TextView::contentChanged);
         connect(mm, &MemoryMapper::contentChanged, this, &TextView::contentChanged);
+        connect(mm, &MemoryMapper::createMarks, this, &TextView::createMarks);
+        connect(mm, &MemoryMapper::appendLines, this, &TextView::appendLines);
+        connect(mm, &MemoryMapper::appendDisplayLines, this, &TextView::appendedLines);
     }
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
@@ -74,7 +77,6 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(mMapper, &AbstractTextMapper::loadAmountChanged, this, &TextView::loadAmountChanged);
     connect(mMapper, &AbstractTextMapper::blockCountChanged, this, &TextView::blockCountChanged);
     connect(mMapper, &AbstractTextMapper::selectionChanged, this, &TextView::selectionChanged);
-    connect(mMapper, &AbstractTextMapper::linesAdded, this, &TextView::mapperLinesAdded);
 //    connect(mMapper, &AbstractTextMapper::contentChanged, this, &TextView::contentChanged);
 
 /* --- scrollbar controlling qt-methods
@@ -109,15 +111,13 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 void TextView::prepareRun()
 {
     mMapper->startRun();
-    ChangeKeeper x(mDocChanging);
-    mEdit->clear();
     topLineMoved();
 }
 
 void TextView::endRun()
 {
     mMapper->endRun();
-    // TODO(JM) if TextMarks left to create (errors from log-tail), do it here
+    topLineMoved();
 }
 
 qint64 TextView::size() const
@@ -214,7 +214,8 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 
 void TextView::outerScrollAction(int action)
 {
-    DEB() << "Scrolled " << verticalScrollBar()->sliderPosition() << "  [" << verticalScrollBar()->minimum() << "," << verticalScrollBar()->maximum() << "]";
+    if (mDocChanging) return;
+//    DEB() << "Scrolled " << verticalScrollBar()->sliderPosition() << "  [" << verticalScrollBar()->minimum() << "," << verticalScrollBar()->maximum() << "]";
     switch (action) {
     case QScrollBar::SliderSingleStepAdd:
     case QScrollBar::SliderSingleStepSub:
@@ -368,7 +369,6 @@ void TextView::init()
 void TextView::updateVScrollZone()
 {
     int count = mMapper->lineCount();
-    DEB() << "LineCount: " << count;
     verticalScrollBar()->setPageStep(mVisibleLines);
     if (count < 0) { // estimated lines count
         verticalScrollBar()->setMinimum(qMin(count+mVisibleLines-1, 0));
@@ -396,7 +396,6 @@ void TextView::syncVScroll()
 void TextView::topLineMoved()
 {
     if (!mDocChanging) {
-        DEB() << "visibleLineCount: " << mMapper->visibleLineCount() << " visibleOffset: " << mMapper->visibleOffset();
         ChangeKeeper x(mDocChanging);
         mEdit->setTextCursor(QTextCursor(mEdit->document()));
         mEdit->protectWordUnderCursor(true);
@@ -410,6 +409,13 @@ void TextView::topLineMoved()
             const LineFormat &format = formats.at(row);
             QTextBlock block = mEdit->document()->findBlockByNumber(row);
             QTextCursor cursor(block);
+            if (format.extraLstFormat) {
+                cursor.setPosition(block.position()+3, QTextCursor::KeepAnchor);
+                QTextCharFormat extraFormat = *format.extraLstFormat;
+                extraFormat.setAnchor(true);
+                extraFormat.setAnchorHref(format.extraLstHRef);
+                cursor.setCharFormat(extraFormat);
+            }
             cursor.setPosition(block.position()+format.start);
             cursor.setPosition(block.position()+format.end, QTextCursor::KeepAnchor);
             cursor.setCharFormat(format.format);
@@ -418,16 +424,136 @@ void TextView::topLineMoved()
         mEdit->blockSignals(true);
         mEdit->verticalScrollBar()->setSliderPosition(mMapper->visibleOffset());
         mEdit->verticalScrollBar()->setValue(mEdit->verticalScrollBar()->sliderPosition());
-//        mEdit->verticalScrollBar()->setValue(mMapper->visibleOffset()); // workaround: isn't set correctly on the first time
         mEdit->blockSignals(false);
         updateVScrollZone();
         mEdit->updateExtraSelections();
         mEdit->protectWordUnderCursor(false);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
-//        mEdit->horizontalScrollBar()->setValue(mHScrollValue);  // workaround: isn't set correctly on the first time
-//        DEB() << "mapper lines = " << mMapper->lineCount() << "   scroll lines = " << verticalScrollBar()->maximum();
     }
+}
+
+void TextView::appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QMap<int, LineFormat> &formats)
+{
+    mLinesAddedCount += lines.length();
+    if (append || overwriteLast) --mLinesAddedCount;
+    mStayAtTail = (mEdit->verticalScrollBar()->sliderPosition() >= mEdit->verticalScrollBar()->maximum()-2);
+    if (!mStayAtTail) return;
+
+    ChangeKeeper x(mDocChanging);
+    QTextCursor cur(mEdit->document());
+    cur.movePosition(QTextCursor::End);
+    if (append || overwriteLast) {
+        cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+        if (overwriteLast)
+            cur.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
+        cur.removeSelectedText();
+    }
+//    cur.insertText(lines.join("\n")+"\n");
+    int firstLine = cur.blockNumber();
+
+    // one way to insert formats: format parts afterwards
+//    if (true) {
+        cur.insertText(lines.join("\n")+"\n");
+        if (!formats.isEmpty()) {
+            QMap<int, LineFormat>::const_iterator it = formats.cbegin();
+            while (it != formats.cend()) {
+                QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+it.key());
+                if (it.value().extraLstFormat) {
+                    cur.setPosition(block.position());
+                    cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
+                    cur.setCharFormat(*it.value().extraLstFormat);
+                }
+                cur.setPosition(block.position() + it.value().start);
+                cur.setPosition(block.position() + it.value().end, QTextCursor::KeepAnchor);
+                cur.setCharFormat(it.value().format);
+                cur.setPosition(block.position() + it.value().end);
+                cur.setPosition(block.position() + it.value().end+1, QTextCursor::KeepAnchor);
+                cur.setCharFormat(QTextCharFormat());
+                ++it;
+            }
+        }
+//    }
+
+//    // another way to insert formats: switch formats while inserting text
+//    else {
+//        QString all = lines.join("\n")+"\n";
+//        int start = 0;
+//        int len = 0;
+//        if (!formats.isEmpty()) {
+//            int firstLine = cur.blockNumber();
+//            for (int nr = 0; nr < lines.length(); ++nr) {
+//                if (formats.contains(nr)) {
+//                    const LineFormat &fmt = formats.value(nr);
+//                    if (!fmt.extraLstFormat)
+//                        len += 4;
+//                    if (len > 0) {
+//                        cur.setCharFormat(QTextCharFormat());
+//                        cur.insertText(all.mid(start, len));
+//                        start += len;
+//                        len = 0;
+//                    }
+//                    if (fmt.extraLstFormat) {
+//                        cur.setCharFormat(*fmt.extraLstFormat);
+//                        cur.insertText(all.mid(start, 3));
+//                        start += 3;
+//                        cur.setCharFormat(QTextCharFormat());
+//                        cur.insertText(all.mid(start++, 1));
+//                    }
+//                    len = lines.at(nr).length();
+//                    cur.setCharFormat(fmt.format);
+//                    cur.insertText(all.mid(start, len));
+//                    start += len;
+//                    cur.setCharFormat(QTextCharFormat());
+//                    cur.insertText(all.mid(start++, 1));
+//                    len = 0;
+//                } else {
+//                    len += lines.at(nr).length()+1;
+//                }
+//            }
+
+
+//            QMap<int, LineFormat>::const_iterator it = formats.cbegin();
+//            while (it != formats.cend()) {
+//                QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+it.key());
+//                if (it.value().extraLstFormat) {
+//                    cur.setPosition(block.position());
+//                    cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
+//                    cur.setCharFormat(*it.value().extraLstFormat);
+//                }
+//                cur.setPosition(block.position() + it.value().start);
+//                cur.setPosition(block.position() + it.value().end, QTextCursor::KeepAnchor);
+//                cur.setCharFormat(it.value().format);
+//                cur.setPosition(block.position() + it.value().end);
+//                cur.setPosition(block.position() + it.value().end+1, QTextCursor::KeepAnchor);
+//                cur.setCharFormat(QTextCharFormat());
+//                ++it;
+//            }
+//        }
+//    }
+
+
+
+    // TODO(JM) adjust when to remove lines (top-line dependant)
+    int topLinesToRemove = mEdit->blockCount() - mMapper->bufferedLines();
+    if (topLinesToRemove > 0) {
+        cur.setPosition(0);
+        cur.setPosition(mEdit->document()->findBlockByNumber(topLinesToRemove).position()
+                        , QTextCursor::KeepAnchor);
+        cur.removeSelectedText();
+    }
+    mMapper->moveVisibleTopLine(lines.count()+1);
+    updatePosAndAnchor();
+    mEdit->blockSignals(true);
+    mEdit->verticalScrollBar()->setSliderPosition(mMapper->visibleOffset());
+    mEdit->verticalScrollBar()->setValue(mEdit->verticalScrollBar()->sliderPosition());
+    mEdit->blockSignals(false);
+    updateVScrollZone();
+    mEdit->updateExtraSelections();
+    mEdit->protectWordUnderCursor(false);
+    mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
+    mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
+    mEdit->repaint();
 }
 
 void TextView::topLineMoved(int offset)
@@ -447,7 +573,6 @@ void TextView::topLineMoved(int offset)
             cur.removeSelectedText();
         }
     } else {
-        DEB() << "some new lines " << offset;
         QTextCursor cur(mEdit->document());
         cur.movePosition(QTextCursor::End);
         // TODO(JM) adjust when to remove lines (top-line dependant)
@@ -456,9 +581,7 @@ void TextView::topLineMoved(int offset)
             cur = QTextCursor(mEdit->document()->findBlockByNumber(
                                   mMapper->bufferedLines() - mEdit->document()->blockCount()));
             cur.movePosition(QTextCursor::Start, QTextCursor::KeepAnchor);
-            DEB() << "REMOVED:\n" << cur.selectedText();
             cur.removeSelectedText();
-            DEB() << "TOPLINE:\n" << mEdit->document()->firstBlock().text();
         }
     }
     updatePosAndAnchor();
@@ -489,7 +612,13 @@ void TextView::setDebugMode(bool debug)
 {
     if (mMapper->debugMode() != debug) {
         mMapper->setDebugMode(debug);
+        topLineMoved();
     }
+}
+
+void TextView::reset()
+{
+    mMapper->reset();
 }
 
 void TextView::updatePosAndAnchor()
@@ -497,6 +626,10 @@ void TextView::updatePosAndAnchor()
     QPoint pos = mMapper->position(true);
     QPoint anchor = mMapper->anchor(true);
     if (pos.y() < 0) return;
+    if (mMapper->debugMode()) {
+        pos.setY(pos.y()*2 + 1);
+        anchor.setY(anchor.y()*2 + 1);
+    }
 
     int scrollPos = mEdit->verticalScrollBar()->sliderPosition();
     ChangeKeeper x(mDocChanging);
@@ -520,14 +653,6 @@ void TextView::updatePosAndAnchor()
     mEdit->verticalScrollBar()->setValue(mEdit->verticalScrollBar()->sliderPosition());
 }
 
-void TextView::mapperLinesAdded(int lineAddCount)
-{
-    mLinesAddedCount += lineAddCount;
-    mStayAtTail = (mEdit->verticalScrollBar()->sliderPosition() >= mEdit->verticalScrollBar()->maximum()-2);
-    if (!mLinesAddedTimer.isActive())
-        mLinesAddedTimer.start();
-}
-
 void TextView::updateExtraSelections()
 {
     mEdit->updateExtraSelections();
@@ -540,7 +665,6 @@ void TextView::contentChanged()
         // TODO(JM) implement contentChanged()
         if (mStayAtTail)
             mMapper->moveVisibleTopLine(mLinesAddedCount);
-        DEB() << "mLinesAddedCount " << mLinesAddedCount;
         offset = mLinesAddedCount;
         mLinesAddedCount = 0;
         // 1. if position at end -> keep at end

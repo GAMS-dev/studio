@@ -45,6 +45,8 @@ struct LineFormat {
     int start = -1;
     int end = -1;
     QTextCharFormat format;
+    const QTextCharFormat *extraLstFormat = nullptr;
+    QString extraLstHRef;
 };
 
 ///
@@ -125,6 +127,7 @@ public:
     virtual void createSection();
     virtual qint64 size() const;                                    // share FM + MM
     virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
+    virtual void reset();
 
     virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
     virtual void setVisibleLineCount(int visibleLines);                 // share FM + MM
@@ -154,7 +157,6 @@ public:
     virtual QPoint anchor(bool local = false) const;                    // share FM + MM
     virtual bool hasSelection() const;                                  // share FM + MM
     virtual int selectionSize() const;                                  // share FM + MM
-    bool isAtEnd();
     int bufferedLines() const;
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
@@ -165,13 +167,11 @@ signals:
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
     void contentChanged();
-    void linesAdded(int count);
 
 protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
     virtual int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
-    virtual void reset();
     virtual QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
     Chunk *setActiveChunk(int chunkNr) const;
     Chunk *activeChunk();
