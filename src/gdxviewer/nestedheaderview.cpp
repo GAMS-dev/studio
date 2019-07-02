@@ -27,7 +27,10 @@ NestedHeaderView::~NestedHeaderView()
 void NestedHeaderView::setModel(QAbstractItemModel *model)
 {
     QHeaderView::setModel(model);
-    bindScrollMechanism();
+    if (!mIsScrollMechanismBound) {
+        bindScrollMechanism();
+        mIsScrollMechanismBound = true;
+    }
 }
 
 void NestedHeaderView::reset()

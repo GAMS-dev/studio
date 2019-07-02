@@ -56,6 +56,8 @@ private:
 
     QVector<int> sectionWidth;
     bool ddEnabled = true;
+
+    bool mIsScrollMechanismBound = false;
 };
 
 } // namespace gdxviewer
