@@ -38,8 +38,11 @@ include(../gamsdependency.pri)
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
-    ICON = studio.icns
-    QMAKE_INFO_PLIST=Info.plist
+    ICON = ../icons/studio.icns
+    MACOS_BUNDLE_ICONS.files = ../icons/database.icns
+    MACOS_BUNDLE_ICONS.path = Contents/Resources
+    QMAKE_BUNDLE_DATA += MACOS_BUNDLE_ICONS
+    QMAKE_INFO_PLIST = Info.plist
 }
 unix {
     LIBS += -ldl
