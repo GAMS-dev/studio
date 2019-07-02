@@ -1,3 +1,4 @@
+#include "gdxsymbolview.h"
 #include "nestedheaderview.h"
 
 #include <QTableView>
@@ -310,7 +311,7 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     dimIdxEnd = -1;
     dimIdxStart = -1;
 
-    static_cast<QTableView*>(parent())->resizeColumnsToContents();
+    static_cast<GdxSymbolView*>(parent()->parent())->autoResizeColumns();
 }
 
 void NestedHeaderView::dragLeaveEvent(QDragLeaveEvent *event)
