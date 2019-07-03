@@ -165,7 +165,8 @@ public slots:
     void showErrorMessage(QString text);
     void optionRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>());
-
+    bool eventFilter(QObject*, QEvent* event);
+    void dockTopLevelChanged(bool);
 
 private slots:
     void openInitialFiles();
