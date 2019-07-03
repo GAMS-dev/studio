@@ -27,10 +27,7 @@ NestedHeaderView::~NestedHeaderView()
 void NestedHeaderView::setModel(QAbstractItemModel *model)
 {
     QHeaderView::setModel(model);
-    if (!mIsScrollMechanismBound) {
-        bindScrollMechanism();
-        mIsScrollMechanismBound = true;
-    }
+    bindScrollMechanism();
 }
 
 void NestedHeaderView::reset()
@@ -410,11 +407,13 @@ int NestedHeaderView::pointToDropDimension(QPoint p)
 
 void NestedHeaderView::bindScrollMechanism()
 {
+    if (!model())
+        return;
     // need to update the first visible sections when scrolling in order to trigger the repaint for showing all labels for the first section
     if (orientation() == Qt::Vertical)
-        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { if (model())model()->headerDataChanged(this->orientation(), 0, 2); });
+        connect((static_cast<QTableView*>(parent()))->verticalScrollBar(), &QScrollBar::valueChanged, static_cast<TableViewModel*>(model()), &TableViewModel::scrollVTriggered, Qt::UniqueConnection);
     else
-        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]() { if (model())model()->headerDataChanged(this->orientation(), 0, 2); });
+        connect((static_cast<QTableView*>(parent()))->horizontalScrollBar(), &QScrollBar::valueChanged, static_cast<TableViewModel*>(model()), &TableViewModel::scrollHTriggered, Qt::UniqueConnection);
 }
 
 TableViewModel *NestedHeaderView::sym() const
