@@ -93,7 +93,8 @@ bool SolverOptionWidget::init()
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->solverOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
-    headerView->setDefaultSectionSize( static_cast<int>(ui->solverOptionTableView->sizeHint().width()/(ui->solverOptionTableView->model()->columnCount()-1)) );
+    headerView->setMinimumSectionSize(1);
+
     ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
 
@@ -102,8 +103,7 @@ bool SolverOptionWidget::init()
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     if (ui->solverOptionTableView->model()->rowCount()<=0) {
-        ui->solverOptionTableView->horizontalHeader()->setMinimumSectionSize(1);
-        ui->solverOptionTableView->horizontalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+        ui->solverOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->solverOptionTableView->sizeHint().width()/(ui->solverOptionTableView->model()->columnCount()-1) );
     } else {
         ui->solverOptionTableView->resizeColumnsToContents();
     }

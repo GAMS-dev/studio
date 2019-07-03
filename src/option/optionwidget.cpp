@@ -85,7 +85,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
     headerView->setMinimumSectionSize(1);
-    headerView->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->setColumnHidden(GamsOptionTableModel::COLUMN_ENTRY_NUMBER, true);
 
