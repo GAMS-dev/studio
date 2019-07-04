@@ -60,7 +60,7 @@
          <widget class="QWidget" name="solverOptionwidget" native="true">
           <layout class="QHBoxLayout" name="horizontalLayout_3">
            <property name="spacing">
-            <number>2</number>
+            <number>10</number>
            </property>
            <property name="leftMargin">
             <number>2</number>
