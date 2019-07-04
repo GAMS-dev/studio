@@ -93,20 +93,20 @@ bool SolverOptionWidget::init()
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->solverOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
-    headerView->setMinimumSectionSize(1);
+    QFontMetrics fm(QFont("times", 16));
+    headerView->setMinimumSectionSize(fm.horizontalAdvance("Comment"));
 
     ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
 
-    ui->solverOptionTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-    ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
     if (ui->solverOptionTableView->model()->rowCount()<=0) {
         ui->solverOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->solverOptionTableView->sizeHint().width()/(ui->solverOptionTableView->model()->columnCount()-1) );
     } else {
         ui->solverOptionTableView->resizeColumnsToContents();
     }
+    ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
