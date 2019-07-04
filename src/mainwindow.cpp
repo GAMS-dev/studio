@@ -697,9 +697,17 @@ void MainWindow::focusCmdLine()
 void MainWindow::focusProjectExplorer()
 {
     setProjectViewVisibility(true);
-    ui->projectView->raise();
-    ui->projectView->activateWindow();
-    ui->projectView->setFocus(Qt::ShortcutFocusReason);
+    ui->dockProjectView->activateWindow();
+    ui->dockProjectView->raise();
+    ui->projectView->setFocus();
+}
+
+void MainWindow::focusProcessLogs()
+{
+    setOutputViewVisibility(true);
+    ui->dockLogView->activateWindow();
+    ui->dockLogView->raise();
+    ui->logTabs->currentWidget()->setFocus();
 }
 
 void MainWindow::updateEditorPos()
@@ -1810,12 +1818,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
         toggleDebugMode();
         e->accept(); return;
-    }
-    if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
-        if (outputViewVisibility() == false) setOutputViewVisibility(true);
-        ui->dockLogView->activateWindow();
-        ui->dockLogView->raise();
-        ui->logTabs->currentWidget()->setFocus();
+    } else if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
+        focusProcessLogs();
         e->accept(); return;
     }
 

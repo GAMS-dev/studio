@@ -282,6 +282,7 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
+    void focusProcessLogs();
 
     void on_actionToggleBookmark_triggered();
     void on_actionNextBookmark_triggered();
