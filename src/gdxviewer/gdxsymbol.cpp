@@ -25,6 +25,8 @@
 #include <QMutex>
 #include <QSet>
 
+#include <cmath>
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
