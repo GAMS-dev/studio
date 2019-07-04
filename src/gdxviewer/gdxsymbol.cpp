@@ -353,14 +353,14 @@ QVariant GdxSymbol::formatValue(double val) const
         int prec = mNumericalPrecision;
         if (prec == -1) // Max
             prec = 15;
-        if (prec == 0 && abs(val) < 1e15) // this is requried in case of rounding numbers that increase the number of digits e.g. 9999.9 -> 10000 (1e4)
+        if (prec == 0 && qAbs(val) < 1e15) // this is requried in case of rounding numbers that increase the number of digits e.g. 9999.9 -> 10000 (1e4)
             return QString::number(val, 'f', 0);
         QString str = QString::number(val, 'g', 15);
         if (mSqueezeTrailingZeroes) {
             if (str.contains('e'))
                 str = QString::number(val, 'g', prec+1);
             else {
-                int log10 = qMax(0, int(ceil( log2(abs(val)) / log2(10) ))); // calculate digits before decimal separator
+                int log10 = qMax(0, int(ceil( log2(qAbs(val)) / log2(10) ))); // calculate digits before decimal separator
                 str = QString::number(val, 'g', prec+log10);
             }
         } else {
