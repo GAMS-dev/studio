@@ -78,6 +78,7 @@ signals:
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines);
+    void setLstErrorText(int line, QString text);
 
 public slots:
     void updateExtraSelections();

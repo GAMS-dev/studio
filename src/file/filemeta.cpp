@@ -658,9 +658,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
-        connect(parser, &LogParser::setLstErrorText, runGroup, &ProjectRunGroupNode::setLstErrorText);
         connect(parser, &LogParser::hasFile, runGroup, &ProjectRunGroupNode::hasFile);
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
+        connect(tView, &TextView::setLstErrorText, runGroup, &ProjectRunGroupNode::setLstErrorText);
         connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
         connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
         connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);

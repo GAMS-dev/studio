@@ -109,33 +109,6 @@ void LogParser::quickParse(const QByteArray &data, int start, int end, QString &
 
 }
 
-
-
-QString LogParser::quickParse2(const QByteArray &data, QString &line, bool &hasLink, bool &hasErr)
-{
-    line = data;
-    if (data.length() < 3) return line;
-
-    // link-lines start with *** or with ---
-    if ((data.at(0) != '*' && data.at(0) != '-') || data.at(0) != data.at(1) || data.at(0) != data.at(2))
-        return line;
-
-    hasLink = false;
-    bool inQuote = false;
-    for (int i = 3; i < data.length(); ++i) {
-        if (data.at(i) == '\"')
-            inQuote = !inQuote;
-        if (inQuote)
-            continue;
-        if (data.at(i) == '[') {
-            hasLink = true;
-            hasErr = (data.length() > i+2 && data.at(i+1) == 'E' && data.at(i+2) == 'R' && data.at(i+3) == 'R');
-            return data.left(i);
-        }
-    }
-    return line;
-}
-
 inline QStringRef capture(const QString &line, int &a, int &b, const int offset, const QChar ch)
 {
     a = b + offset;

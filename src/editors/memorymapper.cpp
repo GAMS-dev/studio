@@ -25,18 +25,15 @@ namespace gams {
 namespace studio {
 
 enum BaseFormat {old, debug, error, lstLink, fileLink};
-static int CErrorBound = 30;
-static int CParseLinesMax = 30;
+static int CErrorBound = 50;
+static int CParseLinesMax = 23;
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
     mState.deep = true;
     mRunFinishedTimer.setInterval(10);
     mRunFinishedTimer.setSingleShot(true);
     connect(&mRunFinishedTimer, &QTimer::timeout, this, &MemoryMapper::runFinished);
-//    mUpdateDisplayTimer.setInterval(25);
-//    mUpdateDisplayTimer.setSingleShot(true);
-//    connect(&mUpdateDisplayTimer, &QTimer::timeout, this, &MemoryMapper::updateDisplay);
-    mMarksHead.reserve(CErrorBound * int(sizeof(LogParser::MarkData)));
+    mMarksHead.reserve(CErrorBound);
     mMarksTail.setCapacity(CErrorBound);
     // old
     QTextCharFormat fmt;
@@ -102,7 +99,7 @@ AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 
     if (startUnit || !mUnits.size()) {
         mUnits << Unit(mChunks.last());
-        mShrunk = false;
+        mShrinkLineCount = 0;
     }
     ++mUnits.last().chunkCount;
     return mChunks.last();
@@ -116,7 +113,7 @@ void MemoryMapper::shrinkLog()
     if (chunk->nr == mChunks.last()->nr || chunk->lineCount() < 2)
         return; // only one chunk in current unit
 
-    if (!mShrunk) {
+    if (!mShrinkLineCount) {
         mSize -= chunk->size();
 
         // the first chunk in the unit starts at bArray[0]
@@ -129,14 +126,15 @@ void MemoryMapper::shrinkLog()
                              << (chunk->lineBytes.last() + ellipsis.length());
         mSize += chunk->size();
         invalidateLineOffsets(chunk);
-        mShrunk = true;
     }
 
     // remove some lines at the start of the second active chunk
     chunk = mChunks[chunk->nr+1];
+    int linesToRemove = (chunk->lineBytes.size() > 4 ? 4 : chunk->lineCount());
     mSize -= chunk->size();
-    chunk->lineBytes.remove(0,(chunk->lineBytes.size() > 4 ? 4 : chunk->lineBytes.size()-1));
+    chunk->lineBytes.remove(0, linesToRemove);
     mSize += chunk->size();
+    mShrinkLineCount += linesToRemove;
 
     // remove chunk if it is empty
     if (!chunk->size()) {
@@ -171,6 +169,48 @@ void MemoryMapper::recalcLineCount()
     emitBlockCountChanged();
 }
 
+MemoryMapper::LineRef MemoryMapper::logLineToRef(const int &lineNr)
+{
+    // lineNr: relative line nr in current run
+    LineRef res;
+    res.chunk = mUnits.last().firstChunk;
+    res.relLine = lineNr;
+
+    // takes care of possible ellipsis in first chunk of the run
+    int headLines = mShrinkLineCount ? res.chunk->lineCount()-3 : res.chunk->lineCount();
+
+    // if line is in first chunk (before ellipsis)
+    if (res.relLine < headLines) return res;
+
+    res.relLine = lineNr - mShrinkLineCount;
+    while (res.relLine >= res.chunk->lineCount()) {
+        res.relLine -= headLines;
+        res.chunk = nextChunk(res.chunk);
+        if (!res.chunk) break;
+        headLines = res.chunk->lineCount();
+    }
+    return res;
+}
+
+AbstractTextMapper::Chunk *MemoryMapper::nextChunk(AbstractTextMapper::Chunk *chunk)
+{
+    if (!chunk) return nullptr;
+    int i = mChunks.indexOf(chunk);
+    if (i+1 < mChunks.size()) return mChunks.at(i+1);
+    return nullptr;
+}
+
+int MemoryMapper::currentRunLines()
+{
+    int res = -1;
+    Chunk *chunk = mUnits.last().firstChunk;
+    while (chunk) {
+        res += chunk->lineCount();
+        chunk = nextChunk(chunk);
+    }
+    return mShrinkLineCount ? res + mShrinkLineCount - 3 : res;
+}
+
 int MemoryMapper::lineCount() const
 {
     return mLineCount * (debugMode() ? 2 : 1);
@@ -178,10 +218,13 @@ int MemoryMapper::lineCount() const
 
 void MemoryMapper::startRun()
 {
-    addChunk(true);
-    mMarkCount = 0;
-    mMarksHead.clear();
-    mMarksTail.clear();
+    addChunk(true);         // prepare chunk and unit for new run
+    mMarkers.clear();       // LineRefs to remembered marks of current run (persists until next run)
+    mMarksHead.clear();     // temp top lines with marks (converted to markers at end of run)
+    mMarksTail.clear();     // temp bottom lines with marks (converted to markers at end of run)
+    mShrinkLineCount = 0;   // count of lines removed by shrinking
+
+    mErrCount = 0;
     mAddedLines = 0;
     mDisplayLastLineLen = 0;
     mDisplayLinesOverwrite = false;
@@ -200,27 +243,47 @@ void MemoryMapper::endRun()
 
 void MemoryMapper::runFinished()
 {
-    // TODO(JM) OLD: rework
+    TRACETIME();
     mMarksTail.normalizeIndexes();
-    if (!mMarksTail.isEmpty()) {
-        // parse from first
+    mMarkers.clear();
+    mMarkers.reserve(mMarksHead.size() + mMarksTail.size());
+    for (const int &lineNr: mMarksHead) {
+        LineRef ref = logLineToRef(lineNr);
+        if (ref.chunk) mMarkers << ref;
+    }
+    for (int i = mMarksTail.firstIndex(); i <= mMarksTail.lastIndex(); ++i) {
+        LineRef ref = logLineToRef(mMarksTail.at(i));
+        if (ref.chunk) mMarkers << ref;
+    }
+
+    for (int i = 0; i < mMarkers.size(); ++i) {
+        LineRef ref = mMarkers.at(i);
+        QByteArray data = lineData(ref);
         QString rawLine;
         bool hasError = false;
         LogParser::MarksBlockState mbState;
-        mbState.deep = true;
-        mParsed = mMarksTail.first();
-        QByteArray data = popNextLine();
-        while (!data.isNull()) {
-            mLogParser->parseLine(data, rawLine, hasError, mbState);
-            if (mbState.marks.hasErr()) {
-                emit createMarks(mbState.marks);
+        QString line = mLogParser->parseLine(data, rawLine, hasError, mbState);
+        LogParser::MarksBlockState mbFollowState = mbState;
+        if (mbState.errData.errNr > 0) {
+            // compile-time error have descriptions in the following lines
+            while (true) {
+                ref = nextRef(ref);
+                data = lineData(ref);
+                if (!data.startsWith("   ")) break;
+                if (!mbState.errData.text.isEmpty())
+                    mbState.errData.text.append('\n');
+                mbState.errData.text += data;
             }
-
-            data = popNextLine();
+            emit setLstErrorText(mbState.errData.lstLine, mbState.errData.text);
         }
-        mMarksTail.clear();
+        DEB() << "ERR-LINE " << i << "[" << ref.chunk->nr << "->" << ref.relLine << "]: " << line;
+        emit createMarks(mbState.marks);
     }
+
+    mMarksHead.clear();
+    mMarksTail.clear();
     recalcLineCount();
+    PEEKTIME() << " ms FINISH for " << mMarkers.size() << " Markers";
 }
 
 void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
@@ -241,7 +304,6 @@ void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
         newChunk->lineBytes << (lastLineEnd-lastLineStart+1);
         chunk->lineBytes.removeLast();
         chunk = newChunk;
-        --mParsed.relLine; // ensure reparsing the line
         lastLineStart = 0;
         lastLineEnd = chunk->lineBytes.last()-1;
     }
@@ -274,10 +336,20 @@ void MemoryMapper::updateOutputCache()
                 fmt.extraLstFormat = &mBaseFormat.at(lstLink);
             }
             mDisplayQuickFormats.insert(ind, fmt);
+            int lineNr = currentRunLines();
+            if (mErrCount < CErrorBound) {
+                if (mMarksHead.isEmpty() || mMarksHead.last() != lineNr) {
+                    ++mErrCount;
+                    mMarksHead << lineNr;
+                }
+            } else if (mMarksTail.isEmpty() || mMarksTail.last() != lineNr) {
+                ++mErrCount;
+                mMarksTail.append(lineNr);
+            }
         } else if (chunk->bArray.mid(start+line.length()+1, 3) == "LST") {
-            mDisplayQuickFormats.insert(ind, LineFormat(4, line.length()-1, mBaseFormat.at(lstLink)));
+            mDisplayQuickFormats.insert(ind, LineFormat(4, line.length(), mBaseFormat.at(lstLink)));
         } else {
-            mDisplayQuickFormats.insert(ind, LineFormat(4, line.length()-1, mBaseFormat.at(fileLink)));
+            mDisplayQuickFormats.insert(ind, LineFormat(4, line.length(), mBaseFormat.at(fileLink)));
         }
     }
 
@@ -438,8 +510,6 @@ void MemoryMapper::reset()
     mUnits.clear();
     mSize = 0;
     mLineCount = 0;
-    mParsed.chunkNr = -1;
-    mParsed.relLine = 0;
     emit blockCountChanged();
 }
 
@@ -589,29 +659,27 @@ AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const
     return mChunks.at(chunkNr);
 }
 
-QByteArray MemoryMapper::popNextLine()
+MemoryMapper::LineRef MemoryMapper::nextRef(const MemoryMapper::LineRef &ref)
 {
-    if (!mChunks.size()) return QByteArray();
-
-    if (mParsed.chunkNr >= 0) {
-        if (mParsed.relLine < mChunks.at(mParsed.chunkNr)->lineCount()-1) {
-            ++mParsed.relLine;
-        } else if (mParsed.chunkNr < mChunks.size()-1) {
-            ++mParsed.chunkNr;
-            mParsed.relLine = 0;
-        } else {
-            return QByteArray();
-        }
+    if (!ref.chunk) return LineRef();
+    LineRef res = ref;
+    if (res.relLine < res.chunk->lineCount()-1) {
+        ++res.relLine;
     } else {
-        mParsed.chunkNr = 0;
-        mParsed.relLine = 0;
+        res.chunk = nextChunk(res.chunk);
+        res.relLine = 0;
     }
-    Chunk *chunk = mChunks.at(mParsed.chunkNr);
-    int byteFrom = chunk->lineBytes.at(mParsed.relLine);
-    int byteTo = chunk->lineBytes.at(mParsed.relLine+1);
-    while ((chunk->bArray.at(byteTo) == '\n' || chunk->bArray.at(byteTo) == '\r') && byteTo > byteFrom)
+    return res;
+}
+
+QByteArray MemoryMapper::lineData(const MemoryMapper::LineRef &ref)
+{
+    if (!ref.chunk) return QByteArray();
+    int byteFrom = ref.chunk->lineBytes.at(ref.relLine);
+    int byteTo = ref.chunk->lineBytes.at(ref.relLine+1);
+    while ((ref.chunk->bArray.at(byteTo) == '\n' || ref.chunk->bArray.at(byteTo) == '\r') && byteTo > byteFrom)
         --byteTo;
-    return chunk->bArray.mid(byteFrom, byteTo - byteFrom -1);
+    return ref.chunk->bArray.mid(byteFrom, byteTo - byteFrom -1);
 }
 
 } // namespace studio

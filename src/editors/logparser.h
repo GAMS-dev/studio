@@ -64,7 +64,6 @@ public:
     void setDirectory(QString dir);
     QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);
     void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart);
-    QString quickParse2(const QByteArray &data, QString &line, bool &hasLink, bool &hasErr);
 
 signals:
     void setLstErrorText(int line, QString text);

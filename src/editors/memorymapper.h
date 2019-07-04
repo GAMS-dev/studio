@@ -45,7 +45,7 @@ private:
         bool folded = false;
     };
     struct LineRef {
-        int chunkNr = -1;
+        Chunk *chunk = nullptr;
         int relLine = 0;
     };
 
@@ -70,6 +70,8 @@ signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines);
     void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QMap<int, LineFormat> &formats);
+    void setLstErrorText(int line, QString text);
+
 
 public slots:
     void addProcessData(const QByteArray &data);
@@ -90,9 +92,14 @@ private:
     void fetchLog();
     void fetchDisplay();
     QByteArray popNextLine();
+    LineRef nextRef(const LineRef &ref);
+    QByteArray lineData(const LineRef &ref);
     Chunk *addChunk(bool startUnit = false);
     void shrinkLog();
     void recalcLineCount();
+    LineRef logLineToRef(const int &lineNr);
+    Chunk *nextChunk(Chunk *chunk);
+    int currentRunLines();
 
 private:
     struct InputState {
@@ -110,11 +117,12 @@ private:
     bool mShrunk = false;
     LogParser *mLogParser = nullptr;
     LogParser::MarksBlockState mState;
-    int mMarkCount = 0;
-    QVector<LogParser::MarkData> mMarksHead;
-    QContiguousCache<LineRef> mMarksTail;
+    QVector<int> mMarksHead;
+    QContiguousCache<int> mMarksTail;
+    QVector<LineRef> mMarkers;
+    int mShrinkLineCount = 0;
     QTimer mRunFinishedTimer;
-    LineRef mParsed;
+    int mErrCount = 0;
 
     bool mLastLineIsOpen = false;
     int mLastLineLen = 0;

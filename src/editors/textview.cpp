@@ -54,6 +54,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
         connect(mm, &MemoryMapper::createMarks, this, &TextView::createMarks);
         connect(mm, &MemoryMapper::appendLines, this, &TextView::appendLines);
         connect(mm, &MemoryMapper::appendDisplayLines, this, &TextView::appendedLines);
+        connect(mm, &MemoryMapper::setLstErrorText, this, &TextView::setLstErrorText);
     }
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
@@ -468,7 +469,7 @@ void TextView::appendedLines(const QStringList &lines, bool append, bool overwri
                 cur.setPosition(block.position() + it.value().end, QTextCursor::KeepAnchor);
                 cur.setCharFormat(it.value().format);
                 cur.setPosition(block.position() + it.value().end);
-                cur.setPosition(block.position() + it.value().end+1, QTextCursor::KeepAnchor);
+//                cur.setPosition(block.position() + it.value().end+1, QTextCursor::KeepAnchor);
                 cur.setCharFormat(QTextCharFormat());
                 ++it;
             }
