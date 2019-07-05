@@ -57,8 +57,10 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     connect(&mDirtyLinesUpdater, &QTimer::timeout, this, &FileMeta::updateMarks);
 }
 
-void FileMeta::setLocation(const QString &location)
+void FileMeta::setLocation(QString location)
 {
+    if (location.contains('\\'))
+        location = QDir::fromNativeSeparators(location);
     if (mLocation != location) {
         QString oldLocation = mLocation;
         mFileRepo->unwatch(this);

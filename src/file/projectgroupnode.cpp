@@ -40,8 +40,10 @@ namespace gams {
 namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(QString name, QString location, NodeType type)
-    : ProjectAbstractNode(name, type), mLocation(location)
-{}
+    : ProjectAbstractNode(name, type)
+{
+    setLocation(location);
+}
 
 ProjectGroupNode::~ProjectGroupNode()
 {
@@ -92,7 +94,7 @@ QString ProjectGroupNode::location() const
 
 void ProjectGroupNode::setLocation(const QString& location)
 {
-    mLocation = location;
+    mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(location) : location;
     emit changed(id());
 }
 
@@ -111,8 +113,9 @@ QString ProjectGroupNode::lstErrorText(int line)
     return parentNode() ? parentNode()->lstErrorText(line) : QString();
 }
 
-ProjectFileNode *ProjectGroupNode::findFile(const QString &location, bool recurse) const
+ProjectFileNode *ProjectGroupNode::findFile(QString location, bool recurse) const
 {
+    if (location.contains('\\')) location = QDir::fromNativeSeparators(location);
     QFileInfo fi(location);
     for (ProjectAbstractNode* node: mChildNodes) {
         ProjectFileNode* file = node->toFile();
@@ -261,16 +264,16 @@ ProjectLogNode *ProjectRunGroupNode::logNode()
 /// \brief ProjectGroupNode::setLogLocation sets the location of the log. Filename can be determined automatically from path.
 /// \param path
 ///
-void ProjectRunGroupNode::setLogLocation(const QString& path)
+void ProjectRunGroupNode::setLogLocation(QString path)
 {
+    if (path.contains('\\'))
+        path = QDir::fromNativeSeparators(path);
     QFileInfo log(path);
-    QString fullPath;
+    QString fullPath = log.filePath();
 
-    fullPath = log.filePath();
     if (log.isDir()) {
-
-        if (!fullPath.endsWith(QDir::separator()))
-            fullPath.append(QDir::separator());
+        if (!fullPath.endsWith('/'))
+            fullPath.append('/');
 
         QFileInfo filename(mLogNode->file()->location());
         fullPath.append(filename.completeBaseName() + "." + FileType::from(FileKind::Log).defaultSuffix());
@@ -584,9 +587,9 @@ void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
         mParameterHash.remove(kind);
         return;
     }
-    QString fullPath = path;
-    if (QFileInfo(path).isRelative())
-        fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
+    QString fullPath = path.contains('\\') ? QDir::fromNativeSeparators(path) : path;
+    if (QFileInfo(fullPath).isRelative())
+        fullPath = QFileInfo(location()).canonicalFilePath() + "/" + fullPath;
 
     fullPath.remove("\"");
 
