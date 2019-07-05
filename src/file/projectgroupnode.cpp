@@ -427,6 +427,9 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     bool defaultOverride = false;
     for (OptionItem item : itemList) {
 
+        // keep unmodified value as option for output
+        gamsArgs[item.key] = item.value;
+
         // convert to native seperator
         QString value = item.value;
         value = value.replace('\\', '/');
@@ -439,7 +442,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         // set parameters
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
-
             mParameterHash.remove("lst"); // remove default
 
             if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
@@ -447,25 +449,20 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             setParameter("lst", cleanPath(path, value));
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
-
             if (value == "default") value = "\"" + filestem + ".gdx\"";
             setParameter("gdx", cleanPath(path, value));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
-
             if (value == "default") value = "\"" + filestem + ".ref\"";
             setParameter("ref", cleanPath(path, value));
 
         } else if (QString::compare(item.key, "lf", Qt::CaseInsensitive) == 0) {
-
             if (!value.endsWith(".log")) value.append("." + FileType::from(FileKind::Log).defaultSuffix());
             setLogLocation(cleanPath(path, value));
         }
 
         if (defaultGamsArgs.contains(item.key))
             defaultOverride = true;
-
-        gamsArgs[item.key] = value;
     }
 
     if (defaultOverride)
@@ -502,7 +499,7 @@ QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
 
     QString ret = "";
 
-    path.remove("\"");
+    path.remove("\""); // remove quotes from path
     QDir dir(path);
     if (dir.isRelative()) {
         path = location() + '/' + path;
