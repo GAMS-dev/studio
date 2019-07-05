@@ -169,6 +169,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
 
+    connect(ui->dockProjectView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockLogView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockHelpView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+
+
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
