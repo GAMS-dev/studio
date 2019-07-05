@@ -480,7 +480,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     for(QString k : gamsArgs.keys()) {
         output.append(k + "=" + gamsArgs.value(k));
     }
-    DEB() << "output: " << output.join(" | ");
     // console output
     QString msg = "Running GAMS:";
     msg.append(output.join(" "));
