@@ -409,14 +409,14 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     // if wdir is relative, it is appended to cdir
     if (!wdir.isEmpty()) {
         if (!cdir.isEmpty() && QDir(wdir).isRelative())
-            path += QDir::separator() + wdir;
+            path += '/' + wdir;
         else path = wdir;
     }
 
     QFileInfo fi(gmsLocation);
-    if (filestem.isEmpty()) filestem = fi.path() + QDir::separator() + fi.completeBaseName();
+    if (filestem.isEmpty()) filestem = fi.path() + '/' + fi.completeBaseName();
     if (path.isEmpty()) path = fi.path();
-    else if (QDir(path).isRelative()) path = fi.path() + QDir::separator() + path;
+    else if (QDir(path).isRelative()) path = fi.path() + '/' + path;
 
     setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
 
@@ -429,8 +429,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
         // convert to native seperator
         QString value = item.value;
-        value = value.replace('/', QDir::separator());
-        value = value.replace('\\', QDir::separator());
+        value = value.replace('\\', '/');
 
         // regex to remove dots at the end of a filename
         QRegularExpression notDotAsEnding("[\\w\\d](\\.)[\"\\\\ ]*$");
@@ -484,6 +483,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     for(QString k : gamsArgs.keys()) {
         output.append(k + "=" + gamsArgs.value(k));
     }
+    DEB() << "output: " << output.join(" | ");
     // console output
     QString msg = "Running GAMS:";
     msg.append(output.join(" "));
@@ -505,15 +505,15 @@ QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
     path.remove("\"");
     QDir dir(path);
     if (dir.isRelative()) {
-        path = location() + QDir::separator() + path;
+        path = location() + '/' + path;
     }
 
     file.remove("\""); // remove quotes from filename
     file = file.trimmed();
     if (file.isEmpty() || QFileInfo(file).isRelative()) {
         ret = path;
-        if (! ret.endsWith(QDir::separator()))
-            ret += QDir::separator();
+        if (! ret.endsWith('/'))
+            ret += '/';
     }
     ret.append(file);
 

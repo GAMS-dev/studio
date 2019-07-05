@@ -442,7 +442,10 @@ ProjectFileNode *ProjectRepo::findOrCreateFileNode(QString location, ProjectGrou
 {
     if (location.isEmpty())
         return nullptr;
-
+    if (location.contains('\\')) {
+        DEB() << "Wrong separators: " << location;
+        location = QDir::fromNativeSeparators(location);
+    }
     if (!knownType || knownType->kind() == FileKind::None)
         knownType = parseGdxHeader(location) ? &FileType::from(FileKind::Gdx) : nullptr;
 

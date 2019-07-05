@@ -32,7 +32,6 @@ GlbParser::GlbParser()
 
 QList<LibraryItem> GlbParser::parseFile(QString glbFile)
 {
-    glbFile = QDir::toNativeSeparators(glbFile);
     QFile file(glbFile);
     if (!file.open(QIODevice::ReadOnly))
         EXCEPT() << "GLB file '" << file.fileName() << "' not found";
