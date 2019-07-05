@@ -1378,7 +1378,7 @@ void MainWindow::showErrorMessage(QString text)
     mSyslog->append(text, LogMsgType::Error);
 }
 
-void MainWindow::postGamsRun(NodeId origin)
+void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
     if (origin == -1) {
         mSyslog->append("No fileId set to process", LogMsgType::Error);
@@ -1388,6 +1388,19 @@ void MainWindow::postGamsRun(NodeId origin)
     if (!groupNode) {
         mSyslog->append("No group attached to process", LogMsgType::Error);
         return;
+    }
+
+    if (exitCode == 110) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("No available scratch directories");
+        msgBox.setText("GAMS was unable to run because there are too many scratch directories "
+                       "in the current workspace folder. Clean up your workspace and try again.");
+        msgBox.setInformativeText("Delete scratch directories now?");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+        if (msgBox.exec() == QMessageBox::Yes)
+            on_actionCleanWorkspace_triggered();
     }
 
     // add all created files to project explorer
@@ -3187,7 +3200,6 @@ void MainWindow::on_actionToggleBookmark_triggered()
     } else if (TextView* tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->edit()->sendToggleBookmark();
     }
-
 }
 
 void MainWindow::on_actionNextBookmark_triggered()
@@ -3211,6 +3223,22 @@ void MainWindow::on_actionPreviousBookmark_triggered()
 void MainWindow::on_actionRemoveBookmarks_triggered()
 {
     mTextMarkRepo.removeBookmarks();
+}
+
+void MainWindow::on_actionCleanWorkspace_triggered()
+{
+    QDirIterator it(SettingsLocator::settings()->defaultWorkspace(), QDir::Dirs, QDirIterator::FollowSymlinks);
+
+    QRegularExpression scratchDir("[\\/\\\\]225\\w\\w?$");
+    while (it.hasNext()) {
+        QDir dir(it.filePath());
+        if (scratchDir.match(it.filePath()).hasMatch()) {
+            if (!dir.removeRecursively()) {
+                SysLogLocator::systemLog()->append("Could not remove scratch directory " + it.filePath());
+            }
+        }
+        it.next();
+    }
 }
 
 }

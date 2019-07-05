@@ -236,6 +236,7 @@
     <addaction name="actionStop"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
+    <addaction name="actionCleanWorkspace"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1097,6 +1098,14 @@
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionCleanWorkspace">
+   <property name="text">
+    <string>Clean Workspace</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete scratch directories in current working directory</string>
    </property>
   </action>
  </widget>

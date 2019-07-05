@@ -21,7 +21,6 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QDesktopServices>
-#include <QMessageBox>
 #include "projectcontextmenu.h"
 #include "file.h"
 #include "commonpaths.h"
