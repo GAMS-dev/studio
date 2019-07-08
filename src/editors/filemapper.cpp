@@ -40,7 +40,6 @@ FileMapper::FileMapper(QObject *parent): AbstractTextMapper(parent)
 
 FileMapper::~FileMapper()
 {
-    TRACE();
     closeFile();
 }
 
@@ -86,6 +85,10 @@ void FileMapper::closeAndReset()
         chunk = activeChunk();
     }
     closeFile();
+
+    // JM: Workaround for file kept locked (due to chunk maps)
+    mFile.setFileName(mFile.fileName());
+
     mSize = 0;
     reset();
 }

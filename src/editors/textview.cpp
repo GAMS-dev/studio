@@ -459,87 +459,24 @@ void TextView::appendedLines(const QStringList &lines, bool append, bool overwri
 //    cur.insertText(lines.join("\n")+"\n");
     int firstLine = cur.blockNumber();
 
-    // one way to insert formats: format parts afterwards
-//    if (true) {
-        cur.insertText(lines.join("\n")+"\n");
-        if (!formats.isEmpty()) {
-            QMap<int, LineFormat>::const_iterator it = formats.cbegin();
-            while (it != formats.cend()) {
-                QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+it.key());
-                if (it.value().extraLstFormat) {
-                    cur.setPosition(block.position());
-                    cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
-                    cur.setCharFormat(*it.value().extraLstFormat);
-                }
-                cur.setPosition(block.position() + it.value().start);
-                cur.setPosition(block.position() + it.value().end, QTextCursor::KeepAnchor);
-                cur.setCharFormat(it.value().format);
-                cur.setPosition(block.position() + it.value().end);
-//                cur.setPosition(block.position() + it.value().end+1, QTextCursor::KeepAnchor);
-                cur.setCharFormat(QTextCharFormat());
-                ++it;
+    cur.insertText(lines.join("\n")+"\n");
+    if (!formats.isEmpty()) {
+        QMap<int, LineFormat>::const_iterator it = formats.cbegin();
+        while (it != formats.cend()) {
+            QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+it.key());
+            if (it.value().extraLstFormat) {
+                cur.setPosition(block.position());
+                cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
+                cur.setCharFormat(*it.value().extraLstFormat);
             }
+            cur.setPosition(block.position() + it.value().start);
+            cur.setPosition(block.position() + it.value().end, QTextCursor::KeepAnchor);
+            cur.setCharFormat(it.value().format);
+            cur.setPosition(block.position() + it.value().end);
+            cur.setCharFormat(QTextCharFormat());
+            ++it;
         }
-//    }
-
-//    // another way to insert formats: switch formats while inserting text
-//    else {
-//        QString all = lines.join("\n")+"\n";
-//        int start = 0;
-//        int len = 0;
-//        if (!formats.isEmpty()) {
-//            int firstLine = cur.blockNumber();
-//            for (int nr = 0; nr < lines.length(); ++nr) {
-//                if (formats.contains(nr)) {
-//                    const LineFormat &fmt = formats.value(nr);
-//                    if (!fmt.extraLstFormat)
-//                        len += 4;
-//                    if (len > 0) {
-//                        cur.setCharFormat(QTextCharFormat());
-//                        cur.insertText(all.mid(start, len));
-//                        start += len;
-//                        len = 0;
-//                    }
-//                    if (fmt.extraLstFormat) {
-//                        cur.setCharFormat(*fmt.extraLstFormat);
-//                        cur.insertText(all.mid(start, 3));
-//                        start += 3;
-//                        cur.setCharFormat(QTextCharFormat());
-//                        cur.insertText(all.mid(start++, 1));
-//                    }
-//                    len = lines.at(nr).length();
-//                    cur.setCharFormat(fmt.format);
-//                    cur.insertText(all.mid(start, len));
-//                    start += len;
-//                    cur.setCharFormat(QTextCharFormat());
-//                    cur.insertText(all.mid(start++, 1));
-//                    len = 0;
-//                } else {
-//                    len += lines.at(nr).length()+1;
-//                }
-//            }
-
-
-//            QMap<int, LineFormat>::const_iterator it = formats.cbegin();
-//            while (it != formats.cend()) {
-//                QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+it.key());
-//                if (it.value().extraLstFormat) {
-//                    cur.setPosition(block.position());
-//                    cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
-//                    cur.setCharFormat(*it.value().extraLstFormat);
-//                }
-//                cur.setPosition(block.position() + it.value().start);
-//                cur.setPosition(block.position() + it.value().end, QTextCursor::KeepAnchor);
-//                cur.setCharFormat(it.value().format);
-//                cur.setPosition(block.position() + it.value().end);
-//                cur.setPosition(block.position() + it.value().end+1, QTextCursor::KeepAnchor);
-//                cur.setCharFormat(QTextCharFormat());
-//                ++it;
-//            }
-//        }
-//    }
-
-
+    }
 
     // TODO(JM) adjust when to remove lines (top-line dependant)
     int topLinesToRemove = mEdit->blockCount() - mMapper->bufferedLines();
@@ -643,14 +580,14 @@ void TextView::updatePosAndAnchor()
     QTextCursor cursor = mEdit->textCursor();
     if (anchor.y() < 0 && pos == anchor) {
         QTextBlock block = mEdit->document()->findBlockByNumber(pos.y());
-        int p = block.position() + qMin(block.length()-1, pos.x());
+        int p = block.position() + qMin(block.length(), pos.x());
         cursor.setPosition(p);
     } else {
         QTextBlock block = mEdit->document()->findBlockByNumber(anchor.y());
-        int p = block.position() + qMin(block.length()-1, anchor.x());
+        int p = block.position() + qMin(block.length(), anchor.x());
         cursor.setPosition(p);
         block = mEdit->document()->findBlockByNumber(pos.y());
-        p = block.position() + qMin(block.length()-1, pos.x());
+        p = block.position() + qMin(block.length(), pos.x());
         cursor.setPosition(p, QTextCursor::KeepAnchor);
     }
     disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);

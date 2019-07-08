@@ -95,7 +95,6 @@ void AbstractEdit::updateGroupId()
 
 void AbstractEdit::updateExtraSelections()
 {
-//    TRACE();
     mSelUpdater.start();
 //    QList<QTextEdit::ExtraSelection> selections;
 //    extraSelMarks(selections);
