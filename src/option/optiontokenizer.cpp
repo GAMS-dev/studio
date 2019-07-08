@@ -701,11 +701,6 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
     this->formatLineEdit(lineEdit, errList);
 }
 
-void OptionTokenizer::on_EOLCommentChar_changed(const QChar ch)
-{
-    mEOLCommentChar = ch;
-}
-
 OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
 {
     OptionErrorType type = No_Error;

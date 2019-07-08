@@ -125,7 +125,6 @@ SOURCES += \
     option/optiontokenizer.cpp \
     option/optionwidget.cpp \
     option/solveroptiondefinitionmodel.cpp \
-    option/solveroptionsetting.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
     reference/reference.cpp \
@@ -241,7 +240,6 @@ HEADERS += \
     option/optiontokenizer.h \
     option/optionwidget.h \
     option/solveroptiondefinitionmodel.h \
-    option/solveroptionsetting.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
     reference/reference.h \
@@ -309,7 +307,6 @@ FORMS += \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
     option/solveroptionwidget.ui \
-    option/solveroptionsetting.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     resultsview.ui \

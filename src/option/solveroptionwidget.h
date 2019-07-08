@@ -88,11 +88,8 @@ public slots:
     void on_toggleRowHeader(int logicalIndex);
 
     void on_compactViewCheckBox_stateChanged(int checkState);
+    void on_messageViewCheckBox_stateChanged(int checkState);
     void on_openAsTextButton_clicked(bool checked = false);
-
-    void on_overrideExistingOptionChanged(int checkState);
-    void on_addCommentAboveChanged(int checkState);
-    void on_addEOLCommentChanged(int checkState);
 
     void copyAction();
 
@@ -106,7 +103,8 @@ private slots:
     void selectAnOption();
     void insertOption();
     void insertComment();
-    void deleteOption(bool keepFirstOne = false);
+    void deleteCommentsBeforeOption(int row);
+    void deleteOption();
     void moveOptionUp();
     void moveOptionDown();
 
@@ -120,16 +118,14 @@ private:
 
     bool mFileHasChangedExtern = false;
 
-    bool overrideExistingOption = true;
-    bool addCommentAbove = false;
-    bool addEOLComment = false;
-
     QTextCodec* mCodec;
     SolverOptionTableModel* mOptionTableModel;
     QMenu mContextMenu;
 
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
+
+    void refreshOptionTableModel(bool hideAllComments);
 
     void addActions();
     void updateEditActions(bool modified);

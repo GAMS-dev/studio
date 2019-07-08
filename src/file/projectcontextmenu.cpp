@@ -266,13 +266,13 @@ void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
     QString sourcePath = "";
     emit getSourcePath(sourcePath);
 
+
     QString filePath = QFileDialog::getSaveFileName(mParent,
                                                     QString("Create %1 option file...").arg(solverName),
                                                     QDir(QFileInfo(sourcePath).absolutePath()).filePath(QString("%1.opt").arg(solverName)),
-                                                    tr(QString("%1 option file (%1.opt %1.op*);;All files (*.*)").arg(solverName).toLatin1()),
+                                                    tr(QString("%1 option file (%1.*)").arg(solverName).toLatin1()),
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
     if (filePath.isEmpty()) return;
 
     QFileInfo fi(filePath);

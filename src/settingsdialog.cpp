@@ -63,6 +63,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_historySize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     adjustSize();
 }
 
@@ -94,6 +98,11 @@ void SettingsDialog::loadSettings()
 
     // misc tab page
     ui->sb_historySize->setValue(mSettings->historySize());
+    // solver option editor
+    ui->overrideExistingOptionCheckBox->setChecked(mSettings->overridExistingOption());
+    ui->addCommentAboveCheckBox->setChecked(mSettings->addCommentDescriptionAboveOption());
+    ui->addEOLCommentCheckBox->setChecked(mSettings->addEOLCommentDescriptionOption());
+    ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
 }
 
 void SettingsDialog::setModified()
@@ -137,6 +146,11 @@ void SettingsDialog::saveSettings()
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());
+    // solver option editor
+    mSettings->setOverrideExistingOption(ui->overrideExistingOptionCheckBox->isChecked());
+    mSettings->setAddCommentDescriptionAboveOption(ui->addCommentAboveCheckBox->isChecked());
+    mSettings->setAddEOLCommentDescriptionOption(ui->addEOLCommentCheckBox->isChecked());
+    mSettings->setDeleteAllCommentsAboveOption(ui->deleteCommentAboveCheckbox->isChecked());
 
     // done
     setModifiedStatus(false);
