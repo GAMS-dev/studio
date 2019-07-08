@@ -437,7 +437,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
 
-    openModelFromLib(glbFile, model->name(), inputFile);
+    openModelFromLib(glbFile, model->nameWithSuffix(), inputFile);
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
