@@ -771,7 +771,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups)
+void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
     QString path = mRecent.path;
     if (path.isEmpty()) path = ".";
@@ -779,21 +779,32 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups)
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
         if (fm) path = QFileInfo(fm->location()).path();
     }
-    // find a free file name
-    int nr = 1;
-    while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
-    path += QString("/new%1.gms").arg(nr);
+
+    if (solverName.isEmpty()) {
+        // find a free file name
+        int nr = 1;
+        while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
+        path += QString("/new%1.gms").arg(nr);
+    } else {
+        path = QDir(QFileInfo(path).absolutePath()).filePath(QString("%1.opt").arg(solverName));
+    }
     int choice = 4;
     while (choice == 4) {
-        QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
-                                                        tr("GAMS code (*.gms *.inc );;"
-                                                           "Option files (*.opt *.op* *.o*);;"
-                                                           "Text files (*.txt);;"
-                                                           "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
+        QString filePath = solverName.isEmpty()
+                             ? QFileDialog::getSaveFileName(this, "Create new file...",
+                                                            path,
+                                                            tr("GAMS code (*.gms *.inc );;"
+                                                               "Option files (*.opt *.op* *.o*);;"
+                                                               "Text files (*.txt);;"
+                                                               "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite)
+                             : QFileDialog::getSaveFileName(this, QString("Create %1 option file...").arg(solverName),
+                                                            path,
+                                                            tr(QString("%1 option file (%1.*)").arg(solverName).toLatin1()),
+                                                            nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
         if (filePath == "") return;
         QFileInfo fi(filePath);
         if (fi.suffix().isEmpty())
-            filePath += ".gms";
+            filePath += (solverName.isEmpty() ? ".gms" : ".opt");
         QFile file(filePath);
         bool exists = file.exists();
         FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
