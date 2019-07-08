@@ -37,7 +37,9 @@ class TextMarkRepo;
 class FileMeta;
 class FileMetaRepo;
 class AbstractProcess;
+namespace option {
 struct OptionItem;
+}
 
 class ProjectGroupNode : public ProjectAbstractNode
 {
@@ -95,7 +97,7 @@ public:
     bool hasLstErrorText( int line = -1);
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
-    QStringList analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList);
+    QStringList analyzeParameters(const QString &gmsLocation, QList<option::OptionItem> itemList);
 
     QString parameter(const QString& kind) const;
     bool hasParameter(const QString& kind) const;

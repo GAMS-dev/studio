@@ -54,6 +54,9 @@ class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
+namespace option {
+class OptionWidget;
+}
 
 
 struct RecentData {
@@ -138,16 +141,21 @@ public:
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
 #endif
-    OptionWidget *gamsOptionWidget() const;
+    option::OptionWidget *gamsOptionWidget() const;
+
+signals:
+    void saved();
+    void savedAs();
 
 public slots:
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
+    void updateEditorItemCount();
     void updateLoadAmount();
     void runGmsFile(ProjectFileNode *node);
     void setMainGms(ProjectFileNode *node);
@@ -161,8 +169,9 @@ public slots:
 
 private slots:
     void openInitialFiles();
-    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
-    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedTextEditor = false);
+    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void reOpenFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -280,7 +289,7 @@ private slots:
 
 protected:
     void closeEvent(QCloseEvent *event);
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *e);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -330,7 +339,7 @@ private:
 #ifdef QWEBENGINE
     HelpWidget *mHelpWidget = nullptr;
 #endif
-    OptionWidget *mGamsOptionWidget = nullptr;
+    option::OptionWidget *mGamsOptionWidget = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
 

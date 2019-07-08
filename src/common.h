@@ -89,7 +89,7 @@ enum class FileKind {
     Log,
     Gdx,
     Ref,
-    Dir
+    Opt
 };
 Q_ENUM_NS(FileKind)
 
@@ -108,6 +108,7 @@ enum class EditorType {
     lxiLst = 6,
     gdx = 7,
     ref = 8,
+    opt = 9,
 };
 Q_ENUM_NS(EditorType)
 
@@ -129,6 +130,9 @@ operator<<(QTextStream &dbg, T enumValue)
     int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
     return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
 }
+
+const int MAX_SEARCH_RESULTS = 50000;
+const double TABLE_ROW_HEIGHT = 1.6;
 
 }
 }

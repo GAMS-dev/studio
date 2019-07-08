@@ -17,29 +17,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QDir>
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QDesktopServices>
+#include <QMessageBox>
 #include "projectcontextmenu.h"
 #include "file.h"
 #include "commonpaths.h"
+#include "editors/viewhelper.h"
 
 namespace gams {
 namespace studio {
 
 enum ContextAction {
+    actOpen,
+    actOpenAsText,
+    actReOpen,
+    actReOpenAsText,
+    actSep1,
     actExplorer,
     actLogTab,
     actRename,
-    actSep1,
-    actSetMain,
     actSep2,
-    actAddExisting,
-    actAddNew,
+    actSetMain,
     actSep3,
+    actAddExisting,
+    actSep4,
+    actAddNewGms,
+    actAddNewOpt,
+    actSep5,
     actCloseGroup,
     actCloseFile,
-    actSep4,
+    actSep6,
     actSelectAll,
     actExpandAll,
     actCollapseAll,
@@ -47,6 +57,13 @@ enum ContextAction {
 
 ProjectContextMenu::ProjectContextMenu()
 {
+    mActions.insert(actOpen, addAction("&Open File", this, &ProjectContextMenu::onOpenFile));
+    mActions.insert(actOpenAsText, addAction("&Open File As Text", this, &ProjectContextMenu::onOpenFileAsText));
+    mActions.insert(actReOpen, addAction("&Reopen File using Solver Option Editor", this, &ProjectContextMenu::onReOpenSolverOptionFile));
+    mActions.insert(actReOpenAsText, addAction("Reopen File as Text", this, &ProjectContextMenu::onReOpenSolverOptionFileAsText));
+
+    mActions.insert(actSep1, addSeparator());
+
     mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
@@ -54,16 +71,37 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actSep1, addSeparator());
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
-    mActions.insert(actSep2, addSeparator());
-    mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
-    mActions.insert(actAddNew, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
-
     mActions.insert(actSep3, addSeparator());
+
+    mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
+
+    mActions.insert(actAddNewGms, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+
+    QMenu* newSolverOptionMenu = addMenu( "Add new solver option file" );
+    mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
+    int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
+
+    QDir sysdir(CommonPaths::systemDir());
+    QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
+    for (QString &filename : optFiles) {
+        QString solvername = filename.mid(QString("opt").length());
+        solvername.replace(QRegExp(".def"), "");
+        if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
+            continue;
+        QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
+        connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername); });
+
+        mAvailableSolvers << solvername;
+        mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
+    }
+
+    mActions.insert(actSep5, addSeparator());
     mActions.insert(actSelectAll, addAction("Select &all", this, &ProjectContextMenu::onSelectAll));
     mActions.insert(actCollapseAll, addAction("Collapse all", this, &ProjectContextMenu::onCollapseAll));
     mActions.insert(actExpandAll, addAction("Expand all", this, &ProjectContextMenu::onExpandAll));
 
-    mActions.insert(actSep4, addSeparator());
+    mActions.insert(actSep6, addSeparator());
+
     mActions.insert(actCloseGroup, addAction(mTxtCloseGroup, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 }
@@ -82,6 +120,19 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     ProjectFileNode *fileNode = mNodes.first()->toFile();
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
     bool isRunnable = false;
+    bool isOpen = fileNode && fileNode->file()->isOpen();
+    bool isOpenable = fileNode && !fileNode->file()->isOpen();
+    bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt;
+    bool isOpenableAsText = isOpenable && isOptFile;
+    bool isOpenWithSolverOptionEditor = false;
+    if (fileNode) {
+        for (QWidget *e : fileNode->file()->editors()) {
+            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
+            if (so) isOpenWithSolverOptionEditor = true;
+        }
+    }
+    bool isReOpenableWithSolverOptionEditor = isOpen && isOptFile && !isOpenWithSolverOptionEditor;
+    bool isReOpenableAsText = isOpen && isOptFile && isOpenWithSolverOptionEditor;
 
     QString file;
     if (fileNode && fileNode->assignedRunGroup()) {
@@ -91,6 +142,16 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
 
     mActions[actExplorer]->setEnabled(single);
 
+    mActions[actOpen]->setEnabled(isOpenable);
+    mActions[actOpen]->setVisible(isOpenable);
+    mActions[actOpenAsText]->setEnabled(isOpenableAsText);
+    mActions[actOpenAsText]->setVisible(isOpenableAsText);
+
+    mActions[actReOpen]->setEnabled(isReOpenableWithSolverOptionEditor);
+    mActions[actReOpen]->setVisible(isReOpenableWithSolverOptionEditor);
+    mActions[actReOpenAsText]->setEnabled(isReOpenableAsText);
+    mActions[actReOpenAsText]->setVisible(isReOpenableAsText);
+
     mActions[actLogTab]->setVisible(isGroup);
     mActions[actLogTab]->setEnabled(single);
 
@@ -99,6 +160,11 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
 
     mActions[actSep1]->setVisible(isGroup);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
+//    mActions[actSetMain]->setEnabled(single);
+
+    mActions[actAddNewGms]->setVisible(isGroup);
+    mActions[actAddExisting]->setVisible(isGroup);
+    mActions[actCloseGroup]->setVisible(isGroup);
 
     mActions[actCloseFile]->setVisible(fileNode);
     mActions[actCloseGroup]->setVisible(isGroup);
@@ -110,6 +176,12 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
         mActions[actCloseGroup]->setText(mTxtCloseGroup);
         mActions[actCloseFile]->setText(mTxtCloseFile);
     }
+
+    // create solver option files
+    mActions[actSep3]->setVisible(isGroup);
+    mActions[actAddNewOpt]->setVisible(isGroup);
+    for (QAction* action : mSolverOptionActions)
+        action->setVisible(isGroup);
 }
 
 void ProjectContextMenu::onCloseFile()
@@ -126,9 +198,11 @@ void ProjectContextMenu::onAddExisitingFile()
     emit getSourcePath(sourcePath);
 
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent,
-                                                    "Add existing file",
+                                                    "Add existing files",
                                                     sourcePath,
                                                     tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *ref);;"
+                                                       "Option files (*.opt *.op* *.o*);;"
+                                                       "Reference files (*.ref);;"
                                                        "Text files (*.txt);;"
                                                        "All files (*.*)"),
                                                     nullptr,
@@ -187,6 +261,27 @@ void ProjectContextMenu::onRenameGroup()
     if (group) emit renameGroup(group);
 }
 
+void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
+{
+    QString sourcePath = "";
+    emit getSourcePath(sourcePath);
+
+    QString filePath = QFileDialog::getSaveFileName(mParent,
+                                                    QString("Create %1 option file...").arg(solverName),
+                                                    QDir(QFileInfo(sourcePath).absolutePath()).filePath(QString("%1.opt").arg(solverName)),
+                                                    tr(QString("%1 option file (%1.opt %1.op*);;All files (*.*)").arg(solverName).toLatin1()),
+                                                    nullptr,
+                                                    DONT_RESOLVE_SYMLINKS_ON_MACOS);
+
+    if (filePath.isEmpty()) return;
+
+    QFileInfo fi(filePath);
+    if (fi.suffix().isEmpty())
+        filePath += ".opt";
+
+    addNewFile(filePath);
+}
+
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
@@ -218,9 +313,54 @@ void ProjectContextMenu::onOpenFileLoc()
     }
 }
 
+void ProjectContextMenu::onOpenFile()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit openFile(file, true, -1, false);
+}
+
+void ProjectContextMenu::onOpenFileAsText()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit openFile(file, true, -1, true);
+}
+
+void ProjectContextMenu::onReOpenSolverOptionFile()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit reOpenFile(file, true, -1, false);
+}
+
+void ProjectContextMenu::onReOpenSolverOptionFileAsText()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) emit reOpenFile(file, true, -1, true);
+}
+
 void ProjectContextMenu::onOpenLog()
 {
     if (mNodes.first()) emit openLogFor(mNodes.first(), true, true);
+}
+
+void ProjectContextMenu::addNewFile(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.exists()) { // create
+        file.open(QIODevice::WriteOnly);
+        file.close();
+    } else { // replace old
+        file.resize(0);
+    }
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (!groups.contains(group))
+            groups << group;
+    }
+    for (ProjectGroupNode *group: groups) {
+        emit addExistingFile(group, filePath);
+    }
 }
 
 void ProjectContextMenu::onSelectAll()

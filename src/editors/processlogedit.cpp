@@ -20,6 +20,7 @@
 #include "processlogedit.h"
 #include <QMenu>
 #include <QScrollBar>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -90,12 +91,6 @@ void ProcessLogEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selec
     Q_UNUSED(selections);
     return;
 }
-
-//void ProcessLogEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
-//{
-//    Q_UNUSED(selections);
-//    return;
-//}
 
 AbstractEdit::EditorType ProcessLogEdit::type()
 {

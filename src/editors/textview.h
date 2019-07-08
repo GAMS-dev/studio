@@ -43,6 +43,8 @@ public:
     enum TextKind { FileText, MemoryText };
 
     explicit TextView(TextKind kind, QWidget *parent = nullptr);
+    ~TextView() override;
+
     bool loadFile(const QString &fileName, int codecMib, bool initAnchor);
     void prepareRun();
     void endRun();
@@ -51,7 +53,7 @@ public:
     int knownLines() const;
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
-    bool jumpTo(int lineNr, int charNr);
+    bool jumpTo(int lineNr, int charNr, int length = 0);
     QPoint position() const;                // JM: changes on Debug / pos only in regular lines
     QPoint anchor() const;                  // JM: changes on Debug / no selection
     bool hasSelection() const;              // JM: changes on Debug / no selection

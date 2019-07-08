@@ -48,6 +48,7 @@ private slots:
 
 private:
     FileMapper *mMapper;
+    QDir mCurrentPath;
 };
 
 #endif // TESTFILEMAPPER_H

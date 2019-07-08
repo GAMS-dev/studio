@@ -437,7 +437,7 @@ QStringList ProjectRunGroupNode::getRunParametersHistory() const
 /// \param itemList list of options given by studio and user
 /// \return QStringList all arguments
 ///
-QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QList<OptionItem> itemList)
+QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QList<option::OptionItem> itemList)
 {
     // set studio default parameters
     QMap<QString, QString> defaultGamsArgs;
@@ -454,7 +454,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QString cdir = "";
     QString wdir = "";
     QString filestem = "";
-    for (OptionItem item : itemList) {
+    for (option::OptionItem item : itemList) {
         if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0) {
             cdir = item.value;
@@ -493,7 +493,8 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     setParameter("lst", cleanPath(path, filestem + ".lst"));
 
     bool defaultOverride = false;
-    for (OptionItem item : itemList) {
+    // iterate options
+    for (option::OptionItem item : itemList) {
 
         // convert to native seperator
         QString value = item.value;

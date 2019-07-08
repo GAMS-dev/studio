@@ -25,6 +25,11 @@ CONFIG -= app_bundle
 
 DESTDIR = ../bin
 
+#include(../gamsdependency.pri)
+
+#unix : LIBS += -ldl -L../../bin
+#win32: LIBS += -L../../bin/
+
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 

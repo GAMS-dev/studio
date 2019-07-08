@@ -37,7 +37,6 @@
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
 #include <QScrollBar>
-#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -123,18 +122,29 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 
 void FileMeta::internalSave(const QString &location)
 {
-    QFile file(location);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        EXCEPT() << "Can't save " << location;
-    QTextStream out(&file);
-    if (mCodec) out.setCodec(mCodec);
-    mActivelySaved = true;
-    out << document()->toPlainText();
-    out.flush();
-    file.close();
-    mData = Data(location, mData.type);
-    document()->setModified(false);
-    mFileRepo->watch(this);
+    if (document()) {
+        QFile file(location);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            EXCEPT() << "Can't save " << location;
+        QTextStream out(&file);
+        if (mCodec) out.setCodec(mCodec);
+        mActivelySaved = true;
+        out << document()->toPlainText();
+        out.flush();
+        file.close();
+        mData = Data(location, mData.type);
+        setModified(false);
+        mFileRepo->watch(this);
+    } else if (kind() == FileKind::Opt) {
+        option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
+        if (solverOptionWidget) {
+            mActivelySaved = true;
+            solverOptionWidget->saveOptionFile(location);
+            mData = Data(location, mData.type);
+            setModified(false);
+            mFileRepo->watch(this);
+        }
+    }
 }
 
 bool FileMeta::checkActivelySavedAndReset()
@@ -160,8 +170,6 @@ void FileMeta::linkDocument(QTextDocument *doc)
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
     }
-//    if (mHighlighter)
-//        mHighlighter->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
 void FileMeta::unlinkAndFreeDocument()
@@ -310,6 +318,7 @@ void FileMeta::addEditor(QWidget *edit)
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
+    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
 
     if (aEdit) {
         if (!mDocument)
@@ -334,6 +343,9 @@ void FileMeta::addEditor(QWidget *edit)
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     }
+    if (soEdit) {
+        connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
+    }
     if (mEditors.size() == 1) emit documentOpened();
     if (aEdit)
         aEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
@@ -351,6 +363,7 @@ void FileMeta::removeEditor(QWidget *edit)
 
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
+    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
     mEditors.removeAt(i);
 
     if (aEdit) {
@@ -371,6 +384,9 @@ void FileMeta::removeEditor(QWidget *edit)
     if (TextView* tv = ViewHelper::toTextView(edit)) {
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+    }
+    if (soEdit) {
+       disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     }
 
     if (mEditors.isEmpty()) {
@@ -420,7 +436,19 @@ void FileMeta::load(int codecMib, bool init)
         }
         return;
     }
-
+    if (kind() == FileKind::Opt) {
+        bool textOptEditor = true;
+        for (QWidget *wid : mEditors) {
+            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
+            if (so) {
+                textOptEditor = false;
+                mCodec = QTextCodec::codecForMib(codecMib);
+                so->on_reloadSolverOptionFile(mCodec);
+            }
+        }
+        if (!textOptEditor)
+            return;
+    }
 
     QFile file(location());
     bool canOpen = true;
@@ -459,7 +487,7 @@ void FileMeta::load(int codecMib, bool init)
             SysLogLocator::systemLog()->append("System doesn't contain codec for MIB " + QString::number(codecMib), LogMsgType::Info);
         }
         file.close();
-        document()->setModified(false);
+        setModified(false);
         return;
     }
     return;
@@ -512,16 +540,20 @@ FileMeta::FileDifferences FileMeta::compare(QString fileName)
     return res;
 }
 
-void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
+void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int length)
 {
     emit mFileRepo->openFile(this, groupId, focus, codecMib());
     if (!mEditors.size()) return;
+
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
         QTextCursor tc = QTextCursor(block);
-        tc.setPosition(block.position()+qMin(column, block.length()-1));
+
+        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(column, block.length()-1));
+        tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, length);
         edit->setTextCursor(tc);
+
         // center line vertically
         qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
         qreal line = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
@@ -531,7 +563,7 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column)
         return;
     }
     if (TextView *tv = ViewHelper::toTextView(mEditors.first())) {
-        tv->jumpTo(line, column);
+        tv->jumpTo(line, column, length);
     }
 }
 
@@ -571,14 +603,32 @@ void FileMeta::reloadDelayed()
 
 bool FileMeta::isModified() const
 {
-    return mDocument ? mDocument->isModified() : false;
+    if (mDocument) {
+        return  mDocument->isModified();
+    } else if (kind() == FileKind::Opt) {
+            for (QWidget *wid: mEditors) {
+                option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
+                if (solverOptionWidget)
+                    return solverOptionWidget->isModified();
+            }
+    }
+    return false;
 }
 
 bool FileMeta::isReadOnly() const
 {
     AbstractEdit* edit = mEditors.isEmpty() ? nullptr : ViewHelper::toAbstractEdit(mEditors.first());
-    if (!edit) return true;
-    return edit->isReadOnly();
+    if (edit) return edit->isReadOnly();
+
+    if (kind() == FileKind::TxtRO
+            || kind() == FileKind::Lst
+            || kind() == FileKind::Lxi
+            || kind() == FileKind::Gdx
+            || kind() == FileKind::Ref
+            || kind() == FileKind::Log)
+        return true;
+    else
+        return false;
 }
 
 bool FileMeta::isAutoReload() const
@@ -589,6 +639,18 @@ bool FileMeta::isAutoReload() const
 void FileMeta::resetTempReloadState()
 {
     mTempAutoReloadTimer.start(1500);
+}
+
+void FileMeta::setModified(bool modified)
+{
+    if (document()) {
+        document()->setModified(modified);
+    } else if (kind() == FileKind::Opt) {
+              for (QWidget *e : mEditors) {
+                   option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
+                   if (so) so->setModified(modified);
+              }
+    }
 }
 
 QTextDocument *FileMeta::document() const
@@ -608,8 +670,8 @@ void FileMeta::setCodecMib(int mib)
         DEB() << "TextCodec not found for MIB " << mib;
         return;
     }
-    if (document() && !isReadOnly() && codec != mCodec) {
-        document()->setModified();
+    if (!isReadOnly() && codec != mCodec) {
+       setModified(true);
     }
     setCodec(codec);
 }
@@ -644,7 +706,7 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib)
+QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEdit)
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
@@ -652,9 +714,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gdx) {
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
-    } else if (kind() == FileKind::Ref) {
-        // TODO: multiple ReferenceViewers share one Reference Object of the same file
-        //       instead of holding individual Reference Object
+    } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
@@ -673,6 +733,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
+    } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
+        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;

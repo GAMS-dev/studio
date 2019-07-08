@@ -25,29 +25,40 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionDefinitionItem
 {
 public:
-    OptionDefinitionItem(const QList<QVariant>& data, OptionDefinitionItem* parentItem = 0);
+    OptionDefinitionItem(const QList<QVariant>& data, OptionDefinitionItem* parentItem = nullptr);
     ~OptionDefinitionItem();
 
     void appendChild(OptionDefinitionItem *child);
 
-    OptionDefinitionItem *child(int row);
+    OptionDefinitionItem* child(int row);
+    OptionDefinitionItem* parent();
     int childCount() const;
     int columnCount() const;
     QVariant data(int column) const;
     int row() const;
     OptionDefinitionItem *parentItem();
+    bool setData(int column, const QVariant &value);
+
+    void setParent(OptionDefinitionItem* parent);
+    void insertChild(int row, OptionDefinitionItem* item);
+    bool removeChildren(int position, int count);
+
+    bool modified() const;
+    void setModified(bool modified);
 
 private:
     QList<OptionDefinitionItem*> mChildItems;
     QList<QVariant> mItemData;
     OptionDefinitionItem *mParentItem;
-
+    bool mModified;
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

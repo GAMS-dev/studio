@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>30</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -265,7 +265,7 @@
     <string>Project Explorer</string>
    </property>
    <property name="windowTitle">
-    <string>Explorer</string>
+    <string>Project Explorer</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -437,6 +437,9 @@
    <addaction name="actionSettings"/>
    <addaction name="actionGAMS_Library"/>
    <addaction name="actionToggle_Extended_Option_Editor"/>
+   <addaction name="actionProject_View"/>
+   <addaction name="actionOutput_View"/>
+   <addaction name="actionHelp_View"/>
   </widget>
   <action name="actionFile">
    <property name="text">
@@ -485,8 +488,15 @@
    <property name="enabled">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/output</normaloff>:/img/output</iconset>
+   </property>
    <property name="text">
     <string>&amp;Output</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Output View (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+Shift+G&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionProject_View">
@@ -496,8 +506,15 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/project</normaloff>:/img/project</iconset>
+   </property>
    <property name="text">
-    <string>&amp;Explorer</string>
+    <string>Project &amp;Explorer</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Project Explorer (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+J&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionNew">
@@ -648,6 +665,9 @@
    <property name="shortcut">
     <string>F7</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
   </action>
   <action name="actionCompile_with_GDX_Creation">
    <property name="icon">
@@ -796,8 +816,15 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/question</normaloff>:/img/question</iconset>
+   </property>
    <property name="text">
     <string>&amp;Help</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Help (&lt;span style=&quot; font-weight:600;&quot;&gt;F1&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionOverwrite_Mode">

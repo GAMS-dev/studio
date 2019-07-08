@@ -1,12 +1,17 @@
-Version 0.11.0
+Version 0.12.0
 ========================
 
 ## General
-- fixed flickering of Studio when resizing
-- added "open anyway" to warning dialog for large files
-- changed icon of all editable non-GAMS files (prior that was only for txt files)
+- **added GAMS Solver Option Editor (requires GAMS 27.0)**
+- fixed crash when running studio with --ignore-settings and double clicking a word (fixes #1031)
+- fixed freeze when exiting studio during startup procedure
+- added Ctrl+H to focus main editor
+- added Ctrl+Shift+G to focus logs
+- added Esc to close several widgets
+- added icons to toolbar to show/hide project explorer, logs, and help
+- adjusted row height of all tables to be equal (#1002)
+- discarded file stays marked as modified (fixes #1018)
 
-## Editor
-- further syntax highlighter improvements
-- improved performance of error highlighting when editing a file contaning many
-- fixed highlighting of word under cursor when stepping through vertain search results
+## Search
+- fixed cursor not jumping to first match on first try in lst file (fixes #1039)
+

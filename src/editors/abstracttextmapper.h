@@ -146,7 +146,7 @@ public:
 
     virtual QString lines(int localLineNrFrom, int lineCount) const;    // share FM + MM    //    CC?
     virtual QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const;
-    virtual bool findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind);   // share FM + MM
+    virtual bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);   // share FM + MM
 
     virtual QString selectedText() const;                               // share FM + MM    //    CC?
     virtual void copyToClipboard();                                     // share FM + MM

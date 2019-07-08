@@ -75,8 +75,9 @@ public:
     bool isReadOnly() const;
     bool isAutoReload() const;
     void resetTempReloadState();
+    void setModified(bool modified=true);
 
-    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1);
+    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedAsTextEdit = false);
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void addEditor(QWidget* edit);
@@ -88,7 +89,7 @@ public:
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
-    void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0);
+    void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0, int length = 0);
     void rehighlight(int line);
     void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     syntax::SyntaxHighlighter *highlighter() const;

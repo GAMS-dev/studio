@@ -26,10 +26,9 @@ namespace studio {
 class SearchResultList;
 class SearchDialog;
 class SearchLocator
-{    
+{
 
 public:
-    static SearchResultList* searchResults();
     static SearchDialog* searchDialog();
     static void provide(SearchDialog* sd);
 

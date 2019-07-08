@@ -512,7 +512,7 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount, QVector<Li
     return lines(localLineNrFrom, lineCount);
 }
 
-bool AbstractTextMapper::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind)
+bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     bool backwards = flags.testFlag(QTextDocument::FindBackward);
     int part = backwards ? 2 : 1;
@@ -543,8 +543,8 @@ bool AbstractTextMapper::findText(QRegularExpression seachRegex, QTextDocument::
         }
 
         QRegularExpressionMatch match;
-        if (backwards) textBlock.lastIndexOf(seachRegex, ind, &match);
-        else textBlock.indexOf(seachRegex, ind, &match);
+        if (backwards) textBlock.lastIndexOf(searchRegex, ind, &match);
+        else textBlock.indexOf(searchRegex, ind, &match);
         if (match.hasMatch() || match.hasPartialMatch()) {
             QStringRef ref = textBlock.leftRef(match.capturedStart());
             int line = ref.count("\n");
@@ -886,9 +886,7 @@ int AbstractTextMapper::selectionSize() const
 
 void AbstractTextMapper::chunkUncached(Chunk *&chunk) const
 {
-    Q_UNUSED(chunk)
-//    delete chunk;
-    //    chunk = nullptr;
+    Q_UNUSED(chunk);
 }
 
 

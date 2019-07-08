@@ -89,6 +89,11 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
 */
 }
 
+TextView::~TextView()
+{
+    mMapper->deleteLater();
+}
+
 int TextView::lineCount() const
 {
     return mMapper->lineCount();
@@ -138,7 +143,7 @@ void TextView::zoomOut(int range)
     recalcVisibleLines();
 }
 
-bool TextView::jumpTo(int lineNr, int charNr)
+bool TextView::jumpTo(int lineNr, int charNr, int length)
 {
     if (lineNr > mMapper->knownLineNrs()) return false;
     int vTop = mMapper->absTopLine()+mMapper->visibleOffset();
@@ -148,7 +153,8 @@ bool TextView::jumpTo(int lineNr, int charNr)
         topLineMoved();
         vTop = mMapper->absTopLine()+mMapper->visibleOffset();
     }
-    mMapper->setPosRelative(lineNr - mMapper->absTopLine(), charNr);
+    if (length != 0)
+        mMapper->setPosRelative(lineNr - mMapper->absTopLine(), charNr + length, QTextCursor::KeepAnchor);
     updatePosAndAnchor();
     emit selectionChanged();
     setFocus();
@@ -208,7 +214,7 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
     if (found) {
         mMapper->scrollToPosition();
         topLineMoved();
-        updatePosAndAnchor();
+        emit selectionChanged();
     }
     return found;
 }

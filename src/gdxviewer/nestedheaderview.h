@@ -19,6 +19,8 @@ public:
     ~NestedHeaderView() override;
     void setModel(QAbstractItemModel *model) override;
 
+    void setDdEnabled(bool value);
+
 public slots:
     void reset() override;
 
@@ -52,7 +54,7 @@ private:
     int dragOrientationStart = -1;
     int dragOrientationEnd = -1;
 
-    QVector<int> vhSectionWidth;
+    QVector<int> sectionWidth;
     bool ddEnabled = true;
 };
 

@@ -35,25 +35,16 @@
 #include "support/checkforupdatewrapper.h"
 #include "commonpaths.h"
 #include "gclgms.h"
+#include "helpdata.h"
 #include "helppage.h"
 
 namespace gams {
 namespace studio {
 
-const QString HelpWidget::START_CHAPTER = "docs/index.html";
-const QString HelpWidget::DOLLARCONTROL_CHAPTER = "docs/UG_DollarControlOptions.html";
-const QString HelpWidget::GAMSCALL_CHAPTER = "docs/UG_GamsCall.html";
-const QString HelpWidget::INDEX_CHAPTER = "docs/keyword.html";
-const QString HelpWidget::OPTION_CHAPTER = "docs/UG_OptionStatement.html";
-const QString HelpWidget::LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
-
 HelpWidget::HelpWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::HelpWidget)
 {
-    mChapters << START_CHAPTER << DOLLARCONTROL_CHAPTER << GAMSCALL_CHAPTER
-              << INDEX_CHAPTER << OPTION_CHAPTER;
-
     ui->setupUi(this);
 
     ui->webEngineView->showMaximized();
@@ -118,7 +109,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     ui->toolbarVlLayout->addWidget(toolbar);
 
-    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+    if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
         ui->webEngineView->load( getStartPageUrl() );
     } else {
         QString htmlText;
@@ -175,9 +166,14 @@ void HelpWidget::on_urlOpened(const QUrl &location)
     ui->webEngineView->load(location);
 }
 
-void HelpWidget::on_helpContentRequested(const QString &chapter, const QString &keyword)
+void HelpWidget::on_helpContentRequested(const DocumentType &type, const QString &keyword, const QString &submoduleName)
 {
-    QDir dir = QDir(CommonPaths::systemDir()).filePath(chapter);
+    QDir dir = QDir(CommonPaths::systemDir()).filePath( HelpData::getChapterLocation(type) );
+    if (!submoduleName.isEmpty()) {
+        if (type == DocumentType::Solvers)
+            dir = QDir(CommonPaths::systemDir()).filePath( HelpData::getSolverChapterLocation(submoduleName) );
+        // TODO (JP) other DocumentType(s)
+    }
     if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
         QString htmlText;
         getErrorHTMLText( htmlText, QUrl::fromLocalFile(dir.absolutePath()) );
@@ -186,39 +182,40 @@ void HelpWidget::on_helpContentRequested(const QString &chapter, const QString &
     }
 
     QUrl url = QUrl::fromLocalFile(dir.canonicalPath());
-    switch(mChapters.indexOf(chapter)) {
-    case 0: // START_CHAPTER
+
+    switch(type) {
+    case DocumentType::Main :  {
         ui->webEngineView->load(QUrl::fromLocalFile(dir.canonicalPath()));
         break;
-    case 1: // DOLLARCONTROL_CHAPTER
-        if (!keyword.isEmpty()) {
-            QString anchorStr;
-            if (keyword.toLower().startsWith("off")) {
-                anchorStr = "DOLLARon"+keyword.toLower();
-            } else if (keyword.toLower().startsWith("on")) {
-                   anchorStr = "DOLLARonoff"+keyword.toLower().mid(2);
-            } else {
-               anchorStr = "DOLLAR"+keyword.toLower();
-            }
-            url.setFragment(anchorStr);
-        }
+    }
+    case DocumentType::DollarControl : {
+        QString dollarControlStr = HelpData::getDollarControlOptionAnchor(keyword);
+        if (!dollarControlStr.isEmpty())
+            url.setFragment(dollarControlStr);
         ui->webEngineView->load(url);
-        break;
-    case 2: // GAMSCALL_CHAPTER
-        if (!keyword.isEmpty()) {
-            QString anchorStr = "GAMSAO" + keyword.toLower();
-            url.setFragment(anchorStr);
-        }
-        ui->webEngineView->load(url);
-        break;
-    case 3: // INDEX_CHAPTER
-        url.setQuery("q="+keyword);
-        ui->webEngineView->load(url);
-        break;
-    default:
         break;
     }
-    return;
+    case DocumentType::GamsCall :  {
+        QString gamscallStr = HelpData::getGamsCallOptionAnchor(keyword);
+        if (!gamscallStr.isEmpty())
+            url.setFragment(gamscallStr);
+        ui->webEngineView->load(url);
+        break;
+    }
+    case DocumentType::Index :  {
+        url.setQuery(HelpData::getKeywordIndexAnchor(keyword));
+        ui->webEngineView->load(url);
+        break;
+    }
+    case DocumentType::Solvers :  {
+        QString indexStr = HelpData::getSolverOptionAnchor(submoduleName, keyword);
+        if (!indexStr.isEmpty())
+            url.setFragment(indexStr);
+        ui->webEngineView->load(url);
+        break;
+    }
+    default: break;
+    }
 }
 
 void HelpWidget::on_bookmarkNameUpdated(const QString &location, const QString &name)
@@ -284,7 +281,7 @@ void HelpWidget::on_bookmarkRemoved(const QString &location, const QString &name
 
 void HelpWidget::on_actionHome_triggered()
 {
-    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+    if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
         ui->webEngineView->load( getStartPageUrl() );
     } else {
         QString htmlText;
@@ -370,7 +367,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                         onlineStartPageUrl.toDisplayString() );
         url = QUrl(urlStr);
     } else {
-        if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+        if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
             QString urlStr = url.toDisplayString();
             urlStr.replace( urlStr.indexOf( onlineStartPageUrl.toDisplayString() ),
                             onlineStartPageUrl.toDisplayString().size(),
@@ -394,14 +391,14 @@ void HelpWidget::on_actionOpenInBrowser_triggered()
 
 void HelpWidget::on_actionCopyPageURL_triggered()
 {
-    QClipboard* clip = QApplication::clipboard();;
+    QClipboard* clip = QApplication::clipboard();
     clip->setText( ui->webEngineView->page()->url().toString());
 }
 
 void HelpWidget::on_bookmarkaction()
 {
     QAction* sAction = qobject_cast<QAction*>(sender());
-    if (isDocumentAvailable(CommonPaths::systemDir(), START_CHAPTER)) {
+    if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
         ui->webEngineView->load( QUrl(sAction->toolTip(), QUrl::TolerantMode) );
     } else {
         QString htmlText;
@@ -541,15 +538,16 @@ void HelpWidget::keyPressEvent(QKeyEvent *event)
            clearStatusBar();
            ui->webEngineView->setFocus();
         } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-                  on_forwardButtonTriggered();
+            on_forwardButtonTriggered();
         }
     }
+
     QWidget::keyPressEvent(event);
 }
 
 QUrl HelpWidget::getStartPageUrl()
 {
-    QDir dir = QDir(CommonPaths::systemDir()).filePath(START_CHAPTER);
+    QDir dir = QDir(CommonPaths::systemDir()).filePath( HelpData::getChapterLocation(DocumentType::Main) );
     return QUrl::fromLocalFile(dir.absolutePath());
 }
 
@@ -557,10 +555,10 @@ QUrl HelpWidget::getOnlineStartPageUrl()
 {
     support::CheckForUpdateWrapper c4uWrapper;
     if (!c4uWrapper.isValid())
-        return QUrl(LATEST_ONLINE_HELP_URL);
+        return HelpData::getLatestOnlineHelpUrl();
 
     if (c4uWrapper.distribIsLatest())
-        return QUrl(LATEST_ONLINE_HELP_URL);
+        return HelpData::getLatestOnlineHelpUrl();
     else
        return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
 }

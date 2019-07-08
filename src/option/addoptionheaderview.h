@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class AddOptionHeaderView : public QHeaderView
 {
@@ -31,7 +32,7 @@ class AddOptionHeaderView : public QHeaderView
 
 public:
     AddOptionHeaderView(Qt::Orientation orientation, QWidget* parent = nullptr);
-    ~AddOptionHeaderView();
+    ~AddOptionHeaderView() override;
 
 protected:
     bool event(QEvent *event) override;
@@ -40,8 +41,8 @@ protected:
 
 private:
     const QString iconStr = ":/img/plus";
-    const double ICON_SCALE_FACTOR = 0.6;
-    const double ICON_MARGIN_FACTOR = 0.5;
+    const double ICON_SCALE_FACTOR = 0.7;
+    const double ICON_MARGIN_FACTOR = 0.3;
 
     mutable int mIconWidth;
     mutable int mIconX;
@@ -51,6 +52,7 @@ private:
     bool isAddOptionCoordinate(QPoint p);
 };
 
+} // namepsage option
 } // namespace studio
 } // namespace gams
 

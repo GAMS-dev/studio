@@ -67,7 +67,7 @@ private:
     bool reload();
 
 private:
-    mutable QFile mFile;                // mutable to provide consistant logical const-correctness
+    mutable QFile mFile;        // mutable to provide consistant logical const-correctness
     mutable QMutex mMutex;
     mutable QTimer mTimer;
 

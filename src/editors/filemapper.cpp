@@ -40,6 +40,7 @@ FileMapper::FileMapper(QObject *parent): AbstractTextMapper(parent)
 
 FileMapper::~FileMapper()
 {
+    TRACE();
     closeFile();
 }
 
@@ -166,7 +167,9 @@ void FileMapper::closeFile()
 {
     QMutexLocker locker(&mMutex);
     mTimer.stop();
-    if (mFile.isOpen()) mFile.close();
+    if (mFile.isOpen()) {
+        mFile.close();
+    }
 }
 
 int FileMapper::lineCount() const
