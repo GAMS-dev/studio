@@ -75,9 +75,11 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
                 if (line.startsWith("Directory", Qt::CaseInsensitive)) // skip extra line containing the source directory of the model to be retrieved
                     line = in.readLine();
                 QStringList values;
+                for(int i=0; i<nrColumns; i++)
+                    values << "";
                 QString longDescription;
                 for (int i=0; i<nrColumns; i++) {
-                    values.append(line.split("=")[1].trimmed());
+                    values[line.split("=")[0].trimmed().toInt()-1] = line.split("=")[1].trimmed();
                     line = in.readLine();
                 }
                 while (!line.startsWith("*$*$*$") && !in.atEnd()) {
