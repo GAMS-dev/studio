@@ -200,7 +200,7 @@ void ProjectContextMenu::onAddExisitingFile()
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent,
                                                     "Add existing files",
                                                     sourcePath,
-                                                    tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *ref);;"
+                                                    tr("GAMS code (*.gms *.inc *.gdx *.lst);;"
                                                        "Option files (*.opt *.op* *.o*);;"
                                                        "Reference files (*.ref);;"
                                                        "Text files (*.txt);;"
