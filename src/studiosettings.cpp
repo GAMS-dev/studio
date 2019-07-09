@@ -23,7 +23,6 @@
 #include <QJsonDocument>
 #include <QDir>
 #include <QSettings>
-#include <QMutexLocker>
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
@@ -84,7 +83,6 @@ void StudioSettings::initDefaultColors()
 
 void StudioSettings::resetSettings()
 {
-    QMutexLocker locker(&mMutex);
     initSettingsFiles();
     initDefaultColors();
     mAppSettings->sync();
@@ -93,7 +91,6 @@ void StudioSettings::resetSettings()
 
 void StudioSettings::resetViewSettings()
 {
-    QMutexLocker locker(&mMutex);
     mAppSettings->beginGroup("mainWindow");
     mAppSettings->setValue("size", QSize(1024, 768));
     mAppSettings->setValue("pos", QPoint());
@@ -117,7 +114,6 @@ bool StudioSettings::resetSettingsSwitch()
 
 void StudioSettings::saveSettings(MainWindow *main)
 {
-    QMutexLocker locker(&mMutex);
     // return directly only if settings are ignored and not resettet
     if (mIgnoreSettings && !mResetSettings)
         return;
@@ -197,8 +193,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     saveDoc = QJsonDocument(jsonTabs);
     mAppSettings->setValue("openTabs", saveDoc.toJson(QJsonDocument::Compact));
     mAppSettings->endGroup();
-
     mAppSettings->sync();
+
 
     // User Settings
     mUserSettings->beginGroup("General");
@@ -242,7 +238,6 @@ void StudioSettings::saveSettings(MainWindow *main)
 
 void StudioSettings::loadViewStates(MainWindow *main)
 {
-    QMutexLocker locker(&mMutex);
     mAppSettings->beginGroup("settings");
     // TODO: write settings converter
     mAppSettings->value("version").toString();
@@ -327,7 +322,6 @@ int StudioSettings::compareVersion(QString currentVersion, QString otherVersion)
 
 void StudioSettings::loadUserSettings()
 {
-    QMutexLocker locker(&mMutex);
     mUserSettings->beginGroup("General");
 
     setDefaultWorkspace(mUserSettings->value("defaultWorkspace", CommonPaths::defaultWorkingDir()).toString());
@@ -380,7 +374,6 @@ void StudioSettings::setHistorySize(int historySize)
 
 void StudioSettings::restoreLastFilesUsed(MainWindow *main)
 {
-    QMutexLocker locker(&mMutex);
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->beginReadArray("lastOpenedFiles");
     main->history()->lastOpenedFiles.clear();
@@ -434,7 +427,6 @@ void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)
 {
-    QMutexLocker locker(&mMutex);
     bool res = true;
     mAppSettings->beginGroup("json");
     QByteArray saveData = mAppSettings->value("projects", "").toByteArray();

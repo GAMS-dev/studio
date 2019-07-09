@@ -24,12 +24,13 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionSortFilterProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    OptionSortFilterProxyModel(QObject *parent = 0);
+    OptionSortFilterProxyModel(QObject *parent = nullptr);
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
@@ -39,6 +40,7 @@ protected:
 
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

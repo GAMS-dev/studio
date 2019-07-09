@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OptionWidget</class>
- <widget class="QWidget" name="OptionWidget">
+ <class>gams::studio::option::OptionWidget</class>
+ <widget class="QWidget" name="gams::studio::option::OptionWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -101,7 +101,7 @@
        </widget>
       </item>
       <item>
-       <widget class="gams::studio::CommandLineOption" name="gamsOptionCommandLine">
+       <widget class="gams::studio::option::CommandLineOption" name="gamsOptionCommandLine">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -145,7 +145,14 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-        <widget class="QTableView" name="gamsOptionTableView"/>
+        <widget class="QTableView" name="gamsOptionTableView">
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::DragDrop</enum>
+         </property>
+         <property name="defaultDropAction">
+          <enum>Qt::CopyAction</enum>
+         </property>
+        </widget>
         <widget class="QWidget" name="gamsOptionDefinitionView" native="true">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">
@@ -184,7 +191,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>gams::studio::CommandLineOption</class>
+   <class>gams::studio::option::CommandLineOption</class>
    <extends>QComboBox</extends>
    <header>option/commandlineoption.h</header>
   </customwidget>

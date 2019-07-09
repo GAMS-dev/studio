@@ -21,7 +21,7 @@
 #define FILETYPE_H
 
 #include <QStringList>
-#include"common.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {

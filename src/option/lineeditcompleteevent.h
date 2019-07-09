@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class LineEditCompleteEvent : public QEvent
 {
@@ -41,6 +42,7 @@ private:
     static QEvent::Type LineEditCompleteEventType;
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 
