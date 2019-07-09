@@ -790,7 +790,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
         QString suffix = "opt";
         QString filename = QString("%1.%2").arg(solverName).arg(suffix);
         while (QFileInfo(path, filename).exists()) {
-            ++nr;
+            ++nr;  // note: "op1" is invalid
             if (nr<10) suffix = "op";
             else if (nr<100) suffix = "o";
             else suffix = "";
@@ -808,7 +808,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
                                                                "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite)
                              : QFileDialog::getSaveFileName(this, QString("Create %1 option file...").arg(solverName),
                                                             path,
-                                                            tr(QString("%1 option file (%1.*)").arg(solverName).toLatin1()),
+                                                            tr(QString("%1 option file (%1.*);;All files (*.*)").arg(solverName).toLatin1()),
                                                             nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
         if (filePath == "") return;
         QFileInfo fi(filePath);
