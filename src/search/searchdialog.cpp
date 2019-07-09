@@ -49,8 +49,6 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     ui->lbl_nrResults->setText("");
     ui->combo_search->setAutoCompletion(false);
     adjustSize();
-
-    connect(ui->combo_search->lineEdit(), &QLineEdit::returnPressed, this, &SearchDialog::returnPressed);
 }
 
 SearchDialog::~SearchDialog()
@@ -535,15 +533,6 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         on_btn_FindAll_clicked();
     }
     QDialog::keyPressEvent(e);
-}
-
-// this is a workaround for the QLineEdit field swallowing the first enter after a show event
-// leading to a search using the last search term instead of the current.
-void SearchDialog::returnPressed() {
-    if (mFirstReturn) {
-        findNext(SearchDialog::Forward);
-        mFirstReturn = false;
-    }
 }
 
 void SearchDialog::searchResume()
