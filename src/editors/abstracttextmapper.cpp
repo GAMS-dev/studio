@@ -31,7 +31,7 @@ namespace studio {
 AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 {
     mCodec = QTextCodec::codecForLocale();
-//    setMappingSizes();
+    setMappingSizes();
     setPosAbsolute(nullptr, 0, 0);
 }
 
@@ -97,8 +97,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     Chunk *chunk = setActiveChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
 
-    int remainingLines = debugMode() ? (bufferedLines()+1)/2 : bufferedLines();
-    // TODO(JM) simulate visibleLineCount/2 for debug mode
+    int remainingLines = debugMode() ? (bufferedLines()-1)/2 : bufferedLines()-1;
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -213,7 +212,7 @@ void AbstractTextMapper::updateLineOffsets(Chunk *chunk) const
 bool AbstractTextMapper::setMappingSizes(int visibleLines, int chunkSizeInBytes, int chunkOverlap)
 {
     // check constraints
-    mVisibleLineCount = qBound(10, visibleLines, 100);
+    mVisibleLineCount = qBound(20, visibleLines, 100);
     mMaxLineWidth = qBound(100, chunkOverlap, 10000);
     mChunkSize = qMax(chunkOverlap *8, chunkSizeInBytes);
     updateMaxTop();
@@ -222,9 +221,13 @@ bool AbstractTextMapper::setMappingSizes(int visibleLines, int chunkSizeInBytes,
 
 void AbstractTextMapper::setVisibleLineCount(int visibleLines)
 {
-    mVisibleLineCount = visibleLines;
+    mVisibleLineCount = qMax(visibleLines, 20);
     updateMaxTop();
-    // TODO(JM) invalidate view
+}
+
+int AbstractTextMapper::visibleLineCount() const
+{
+    return mVisibleLineCount;
 }
 
 bool AbstractTextMapper::setTopOffset(qint64 absPos)
@@ -329,7 +332,7 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         lineDelta /= 2;
     Chunk *chunk = setActiveChunk(mTopLine.chunkNr);
     if (!chunk) return 0;
-    if (mTopLine.absStart == 0) {
+    if (mTopLine.absStart == 0 && chunk->nr == 0) {
         // buffer is at absolute top
         int max = (mTopLine.absStart == mMaxTopLine.absStart) ? bufferedLines()-visibleLineCount()
                                                               : bufferedLines() / 3;
@@ -501,7 +504,10 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
         res.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
         interval.first += chunkInterval.second;
         interval.second -= chunkInterval.second;
-        if (chunk->nr == chunkCount()-1) break;
+        if (chunk->nr == chunkCount()-1) {
+            break;
+        }
+
     }
     return res;
     // get the text of the line
@@ -777,6 +783,11 @@ void AbstractTextMapper::dumpPos()
 }
 
 void AbstractTextMapper::dumpMetrics()
+{
+
+}
+
+void AbstractTextMapper::invalidate()
 {
 
 }

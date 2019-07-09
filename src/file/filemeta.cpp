@@ -304,6 +304,15 @@ void FileMeta::reload()
     load(mCodec->mibEnum(), false);
 }
 
+void FileMeta::invalidate()
+{
+    for (QWidget *wid: mEditors) {
+        if (TextView* tv = ViewHelper::toTextView(wid)) {
+            tv->invalidate();
+        }
+    }
+}
+
 void FileMeta::addEditor(QWidget *edit)
 {
     if (!edit) return;

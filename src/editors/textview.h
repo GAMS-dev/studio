@@ -68,6 +68,7 @@ public:
     void setLogParser(LogParser *logParser);
     void reset();
     void setDebugMode(bool debug);
+    void invalidate();
 
 signals:
     void addProcessData(const QByteArray &data);
@@ -99,6 +100,7 @@ private slots:
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
     void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QMap<int, LineFormat> &formats);
+    void recalcVisibleLines();          // JM: changes on Debug
 
 protected:
     friend class FileMeta;
@@ -106,7 +108,6 @@ protected:
     const LineMarks* marks() const;
 
     void resizeEvent(QResizeEvent *event) override;
-    void recalcVisibleLines();                          // JM: changes on Debug
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
     inline FileId fileId() {
@@ -129,7 +130,6 @@ private:
 
 private:
     TextKind mTextKind;
-    int mVisibleLines = 0;
     const int mDocChanging = 0;
     bool mInit = true;
     int mHScrollValue = 0;
@@ -152,7 +152,6 @@ private:
         ChangeKeeper(const int &_changeCounter) : changeCounter(const_cast<int&>(_changeCounter)) {++changeCounter;}
         ~ChangeKeeper() {--changeCounter;}
     };
-
 };
 
 } // namespace studio

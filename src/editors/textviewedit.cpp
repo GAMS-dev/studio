@@ -37,6 +37,9 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setLineWrapMode(QPlainTextEdit::NoWrap);
 //    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
+    mResizeTimer.setSingleShot(true);
+    mResizeTimer.setInterval(30);
+    connect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
 }
 
 void TextViewEdit::protectWordUnderCursor(bool protect)
@@ -192,6 +195,14 @@ void TextViewEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
         }
     }
     viewport()->setCursor(shape);
+}
+
+bool TextViewEdit::viewportEvent(QEvent *event)
+{
+    if (event->type() == QEvent::Resize) {
+        mResizeTimer.start();
+    }
+    return QAbstractScrollArea::viewportEvent(event);
 }
 
 bool TextViewEdit::existHRef(QString href)

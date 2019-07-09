@@ -42,6 +42,7 @@ signals:
     void updatePosAndAnchor();
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
+    void recalcVisibleLines();
 
 public slots:
     void copySelection() override;
@@ -58,6 +59,7 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void updateCursorShape(const Qt::CursorShape &defaultShape) override;
+    bool viewportEvent(QEvent *event) override;
 
 private:
     int topVisibleLine() override;
@@ -68,6 +70,7 @@ private:
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
     QPoint mHRefClickPos;
+    QTimer mResizeTimer;
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;

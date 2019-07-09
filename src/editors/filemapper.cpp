@@ -91,6 +91,8 @@ void FileMapper::closeAndReset()
 
     mSize = 0;
     reset();
+    setPosAbsolute(nullptr, 0, 0);
+    stopPeeking();
 }
 
 FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
@@ -158,7 +160,6 @@ void FileMapper::chunkUncached(AbstractTextMapper::Chunk *&chunk) const
 void FileMapper::startRun()
 {
     closeAndReset();
-    setMappingSizes();
 }
 
 void FileMapper::endRun()
@@ -186,6 +187,11 @@ int FileMapper::lineCount() const
     return int(res);
 }
 
+void FileMapper::invalidate()
+{
+    openFile(mFile.fileName(), true);
+}
+
 void FileMapper::peekChunksForLineNrs()
 {
     // peek and keep timer alive if not done
@@ -206,6 +212,15 @@ void FileMapper::peekChunksForLineNrs()
         emitBlockCountChanged();
         emit selectionChanged();
     }
+}
+
+void FileMapper::stopPeeking()
+{
+    mPeekTimer.stop();
+    mPeekTimer.setProperty("val", 0);
+    emit loadAmountChanged(knownLineNrs());
+    emitBlockCountChanged();
+    emit selectionChanged();
 }
 
 } // namespace studio

@@ -98,7 +98,7 @@ void AbstractEdit::updateExtraSelections()
     mSelUpdater.start();
 //    QList<QTextEdit::ExtraSelection> selections;
 //    extraSelMarks(selections);
-//    setExtraSelections(selections);
+    //    setExtraSelections(selections);
 }
 
 void AbstractEdit::setMarks(const LineMarks *marks)
@@ -261,12 +261,16 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
 {
     if (e == Hotkey::MoveViewLineUp) {
         verticalScrollBar()->setValue(verticalScrollBar()->value()-1);
+        e->accept();
     } else if (e == Hotkey::MoveViewLineDown) {
         verticalScrollBar()->setValue(verticalScrollBar()->value()+1);
+        e->accept();
     } else if (e == Hotkey::MoveViewPageUp) {
         verticalScrollBar()->setValue(verticalScrollBar()->value()-verticalScrollBar()->pageStep());
+        e->accept();
     } else if (e == Hotkey::MoveViewPageDown) {
         verticalScrollBar()->setValue(verticalScrollBar()->value()+verticalScrollBar()->pageStep());
+        e->accept();
     } else {
         QPlainTextEdit::keyPressEvent(e);
         if ((e->key() & 0x11111110) == 0x01000010)

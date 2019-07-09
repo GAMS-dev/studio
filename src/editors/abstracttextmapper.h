@@ -131,7 +131,7 @@ public:
 
     virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
     virtual void setVisibleLineCount(int visibleLines);                 // share FM + MM
-    virtual int visibleLineCount() const { return mVisibleLineCount; }  // share FM + MM
+    virtual int visibleLineCount() const;                               // share FM + MM
     virtual bool setVisibleTopLine(double region);                      // share FM + MM
     virtual bool setVisibleTopLine(int lineNr);                         // share FM + MM
     virtual int moveVisibleTopLine(int lineDelta);                      // share FM + MM
@@ -161,6 +161,7 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     void dumpMetrics();
+    virtual void invalidate();
 
 signals:
     void blockCountChanged();

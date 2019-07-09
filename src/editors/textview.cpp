@@ -45,16 +45,12 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     if (kind == MemoryText) {
         MemoryMapper* mm = new MemoryMapper();
         connect(this, &TextView::addProcessData, mm, &MemoryMapper::addProcessData);
-        mMapper = mm;
-        mMapper->setMappingSizes();
-//        mLinesAddedTimer.setSingleShot(true);
-//        mLinesAddedTimer.setInterval(0);
-//        connect(&mLinesAddedTimer, &QTimer::timeout, this, &TextView::contentChanged);
         connect(mm, &MemoryMapper::contentChanged, this, &TextView::contentChanged);
         connect(mm, &MemoryMapper::createMarks, this, &TextView::createMarks);
         connect(mm, &MemoryMapper::appendLines, this, &TextView::appendLines);
         connect(mm, &MemoryMapper::appendDisplayLines, this, &TextView::appendedLines);
         connect(mm, &MemoryMapper::setLstErrorText, this, &TextView::setLstErrorText);
+        mMapper = mm;
     }
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
@@ -64,7 +60,6 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
-
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
     connect(mEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextView::editScrollChanged);
@@ -75,6 +70,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit, &TextViewEdit::searchFindPrevPressed, this, &TextView::searchFindPrevPressed);
     connect(mEdit, &TextViewEdit::hasHRef, this, &TextView::hasHRef);
     connect(mEdit, &TextViewEdit::jumpToHRef, this, &TextView::jumpToHRef);
+    connect(mEdit, &TextViewEdit::recalcVisibleLines, this, &TextView::recalcVisibleLines);
     connect(mMapper, &AbstractTextMapper::loadAmountChanged, this, &TextView::loadAmountChanged);
     connect(mMapper, &AbstractTextMapper::blockCountChanged, this, &TextView::blockCountChanged);
     connect(mMapper, &AbstractTextMapper::selectionChanged, this, &TextView::selectionChanged);
@@ -108,6 +104,7 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
     if (!static_cast<FileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
     updateVScrollZone();
     mMapper->setMappingSizes();
+    recalcVisibleLines();
     if (initAnchor)
         mMapper->setVisibleTopLine(0);
     topLineMoved();
@@ -153,8 +150,7 @@ bool TextView::jumpTo(int lineNr, int charNr, int length)
         topLineMoved();
         vTop = mMapper->absTopLine()+mMapper->visibleOffset();
     }
-    if (length != 0)
-        mMapper->setPosRelative(lineNr - mMapper->absTopLine(), charNr + length, QTextCursor::KeepAnchor);
+    mMapper->setPosRelative(lineNr - mMapper->absTopLine(), charNr + length, QTextCursor::MoveAnchor);
     updatePosAndAnchor();
     emit selectionChanged();
     setFocus();
@@ -254,10 +250,10 @@ void TextView::adjustOuterScrollAction()
         mMapper->moveVisibleTopLine(1);
         break;
     case QScrollBar::SliderPageStepSub:
-        mMapper->moveVisibleTopLine(-mVisibleLines+1);
+        mMapper->moveVisibleTopLine(-mMapper->visibleLineCount()+1);
         break;
     case QScrollBar::SliderPageStepAdd:
-        mMapper->moveVisibleTopLine(mVisibleLines-1);
+        mMapper->moveVisibleTopLine(mMapper->visibleLineCount()-1);
         break;
     case QScrollBar::SliderMove: {
         int lineNr = verticalScrollBar()->sliderPosition() - verticalScrollBar()->minimum();
@@ -287,14 +283,13 @@ void TextView::editScrollChanged()
 void TextView::resizeEvent(QResizeEvent *event)
 {
     QAbstractScrollArea::resizeEvent(event);
-    recalcVisibleLines();
+//    recalcVisibleLines();
 }
 
 void TextView::recalcVisibleLines()
 {
-    mVisibleLines = (mEdit->height() - mEdit->contentsMargins().top() - mEdit->contentsMargins().bottom())
-            / mEdit->fontMetrics().height();
-    mMapper->setVisibleLineCount(mVisibleLines);
+    int visibleLines = mEdit->viewport()->height() / mEdit->fontMetrics().height();
+    mMapper->setVisibleLineCount(visibleLines);
     updateVScrollZone();
 }
 
@@ -330,10 +325,10 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         mMapper->moveVisibleTopLine(1);
         break;
     case Qt::Key_PageUp:
-        mMapper->moveVisibleTopLine(-mVisibleLines+1);
+        mMapper->moveVisibleTopLine(-mMapper->visibleLineCount()+1);
         break;
     case Qt::Key_PageDown:
-        mMapper->moveVisibleTopLine(mVisibleLines-1);
+        mMapper->moveVisibleTopLine(mMapper->visibleLineCount()-1);
         break;
     case Qt::Key_Home:
         mMapper->setVisibleTopLine(0);
@@ -376,13 +371,13 @@ void TextView::init()
 void TextView::updateVScrollZone()
 {
     int count = mMapper->lineCount();
-    verticalScrollBar()->setPageStep(mVisibleLines);
+    verticalScrollBar()->setPageStep(mMapper->visibleLineCount());
     if (count < 0) { // estimated lines count
-        verticalScrollBar()->setMinimum(qMin(count+mVisibleLines-1, 0));
+        verticalScrollBar()->setMinimum(qMin(count+mMapper->visibleLineCount()-1, 0));
         verticalScrollBar()->setMaximum(0);
     } else { // known lines count
         verticalScrollBar()->setMinimum(0);
-        verticalScrollBar()->setMaximum(qMax(count-mVisibleLines+1, 0));
+        verticalScrollBar()->setMaximum(qMax(count-mMapper->visibleLineCount()+1, 0));
     }
     syncVScroll();
 }
@@ -558,6 +553,11 @@ void TextView::setDebugMode(bool debug)
         mMapper->setDebugMode(debug);
         topLineMoved();
     }
+}
+
+void TextView::invalidate()
+{
+    recalcVisibleLines();
 }
 
 void TextView::reset()
