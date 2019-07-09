@@ -123,6 +123,9 @@
        <property name="contextMenuPolicy">
         <enum>Qt::DefaultContextMenu</enum>
        </property>
+       <property name="toolTip">
+        <string>Hide/Show specific value columns</string>
+       </property>
        <property name="text">
         <string>Value Columns</string>
        </property>
@@ -158,6 +161,9 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="toolTip">
+        <string>Toggle between List View and Table View</string>
+       </property>
        <property name="text">
         <string>Table View</string>
        </property>
@@ -172,6 +178,9 @@
      </item>
      <item>
       <widget class="QSpinBox" name="sbPrecision">
+       <property name="toolTip">
+        <string>Adjust the maximum number of decimals</string>
+       </property>
        <property name="wrapping">
         <bool>true</bool>
        </property>
@@ -191,6 +200,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="cbSqueezeZeroes">
+       <property name="toolTip">
+        <string>Remove trailing zeroes</string>
+       </property>
        <property name="text">
         <string>Squeeze Trailing Zeroes</string>
        </property>
