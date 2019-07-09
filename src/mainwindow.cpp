@@ -804,7 +804,6 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
                              ? QFileDialog::getSaveFileName(this, "Create new file...",
                                                             path,
                                                             tr("GAMS code (*.gms *.inc );;"
-                                                               "Option files (*.opt *.op* *.o*);;"
                                                                "Text files (*.txt);;"
                                                                "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite)
                              : QFileDialog::getSaveFileName(this, QString("Create %1 option file...").arg(solverName),
