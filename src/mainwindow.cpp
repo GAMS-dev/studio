@@ -1392,7 +1392,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
     if (exitCode == 110) {
         QMessageBox msgBox;
-        msgBox.setWindowTitle("No available scratch directories");
+        msgBox.setWindowTitle("Delete scratch directories");
         msgBox.setText("GAMS was unable to run because there are too many scratch directories "
                        "in the current workspace folder. Clean up your workspace and try again.");
         msgBox.setInformativeText("Delete scratch directories now?");
@@ -1400,7 +1400,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 
         if (msgBox.exec() == QMessageBox::Yes)
-            on_actionCleanWorkspace_triggered();
+            deleteScratchDirs();
     }
 
     // add all created files to project explorer
@@ -3225,7 +3225,19 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
     mTextMarkRepo.removeBookmarks();
 }
 
-void MainWindow::on_actionCleanWorkspace_triggered()
+void MainWindow::on_actionDeleteScratchDirs_triggered()
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Delete scratch directories");
+    msgBox.setText("Delete scratch directories now?");
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+    if (msgBox.exec() == QMessageBox::Yes)
+        deleteScratchDirs();
+}
+
+void MainWindow::deleteScratchDirs()
 {
     QDirIterator it(SettingsLocator::settings()->defaultWorkspace(), QDir::Dirs, QDirIterator::FollowSymlinks);
 

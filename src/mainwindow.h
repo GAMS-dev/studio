@@ -286,7 +286,7 @@ private slots:
     void on_actionNextBookmark_triggered();
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
-    void on_actionCleanWorkspace_triggered();
+    void on_actionDeleteScratchDirs_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -326,6 +326,7 @@ private:
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
     void initToolBar();
     void updateToolbar(QWidget* current);
+    void deleteScratchDirs();
 
 private:
     QTime mTestTimer;
