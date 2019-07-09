@@ -1806,7 +1806,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     }
 
     // focus shortcuts
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_H)) {
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_E)) {
         activateWindow();
         if (mRecent.editor()) mRecent.editor()->setFocus();
 
