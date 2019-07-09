@@ -786,7 +786,17 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
         while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
         path += QString("/new%1.gms").arg(nr);
     } else {
-        path = QDir(QFileInfo(path).absolutePath()).filePath(QString("%1.opt").arg(solverName));
+        int nr = 1;
+        QString suffix = "opt";
+        QString filename = QString("%1.%2").arg(solverName).arg(suffix);
+        while (QFileInfo(path, filename).exists()) {
+            ++nr;
+            if (nr<10) suffix = "op";
+            else if (nr<100) suffix = "o";
+            else suffix = "";
+            filename = QString("%1.%2%3").arg(solverName).arg(suffix).arg(nr);
+        }
+        path += QString("%1%2").arg("/").arg(filename);
     }
     int choice = 4;
     while (choice == 4) {
