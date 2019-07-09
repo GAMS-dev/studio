@@ -362,8 +362,11 @@ QVariant GdxSymbol::formatValue(double val) const
             if (str.contains('e'))
                 str = QString::number(val, 'g', prec+1);
             else {
-                int log10 = qMax(0, int(ceil( log2(qAbs(val)) / log2(10) ))); // calculate digits before decimal separator
-                str = QString::number(val, 'g', prec+log10);
+                str = QString::number(val, 'f', prec);
+                while (str.back() == '0')
+                    str.chop(1);
+                if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
+                    str.chop(1);
             }
         } else {
             if (str.contains('e'))
