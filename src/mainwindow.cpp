@@ -919,23 +919,32 @@ void MainWindow::on_actionSave_As_triggered()
     QFileInfo fi(filePath);
     while (choice < 1) {
         QStringList filters;
-        filters << tr("GAMS code (*.gms *.inc *.log *.gdx *.opt *.ref)");
-        filters << tr("Text files (*.txt)");
-        filters << tr("All files (*.*)");
-        QString *selFilter = &filters.last();
-        if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
-        if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
-        filePath = QFileDialog::getSaveFileName(this, "Save file as...",
-                                                filePath, filters.join(";;"),
-                                                selFilter,
-                                                QFileDialog::DontConfirmOverwrite);
+        if (fileMeta->kind() == FileKind::Opt) {
+            filters << tr( QString("%1 option files (%1.*)").arg(fi.baseName()).toLatin1() );
+            filters << tr("All files (*.*)");
+            filePath = QFileDialog::getSaveFileName(this, "Save file as...",
+                                                    filePath, filters.join(";;"),
+                                                    &filters.first(),
+                                                    QFileDialog::DontConfirmOverwrite);
+        } else {
+            filters << tr("GAMS code (*.gms *.inc *.log *.gdx *.ref)");
+            filters << tr("Text files (*.txt)");
+            filters << tr("All files (*.*)");
+            QString *selFilter = &filters.last();
+            if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
+            if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
+            filePath = QFileDialog::getSaveFileName(this, "Save file as...",
+                                                    filePath, filters.join(";;"),
+                                                    selFilter,
+                                                    QFileDialog::DontConfirmOverwrite);
+        }
         if (filePath.isEmpty()) return;
 
         choice = 1;
         if ( fileMeta->kind() == FileKind::Opt  &&
-             QString::compare(QFileInfo(fileMeta->location()).completeBaseName(), QFileInfo(filePath).completeBaseName(), Qt::CaseInsensitive)!=0 )
+             QString::compare(fi.baseName(), QFileInfo(filePath).completeBaseName(), Qt::CaseInsensitive)!=0 )
             choice = QMessageBox::question(this, "Different solver name"
-                                               , QString("Solver option file name '%1' is different than source option file name '%2'. Saved file '%3' may not be displayed properly.")
+                                               , QString("The option file name '%1' is different than source option file name '%2'. Saved file '%3' may not be displayed properly.")
                                                       .arg(QFileInfo(filePath).completeBaseName()).arg(QFileInfo(fileMeta->location()).completeBaseName()).arg(QFileInfo(filePath).fileName())
                                                , "Select other", "Continue", "Abort", 0, 2);
         if (choice == 0)
@@ -948,7 +957,7 @@ void MainWindow::on_actionSave_As_triggered()
             if (fileMeta->kind() == FileKind::Opt)
                 choice = QMessageBox::question(this, "Invalid Option File Suffix"
                                                    , QString("'%1' is not a valid option file suffix. Saved file '%2' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(fileMeta->location()).suffix()).arg(QFileInfo(filePath).fileName())
+                                                          .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(filePath).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
             else
                 choice = QMessageBox::question(this, "Different File Type"
