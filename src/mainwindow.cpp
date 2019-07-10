@@ -796,7 +796,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             else suffix = "";
             filename = QString("%1.%2%3").arg(solverName).arg(suffix).arg(nr);
         }
-        path += QString("%1%2").arg("/").arg(filename);
+        path += QString("/%1").arg(filename);
     }
     int choice = 4;
     while (choice == 4) {
@@ -808,7 +808,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
                                                                "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite)
                              : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
                                                             path,
-                                                            tr(QString("%1 option file (%1.*);;All files (*.*)").arg(solverName).toLatin1()),
+                                                            tr(QString("%1 option file (%1*);;All files (*)").arg(solverName).toLatin1()),
                                                             nullptr, QFileDialog::DontConfirmOverwrite);
         if (filePath == "") return;
         QFileInfo fi(filePath);
