@@ -809,7 +809,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
                              : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
                                                             path,
                                                             tr(QString("%1 option file (%1.*);;All files (*.*)").arg(solverName).toLatin1()),
-                                                            nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
+                                                            nullptr, QFileDialog::DontConfirmOverwrite);
         if (filePath == "") return;
         QFileInfo fi(filePath);
         if (fi.suffix().isEmpty())
