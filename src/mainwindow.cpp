@@ -1504,6 +1504,28 @@ void MainWindow::on_actionAbout_Qt_triggered()
     QMessageBox::aboutQt(this, "About Qt");
 }
 
+void MainWindow::on_actionChangelog_triggered()
+{
+    QString data;
+    QString fileName("../../CHANGELOG");
+
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly)) {
+        qDebug()<<"Changelog file was not found"<<endl;
+    }
+    else
+    {
+        data = file.readAll();
+        QMessageBox changeLogBox;
+        changeLogBox.setText(data);
+        changeLogBox.setWindowTitle("ChangeLog");
+        QPixmap pm(QLatin1String("../../icons/gamslogo.svg"));
+        changeLogBox.setIconPixmap(pm);
+        changeLogBox.exec();
+    }
+    file.close();
+}
+
 void MainWindow::on_actionUpdate_triggered()
 {
     support::UpdateDialog updateDialog(this);
@@ -3215,3 +3237,4 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 
 }
 }
+

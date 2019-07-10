@@ -349,4 +349,5 @@ OTHER_FILES +=              \
     ../jenkinsfile          \
     ../jenkinsfile-ci       \
     ../gamsstudio.desktop   \
-    ../version
+    ../version              \
+    ../CHANGELOG

@@ -287,6 +287,8 @@ private slots:
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
 
+    void on_actionChangelog_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);
