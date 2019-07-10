@@ -920,8 +920,8 @@ void MainWindow::on_actionSave_As_triggered()
     while (choice < 1) {
         QStringList filters;
         if (fileMeta->kind() == FileKind::Opt) {
-            filters << tr( QString("%1 option files (%1.*)").arg(fi.baseName()).toLatin1() );
-            filters << tr("All files (*.*)");
+            filters << tr( QString("%1 option files (%1*)").arg(fi.baseName()).toLatin1() );
+            filters << tr("All files (*)");
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
                                                     filePath, filters.join(";;"),
                                                     &filters.first(),
