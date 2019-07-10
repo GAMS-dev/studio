@@ -54,7 +54,7 @@ public:
     virtual QString location() const;
     QString tooltip() override;
     virtual QString lstErrorText(int line);
-    ProjectFileNode *findFile(const QString &location, bool recurse = true) const;
+    ProjectFileNode *findFile(QString location, bool recurse = true) const;
     ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
     ProjectRunGroupNode *findRunGroup(FileId runId) const;
@@ -134,7 +134,7 @@ private:
 
 private:
     QString cleanPath(QString path, QString file);
-    void setLogLocation(const QString& path);
+    void setLogLocation(QString path);
 };
 
 
