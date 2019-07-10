@@ -806,7 +806,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
                                                             tr("GAMS code (*.gms *.inc );;"
                                                                "Text files (*.txt);;"
                                                                "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite)
-                             : QFileDialog::getSaveFileName(this, QString("Create %1 option file...").arg(solverName),
+                             : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
                                                             path,
                                                             tr(QString("%1 option file (%1.*);;All files (*.*)").arg(solverName).toLatin1()),
                                                             nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
