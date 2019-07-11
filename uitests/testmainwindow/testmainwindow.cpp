@@ -33,6 +33,11 @@ void testmainwindow::initTestCase()
     mMainWindow = new MainWindow();
     QVERIFY(mMainWindow);
 
+    // make sure a file to work with is there
+    mGms = QFileInfo(mSettings->defaultWorkspace()+"/trnsport.gms");
+    if (!mGms.exists())
+        mMainWindow->receiveModLibLoad("trnsport");
+    Q_ASSERT(mGms.exists());
 }
 
 void testmainwindow::cleanupTestCase()
