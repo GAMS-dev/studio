@@ -1395,7 +1395,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         msgBox.setWindowTitle("Delete scratch directories");
         msgBox.setText("GAMS was unable to run because there are too many scratch directories "
                        "in the current workspace folder. Clean up your workspace and try again.\n"
-                       "The current workspace directory is " + mSettings->defaultWorkspace());
+                       "The current working directory is " + QDir::toNativeSeparators(mSettings->defaultWorkspace()));
         msgBox.setInformativeText("Delete scratch directories now?");
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
@@ -3231,7 +3231,7 @@ void MainWindow::on_actionDeleteScratchDirs_triggered()
     QMessageBox msgBox;
     msgBox.setWindowTitle("Delete scratch directories");
     msgBox.setText("This will delete all scratch directories in your current workspace.\n"
-                   "The current workspace directory is " + mSettings->defaultWorkspace());
+                   "The current working directory is " + QDir::toNativeSeparators(mSettings->defaultWorkspace()));
     msgBox.setInformativeText("Delete scratch directories now?");
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
