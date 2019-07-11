@@ -2519,6 +2519,11 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
+    openSearchDialog();
+}
+
+void MainWindow::openSearchDialog()
+{
     if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
 #ifdef QWEBENGINE

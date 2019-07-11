@@ -33,6 +33,8 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
 
+    void test_search();
+
 private:
     MainWindow* mMainWindow = nullptr;
     StudioSettings* mSettings = nullptr;

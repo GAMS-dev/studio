@@ -131,6 +131,7 @@ public:
     void ensureInScreen();
     void setExtendedEditorVisibility(bool visible);
     void resetLoadAmount();
+    void openSearchDialog();
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;

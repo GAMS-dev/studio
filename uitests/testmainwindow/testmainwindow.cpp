@@ -21,6 +21,7 @@
 #include "studiosettings.h"
 #include "locators/settingslocator.h"
 #include "modeldialog/modeldialog.h"
+#include "search/searchdialog.h"
 
 #include <QDialog>
 #include <QToolBar>
@@ -46,5 +47,17 @@ void testmainwindow::cleanupTestCase()
     delete mSettings;
 }
 
+void testmainwindow::test_search()
+{
+    mMainWindow->openFilePath(mGms.filePath(), true);
+    Q_ASSERT(mMainWindow->recent()->editor());
+    QVERIFY2(mMainWindow->recent()->editor()->property("location").toString() == mGms.filePath(), "Wrong file focussed.");
+
+    SearchDialog* sd = mMainWindow->findChild<SearchDialog*>("SearchDialog");
+
+    QVERIFY2(!sd->isVisible(), "Search Dialog already visible. Something is wrong.");
+    mMainWindow->openSearchDialog();
+    QVERIFY2(sd->isVisible(), "Search Dialog not visible. Something is wrong.");
+}
 
 QTEST_MAIN(testmainwindow)
