@@ -179,7 +179,7 @@ private slots:
     void fileClosed(const FileId fileId);
     void fileEvent(const FileEvent &e);
     void processFileEvents();
-    void postGamsRun(NodeId origin);
+    void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
     void closeGroup(ProjectGroupNode* group);
     void closeNodeConditionally(ProjectFileNode *node);
@@ -286,6 +286,7 @@ private slots:
     void on_actionNextBookmark_triggered();
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
+    void on_actionDeleteScratchDirs_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -325,6 +326,7 @@ private:
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
     void initToolBar();
     void updateToolbar(QWidget* current);
+    void deleteScratchDirs();
 
 private:
     QTime mTestTimer;

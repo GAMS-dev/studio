@@ -21,7 +21,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QApplication>
-#include <QMessageBox>
 
 #include "projectrepo.h"
 #include "exception.h"
