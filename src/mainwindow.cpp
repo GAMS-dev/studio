@@ -2554,14 +2554,12 @@ void MainWindow::on_actionSearch_triggered()
                gdx->selectSearchField();
                return;
            }
-           if (fc->file()->kind() == FileKind::Ref) {
-               reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor());
+           if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor())) {
                refViewer->selectSearchField();
                return;
            }
-           if (fc->file()->kind() == FileKind::Opt) {
-               option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(mRecent.editor());
-               solverOptionEditor->selectSearchField();
+           if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+               sow->selectSearchField();
                return;
            }
        }
@@ -2767,8 +2765,7 @@ void MainWindow::on_actionCopy_triggered()
     if (fm->kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
         gdx->copyAction();
-    } else if (fm->kind() == FileKind::Opt) {
-        option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor());
+    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->copy();
