@@ -1,6 +1,22 @@
-Version 0.11.5
-========================
+Version 0.12.1 
+===================
+## General 
+- changed focus main editor shortcut to CTRL+E (there was a collision on macOS)
+- added file associations and icons for .gms and .gdx files on macOS
+- fixed potential issue with doubled entries in project explorer on windows systems (#1053)
+- added dialog for GAMS return code 110 (too many scratch dirs) (#254)
+- added menu entry to delete scratch directories in current working directory (#254) 
+ 
+## Solver Option Editor
+- fixed crash when using one of the following shortcuts: CTRL+C, CTRL+A or CTRL+F
 
-- performance improvements for GDX Table View adjust columns
-- fixed crash related to GDX table view
+## GDX Viewer 
+- performance improvements for GDX Viewer table view adjust columns (#1034)
+- fixed possible crash related to table view (#1048) 
+
+## Code Editor 
+- fixed issue where error highlighting would not update when clicking on the scrollbar (#1056) 
+
+## Search 
+- fixed crash in search dialog when pressing return the first time (#1058)
 

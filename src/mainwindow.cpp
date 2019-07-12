@@ -1404,17 +1404,20 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
     }
 
     if (exitCode == GAMSRETRN_TOO_MANY_SCRATCH_DIRS) {
+        ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+        QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+
         QMessageBox msgBox;
         msgBox.setWindowTitle("Delete scratch directories");
         msgBox.setText("GAMS was unable to run because there are too many scratch directories "
                        "in the current workspace folder. Clean up your workspace and try again.\n"
-                       "The current working directory is " + QDir::toNativeSeparators(mSettings->defaultWorkspace()));
+                       "The current working directory is " + path);
         msgBox.setInformativeText("Delete scratch directories now?");
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 
         if (msgBox.exec() == QMessageBox::Yes)
-            deleteScratchDirs();
+            deleteScratchDirs(path);
     }
 
     // add all created files to project explorer
@@ -3268,21 +3271,26 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 
 void MainWindow::on_actionDeleteScratchDirs_triggered()
 {
+    ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+    QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+
     QMessageBox msgBox;
     msgBox.setWindowTitle("Delete scratch directories");
     msgBox.setText("This will delete all scratch directories in your current workspace.\n"
-                   "The current working directory is " + QDir::toNativeSeparators(mSettings->defaultWorkspace()));
+                   "The current working directory is " + path);
     msgBox.setInformativeText("Delete scratch directories now?");
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 
     if (msgBox.exec() == QMessageBox::Yes)
-        deleteScratchDirs();
+        deleteScratchDirs(path);
 }
 
-void MainWindow::deleteScratchDirs()
+void MainWindow::deleteScratchDirs(const QString &path)
 {
-    QDirIterator it(SettingsLocator::settings()->defaultWorkspace(), QDir::Dirs, QDirIterator::FollowSymlinks);
+    if (path.isEmpty()) return;
+
+    QDirIterator it(path, QDir::Dirs, QDirIterator::FollowSymlinks);
 
     QRegularExpression scratchDir("[\\/\\\\]225\\w\\w?$");
     while (it.hasNext()) {
