@@ -1,6 +1,28 @@
-Version 0.11.5
+Version 0.12.1
 ========================
 
-- performance improvements for GDX Table View adjust columns
-- fixed crash related to GDX table view
+## General
+- **added GAMS Solver Option Editor (requires GAMS 27.0)**
+- fixed crash when running studio with --ignore-settings and double clicking a word (#1031)
+- fixed freeze when exiting studio during startup procedure
+- added Ctrl+E to focus main editor
+- added Ctrl+Shift+G to focus logs
+- added Esc to close several widgets
+- added icons to toolbar to show/hide project explorer, logs, and help
+- adjusted row height of all tables to be equal (#1002)
+- discarded file stays marked as modified (#1018)
+- added file associations and icons for .gms and .gdx files on macOS
+- fixed potential issue with doubled entries in project explorer on windows systems (#1053)
+- added dialog for GAMS return code 110 (too many scratch dirs) (#254)
+- added menu entry to delete scratch directories in current working directory (#254)
+
+## GDX Viewer
+- performance improvements for GDX Viewer table view adjust columns (#1034)
+- fixed possible crash related to table view (#1048)
+
+## Code Editor
+- fixed issue where error highlighting would not update when clicking on the scrollbar (#1056)
+
+## Search
+- fixed cursor not jumping to first match on first try in lst file (#1039)
 
