@@ -41,7 +41,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     addActions();
     mOptionTokenizer = new OptionTokenizer(QString("optgams.def"));
-//    mCommandLineHistory = new CommandLineHistory(this);
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
     setInterruptActionGroup(aInterrupt, actionStop);
@@ -767,13 +766,6 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
 
 void OptionWidget::addActions()
 {
-//    QAction* selectAll = mContextMenu.addAction("Select All", [this]() { ui->gamsOptionTableView->selectAll(); });
-//    selectAll->setObjectName("actionSelect_all");
-//    selectAll->setShortcut( QKeySequence("Ctrl+A") );
-//    selectAll->setShortcutVisibleInContextMenu(true);
-//    selectAll->setShortcutContext(Qt::WidgetShortcut);
-//    ui->gamsOptionTableView->addAction(selectAll);
-
     QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Parameter", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
     insertOptionAction->setShortcut( QKeySequence("Ctrl+Insert") );
