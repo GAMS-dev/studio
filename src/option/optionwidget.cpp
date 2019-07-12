@@ -773,7 +773,7 @@ void OptionWidget::addActions()
 //    selectAll->setShortcutContext(Qt::WidgetShortcut);
 //    ui->gamsOptionTableView->addAction(selectAll);
 
-    QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Option", [this]() { insertOption(); });
+    QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Parameter", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
     insertOptionAction->setShortcut( QKeySequence("Ctrl+Insert") );
     insertOptionAction->setShortcutVisibleInContextMenu(true);
@@ -787,7 +787,7 @@ void OptionWidget::addActions()
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(deleteAction);
 
-    QAction* deleteAllAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete All Options", [this]() { deleteAllOptions(); });
+    QAction* deleteAllAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete All Parameters", [this]() { deleteAllOptions(); });
     deleteAllAction->setObjectName("actionDeleteAll_option");
     deleteAllAction->setShortcut( QKeySequence("Alt+Delete") );
     deleteAllAction->setShortcutVisibleInContextMenu(true);
@@ -808,14 +808,14 @@ void OptionWidget::addActions()
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(moveDownAction);
 
-    QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
+    QAction* showDefinitionAction = mContextMenu.addAction("show Parameter Definition", [this]() { showOptionDefinition(); });
     showDefinitionAction->setObjectName("actionShowDefinition_option");
     showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(showDefinitionAction);
 
-    QAction* findThisOptionAction = mContextMenu.addAction("show Selection of This Option", [this]() {
+    QAction* findThisOptionAction = mContextMenu.addAction("show Selection of This Parameter", [this]() {
         findAndSelectionOptionFromDefinition();
     });
     findThisOptionAction->setObjectName("actionFindThisOption");
@@ -824,7 +824,7 @@ void OptionWidget::addActions()
     findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTreeView->addAction(findThisOptionAction);
 
-    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Option", [this]() {
+    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Parameter", [this]() {
         QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
             addOptionFromDefinition(selection.at(0));
@@ -835,7 +835,7 @@ void OptionWidget::addActions()
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTreeView->addAction(addThisOptionAction);
 
-    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "remove This Option", [this]() {
+    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "remove This Parameter", [this]() {
         findAndSelectionOptionFromDefinition();
         deleteOption();
     });
