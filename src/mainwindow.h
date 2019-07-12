@@ -328,7 +328,7 @@ private:
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
     void initToolBar();
     void updateToolbar(QWidget* current);
-    void deleteScratchDirs();
+    void deleteScratchDirs(const QString& path);
 
 private:
     QTime mTestTimer;
