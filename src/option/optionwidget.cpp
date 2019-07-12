@@ -92,14 +92,9 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
-    if (ui->gamsOptionTableView->model()->rowCount()<=0)
-        ui->gamsOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1) );
-    else
-        ui->gamsOptionTableView->resizeColumnsToContents();
-
-    ui->gamsOptionTableView->setTabKeyNavigation(false);
-
+    ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, this, &OptionWidget::on_optionTableModelChanged);
     connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);

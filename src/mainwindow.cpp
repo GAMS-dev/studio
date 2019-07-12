@@ -169,6 +169,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
 
+    connect(ui->dockProjectView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockLogView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockHelpView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+
+
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
@@ -199,10 +204,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logTabs->setCornerWidget(tabMenu);
 
     // shortcuts
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleDebugMode()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
@@ -693,13 +694,25 @@ void MainWindow::showTabsMenu()
 
 void MainWindow::focusCmdLine()
 {
+    raise();
+    activateWindow();
     mGamsOptionWidget->focus();
 }
 
 void MainWindow::focusProjectExplorer()
 {
     setProjectViewVisibility(true);
-    ui->projectView->setFocus(Qt::ShortcutFocusReason);
+    ui->dockProjectView->activateWindow();
+    ui->dockProjectView->raise();
+    ui->projectView->setFocus();
+}
+
+void MainWindow::focusProcessLogs()
+{
+    setOutputViewVisibility(true);
+    ui->dockLogView->activateWindow();
+    ui->dockLogView->raise();
+    ui->logTabs->currentWidget()->setFocus();
 }
 
 void MainWindow::updateEditorPos()
@@ -1549,7 +1562,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        fc->setModified(false);
+        if (fc->document())
+            fc->document()->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;
@@ -1806,16 +1820,26 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         e->accept(); return;
     }
 
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_H)) {
+    // focus shortcuts
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_E)) {
+        activateWindow();
         if (mRecent.editor()) mRecent.editor()->setFocus();
 
         e->accept(); return;
-    }
-
-    if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
-        if (outputViewVisibility() == false) setOutputViewVisibility(true);
-        ui->dockLogView->raise();
-        ui->logTabs->currentWidget()->setFocus();
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
+        focusProjectExplorer();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_K)) {
+        showTabsMenu();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
+        focusCmdLine();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
+        toggleDebugMode();
+        e->accept(); return;
+    } else if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
+        focusProcessLogs();
         e->accept(); return;
     }
 
@@ -1854,6 +1878,25 @@ void MainWindow::dropEvent(QDropEvent* e)
         }
         openFiles(pathList);
     }
+}
+
+void MainWindow::dockTopLevelChanged(bool)
+{
+    QDockWidget* dw = static_cast<QDockWidget*>(QObject::sender());
+    if (dw->isFloating()) {
+        dw->installEventFilter(this);
+    } else
+        dw->removeEventFilter(this);
+}
+
+bool MainWindow::eventFilter(QObject*, QEvent* event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        keyPressEvent(keyEvent);
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::openFiles(QStringList files, bool forceNew)

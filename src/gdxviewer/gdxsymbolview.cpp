@@ -302,8 +302,11 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::autoResizeColumns()
 {
-    if (mTableView)
-        ui->tvTableView->resizeColumnsToContents();
+    if (mTableView) {
+        ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
+        for (int i=0; i<mTVResizeColNr; i++)
+            ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+    }
     else
         ui->tvListView->resizeColumnsToContents();
 }
@@ -331,7 +334,7 @@ void GdxSymbolView::showTableView()
     ui->tvListView->hide();
     ui->tvTableView->show();
     mTableView = true;
-    ui->tvTableView->resizeColumnsToContents();
+    autoResizeColumns();
 }
 
 void GdxSymbolView::toggleView()
