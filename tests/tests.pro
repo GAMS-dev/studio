@@ -20,9 +20,18 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += testcommonpaths \
-           testeditors \
-           testservicelocators \
-           testcheckforupdatewrapper \
-           testtextmapper \
-           testblockcode
+SUBDIRS += testcommonpaths              \
+           testeditors                  \
+           testservicelocators          \
+           testgamslicenseinfo          \
+           testcheckforupdatewrapper    \
+           testtextmapper               \
+           testblockcode                \
+           testgamsoption               \
+           testcplexoption              \
+           testconopt4option            \
+           testminosoption              \
+           testgurobioption             \
+           testoptionapi                \
+           testdoclocation
+

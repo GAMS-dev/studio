@@ -18,23 +18,30 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QIcon>
+#include <QDebug>
 #include "option.h"
-#include "optiontablemodel.h"
+#include "gamsoptiontablemodel.h"
 
 namespace gams {
 namespace studio {
+namespace option {
 
-OptionTableModel::OptionTableModel(const QString normalizedCommandLineStr, CommandLineTokenizer* tokenizer, QObject* parent):
-    QAbstractTableModel(parent), commandLineTokenizer(tokenizer)
+GamsOptionTableModel::GamsOptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
+    QAbstractTableModel(parent), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(true)
 {
-    Q_UNUSED(normalizedCommandLineStr);
-    mHeader.append("Key");
-    mHeader.append("Value");
+    mHeader << "Key"  << "Value" << "Debug Entry";
 
-    gamsOption = commandLineTokenizer->getGamsOption();
+    if (!normalizedCommandLineStr.simplified().isEmpty())
+        on_optionTableModelChanged(normalizedCommandLineStr);
 }
 
-QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
+GamsOptionTableModel::GamsOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent):
+    QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(false)
+{
+    mHeader << "Key"  << "Value" << "Debug Entry";
+}
+
+QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal) {
        if (role == Qt::DisplayRole) {
@@ -64,7 +71,7 @@ QVariant OptionTableModel::headerData(int index, Qt::Orientation orientation, in
     return QVariant();
 }
 
-int OptionTableModel::rowCount(const QModelIndex &parent) const
+int GamsOptionTableModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
@@ -72,14 +79,14 @@ int OptionTableModel::rowCount(const QModelIndex &parent) const
     return  mOptionItem.size();
 }
 
-int OptionTableModel::columnCount(const QModelIndex &parent) const
+int GamsOptionTableModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return mHeader.size();
 }
 
-QVariant OptionTableModel::data(const QModelIndex &index, int role) const
+QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
@@ -89,36 +96,45 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole: {
-        if (col==0)
+        if (col==0) {
             return mOptionItem.at(row).key;
-        else if (col== 1)
+        } else if (col== 1) {
                  return mOptionItem.at(row).value;
-        else
+        } else if (col==2) {
+            QString key = mOptionItem.at(row).key;
+            if (mOption->isASynonym(mOptionItem.at(row).key))
+                key = mOption->getNameFromSynonym(mOptionItem.at(row).key);
+            if (mOption->isValid(key) || mOption->isASynonym(key))
+                return QVariant(mOption->getOptionDefinition(key).number);
+            else
+                return QVariant(-1);
+        } else {
             break;
+        }
     }
     case Qt::TextAlignmentRole: {
-        return Qt::AlignLeft;
+        return Qt::AlignLeft+ Qt::AlignVCenter;
     }
 //    case Qt::DecorationRole
     case Qt::ToolTipRole: {
 //        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
 //            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
         if (col==0) {
-            if ( gamsOption->isDoubleDashedOption(mOptionItem.at(row).key) ) {
-                if (!gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(mOptionItem.at(row).key))) {
-                    return QString("'%1' is an invalid double dashed option (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))").arg(gamsOption->getOptionKey(mOptionItem.at(row).key));
+            if ( mOption->isDoubleDashedOption(mOptionItem.at(row).key) ) {
+                if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key))) {
+                    return QString("'%1' is an invalid double dashed option (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))").arg(mOption->getOptionKey(mOptionItem.at(row).key));
                 } else {
                     break;
                 }
-            } else if ( !gamsOption->isValid(mOptionItem.at(row).key) &&
-                        !gamsOption->isASynonym(mOptionItem.at(row).key)
+            } else if ( !mOption->isValid(mOptionItem.at(row).key) &&
+                        !mOption->isASynonym(mOptionItem.at(row).key)
                       )  {
                          return QString("'%1' is an unknown option Key").arg(mOptionItem.at(row).key);
-            } else if (gamsOption->isDeprecated(mOptionItem.at(row).key)) {
+            } else if (mOption->isDeprecated(mOptionItem.at(row).key)) {
                       return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key);
             }
         } else if (col==1) {
-            switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+            switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
               case Incorrect_Value_Type:
                    return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
               case Value_Out_Of_Range:
@@ -133,21 +149,21 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
 
-        if (gamsOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
-            if (!gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(mOptionItem.at(row).key)) )
+        if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
+            if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
                 return QVariant::fromValue(QColor(Qt::red));
             else
                  return QVariant::fromValue(QColor(Qt::black));
         }
-        if (gamsOption->isValid(mOptionItem.at(row).key) || gamsOption->isASynonym(mOptionItem.at(row).key)) { // valid option
+        if (mOption->isValid(mOptionItem.at(row).key) || mOption->isASynonym(mOptionItem.at(row).key)) { // valid option
             if (col==0) { // key
-                if (gamsOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
+                if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
                 } else {
                     return  QVariant::fromValue(QColor(Qt::black));
                 }
             } else { // value
-                  switch (gamsOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                  switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
                       case Incorrect_Value_Type:
                             return QVariant::fromValue(QColor(Qt::red));
                       case Value_Out_Of_Range:
@@ -166,20 +182,22 @@ QVariant OptionTableModel::data(const QModelIndex &index, int role) const
         }
 
      }
-     default:
+    default:
         break;
     }
     return QVariant();
 }
 
-Qt::ItemFlags OptionTableModel::flags(const QModelIndex &index) const
+Qt::ItemFlags GamsOptionTableModel::flags(const QModelIndex &index) const
 {
+   Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
     if (!index.isValid())
-        return Qt::NoItemFlags;
-    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+        return Qt::NoItemFlags | Qt::ItemIsDropEnabled ;
+    else
+        return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
 }
 
-bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
+bool GamsOptionTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
 {
     if (orientation != Qt::Vertical || role != Qt::CheckStateRole)
         return false;
@@ -190,20 +208,23 @@ bool OptionTableModel::setHeaderData(int index, Qt::Orientation orientation, con
     return true;
 }
 
-bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool GamsOptionTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role == Qt::EditRole)   {
-        QString data = value.toString().simplified();
-        if (data.isEmpty())
+        QString dataValue = value.toString().simplified();
+        if (dataValue.isEmpty())
             return false;
 
         if (index.row() > mOptionItem.size())
             return false;
 
         if (index.column() == 0) { // key
-            mOptionItem[index.row()].key = data;
+            QString from = data(index, Qt::DisplayRole).toString();
+            mOptionItem[index.row()].key = dataValue;
+            if (QString::compare(from, dataValue, Qt::CaseInsensitive)!=0)
+                emit optionNameChanged(from, dataValue);
         } else if (index.column() == 1) { // value
-                  mOptionItem[index.row()].value = data;
+                  mOptionItem[index.row()].value = dataValue;
         }
         emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
@@ -217,49 +238,52 @@ bool OptionTableModel::setData(const QModelIndex &index, const QVariant &value, 
     return true;
 }
 
-QModelIndex OptionTableModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex GamsOptionTableModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (hasIndex(row, column, parent))
         return QAbstractTableModel::createIndex(row, column);
     return QModelIndex();
 }
 
-bool OptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
+bool GamsOptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size())
          return false;
 
      beginInsertRows(QModelIndex(), row, row + count - 1);
      if (mOptionItem.size() == row)
-         mOptionItem.append(OptionItem("[KEY]", "[VALUE]", -1, -1));
+         mOptionItem.append(OptionItem(OptionTokenizer::keyGeneratedStr, OptionTokenizer::valueGeneratedStr, -1, -1));
      else
-         mOptionItem.insert(row, OptionItem(OptionItem("[KEY]", "[VALUE]", -1, -1)));
+         mOptionItem.insert(row, OptionItem(OptionItem(OptionTokenizer::keyGeneratedStr,  OptionTokenizer::valueGeneratedStr, -1, -1)));
 
     endInsertRows();
     emit optionModelChanged(mOptionItem);
     return true;
 }
 
-bool OptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
+bool GamsOptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
          return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
-    mOptionItem.removeAt(row);
+    for(int i=row+count-1; i>=row; --i) {
+        mOptionItem.removeAt(i);
+    }
     endRemoveRows();
     emit optionModelChanged(mOptionItem);
     return true;
 }
 
-bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+bool GamsOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
     if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
 
-    Q_UNUSED(sourceParent); Q_UNUSED(destinationParent);
+    Q_UNUSED(sourceParent)
+    Q_UNUSED(destinationParent)
     beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count - 1, QModelIndex(), destinationChild);
     mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
     int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
@@ -269,12 +293,123 @@ bool OptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     return true;
 }
 
-QList<OptionItem> OptionTableModel::getCurrentListOfOptionItems()
+QStringList GamsOptionTableModel::mimeTypes() const
+{
+    QStringList types;
+    types << "application/vnd.gams-pf.text";
+    return types;
+}
+
+QMimeData *GamsOptionTableModel::mimeData(const QModelIndexList &indexes) const
+{
+    QMimeData* mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    for (const QModelIndex &index : indexes) {
+        if (index.isValid()) {
+            if (index.column()>0) {
+                continue;
+            }
+
+            QModelIndex valueIndex = index.sibling(index.row(), 1);
+            QString text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(valueIndex, Qt::DisplayRole).toString());
+            stream << text;
+        }
+    }
+
+    mimeData->setData("application/vnd.gams-pf.text", encodedData);
+    return mimeData;
+}
+
+Qt::DropActions GamsOptionTableModel::supportedDragActions() const
+{
+    return Qt::MoveAction ;
+}
+
+Qt::DropActions GamsOptionTableModel::supportedDropActions() const
+{
+    return Qt::MoveAction | Qt::CopyAction ;
+}
+
+bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    Q_UNUSED(column)
+    if (action == Qt::IgnoreAction)
+        return true;
+    if (!mimedata->hasFormat("application/vnd.gams-pf.text"))
+        return false;
+
+    QByteArray encodedData = mimedata->data("application/vnd.gams-pf.text");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QStringList newItems;
+    int rows = 0;
+
+    while (!stream.atEnd()) {
+       QString text;
+       stream >> text;
+       newItems << text;
+       ++rows;
+    }
+
+    int beginRow;
+
+    if (row != -1) {
+        beginRow = row;
+    } else if (parent.isValid()) {
+        beginRow = parent.row();
+    } else {
+        beginRow = rowCount(QModelIndex());
+    }
+
+    if (action ==  Qt::CopyAction) {
+
+        QList<int> insertRowList;
+        insertRows(beginRow, rows, QModelIndex());
+
+        for (const QString &text : newItems) {          
+            insertRowList.append( beginRow );
+
+            QStringList textList = text.split("=");
+            QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY, QModelIndex());
+            setData(idx, textList.at(0), Qt::EditRole);
+            idx = index(beginRow, COLUMN_OPTION_VALUE, QModelIndex());
+            setData(idx, textList.at(1), Qt::EditRole);
+            idx = index(beginRow, COLUMN_ENTRY_NUMBER, QModelIndex());
+            setData(idx, textList.at(2), Qt::EditRole);
+            emit newTableRowDropped(index(beginRow, 0, QModelIndex()));
+            beginRow++;
+        }
+
+        for (const QString &text : newItems) {
+            QStringList textList = text.split("=");
+            QModelIndex idx;
+            for(int i=0; i<rowCount(); ++i) {
+                if (insertRowList.contains(i))
+                    continue;
+
+                idx = index(i, COLUMN_OPTION_KEY, QModelIndex());
+                QString key = data(idx, Qt::DisplayRole).toString();
+                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
+                    break;
+            }
+            if (idx.row() == rowCount())
+               removeRows(idx.row(), COLUMN_OPTION_VALUE, QModelIndex());
+        }
+        return true;
+
+    }
+
+    return false;
+}
+
+QList<OptionItem> GamsOptionTableModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
 }
 
-void OptionTableModel::toggleActiveOptionItem(int index)
+void GamsOptionTableModel::toggleActiveOptionItem(int index)
 {
     if (mOptionItem.isEmpty() || index >= mOptionItem.size())
         return;
@@ -287,11 +422,11 @@ void OptionTableModel::toggleActiveOptionItem(int index)
     emit optionModelChanged(mOptionItem);
 }
 
-void OptionTableModel::on_optionTableModelChanged(const QString &text)
+void GamsOptionTableModel::on_optionTableModelChanged(const QString &text)
 {
     beginResetModel();
     itemizeOptionFromCommandLineStr(text);
-    validateOption();
+    mOptionTokenizer->validateOption(mOptionItem);
 
     setRowCount(mOptionItem.size());
 
@@ -309,14 +444,13 @@ void OptionTableModel::on_optionTableModelChanged(const QString &text)
         else setHeaderData( i, Qt::Vertical,
                           Qt::CheckState(Qt::Checked),
                           Qt::CheckStateRole );
-
     }
     endResetModel();
     emit optionModelChanged(mOptionItem);
 }
 
 
-void OptionTableModel::setRowCount(int rows)
+void GamsOptionTableModel::setRowCount(int rows)
 {
    int rc = mOptionItem.size();
    if (rows < 0 ||  rc == rows)
@@ -328,37 +462,17 @@ void OptionTableModel::setRowCount(int rows)
       removeRows(qMax(rows, 0), rc - rows);
 }
 
-void OptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
+void GamsOptionTableModel::itemizeOptionFromCommandLineStr(const QString text)
 {
     QMap<int, QVariant> previousCheckState = mCheckState;
     mOptionItem.clear();
-    mOptionItem = commandLineTokenizer->tokenize(text);
+    mOptionItem = mOptionTokenizer->tokenize(text);
     for(int idx = 0; idx<mOptionItem.size(); ++idx) {
        mCheckState[idx] = QVariant();
     }
+
 }
 
-void OptionTableModel::validateOption()
-{
-   for(OptionItem& item : mOptionItem) {
-       if (gamsOption->isDoubleDashedOption(item.key)) { // double dashed parameter
-           if ( gamsOption->isDoubleDashedOptionNameValid( gamsOption->getOptionKey(item.key)) )
-               item.error = OptionErrorType::No_Error;
-           else
-              item.error = OptionErrorType::Invalid_Key;
-           continue;
-       }
-       if (gamsOption->isValid(item.key) || gamsOption->isASynonym(item.key)) { // valid option
-           if (gamsOption->isDeprecated(item.key)) { // deprecated option
-               item.error = OptionErrorType::Deprecated_Option;
-           } else { // valid and not deprected Option
-               item.error = gamsOption->getValueErrorType(item.key, item.value);
-           }
-       } else { // invalid option
-           item.error = OptionErrorType::Invalid_Key;
-       }
-   }
-}
-
+} // namepsace option
 } // namespace studio
 } // namespace gams

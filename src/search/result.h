@@ -34,6 +34,7 @@ public:
     QString filepath() const;
     QString context() const;
     int length() const;
+    bool operator==(const Result r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
 
 private:
     int mLineNr;

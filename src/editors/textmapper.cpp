@@ -530,7 +530,7 @@ QString TextMapper::lines(int localLineNrFrom, int lineCount) const
     // get the text of the line
 }
 
-bool TextMapper::findText(QRegularExpression seachRegex, QTextDocument::FindFlags flags, bool &continueFind)
+bool TextMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     bool backwards = flags.testFlag(QTextDocument::FindBackward);
     int part = backwards ? 2 : 1;
@@ -561,8 +561,8 @@ bool TextMapper::findText(QRegularExpression seachRegex, QTextDocument::FindFlag
         }
 
         QRegularExpressionMatch match;
-        if (backwards) textBlock.lastIndexOf(seachRegex, ind, &match);
-        else textBlock.indexOf(seachRegex, ind, &match);
+        if (backwards) textBlock.lastIndexOf(searchRegex, ind, &match);
+        else textBlock.indexOf(searchRegex, ind, &match);
         if (match.hasMatch() || match.hasPartialMatch()) {
             QStringRef ref = textBlock.leftRef(match.capturedStart());
             int line = ref.count("\n");

@@ -27,18 +27,22 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 enum OptionErrorType {
-    No_Error,
-    Invalid_Key,
-    Incorrect_Value_Type,
-    Value_Out_Of_Range,
-    Deprecated_Option,
-    Unknown_Error
+    No_Error,     // 0
+    Invalid_Key,  // 1
+    Incorrect_Value_Type, // 2
+    Value_Out_Of_Range,   // 3
+    Deprecated_Option,    // 4
+    Override_Option,      // 5
+    UserDefined_Error     // 6
 };
 
 struct OptionItem {
     OptionItem() { }
+    OptionItem(QString k, QString v) :
+          key(k), value(v) { }
     OptionItem(QString k, QString v, int kpos, int vpos) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos) { }
     OptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
@@ -46,19 +50,36 @@ struct OptionItem {
 
     QString key;
     QString value;
-    int keyPosition;
-    int valuePosition;
+    int keyPosition = -1;
+    int valuePosition = -1;
+    bool disabled = false;
+    OptionErrorType error = No_Error;
+};
+
+
+struct SolverOptionItem {
+    SolverOptionItem() { }
+    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag) :
+        optionId(id), key(k), value(v), text(t), disabled(disabledFlag) {}
+    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag, OptionErrorType e) :
+          optionId(id), key(k), value(v), text(t), disabled(disabledFlag), error(e) { }
+
+    int optionId = -1;
+    QString key = "";
+    QVariant value = "";
+    QString text = "";
     bool disabled = false;
     OptionErrorType error = No_Error;
 };
 
 struct OptionGroup {
     OptionGroup() { }
-    OptionGroup(QString n, int num, QString desc, int helpCtxt) :
-         name(n), number(num), description(desc), helpContext(helpCtxt) { }
+    OptionGroup(QString n, int num, bool h, QString desc, int helpCtxt) :
+         name(n), number(num), hidden(h), description(desc), helpContext(helpCtxt) { }
 
     QString name;
     int number;
+    bool hidden;
     QString description;
     int helpContext;
 };
@@ -76,21 +97,24 @@ struct OptionValue {
 
 struct OptionDefinition {
     OptionDefinition() { }
-    OptionDefinition(QString n, optOptionType ot, optDataType dt, QString desc):
-         name(n), type(ot), dataType(dt), description(desc) { }
+    OptionDefinition(int num, QString n, optDataType dt, optOptionType ot, optOptionSubType st, QString desc):
+         number(num), name(n), dataType(dt), type(ot), subType(st), description(desc) { }
 
+    int number;
     QString name;
     QString synonym;
-    optOptionType type;
     optDataType dataType;
+    optOptionType type;
+    optOptionSubType subType;
     QString description;
-    bool deprecated;
-    bool valid;
+    bool deprecated = false;
+    bool valid = false;
     QVariant defaultValue;
     QVariant lowerBound;
     QVariant upperBound;
     QList<OptionValue> valueList;
     int groupNumber;
+    bool modified = false;
 };
 
 
@@ -105,6 +129,7 @@ public:
     void dumpAll();
 
     bool isValid(const QString &optionName) const;
+    bool isSynonymDefined() const;
     bool isASynonym(const QString &optionName) const;
     bool isDeprecated(const QString &optionName) const;
     bool isDoubleDashedOption(const QString &option) const;
@@ -113,6 +138,7 @@ public:
 
     QString getNameFromSynonym(const QString &synonym) const;
     optOptionType getOptionType(const QString &optionName) const;
+    optOptionSubType getOptionSubType(const QString &optionName) const;
     optDataType getDataType(const QString &optionName) const;
     QVariant getUpperBound(const QString &optionName) const;
     QVariant getLowerBound(const QString &optionName) const;
@@ -120,32 +146,63 @@ public:
     QString getDescription(const QString &optionName) const;
     QList<OptionValue> getValueList(const QString &optionName) const;
 
+    QString getEOLChars() const;
+    bool isEOLCharDefined() const;
+
+    QString getDefaultSeparator() const;
+    bool isDefaultSeparatorDefined() const;
+
+    QString getDefaultStringquote() const;
+    bool isDefaultStringquoteDefined() const;
+
     QStringList getKeyList() const;
     QStringList getValidNonDeprecatedKeyList() const;
     QStringList getKeyAndSynonymList() const;
     QStringList getValuesList(const QString &optionName) const;
+    QStringList getSynonymList(const QString &optionName) const;
     QStringList getNonHiddenValuesList(const QString &optionName) const;
+
+    int getOrdinalNumber(const QString &optionName) const;
+
+    int getGroupNumber(const QString &optionName) const;
+    bool isGroupHidden(int number) const;
+    QString getGroupName(const QString &optionName) const;
+    QString getGroupDescription(const QString &optionName) const;
 
     OptionDefinition getOptionDefinition(const QString &optionName) const;
     QList<OptionGroup> getOptionGroupList() const;
     QString getOptionTypeName(int type) const;
-    QString getOptionKey(const QString &option);
+    QString getOptionKey(const QString &option) const;
 
     bool available() const;
 
     QMap<QString, OptionDefinition> getOption() const;
 
-private:
+    bool isModified(const QString &optionName) const;
+    void setModified(const QString &optionName, bool modified);
+    void resetModficationFlag();
+
+    QString getOptionDefinitionFile() const;
+    QString getOptionDefinitionPath() const;
+
     static int errorCallback(int count, const char *message);
 
 private:
+    QString mOptionDefinitionPath;
+    QString mOptionDefinitionFile;
+
+    QString mEOLChars;
+    QString mSeparator;
+    QString mStringquote;
+
     QMap<QString, OptionDefinition> mOption;
+    QStringList mDeprecatedSynonym;
     QMap<QString, QString> mSynonymMap;
     QMap<int, QString> mOptionTypeNameMap;
-    QList<OptionGroup> mOptionGroupList;
+    QMap<int, OptionGroup> mOptionGroup;
 
     bool mAvailable;
-    bool readDefinition(const QString &systemPath, const QString &optionFileName);
+    bool readDefinitionFile(const QString &systemPath, const QString &optionFileName);
 };
 
 const double OPTION_VALUE_MAXDOUBLE = 1e+299;
@@ -154,6 +211,7 @@ const int OPTION_VALUE_MAXINT = INT_MAX;
 const int OPTION_VALUE_MININT = INT_MIN;
 const int OPTION_VALUE_DECIMALS = 20;
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace option {
 
 OptionSortFilterProxyModel::OptionSortFilterProxyModel(QObject *parent)
       : QSortFilterProxyModel(parent)
@@ -97,5 +98,6 @@ bool OptionSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelI
     }
 }
 
+} // namespace option
 } // namespace studio
 } // namespace gams

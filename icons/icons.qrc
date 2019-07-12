@@ -47,12 +47,14 @@
         <file alias="minus">minus.svg</file>
         <file alias="move-up">move-up.svg</file>
         <file alias="move-down">move-down.svg</file>
+        <file alias="output">comment-alt-lines.svg</file>
         <file alias="paste">paste.svg</file>
         <file alias="pause">pause.svg</file>
         <file alias="pen">pen-alt.svg</file>
         <file alias="play">play.svg</file>
         <file alias="plus">plus.svg</file>
-        <file alias="question">question.svg</file>
+        <file alias="project">clipboard-list.svg</file>
+        <file alias="question">question-square.svg</file>
         <file alias="redo">redo.svg</file>
         <file alias="ref-file">ref-file.svg</file>
         <file alias="run-gdx">play-gdx.svg</file>
@@ -71,6 +73,8 @@
         <file alias="camera">camera.png</file>
         <file alias="show">angle-double-down.svg</file>
         <file alias="hide">angle-double-up.svg</file>
+        <file alias="square-darkyellow">square-darkyellow.svg</file>
+        <file alias="option-file">option.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

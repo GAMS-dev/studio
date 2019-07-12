@@ -82,6 +82,7 @@ public:
 
 signals:
     void loadFinished();
+    void triggerListViewAutoResize();
 
 private:
     void calcDefaultColumns();

@@ -17,15 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINETOKENIZER_H
-#define COMMANDLINETOKENIZER_H
+#ifndef OPTIONTOKENIZER_H
+#define OPTIONTOKENIZER_H
 
 #include <QTextLayout>
 #include <QLineEdit>
 #include "option.h"
+#include "locators/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
+namespace option {
+
 
 struct OptionError {
     OptionError() { }
@@ -36,14 +39,14 @@ struct OptionError {
     QString message;
 };
 
-class CommandLineTokenizer : public QObject
+class OptionTokenizer : public QObject
 {
     Q_OBJECT
 
 public:
 
-    CommandLineTokenizer(const QString &optionFileName);
-    ~CommandLineTokenizer();
+    OptionTokenizer(const QString &optionDefFileName);
+    ~OptionTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);
     QList<OptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
@@ -60,19 +63,59 @@ public:
     void setDeprecateOptionFormat(const QTextCharFormat &deprecateOptionFormat);
     void setDeactivatedOptionFormat(const QTextCharFormat &deactivatedOptionFormat);
 
-    Option *getGamsOption() const;
+    QString formatOption(const SolverOptionItem *item);
+    bool getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str);
+    bool updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem* item);
+
+    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QTextCodec* codec);
+    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QTextCodec* codec);
+
+    void validateOption(QList<OptionItem> &items);
+    void validateOption(QList<SolverOptionItem *> &items);
+
+    Option *getOption() const;
+
+    AbstractSystemLogger* logger();
+    void provideLogger(AbstractSystemLogger* optionLogEdit);
+
+    QChar getEOLCommentChar() const;
+    bool isValidLineCommentChar(const QChar& ch);
+    bool isValidEOLCommentChar(const QChar& ch);
+
+    static QString keyGeneratedStr;
+    static QString valueGeneratedStr;
+    static QString commentGeneratedStr;
 
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
     void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 private:
+    Option* mOption = nullptr;
+    optHandle_t mOPTHandle;
+    bool mOPTAvailable = false;
+    QStringList mLineComments;
+    QChar mEOLCommentChar = QChar();
+
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
 
-    Option* mGamsOption;
+    AbstractSystemLogger* mOptionLogger = nullptr;
+    static AbstractSystemLogger* mNullLogger;
+
+    OptionErrorType getErrorType(optHandle_t &mOPTHandle);
+    bool logMessage(optHandle_t &mOPTHandle);
+    OptionErrorType logAndClearMessage(optHandle_t &OPTHandle, bool logged = true);
+
+    QString getKeyFromStr(const QString &line, const QString &hintKey);
+    QString getDoubleValueFromStr(const QString &line, const QString &hintKey, const QString &hintValue);
+    QString getValueFromStr(const QString &line, const int itype, const int ioptsubtype, const QString &hintKey, const QString &hintValue);
+    QString getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue);
+    QString getQuotedStringValue(const QString &line, const QString &value);
+    int getEOLCommentCharIndex(const QString &text);
+    void parseOptionString(const QString &text, QString &keyStr, QString &valueStr, QString &commentStr);
 
     void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
     void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
@@ -82,7 +125,8 @@ private:
     void formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList);
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINETOKENIZER_H
+#endif // OPTIONTOKENIZER_H

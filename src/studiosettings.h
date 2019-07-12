@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -23,7 +23,6 @@
 #include <QString>
 #include <QColor>
 #include <QHash>
-#include <QMutex>
 
 class QSettings;
 
@@ -128,6 +127,18 @@ public:
     int historySize() const;
     void setHistorySize(int historySize);
 
+    bool overridExistingOption() const;
+    void setOverrideExistingOption(bool value);
+
+    bool addCommentDescriptionAboveOption() const;
+    void setAddCommentDescriptionAboveOption(bool value);
+
+    bool addEOLCommentDescriptionOption() const;
+    void setAddEOLCommentDescriptionOption(bool value);
+
+    bool deleteAllCommentsAboveOption() const;
+    void setDeleteAllCommentsAboveOption(bool value);
+
     void resetSettings();
     bool resetSettingsSwitch();
     void resetViewSettings();
@@ -152,7 +163,6 @@ private:
     QSettings *mUserSettings = nullptr;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
-    QMutex mMutex;
 
     // general settings page
     QString mDefaultWorkspace;
@@ -183,6 +193,12 @@ private:
 
     // misc settings page
     int mHistorySize;
+
+    // solver option editor settings
+    bool mOverrideExistingOption = true;
+    bool mAddCommentAboveOption = false;
+    bool mAddEOLCommentOption = false;
+    bool mDeleteCommentsAboveOption = false;
 
     // search widget
     bool mSearchUseRegex;

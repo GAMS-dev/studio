@@ -158,44 +158,6 @@ void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
     selections.append(selection);
 }
 
-void TextViewEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
-{
-    SearchDialog *searchDialog = SearchLocator::searchDialog();
-    if (!searchDialog) return;
-    QString searchTerm = searchDialog->searchTerm();
-    if (searchTerm.isEmpty()) return;
-    QRegularExpression regEx = searchDialog->createRegex();
-
-    QTextBlock block = firstVisibleBlock();
-    int fromPos = block.position();
-    int toPos = fromPos;
-    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
-    while (block.isValid() && top < viewport()->height()) {
-        toPos = block.position() + block.length();
-        top += qRound(blockBoundingRect(block).height());
-        block = block.next();
-    }
-
-    QTextCursor lastItem = QTextCursor(document());
-    lastItem.setPosition(document()->findBlockByNumber(mMapper.visibleOffset() - mMapper.absTopLine()).position());
-    QTextCursor item;
-    QFlags<QTextDocument::FindFlag> flags;
-    flags.setFlag(QTextDocument::FindCaseSensitively, searchDialog->caseSens());
-
-    do {
-        item = document()->find(regEx, lastItem, flags);
-        if (lastItem == item) break;
-        lastItem = item;
-        if (!item.isNull()) {
-            if (item.position() > toPos) break;
-            QTextEdit::ExtraSelection selection;
-            selection.cursor = item;
-            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
-            selections << selection;
-        }
-    } while (!item.isNull());
-}
-
 int TextViewEdit::topVisibleLine()
 {
     return mMapper.absTopLine() + mMapper.visibleOffset();

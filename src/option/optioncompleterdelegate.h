@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -21,35 +21,42 @@
 #define OPTIONCOMPLETERDELEGATE_H
 
 #include <QStyledItemDelegate>
-#include "commandlinetokenizer.h"
+#include "optiontokenizer.h"
 #include "option.h"
 
 namespace gams {
 namespace studio {
+namespace option {
 
 class OptionCompleterDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    OptionCompleterDelegate(CommandLineTokenizer* tokenizer, QObject* parent = 0);
+    OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent = nullptr);
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
-//    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelInd*/ex &index) const;
+
+    QModelIndex currentEditedIndex() const;
 
 protected:
     virtual bool eventFilter(QObject * editor, QEvent * event) override;
 
+signals:
+    void currentEditedIndexChanged(const QModelIndex &index) const;
+
 private slots:
-    void on_lineEdit_textChanged(const QString &text);
     void commitAndCloseEditor();
+    void updateCurrentEditedIndex(const QModelIndex &index);
 
 private:
-    CommandLineTokenizer* commandLineTokenizer;
-    Option* gamsOption;
+    OptionTokenizer* mOptionTokenizer;
+    Option* mOption;
+    QModelIndex mCurrentEditedIndex;
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 

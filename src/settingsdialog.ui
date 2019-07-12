@@ -261,7 +261,7 @@
             </property>
             <property name="currentFont">
              <font>
-              <family>Source Code Pro</family>
+              <family>Source Code Pro [ADBE]</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -292,7 +292,7 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>When activated all occurences of the word that is currently under the text cursor will be highlighted. When deactivated a selection of the word is needed.</string>
+             <string>When activated all occurrences of the word that is currently under the text cursor will be highlighted. When deactivated a selection of the word is needed.</string>
             </property>
             <property name="text">
              <string>Highlight word under cursor without selection</string>
@@ -517,6 +517,20 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lbl_wpHistorySize">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Welcome Page size of 'Last Files' list&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="btn_resetView">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="2">
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
@@ -530,10 +544,10 @@
             </property>
            </spacer>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="lbl_wpHistorySize">
+          <item row="2" column="0">
+           <widget class="QLabel" name="lbl_resetView">
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Welcome Page size of 'Last Files' list&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>Reset window size, position and states: </string>
             </property>
            </widget>
           </item>
@@ -560,35 +574,78 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="lbl_resetView">
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="insertingNewOptionGroupBox">
+         <property name="title">
+          <string>Solver Option Editor Settings</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_9">
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="overrideExistingOptionCheckBox">
             <property name="text">
-             <string>Reset window size, position and states: </string>
+             <string>override existing option, if there is any</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="btn_resetView">
+          <item row="0" column="0">
+           <widget class="QLabel" name="insertingNewOptionLabel">
             <property name="text">
-             <string>Reset</string>
+             <string>When inserting new option from definition:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="addEOLCommentCheckBox">
+            <property name="text">
+             <string>add option description as end of line comment (when available)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="addCommentAboveCheckBox">
+            <property name="text">
+             <string>add option description as comment above</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="deletingOptionLabel">
+            <property name="text">
+             <string>When deleting option:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="deleteCommentAboveCheckbox">
+            <property name="text">
+             <string>delete all immediate comments above, if there is any</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
+       </item>
+       <item row="3" column="0">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>

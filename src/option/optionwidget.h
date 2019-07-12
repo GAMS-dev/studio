@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -22,19 +22,24 @@
 
 #include <QDockWidget>
 #include <QWidget>
+#include <QMenu>
 
 #include "option.h"
 #include "commandlineoption.h"
-#include "commandlinetokenizer.h"
-
-namespace Ui {
-class OptionWidget;
-}
+#include "optiontokenizer.h"
+#include "gamsoptiontablemodel.h"
+#include "optioncompleterdelegate.h"
 
 namespace gams {
 namespace studio {
 
 class MainWindow;
+
+namespace option {
+
+namespace Ui {
+class OptionWidget;
+}
 
 enum class RunActionState {
     Run,
@@ -57,8 +62,11 @@ public:
     void on_interruptAction();
     void on_stopAction();
 
-    CommandLineTokenizer *getGamsOptionTokenizer() const;
-    bool isAnOptionWidgetFocused(QWidget* focusWidget);
+
+    OptionTokenizer *getOptionTokenizer() const;
+    bool isAnOptionWidgetFocused(QWidget* focusWidget) const;
+    bool isAnOptionTableFocused(QWidget* focusWidget) const;
+
     QString getSelectedOptionName(QWidget* widget) const;
 
     QString getCurrentCommandLineData() const;
@@ -78,18 +86,42 @@ signals:
 
 public slots:
     void updateOptionTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
-    void updateCommandLineStr(const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
+
     void showOptionContextMenu(const QPoint &pos);
+    void showDefinitionContextMenu(const QPoint &pos);
+
     void updateRunState(bool isRunnable, bool isRunning);
     void addOptionFromDefinition(const QModelIndex &index);
     void loadCommandLineOption(const QStringList &history);
+
+    void selectSearchField();
+    void optionItemCommitted(QWidget *editor);
+
+private slots:
+    void findAndSelectionOptionFromDefinition();
+
+    void showOptionDefinition();
+    void deleteOption();
+    void deleteAllOptions();
+    void insertOption();
+
+    void moveOptionUp();
+    void moveOptionDown();
+
+    void on_newTableRowDropped(const QModelIndex &index);
+    void on_optionTableNameChanged(const QString &from, const QString &to);
+    void on_optionTableModelChanged(const QString &commandLineStr);
+
+    void resizeColumnsToContents();
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX);
     void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
+
+    void addActions();
 
     Ui::OptionWidget *ui;
     QDockWidget *mExtendedEditor = nullptr;
@@ -102,11 +134,16 @@ private:
     QAction* actionInterrupt;
     QAction* actionStop;
 
+    QMenu mContextMenu;
+    OptionCompleterDelegate* mOptionCompleter;
+
     MainWindow* main;
 
-    CommandLineTokenizer* mGamsOptionTokenizer;
+    OptionTokenizer* mOptionTokenizer;
+    GamsOptionTableModel* mOptionTableModel;
 };
 
+}
 }
 }
 

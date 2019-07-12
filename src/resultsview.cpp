@@ -22,19 +22,29 @@
 #include "exception.h"
 #include "search/searchresultlist.h"
 #include "search/result.h"
+#include "common.h"
 
 namespace gams {
 namespace studio {
 
 ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
-    QWidget(parent), ui(new Ui::ResultsView), mMain(parent)
+    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList->searchRegex())
 {
     ui->setupUi(this);
-    mResultList = resultList;
-    ui->tableView->setModel(mResultList);
-    searchTermLength = resultList->searchTerm().length();
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
+    ui->tableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->tableView->setTextElideMode(Qt::ElideLeft);
+
+    for (Result r : resultList->resultsAsList()) {
+        mResultList.addResult(r.lineNr(), r.colNr(), r.length(), r.filepath(), r.context());
+    }
+    ui->tableView->setModel(&mResultList);
+
+    QPalette palette;
+    palette.setColor(QPalette::Highlight, ui->tableView->palette().highlight().color());
+    palette.setColor(QPalette::HighlightedText, ui->tableView->palette().highlightedText().color());
+    ui->tableView->setPalette(palette);
 }
 
 ResultsView::~ResultsView()
@@ -44,29 +54,49 @@ ResultsView::~ResultsView()
 
 void ResultsView::resizeColumnsToContent()
 {
-    ui->tableView->resizeColumnToContents(0);
+    ui->tableView->setColumnWidth(0, this->width()/3);
     ui->tableView->resizeColumnToContents(1);
 }
 
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 {
     int selectedRow = index.row();
-    Result item = mResultList->at(selectedRow);
+    Result r = mResultList.at(selectedRow);
 
     // open so we have a document of the file
-    if (QFileInfo(item.filepath()).exists())
-        mMain->openFilePath(item.filepath());
+    if (QFileInfo(r.filepath()).exists())
+        mMain->openFilePath(r.filepath());
 
-    ProjectFileNode *node = mMain->projectRepo()->findFile(item.filepath());
-    if (!node) EXCEPT() << "File not found: " << item.filepath();
+    ProjectFileNode *node = mMain->projectRepo()->findFile(r.filepath());
+    if (!node) EXCEPT() << "File not found: " << r.filepath();
 
     // jump to line
-    node->file()->jumpTo(node->runGroupId(), true, item.lineNr()-1, qMax(item.colNr(), 0));
+    node->file()->jumpTo(node->runGroupId(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+    emit updateMatchLabel(selectedRow+1);
 }
 
-SearchResultList* ResultsView::resultList()
+void ResultsView::keyPressEvent(QKeyEvent* e)
 {
-    return mResultList;
+    if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+        on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
+        e->accept();
+    }
+    QWidget::keyPressEvent(e);
+}
+
+void ResultsView::selectItem(int index)
+{
+    ui->tableView->selectRow(index);
+}
+
+void ResultsView::setOutdated()
+{
+    mOutdated = true;
+}
+
+bool ResultsView::isOutdated()
+{
+    return mOutdated;
 }
 
 }

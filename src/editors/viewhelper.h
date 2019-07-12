@@ -7,6 +7,7 @@
 #include "textview.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
+#include "option/solveroptionwidget.h"
 #include "reference/referenceviewer.h"
 #include <QWidget>
 
@@ -54,6 +55,10 @@ public:
         if(w) w->setProperty("EditorType", int(EditorType::ref));
         return w;
     }
+    inline static option::SolverOptionWidget* initEditorType(option::SolverOptionWidget * w) {
+        if(w) w->setProperty("EditorType", int(EditorType::opt));
+        return w;
+    }
 
     inline static EditorType editorType(QWidget* w) {
         QVariant v = w ? w->property("EditorType") : QVariant();
@@ -88,6 +93,9 @@ public:
     }
     inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
         return (editorType(w) == EditorType::ref) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;
+    }
+    inline static option::SolverOptionWidget* toSolverOptionEdit(QWidget* w) {
+        return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
     }
 
 

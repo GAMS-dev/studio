@@ -203,6 +203,7 @@ void GdxSymbol::loadData()
         }
 
         int updateCount = 1000000;
+        int triggerAutoResizeListViewCount = 1000;
         int keyOffset;
         int valOffset;
         int k;
@@ -224,6 +225,11 @@ void GdxSymbol::loadData()
                     mValues[valOffset+vIdx] =  values[vIdx];
             }
             mLoadedRecCount++;
+            if (mLoadedRecCount == triggerAutoResizeListViewCount || mLoadedRecCount == mRecordCount) {
+                beginResetModel();
+                endResetModel();
+                emit triggerListViewAutoResize();
+            }
             mFilterRecCount = mLoadedRecCount;
             if(i%updateCount == 0) {
                 beginResetModel();

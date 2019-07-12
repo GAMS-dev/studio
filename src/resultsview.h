@@ -21,6 +21,7 @@
 #define RESULTSVIEW_H
 
 #include <QTableWidget>
+#include <QTextCursor>
 #include <QWidget>
 #include "search/searchresultlist.h"
 
@@ -39,10 +40,15 @@ class ResultsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit ResultsView(SearchResultList* resultList, MainWindow *parent = nullptr);
+    explicit ResultsView(SearchResultList* searchResultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
-    SearchResultList* resultList();
+    void selectItem(int index);
+    void setOutdated();
+    bool isOutdated();
+
+signals:
+    void updateMatchLabel(int row);
 
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);
@@ -50,8 +56,11 @@ private slots:
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList* mResultList;
-    int searchTermLength = 0;
+    SearchResultList mResultList;
+    bool mOutdated = false;
+
+protected:
+    void keyPressEvent(QKeyEvent* event);
 };
 
 }

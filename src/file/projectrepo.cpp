@@ -21,7 +21,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QApplication>
-#include <QMessageBox>
 
 #include "projectrepo.h"
 #include "exception.h"
@@ -507,11 +506,11 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
     QString oldFile = node->location();
-    if (!sourceFM->document()) return;
+    if (!sourceFM->document() && sourceFM->kind() != FileKind::Opt) return;
 
     // set location to new file
     sourceFM->setLocation(target);
-    sourceFM->document()->setModified(true);
+    sourceFM->setModified(true);
     sourceFM->save();
 
     // re-add old file

@@ -61,6 +61,7 @@ public slots:
 private slots:
     void showContextMenu(QPoint p);
     void updateNumericalPrecision();
+    void autoResizeColumns();
 
 private:
     Ui::GdxSymbolView *ui;

@@ -48,7 +48,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
     ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->symbolView->verticalHeader()->setDefaultSectionSize(int(ui->symbolView->fontMetrics().height()*1.4));
+    ui->symbolView->verticalHeader()->setMinimumSectionSize(1);
+    ui->symbolView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     connect(mSymbolTableModel, &SymbolTableModel::symbolSelectionToBeUpdated, this, &SymbolReferenceWidget::updateSymbolSelection);
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
@@ -79,12 +80,12 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
     delete mReferenceTreeModel;
 }
 
-void SymbolReferenceWidget::selectSearchField()
+void SymbolReferenceWidget::selectSearchField() const
 {
     ui->symbolSearchLineEdit->setFocus();
 }
 
-bool SymbolReferenceWidget::isModelLoaded()
+bool SymbolReferenceWidget::isModelLoaded() const
 {
     return mSymbolTableModel->isModelLoaded();
 }

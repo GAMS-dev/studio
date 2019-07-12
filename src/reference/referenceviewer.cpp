@@ -90,7 +90,7 @@ ReferenceViewer::~ReferenceViewer()
     delete mReference;
 }
 
-void ReferenceViewer::selectSearchField()
+void ReferenceViewer::selectSearchField() const
 {
     SymbolReferenceWidget* tabWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
     if (tabWidget)
