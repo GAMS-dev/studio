@@ -382,8 +382,8 @@ void TextView::topLineMoved()
 {
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
-        mEdit->setTextCursor(QTextCursor(mEdit->document()));
         mEdit->protectWordUnderCursor(true);
+        mEdit->setTextCursor(QTextCursor(mEdit->document()));
         mEdit->setPlainText(mMapper.lines(0, 3*mTopBufferLines));
         updatePosAndAnchor();
         mEdit->blockSignals(true);
