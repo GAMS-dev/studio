@@ -43,6 +43,7 @@ signals:
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
     void recalcVisibleLines();
+    void textDoubleClicked(const QTextCursor &cursor, bool &done);
 
 public slots:
     void copySelection() override;
@@ -58,6 +59,7 @@ protected:
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void updateCursorShape(const Qt::CursorShape &defaultShape) override;
     bool viewportEvent(QEvent *event) override;
 

@@ -116,6 +116,27 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     return true;
 }
 
+qint64 AbstractTextMapper::lastTopAbsPos()
+{
+    if (isEmpty()) return size();
+    Chunk *chunk = setActiveChunk(chunkCount()-1);
+    if (!chunk || !chunk->isValid()) return size();
+
+    qint64 lastPos = 0LL;
+    int remainingLines = debugMode() ? (visibleLineCount()-1)/2 : visibleLineCount()-1;
+    while (remainingLines > 0) {
+        remainingLines -= chunk->lineCount();
+        if (remainingLines <= 0) {
+            lastPos = chunk->bStart + chunk->lineBytes.at(-remainingLines);
+            break;
+        } else if (chunk->nr == 0) {
+            break;
+        }
+        chunk = setActiveChunk(chunk->nr -1);
+    }
+    return lastPos;
+}
+
 void AbstractTextMapper::reset()
 {
     mChunkCache.clear();
@@ -252,6 +273,7 @@ bool AbstractTextMapper::setTopOffset(qint64 absPos)
         mTopLine.localLine = i;
     }
     mTopLine.absStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
+
     return true;
 }
 
@@ -260,7 +282,7 @@ bool AbstractTextMapper::setVisibleTopLine(double region)
     if (region < 0.0 || region > 1.0) return false;
 
     // estimate a chunk-index at or beyond the position
-    qint64 absPos = qint64(region * size());
+    qint64 absPos = qint64(region * lastTopAbsPos());
 
     int iChunk = qMin(int(absPos / mChunkSize), chunkCount()-1);
     if (iChunk <= mLastChunkWithLineNr) {
@@ -289,7 +311,7 @@ bool AbstractTextMapper::setVisibleTopLine(double region)
         bufferTopLine += chunk->lineCount();
     }
     if (bufferTopLine < 0) {
-        mVisibleOffset = bufferedLines()/3 + bufferTopLine;
+        mVisibleOffset = bufferedLines()/3 + bufferTopLine -1;
         bufferTopLine = 0;
     } else {
         mVisibleOffset = bufferedLines()/3;
@@ -300,18 +322,18 @@ bool AbstractTextMapper::setVisibleTopLine(double region)
 
 bool AbstractTextMapper::setVisibleTopLine(int lineNr)
 {
-    if (lineNr < 0 || lineNr > knownLineNrs()) return false; // out of counted-lines region
+    if (lineNr < 0 || lineNr > knownLineNrs())
+        return false; // out of counted-lines region
 
-    int maxVisLineNr = qAbs(lineCount()) - visibleLineCount();
-    if (lineNr > maxVisLineNr) {
-        lineNr = maxVisLineNr;
-    }
+    int maxVisLineNr = qMax(0, qAbs(lineCount()) - visibleLineCount());
+    if (lineNr > maxVisLineNr) lineNr = maxVisLineNr;
+
     int tl = absTopLine();
     if (visibleOffset() >= 0 && tl >= 0 && lineNr == tl + visibleOffset())
         return true; // nothing changed
 
     // calculate the topLine for this visibleTopLine
-    tl = qBound(0, lineNr - visibleLineCount(), qAbs(lineCount())-visibleLineCount());
+    tl = qBound(0, lineNr - visibleLineCount(), qMax(0, qAbs(lineCount())- bufferedLines()));
 
     int chunkNr = findChunk(tl);
     if (chunkNr >= 0) {

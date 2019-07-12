@@ -1402,6 +1402,21 @@ void MainWindow::postGamsRun(NodeId origin)
         mSyslog->append("Invalid runable attached to process", LogMsgType::Error);
         return;
     }
+    if (groupNode && groupNode->hasLogNode()) {
+        ProjectLogNode *logNode = groupNode->logNode();
+        logNode->logDone();
+        if (logNode->file()->editors().size()) {
+            if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
+                if (mSettings->jumpToError()) {
+                    int errLine = tv->firstErrorLine();
+                    if (errLine >= 0) tv->jumpTo(errLine, 0);
+                }
+                MainWindow::disconnect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos);
+                MainWindow::disconnect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount);
+                MainWindow::disconnect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount);
+            }
+        }
+    }
     if (groupNode && runMeta->exists(true)) {
         QString lstFile = groupNode->parameter("lst");
         bool doFocus = groupNode == mRecent.group;
@@ -1416,18 +1431,6 @@ void MainWindow::postGamsRun(NodeId origin)
 
         if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
-    }
-    if (groupNode && groupNode->hasLogNode()) {
-        ProjectLogNode *logNode = groupNode->logNode();
-        logNode->logDone();
-        if (logNode->file()->editors().size()) {
-            if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().last())) {
-                MainWindow::disconnect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos);
-                MainWindow::disconnect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount);
-                MainWindow::disconnect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount);
-            }
-        }
-
     }
     DEB() << "-------------- ELAPSED: " << (QTime::currentTime().msecsSinceStartOfDay() - xDebTime);
 }
@@ -2010,7 +2013,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
             ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                       : AbstractEdit::NoWrap);
     }
-    if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().last())) {
+    if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
         MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
         MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
@@ -2177,7 +2180,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
                 ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                           : AbstractEdit::NoWrap);
         }
-        if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().last())) {
+        if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
             MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
             MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
             MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);

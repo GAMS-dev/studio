@@ -69,6 +69,8 @@ public:
     void reset();
     void setDebugMode(bool debug);
     void invalidate();
+    void scrollToEnd();
+    int firstErrorLine();
 
 signals:
     void addProcessData(const QByteArray &data);
@@ -96,6 +98,7 @@ private slots:
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
+    void textDoubleClicked(const QTextCursor &cursor, bool &done);
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
@@ -126,7 +129,6 @@ private:
     void updateVScrollZone();
     void syncVScroll();
     void topLineMoved();
-    void topLineMoved(int offset);
 
 private:
     TextKind mTextKind;

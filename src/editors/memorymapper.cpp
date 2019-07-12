@@ -25,8 +25,9 @@ namespace gams {
 namespace studio {
 
 enum BaseFormat {old, debug, error, lstLink, fileLink};
-static int CErrorBound = 50;
-static int CParseLinesMax = 23;
+static int CErrorBound = 50;        // The count of errors created at the beginning and the end (each the count)
+static int CDirectErrors = 3;       // The count of errors created immediately
+static int CParseLinesMax = 23;     // The maximum count of gathered lines befor updating the display
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
     mState.deep = true;
@@ -62,8 +63,6 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     fmt.setUnderlineColor(Qt::darkGreen);
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
-
-    startRun();
 }
 
 void MemoryMapper::setLogParser(LogParser *parser)
@@ -238,7 +237,20 @@ void MemoryMapper::endRun()
     mLastLineLen = 0;
     mLastLineIsOpen = false;
     fetchLog();
-    QTimer::singleShot(0, this, &MemoryMapper::runFinished);
+    runFinished();
+}
+
+int MemoryMapper::firstErrorLine()
+{
+    if (mMarkers.isEmpty()) return -1;
+    int res = 0;
+    Chunk *chunkOfErr1 = mMarkers.at(0).chunk;
+    for (Chunk *chunk : mChunks) {
+        if (chunk == chunkOfErr1) break;
+        res += chunk->lineCount();
+    }
+    res += mMarkers.at(0).relLine;
+    return res;
 }
 
 void MemoryMapper::runFinished()
@@ -256,34 +268,37 @@ void MemoryMapper::runFinished()
         if (ref.chunk) mMarkers << ref;
     }
 
-    for (int i = 0; i < mMarkers.size(); ++i) {
-        LineRef ref = mMarkers.at(i);
-        QByteArray data = lineData(ref);
-        QString rawLine;
-        bool hasError = false;
-        LogParser::MarksBlockState mbState;
-        QString line = mLogParser->parseLine(data, rawLine, hasError, mbState);
-        LogParser::MarksBlockState mbFollowState = mbState;
-        if (mbState.errData.errNr > 0) {
-            // compile-time error have descriptions in the following lines
-            while (true) {
-                ref = nextRef(ref);
-                data = lineData(ref);
-                if (!data.startsWith("   ")) break;
-                if (!mbState.errData.text.isEmpty())
-                    mbState.errData.text.append('\n');
-                mbState.errData.text += data;
-            }
-            emit setLstErrorText(mbState.errData.lstLine, mbState.errData.text);
-        }
-        DEB() << "ERR-LINE " << i << "[" << ref.chunk->nr << "->" << ref.relLine << "]: " << line;
-        emit createMarks(mbState.marks);
+    for (int i = CDirectErrors; i < mMarkers.size(); ++i) {
+        createErrorMarks(mMarkers.at(i));
     }
 
     mMarksHead.clear();
     mMarksTail.clear();
     recalcLineCount();
     PEEKTIME() << " ms FINISH for " << mMarkers.size() << " Markers";
+}
+
+void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref)
+{
+    QByteArray data = lineData(ref);
+    QString rawLine;
+    bool hasError = false;
+    LogParser::MarksBlockState mbState;
+    QString line = mLogParser->parseLine(data, rawLine, hasError, mbState);
+    LogParser::MarksBlockState mbFollowState = mbState;
+    if (mbState.errData.errNr > 0) {
+        // compile-time error have descriptions in the following lines
+        while (true) {
+            ref = nextRef(ref);
+            data = lineData(ref);
+            if (!data.startsWith("   ")) break;
+            if (!mbState.errData.text.isEmpty())
+                mbState.errData.text.append('\n');
+            mbState.errData.text += data;
+        }
+        emit setLstErrorText(mbState.errData.lstLine, mbState.errData.text);
+    }
+    emit createMarks(mbState.marks);
 }
 
 void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
@@ -341,6 +356,9 @@ void MemoryMapper::updateOutputCache()
                 if (mMarksHead.isEmpty() || mMarksHead.last() != lineNr) {
                     ++mErrCount;
                     mMarksHead << lineNr;
+                    if (mErrCount < CDirectErrors) {
+                        createErrorMarks(logLineToRef(lineNr));
+                    }
                 }
             } else if (mMarksTail.isEmpty() || mMarksTail.last() != lineNr) {
                 ++mErrCount;

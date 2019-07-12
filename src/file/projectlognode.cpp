@@ -94,6 +94,7 @@ void ProjectLogNode::prepareRun()
     for (QWidget *wid: file()->editors()) {
         if (TextView *tv = ViewHelper::toTextView(wid)) {
             tv->prepareRun();
+            tv->scrollToEnd();
             if (first)
                 connect(tv, &TextView::appendLines, this, &ProjectLogNode::saveLines, Qt::UniqueConnection);
             first = false;

@@ -135,6 +135,7 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
 void TextViewEdit::recalcWordUnderCursor()
 {
     if (!mKeepWordUnderCursor) {
+        DEB() << "update WORD-UNDER-CURSOR";
         CodeEdit::recalcWordUnderCursor();
     }
 }
@@ -181,6 +182,16 @@ void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
         QTextCursor cursor = cursorForPosition(e->pos());
         if (!existHRef(cursor.charFormat().anchorHref())) return;
         emit jumpToHRef(cursor.charFormat().anchorHref());
+    }
+}
+
+void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QTextCursor cursor = cursorForPosition(event->pos());
+    bool done = false;
+    emit textDoubleClicked(cursor, done);
+    if (!done) {
+        CodeEdit::mouseDoubleClickEvent(event);
     }
 }
 

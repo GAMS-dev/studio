@@ -56,6 +56,7 @@ public:
     qint64 size() const override;
     void startRun() override;
     void endRun() override;
+    int firstErrorLine();
 //    int visibleLineCount() const override;
     QString lines(int localLineNrFrom, int lineCount) const override;
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
@@ -91,7 +92,7 @@ private:
     void updateOutputCache();
     void fetchLog();
     void fetchDisplay();
-    QByteArray popNextLine();
+    void createErrorMarks(LineRef ref);
     LineRef nextRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
     Chunk *addChunk(bool startUnit = false);

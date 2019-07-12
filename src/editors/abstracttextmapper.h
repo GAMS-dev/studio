@@ -180,6 +180,7 @@ protected:
     virtual Chunk *getChunk(int chunkNr) const = 0;
     void initDelimiter(Chunk *chunk) const;
     virtual bool updateMaxTop();
+    qint64 lastTopAbsPos();
     virtual void chunkUncached(Chunk *&chunk) const;
     void invalidateLineOffsets(Chunk *chunk, bool cutRemain = false) const;
     void updateLineOffsets(Chunk *chunk) const;
