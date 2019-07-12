@@ -3291,16 +3291,14 @@ void MainWindow::deleteScratchDirs(const QString &path)
     if (path.isEmpty()) return;
 
     QDirIterator it(path, QDir::Dirs, QDirIterator::FollowSymlinks);
-
     QRegularExpression scratchDir("[\\/\\\\]225\\w\\w?$");
     while (it.hasNext()) {
-        QDir dir(it.filePath());
+        QDir dir(it.next());
         if (scratchDir.match(it.filePath()).hasMatch()) {
             if (!dir.removeRecursively()) {
                 SysLogLocator::systemLog()->append("Could not remove scratch directory " + it.filePath());
             }
         }
-        it.next();
     }
 }
 
