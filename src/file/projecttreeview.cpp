@@ -3,7 +3,6 @@
 #include "projecttreemodel.h"
 #include <QApplication>
 #include <QMimeData>
-#include <QMessageBox>
 
 namespace gams {
 namespace studio {

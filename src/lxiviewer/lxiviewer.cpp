@@ -68,9 +68,9 @@ TextView *LxiViewer::textView() const
 
 void LxiViewer::loadLxi()
 {
-    if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size()>0) {
+    if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size() > 0) {
         ui->splitter->widget(0)->show();
-        LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
+        LxiTreeModel* model = LxiParser::parseFile(mLxiFile);
         LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
         ui->lxiTreeView->setModel(model);
         if (oldModel)

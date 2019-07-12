@@ -83,10 +83,6 @@ public slots:
     void on_removeSolverOptionItem();
     void on_toggleRowHeader(int logicalIndex);
 
-    void on_overrideExistingOptionChanged(int checkState);
-    void on_addCommentAbove_stateChanged(int checkState);
-    void on_addEOLCommentCheckBox_stateChanged(int checkState);
-
 protected:
     QList<SolverOptionItem *> mOptionItem;
     QList<QString> mHeader;
@@ -94,10 +90,6 @@ protected:
 
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
-
-    bool overrideExistingOption = true;
-    bool addCommentAbove = false;
-    bool addEOLComment = false;
 
     void setRowCount(int rows);
     void updateCheckState();

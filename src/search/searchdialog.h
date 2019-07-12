@@ -95,7 +95,6 @@ public slots:
     void updateNrMatches(int current = 0);
 
 protected slots:
-    void returnPressed();
     void searchResume();
 
 private slots:

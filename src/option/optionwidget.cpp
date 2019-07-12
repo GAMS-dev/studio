@@ -85,21 +85,16 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
     headerView->setMinimumSectionSize(1);
-    headerView->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->setColumnHidden(GamsOptionTableModel::COLUMN_ENTRY_NUMBER, true);
 
     ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
-    if (ui->gamsOptionTableView->model()->rowCount()<=0)
-        ui->gamsOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1) );
-    else
-        ui->gamsOptionTableView->resizeColumnsToContents();
-
-    ui->gamsOptionTableView->setTabKeyNavigation(false);
-
+    ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, this, &OptionWidget::on_optionTableModelChanged);
     connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
@@ -205,7 +200,7 @@ void OptionWidget::on_stopAction()
 
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
-    Q_UNUSED(lineEdit);
+    Q_UNUSED(lineEdit)
     if (mExtendedEditor->isHidden()) return;
 
     emit optionTableModelChanged(commandLineStr);
@@ -416,7 +411,7 @@ void OptionWidget::selectSearchField()
 
 void OptionWidget::optionItemCommitted(QWidget *editor)
 {
-    Q_UNUSED(editor);
+    Q_UNUSED(editor)
     if (mOptionCompleter->currentEditedIndex().isValid()) {
         ui->gamsOptionTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
         ui->gamsOptionTableView->setCurrentIndex( mOptionCompleter->currentEditedIndex() );
@@ -435,7 +430,7 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
     QVariant data = ui->gamsOptionTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->gamsOptionTableView->model()->match(ui->gamsOptionTableView->model()->index(0, GamsOptionTableModel::COLUMN_ENTRY_NUMBER),
                                                                        Qt::DisplayRole,
-                                                                       data.toString(), Qt::MatchRecursive);
+                                                                       data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->gamsOptionTableView->clearSelection();
     QItemSelection selection;
     for(QModelIndex i :indices) {
@@ -473,7 +468,7 @@ void OptionWidget::showOptionDefinition()
             QVariant optionId = ui->gamsOptionTableView->model()->data( index.sibling(index.row(), ui->gamsOptionTableView->model()->columnCount()-1), Qt::DisplayRole);
             QModelIndexList indices = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
-                                                                               optionId.toString(), 1); //, Qt::MatchRecursive);
+                                                                               optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
             for(QModelIndex idx : indices) {
                 QModelIndex  parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
 

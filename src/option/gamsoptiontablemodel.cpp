@@ -247,7 +247,7 @@ QModelIndex GamsOptionTableModel::index(int row, int column, const QModelIndex &
 
 bool GamsOptionTableModel::insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size())
          return false;
 
@@ -264,7 +264,7 @@ bool GamsOptionTableModel::insertRows(int row, int count, const QModelIndex &par
 
 bool GamsOptionTableModel::removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
          return false;
 
@@ -282,7 +282,8 @@ bool GamsOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourceR
     if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
 
-    Q_UNUSED(sourceParent); Q_UNUSED(destinationParent);
+    Q_UNUSED(sourceParent)
+    Q_UNUSED(destinationParent)
     beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count - 1, QModelIndex(), destinationChild);
     mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
     int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
@@ -334,7 +335,7 @@ Qt::DropActions GamsOptionTableModel::supportedDropActions() const
 
 bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
-    Q_UNUSED(column);
+    Q_UNUSED(column)
     if (action == Qt::IgnoreAction)
         return true;
     if (!mimedata->hasFormat("application/vnd.gams-pf.text"))

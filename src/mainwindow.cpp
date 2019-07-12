@@ -169,6 +169,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
 
+    connect(ui->dockProjectView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockLogView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockHelpView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+
+
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
@@ -199,10 +204,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logTabs->setCornerWidget(tabMenu);
 
     // shortcuts
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleDebugMode()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
@@ -693,13 +694,25 @@ void MainWindow::showTabsMenu()
 
 void MainWindow::focusCmdLine()
 {
+    raise();
+    activateWindow();
     mGamsOptionWidget->focus();
 }
 
 void MainWindow::focusProjectExplorer()
 {
     setProjectViewVisibility(true);
-    ui->projectView->setFocus(Qt::ShortcutFocusReason);
+    ui->dockProjectView->activateWindow();
+    ui->dockProjectView->raise();
+    ui->projectView->setFocus();
+}
+
+void MainWindow::focusProcessLogs()
+{
+    setOutputViewVisibility(true);
+    ui->dockLogView->activateWindow();
+    ui->dockLogView->raise();
+    ui->logTabs->currentWidget()->setFocus();
 }
 
 void MainWindow::updateEditorPos()
@@ -1378,7 +1391,7 @@ void MainWindow::showErrorMessage(QString text)
     mSyslog->append(text, LogMsgType::Error);
 }
 
-void MainWindow::postGamsRun(NodeId origin)
+void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
     if (origin == -1) {
         mSyslog->append("No fileId set to process", LogMsgType::Error);
@@ -1388,6 +1401,23 @@ void MainWindow::postGamsRun(NodeId origin)
     if (!groupNode) {
         mSyslog->append("No group attached to process", LogMsgType::Error);
         return;
+    }
+
+    if (exitCode == GAMSRETRN_TOO_MANY_SCRATCH_DIRS) {
+        ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+        QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Delete scratch directories");
+        msgBox.setText("GAMS was unable to run because there are too many scratch directories "
+                       "in the current workspace folder. Clean up your workspace and try again.\n"
+                       "The current working directory is " + path);
+        msgBox.setInformativeText("Delete scratch directories now?");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+        if (msgBox.exec() == QMessageBox::Yes)
+            deleteScratchDirs(path);
     }
 
     // add all created files to project explorer
@@ -1535,7 +1565,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        fc->setModified(false);
+        if (fc->document())
+            fc->document()->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;
@@ -1792,16 +1823,26 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         e->accept(); return;
     }
 
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_H)) {
+    // focus shortcuts
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_E)) {
+        activateWindow();
         if (mRecent.editor()) mRecent.editor()->setFocus();
 
         e->accept(); return;
-    }
-
-    if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
-        if (outputViewVisibility() == false) setOutputViewVisibility(true);
-        ui->dockLogView->raise();
-        ui->logTabs->currentWidget()->setFocus();
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
+        focusProjectExplorer();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_K)) {
+        showTabsMenu();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
+        focusCmdLine();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
+        toggleDebugMode();
+        e->accept(); return;
+    } else if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
+        focusProcessLogs();
         e->accept(); return;
     }
 
@@ -1840,6 +1881,25 @@ void MainWindow::dropEvent(QDropEvent* e)
         }
         openFiles(pathList);
     }
+}
+
+void MainWindow::dockTopLevelChanged(bool)
+{
+    QDockWidget* dw = static_cast<QDockWidget*>(QObject::sender());
+    if (dw->isFloating()) {
+        dw->installEventFilter(this);
+    } else
+        dw->removeEventFilter(this);
+}
+
+bool MainWindow::eventFilter(QObject*, QEvent* event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        keyPressEvent(keyEvent);
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::openFiles(QStringList files, bool forceNew)
@@ -2540,14 +2600,12 @@ void MainWindow::on_actionSearch_triggered()
                gdx->selectSearchField();
                return;
            }
-           if (fc->file()->kind() == FileKind::Ref) {
-               reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor());
+           if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor())) {
                refViewer->selectSearchField();
                return;
            }
-           if (fc->file()->kind() == FileKind::Opt) {
-               option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(mRecent.editor());
-               solverOptionEditor->selectSearchField();
+           if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+               sow->selectSearchField();
                return;
            }
        }
@@ -2753,8 +2811,7 @@ void MainWindow::on_actionCopy_triggered()
     if (fm->kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
         gdx->copyAction();
-    } else if (fm->kind() == FileKind::Opt) {
-        option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor());
+    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->copy();
@@ -3187,7 +3244,6 @@ void MainWindow::on_actionToggleBookmark_triggered()
     } else if (TextView* tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->edit()->sendToggleBookmark();
     }
-
 }
 
 void MainWindow::on_actionNextBookmark_triggered()
@@ -3211,6 +3267,41 @@ void MainWindow::on_actionPreviousBookmark_triggered()
 void MainWindow::on_actionRemoveBookmarks_triggered()
 {
     mTextMarkRepo.removeBookmarks();
+}
+
+void MainWindow::on_actionDeleteScratchDirs_triggered()
+{
+    ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+    QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Delete scratch directories");
+    msgBox.setText("This will delete all scratch directories in your current workspace.\n"
+                   "The current working directory is " + path);
+    msgBox.setInformativeText("Delete scratch directories now?");
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+    if (msgBox.exec() == QMessageBox::Yes)
+        deleteScratchDirs(path);
+}
+
+void MainWindow::deleteScratchDirs(const QString &path)
+{
+    if (path.isEmpty()) return;
+
+    QDirIterator it(path, QDir::Dirs, QDirIterator::FollowSymlinks);
+
+    QRegularExpression scratchDir("[\\/\\\\]225\\w\\w?$");
+    while (it.hasNext()) {
+        QDir dir(it.filePath());
+        if (scratchDir.match(it.filePath()).hasMatch()) {
+            if (!dir.removeRecursively()) {
+                SysLogLocator::systemLog()->append("Could not remove scratch directory " + it.filePath());
+            }
+        }
+        it.next();
+    }
 }
 
 }

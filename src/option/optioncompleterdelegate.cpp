@@ -39,7 +39,7 @@ OptionCompleterDelegate::OptionCompleterDelegate(OptionTokenizer* tokenizer, QOb
 
 QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    Q_UNUSED(option);
+    Q_UNUSED(option)
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
     if (index.column()==SolverOptionTableModel::COLUMN_OPTION_KEY) {

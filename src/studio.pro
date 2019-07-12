@@ -38,8 +38,11 @@ include(../gamsdependency.pri)
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
-    ICON = studio.icns
-    QMAKE_INFO_PLIST=Info.plist
+    ICON = ../icons/studio.icns
+    MACOS_BUNDLE_ICONS.files = ../icons/database.icns
+    MACOS_BUNDLE_ICONS.path = Contents/Resources
+    QMAKE_BUNDLE_DATA += MACOS_BUNDLE_ICONS
+    QMAKE_INFO_PLIST = Info.plist
 }
 unix {
     LIBS += -ldl
@@ -122,7 +125,6 @@ SOURCES += \
     option/optiontokenizer.cpp \
     option/optionwidget.cpp \
     option/solveroptiondefinitionmodel.cpp \
-    option/solveroptionsetting.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
     reference/reference.cpp \
@@ -238,7 +240,6 @@ HEADERS += \
     option/optiontokenizer.h \
     option/optionwidget.h \
     option/solveroptiondefinitionmodel.h \
-    option/solveroptionsetting.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
     reference/reference.h \
@@ -306,7 +307,6 @@ FORMS += \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
     option/solveroptionwidget.ui \
-    option/solveroptionsetting.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     resultsview.ui \
