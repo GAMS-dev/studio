@@ -54,6 +54,10 @@
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
 
+#ifdef __APPLE__
+#include "macoscocoabridge.h"
+#endif
+
 namespace gams {
 namespace studio {
 
@@ -89,6 +93,9 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
+    MacOSCocoaBridge::disableDictationMenuItem(true);
+    MacOSCocoaBridge::disableCharacterPaletteMenuItem(true);
+    MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
 #endif
 
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
