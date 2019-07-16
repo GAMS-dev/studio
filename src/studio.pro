@@ -40,6 +40,12 @@ macx {
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
     ICON = ../icons/studio.icns
 
+    HEADERS += macoscocoabridge.h
+
+    OBJECTIVE_SOURCES += macoscocoabridge.mm
+
+    LIBS += -framework AppKit
+
     MACOS_BUNDLE_ICONS.files = ../icons/database.icns
     MACOS_BUNDLE_ICONS.path = Contents/Resources
     QMAKE_BUNDLE_DATA += MACOS_BUNDLE_ICONS
