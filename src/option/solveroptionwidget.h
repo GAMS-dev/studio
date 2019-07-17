@@ -93,13 +93,13 @@ public slots:
 
     void copyAction();
 
+    void selectAllOptions();
+
 private slots:
     void showOptionDefinition();
     void copyDefinitionToClipboard(int column);
-
     void findAndSelectionOptionFromDefinition();
     void toggleCommentOption();
-    void selectAllOptions();
     void selectAnOption();
     void insertOption();
     void insertComment();

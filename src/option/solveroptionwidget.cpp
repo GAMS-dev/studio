@@ -798,6 +798,7 @@ void SolverOptionWidget::selectAllOptions()
     if (isViewCompact())
         return;
 
+    ui->solverOptionTableView->setFocus();
     ui->solverOptionTableView->selectAll();
 }
 

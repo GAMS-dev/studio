@@ -2850,6 +2850,8 @@ void MainWindow::on_actionSelect_All_triggered()
         ae->selectAll();
     } else if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
         tv->selectAllText();
+    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(focusWidget())) {
+        so->selectAllOptions();
     }
 }
 

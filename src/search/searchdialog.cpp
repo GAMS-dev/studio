@@ -447,7 +447,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     int matchNr = -1;
 
     // skip to next entry if file is opened in solver option edit
-    if (option::SolverOptionWidget* sow = ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
+    if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
         int selected = resultsView()->selectedItem();
 
         // no rows selected, select new depending on direction
