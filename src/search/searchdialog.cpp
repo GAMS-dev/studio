@@ -25,12 +25,14 @@
 #include "../exception.h"
 #include "searchresultlist.h"
 #include "searchworker.h"
+#include "option/solveroptionwidget.h"
 #include "locators/settingslocator.h"
 #include "editors/viewhelper.h"
 
 #include <QMessageBox>
 #include <QTextDocumentFragment>
 #include <QThread>
+
 
 namespace gams {
 namespace studio {
@@ -434,18 +436,35 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         lineNr = t->position().y()+1;
         colNr = t->position().x();
     }
+
     QList<Result> resultList = mCachedResults->resultsAsList();
     if (resultList.size() == 0) return;
 
-    Result* res = nullptr;
-    int interator = backwards ? -1 : 1;
+    const Result* res = nullptr;
+    int iterator = backwards ? -1 : 1;
     int start = backwards ? resultList.size()-1 : 0;
     bool allowJumping = false;
     int matchNr = -1;
 
-    if (mMain->recent()->editor()) {
+    // skip to next entry if file is opened in solver option edit
+    if (option::SolverOptionWidget* sow = ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
+        int selected = resultsView()->selectedItem();
+
+        // no rows selected, select new depending on direction
+        if (selected == -1) selected = backwards ? resultList.size() : 0;
+
+        int newIndex = selected + iterator;
+        if (newIndex < 0)
+            newIndex = resultList.size()-1;
+        else if (newIndex > resultList.size()-1)
+            newIndex = 0;
+
+        res = &resultList.at(newIndex);
+        matchNr = newIndex;
+
+    } else if (mMain->recent()->editor()){
         QString file = ViewHelper::location(mMain->recent()->editor());
-        for (int i = start; i >= 0 && i < resultList.size(); i += interator) {
+        for (int i = start; i >= 0 && i < resultList.size(); i += iterator) {
             matchNr = i;
             Result r = resultList.at(i);
 
