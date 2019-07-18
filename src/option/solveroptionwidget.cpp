@@ -48,7 +48,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
           mCodec(codec)
 {
     ui->setupUi(this);
-
+    setFocusProxy(ui->solverOptionTableView);
     addActions();
 
     init();

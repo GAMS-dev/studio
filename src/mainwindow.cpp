@@ -2381,11 +2381,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     // set keyboard focus to editor
     if (tabWidget->currentWidget())
         if (focus) {
-            lxiviewer::LxiViewer* lxiViewer = ViewHelper::toLxiViewer(edit);
-            if (lxiViewer)
-                lxiViewer->textView()->setFocus();
-            else
-                tabWidget->currentWidget()->setFocus();
+            tabWidget->currentWidget()->setFocus();
             if (runGroup)
                 mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
         }
