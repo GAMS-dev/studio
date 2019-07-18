@@ -177,16 +177,9 @@ bool SolverOptionWidget::init()
         ui->compactViewCheckBox->setEnabled(false);
 
         QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
-        QString msg2 = QString("%1 is not a valid solver name").arg(mSolverName);
-        mOptionTokenizer->logger()->append(msg2, LogMsgType::Warning);
-        mOptionTokenizer->logger()->append(QString("Unable to load options from %1 properly.").arg(mLocation), LogMsgType::Warning);
-
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Problem openning Solver Option File");
-        msgBox.setText(QString("%1.\nProblem: %2.").arg(msg1).arg(msg2));
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
+        QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
+        mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1).arg(msg2), LogMsgType::Error);
+        mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Warning);
 
         return false;
     }
