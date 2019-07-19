@@ -795,79 +795,57 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups)
 {
     QString path = mRecent.path;
     if (path.isEmpty()) path = ".";
-    if (mRecent.editFileId >= 0) {
-        FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
-        if (fm) path = QFileInfo(fm->location()).path();
+
+    QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
+                                                    tr("GAMS Source (*.gms);;"
+                                                       "Option files (*.opt *.op* *.o*);;"
+                                                       "Text files (*.txt);;"
+                                                       "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
+    if (filePath == "") return;
+    QFileInfo fi(filePath);
+    if (fi.suffix().isEmpty()) filePath += ".gms";
+
+    QFile file(filePath);
+    FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+
+    if (file.exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File already existing");
+        msgBox.setText("The file " + filePath + " already exists in your working directory.");
+        msgBox.setInformativeText("What do you want to do with the existing file?");
+        msgBox.setStandardButtons(QMessageBox::Abort);
+        msgBox.addButton("Open", QMessageBox::ActionRole);
+        msgBox.addButton("Replace", QMessageBox::ActionRole);
+        int answer = msgBox.exec();
+
+        switch(answer) {
+        case 0: // open
+            // do nothing and continue
+            break;
+        case 1: // replace
+            closeFileEditors(destFM->id());
+            file.open(QIODevice::WriteOnly); // create empty file
+            file.close();
+            break;
+        case QMessageBox::Abort:
+            return;
+        }
+    } else {
+        file.open(QIODevice::WriteOnly); // create empty file
+        file.close();
     }
-    // find a free file name
-    int nr = 1;
-    while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
-    path += QString("/new%1.gms").arg(nr);
-    int choice = 4;
-    while (choice == 4) {
-        QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
-                                                         tr("GAMS Source (*.gms);;"
-                                                           "Option files (*.opt *.op* *.o*);;"
-                                                           "Text files (*.txt);;"
-                                                           "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
-        if (filePath == "") return;
-        QFileInfo fi(filePath);
-        if (fi.suffix().isEmpty())
-            filePath += ".gms";
-        QFile file(filePath);
-        bool exists = file.exists();
-        FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
 
-        // choices:   0=duplicate   1=overwrite   2=open-existing   3=open-new   4=abort
-        if (destFM) {
-            choice = QMessageBox::question(this, "file in use"
-                                           , QString("%1 is already in use.").arg(filePath)
-                                           , "Duplicate", "Open", "Back", 1, 2);
-            choice *= 2;                    // 0 - 2 - 4
-            if (groups.isEmpty() && choice == 0) {
-                groups << mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
-            }
-        } else if (exists) {
-            choice = QMessageBox::question(this, "File exists", filePath+" already exists."
-                                           , "Overwrite", "Open", "Back", 1, 2);
-            ++choice;
-            if (choice > 1) ++choice;       // 1 - 3 - 4
-        } else {
-            choice = groups.isEmpty() ? 2 : 3;
-        }
-
-        if (choice < 4) {
-            if (!file.exists()) { // new
-                file.open(QIODevice::WriteOnly);
-                file.close();
-            } else if (choice == 1) { // replace old
-                file.resize(0);
-            }
-
-            if (choice == 2) { // default for new_file and existing_node
-                openFilePath(filePath);
-                return;
-            }
-
-            if (groups.isEmpty()) {
-                if (ProjectFileNode *fc = addNode("", filePath)) {
-                    fc->file()->save();
-                    // TODO(JM) at choice==0 -> create Node (look at TreeView)
-                    openFileNode(fc);
-                }
-            } else {
-                for (ProjectGroupNode *group: groups) {
-                    addToGroup(group, filePath);
-                }
-            }
-
-        }
+    if (!groups.isEmpty()) { // add file to each selected group
+        for (ProjectGroupNode *group: groups)
+            openFileNode(addNode("", filePath, group));
+    } else { // create new group
+        ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+        openFileNode(addNode("", filePath, group));
     }
 }
 
 void MainWindow::on_actionNew_triggered()
 {
-    QString fileLocation;
     newFileDialog();
 }
 
@@ -881,7 +859,6 @@ void MainWindow::on_actionOpen_triggered()
                                                           "All files (*.*)"),
                                                        nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
     openFiles(files);
 }
 
@@ -895,7 +872,6 @@ void MainWindow::on_actionOpenNew_triggered()
                                                          "All files (*.*)"),
                                                        nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
     openFiles(files, true);
 }
 
