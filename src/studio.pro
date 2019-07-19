@@ -50,6 +50,7 @@ unix {
 win32 {
     RC_FILE += studio.rc
     LIBS += -luser32
+#testcomment
 }
 
 # The following define makes your compiler emit warnings if you use
