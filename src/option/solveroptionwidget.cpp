@@ -795,8 +795,7 @@ void SolverOptionWidget::toggleCommentOption()
 
 void SolverOptionWidget::selectAllOptions()
 {
-    if (isViewCompact())
-        return;
+    if (isViewCompact()) return;
 
     ui->solverOptionTableView->setFocus();
     ui->solverOptionTableView->selectAll();

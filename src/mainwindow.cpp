@@ -2848,9 +2848,9 @@ void MainWindow::on_actionSelect_All_triggered()
         mSyslog->selectAll();
     } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget())) {
         ae->selectAll();
-    } else if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+    } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->selectAllText();
-    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(focusWidget())) {
+    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         so->selectAllOptions();
     }
 }
