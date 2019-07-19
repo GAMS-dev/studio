@@ -806,7 +806,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups)
     int choice = 4;
     while (choice == 4) {
         QString filePath = QFileDialog::getSaveFileName(this, "Create new file...", path,
-                                                        tr("GAMS code (*.gms *.inc );;"
+                                                         tr("GAMS Source (*.gms);;"
                                                            "Option files (*.opt *.op* *.o*);;"
                                                            "Text files (*.txt);;"
                                                            "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite);
@@ -875,7 +875,8 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *.ref);;"
+                                                       tr("GAMS Source (*.gms);;"
+                                                          "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -888,9 +889,10 @@ void MainWindow::on_actionOpenNew_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *.ref);;"
-                                                          "Text files (*.txt);;"
-                                                          "All files (*.*)"),
+                                                      tr("GAMS Source (*.gms);;"
+                                                         "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                         "Text files (*.txt);;"
+                                                         "All files (*.*)"),
                                                        nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
 
@@ -919,7 +921,8 @@ void MainWindow::on_actionSave_As_triggered()
     QFileInfo fi(filePath);
     while (choice < 1) {
         QStringList filters;
-        filters << tr("GAMS code (*.gms *.inc *.log *.gdx *.opt *.ref)");
+        filters << tr("GAMS Source (*.gms)");
+        filters << tr("All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref)");
         filters << tr("Text files (*.txt)");
         filters << tr("All files (*.*)");
         QString *selFilter = &filters.last();
