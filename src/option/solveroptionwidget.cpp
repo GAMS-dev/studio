@@ -1147,6 +1147,13 @@ void SolverOptionWidget::addActions()
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(selectAll);
 
+    QAction* anotehrSelectAll = mContextMenu.addAction("Select All", ui->solverOptionTreeView, [this]() { selectAllOptions(); });
+    anotehrSelectAll->setObjectName("actionSelect_all");
+    anotehrSelectAll->setShortcut( QKeySequence("Ctrl+A") );
+    anotehrSelectAll->setShortcutVisibleInContextMenu(true);
+    anotehrSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->solverOptionTreeView->addAction(anotehrSelectAll);
+
     QAction* findThisOptionAction = mContextMenu.addAction("show Option of this definition", [this]() {
         findAndSelectionOptionFromDefinition();
     });
