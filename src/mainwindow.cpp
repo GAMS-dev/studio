@@ -55,7 +55,7 @@
 #include "editors/viewhelper.h"
 
 #ifdef __APPLE__
-#include "macoscocoabridge.h"
+#include "../platform/macos/macoscocoabridge.h"
 #endif
 
 namespace gams {
