@@ -154,7 +154,6 @@ private:
     SearchResultList *mCachedResults = nullptr;
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = true;
-    bool mFirstReturn = false;
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;

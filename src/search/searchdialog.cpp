@@ -61,10 +61,10 @@ SearchDialog::~SearchDialog()
 
 void SearchDialog::on_btn_Replace_clicked()
 {
-    mIsReplacing = true; // when replacing dont jump to first result after updating cache, replace will take care of that
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
+    mIsReplacing = true;
     QRegularExpression regex = createRegex();
     QRegularExpressionMatch match = regex.match(edit->textCursor().selectedText());
 
@@ -74,6 +74,7 @@ void SearchDialog::on_btn_Replace_clicked()
     }
 
     findNext(SearchDialog::Forward, true);
+    mIsReplacing = false;
 }
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
@@ -116,15 +117,13 @@ void SearchDialog::finalUpdate()
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
         if (edit && !edit->textCursor().hasSelection()) {
-            if (!mIsReplacing) selectNextMatch(SearchDirection::Forward);
+            selectNextMatch(SearchDirection::Forward);
         } else if (edit) {
             edit->textCursor().clearSelection();
         } else if (tv) {
-            if (!mIsReplacing) selectNextMatch(SearchDirection::Forward);
+            selectNextMatch(SearchDirection::Forward);
         }
     }
-
-    if (mIsReplacing) mIsReplacing = false;
 
     updateEditHighlighting();
 
@@ -418,7 +417,7 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
         updateSearchCache(ignoreReadOnly);
         QApplication::processEvents(QEventLoop::AllEvents, 50);
     }
-    selectNextMatch(direction);
+    if (!mIsReplacing) selectNextMatch(direction);
 }
 
 ///
@@ -519,7 +518,6 @@ void SearchDialog::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
-    mFirstReturn = true;
     autofillSearchField();
     updateReplaceActionAvailability();
 }
@@ -805,7 +803,6 @@ void SearchDialog::autofillSearchField()
             ui->combo_search->setCurrentIndex(0);
         } else {
             ui->combo_search->setEditText(ui->combo_search->itemText(0));
-            mFirstReturn = false;
         }
     }
 
@@ -815,7 +812,6 @@ void SearchDialog::autofillSearchField()
             ui->combo_search->setCurrentIndex(0);
         } else {
             ui->combo_search->setEditText(ui->combo_search->itemText(0));
-            mFirstReturn = false;
         }
     }
 
