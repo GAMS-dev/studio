@@ -154,11 +154,11 @@ private:
     SearchResultList *mCachedResults = nullptr;
     QWidget *mActiveEdit = nullptr;
     bool mHasChanged = true;
-    bool mFirstReturn = false;
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;
     bool mShowResults = true;
+    bool mIsReplacing = false;
     bool mSuppressChangeEvent = false;
     QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
     QThread mThread;

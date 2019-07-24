@@ -64,11 +64,17 @@ void SearchDialog::on_btn_Replace_clicked()
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
-    QString replaceTerm = ui->txt_replace->text();
-    if (edit->textCursor().hasSelection())
-        edit->textCursor().insertText(replaceTerm);
+    mIsReplacing = true;
+    QRegularExpression regex = createRegex();
+    QRegularExpressionMatch match = regex.match(edit->textCursor().selectedText());
+
+    if (edit->textCursor().hasSelection() && match.hasMatch() &&
+            match.capturedLength() == edit->textCursor().selectedText().length()) {
+        edit->textCursor().insertText(ui->txt_replace->text());
+    }
 
     findNext(SearchDialog::Forward, true);
+    mIsReplacing = false;
 }
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
@@ -110,12 +116,13 @@ void SearchDialog::finalUpdate()
     } else {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
-        if (edit && !edit->textCursor().hasSelection())
+        if (edit && !edit->textCursor().hasSelection()) {
             selectNextMatch(SearchDirection::Forward);
-        else if (edit)
+        } else if (edit) {
             edit->textCursor().clearSelection();
-        else if (tv)
+        } else if (tv) {
             selectNextMatch(SearchDirection::Forward);
+        }
     }
 
     updateEditHighlighting();
@@ -405,12 +412,12 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
 {
     if (ui->combo_search->currentText() == "") return;
 
-    if (!mCachedResults || mHasChanged || (mMain->recent()->editor() && mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty())) {
+    if (!mCachedResults || mHasChanged) {
         invalidateCache();
         updateSearchCache(ignoreReadOnly);
         QApplication::processEvents(QEventLoop::AllEvents, 50);
     }
-    selectNextMatch(direction);
+    if (!mIsReplacing) selectNextMatch(direction);
 }
 
 ///
@@ -511,7 +518,6 @@ void SearchDialog::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
 
-    mFirstReturn = true;
     autofillSearchField();
     updateReplaceActionAvailability();
 }
@@ -797,7 +803,6 @@ void SearchDialog::autofillSearchField()
             ui->combo_search->setCurrentIndex(0);
         } else {
             ui->combo_search->setEditText(ui->combo_search->itemText(0));
-            mFirstReturn = false;
         }
     }
 
@@ -807,7 +812,6 @@ void SearchDialog::autofillSearchField()
             ui->combo_search->setCurrentIndex(0);
         } else {
             ui->combo_search->setEditText(ui->combo_search->itemText(0));
-            mFirstReturn = false;
         }
     }
 
