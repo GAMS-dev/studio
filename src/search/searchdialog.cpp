@@ -61,12 +61,17 @@ SearchDialog::~SearchDialog()
 
 void SearchDialog::on_btn_Replace_clicked()
 {
+    mIsReplacing = true; // when replacing dont jump to first result after updating cache, replace will take care of that
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
-    QString replaceTerm = ui->txt_replace->text();
-    if (edit->textCursor().hasSelection())
-        edit->textCursor().insertText(replaceTerm);
+    QRegularExpression regex = createRegex();
+    QRegularExpressionMatch match = regex.match(edit->textCursor().selectedText());
+
+    if (edit->textCursor().hasSelection() && match.hasMatch() &&
+            match.capturedLength() == edit->textCursor().selectedText().length()) {
+        edit->textCursor().insertText(ui->txt_replace->text());
+    }
 
     findNext(SearchDialog::Forward, true);
 }
@@ -110,13 +115,16 @@ void SearchDialog::finalUpdate()
     } else {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
-        if (edit && !edit->textCursor().hasSelection())
-            selectNextMatch(SearchDirection::Forward);
-        else if (edit)
+        if (edit && !edit->textCursor().hasSelection()) {
+            if (!mIsReplacing) selectNextMatch(SearchDirection::Forward);
+        } else if (edit) {
             edit->textCursor().clearSelection();
-        else if (tv)
-            selectNextMatch(SearchDirection::Forward);
+        } else if (tv) {
+            if (!mIsReplacing) selectNextMatch(SearchDirection::Forward);
+        }
     }
+
+    if (mIsReplacing) mIsReplacing = false;
 
     updateEditHighlighting();
 
@@ -405,7 +413,7 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
 {
     if (ui->combo_search->currentText() == "") return;
 
-    if (!mCachedResults || mHasChanged || (mMain->recent()->editor() && mCachedResults->filteredResultList(mMain->recent()->editor()->property("location").toString()).isEmpty())) {
+    if (!mCachedResults || mHasChanged) {
         invalidateCache();
         updateSearchCache(ignoreReadOnly);
         QApplication::processEvents(QEventLoop::AllEvents, 50);
