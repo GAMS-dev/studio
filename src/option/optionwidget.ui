@@ -173,7 +173,7 @@
           <item>
            <widget class="QLineEdit" name="gamsOptionSearch">
             <property name="placeholderText">
-             <string>Search Option...</string>
+             <string>Search Parameters...</string>
             </property>
            </widget>
           </item>

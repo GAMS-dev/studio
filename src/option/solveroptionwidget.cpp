@@ -177,16 +177,9 @@ bool SolverOptionWidget::init()
         ui->compactViewCheckBox->setEnabled(false);
 
         QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
-        QString msg2 = QString("%1 is not a valid solver name").arg(mSolverName);
-        mOptionTokenizer->logger()->append(msg2, LogMsgType::Warning);
-        mOptionTokenizer->logger()->append(QString("Unable to load options from %1 properly.").arg(mLocation), LogMsgType::Warning);
-
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Problem openning Solver Option File");
-        msgBox.setText(QString("%1.\nProblem: %2.").arg(msg1).arg(msg2));
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
+        QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
+        mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1).arg(msg2), LogMsgType::Error);
+        mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Warning);
 
         return false;
     }
@@ -1105,42 +1098,42 @@ void SolverOptionWidget::addActions()
     ui->solverOptionTableView->addAction(commentAction);
     addAction(commentAction);
 
-    QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Option", [this]() { insertOption(); });
+    QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "Insert new option", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
     insertOptionAction->setShortcut( QKeySequence("Ctrl+Insert") );
     insertOptionAction->setShortcutVisibleInContextMenu(true);
     insertOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(insertOptionAction);
 
-    QAction* insertCommentAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Comment", [this]() { insertComment(); });
+    QAction* insertCommentAction = mContextMenu.addAction(QIcon(":/img/insert"), "Insert new comment", [this]() { insertComment(); });
     insertCommentAction->setObjectName("actionInsert_comment");
     insertCommentAction->setShortcut( QKeySequence("Ctrl+Alt+Insert") );
     insertCommentAction->setShortcutVisibleInContextMenu(true);
     insertCommentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(insertCommentAction);
 
-    QAction* deleteAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete Selection", [this]() { deleteOption(); });
+    QAction* deleteAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "Delete selection", [this]() { deleteOption(); });
     deleteAction->setObjectName("actionDelete_option");
     deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
     deleteAction->setShortcutVisibleInContextMenu(true);
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(deleteAction);
 
-    QAction* moveUpAction = mContextMenu.addAction(QIcon(":/img/move-up"), "move Up", [this]() { moveOptionUp(); });
+    QAction* moveUpAction = mContextMenu.addAction(QIcon(":/img/move-up"), "Move up", [this]() { moveOptionUp(); });
     moveUpAction->setObjectName("actionMoveUp_option");
     moveUpAction->setShortcut( QKeySequence("Ctrl+Up") );
     moveUpAction->setShortcutVisibleInContextMenu(true);
     moveUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(moveUpAction);
 
-    QAction* moveDownAction = mContextMenu.addAction(QIcon(":/img/move-down"), "move Down", [this]() { moveOptionDown(); });
+    QAction* moveDownAction = mContextMenu.addAction(QIcon(":/img/move-down"), "Move down", [this]() { moveOptionDown(); });
     moveDownAction->setObjectName("actionMoveDown_option");
     moveDownAction->setShortcut( QKeySequence("Ctrl+Down") );
     moveDownAction->setShortcutVisibleInContextMenu(true);
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(moveDownAction);
 
-    QAction* selectAll = mContextMenu.addAction("Select All", ui->solverOptionTableView, [this]() { selectAllOptions(); });
+    QAction* selectAll = mContextMenu.addAction("Select all", ui->solverOptionTableView, [this]() { selectAllOptions(); });
     selectAll->setObjectName("actionSelect_all");
     selectAll->setShortcut( QKeySequence("Ctrl+A") );
     selectAll->setShortcutVisibleInContextMenu(true);
@@ -1163,7 +1156,7 @@ void SolverOptionWidget::addActions()
     findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(findThisOptionAction);
 
-    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Option", [this]() {
+    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "Add this option", [this]() {
         QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
         if (selection.size()>0) {
             ui->solverOptionTableView->clearSelection();
@@ -1177,7 +1170,7 @@ void SolverOptionWidget::addActions()
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(addThisOptionAction);
 
-    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "remove This Option", [this]() {
+    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "Remove this option", [this]() {
         findAndSelectionOptionFromDefinition();
         deleteOption();
     });
@@ -1187,13 +1180,13 @@ void SolverOptionWidget::addActions()
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(deleteThisOptionAction);
 
-    QAction* copyDefinitionOptionNameAction = mContextMenu.addAction("Copy Option Name\tCtrl+C",
+    QAction* copyDefinitionOptionNameAction = mContextMenu.addAction("Copy option name\tCtrl+C",
                                                                      [this]() { copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_OPTION_NAME ); });
     copyDefinitionOptionNameAction->setObjectName("actionCopyDefinitionOptionName");
     copyDefinitionOptionNameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionOptionNameAction);
 
-    QAction* copyDefinitionOptionDescriptionAction = mContextMenu.addAction("Copy Option Description",
+    QAction* copyDefinitionOptionDescriptionAction = mContextMenu.addAction("Copy option description",
                                                                             [this]() { copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_DESCIPTION ); });
     copyDefinitionOptionDescriptionAction->setObjectName("actionCopyDefinitionOptionDescription");
     copyDefinitionOptionDescriptionAction->setShortcut( QKeySequence("Shift+C") );
@@ -1201,7 +1194,7 @@ void SolverOptionWidget::addActions()
     copyDefinitionOptionDescriptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionOptionDescriptionAction);
 
-    QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy Definition Text",
+    QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy definition text",
                                                                [this]() { copyDefinitionToClipboard( -1 ); });
     copyDefinitionTextAction->setObjectName("actionCopyDefinitionText");
     copyDefinitionTextAction->setShortcut( QKeySequence("Ctrl+Shift+C") );
@@ -1209,7 +1202,7 @@ void SolverOptionWidget::addActions()
     copyDefinitionTextAction->setShortcutContext(Qt::WidgetShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionTextAction);
 
-    QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
+    QAction* showDefinitionAction = mContextMenu.addAction("Show option definition", [this]() { showOptionDefinition(); });
     showDefinitionAction->setObjectName("actionShowDefinition_option");
     showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
     showDefinitionAction->setShortcutVisibleInContextMenu(true);

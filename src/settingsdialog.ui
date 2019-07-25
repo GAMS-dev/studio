@@ -586,7 +586,7 @@
           <item row="1" column="0">
            <widget class="QCheckBox" name="overrideExistingOptionCheckBox">
             <property name="text">
-             <string>override existing option, if there is any</string>
+             <string>Override existing option, if there is any</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -596,35 +596,35 @@
           <item row="0" column="0">
            <widget class="QLabel" name="insertingNewOptionLabel">
             <property name="text">
-             <string>When inserting new option from definition:</string>
+             <string>When inserting a new option from definition:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="0">
            <widget class="QCheckBox" name="addEOLCommentCheckBox">
             <property name="text">
-             <string>add option description as end of line comment (when available)</string>
+             <string>Add option description as end of line comment (when available)</string>
             </property>
            </widget>
           </item>
           <item row="2" column="0">
            <widget class="QCheckBox" name="addCommentAboveCheckBox">
             <property name="text">
-             <string>add option description as comment above</string>
+             <string>Add option description as comment above</string>
             </property>
            </widget>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="deletingOptionLabel">
             <property name="text">
-             <string>When deleting option:</string>
+             <string>When deleting or replacing an option:</string>
             </property>
            </widget>
           </item>
           <item row="5" column="0">
            <widget class="QCheckBox" name="deleteCommentAboveCheckbox">
             <property name="text">
-             <string>delete all immediate comments above, if there is any</string>
+             <string>Delete all immediate comments above, if there are any</string>
             </property>
             <property name="checked">
              <bool>false</bool>

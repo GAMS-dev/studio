@@ -164,7 +164,7 @@ public slots:
     void appendSystemLog(const QString &text);
     void showErrorMessage(QString text);
     void optionRunChanged();
-    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>());
+    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     bool eventFilter(QObject*, QEvent* event);
     void dockTopLevelChanged(bool);
 

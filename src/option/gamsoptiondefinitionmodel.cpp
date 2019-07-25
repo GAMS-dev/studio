@@ -26,7 +26,12 @@ namespace option {
 GamsOptionDefinitionModel::GamsOptionDefinitionModel(Option *data, int optionGroup, QObject *parent):
     OptionDefinitionModel (data, optionGroup, parent)
 {
+    QList<QVariant> rootData;
+    rootData << "Parameter" << "Synonym" << "DefValue" << "Range"
+             << "Type" << "Description" << "Debug Entry" ;
+    rootItem = new OptionDefinitionItem(rootData);
 
+    setupTreeItemModelData(mOption, rootItem);
 }
 
 QStringList GamsOptionDefinitionModel::mimeTypes() const

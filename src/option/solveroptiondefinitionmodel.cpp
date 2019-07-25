@@ -28,7 +28,12 @@ namespace option {
 SolverOptionDefinitionModel::SolverOptionDefinitionModel(Option *data, int optionGroup, QObject *parent):
     OptionDefinitionModel (data, optionGroup, parent)
 {
+    QList<QVariant> rootData;
+    rootData << "Option" << "Synonym" << "DefValue" << "Range"
+             << "Type" << "Description" << "Debug Entry" ;
+    rootItem = new OptionDefinitionItem(rootData);
 
+    setupTreeItemModelData(mOption, rootItem);
 }
 
 QStringList SolverOptionDefinitionModel::mimeTypes() const
