@@ -48,7 +48,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
           mCodec(codec)
 {
     ui->setupUi(this);
-
+    setFocusProxy(ui->solverOptionTableView);
     addActions();
 
     init();
@@ -788,9 +788,9 @@ void SolverOptionWidget::toggleCommentOption()
 
 void SolverOptionWidget::selectAllOptions()
 {
-    if (isViewCompact())
-        return;
+    if (isViewCompact()) return;
 
+    ui->solverOptionTableView->setFocus();
     ui->solverOptionTableView->selectAll();
 }
 
@@ -1140,7 +1140,14 @@ void SolverOptionWidget::addActions()
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(selectAll);
 
-    QAction* findThisOptionAction = mContextMenu.addAction("Show option of this definition", [this]() {
+    QAction* anotehrSelectAll = mContextMenu.addAction("Select All", ui->solverOptionTreeView, [this]() { selectAllOptions(); });
+    anotehrSelectAll->setObjectName("actionSelect_all");
+    anotehrSelectAll->setShortcut( QKeySequence("Ctrl+A") );
+    anotehrSelectAll->setShortcutVisibleInContextMenu(true);
+    anotehrSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->solverOptionTreeView->addAction(anotehrSelectAll);
+
+    QAction* findThisOptionAction = mContextMenu.addAction("show Option of this definition", [this]() {
         findAndSelectionOptionFromDefinition();
     });
     findThisOptionAction->setObjectName("actionFindThisOption");

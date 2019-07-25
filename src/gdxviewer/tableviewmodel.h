@@ -45,6 +45,10 @@ public:
 
     QVector<QList<QString> > labelsInRows() const;
 
+public slots:
+    void scrollHTriggered();
+    void scrollVTriggered();
+
 private:
     void calcDefaultColumnsTableView();
 

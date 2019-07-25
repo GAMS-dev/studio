@@ -50,6 +50,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     palette.setColor(QPalette::Highlight, ui->tvSymbols->palette().highlight().color());
     palette.setColor(QPalette::HighlightedText, ui->tvSymbols->palette().highlightedText().color());
     ui->tvSymbols->setPalette(palette);
+    setFocusProxy(ui->tvSymbols);
 
     mGdxMutex = new QMutex();
     gdxSetExitIndicator(0); // switch of exit() call

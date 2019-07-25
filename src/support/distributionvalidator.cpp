@@ -45,7 +45,7 @@ void DistributionValidator::checkBitness()
 {
 #ifdef _WIN32
     auto gamsPath = CommonPaths::systemDir();
-    QFileInfo joat64(gamsPath + QDir::separator() + "joatdclib64.dll");
+    QFileInfo joat64(gamsPath + '/' + "joatdclib64.dll");
     bool is64 = (sizeof(void*) == 8);
     QStringList messages;
     if (!is64 && joat64.exists())

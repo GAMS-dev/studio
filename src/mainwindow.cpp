@@ -54,6 +54,10 @@
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
 
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
+
 namespace gams {
 namespace studio {
 
@@ -89,6 +93,9 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
+    MacOSCocoaBridge::disableDictationMenuItem(true);
+    MacOSCocoaBridge::disableCharacterPaletteMenuItem(true);
+    MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
 #endif
 
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
@@ -169,6 +176,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
 
+    connect(ui->dockProjectView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockLogView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockHelpView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+
+
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
@@ -199,10 +211,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logTabs->setCornerWidget(tabMenu);
 
     // shortcuts
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F12), this, SLOT(toggleDebugMode()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this, SLOT(focusCmdLine()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this, SLOT(focusProjectExplorer()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
@@ -693,13 +701,25 @@ void MainWindow::showTabsMenu()
 
 void MainWindow::focusCmdLine()
 {
+    raise();
+    activateWindow();
     mGamsOptionWidget->focus();
 }
 
 void MainWindow::focusProjectExplorer()
 {
     setProjectViewVisibility(true);
-    ui->projectView->setFocus(Qt::ShortcutFocusReason);
+    ui->dockProjectView->activateWindow();
+    ui->dockProjectView->raise();
+    ui->projectView->setFocus();
+}
+
+void MainWindow::focusProcessLogs()
+{
+    setOutputViewVisibility(true);
+    ui->dockLogView->activateWindow();
+    ui->dockLogView->raise();
+    ui->logTabs->currentWidget()->setFocus();
 }
 
 void MainWindow::updateEditorPos()
@@ -775,6 +795,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
 {
     QString path = mRecent.path;
     if (path.isEmpty()) path = ".";
+
     if (mRecent.editFileId >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
         if (fm) path = QFileInfo(fm->location()).path();
@@ -798,76 +819,63 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
         }
         path += QString("/%1").arg(filename);
     }
-    int choice = 4;
-    while (choice == 4) {
-        QString filePath = solverName.isEmpty()
+
+    QString filePath = solverName.isEmpty()
                              ? QFileDialog::getSaveFileName(this, "Create new file...",
                                                             path,
-                                                            tr("GAMS code (*.gms *.inc );;"
+                                                            tr("GAMS source (*.gms);;"
                                                                "Text files (*.txt);;"
                                                                "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite)
                              : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
                                                             path,
                                                             tr(QString("%1 option file (%1*);;All files (*)").arg(solverName).toLatin1()),
                                                             nullptr, QFileDialog::DontConfirmOverwrite);
-        if (filePath == "") return;
-        QFileInfo fi(filePath);
-        if (fi.suffix().isEmpty())
-            filePath += (solverName.isEmpty() ? ".gms" : ".opt");
-        QFile file(filePath);
-        bool exists = file.exists();
-        FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+    if (filePath == "") return;
+    QFileInfo fi(filePath);
+    if (fi.suffix().isEmpty())
+        filePath += (solverName.isEmpty() ? ".gms" : ".opt");
 
-        // choices:   0=duplicate   1=overwrite   2=open-existing   3=open-new   4=abort
-        if (destFM) {
-            choice = QMessageBox::question(this, "file in use"
-                                           , QString("%1 is already in use.").arg(filePath)
-                                           , "Duplicate", "Open", "Back", 1, 2);
-            choice *= 2;                    // 0 - 2 - 4
-            if (groups.isEmpty() && choice == 0) {
-                groups << mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
-            }
-        } else if (exists) {
-            choice = QMessageBox::question(this, "File exists", filePath+" already exists."
-                                           , "Overwrite", "Open", "Back", 1, 2);
-            ++choice;
-            if (choice > 1) ++choice;       // 1 - 3 - 4
-        } else {
-            choice = groups.isEmpty() ? 2 : 3;
+    QFile file(filePath);
+    FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+
+    if (file.exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("File already existing");
+        msgBox.setText("The file " + filePath + " already exists in your working directory.");
+        msgBox.setInformativeText("What do you want to do with the existing file?");
+        msgBox.setStandardButtons(QMessageBox::Abort);
+        msgBox.addButton("Open", QMessageBox::ActionRole);
+        msgBox.addButton("Replace", QMessageBox::ActionRole);
+        int answer = msgBox.exec();
+
+        switch(answer) {
+        case 0: // open
+            // do nothing and continue
+            break;
+        case 1: // replace
+            closeFileEditors(destFM->id());
+            file.open(QIODevice::WriteOnly); // create empty file
+            file.close();
+            break;
+        case QMessageBox::Abort:
+            return;
         }
+    } else {
+        file.open(QIODevice::WriteOnly); // create empty file
+        file.close();
+    }
 
-        if (choice < 4) {
-            if (!file.exists()) { // new
-                file.open(QIODevice::WriteOnly);
-                file.close();
-            } else if (choice == 1) { // replace old
-                file.resize(0);
-            }
-
-            if (choice == 2) { // default for new_file and existing_node
-                openFilePath(filePath);
-                return;
-            }
-
-            if (groups.isEmpty()) {
-                if (ProjectFileNode *fc = addNode("", filePath)) {
-                    fc->file()->save();
-                    // TODO(JM) at choice==0 -> create Node (look at TreeView)
-                    openFileNode(fc);
-                }
-            } else {
-                for (ProjectGroupNode *group: groups) {
-                    addToGroup(group, filePath);
-                }
-            }
-
-        }
+    if (!groups.isEmpty()) { // add file to each selected group
+        for (ProjectGroupNode *group: groups)
+            openFileNode(addNode("", filePath, group));
+    } else { // create new group
+        ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+        openFileNode(addNode("", filePath, group));
     }
 }
 
 void MainWindow::on_actionNew_triggered()
 {
-    QString fileLocation;
     newFileDialog();
 }
 
@@ -875,12 +883,12 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *.ref);;"
+                                                       tr("GAMS Source (*.gms);;"
+                                                          "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
     openFiles(files);
 }
 
@@ -888,12 +896,12 @@ void MainWindow::on_actionOpenNew_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS code (*.gms *.inc *.log *.gdx *.lst *.opt *.ref);;"
-                                                          "Text files (*.txt);;"
-                                                          "All files (*.*)"),
+                                                      tr("GAMS Source (*.gms);;"
+                                                         "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                         "Text files (*.txt);;"
+                                                         "All files (*.*)"),
                                                        nullptr,
                                                        DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
     openFiles(files, true);
 }
 
@@ -927,7 +935,8 @@ void MainWindow::on_actionSave_As_triggered()
                                                     &filters.first(),
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
-            filters << tr("GAMS code (*.gms *.inc *.log *.gdx *.ref)");
+            filters << tr("GAMS Source (*.gms)");
+            filters << tr("All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref)");
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
             QString *selFilter = &filters.last();
@@ -1407,7 +1416,7 @@ void MainWindow::showErrorMessage(QString text)
     mSyslog->append(text, LogMsgType::Error);
 }
 
-void MainWindow::postGamsRun(NodeId origin)
+void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
     if (origin == -1) {
         mSyslog->append("No fileId set to process", LogMsgType::Error);
@@ -1417,6 +1426,23 @@ void MainWindow::postGamsRun(NodeId origin)
     if (!groupNode) {
         mSyslog->append("No group attached to process", LogMsgType::Error);
         return;
+    }
+
+    if (exitCode == GAMSRETRN_TOO_MANY_SCRATCH_DIRS) {
+        ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+        QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Delete scratch directories");
+        msgBox.setText("GAMS was unable to run because there are too many scratch directories "
+                       "in the current workspace folder. Clean up your workspace and try again.\n"
+                       "The current working directory is " + path);
+        msgBox.setInformativeText("Delete scratch directories now?");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+        if (msgBox.exec() == QMessageBox::Yes)
+            deleteScratchDirs(path);
     }
 
     // add all created files to project explorer
@@ -1564,7 +1590,8 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        fc->setModified(false);
+        if (fc->document())
+            fc->document()->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;
@@ -1773,6 +1800,10 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    if (runGroup) runGroup->addRunParametersHistory(mGamsOptionWidget->getCurrentCommandLineData());
+
     mSettings->saveSettings(this);
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
     if (!terminateProcessesConditionally(mProjectRepo.runGroups())) {
@@ -1821,16 +1852,26 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         e->accept(); return;
     }
 
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_H)) {
+    // focus shortcuts
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_E)) {
+        activateWindow();
         if (mRecent.editor()) mRecent.editor()->setFocus();
 
         e->accept(); return;
-    }
-
-    if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
-        if (outputViewVisibility() == false) setOutputViewVisibility(true);
-        ui->dockLogView->raise();
-        ui->logTabs->currentWidget()->setFocus();
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
+        focusProjectExplorer();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_K)) {
+        showTabsMenu();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
+        focusCmdLine();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
+        toggleDebugMode();
+        e->accept(); return;
+    } else if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
+        focusProcessLogs();
         e->accept(); return;
     }
 
@@ -1869,6 +1910,25 @@ void MainWindow::dropEvent(QDropEvent* e)
         }
         openFiles(pathList);
     }
+}
+
+void MainWindow::dockTopLevelChanged(bool)
+{
+    QDockWidget* dw = static_cast<QDockWidget*>(QObject::sender());
+    if (dw->isFloating()) {
+        dw->installEventFilter(this);
+    } else
+        dw->removeEventFilter(this);
+}
+
+bool MainWindow::eventFilter(QObject*, QEvent* event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        keyPressEvent(keyEvent);
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::openFiles(QStringList files, bool forceNew)
@@ -2339,11 +2399,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     // set keyboard focus to editor
     if (tabWidget->currentWidget())
         if (focus) {
-            lxiviewer::LxiViewer* lxiViewer = ViewHelper::toLxiViewer(edit);
-            if (lxiViewer)
-                lxiViewer->textView()->setFocus();
-            else
-                tabWidget->currentWidget()->setFocus();
+            tabWidget->currentWidget()->setFocus();
             if (runGroup)
                 mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
         }
@@ -2569,14 +2625,12 @@ void MainWindow::on_actionSearch_triggered()
                gdx->selectSearchField();
                return;
            }
-           if (fc->file()->kind() == FileKind::Ref) {
-               reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor());
+           if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor())) {
                refViewer->selectSearchField();
                return;
            }
-           if (fc->file()->kind() == FileKind::Opt) {
-               option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(mRecent.editor());
-               solverOptionEditor->selectSearchField();
+           if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+               sow->selectSearchField();
                return;
            }
        }
@@ -2782,8 +2836,7 @@ void MainWindow::on_actionCopy_triggered()
     if (fm->kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
         gdx->copyAction();
-    } else if (fm->kind() == FileKind::Opt) {
-        option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor());
+    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->copy();
@@ -2813,8 +2866,10 @@ void MainWindow::on_actionSelect_All_triggered()
         mSyslog->selectAll();
     } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget())) {
         ae->selectAll();
-    } else if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+    } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->selectAllText();
+    } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+        so->selectAllOptions();
     }
 }
 
@@ -3216,7 +3271,6 @@ void MainWindow::on_actionToggleBookmark_triggered()
     } else if (TextView* tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->edit()->sendToggleBookmark();
     }
-
 }
 
 void MainWindow::on_actionNextBookmark_triggered()
@@ -3240,6 +3294,39 @@ void MainWindow::on_actionPreviousBookmark_triggered()
 void MainWindow::on_actionRemoveBookmarks_triggered()
 {
     mTextMarkRepo.removeBookmarks();
+}
+
+void MainWindow::on_actionDeleteScratchDirs_triggered()
+{
+    ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+    QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Delete scratch directories");
+    msgBox.setText("This will delete all scratch directories in your current workspace.\n"
+                   "The current working directory is " + path);
+    msgBox.setInformativeText("Delete scratch directories now?");
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+    if (msgBox.exec() == QMessageBox::Yes)
+        deleteScratchDirs(path);
+}
+
+void MainWindow::deleteScratchDirs(const QString &path)
+{
+    if (path.isEmpty()) return;
+
+    QDirIterator it(path, QDir::Dirs, QDirIterator::FollowSymlinks);
+    QRegularExpression scratchDir("[\\/\\\\]225\\w\\w?$");
+    while (it.hasNext()) {
+        QDir dir(it.next());
+        if (scratchDir.match(it.filePath()).hasMatch()) {
+            if (!dir.removeRecursively()) {
+                SysLogLocator::systemLog()->append("Could not remove scratch directory " + it.filePath());
+            }
+        }
+    }
 }
 
 }

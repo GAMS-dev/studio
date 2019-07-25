@@ -38,14 +38,25 @@ include(../gamsdependency.pri)
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
-    ICON = studio.icns
-    QMAKE_INFO_PLIST=Info.plist
+    ICON = ../icons/studio.icns
+
+    HEADERS += ../platform/macos/macoscocoabridge.h
+
+    OBJECTIVE_SOURCES += ../platform/macos/macoscocoabridge.mm
+
+    LIBS += -framework AppKit
+
+    MACOS_BUNDLE_ICONS.files = ../icons/database.icns
+    MACOS_BUNDLE_ICONS.path = Contents/Resources
+    QMAKE_BUNDLE_DATA += MACOS_BUNDLE_ICONS
+
+    QMAKE_INFO_PLIST = ../platform/macos/info.plist
 }
 unix {
     LIBS += -ldl
 }
 win32 {
-    RC_FILE += studio.rc
+    RC_FILE += ../platform/windows/studio.rc
     LIBS += -luser32
 }
 
@@ -320,7 +331,7 @@ RESOURCES += \
     ../icons/icons.qrc
 
 DISTFILES += \
-    studio.rc
+    ../platform/windows/studio.rc
 
 equals(QWEBENGINE, "true") {
 DEFINES += QWEBENGINE
@@ -342,8 +353,11 @@ FORMS += help/bookmarkdialog.ui \
     message("Building Studio without QWebEngine support.")
 }
 
-OTHER_FILES +=              \
-    ../jenkinsfile          \
-    ../jenkinsfile-ci       \
-    ../gamsstudio.desktop   \
+OTHER_FILES +=                                      \
+    ../platform/macos/studio.entitlements.plist     \
+    ../platform/macos/webengine.entitlements.plist  \
+    ../platform/linux/gamsstudio.desktop            \
+    ../jenkinsfile                                  \
+    ../jenkinsfile-ci                               \
+    ../gamsstudio.desktop                           \
     ../version
