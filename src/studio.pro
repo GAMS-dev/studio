@@ -40,7 +40,10 @@ macx {
 # ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
     ICON = ../icons/studio.icns
 
-    HEADERS += ../platform/macos/macoscocoabridge.h
+    HEADERS += ../platform/macos/macoscocoabridge.h \
+               ../platform/macos/macospathfinder.h
+
+    SOURCES += ../platform/macos/macospathfinder.cpp
 
     OBJECTIVE_SOURCES += ../platform/macos/macoscocoabridge.mm
 
