@@ -43,7 +43,10 @@ public:
     explicit ResultsView(SearchResultList* searchResultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
+
     void selectItem(int index);
+    int selectedItem();
+
     void setOutdated();
     bool isOutdated();
 

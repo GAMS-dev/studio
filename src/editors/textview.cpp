@@ -285,12 +285,6 @@ void TextView::showEvent(QShowEvent *event)
     if (mInit) init();
 }
 
-void TextView::focusInEvent(QFocusEvent *event)
-{
-    Q_UNUSED(event);
-    mEdit->setFocus();
-}
-
 void TextView::setMarks(const LineMarks *marks)
 {
     mEdit->setMarks(marks);
@@ -349,7 +343,6 @@ void TextView::handleSelectionChange()
 void TextView::init()
 {
     layout()->setContentsMargins(0, 0, verticalScrollBar()->isVisible() ? verticalScrollBar()->width() : 0, 0);
-    mEdit->setFocus();
     mInit = false;
 }
 

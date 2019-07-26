@@ -79,6 +79,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
 
     ui->tabWidget->setCurrentIndex(0);
     allSymbolsRefWidget->initModel();
+    setFocusProxy(ui->tabWidget);
 
     connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &ReferenceViewer::on_tabBarClicked);
     connect(mReference, &Reference::loadFinished, this, &ReferenceViewer::updateView);

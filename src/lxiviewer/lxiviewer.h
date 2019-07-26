@@ -56,8 +56,8 @@ private:
     Ui::LxiViewer *ui;
     TextView* mTextView;
     QString mLxiFile;
-};
 
+};
 
 } // namespace lxiviewer
 } // namespace studio

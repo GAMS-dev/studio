@@ -54,7 +54,7 @@ signals:
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<ProjectGroupNode *> groups);
+    void newFileDialog(QVector<ProjectGroupNode *> groups, const QString& solverName="");
 
 private slots:
     void onCloseGroup();
@@ -75,7 +75,6 @@ private:
     void onReOpenSolverOptionFile();
     void onReOpenSolverOptionFileAsText();
     void onOpenLog();
-    void addNewFile(const QString &filePath);
 
 private:
     QVector<ProjectAbstractNode*> mNodes;
