@@ -50,14 +50,17 @@ unix {
 win32 {
     RC_FILE += studio.rc
     LIBS += -luser32
-#testcomment
+    #CHANGELOG_NB_LINES = $$wc(../CHANGELOG[,-l])
+    #CHANGELOG_TEXT = "$$cat(CHANGELOG)"
 }
+    CHANGELOG_TEXT = "$$cat(CHANGELOG,blob)"
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += CHANGELOG_TEXT
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -350,5 +353,4 @@ OTHER_FILES +=              \
     ../jenkinsfile          \
     ../jenkinsfile-ci       \
     ../gamsstudio.desktop   \
-    ../version              \
-    ../CHANGELOG
+    ../version
