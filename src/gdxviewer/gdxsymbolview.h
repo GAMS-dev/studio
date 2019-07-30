@@ -57,6 +57,7 @@ public slots:
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
     void showColumnFilter(QPoint p);
+    void autoResizeColumns();
 
 private slots:
     void showContextMenu(QPoint p);
@@ -80,6 +81,9 @@ private:
 
     GdxSymbolTable* mGdxSymbolTable = nullptr;
     bool mTableView = false;
+
+    int mTVResizePrecision = 500;
+    int mTVResizeColNr = 100;
 };
 
 

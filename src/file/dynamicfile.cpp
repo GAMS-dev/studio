@@ -27,7 +27,7 @@ namespace studio {
 
 DynamicFile::DynamicFile(QString fileName, int backups, QObject *parent): QObject(parent), mBackups(backups)
 {
-    mFile.setFileName(QDir::toNativeSeparators(fileName));
+    mFile.setFileName(fileName);
     if (mFile.exists()) runBackupCircle();
 }
 

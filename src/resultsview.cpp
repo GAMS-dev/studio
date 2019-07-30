@@ -89,6 +89,13 @@ void ResultsView::selectItem(int index)
     ui->tableView->selectRow(index);
 }
 
+int ResultsView::selectedItem()
+{
+    if (!ui->tableView->selectionModel()->hasSelection())
+        return -1;
+    return ui->tableView->selectionModel()->selectedRows().first().row();
+}
+
 void ResultsView::setOutdated()
 {
     mOutdated = true;

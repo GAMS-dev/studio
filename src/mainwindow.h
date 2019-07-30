@@ -164,8 +164,9 @@ public slots:
     void appendSystemLog(const QString &text);
     void showErrorMessage(QString text);
     void optionRunChanged();
-    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>());
-
+    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
+    bool eventFilter(QObject*, QEvent* event);
+    void dockTopLevelChanged(bool);
 
 private slots:
     void openInitialFiles();
@@ -281,6 +282,7 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
+    void focusProcessLogs();
 
     void on_actionToggleBookmark_triggered();
     void on_actionNextBookmark_triggered();
@@ -326,7 +328,7 @@ private:
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
     void initToolBar();
     void updateToolbar(QWidget* current);
-    void deleteScratchDirs();
+    void deleteScratchDirs(const QString& path);
 
 private:
     QTime mTestTimer;
