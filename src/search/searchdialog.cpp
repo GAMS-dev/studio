@@ -543,6 +543,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
         e->accept();
+        mMain->setSearchWidgetPos(pos());
         hide();
         if (mMain->projectRepo()->findFileNode(mMain->recent()->editor()))
             mMain->recent()->editor()->setFocus();
