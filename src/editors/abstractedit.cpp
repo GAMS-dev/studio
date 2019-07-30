@@ -188,7 +188,6 @@ void AbstractEdit::showToolTip(const QList<TextMark*> marks)
 {
     if (marks.size() > 0) {
         QTextCursor cursor(document()->findBlockByNumber(marks.first()->line()));
-                //(marks.first()->textCursor());
         cursor.setPosition(cursor.position() + marks.first()->column(), QTextCursor::MoveAnchor);
         QPoint pos = cursorRect(cursor).bottomLeft();
         if (pos.x() < 10) pos.setX(10);
@@ -206,7 +205,7 @@ bool AbstractEdit::event(QEvent *e)
     }
     if (e->type() == QEvent::FontChange) {
         QFontMetrics metric(font());
-        setTabStopDistance(8*metric.width(' '));
+        setTabStopDistance(SettingsLocator::settings()->tabSize() * metric.width(' '));
     }
     return QPlainTextEdit::event(e);
 }

@@ -107,8 +107,7 @@ void SettingsDialog::loadSettings()
 
 void SettingsDialog::setModified()
 {
-    isModified = true;
-    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+    setModifiedStatus(true);
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
