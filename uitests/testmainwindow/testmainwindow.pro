@@ -87,7 +87,6 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/option/optiontokenizer.h \
            $$SRCPATH/option/optionwidget.h \
            $$SRCPATH/option/solveroptiondefinitionmodel.h \
-           $$SRCPATH/option/solveroptionsetting.h \
            $$SRCPATH/option/solveroptiontablemodel.h \
            $$SRCPATH/option/solveroptionwidget.h \
            $$SRCPATH/reference/reference.h \
@@ -207,7 +206,6 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/option/optiontokenizer.cpp \
            $$SRCPATH/option/optionwidget.cpp \
            $$SRCPATH/option/solveroptiondefinitionmodel.cpp \
-           $$SRCPATH/option/solveroptionsetting.cpp \
            $$SRCPATH/option/solveroptiontablemodel.cpp \
            $$SRCPATH/option/solveroptionwidget.cpp \
            $$SRCPATH/reference/reference.cpp \
@@ -268,7 +266,6 @@ FORMS += $$SRCPATH/gdxviewer/columnfilterframe.ui \
          $$SRCPATH/modeldialog/modeldialog.ui \
          $$SRCPATH/option/optionwidget.ui \
          $$SRCPATH/option/solveroptionwidget.ui \
-         $$SRCPATH/option/solveroptionsetting.ui \
          $$SRCPATH/reference/referenceviewer.ui \
          $$SRCPATH/reference/symbolreferencewidget.ui \
          $$SRCPATH/resultsview.ui \

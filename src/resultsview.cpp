@@ -32,7 +32,8 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
 {
     ui->setupUi(this);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*1.4));
+    ui->tableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->tableView->setTextElideMode(Qt::ElideLeft);
 
     for (Result r : resultList->resultsAsList()) {
@@ -57,9 +58,8 @@ void ResultsView::resizeColumnsToContent()
     ui->tableView->resizeColumnToContents(1);
 }
 
-void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
+void ResultsView::jumpToResult(int selectedRow, bool focus)
 {
-    int selectedRow = index.row();
     Result r = mResultList.at(selectedRow);
 
     // open so we have a document of the file
@@ -72,6 +72,13 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
     // jump to line
     node->file()->jumpTo(node->runGroupId(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     emit updateMatchLabel(selectedRow+1);
+    if (!focus) setFocus();
+}
+
+void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
+{
+    int selectedRow = index.row();
+    jumpToResult(selectedRow);
 }
 
 void ResultsView::keyPressEvent(QKeyEvent* e)
@@ -79,13 +86,40 @@ void ResultsView::keyPressEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
         e->accept();
+    } else if ((e->modifiers() & Qt::ShiftModifier) && (e->key() == Qt::Key_F3)) {
+        jumpToResult(selectNextItem(true), false);
+    } else if (e->key() == Qt::Key_F3) {
+        jumpToResult(selectNextItem(), false);
     }
     QWidget::keyPressEvent(e);
+}
+
+int ResultsView::selectNextItem(bool backwards)
+{
+    int selected = selectedItem();
+    int iterator = backwards ? -1 : 1;
+    if (selected == -1) selected = backwards ? mResultList.size() : 0;
+
+    int newIndex = selected + iterator;
+    if (newIndex < 0)
+        newIndex = mResultList.size()-1;
+    else if (newIndex > mResultList.size()-1)
+        newIndex = 0;
+
+    selectItem(newIndex);
+    return newIndex;
 }
 
 void ResultsView::selectItem(int index)
 {
     ui->tableView->selectRow(index);
+}
+
+int ResultsView::selectedItem()
+{
+    if (!ui->tableView->selectionModel()->hasSelection())
+        return -1;
+    return ui->tableView->selectionModel()->selectedRows().first().row();
 }
 
 void ResultsView::setOutdated()

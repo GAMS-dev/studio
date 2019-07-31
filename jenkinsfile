@@ -170,7 +170,7 @@ pipeline {
 
                             # collect files
                             cp src/bin/studio appdir/usr/bin/
-                            cp gamsstudio.desktop appdir/usr/share/studio.desktop
+                            cp platform/linux/gamsstudio.desktop appdir/usr/share/studio.desktop
                             cp icons/* appdir/usr/share/pixmaps
 
                             # TODO (AF) take a look at linuxdeployqt
@@ -256,8 +256,14 @@ pipeline {
                         fileOperations([folderRenameOperation(destination: 'src/bin/GAMS Studio.app', source: 'src/bin/studio.app')])
                         withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
                             sh '''
+                                cd src/bin
                                 security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
-                                macdeployqt "src/bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+
+                                macdeployqt "GAMS Studio.app" -always-overwrite
+                                codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
+                                codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --timestamp --entitlements ../../platform/macos/webengine.entitlements.plist "GAMS Studio.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
+                                hdiutil create -volname "GAMS Studio" -srcfolder "GAMS Studio.app" -ov -fs HFS+ -format UDZO "GAMS Studio.dmg"
+
                                 security lock-keychain
                             '''
                             sh '''

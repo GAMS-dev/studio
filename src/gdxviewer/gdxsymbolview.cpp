@@ -24,6 +24,7 @@
 #include "columnfilter.h"
 #include "nestedheaderview.h"
 #include "tableviewmodel.h"
+#include "common.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -81,7 +82,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->horizontalHeader()->setSectionsMovable(true);
     ui->tvListView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvListView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tvListView->verticalHeader()->setDefaultSectionSize(int(ui->tvListView->fontMetrics().height()*1.4));
+    ui->tvListView->verticalHeader()->setMinimumSectionSize(1);
+    ui->tvListView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
     connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
@@ -95,7 +97,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
 
     ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(ui->tvTableView->fontMetrics().height()*1.4));
+    ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     //mSym->setTvTableView(ui->tvTableView);
 }
@@ -299,8 +302,11 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::autoResizeColumns()
 {
-    if (mTableView)
-        ui->tvTableView->resizeColumnsToContents();
+    if (mTableView) {
+        ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
+        for (int i=0; i<mTVResizeColNr; i++)
+            ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+    }
     else
         ui->tvListView->resizeColumnsToContents();
 }
@@ -328,7 +334,7 @@ void GdxSymbolView::showTableView()
     ui->tvListView->hide();
     ui->tvTableView->show();
     mTableView = true;
-    ui->tvTableView->resizeColumnsToContents();
+    autoResizeColumns();
 }
 
 void GdxSymbolView::toggleView()

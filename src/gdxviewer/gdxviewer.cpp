@@ -50,6 +50,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     palette.setColor(QPalette::Highlight, ui->tvSymbols->palette().highlight().color());
     palette.setColor(QPalette::HighlightedText, ui->tvSymbols->palette().highlightedText().color());
     ui->tvSymbols->setPalette(palette);
+    setFocusProxy(ui->tvSymbols);
 
     mGdxMutex = new QMutex();
     gdxSetExitIndicator(0); // switch of exit() call
@@ -236,7 +237,8 @@ bool GdxViewer::init()
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->sortByColumn(1,Qt::AscendingOrder);
     ui->tvSymbols->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(ui->tvSymbols->fontMetrics().height()*1.4));
+    ui->tvSymbols->verticalHeader()->setMinimumSectionSize(1);
+    ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     connect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
     connect(ui->lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);

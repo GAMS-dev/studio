@@ -132,6 +132,9 @@ operator<<(QTextStream &dbg, T enumValue)
 }
 
 const int MAX_SEARCH_RESULTS = 50000;
+const double TABLE_ROW_HEIGHT = 1.6;
+
+const int GAMSRETRN_TOO_MANY_SCRATCH_DIRS = 110;
 
 }
 }

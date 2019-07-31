@@ -41,7 +41,6 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     addActions();
     mOptionTokenizer = new OptionTokenizer(QString("optgams.def"));
-//    mCommandLineHistory = new CommandLineHistory(this);
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
     setInterruptActionGroup(aInterrupt, actionStop);
@@ -84,20 +83,18 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
 
     AddOptionHeaderView* headerView = new AddOptionHeaderView(Qt::Horizontal, ui->gamsOptionTableView);
     headerView->setSectionResizeMode(QHeaderView::Interactive);
-    headerView->setDefaultSectionSize( static_cast<int>(ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1)) );
+    QFontMetrics fm(QFont("times", 16));
+    headerView->setMinimumSectionSize(fm.horizontalAdvance("Key/Value"));
+
     ui->gamsOptionTableView->setHorizontalHeader(headerView);
     ui->gamsOptionTableView->setColumnHidden(GamsOptionTableModel::COLUMN_ENTRY_NUMBER, true);
 
-    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(ui->gamsOptionTableView->verticalHeader()->minimumSectionSize());
+    ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->gamsOptionTableView->horizontalHeader()->setStretchLastSection(true);
-    ui->gamsOptionTableView->horizontalHeader()->setHighlightSections(false);
-    if (ui->gamsOptionTableView->model()->rowCount()<=0)
-         ui->gamsOptionTableView->horizontalHeader()->setDefaultSectionSize( ui->gamsOptionTableView->sizeHint().width()/(ui->gamsOptionTableView->model()->columnCount()-1) );
-    else
-        ui->gamsOptionTableView->resizeColumnsToContents();
-
-    ui->gamsOptionTableView->setTabKeyNavigation(false);
-
+    ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    
     connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
     connect(this, &OptionWidget::optionTableModelChanged, this, &OptionWidget::on_optionTableModelChanged);
     connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
@@ -203,7 +200,7 @@ void OptionWidget::on_stopAction()
 
 void OptionWidget::updateOptionTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
-    Q_UNUSED(lineEdit);
+    Q_UNUSED(lineEdit)
     if (mExtendedEditor->isHidden()) return;
 
     emit optionTableModelChanged(commandLineStr);
@@ -414,7 +411,7 @@ void OptionWidget::selectSearchField()
 
 void OptionWidget::optionItemCommitted(QWidget *editor)
 {
-    Q_UNUSED(editor);
+    Q_UNUSED(editor)
     if (mOptionCompleter->currentEditedIndex().isValid()) {
         ui->gamsOptionTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
         ui->gamsOptionTableView->setCurrentIndex( mOptionCompleter->currentEditedIndex() );
@@ -433,7 +430,7 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
     QVariant data = ui->gamsOptionTreeView->model()->data( idx, Qt::DisplayRole );
     QModelIndexList indices = ui->gamsOptionTableView->model()->match(ui->gamsOptionTableView->model()->index(0, GamsOptionTableModel::COLUMN_ENTRY_NUMBER),
                                                                        Qt::DisplayRole,
-                                                                       data.toString(), Qt::MatchRecursive);
+                                                                       data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->gamsOptionTableView->clearSelection();
     QItemSelection selection;
     for(QModelIndex i :indices) {
@@ -471,7 +468,7 @@ void OptionWidget::showOptionDefinition()
             QVariant optionId = ui->gamsOptionTableView->model()->data( index.sibling(index.row(), ui->gamsOptionTableView->model()->columnCount()-1), Qt::DisplayRole);
             QModelIndexList indices = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
-                                                                               optionId.toString(), 1); //, Qt::MatchRecursive);
+                                                                               optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
             for(QModelIndex idx : indices) {
                 QModelIndex  parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
 
@@ -764,56 +761,49 @@ void OptionWidget::setInterruptActionsEnabled(bool enable)
 
 void OptionWidget::addActions()
 {
-//    QAction* selectAll = mContextMenu.addAction("Select All", [this]() { ui->gamsOptionTableView->selectAll(); });
-//    selectAll->setObjectName("actionSelect_all");
-//    selectAll->setShortcut( QKeySequence("Ctrl+A") );
-//    selectAll->setShortcutVisibleInContextMenu(true);
-//    selectAll->setShortcutContext(Qt::WidgetShortcut);
-//    ui->gamsOptionTableView->addAction(selectAll);
-
-    QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "insert new Option", [this]() { insertOption(); });
+    QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "Insert new parameter", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
     insertOptionAction->setShortcut( QKeySequence("Ctrl+Insert") );
     insertOptionAction->setShortcutVisibleInContextMenu(true);
     insertOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(insertOptionAction);
 
-    QAction* deleteAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete Selection", [this]() { deleteOption(); });
+    QAction* deleteAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "Delete selection", [this]() { deleteOption(); });
     deleteAction->setObjectName("actionDelete_option");
     deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
     deleteAction->setShortcutVisibleInContextMenu(true);
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(deleteAction);
 
-    QAction* deleteAllAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "delete All Options", [this]() { deleteAllOptions(); });
+    QAction* deleteAllAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "Delete all parameters", [this]() { deleteAllOptions(); });
     deleteAllAction->setObjectName("actionDeleteAll_option");
     deleteAllAction->setShortcut( QKeySequence("Alt+Delete") );
     deleteAllAction->setShortcutVisibleInContextMenu(true);
     deleteAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(deleteAllAction);
 
-    QAction* moveUpAction = mContextMenu.addAction(QIcon(":/img/move-up"), "move Up", [this]() { moveOptionUp(); });
+    QAction* moveUpAction = mContextMenu.addAction(QIcon(":/img/move-up"), "Move up", [this]() { moveOptionUp(); });
     moveUpAction->setObjectName("actionMoveUp_option");
     moveUpAction->setShortcut( QKeySequence("Ctrl+Up") );
     moveUpAction->setShortcutVisibleInContextMenu(true);
     moveUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(moveUpAction);
 
-    QAction* moveDownAction = mContextMenu.addAction(QIcon(":/img/move-down"), "move Down", [this]() { moveOptionDown(); });
+    QAction* moveDownAction = mContextMenu.addAction(QIcon(":/img/move-down"), "Move down", [this]() { moveOptionDown(); });
     moveDownAction->setObjectName("actionMoveDown_option");
     moveDownAction->setShortcut( QKeySequence("Ctrl+Down") );
     moveDownAction->setShortcutVisibleInContextMenu(true);
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(moveDownAction);
 
-    QAction* showDefinitionAction = mContextMenu.addAction("show Option Definition", [this]() { showOptionDefinition(); });
+    QAction* showDefinitionAction = mContextMenu.addAction("Show parameter definition", [this]() { showOptionDefinition(); });
     showDefinitionAction->setObjectName("actionShowDefinition_option");
     showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(showDefinitionAction);
 
-    QAction* findThisOptionAction = mContextMenu.addAction("show Selection of This Option", [this]() {
+    QAction* findThisOptionAction = mContextMenu.addAction("Show selection of this parameter", [this]() {
         findAndSelectionOptionFromDefinition();
     });
     findThisOptionAction->setObjectName("actionFindThisOption");
@@ -822,7 +812,7 @@ void OptionWidget::addActions()
     findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTreeView->addAction(findThisOptionAction);
 
-    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "add This Option", [this]() {
+    QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "Add this parameter", [this]() {
         QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
             addOptionFromDefinition(selection.at(0));
@@ -833,7 +823,7 @@ void OptionWidget::addActions()
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTreeView->addAction(addThisOptionAction);
 
-    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "remove This Option", [this]() {
+    QAction* deleteThisOptionAction = mContextMenu.addAction(QIcon(":/img/delete-all"), "Remove this parameter", [this]() {
         findAndSelectionOptionFromDefinition();
         deleteOption();
     });

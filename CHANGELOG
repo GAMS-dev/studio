@@ -1,22 +1,25 @@
-Version 0.11.3
-========================
+Version 0.12.2
+===================
 
-# General
-- fixed status bar cursor position not updating in lst files
+## General 
+- renamed Option Editor to Parameter Editor to better distinguish solver options and gams parameters
+- fixed bug where not all scratch directories where deleted
+- disabled unused default menu entries on macOS
+- added save of command line parameters when exiting studio
+- improved behavior of focussing main editor (CTRL+E) for gdx, lxi, opt, ref files
+- improved keyboard navigation when using CTRL+J, -E, Arrow Keys, Tab, and Enter to jump around widgets and make selections
+- changed default file filter for open and save dialogs (#1035)
+- improved wording and logic for new file dialog (#1080)
+- improved discovery of online help documentation for gams version used
 
-# GDX Viewer
-- added column auto-shrink for table view
-- added shortcut for auto-shrink (Ctrl+R)
+## Search
+- fixed search gets stuck in solver option editor when using Find Next/Prev (#1074)
+- fixed cursor jumping behavior when using "Replace"
 
-# Search
-- many improvements and bug fixes to highlighting of search results
-- general fixes of bugs, crashes, etc.
-- added shortcut Ctrl+Enter for "Search All"
-- improved tab order in search dialog. now repolace textfield comes right after search textfield
-- added ability to replace in more than one file at a time. there is a safety dialog showing how many files are being affected and the user can start a search to find all matches being affected.
-- Find Next/Previous now respects all search options and will jump to the next file if there are also matches
-- lst files now also have a match counter when stepping through with Find Next/Previous
-- results view now supports enter key to select and jump to a result
-- changed position of search dialog
-- minor layout adjustments to search dialog
+## Solver Option Editor
+- removed message box when there is a problem opening solver option file
+- improved select all action in solver option editor
+- fixed Studio menu entry "Select All" not working for solver option editor
+- selectAll table view when tree view is in focus
+- fixed capitalization for context menu
 

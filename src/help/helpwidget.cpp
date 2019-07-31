@@ -557,10 +557,15 @@ QUrl HelpWidget::getOnlineStartPageUrl()
     if (!c4uWrapper.isValid())
         return HelpData::getLatestOnlineHelpUrl();
 
-    if (c4uWrapper.distribIsLatest())
+    if (c4uWrapper.distribIsLatest()) {
         return HelpData::getLatestOnlineHelpUrl();
-    else
-       return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
+    } else {
+        int marjorversion = c4uWrapper.currentDistribVersion()/100;
+        if (marjorversion>=26)
+            return QUrl( QString("https://www.gams.com/%1").arg( marjorversion ));
+        else
+          return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
+    }
 }
 
 bool HelpWidget::isDocumentAvailable(const QString &path, const QString &chapter)

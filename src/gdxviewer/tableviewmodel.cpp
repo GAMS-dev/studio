@@ -168,6 +168,16 @@ QVector<QList<QString> > TableViewModel::labelsInRows() const
     return mlabelsInRows;
 }
 
+void TableViewModel::scrollHTriggered()
+{
+    headerDataChanged(Qt::Horizontal, 0, 2);
+}
+
+void TableViewModel::scrollVTriggered()
+{
+    headerDataChanged(Qt::Vertical, 0, 2);
+}
+
 void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
 {
     if (dimOrder.isEmpty()) {
