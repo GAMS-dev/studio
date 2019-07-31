@@ -46,7 +46,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     QStringList splitList;
     QStringList columns;
     QStringList toolTips;
-    int nameIdx;
+    int nameIdx = 0;
     for (int i=0; i<nrColumns; i++) {
         splitList = in.readLine().split("|");
         if(2 == splitList.size()) //we have a tool tip
