@@ -50,11 +50,16 @@ public:
     void setOutdated();
     bool isOutdated();
 
+    void jumpToResult(int selectedRow, bool focus = true);
+
 signals:
     void updateMatchLabel(int row);
 
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);
+
+protected:
+    void keyPressEvent(QKeyEvent* event);
 
 private:
     Ui::ResultsView *ui;
@@ -62,8 +67,8 @@ private:
     SearchResultList mResultList;
     bool mOutdated = false;
 
-protected:
-    void keyPressEvent(QKeyEvent* event);
+private:
+    int selectNextItem(bool backwards = false);
 };
 
 }
