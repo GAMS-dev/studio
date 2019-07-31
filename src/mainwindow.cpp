@@ -1506,13 +1506,13 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionChangelog_triggered()
 {
+    qDebug() << CHANGELOG_TEXT;
     QMessageBox changeLogBox;
     changeLogBox.setText(QString(CHANGELOG_TEXT));
     changeLogBox.setWindowTitle("ChangeLog");
     QPixmap pm(QLatin1String("../../icons/gamslogo.svg"));
     changeLogBox.setIconPixmap(pm);
     changeLogBox.exec();
-
 }
 
 void MainWindow::on_actionUpdate_triggered()
