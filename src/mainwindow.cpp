@@ -1506,13 +1506,22 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionChangelog_triggered()
 {
-    qDebug() << QString(CHANGELOG_TEXT);
-    QMessageBox changeLogBox;
-    changeLogBox.setText(QString(CHANGELOG_TEXT));
-    changeLogBox.setWindowTitle("ChangeLog");
-    QPixmap pm(QLatin1String("../../icons/gamslogo.svg"));
-    changeLogBox.setIconPixmap(pm);
-    changeLogBox.exec();
+    QFile ChangeLogText(":/CHANGELOG");
+    QString data;
+
+    if(!ChangeLogText.open(QIODevice::ReadOnly)) {
+        qDebug()<<"Changelog file was not found"<<endl;
+    }
+    else
+    {
+        data = ChangeLogText.readAll();
+        QMessageBox changeLogBox;
+        changeLogBox.setText(data);
+        changeLogBox.setWindowTitle("ChangeLog");
+        changeLogBox.setIconPixmap(QPixmap(":/img/gams-w24"));
+        changeLogBox.exec();
+    }
+    ChangeLogText.close();
 }
 
 void MainWindow::on_actionUpdate_triggered()

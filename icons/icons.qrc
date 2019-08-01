@@ -79,4 +79,7 @@
     <qresource prefix="/data">
         <file>style.css</file>
     </qresource>
+    <qresource prefix="/">
+        <file>CHANGELOG</file>
+    </qresource>
 </RCC>
