@@ -34,6 +34,7 @@
 #include "editors/systemlogedit.h"
 #include "locators/settingslocator.h"
 #include "studiosettings.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -64,6 +65,8 @@ SolverOptionWidget::~SolverOptionWidget()
 bool SolverOptionWidget::init()
 {
     mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(mSolverName));
+    if (!mOptionTokenizer->getOption()->available())
+       EXCEPT() << "Could not load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
