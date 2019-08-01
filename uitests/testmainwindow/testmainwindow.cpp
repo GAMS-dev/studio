@@ -58,6 +58,24 @@ void testmainwindow::test_search()
     QVERIFY2(!sd->isVisible(), "Search Dialog already visible. Something is wrong.");
     mMainWindow->openSearchDialog();
     QVERIFY2(sd->isVisible(), "Search Dialog not visible. Something is wrong.");
+
+    QComboBox* input = mMainWindow->findChild<QComboBox*>("combo_search");
+    QVERIFY2(input, "Input field not found");
+
+    QVERIFY2(!sd->resultsView(), "ResultsView still open. Something is wrong.");
+    QString searchword("text");
+    QTest::keyClicks(input, searchword);
+
+    QWidget* btnFindAll = sd->findChild<QWidget*>("btn_FindAll");
+    QVERIFY2(btnFindAll, "Find All Button not found");
+    QTest::mouseClick(btnFindAll, Qt::LeftButton);
+
+    QTest::qWait(1000); // wait for asynchronous search
+
+    QVERIFY2(input->currentText() == searchword, "Text in search field differs from input text.");
+    QVERIFY2(sd->resultsView(), "ResultsView did not open");
+
+    QCOMPARE(sd->results()->size(), 2);
 }
 
 QTEST_MAIN(testmainwindow)
