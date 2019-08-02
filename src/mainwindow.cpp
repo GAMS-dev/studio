@@ -853,7 +853,8 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             // do nothing and continue
             break;
         case 1: // replace
-            closeFileEditors(destFM->id());
+            if (destFM)
+               closeFileEditors(destFM->id());
             file.open(QIODevice::WriteOnly); // create empty file
             file.close();
             break;
