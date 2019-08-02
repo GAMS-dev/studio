@@ -147,7 +147,7 @@ signals:
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void receiveAction(const QString &action);
-    void receiveModLibLoad(QString gmsFile);
+    void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
@@ -305,7 +305,7 @@ private:
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId, bool ask, int count = 1);
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
-    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
+    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 

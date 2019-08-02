@@ -455,7 +455,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
     openModelFromLib(glbFile, model->name(), inputFile);
 }
 
-void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
+void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
     QString gmsFilePath = mSettings->defaultWorkspace() + "/" + inputFile;
     QFile gmsFile(gmsFilePath);
@@ -464,26 +464,29 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     if (gmsFile.exists()) {
         FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(gmsFilePath);
 
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("File already existing");
+        if (!forceOverwrite) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("File already existing");
+            msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
+            msgBox.setInformativeText("What do you want to do with the existing file?");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Open", QMessageBox::ActionRole);
+            msgBox.addButton("Replace", QMessageBox::ActionRole);
+            int answer = msgBox.exec();
 
-        msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
-        msgBox.setInformativeText("What do you want to do with the existing file?");
-        msgBox.setStandardButtons(QMessageBox::Abort);
-        msgBox.addButton("Open", QMessageBox::ActionRole);
-        msgBox.addButton("Replace", QMessageBox::ActionRole);
-        int answer = msgBox.exec();
-
-        switch(answer) {
-        case 0: // open
-            openFileNode(addNode("", gmsFilePath));
-            return;
-        case 1: // replace
-            fm->renameToBackup();
-            // and continue;
-            break;
-        case QMessageBox::Abort:
-            return;
+            switch(answer) {
+            case 0: // open
+                openFileNode(addNode("", gmsFilePath));
+                return;
+            case 1: // replace
+                fm->renameToBackup();
+                // and continue;
+                break;
+            case QMessageBox::Abort:
+                return;
+            }
+        } else {
+            // continuing will replace old file
         }
     }
 
@@ -500,9 +503,9 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::receiveModLibLoad(QString gmsFile)
+void MainWindow::receiveModLibLoad(QString gmsFile, bool forceOverwrite)
 {
-    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms");
+    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms", forceOverwrite);
 }
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)

@@ -35,9 +35,10 @@ void testmainwindow::initTestCase()
     QVERIFY(mMainWindow);
 
     // make sure a file to work with is there
+    mMainWindow->receiveModLibLoad("trnsport", true);
+    QTest::qWait(200); // needed for filesystem to finish writing
+
     mGms = QFileInfo(mSettings->defaultWorkspace()+"/trnsport.gms");
-    if (!mGms.exists())
-        mMainWindow->receiveModLibLoad("trnsport");
     Q_ASSERT(mGms.exists());
 }
 
@@ -70,11 +71,12 @@ void testmainwindow::test_search()
     QVERIFY2(btnFindAll, "Find All Button not found");
     QTest::mouseClick(btnFindAll, Qt::LeftButton);
 
-    QTest::qWait(1000); // wait for asynchronous search
+    QTest::qWait(500); // wait for asynchronous search
 
     QVERIFY2(input->currentText() == searchword, "Text in search field differs from input text.");
     QVERIFY2(sd->resultsView(), "ResultsView did not open");
 
+    QVERIFY2(sd->results(), "SearchResultList not available.");
     QCOMPARE(sd->results()->size(), 2);
 }
 

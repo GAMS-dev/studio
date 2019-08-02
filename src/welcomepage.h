@@ -48,7 +48,7 @@ public:
 signals:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEdit = false);
     void relayActionWp(QString action);
-    void relayModLibLoad(QString lib);
+    void relayModLibLoad(QString lib, bool forceOverwrite = false);
     void relayDocOpen(QString doc, QString anchor);
 
 public slots:
