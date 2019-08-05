@@ -65,6 +65,8 @@ private:
 
     QString mUserLibPath;
     QString mIconUserLib = ":/img/user";
+
+    bool mHasGlbErrors = false;
 };
 
 }

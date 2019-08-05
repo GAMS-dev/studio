@@ -30,67 +30,124 @@ GlbParser::GlbParser()
 
 }
 
-QList<LibraryItem> GlbParser::parseFile(QString glbFile)
+bool GlbParser::parseFile(QString glbFile)
 {
+    mLibraryItems.clear();
+    mLineNr = 0;
     QFile file(glbFile);
     if (!file.open(QIODevice::ReadOnly))
         EXCEPT() << "GLB file '" << file.fileName() << "' not found";
     QTextStream in(&file);
 
-    // create Library object containing library meta data like library name and column names
-    int version = in.readLine().split("=")[1].trimmed().toInt();
-    QString name = in.readLine().split("=")[1].trimmed();
-    int nrColumns = in.readLine().split("=")[1].trimmed().toInt();
-    QList<int> colOrder;
     QStringList splitList;
+
+    // create Library object containing library meta data like library name and column names
+    splitList = readLine(in).split("=");
+    if (!checkListSize(splitList, 2, glbFile))
+        return false;
+    int version = splitList[1].trimmed().toInt();
+
+    splitList = readLine(in).split("=");
+    if (!checkListSize(splitList, 2, glbFile))
+        return false;
+    QString name = splitList[1].trimmed();
+
+    splitList = readLine(in).split("=");
+    if (!checkListSize(splitList, 2, glbFile))
+        return false;
+    int nrColumns = splitList[1].trimmed().toInt();
+
+    QList<int> colOrder;
     QStringList columns;
     QStringList toolTips;
     for (int i=0; i<nrColumns; i++) {
-        splitList = in.readLine().split("|");
+        splitList = readLine(in).split("|");
         if(2 == splitList.size()) //we have a tool tip
             toolTips.append(splitList.at(1).trimmed());
         else
             toolTips.append("");
+
         splitList = splitList.at(0).split("=");
-        colOrder.append(splitList.at(0).trimmed().toInt()-1);
+        if (!checkListSize(splitList, 2, glbFile))
+            return false;
+        int orderNumber = splitList.at(0).trimmed().toInt();
+        if (orderNumber<1) { // order numbers have to be positive
+            mErrorMessage = "Error while loading model library from GLB file: " + glbFile + " (line " + QString::number(3+i) + ")";
+            return false;
+        }
+        colOrder.append(orderNumber-1); // 1-based to 0-based
         columns.append(splitList.at(1).trimmed());
     }
-    //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no default sorting index. sorting index is first column
+    //int initSortCol = readLine(in).split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no default sorting index. sorting index is first column
     std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, toolTips, colOrder, glbFile);
 
     // read models
-    QList<LibraryItem> libraryItems;
     QString line;
     QString description;
-    line = in.readLine();
+    line = readLine(in);
     while (!in.atEnd()) {
         if (line.startsWith("*$*$*$")) {
-            line = in.readLine();
+            line = readLine(in);
             if (line.length() == 0) // we have reached the end of the file
                 file.close();
             else { // read new model
-                QStringList files = line.split("=")[1].trimmed().split(",");
-                line = in.readLine();
+                splitList = line.split("=");
+                if (!checkListSize(splitList, 2, glbFile))
+                    return false;
+                QStringList files = splitList[1].trimmed().split(",");
+                line = readLine(in);
                 if (line.startsWith("Directory", Qt::CaseInsensitive)) // skip extra line containing the source directory of the model to be retrieved
-                    line = in.readLine();
+                    line = readLine(in);
                 QStringList values;
                 QString longDescription;
                 for (int i=0; i<nrColumns; i++) {
-                    values.append(line.split("=")[1].trimmed());
-                    line = in.readLine();
+                    splitList = line.split("=");
+                    while (splitList.size()>2) { // custom implementation of a maxsplit=1
+                        splitList[1] = splitList[1]+"="+splitList[2];
+                        splitList.removeAt(2);
+                    }
+                    if (!checkListSize(splitList, 2, glbFile))
+                        return false;
+                    values.append(splitList[1].trimmed());
+                    line = readLine(in);
                 }
                 while (!line.startsWith("*$*$*$") && !in.atEnd()) {
                     longDescription += line + "\n";
-                    line = in.readLine();
+                    line = readLine(in);
                 }
                 longDescription = longDescription.trimmed();
-                libraryItems.append(LibraryItem(library, values, description, longDescription, files));
+                mLibraryItems.append(LibraryItem(library, values, description, longDescription, files));
             }
         }
         else
-            line = in.readLine();
+            line = readLine(in);
     }
-    return libraryItems;
+    return true;
+}
+
+QList<LibraryItem> GlbParser::libraryItems() const
+{
+    return mLibraryItems;
+}
+
+QString GlbParser::errorMessage() const
+{
+    return mErrorMessage;
+}
+
+bool GlbParser::checkListSize(const QStringList& list, int expectedSize, QString glbFile)
+{
+    if (list.size() != expectedSize) {
+        mErrorMessage = "Error while loading model library from GLB file: " + glbFile + " (line " + QString::number(mLineNr) + ")";
+        return false;
+    }
+    return true;
+}
+
+QString GlbParser::readLine(QTextStream &in)
+{
+    mLineNr++;
+    return in.readLine();
 }
 
 } // namespace studio

@@ -53,6 +53,5 @@ QString LibraryItem::longDescription() const
     return mLongDescription;
 }
 
-
 } // namespace studio
 } // namespace gams
