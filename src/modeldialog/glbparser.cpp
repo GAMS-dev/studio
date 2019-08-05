@@ -73,7 +73,7 @@ bool GlbParser::parseFile(QString glbFile)
             return false;
         int orderNumber = splitList.at(0).trimmed().toInt();
         if (orderNumber<1) { // order numbers have to be positive
-            mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + " (line " + QString::number(3+i) + ")";
+            mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
             return false;
         }
         colOrder.append(orderNumber-1); // 1-based to 0-based
