@@ -38,9 +38,11 @@ public:
 private:
     QList<LibraryItem> mLibraryItems;
     QString mErrorMessage;
-    bool checkListSize(const QStringList& list, int expectedSize, QString glbFile);
+    bool checkListSize(const QStringList& list, int expectedSize);
+    bool checkKey(QString key, QString expected);
     QString readLine(QTextStream& in);
     int mLineNr = 0;
+    QString mGlbFile;
 };
 
 } // namespace studio

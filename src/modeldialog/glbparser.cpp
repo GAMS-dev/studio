@@ -34,7 +34,8 @@ bool GlbParser::parseFile(QString glbFile)
 {
     mLibraryItems.clear();
     mLineNr = 0;
-    QFile file(glbFile);
+    mGlbFile = glbFile;
+    QFile file(mGlbFile);
     if (!file.open(QIODevice::ReadOnly))
         EXCEPT() << "GLB file '" << file.fileName() << "' not found";
     QTextStream in(&file);
@@ -43,17 +44,17 @@ bool GlbParser::parseFile(QString glbFile)
 
     // create Library object containing library meta data like library name and column names
     splitList = readLine(in).split("=");
-    if (!checkListSize(splitList, 2, glbFile))
+    if (!checkListSize(splitList, 2) || !checkKey(splitList[0], "Version"))
         return false;
     int version = splitList[1].trimmed().toInt();
 
     splitList = readLine(in).split("=");
-    if (!checkListSize(splitList, 2, glbFile))
+    if (!checkListSize(splitList, 2) || !checkKey(splitList[0], "LibraryName"))
         return false;
     QString name = splitList[1].trimmed();
 
     splitList = readLine(in).split("=");
-    if (!checkListSize(splitList, 2, glbFile))
+    if (!checkListSize(splitList, 2) || !checkKey(splitList[0], "Columns"))
         return false;
     int nrColumns = splitList[1].trimmed().toInt();
 
@@ -68,18 +69,18 @@ bool GlbParser::parseFile(QString glbFile)
             toolTips.append("");
 
         splitList = splitList.at(0).split("=");
-        if (!checkListSize(splitList, 2, glbFile))
+        if (!checkListSize(splitList, 2))
             return false;
         int orderNumber = splitList.at(0).trimmed().toInt();
         if (orderNumber<1) { // order numbers have to be positive
-            mErrorMessage = "Error while loading model library from GLB file: " + glbFile + " (line " + QString::number(3+i) + ")";
+            mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + " (line " + QString::number(3+i) + ")";
             return false;
         }
         colOrder.append(orderNumber-1); // 1-based to 0-based
         columns.append(splitList.at(1).trimmed());
     }
     //int initSortCol = readLine(in).split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no default sorting index. sorting index is first column
-    std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, toolTips, colOrder, glbFile);
+    std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, toolTips, colOrder, mGlbFile);
 
     // read models
     QString line;
@@ -92,7 +93,7 @@ bool GlbParser::parseFile(QString glbFile)
                 file.close();
             else { // read new model
                 splitList = line.split("=");
-                if (!checkListSize(splitList, 2, glbFile))
+                if (!checkListSize(splitList, 2))
                     return false;
                 QStringList files = splitList[1].trimmed().split(",");
                 line = readLine(in);
@@ -106,7 +107,7 @@ bool GlbParser::parseFile(QString glbFile)
                         splitList[1] = splitList[1]+"="+splitList[2];
                         splitList.removeAt(2);
                     }
-                    if (!checkListSize(splitList, 2, glbFile))
+                    if (!checkListSize(splitList, 2))
                         return false;
                     values.append(splitList[1].trimmed());
                     line = readLine(in);
@@ -135,10 +136,19 @@ QString GlbParser::errorMessage() const
     return mErrorMessage;
 }
 
-bool GlbParser::checkListSize(const QStringList& list, int expectedSize, QString glbFile)
+bool GlbParser::checkListSize(const QStringList& list, int expectedSize)
 {
     if (list.size() != expectedSize) {
-        mErrorMessage = "Error while loading model library from GLB file: " + glbFile + " (line " + QString::number(mLineNr) + ")";
+        mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
+        return false;
+    }
+    return true;
+}
+
+bool GlbParser::checkKey(QString key, QString expected)
+{
+    if (!key.toLower().startsWith(expected.toLower())) {
+        mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + "(line " + QString::number(mLineNr) + "): Expected '" + expected + "' but found '" + key + "'";
         return false;
     }
     return true;
