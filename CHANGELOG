@@ -1,25 +1,15 @@
-Version 0.12.2
+Version 0.12.3
 ===================
 
-## General 
-- renamed Option Editor to Parameter Editor to better distinguish solver options and gams parameters
-- fixed bug where not all scratch directories where deleted
-- disabled unused default menu entries on macOS
-- added save of command line parameters when exiting studio
-- improved behavior of focussing main editor (CTRL+E) for gdx, lxi, opt, ref files
-- improved keyboard navigation when using CTRL+J, -E, Arrow Keys, Tab, and Enter to jump around widgets and make selections
-- changed default file filter for open and save dialogs (#1035)
-- improved wording and logic for new file dialog (#1080)
-- improved discovery of online help documentation for gams version used
+## General
+- added tab setting awareness to editors (closes #1089)
+- do not check the bitness of a GAMS system if no GAMS system was found before in order to avoid misleading error messages
+- fixed crash when replacing file that is not known to studio
 
 ## Search
-- fixed search gets stuck in solver option editor when using Find Next/Prev (#1074)
-- fixed cursor jumping behavior when using "Replace"
+- Find Next/Previous shortcut (Shift+)F3 now also works when result view is focussed
+- remember search widget postion while studio is running (back to default on restart)
 
 ## Solver Option Editor
-- removed message box when there is a problem opening solver option file
-- improved select all action in solver option editor
-- fixed Studio menu entry "Select All" not working for solver option editor
-- selectAll table view when tree view is in focus
-- fixed capitalization for context menu
+- raise exception and do not open solver option editor when OPT library is not available
 

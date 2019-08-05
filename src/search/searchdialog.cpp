@@ -455,7 +455,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
 
     // skip to next entry if file is opened in solver option edit
     if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
-        int selected = resultsView()->selectedItem();
+        int selected = resultsView() ? resultsView()->selectedItem() : -1;
 
         // no rows selected, select new depending on direction
         if (selected == -1) selected = backwards ? resultList.size() : 0;
@@ -543,6 +543,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
         e->accept();
+        mMain->setSearchWidgetPos(pos());
         hide();
         if (mMain->projectRepo()->findFileNode(mMain->recent()->editor()))
             mMain->recent()->editor()->setFocus();

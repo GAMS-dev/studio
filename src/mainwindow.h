@@ -137,11 +137,13 @@ public:
     void ensureInScreen();
     void setExtendedEditorVisibility(bool visible);
     void resetLoadAmount();
+    void setSearchWidgetPos(const QPoint& searchWidgetPos);
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
 #endif
     option::OptionWidget *gamsOptionWidget() const;
+
 
 signals:
     void saved();
@@ -340,6 +342,7 @@ private:
 
     WelcomePage *mWp;
     SearchDialog *mSearchDialog = nullptr;
+    QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
     HelpWidget *mHelpWidget = nullptr;
 #endif

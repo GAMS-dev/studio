@@ -452,7 +452,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
 
-    openModelFromLib(glbFile, model->name(), inputFile);
+    openModelFromLib(glbFile, model->nameWithSuffix(), inputFile);
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
@@ -853,7 +853,8 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             // do nothing and continue
             break;
         case 1: // replace
-            closeFileEditors(destFM->id());
+            if (destFM)
+               closeFileEditors(destFM->id());
             file.open(QIODevice::WriteOnly); // create empty file
             file.close();
             break;
@@ -2645,26 +2646,30 @@ void MainWindow::on_actionSearch_triggered()
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
-           int sbs;
-           if (mRecent.editor() && ViewHelper::toAbstractEdit(mRecent.editor())
-                   && ViewHelper::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
-               sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
-           else
-               sbs = 2;
 
-           QPoint c = mapToGlobal(centralWidget()->pos());
+           if (mSearchWidgetPos.isNull()) {
+               int sbs;
+               if (mRecent.editor() && ViewHelper::toAbstractEdit(mRecent.editor())
+                       && ViewHelper::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
+                   sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
+               else
+                   sbs = 2;
 
-           int wDiff = frameGeometry().width() - geometry().width();
-           int hDiff = frameGeometry().height() - geometry().height();
+               QPoint c = mapToGlobal(centralWidget()->pos());
 
-           int wSize = mSearchDialog->width() + wDiff;
-           int hSize = mSearchDialog->height() + hDiff;
+               int wDiff = frameGeometry().width() - geometry().width();
+               int hDiff = frameGeometry().height() - geometry().height();
 
-           QPoint p(qMin(c.x() + (centralWidget()->width() - sbs), QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
-                    qMin(c.y() + centralWidget()->height(), QGuiApplication::primaryScreen()->virtualGeometry().height()) - hSize
-                   );
+               int wSize = mSearchDialog->width() + wDiff;
+               int hSize = mSearchDialog->height() + hDiff;
 
-           mSearchDialog->move(p);
+               QPoint p(qMin(c.x() + (centralWidget()->width() - sbs), QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
+                        qMin(c.y() + centralWidget()->height(), QGuiApplication::primaryScreen()->virtualGeometry().height()) - hSize
+                        );
+               mSearchWidgetPos = p;
+           }
+
+           mSearchDialog->move(mSearchWidgetPos);
            mSearchDialog->show();
        }
     }
@@ -3327,6 +3332,11 @@ void MainWindow::deleteScratchDirs(const QString &path)
             }
         }
     }
+}
+
+void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
+{
+    mSearchWidgetPos = searchWidgetPos;
 }
 
 }
