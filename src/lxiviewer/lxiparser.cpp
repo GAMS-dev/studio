@@ -32,7 +32,6 @@ LxiTreeModel *LxiParser::parseFile(QString lxiFile)
     QVector<int> lineNrs;
     QVector<LxiTreeItem*> treeItems;
 
-    lxiFile = QDir::toNativeSeparators(lxiFile);
     QFile file(lxiFile);
     if(!file.open(QIODevice::ReadOnly))
         EXCEPT() << "Unable to open file: " << lxiFile;

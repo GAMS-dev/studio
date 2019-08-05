@@ -32,7 +32,6 @@ GlbParser::GlbParser()
 
 QList<LibraryItem> GlbParser::parseFile(QString glbFile)
 {
-    glbFile = QDir::toNativeSeparators(glbFile);
     QFile file(glbFile);
     if (!file.open(QIODevice::ReadOnly))
         EXCEPT() << "GLB file '" << file.fileName() << "' not found";
@@ -46,6 +45,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     QStringList splitList;
     QStringList columns;
     QStringList toolTips;
+    int nameIdx = 0;
     for (int i=0; i<nrColumns; i++) {
         splitList = in.readLine().split("|");
         if(2 == splitList.size()) //we have a tool tip
@@ -55,6 +55,8 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
         splitList = splitList.at(0).split("=");
         colOrder.append(splitList.at(0).trimmed().toInt()-1);
         columns.append(splitList.at(1).trimmed());
+        if (columns.last().toLower() == "name")
+            nameIdx = splitList.at(0).trimmed().toInt()-1;
     }
     //int initSortCol = in.readLine().split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no default sorting index. sorting index is first column
     std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, toolTips, colOrder, glbFile);
@@ -63,6 +65,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
     QList<LibraryItem> libraryItems;
     QString line;
     QString description;
+    QMap<QString, int> nameDuplicates;
     line = in.readLine();
     while (!in.atEnd()) {
         if (line.startsWith("*$*$*$")) {
@@ -75,9 +78,19 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
                 if (line.startsWith("Directory", Qt::CaseInsensitive)) // skip extra line containing the source directory of the model to be retrieved
                     line = in.readLine();
                 QStringList values;
+                int suffixNumber = 0;
+                for(int i=0; i<nrColumns; i++)
+                    values << "";
                 QString longDescription;
                 for (int i=0; i<nrColumns; i++) {
-                    values.append(line.split("=")[1].trimmed());
+                    QString value = line.split("=")[1].trimmed();
+                    int idx = line.split("=")[0].trimmed().toInt()-1;
+                    values[idx] = value;
+                    if (idx == nameIdx) {
+                        if (nameDuplicates.contains(value.toLower()))
+                            suffixNumber = nameDuplicates[value.toLower()]+1;
+                        nameDuplicates[value.toLower()] = suffixNumber;
+                    }
                     line = in.readLine();
                 }
                 while (!line.startsWith("*$*$*$") && !in.atEnd()) {
@@ -85,7 +98,7 @@ QList<LibraryItem> GlbParser::parseFile(QString glbFile)
                     line = in.readLine();
                 }
                 longDescription = longDescription.trimmed();
-                libraryItems.append(LibraryItem(library, values, description, longDescription, files));
+                libraryItems.append(LibraryItem(library, values, description, longDescription, files, suffixNumber));
             }
         }
         else

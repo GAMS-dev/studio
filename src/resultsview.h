@@ -43,9 +43,14 @@ public:
     explicit ResultsView(SearchResultList* searchResultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
+
     void selectItem(int index);
+    int selectedItem();
+
     void setOutdated();
     bool isOutdated();
+
+    void jumpToResult(int selectedRow, bool focus = true);
 
 signals:
     void updateMatchLabel(int row);
@@ -53,14 +58,17 @@ signals:
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);
 
+protected:
+    void keyPressEvent(QKeyEvent* event);
+
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
     SearchResultList mResultList;
     bool mOutdated = false;
 
-protected:
-    void keyPressEvent(QKeyEvent* event);
+private:
+    int selectNextItem(bool backwards = false);
 };
 
 }

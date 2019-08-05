@@ -1,17 +1,15 @@
-Version 0.12.0
-========================
+Version 0.12.3
+===================
 
 ## General
-- **added GAMS Solver Option Editor (requires GAMS 27.0)**
-- fixed crash when running studio with --ignore-settings and double clicking a word (fixes #1031)
-- fixed freeze when exiting studio during startup procedure
-- added Ctrl+H to focus main editor
-- added Ctrl+Shift+G to focus logs
-- added Esc to close several widgets
-- added icons to toolbar to show/hide project explorer, logs, and help
-- adjusted row height of all tables to be equal (#1002)
-- discarded file stays marked as modified (fixes #1018)
+- added tab setting awareness to editors (closes #1089)
+- do not check the bitness of a GAMS system if no GAMS system was found before in order to avoid misleading error messages
+- fixed crash when replacing file that is not known to studio
 
 ## Search
-- fixed cursor not jumping to first match on first try in lst file (fixes #1039)
+- Find Next/Previous shortcut (Shift+)F3 now also works when result view is focussed
+- remember search widget postion while studio is running (back to default on restart)
+
+## Solver Option Editor
+- raise exception and do not open solver option editor when OPT library is not available
 

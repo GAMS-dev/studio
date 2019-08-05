@@ -46,6 +46,8 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForLocale();
+    if (location.contains('\\'))
+        location = QDir::fromNativeSeparators(location);
     setLocation(location);
     mTempAutoReloadTimer.setSingleShot(true); // only for measurement
     mReloadTimer.setSingleShot(true);
@@ -54,8 +56,10 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     connect(&mDirtyLinesUpdater, &QTimer::timeout, this, &FileMeta::updateMarks);
 }
 
-void FileMeta::setLocation(const QString &location)
+void FileMeta::setLocation(QString location)
 {
+    if (location.contains('\\'))
+        location = QDir::fromNativeSeparators(location);
     if (mLocation != location) {
         QString oldLocation = mLocation;
         mFileRepo->unwatch(this);
@@ -769,6 +773,8 @@ FileMeta::Data::Data(QString location, FileType *knownType)
 {
     if (knownType == &FileType::from(""))
         knownType = nullptr;
+    if (location.contains('\\'))
+        location = QDir::fromNativeSeparators(location);
 
     if (location.startsWith('[')) {
         int len = location.indexOf(']')-2;

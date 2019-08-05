@@ -48,7 +48,9 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     loadLxi();
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
+    setFocusProxy(ui->lxiTreeView);
 
+    connect(ui->lxiTreeView, &QTreeView::activated, this, &LxiViewer::jumpToLine);
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
 }
@@ -68,9 +70,9 @@ TextView *LxiViewer::textView() const
 
 void LxiViewer::loadLxi()
 {
-    if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size()>0) {
+    if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size() > 0) {
         ui->splitter->widget(0)->show();
-        LxiTreeModel* model = LxiParser::parseFile(QDir::toNativeSeparators(mLxiFile));
+        LxiTreeModel* model = LxiParser::parseFile(mLxiFile);
         LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
         ui->lxiTreeView->setModel(model);
         if (oldModel)

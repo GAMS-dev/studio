@@ -463,17 +463,19 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 {
     if (!CommonPaths::isSystemDirValid())
         return false;
-    optHandle_t mOPTHandle;
 
     optSetExitIndicator(0); // switch of exit() call
     optSetScreenIndicator(0);
     optSetErrorCallback(Option::errorCallback);
 
+    optHandle_t mOPTHandle;
+
     char msg[GMS_SSSIZE];
-    optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg));
+    if (!optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg)))
+       return false;
+
     if (msg[0] != '\0') {
         SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
-        optFree(&mOPTHandle);
         return false;
     }
 
