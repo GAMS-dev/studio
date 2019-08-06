@@ -331,8 +331,7 @@ FORMS += \
     support/aboutgamsdialog.ui
 
 RESOURCES += \
-    ../icons/icons.qrc  \
-    ../changelog.qrc
+    ../icons/icons.qrc
 
 DISTFILES += \
     ../platform/windows/studio.rc
