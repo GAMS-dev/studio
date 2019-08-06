@@ -49,6 +49,12 @@ GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
 }
 exists($$PWD/gamsinclude.pri) {
     include($$PWD/gamsinclude.pri)
+    macx {
+        DEFINES += 'GAMS_DISTRIB_PATH=\\"$$GAMS_DISTRIB\\"'
+    }
+    else {
+        DEFINES += 'GAMS_DISTRIB_PATH=\\"\\"'
+    }
 }
 
 # GAMS_BUILD is GAMS distrib build switch

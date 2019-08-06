@@ -885,7 +885,7 @@ void MainWindow::on_actionOpen_triggered()
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                        tr("GAMS Source (*.gms);;"
-                                                          "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                          "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -898,7 +898,7 @@ void MainWindow::on_actionOpenNew_triggered()
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       tr("GAMS Source (*.gms);;"
-                                                         "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                         "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
                                                          "Text files (*.txt);;"
                                                          "All files (*.*)"),
                                                        nullptr,
@@ -937,7 +937,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
             filters << tr("GAMS Source (*.gms)");
-            filters << tr("All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref)");
+            filters << tr("All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp)");
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
             QString *selFilter = &filters.last();
