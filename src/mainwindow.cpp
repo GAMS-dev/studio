@@ -1562,22 +1562,29 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionChangelog_triggered()
 {
+    QString path = mRecent.path;
+    if (path.isEmpty()) {path = mSettings->defaultWorkspace();}
+    else {
+        QFileInfo rootPath(path);
+        path = rootPath.absolutePath();
+    }
+    QString changelogPath = path+"/"+"Changelog";
     QFile ChangeLogText(":/CHANGELOG");
     QString data;
-
     if(!ChangeLogText.open(QIODevice::ReadOnly)) {
         qDebug()<<"Changelog file was not found"<<endl;
     }
-    else
-    {
+    else {
+        QFile changelog(changelogPath);
         data = ChangeLogText.readAll();
-        QMessageBox changeLogBox;
-        changeLogBox.setText(data);
-        changeLogBox.setWindowTitle("ChangeLog");
-        changeLogBox.setIconPixmap(QPixmap(":/img/gams-w24"));
-        changeLogBox.exec();
+        changelog.open(QIODevice::Append);
+        QTextStream stream( &changelog );
+        stream << data << endl;
+        changelog.close();
+        QStringList list;
+        list << changelogPath;
+        openFiles(list);
     }
-    ChangeLogText.close();
 }
 
 void MainWindow::on_actionUpdate_triggered()
