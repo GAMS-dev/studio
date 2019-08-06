@@ -93,11 +93,11 @@ bool GlbParser::parseFile(QString glbFile)
                 file.close();
             else { // read new model
                 splitList = line.split("=");
-                if (!checkListSize(splitList, 2))
+                if (!checkListSize(splitList, 2) || !checkKey(splitList[0], "Files"))
                     return false;
                 QStringList files = splitList[1].trimmed().split(",");
                 line = readLine(in);
-                if (line.startsWith("Directory", Qt::CaseInsensitive)) // skip extra line containing the source directory of the model to be retrieved
+                if (line.startsWith("Directory")) // skip extra line containing the source directory of the model to be retrieved
                     line = readLine(in);
                 QStringList values;
                 QString longDescription;
