@@ -116,7 +116,12 @@ bool GlbParser::parseFile(QString glbFile)
                     }
                     if (!checkListSize(splitList, 2))
                         return false;
-                    int idx = splitList[0].trimmed().toInt()-1;
+                    int idx = splitList[0].trimmed().toInt();
+                    if (idx<1) { // idx numbers has to be positive
+                        mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
+                        return false;
+                    }
+                    idx--;
                     QString value = splitList[1].trimmed();
                     values[idx] = value;
                     if (idx == nameIdx) {
