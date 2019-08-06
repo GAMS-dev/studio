@@ -147,7 +147,7 @@ bool GlbParser::checkListSize(const QStringList& list, int expectedSize)
 
 bool GlbParser::checkKey(QString key, QString expected)
 {
-    if (!key.toLower().startsWith(expected.toLower())) {
+    if (!key.startsWith(expected)) {
         mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + "(line " + QString::number(mLineNr) + "): Expected '" + expected + "' but found '" + key + "'";
         return false;
     }
