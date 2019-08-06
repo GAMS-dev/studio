@@ -226,6 +226,7 @@ pipeline {
                     steps {
                         bat '''
                             windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
+                            copy CHANGELOG "src\\bin"
 
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.12.25810\\x64\\Microsoft.VC141.CRT\\*" "src\\bin"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.12.25810\\vc_redist.x64.exe" "src\\bin"
