@@ -27,18 +27,19 @@
 namespace gams {
 namespace studio {
 
-class HelpWidget;
-
 class HelpToolBar : public QToolBar
 {
     Q_OBJECT
 
 public:
-    HelpToolBar(QAction *aHome,
-                QAction *Back, QAction *aForward, QAction *aReload, QAction* aStop,
-                QToolButton* tbBookmark, QToolButton* tbHelp,
-                HelpWidget *parent);
+    explicit HelpToolBar(QWidget *parent = nullptr);
     ~HelpToolBar();
+
+    void addActionBack(QAction *action);
+    void addActionForward(QAction *action);
+    void addActionReload(QAction *action);
+    void addActionStop(QAction *action);
+    void addSpacer();
 
 signals:
     void webActionTriggered(QWebEnginePage::WebAction webAction, bool checked);
@@ -50,12 +51,10 @@ private:
     void createWebActionTrigger(QAction* action, QWebEnginePage::WebAction webAction);
 
 private:
-    QAction* actionBack;
-    QAction* actionForward;
-    QAction* actionReload;
-    QAction* actionStop;
-
-    HelpWidget* helpWidget;
+    QAction* mActionBack = new QAction(this);
+    QAction* mActionForward = new QAction(this);
+    QAction* mActionReload = new QAction(this);
+    QAction* mActionStop = new QAction(this);
 };
 
 } // namespace studio
