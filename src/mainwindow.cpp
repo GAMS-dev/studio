@@ -452,7 +452,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
 
-    openModelFromLib(glbFile, model->name(), inputFile);
+    openModelFromLib(glbFile, model->nameWithSuffix(), inputFile);
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
@@ -853,7 +853,8 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             // do nothing and continue
             break;
         case 1: // replace
-            closeFileEditors(destFM->id());
+            if (destFM)
+               closeFileEditors(destFM->id());
             file.open(QIODevice::WriteOnly); // create empty file
             file.close();
             break;

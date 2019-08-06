@@ -48,6 +48,8 @@ void DistributionValidator::checkBitness()
     QFileInfo joat64(gamsPath + '/' + "joatdclib64.dll");
     bool is64 = (sizeof(void*) == 8);
     QStringList messages;
+    if (gamsPath.isEmpty())
+        return; //we can check the bitness of GAMS if no GAMS was found
     if (!is64 && joat64.exists())
         messages << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:"
                  << gamsPath;

@@ -61,6 +61,7 @@ bool GlbParser::parseFile(QString glbFile)
     QList<int> colOrder;
     QStringList columns;
     QStringList toolTips;
+    int nameIdx = 0;
     for (int i=0; i<nrColumns; i++) {
         splitList = readLine(in).split("|");
         if(2 == splitList.size()) //we have a tool tip
@@ -78,13 +79,16 @@ bool GlbParser::parseFile(QString glbFile)
         }
         colOrder.append(orderNumber-1); // 1-based to 0-based
         columns.append(splitList.at(1).trimmed());
+        if (columns.last().toLower() == "name")
+            nameIdx = splitList.at(0).trimmed().toInt()-1;
     }
     //int initSortCol = readLine(in).split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no default sorting index. sorting index is first column
     std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, toolTips, colOrder, mGlbFile);
 
     // read models
     QString line;
-    QString description;
+    QString description;    
+    QMap<QString, int> nameDuplicates;
     line = readLine(in);
     while (!in.atEnd()) {
         if (line.startsWith("*$*$*$")) {
@@ -100,6 +104,9 @@ bool GlbParser::parseFile(QString glbFile)
                 if (line.startsWith("Directory")) // skip extra line containing the source directory of the model to be retrieved
                     line = readLine(in);
                 QStringList values;
+                int suffixNumber = 0;
+                for(int i=0; i<nrColumns; i++)
+                    values << "";
                 QString longDescription;
                 for (int i=0; i<nrColumns; i++) {
                     splitList = line.split("=");
@@ -109,7 +116,14 @@ bool GlbParser::parseFile(QString glbFile)
                     }
                     if (!checkListSize(splitList, 2))
                         return false;
-                    values.append(splitList[1].trimmed());
+                    int idx = splitList[0].trimmed().toInt()-1;
+                    QString value = splitList[1].trimmed();
+                    values[idx] = value;
+                    if (idx == nameIdx) {
+                        if (nameDuplicates.contains(value.toLower()))
+                            suffixNumber = nameDuplicates[value.toLower()]+1;
+                        nameDuplicates[value.toLower()] = suffixNumber;
+                    }
                     line = readLine(in);
                 }
                 while (!line.startsWith("*$*$*$") && !in.atEnd()) {
@@ -117,7 +131,7 @@ bool GlbParser::parseFile(QString glbFile)
                     line = readLine(in);
                 }
                 longDescription = longDescription.trimmed();
-                mLibraryItems.append(LibraryItem(library, values, description, longDescription, files));
+                mLibraryItems.append(LibraryItem(library, values, description, longDescription, files, suffixNumber));
             }
         }
         else
