@@ -73,10 +73,11 @@ bool GlbParser::parseFile(QString glbFile)
         if (!checkListSize(splitList, 2))
             return false;
         int orderNumber = splitList.at(0).trimmed().toInt();
-        if (orderNumber<1) { // order numbers have to be positive
-            mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
+        if (orderNumber<1 || orderNumber>nrColumns) { // order numbers have to be positive
+            mErrorMessage = "Error while loading model library from GLB file. Found column number(" + QString::number(orderNumber) + ") that is out of valid range (1.." + QString::number(nrColumns) + "): " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
             return false;
         }
+
         colOrder.append(orderNumber-1); // 1-based to 0-based
         columns.append(splitList.at(1).trimmed());
         if (columns.last().toLower() == "name")
@@ -120,8 +121,8 @@ bool GlbParser::parseFile(QString glbFile)
                     if (!checkListSize(splitList, 2))
                         return false;
                     int idx = splitList[0].trimmed().toInt();
-                    if (idx<1) { // idx numbers has to be positive
-                        mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
+                    if (idx<1 || idx>nrColumns) {
+                        mErrorMessage = "Error while loading model library from GLB file. Found column number(" + QString::number(idx) + ") that is out of valid range (1.." + QString::number(nrColumns) + "): " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
                         return false;
                     }
                     idx--;
