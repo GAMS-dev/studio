@@ -104,6 +104,14 @@ bool GlbParser::parseFile(QString glbFile)
                 if (!checkListSize(splitList, 2) || !checkKey(splitList[0], "Files"))
                     return false;
                 QStringList files = splitList[1].trimmed().split(",");
+                for (int i=0; i<files.size(); i++)
+                    files[i] = files[i].trimmed();
+                files.removeAll("");
+
+                if (files.isEmpty()) { // do not allow empty list of files
+                    mErrorMessage = "Error while loading model library from GLB file. Found the specification of an empty file list: " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
+                    return false;
+                }
                 line = readLine(in);
                 if (line.startsWith("Directory")) // skip extra line containing the source directory of the model to be retrieved
                     line = readLine(in);
