@@ -167,6 +167,7 @@ pipeline {
                             # create folder structure
                             mkdir -p appdir/usr/bin
                             mkdir -p appdir/usr/share/pixmaps
+                            mkdir -p appdir/usr/resources
 
                             # collect files
                             cp src/bin/studio appdir/usr/bin/
