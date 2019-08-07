@@ -25,19 +25,19 @@ CONFIG -= app_bundle
 
 DESTDIR = ../bin
 
-#include(../gamsdependency.pri)
-
-#unix : LIBS += -ldl -L../../bin
-#win32: LIBS += -L../../bin/
-
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 
 macx {
-# ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
-# ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
-#    ICON = studio.icns
-#    QMAKE_INFO_PLIST=Info.plist
+    HEADERS += ../../platform/macos/macospathfinder.h \
+               ../../platform/macos/macoscocoabridge.h
+
+    SOURCES += ../../platform/macos/macospathfinder.cpp
+
+    OBJECTIVE_SOURCES += ../../platform/macos/macoscocoabridge.mm
+
+
+    LIBS += -framework AppKit
 }
 unix {
     LIBS += -ldl

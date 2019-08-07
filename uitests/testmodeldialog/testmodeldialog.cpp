@@ -27,6 +27,8 @@
 
 void testmodeldialog::initTestCase()
 {
+    CommonPaths::setSystemDir(GAMS_DISTRIB_PATH);
+
     mDialog = new ModelDialog();
 }
 

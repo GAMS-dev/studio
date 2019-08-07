@@ -22,12 +22,15 @@
 #include "locators/settingslocator.h"
 #include "modeldialog/modeldialog.h"
 #include "search/searchdialog.h"
+#include "commonpaths.h"
 
 #include <QDialog>
 #include <QToolBar>
 
 void testmainwindow::initTestCase()
 {
+    CommonPaths::setSystemDir(GAMS_DISTRIB_PATH);
+
     mSettings = new StudioSettings(true, false, false);
     SettingsLocator::provide(mSettings);
 
