@@ -2740,6 +2740,15 @@ void MainWindow::updateEditorLineWrapping()
 
 bool MainWindow::readTabs(const QJsonObject &json)
 {
+    if (json.contains("mainTabRecent")) {
+        QString location = json["mainTabRecent"].toString();
+        if (QFileInfo(location).exists()) {
+            openFilePath(location, true);
+            mOpenTabsList << location;
+        } else if (location == "WELCOME_PAGE") {
+            showWelcomePage();
+        }
+    }
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
         for (int i = 0; i < tabArray.size(); ++i) {
@@ -2747,22 +2756,13 @@ bool MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, true);
+                    openFilePath(location, false);
                     mOpenTabsList << location;
                 }
                 QApplication::processEvents(QEventLoop::AllEvents, 1);
                 if (ui->mainTab->count() <= i)
                     return false;
             }
-        }
-    }
-    if (json.contains("mainTabRecent")) {
-        QString location = json["mainTabRecent"].toString();
-        if (QFileInfo(location).exists()) {
-            openFilePath(location);
-            mOpenTabsList << location;
-        } else if (location == "WELCOME_PAGE") {
-            showWelcomePage();
         }
     }
     QTimer::singleShot(0, this, SLOT(initAutoSave()));
