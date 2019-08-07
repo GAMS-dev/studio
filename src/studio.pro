@@ -29,7 +29,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
-QMAKE_EXT_OBJ
+
 CONFIG += c++14
 
 # Setup and include the GAMS distribution
