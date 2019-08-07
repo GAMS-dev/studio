@@ -2749,6 +2749,7 @@ bool MainWindow::readTabs(const QJsonObject &json)
             showWelcomePage();
         }
     }
+    QApplication::processEvents(QEventLoop::AllEvents, 10);
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
         for (int i = 0; i < tabArray.size(); ++i) {
@@ -2759,7 +2760,7 @@ bool MainWindow::readTabs(const QJsonObject &json)
                     openFilePath(location, false);
                     mOpenTabsList << location;
                 }
-                QApplication::processEvents(QEventLoop::AllEvents, 1);
+                if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
                 if (ui->mainTab->count() <= i)
                     return false;
             }
