@@ -101,6 +101,11 @@ void AbstractProcess::setGroupId(const NodeId &groupId)
     mGroupId = groupId;
 }
 
+int AbstractProcess::exitCode() const
+{
+    return mProcess.exitCode();
+}
+
 
 } // namespace studio
 } // namespace gams

@@ -1475,6 +1475,14 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
 void MainWindow::postGamsLibRun()
 {
+    if(mLibProcess->exitCode() != 0) {
+        SysLogLocator::systemLog()->append("Error retrieving model from model library: gamslib returned with exit code " + QString::number(mLibProcess->exitCode()),LogMsgType::Error);
+        if (mLibProcess) {
+            mLibProcess->deleteLater();
+            mLibProcess = nullptr;
+        }
+        return;
+    }
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
