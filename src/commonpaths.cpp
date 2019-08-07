@@ -146,8 +146,9 @@ QString CommonPaths::changelog()
 #ifdef __APPLE__
     return QString();
 #elif __unix__
-    QFileInfo fileInfo(qgetenv("APPDIR"));
-    return QDir::cleanPath(fileInfo.absolutePath());
+    //QFileInfo fileInfo(qgetenv("APPDIR"));
+    //return QDir::cleanPath(fileInfo.absolutePath());
+    return QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../resources/Changelog");
 #else
     auto filename = QCoreApplication::applicationDirPath().append("/resources/Changelog");
     return QDir::cleanPath(filename);
