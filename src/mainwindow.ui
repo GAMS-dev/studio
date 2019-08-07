@@ -100,8 +100,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
-     <height>22</height>
+     <width>860</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -216,10 +216,11 @@
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
     <addaction name="actionAbout_GAMS"/>
-    <addaction name="actionChangelog"/>
     <addaction name="separator"/>
     <addaction name="actionAbout_Qt"/>
     <addaction name="actionAbout_Studio"/>
+    <addaction name="separator"/>
+    <addaction name="actionChangelog"/>
     <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
@@ -1107,8 +1108,8 @@
   <action name="actionChangelog">
    <property name="text">
     <string>What's New</string>
-    </property>
-   </action>
+   </property>
+  </action>
   <action name="actionDeleteScratchDirs">
    <property name="text">
     <string>Delete scratch directories</string>
