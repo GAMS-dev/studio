@@ -264,7 +264,7 @@ pipeline {
                                 security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
 
                                 macdeployqt "GAMS Studio.app" -always-overwrite
-                                cp CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
+                                cp ../../CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --timestamp --entitlements ../../platform/macos/webengine.entitlements.plist "GAMS Studio.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
                                 hdiutil create -volname "GAMS Studio" -srcfolder "GAMS Studio.app" -ov -fs HFS+ -format UDZO "GAMS Studio.dmg"
