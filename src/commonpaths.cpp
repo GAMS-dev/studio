@@ -144,7 +144,7 @@ QString CommonPaths::licenseFile()
 QString CommonPaths::changelog()
 {
 #ifdef __APPLE__
-    return QString();
+    return QDir::cleanPath(MacOSPathFinder::bundlePath() + "/Contents/Resources/Changelog");
 #elif __unix__
     //QFileInfo fileInfo(qgetenv("APPDIR"));
     //return QDir::cleanPath(fileInfo.absolutePath());
