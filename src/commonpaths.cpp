@@ -149,7 +149,7 @@ QString CommonPaths::changelog()
     QFileInfo fileInfo(qgetenv("APPDIR"));
     return QDir::cleanPath(fileInfo.absolutePath());
 #else
-    auto filename = QCoreApplication::applicationDirPath().append("resources/Changelog");
+    auto filename = QCoreApplication::applicationDirPath().append("/resources/Changelog");
     return QDir::cleanPath(filename);
 #endif
 }
