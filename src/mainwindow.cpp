@@ -1562,14 +1562,13 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionChangelog_triggered()
 {
-    QFile ChangeLogText(":CHANGELOG");
-    QMessageBox::information(this, "PATH TEST", CommonPaths::changelog());
+    QFile ChangeLogText(CommonPaths::changelog());
     if(!ChangeLogText.open(QIODevice::ReadOnly)) {
         qDebug()<<"Changelog file was not found"<<endl;
     }
     else {
         QStringList list;
-        list << ":CHANGELOG";
+        list << CommonPaths::changelog();
         openFiles(list);
     }
 }
