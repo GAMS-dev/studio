@@ -1563,6 +1563,8 @@ void MainWindow::on_actionAbout_Qt_triggered()
 void MainWindow::on_actionChangelog_triggered()
 {
     openFiles({CommonPaths::changelog()});
+    auto edit = ViewHelper::toCodeEdit(recent()->editor());
+    if (edit) {edit->setReadOnly(true);}
 }
 
 void MainWindow::on_actionUpdate_triggered()
