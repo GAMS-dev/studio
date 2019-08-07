@@ -27,6 +27,8 @@ class TestCommonPaths : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void testSystemDir();
 
     void testSetSystemDirNull();

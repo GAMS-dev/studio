@@ -452,7 +452,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
 
-    openModelFromLib(glbFile, model->name(), inputFile);
+    openModelFromLib(glbFile, model->nameWithSuffix(), inputFile);
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
@@ -855,7 +855,8 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             // do nothing and continue
             break;
         case 1: // replace
-            closeFileEditors(destFM->id());
+            if (destFM)
+               closeFileEditors(destFM->id());
             file.open(QIODevice::WriteOnly); // create empty file
             file.close();
             break;
@@ -886,7 +887,7 @@ void MainWindow::on_actionOpen_triggered()
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                        tr("GAMS Source (*.gms);;"
-                                                          "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                          "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -899,7 +900,7 @@ void MainWindow::on_actionOpenNew_triggered()
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       tr("GAMS Source (*.gms);;"
-                                                         "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                         "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
                                                          "Text files (*.txt);;"
                                                          "All files (*.*)"),
                                                        nullptr,
@@ -938,7 +939,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
             filters << tr("GAMS Source (*.gms)");
-            filters << tr("All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref)");
+            filters << tr("All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp)");
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
             QString *selFilter = &filters.last();
@@ -2751,6 +2752,16 @@ void MainWindow::updateEditorLineWrapping()
 
 bool MainWindow::readTabs(const QJsonObject &json)
 {
+    if (json.contains("mainTabRecent")) {
+        QString location = json["mainTabRecent"].toString();
+        if (QFileInfo(location).exists()) {
+            openFilePath(location, true);
+            mOpenTabsList << location;
+        } else if (location == "WELCOME_PAGE") {
+            showWelcomePage();
+        }
+    }
+    QApplication::processEvents(QEventLoop::AllEvents, 10);
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
         for (int i = 0; i < tabArray.size(); ++i) {
@@ -2758,22 +2769,13 @@ bool MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, true);
+                    openFilePath(location, false);
                     mOpenTabsList << location;
                 }
-                QApplication::processEvents(QEventLoop::AllEvents, 1);
+                if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
                 if (ui->mainTab->count() <= i)
                     return false;
             }
-        }
-    }
-    if (json.contains("mainTabRecent")) {
-        QString location = json["mainTabRecent"].toString();
-        if (QFileInfo(location).exists()) {
-            openFilePath(location);
-            mOpenTabsList << location;
-        } else if (location == "WELCOME_PAGE") {
-            showWelcomePage();
         }
     }
     QTimer::singleShot(0, this, SLOT(initAutoSave()));

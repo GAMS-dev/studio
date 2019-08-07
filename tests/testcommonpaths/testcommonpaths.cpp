@@ -20,10 +20,16 @@
 #include "testcommonpaths.h"
 #include "commonpaths.h"
 
-#include <QtGlobal>
 #include <QStandardPaths>
 
 using gams::studio::CommonPaths;
+
+void TestCommonPaths::initTestCase()
+{
+    QString path = qgetenv("PATH");
+    path = path + ":" + GAMS_DISTRIB_PATH;
+    qputenv("PATH", path.toUtf8());
+}
 
 void TestCommonPaths::testSystemDir()
 {
