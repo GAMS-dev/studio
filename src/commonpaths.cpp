@@ -144,14 +144,11 @@ QString CommonPaths::licenseFile()
 QString CommonPaths::changelog()
 {
 #ifdef __APPLE__
-    return QString();
+    return QDir::cleanPath(MacOSPathFinder::bundlePath().append("/Contents/Resources/Changelog"));
 #elif __unix__
-    //QFileInfo fileInfo(qgetenv("APPDIR"));
-    //return QDir::cleanPath(fileInfo.absolutePath());
-    return QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../resources/Changelog");
+    return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/../resources/Changelog"));
 #else
-    auto filename = QCoreApplication::applicationDirPath().append("/resources/Changelog");
-    return QDir::cleanPath(filename);
+    return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/resources/Changelog"));
 #endif
 }
 
