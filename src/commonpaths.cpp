@@ -141,5 +141,18 @@ QString CommonPaths::licenseFile()
     return licenseFile.path();
 }
 
+QString CommonPaths::changelog()
+{
+#ifdef __APPLE__
+    return QString();
+#elif __unix__
+    QFileInfo fileInfo(qgetenv("APPDIR"));
+    return QDir::cleanPath(fileInfo.absolutePath());
+#else
+    auto filename = QCoreApplication::applicationDirPath().append("resources/Changelog");
+    return QDir::cleanPath(filename);
+#endif
+}
+
 }
 }
