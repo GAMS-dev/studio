@@ -94,6 +94,12 @@ public:
     ///
     static QString licenseFile();
 
+    ///
+    /// \brief Get the changelog file including its path.
+    /// \return Returns the changelog file name.
+    ///
+    static QString changelog();
+
 private:
     CommonPaths();
 

@@ -1562,6 +1562,7 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionChangelog_triggered()
 {
+    QMessageBox::information(this, "PATH TEST", CommonPaths::changelog());
     QFile ChangeLogText(":/CHANGELOG");
     if(!ChangeLogText.open(QIODevice::ReadOnly)) {
         qDebug()<<"Changelog file was not found"<<endl;
