@@ -1563,6 +1563,16 @@ void MainWindow::on_actionAbout_Qt_triggered()
 void MainWindow::on_actionChangelog_triggered()
 {
     QString filePath = CommonPaths::changelog();
+    QFile changelog(filePath);
+    if (!changelog.exists()) {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setTextFormat(Qt::RichText);
+        msgBox.setText("Changelog file was not found. You can find all the information on https://www.gams.com/latest/docs/");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
+        return;
+    }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
     fm->setKind("log");
     openFile(fm, true);
