@@ -61,6 +61,5 @@ QString LibraryItem::nameWithSuffix() const
     return name;
 }
 
-
 } // namespace studio
 } // namespace gams

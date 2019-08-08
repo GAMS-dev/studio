@@ -48,6 +48,8 @@ public:
     NodeId groupId() const;
     void setGroupId(const NodeId &groupId);
 
+    int exitCode() const;
+
 signals:
     void finished(NodeId origin, int exitCode);
     void newStdChannelData(const QByteArray &data);
