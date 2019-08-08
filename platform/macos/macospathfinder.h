@@ -10,9 +10,9 @@ private:
 
 public:
     static QString systemDir();
+    static QString bundlePath();
 
 private:
-    static QString bundlePath();
     static QString searchApplications();
 
 private:
