@@ -97,6 +97,8 @@ bool GlbParser::parseFile(QString glbFile)
     while (!in.atEnd()) {
         if (line.startsWith("*$*$*$")) {
             line = readLine(in);
+            if(line.trimmed().isEmpty()) // stop reading the file if we hit an empty line. This is what the IDE and also gamslib do
+                return true;
             if (line.length() == 0) // we have reached the end of the file
                 file.close();
             else { // read new model
