@@ -224,6 +224,7 @@ void ModelDialog::on_pbDescription_clicked()
 
 void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
+    Q_UNUSED(checked)
     // trigger update
     emit ui->lineEdit->textChanged(ui->lineEdit->text());
 }
