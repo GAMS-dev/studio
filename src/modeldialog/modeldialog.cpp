@@ -94,7 +94,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
 
     if (mHasGlbErrors) {
         QMessageBox msgBox;
-        msgBox.setText("Some model libraries could not be loaded due to parsing problems in the corresponding GLB files. See the system output for details");
+        msgBox.setText("Some model libraries could not be loaded due to parsing problems in the corresponding GLB files. See the system output for details.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
