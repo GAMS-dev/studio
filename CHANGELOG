@@ -1,15 +1,13 @@
-Version 0.12.3
+Version 0.12.4
 ===================
 
 ## General
-- added tab setting awareness to editors (closes #1089)
-- do not check the bitness of a GAMS system if no GAMS system was found before in order to avoid misleading error messages
-- fixed crash when replacing file that is not known to studio
-
-## Search
-- Find Next/Previous shortcut (Shift+)F3 now also works when result view is focussed
-- remember search widget postion while studio is running (back to default on restart)
-
-## Solver Option Editor
-- raise exception and do not open solver option editor when OPT library is not available
+- improved robustness of glb parser
+- added "What's new" menu entry to show latest changes of Studio
+- changed appearance of log tabs on macOS to be more consistent with main tabs
+- added missing extension for file filter in open/add file dialogs
+- added possible fix for stale lock file leading to a freeze and crash
+- improved Studio startup time when many tabs are open
+- fixed possibility to insert certain characters in read only files
+- fixed new gms file not marked as main
 

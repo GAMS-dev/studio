@@ -871,7 +871,9 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             openFileNode(addNode("", filePath, group));
     } else { // create new group
         ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
-        openFileNode(addNode("", filePath, group));
+        ProjectFileNode* node = addNode("", filePath, group);
+        openFileNode(node);
+        setMainGms(node); // does nothing if file is not of type gms
     }
 }
 
