@@ -21,14 +21,12 @@
 #include "checkforupdatewrapper.h"
 #include "commonpaths.h"
 
-#include <QDebug>
-
 using namespace gams::studio;
 using namespace gams::studio::support;
 
 void TestCheckForUpdateWrapper::initTestCase()
 {
-    CommonPaths::setSystemDir();
+    CommonPaths::setSystemDir(GAMS_DISTRIB_PATH);
 }
 
 void TestCheckForUpdateWrapper::testCheckForUpdateWrapper()

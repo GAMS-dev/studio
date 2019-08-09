@@ -47,6 +47,13 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
         initDefaultColors();
     }
     if (resetViews) resetViewSettings();
+
+    QFileInfo file(mAppSettings->fileName());
+    QDir location(file.path());
+    foreach (const QString &fileName, location.entryList({"*.lock"})) {
+        QFile f(location.path() +  "/" + fileName);
+        f.remove();
+    }
 }
 
 StudioSettings::~StudioSettings()

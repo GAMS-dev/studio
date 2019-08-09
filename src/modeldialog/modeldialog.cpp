@@ -30,6 +30,8 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QSortFilterProxyModel>
+#include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
@@ -51,43 +53,52 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
     QDir gamsSysDir(CommonPaths::systemDir());
     QList<LibraryItem> items;
 
-    items = GlbParser::parseFile(gamsSysDir.filePath("gamslib_ml/gamslib.glb"));
-    items.at(0).library()->setName("Model Library");
-    addLibrary(items);
+    GlbParser glbParser;
 
-    items = GlbParser::parseFile(gamsSysDir.filePath("testlib_ml/testlib.glb"));
-    items.at(0).library()->setName("Test Library");
-    addLibrary(items);
+    QStringList gamsGlbFiles;
+    gamsGlbFiles << "gamslib_ml/gamslib.glb"
+                 << "testlib_ml/testlib.glb"
+                 << "apilib_ml/apilib.glb"
+                 << "datalib_ml/datalib.glb"
+                 << "emplib_ml/emplib.glb"
+                 << "finlib_ml/finlib.glb"
+                 << "noalib_ml/noalib.glb"
+                 << "psoptlib_ml/psoptlib.glb";
 
-    items = GlbParser::parseFile(gamsSysDir.filePath("apilib_ml/apilib.glb"));
-    items.at(0).library()->setName("API Library");
-    addLibrary(items);
+    QStringList gamsLibNames;
+    gamsLibNames << "Model Library"
+                 << "Test Library"
+                 << "API Library"
+                 << "Data Utilities Library"
+                 << "EMP Library"
+                 << "FIN Library"
+                 << "NOA Library"
+                 << "PSO Library";
 
-    items = GlbParser::parseFile(gamsSysDir.filePath("datalib_ml/datalib.glb"));
-    items.at(0).library()->setName("Data Utilities Library");
-    addLibrary(items);
-
-    items = GlbParser::parseFile(gamsSysDir.filePath("emplib_ml/emplib.glb"));
-    items.at(0).library()->setName("EMP Library");
-    addLibrary(items);
-
-    items = GlbParser::parseFile(gamsSysDir.filePath("finlib_ml/finlib.glb"));
-    items.at(0).library()->setName("FIN Library");
-    addLibrary(items);
-
-    items = GlbParser::parseFile(gamsSysDir.filePath("noalib_ml/noalib.glb"));
-    items.at(0).library()->setName("NOA Library");
-    addLibrary(items);
-
-    items = GlbParser::parseFile(gamsSysDir.filePath("psoptlib_ml/psoptlib.glb"));
-    items.at(0).library()->setName("PSO Library");
-    addLibrary(items);
+    for (int i=0; i<gamsGlbFiles.size(); i++) {
+        if (glbParser.parseFile(gamsSysDir.filePath(gamsGlbFiles[i]))) {
+            items = glbParser.libraryItems();
+            items.at(0).library()->setName(gamsLibNames[i]);
+            addLibrary(items);
+        } else {
+            mHasGlbErrors = true;
+            SysLogLocator::systemLog()->append(glbParser.errorMessage(),LogMsgType::Error);
+        }
+    }
 
     if (!mUserLibPath.isEmpty())
         loadUserLibs();
 
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
+
+    if (mHasGlbErrors) {
+        QMessageBox msgBox;
+        msgBox.setText("Some model libraries could not be loaded due to parsing problems in the corresponding GLB files. See the system output for details.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+    }
 }
 
 ModelDialog::~ModelDialog()
@@ -185,10 +196,19 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
 
 void ModelDialog::loadUserLibs()
 {
+    GlbParser glbParser;
     QDirIterator iter(mUserLibPath, QDirIterator::Subdirectories);
     while (!iter.next().isEmpty()) {
-        if (QFileInfo(iter.filePath()).suffix() == "glb")
-            addLibrary(GlbParser::parseFile(iter.filePath()), true);
+        if (QFileInfo(iter.filePath()).suffix() == "glb") {
+            QList<LibraryItem> items;
+            if (glbParser.parseFile(iter.filePath())) {
+                items = glbParser.libraryItems();
+                addLibrary(items, true);
+            } else {
+                mHasGlbErrors = true;
+                SysLogLocator::systemLog()->append(glbParser.errorMessage(),LogMsgType::Error);
+            }
+        }
     }
 }
 

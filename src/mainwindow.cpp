@@ -871,7 +871,9 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             openFileNode(addNode("", filePath, group));
     } else { // create new group
         ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
-        openFileNode(addNode("", filePath, group));
+        ProjectFileNode* node = addNode("", filePath, group);
+        openFileNode(node);
+        setMainGms(node); // does nothing if file is not of type gms
     }
 }
 
@@ -885,7 +887,7 @@ void MainWindow::on_actionOpen_triggered()
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                        tr("GAMS Source (*.gms);;"
-                                                          "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                          "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
                                                           "Text files (*.txt);;"
                                                           "All files (*.*)"),
                                                        nullptr,
@@ -898,7 +900,7 @@ void MainWindow::on_actionOpenNew_triggered()
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       tr("GAMS Source (*.gms);;"
-                                                         "All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref);;"
+                                                         "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
                                                          "Text files (*.txt);;"
                                                          "All files (*.*)"),
                                                        nullptr,
@@ -937,7 +939,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
             filters << tr("GAMS Source (*.gms)");
-            filters << tr("All GAMS Files (*.gms *.log *.gdx *.lst *.opt *.ref)");
+            filters << tr("All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp)");
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
             QString *selFilter = &filters.last();
@@ -1475,6 +1477,14 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
 void MainWindow::postGamsLibRun()
 {
+    if(mLibProcess->exitCode() != 0) {
+        SysLogLocator::systemLog()->append("Error retrieving model from model library: gamslib returned with exit code " + QString::number(mLibProcess->exitCode()),LogMsgType::Error);
+        if (mLibProcess) {
+            mLibProcess->deleteLater();
+            mLibProcess = nullptr;
+        }
+        return;
+    }
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
@@ -1558,6 +1568,24 @@ void MainWindow::on_actionAbout_GAMS_triggered()
 void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, "About Qt");
+}
+
+void MainWindow::on_actionChangelog_triggered()
+{
+    QString filePath = CommonPaths::changelog();
+    QFile changelog(filePath);
+    if (!changelog.exists()) {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setTextFormat(Qt::RichText);
+        msgBox.setText("Changelog file was not found. You can find all the information on https://www.gams.com/latest/docs/");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
+        return;
+    }
+    FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
+    fm->setKind("log");
+    openFile(fm, true);
 }
 
 void MainWindow::on_actionUpdate_triggered()
@@ -2740,6 +2768,16 @@ void MainWindow::updateEditorLineWrapping()
 
 bool MainWindow::readTabs(const QJsonObject &json)
 {
+    if (json.contains("mainTabRecent")) {
+        QString location = json["mainTabRecent"].toString();
+        if (QFileInfo(location).exists()) {
+            openFilePath(location, true);
+            mOpenTabsList << location;
+        } else if (location == "WELCOME_PAGE") {
+            showWelcomePage();
+        }
+    }
+    QApplication::processEvents(QEventLoop::AllEvents, 10);
     if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
         QJsonArray tabArray = json["mainTabs"].toArray();
         for (int i = 0; i < tabArray.size(); ++i) {
@@ -2747,22 +2785,13 @@ bool MainWindow::readTabs(const QJsonObject &json)
             if (tabObject.contains("location")) {
                 QString location = tabObject["location"].toString();
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, true);
+                    openFilePath(location, false);
                     mOpenTabsList << location;
                 }
-                QApplication::processEvents(QEventLoop::AllEvents, 1);
+                if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
                 if (ui->mainTab->count() <= i)
                     return false;
             }
-        }
-    }
-    if (json.contains("mainTabRecent")) {
-        QString location = json["mainTabRecent"].toString();
-        if (QFileInfo(location).exists()) {
-            openFilePath(location);
-            mOpenTabsList << location;
-        } else if (location == "WELCOME_PAGE") {
-            showWelcomePage();
         }
     }
     QTimer::singleShot(0, this, SLOT(initAutoSave()));
@@ -3341,3 +3370,4 @@ void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
 
 }
 }
+
