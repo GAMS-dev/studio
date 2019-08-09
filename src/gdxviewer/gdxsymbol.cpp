@@ -363,7 +363,8 @@ QVariant GdxSymbol::formatValue(double val) const
             prec = 15;
         if (prec == 0 && qAbs(val) < 1e15) // this is requried in case of rounding numbers that increase the number of digits e.g. 9999.9 -> 10000 (1e4)
             return QString::number(val, 'f', 0);
-        QString str = QString::number(val, 'g', 15);
+        QString str = QString::number(QString::number(val, 'f', prec).toDouble(), 'g', prec);
+
         if (mSqueezeTrailingZeroes) {
             if (str.contains('e'))
                 str = QString::number(val, 'g', prec+1);
