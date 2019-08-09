@@ -44,13 +44,14 @@ public:
     LibraryItem *selectedLibraryItem() const;
 
 public slots:
-    void changeHeader();
+    void changeHeader(int tabIndex);
     void updateSelectedLibraryItem();
     void clearSelections();
 
 private slots:
     void on_pbDescription_clicked();
     void on_cbRegEx_toggled(bool checked);
+    void applyFilter(QString filterString, int proxyModelIndex);
 
 private:
     void loadUserLibs();
