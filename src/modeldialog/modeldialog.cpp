@@ -186,7 +186,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
 
     tableView->horizontalHeader()->setResizeContentsPrecision(100);
     tableView->resizeColumnsToContents();
-    tableView->sortByColumn(0, Qt::AscendingOrder);
+    tableView->sortByColumn(items.at(0).library()->initSortCol(), Qt::AscendingOrder);
     tableView->setSortingEnabled(true);
 }
 
