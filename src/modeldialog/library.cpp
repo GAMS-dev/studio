@@ -22,8 +22,17 @@
 namespace gams {
 namespace studio {
 
-Library::Library(QString name, int version, int nrColumns, QStringList columns, int initSortCol, QStringList toolTips, QList<int> colOrder, QString glbFile):
-    mName(name), mLongName(name), mVersion(version), mNrColumns(nrColumns), mColumns(columns), mInitSortCol(initSortCol), mtoolTips(toolTips), mColOrder(colOrder), mGlbFile(glbFile)
+Library::Library(QString name, int version, int nrColumns, QStringList columns,int initSortCol,
+                 QStringList toolTips, QList<int> colOrder, QString glbFile)
+    : mName(name),
+      mLongName(name),
+      mVersion(version),
+      mNrColumns(nrColumns),
+      mInitSortCol(initSortCol),
+      mColumns(columns),
+      mtoolTips(toolTips),
+      mColOrder(colOrder),
+      mGlbFile(glbFile)
 {
 }
 
