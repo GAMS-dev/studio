@@ -34,6 +34,7 @@ class HelpWidget;
 
 class QMenu;
 class HelpToolBar;
+class QToolButton;
 
 namespace gams {
 namespace studio {
@@ -95,6 +96,9 @@ protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
+
+private:
+    void setupToolbar(QToolButton* bookmarkToolButton, QToolButton* helpToolButton);
 
 private:
     Ui::HelpWidget *ui;

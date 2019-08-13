@@ -141,5 +141,16 @@ QString CommonPaths::licenseFile()
     return licenseFile.path();
 }
 
+QString CommonPaths::changelog()
+{
+#ifdef __APPLE__
+    return QDir::cleanPath(MacOSPathFinder::bundlePath().append("/Contents/Resources/Changelog"));
+#elif __unix__
+    return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/../resources/Changelog"));
+#else
+    return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/resources/Changelog"));
+#endif
+}
+
 }
 }

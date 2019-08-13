@@ -220,6 +220,8 @@
     <addaction name="actionAbout_Qt"/>
     <addaction name="actionAbout_Studio"/>
     <addaction name="separator"/>
+    <addaction name="actionChangelog"/>
+    <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
    <widget class="QMenu" name="menu_GAMs">
@@ -1101,6 +1103,11 @@
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionChangelog">
+   <property name="text">
+    <string>What's New</string>
    </property>
   </action>
   <action name="actionDeleteScratchDirs">

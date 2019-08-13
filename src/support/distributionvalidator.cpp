@@ -65,7 +65,7 @@ void DistributionValidator::checkCompatibility()
     GamsProcess gp;
     QString about = gp.aboutGAMS();
     if (about.isEmpty()) {
-        QString error = QString("Could not find GAMS. Please check our GAMS setup. %1\n%2")
+        QString error = QString("Could not find GAMS. Please check your GAMS setup. %1\n%2")
                                 .arg("The installation instructions can be found at www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL")
                                 .arg("Current path to GAMS: " + CommonPaths::systemDir());
         emit newError(error);

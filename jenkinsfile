@@ -167,11 +167,13 @@ pipeline {
                             # create folder structure
                             mkdir -p appdir/usr/bin
                             mkdir -p appdir/usr/share/pixmaps
+                            mkdir -p appdir/usr/resources
 
                             # collect files
                             cp src/bin/studio appdir/usr/bin/
                             cp platform/linux/gamsstudio.desktop appdir/usr/share/studio.desktop
                             cp icons/* appdir/usr/share/pixmaps
+                            cp CHANGELOG appdir/usr/resources/Changelog
 
                             # TODO (AF) take a look at linuxdeployqt
                             # workaround for linuxdeployqt and svg
@@ -198,6 +200,7 @@ pipeline {
                         bat '''
                             windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
 
+                            copy CHANGELOG "src\\bin\\resources\\Changelog"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Redist\\MSVC\\14.15.26706\\x86\\Microsoft.VC141.CRT\\*" "src\\bin"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Redist\\MSVC\\14.15.26706\\vc_redist.x86.exe" "src\\bin"
                         '''
@@ -227,6 +230,7 @@ pipeline {
                         bat '''
                             windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
 
+                            copy CHANGELOG "src\\bin\\resources\\Changelog"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.12.25810\\x64\\Microsoft.VC141.CRT\\*" "src\\bin"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.12.25810\\vc_redist.x64.exe" "src\\bin"
                         '''
@@ -260,6 +264,7 @@ pipeline {
                                 security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
 
                                 macdeployqt "GAMS Studio.app" -always-overwrite
+                                cp ../../CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --timestamp --entitlements ../../platform/macos/webengine.entitlements.plist "GAMS Studio.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
                                 hdiutil create -volname "GAMS Studio" -srcfolder "GAMS Studio.app" -ov -fs HFS+ -format UDZO "GAMS Studio.dmg"

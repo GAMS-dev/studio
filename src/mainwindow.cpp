@@ -873,7 +873,9 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
             openFileNode(addNode("", filePath, group));
     } else { // create new group
         ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
-        openFileNode(addNode("", filePath, group));
+        ProjectFileNode* node = addNode("", filePath, group);
+        openFileNode(node);
+        setMainGms(node); // does nothing if file is not of type gms
     }
 }
 
@@ -1477,6 +1479,14 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
 void MainWindow::postGamsLibRun()
 {
+    if(mLibProcess->exitCode() != 0) {
+        SysLogLocator::systemLog()->append("Error retrieving model from model library: gamslib returned with exit code " + QString::number(mLibProcess->exitCode()),LogMsgType::Error);
+        if (mLibProcess) {
+            mLibProcess->deleteLater();
+            mLibProcess = nullptr;
+        }
+        return;
+    }
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
@@ -1560,6 +1570,24 @@ void MainWindow::on_actionAbout_GAMS_triggered()
 void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, "About Qt");
+}
+
+void MainWindow::on_actionChangelog_triggered()
+{
+    QString filePath = CommonPaths::changelog();
+    QFile changelog(filePath);
+    if (!changelog.exists()) {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setTextFormat(Qt::RichText);
+        msgBox.setText("Changelog file was not found. You can find all the information on https://www.gams.com/latest/docs/");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
+        return;
+    }
+    FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
+    fm->setKind("log");
+    openFile(fm, true);
 }
 
 void MainWindow::on_actionUpdate_triggered()
@@ -3354,3 +3382,4 @@ void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
 
 }
 }
+
