@@ -15,21 +15,19 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QWidget" name="toolbarWidget" native="true">
-     <layout class="QVBoxLayout" name="toolbarVlLayout">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-     </layout>
+    <widget class="gams::studio::HelpToolBar" name="toolbarWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>28</height>
+      </size>
+     </property>
     </widget>
    </item>
    <item>
@@ -216,6 +214,12 @@
    <class>gams::studio::HelpView</class>
    <extends>QWidget</extends>
    <header>help/helpview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>gams::studio::HelpToolBar</class>
+   <extends>QWidget</extends>
+   <header>help/helptoolbar.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,66 +22,75 @@
 namespace gams {
 namespace studio {
 
-HelpToolBar::HelpToolBar(QAction *aHome,
-                         QAction *aBack, QAction *aForward, QAction *aReload, QAction* aStop,
-                         QToolButton* tbBookmark, QToolButton* tbHelp,
-                         HelpWidget *parent) :
-     helpWidget(parent)
+HelpToolBar::HelpToolBar(QWidget *parent)
+    : QToolBar(parent)
 {
-    actionBack = new QAction(aBack->icon(), aBack->text());
-    actionBack->setEnabled(false);
-    createWebActionTrigger( actionBack, QWebEnginePage::Back );
+    mActionBack->setEnabled(false);
+    createWebActionTrigger( mActionBack, QWebEnginePage::Back );
 
-    actionForward = new QAction(QIcon(aForward->icon()), aForward->text());
-    actionForward->setEnabled(false);
-    createWebActionTrigger( actionForward, QWebEnginePage::Forward );
+    mActionForward->setEnabled(false);
+    createWebActionTrigger( mActionForward, QWebEnginePage::Forward );
 
-    actionReload = new QAction(QIcon(aReload->icon()), aReload->text());
-    actionReload->setEnabled(false);
-    createWebActionTrigger( actionReload, QWebEnginePage::Reload );
+    mActionReload->setEnabled(false);
+    createWebActionTrigger( mActionReload, QWebEnginePage::Reload );
 
-    actionStop = new QAction(QIcon(aStop->icon()), aStop->text());
-    actionStop->setEnabled(false);
-    createWebActionTrigger( actionStop, QWebEnginePage::Stop );
-
-    this->addAction(aHome);
-    this->addSeparator();
-    this->addAction(actionBack);
-    this->addAction(actionForward);
-    this->addSeparator();
-    this->addAction(actionReload);
-    this->addSeparator();
-    this->addAction(actionStop);
-    this->addSeparator();
-
-    this->addWidget(tbBookmark);
-
-    QWidget* spacerWidget = new QWidget();
-    spacerWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    this->addWidget(spacerWidget);
-
-    this->addWidget(tbHelp);
-
+    mActionStop->setEnabled(false);
+    createWebActionTrigger( mActionStop, QWebEnginePage::Stop );
 }
 
 HelpToolBar::~HelpToolBar()
 {
-    delete actionBack;
-    delete actionForward;
-    delete actionReload;
-    delete actionStop;
+    delete mActionBack;
+    delete mActionForward;
+    delete mActionReload;
+    delete mActionStop;
+}
+
+void HelpToolBar::addActionBack(QAction *action)
+{
+    mActionBack->setIcon(action->icon());
+    mActionBack->setText(action->text());
+    addAction(mActionBack);
+}
+
+void HelpToolBar::addActionForward(QAction *action)
+{
+    mActionForward->setIcon(action->icon());
+    mActionForward->setText(action->text());
+    addAction(mActionForward);
+}
+
+void HelpToolBar::addActionReload(QAction *action)
+{
+    mActionReload->setIcon(action->icon());
+    mActionReload->setText(action->text());
+    addAction(mActionReload);
+}
+
+void HelpToolBar::addActionStop(QAction *action)
+{
+    mActionStop->setIcon(action->icon());
+    mActionStop->setText(action->text());
+    addAction(mActionStop);
+}
+
+void HelpToolBar::addSpacer()
+{
+    QWidget* spacerWidget = new QWidget();
+    spacerWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    this->addWidget(spacerWidget);
 }
 
 void HelpToolBar::on_webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled)
 {
     if (webAction == QWebEnginePage::Back) {
-        actionBack->setEnabled(enabled);
+        mActionBack->setEnabled(enabled);
     } else if (webAction == QWebEnginePage::Forward) {
-        actionForward->setEnabled(enabled);
+        mActionForward->setEnabled(enabled);
     } else if (webAction == QWebEnginePage::Reload) {
-        actionReload->setEnabled(enabled);
+        mActionReload->setEnabled(enabled);
     } else if (webAction == QWebEnginePage::Stop) {
-        actionStop->setEnabled(enabled);
+        mActionStop->setEnabled(enabled);
     }
 }
 
@@ -90,7 +99,6 @@ void HelpToolBar::createWebActionTrigger(QAction *action, QWebEnginePage::WebAct
     connect(action, &QAction::triggered, [this, webAction](bool checked){
         emit webActionTriggered(webAction, checked);
     });
-
 }
 
 } // namespace studio
