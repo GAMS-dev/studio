@@ -49,8 +49,6 @@ CommonPaths::CommonPaths()
 
 const QString& CommonPaths::systemDir()
 {
-    if (SystemDir.isEmpty())
-        setSystemDir("");
     return SystemDir;
 }
 
