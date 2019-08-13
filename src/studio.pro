@@ -273,8 +273,6 @@ HEADERS += \
     syntax.h \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
-    syntax/syntaxdata.h \
-    syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \
@@ -360,6 +358,7 @@ OTHER_FILES +=                                      \
     ../platform/macos/studio.entitlements.plist     \
     ../platform/macos/webengine.entitlements.plist  \
     ../platform/linux/gamsstudio.desktop            \
+    ../CHANGELOG                                    \
     ../jenkinsfile                                  \
     ../jenkinsfile-ci                               \
     ../gamsstudio.desktop                           \
