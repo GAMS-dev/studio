@@ -25,20 +25,25 @@ include(../tests.pri)
 INCLUDEPATH += $$SRCPATH                \
                $$SRCPATH/modeldialog
 
-HEADERS += $$files(*.h, true)                       \
-           $$SRCPATH/modeldialog/glbparser.h        \
-           $$SRCPATH/modeldialog/library.h          \
-           $$SRCPATH/modeldialog/libraryitem.h      \
-           $$SRCPATH/modeldialog/librarymodel.h     \
-           $$SRCPATH/modeldialog/modeldialog.h
+HEADERS += $$files(*.h, true)                          \
+           $$SRCPATH/modeldialog/glbparser.h           \
+           $$SRCPATH/modeldialog/library.h             \
+           $$SRCPATH/modeldialog/libraryitem.h         \
+           $$SRCPATH/modeldialog/librarymodel.h        \
+           $$SRCPATH/modeldialog/modeldialog.h         \
+           $$SRCPATH/locators/abstractsystemlogger.h   \
+           $$SRCPATH/locators/sysloglocator.h          \
+           $$SRCPATH/locators/defaultsystemlogger.h
 
-SOURCES += $$files(*.cpp, true)                     \
-           $$SRCPATH/commonpaths.cpp                \
-           $$SRCPATH/exception.cpp                  \
-           $$SRCPATH/modeldialog/glbparser.cpp      \
-           $$SRCPATH/modeldialog/library.cpp        \
-           $$SRCPATH/modeldialog/libraryitem.cpp    \
-           $$SRCPATH/modeldialog/librarymodel.cpp   \
-           $$SRCPATH/modeldialog/modeldialog.cpp
+SOURCES += $$files(*.cpp, true)                        \
+           $$SRCPATH/commonpaths.cpp                   \
+           $$SRCPATH/exception.cpp                     \
+           $$SRCPATH/modeldialog/glbparser.cpp         \
+           $$SRCPATH/modeldialog/library.cpp           \
+           $$SRCPATH/modeldialog/libraryitem.cpp       \
+           $$SRCPATH/modeldialog/librarymodel.cpp      \
+           $$SRCPATH/modeldialog/modeldialog.cpp       \
+           $$SRCPATH/locators/sysloglocator.cpp        \
+           $$SRCPATH/locators/defaultsystemlogger.cpp
 
 FORMS += $$SRCPATH/modeldialog/modeldialog.ui

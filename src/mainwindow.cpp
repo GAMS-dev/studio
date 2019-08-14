@@ -38,6 +38,7 @@
 #include "locators/searchlocator.h"
 #include "locators/settingslocator.h"
 #include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
