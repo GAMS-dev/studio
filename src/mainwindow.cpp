@@ -1891,11 +1891,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         e->accept(); return;
     }
 
-    if ((e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
-        if (outputViewVisibility() == false) setOutputViewVisibility(true);
-        ui->dockLogView->raise();
-        ui->logTabs->currentWidget()->setFocus();
-    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
         focusProjectExplorer();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_K)) {
