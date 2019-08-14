@@ -28,6 +28,7 @@ using gams::studio::Application;
 int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_UseOpenGLES);
     QApplication::setApplicationVersion(STUDIO_VERSION);
 
     // to temporarily add additional information enable the following line

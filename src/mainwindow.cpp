@@ -96,6 +96,8 @@ MainWindow::MainWindow(QWidget *parent)
     MacOSCocoaBridge::disableDictationMenuItem(true);
     MacOSCocoaBridge::disableCharacterPaletteMenuItem(true);
     MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
+    MacOSCocoaBridge::setFullScreenMenuItemEverywhere(false);
+    ui->actionFull_Screen->setShortcut(QKeySequence::FullScreen);
 #endif
 
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
@@ -217,7 +219,6 @@ MainWindow::MainWindow(QWidget *parent)
     SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
-
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 }
 
@@ -3364,6 +3365,19 @@ void MainWindow::deleteScratchDirs(const QString &path)
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
 {
     mSearchWidgetPos = searchWidgetPos;
+}
+
+void MainWindow::on_actionFull_Screen_triggered()
+{
+    if (isFullScreen()) {
+        if (mMaximizedBeforeFullScreen)
+            showMaximized();
+        else
+            showNormal();
+    } else {
+        mMaximizedBeforeFullScreen = isMaximized();
+        showFullScreen();
+    }
 }
 
 }

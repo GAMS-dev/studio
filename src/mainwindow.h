@@ -244,6 +244,7 @@ private slots:
     void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();
+    void on_actionFull_Screen_triggered();
     // Other
     void on_mainTab_tabCloseRequested(int index);
     void on_logTabs_tabCloseRequested(int index);
@@ -374,6 +375,7 @@ private:
     int mTimerID;
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
+    bool mMaximizedBeforeFullScreen;
 };
 
 }
