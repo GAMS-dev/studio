@@ -118,6 +118,14 @@ void ModelDialog::changeHeader(int tabIndex)
     ui->tabWidget->setTabText(tabIndex, baseName + " (" + QString::number(rowCount) + ")");
 }
 
+QTableView* ModelDialog::tableAt(int i)
+{
+    if (i >= 0 && i < tableViewList.size())
+        return tableViewList.at(i);
+    else
+        return nullptr;
+}
+
 void ModelDialog::updateSelectedLibraryItem()
 {
     int idx = ui->tabWidget->currentIndex();

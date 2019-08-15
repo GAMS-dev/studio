@@ -38,6 +38,7 @@
 #include "locators/searchlocator.h"
 #include "locators/settingslocator.h"
 #include "locators/sysloglocator.h"
+#include "locators/abstractsystemlogger.h"
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
@@ -455,7 +456,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
     openModelFromLib(glbFile, model->nameWithSuffix(), inputFile);
 }
 
-void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile)
+void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
     QString gmsFilePath = mSettings->defaultWorkspace() + "/" + inputFile;
     QFile gmsFile(gmsFilePath);
@@ -464,26 +465,29 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     if (gmsFile.exists()) {
         FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(gmsFilePath);
 
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("File already existing");
+        if (!forceOverwrite) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("File already existing");
+            msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
+            msgBox.setInformativeText("What do you want to do with the existing file?");
+            msgBox.setStandardButtons(QMessageBox::Abort);
+            msgBox.addButton("Open", QMessageBox::ActionRole);
+            msgBox.addButton("Replace", QMessageBox::ActionRole);
+            int answer = msgBox.exec();
 
-        msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
-        msgBox.setInformativeText("What do you want to do with the existing file?");
-        msgBox.setStandardButtons(QMessageBox::Abort);
-        msgBox.addButton("Open", QMessageBox::ActionRole);
-        msgBox.addButton("Replace", QMessageBox::ActionRole);
-        int answer = msgBox.exec();
-
-        switch(answer) {
-        case 0: // open
-            openFileNode(addNode("", gmsFilePath));
-            return;
-        case 1: // replace
-            fm->renameToBackup();
-            // and continue;
-            break;
-        case QMessageBox::Abort:
-            return;
+            switch(answer) {
+            case 0: // open
+                openFileNode(addNode("", gmsFilePath));
+                return;
+            case 1: // replace
+                fm->renameToBackup();
+                // and continue;
+                break;
+            case QMessageBox::Abort:
+                return;
+            }
+        } else {
+            // continuing will replace old file
         }
     }
 
@@ -500,9 +504,9 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 }
 
-void MainWindow::receiveModLibLoad(QString gmsFile)
+void MainWindow::receiveModLibLoad(QString gmsFile, bool forceOverwrite)
 {
-    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms");
+    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms", forceOverwrite);
 }
 
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
@@ -738,7 +742,6 @@ void MainWindow::updateEditorPos()
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         pos = tv->position() + QPoint(1,1);
         anchor = tv->anchor() + QPoint(1,1);
-//        if (pos == anchor)
     }
     mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
@@ -1762,8 +1765,7 @@ bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     ModelDialog dialog(mSettings->userModelLibraryDir(), this);
-    if(dialog.exec() == QDialog::Accepted)
-    {
+    if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
         LibraryItem *item = dialog.selectedLibraryItem();
 
@@ -1854,8 +1856,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     // escape is the close button for focussed widgets
     if (e->key() == Qt::Key_Escape) {
 
-        // help widget
 #ifdef QWEBENGINE
+        // help widget
         if (mHelpWidget->isVisible()) {
             closeHelpView();
             e->accept(); return;
@@ -1887,7 +1889,9 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         if (mRecent.editor()) mRecent.editor()->setFocus();
 
         e->accept(); return;
-    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
+    }
+
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
         focusProjectExplorer();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_K)) {
@@ -2637,6 +2641,11 @@ void MainWindow::on_actionSettings_triggered()
 }
 
 void MainWindow::on_actionSearch_triggered()
+{
+    openSearchDialog();
+}
+
+void MainWindow::openSearchDialog()
 {
     if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {

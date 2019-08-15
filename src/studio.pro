@@ -312,7 +312,7 @@ HEADERS += \
 FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
-    gdxviewer/gdxviewer.ui \    
+    gdxviewer/gdxviewer.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     modeldialog/modeldialog.ui \

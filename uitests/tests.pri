@@ -18,19 +18,33 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+QT += testlib core gui svg concurrent network
 
-SUBDIRS += testcommonpaths              \
-           testeditors                  \
-           testservicelocators          \
-           testgamslicenseinfo          \
-           testcheckforupdatewrapper    \
-           testtextmapper               \
-           testblockcode                \
-           testgamsoption               \
-           testcplexoption              \
-           testconopt4option            \
-           testminosoption              \
-           testgurobioption             \
-           testoptionapi                \
-           testdoclocation
+CONFIG += c++14
+CONFIG -= app_bundle
+
+DESTDIR = ../bin
+
+# Setup and include the GAMS distribution
+include(../gamsdependency.pri)
+
+macx {
+    HEADERS += ../../platform/macos/macospathfinder.h \
+               ../../platform/macos/macoscocoabridge.h
+
+    SOURCES += ../../platform/macos/macospathfinder.cpp
+
+    OBJECTIVE_SOURCES += ../../platform/macos/macoscocoabridge.mm
+
+
+    LIBS += -framework AppKit
+}
+unix {
+    LIBS += -ldl
+}
+win32 {
+    LIBS += -luser32
+}
+
+TESTSROOT = $$_PRO_FILE_PWD_/..
+SRCPATH = $$TESTSROOT/../src
