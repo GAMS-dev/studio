@@ -28,6 +28,8 @@ enum BaseFormat {old, debug, error, lstLink, fileLink};
 static int CErrorBound = 50;        // The count of errors created at the beginning and the end (each the count)
 static int CDirectErrors = 3;       // The count of errors created immediately
 static int CParseLinesMax = 23;     // The maximum count of gathered lines befor updating the display
+static int CRefreshTimeMax = 200;   // The maximum time (in ms) to wait until the output is updated (after changed)
+
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
     mState.deep = true;
@@ -296,7 +298,8 @@ void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref)
                 mbState.errData.text.append('\n');
             mbState.errData.text += data;
         }
-        emit setLstErrorText(mbState.errData.lstLine, mbState.errData.text);
+        emit mLogParser->setErrorText(mbState.errData.lstLine, mbState.errData.text);
+        DEB() << "Created mark at " << mbState.errData.lstLine << ": " << mbState.errData.text;
     }
     emit createMarks(mbState.marks);
 }
@@ -333,6 +336,12 @@ void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
 
 void MemoryMapper::updateOutputCache()
 {
+    while (mDisplayNewLines.size()-1 > mDisplayQuickFormats.size())
+        mDisplayQuickFormats << LineFormat();
+
+    if (!mDisplayQuickFormats.size())
+        mDisplayCacheChanged.start();
+
     QByteArray data;
     Chunk *chunk = mChunks.last();
     if (!chunk || !chunk->lineCount())
@@ -344,13 +353,12 @@ void MemoryMapper::updateOutputCache()
     int lastLinkStart = -1;
     mLogParser->quickParse(chunk->bArray, start, end, line, lastLinkStart);
     if (lastLinkStart >= start) {
-        int ind = qMax(mNewDisplayLines.length()-1, 0);
         if (lastLinkStart > start+line.length() || line.startsWith("*** Error")) {
             LineFormat fmt(4, line.length(), mBaseFormat.at(error));
             if (lastLinkStart > start+line.length()) {
                 fmt.extraLstFormat = &mBaseFormat.at(lstLink);
             }
-            mDisplayQuickFormats.insert(ind, fmt);
+            mDisplayQuickFormats << fmt;
             int lineNr = currentRunLines();
             if (mErrCount < CErrorBound) {
                 if (mMarksHead.isEmpty() || mMarksHead.last() != lineNr) {
@@ -365,10 +373,12 @@ void MemoryMapper::updateOutputCache()
                 mMarksTail.append(lineNr);
             }
         } else if (chunk->bArray.mid(start+line.length()+1, 3) == "LST") {
-            mDisplayQuickFormats.insert(ind, LineFormat(4, line.length(), mBaseFormat.at(lstLink)));
+            mDisplayQuickFormats << LineFormat(4, line.length(), mBaseFormat.at(lstLink));
         } else {
-            mDisplayQuickFormats.insert(ind, LineFormat(4, line.length(), mBaseFormat.at(fileLink)));
+            mDisplayQuickFormats << LineFormat(4, line.length(), mBaseFormat.at(fileLink));
         }
+    } else {
+        mDisplayQuickFormats << LineFormat();
     }
 
     if (mLastLineIsOpen) {
@@ -385,11 +395,11 @@ void MemoryMapper::updateOutputCache()
     mNewLogLines << line;
 
     // update display cache
-    if (mNewDisplayLines.length())
-        mNewDisplayLines.replace(mNewDisplayLines.length()-1, line); // extend (replace) last Line
+    if (mDisplayNewLines.length())
+        mDisplayNewLines.replace(mDisplayNewLines.length()-1, line); // extend (replace) last Line
      else {
         // nothing to replace - append new part of the line
-        mNewDisplayLines << line.right(line.length()-mLastLineLen);
+        mDisplayNewLines << line.right(line.length()-mLastLineLen);
     }
     mLastLineLen = line.length();
     if (mDisplayLinesOverwrite) {
@@ -402,7 +412,12 @@ void MemoryMapper::updateOutputCache()
 void MemoryMapper::appendEmptyLine()
 {
     // update cached lines in edit and log
-    if (mNewDisplayLines.length() >= CParseLinesMax)
+    while (mDisplayNewLines.length() > visibleLineCount()) {
+        mDisplayNewLines.removeAt(0);
+        mDisplayQuickFormats.removeAt(0);
+    }
+
+    if (mDisplayQuickFormats.length() && mDisplayCacheChanged.elapsed() > CRefreshTimeMax)
         fetchDisplay();
     if (mNewLogLines.length() >= CParseLinesMax)
         fetchLog();
@@ -417,11 +432,11 @@ void MemoryMapper::appendEmptyLine()
     mSize += chunk->size();
 
     // update output cache (states)
-    if (mNewDisplayLines.isEmpty()) {
+    if (mDisplayNewLines.isEmpty()) {
         mDisplayLastLineLen = 0;
         mDisplayLinesOverwrite = false;
     } else {
-        mNewDisplayLines << QString();
+        mDisplayNewLines << QString();
     }
     mLastLineIsOpen = false;
     mLastLineLen = 0;
@@ -430,24 +445,24 @@ void MemoryMapper::appendEmptyLine()
 void MemoryMapper::clearLastLine()
 {
     Chunk *chunk = mChunks.last();
-    if (chunk->lineCount() > 1) {
-        // update internal data
-        int start = chunk->lineBytes.at(chunk->lineCount()-1);
-        if (start+1 < chunk->lineBytes.last()) {
-            mSize -= chunk->size();
-            chunk->lineBytes.last() = start+1;
-            chunk->bArray[start] = '\n';
-            mSize += chunk->size();
-        }
-        // update output-cache
-        if (!mNewDisplayLines.isEmpty()) {
-            fetchDisplay();
-            mNewDisplayLines << QString();
-        }
-        mDisplayLastLineLen = 0;
-        mDisplayLinesOverwrite = true;
-        mLastLineLen = 0;
+    if (chunk->lineCount() < 2) return;
+
+    // update internal data
+    int start = chunk->lineBytes.at(chunk->lineCount()-1);
+    if (start+1 < chunk->lineBytes.last()) {
+        mSize -= chunk->size();
+        chunk->lineBytes.last() = start+1;
+        chunk->bArray[start] = '\n';
+        mSize += chunk->size();
     }
+    // update output-cache
+    if (!mDisplayNewLines.isEmpty()) {
+        fetchDisplay();
+        mDisplayNewLines << QString();
+    }
+    mDisplayLastLineLen = 0;
+    mDisplayLinesOverwrite = true;
+    mLastLineLen = 0;
 }
 
 void MemoryMapper::fetchLog()
@@ -458,8 +473,8 @@ void MemoryMapper::fetchLog()
 
 void MemoryMapper::fetchDisplay()
 {
-    emit appendDisplayLines(mNewDisplayLines, mDisplayLastLineLen, mDisplayLinesOverwrite, mDisplayQuickFormats);
-    mNewDisplayLines.clear();
+    emit appendDisplayLines(mDisplayNewLines, mDisplayLastLineLen, mDisplayLinesOverwrite, mDisplayQuickFormats);
+    mDisplayNewLines.clear();
     mDisplayQuickFormats.clear();
     mDisplayLastLineLen = mLastLineLen;
     mDisplayLinesOverwrite = false;
@@ -592,7 +607,8 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
                 formats << LineFormat(0, line.length(), mBaseFormat.at(old));
             } else if (mbState.marks.hasMark()) {
                 if (mbState.marks.hasErr()) {
-                    formats << LineFormat(4, line.length(), mBaseFormat.at(error), mbState.errData.text, mbState.marks.errRef);
+                    QString toolTip = mbState.errData.text.isEmpty() ? mbState.marks.hRef : mbState.errData.text;
+                    formats << LineFormat(4, line.length(), mBaseFormat.at(error), toolTip, mbState.marks.errRef);
                     if (!mbState.marks.hRef.isEmpty()) {
                         formats.last().extraLstFormat = &mBaseFormat.at(lstLink);
                         formats.last().extraLstHRef = mbState.marks.hRef;

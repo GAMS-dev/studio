@@ -334,7 +334,7 @@ void FileMeta::addEditor(QWidget *edit)
             linkDocument(aEdit->document());
         else
             aEdit->setDocument(mDocument);
-        connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
+        connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
 
@@ -347,7 +347,7 @@ void FileMeta::addEditor(QWidget *edit)
 
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
-        connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
+        connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
@@ -728,8 +728,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
         connect(parser, &LogParser::hasFile, runGroup, &ProjectRunGroupNode::hasFile);
+        connect(parser, &LogParser::setErrorText, runGroup, &ProjectRunGroupNode::setErrorText);
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
-        connect(tView, &TextView::setLstErrorText, runGroup, &ProjectRunGroupNode::setLstErrorText);
         connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
         connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
         connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);

@@ -49,7 +49,6 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
         connect(mm, &MemoryMapper::createMarks, this, &TextView::createMarks);
         connect(mm, &MemoryMapper::appendLines, this, &TextView::appendLines);
         connect(mm, &MemoryMapper::appendDisplayLines, this, &TextView::appendedLines);
-        connect(mm, &MemoryMapper::setLstErrorText, this, &TextView::setLstErrorText);
         mMapper = mm;
     }
     mEdit = new TextViewEdit(*mMapper, this);
@@ -456,7 +455,7 @@ void TextView::topLineMoved()
     }
 }
 
-void TextView::appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QMap<int, LineFormat> &formats)
+void TextView::appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats)
 {
     mLinesAddedCount += lines.length();
     if (append || overwriteLast) --mLinesAddedCount;
@@ -476,24 +475,21 @@ void TextView::appendedLines(const QStringList &lines, bool append, bool overwri
         ++remainLineSpace;
     }
     int firstLine = cur.blockNumber();
-
     cur.insertText(lines.join("\n")+"\n");
-    if (!formats.isEmpty()) {
-        QMap<int, LineFormat>::const_iterator it = formats.cbegin();
-        while (it != formats.cend()) {
-            QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+it.key());
-            if (it.value().extraLstFormat) {
-                cur.setPosition(block.position());
-                cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
-                cur.setCharFormat(*it.value().extraLstFormat);
-            }
-            cur.setPosition(block.position() + it.value().start);
-            cur.setPosition(block.position() + it.value().end, QTextCursor::KeepAnchor);
-            cur.setCharFormat(it.value().format);
-            cur.setPosition(block.position() + it.value().end);
-            cur.setCharFormat(QTextCharFormat());
-            ++it;
+
+    for (int row = 0; row < formats.size(); ++row) {
+        QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+row);
+        const LineFormat &fmt = formats.at(row);
+        if (fmt.extraLstFormat) {
+            cur.setPosition(block.position());
+            cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
+            cur.setCharFormat(*fmt.extraLstFormat);
         }
+        cur.setPosition(block.position() + fmt.start);
+        cur.setPosition(block.position() + fmt.end, QTextCursor::KeepAnchor);
+        cur.setCharFormat(fmt.format);
+        cur.setPosition(block.position() + fmt.end);
+        cur.setCharFormat(QTextCharFormat());
     }
 
     int topLinesToRemove = mEdit->blockCount() - mMapper->bufferedLines();

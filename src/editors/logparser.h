@@ -66,7 +66,7 @@ public:
     void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart);
 
 signals:
-    void setLstErrorText(int line, QString text);
+    void setErrorText(int line, QString text);
     void hasFile(QString fName, bool &exists);
 
 private:

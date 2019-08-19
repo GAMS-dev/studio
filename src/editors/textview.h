@@ -83,7 +83,6 @@ signals:
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines);
-    void setLstErrorText(int line, QString text);
 
 public slots:
     void updateExtraSelections();
@@ -102,7 +101,7 @@ private slots:
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
-    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QMap<int, LineFormat> &formats);
+    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats);
     void recalcVisibleLines();          // JM: changes on Debug
 
 protected:

@@ -61,7 +61,7 @@ QString LogParser::parseLine(const QByteArray &data, QString &line, bool &hasErr
             newLine = line;
         } else {
             if (mbState.deep) {
-                emit setLstErrorText(mbState.errData.lstLine, mbState.errData.text);
+                emit setErrorText(mbState.errData.lstLine, mbState.errData.text);
                 mbState.errData.text = "";
             }
             mbState.inErrorText = false;

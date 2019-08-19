@@ -54,7 +54,7 @@ public:
     int indexOf(ProjectAbstractNode *child);
     virtual QString location() const;
     QString tooltip() override;
-    virtual QString lstErrorText(int line);
+    virtual QString errorText(int lstLine);
     ProjectFileNode *findFile(const QString &location, bool recurse = true) const;
     ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
     ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
@@ -92,9 +92,9 @@ public:
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
     QString tooltip() override;
-    QString lstErrorText(int line) override;
-    void clearLstErrorTexts();
-    bool hasLstErrorText( int line = -1);
+    QString errorText(int lstLine) override;
+    void clearErrorTexts();
+    bool hasErrorText(int lstLine = -1);
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QList<option::OptionItem> itemList);
@@ -114,7 +114,7 @@ signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
 
 public slots:
-    void setLstErrorText(int line, QString text);
+    void setErrorText(int lstLine, QString text);
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
@@ -129,8 +129,7 @@ protected:
     friend class ProjectFileNode;
 
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
-//    void markTexts(const QList<TextMark*> &marks, QStringList &result);
-    void lstTexts(const QVector<int> &lstLines, QStringList &result);
+    void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
     void removeChild(ProjectAbstractNode *child);
     void resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create = false);
@@ -138,7 +137,7 @@ protected:
 private:
     std::unique_ptr<GamsProcess> mGamsProcess;
     ProjectLogNode* mLogNode = nullptr;
-    QHash<int, QString> mLstErrorTexts;
+    QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;
     QHash<QString, QString> mParameterHash;
 

@@ -106,9 +106,9 @@ QString ProjectGroupNode::tooltip()
     return QString(res);
 }
 
-QString ProjectGroupNode::lstErrorText(int line)
+QString ProjectGroupNode::errorText(int lstLine)
 {
-    return parentNode() ? parentNode()->lstErrorText(line) : QString();
+    return parentNode() ? parentNode()->errorText(lstLine) : QString();
 }
 
 ProjectFileNode *ProjectGroupNode::findFile(const QString &location, bool recurse) const
@@ -339,17 +339,17 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     if (hasLogNode()) logNode()->resetLst();
 }
 
-QString ProjectRunGroupNode::lstErrorText(int line)
+QString ProjectRunGroupNode::errorText(int lstLine)
 {
-    return mLstErrorTexts.value(line);
+    return mErrorTexts.value(lstLine);
 }
 
-void ProjectRunGroupNode::setLstErrorText(int line, QString text)
+void ProjectRunGroupNode::setErrorText(int lstLine, QString text)
 {
     if (text.isEmpty())
-        DEB() << "Empty LST-text ignored for line " << line;
+        DEB() << "Empty LST-text ignored for line " << lstLine;
     else
-        mLstErrorTexts.insert(line, text);
+        mErrorTexts.insert(lstLine, text);
 }
 
 void ProjectRunGroupNode::hasHRef(const QString &href, bool &exist)
@@ -396,15 +396,15 @@ void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
     }
 }
 
-void ProjectRunGroupNode::clearLstErrorTexts()
+void ProjectRunGroupNode::clearErrorTexts()
 {
-    mLstErrorTexts.clear();
+    mErrorTexts.clear();
     // TODO(JM) remove marks for this groups NodeId
 }
 
-bool ProjectRunGroupNode::hasLstErrorText(int line)
+bool ProjectRunGroupNode::hasErrorText(int lstLine)
 {
-    return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
+    return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);
 }
 
 void ProjectRunGroupNode::addRunParametersHistory(QString runParameters)
@@ -616,21 +616,10 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     return false;
 }
 
-//void ProjectRunGroupNode::markTexts(const QList<TextMark *> &marks, QStringList &result)
-//{
-//    for (TextMark* mark: marks) {
-//        int lstLine = mark->value();
-//        if (lstLine < 0 && mark->refMark()) lstLine = mark->refMark()->value();
-//        QString newTip = lstErrorText(lstLine);
-//        if (!result.contains(newTip))
-//            result << newTip;
-//    }
-//}
-
-void ProjectRunGroupNode::lstTexts(const QVector<int> &lstLines, QStringList &result)
+void ProjectRunGroupNode::errorTexts(const QVector<int> &lstLines, QStringList &result)
 {
     for (int lstLine: lstLines) {
-        QString newTip = lstErrorText(lstLine);
+        QString newTip = errorText(lstLine);
         if (!result.contains(newTip))
             result << newTip;
     }

@@ -23,6 +23,7 @@
 #include "abstracttextmapper.h"
 #include "logparser.h"
 #include <QMutex>
+#include <QTime>
 #include <QContiguousCache>
 
 namespace gams {
@@ -57,7 +58,6 @@ public:
     void startRun() override;
     void endRun() override;
     int firstErrorLine();
-//    int visibleLineCount() const override;
     QString lines(int localLineNrFrom, int lineCount) const override;
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
     int lineCount() const override;
@@ -70,8 +70,7 @@ public:
 signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines);
-    void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QMap<int, LineFormat> &formats);
-    void setLstErrorText(int line, QString text);
+    void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QVector<LineFormat> &formats);
 
 
 public slots:
@@ -128,8 +127,9 @@ private:
     bool mLastLineIsOpen = false;
     int mLastLineLen = 0;
     QStringList mNewLogLines;
-    QStringList mNewDisplayLines;
-    QMap<int, LineFormat> mDisplayQuickFormats;
+    QTime mDisplayCacheChanged;
+    QStringList mDisplayNewLines;
+    QVector<LineFormat> mDisplayQuickFormats;
     int mDisplayLastLineLen = 0;
     bool mDisplayLinesOverwrite = false;
     int mConcealPos = 0;

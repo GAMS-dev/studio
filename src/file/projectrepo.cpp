@@ -602,11 +602,11 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
 //        runGroup->markTexts(marks, result);
 //}
 
-void ProjectRepo::lstTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result)
+void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result)
 {
     ProjectRunGroupNode *runGroup = asRunGroup(groupId);
     if (runGroup)
-        runGroup->lstTexts(lstLines, result);
+        runGroup->errorTexts(lstLines, result);
 }
 
 void ProjectRepo::stepRunAnimation()

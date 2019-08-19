@@ -150,7 +150,7 @@ public slots:
     void closeNodeById(NodeId nodeId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 //    void markTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
-    void lstTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
+    void errorTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void stepRunAnimation();
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);

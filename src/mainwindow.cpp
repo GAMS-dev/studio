@@ -1954,7 +1954,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     }
 
     runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
-    runGroup->clearLstErrorTexts();
+    runGroup->clearErrorTexts();
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;

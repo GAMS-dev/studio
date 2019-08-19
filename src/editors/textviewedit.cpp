@@ -135,7 +135,6 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
 void TextViewEdit::recalcWordUnderCursor()
 {
     if (!mKeepWordUnderCursor) {
-        DEB() << "update WORD-UNDER-CURSOR";
         CodeEdit::recalcWordUnderCursor();
     }
 }
