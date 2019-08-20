@@ -819,15 +819,16 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->setFocus();
 }
 
-void SearchDialog::updateNrMatches(int current)
+void SearchDialog::updateNrMatches(int current, int max)
 {
     SearchResultList* list = mCachedResults;
+    int size = list ? list->size() : max;
 
     if (current == 0) {
         if (list->size() == 1)
-            ui->lbl_nrResults->setText(QString::number(list->size()) + " match");
+            ui->lbl_nrResults->setText(QString::number(size) + " match");
         else
-            ui->lbl_nrResults->setText(QString::number(list->size()) + " matches");
+            ui->lbl_nrResults->setText(QString::number(size) + " matches");
 
         if (list->size() > MAX_SEARCH_RESULTS-1) {
             ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
@@ -836,10 +837,8 @@ void SearchDialog::updateNrMatches(int current)
             ui->lbl_nrResults->setToolTip("");
         }
 
-    } else {
-        int max = list->size();
-        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(max) + " matches");
-    }
+    } else
+        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(size) + " matches");
 
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 }

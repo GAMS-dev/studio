@@ -71,7 +71,7 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
 
     // jump to line
     node->file()->jumpTo(node->runGroupId(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
-    emit updateMatchLabel(selectedRow+1);
+    emit updateMatchLabel(selectedRow+1, mResultList.size());
     if (!focus) setFocus();
 }
 
