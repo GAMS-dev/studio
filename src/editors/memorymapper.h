@@ -100,6 +100,9 @@ private:
     LineRef logLineToRef(const int &lineNr);
     Chunk *nextChunk(Chunk *chunk);
     int currentRunLines();
+    void updateChunkMetrics(Chunk *chunk, bool cutRemain = false);
+    void recalcSize() const;
+    void invalidateSize();
 
 private:
     struct InputState {
@@ -112,7 +115,7 @@ private:
     QVector<Chunk*> mChunks;
     QVector<Unit> mUnits;
     QVector<QTextCharFormat> mBaseFormat;
-    qint64 mSize = 0;
+    mutable qint64 mSize = 0;   // this is only a caching value
     int mLineCount = 0;
     bool mShrunk = false;
     LogParser *mLogParser = nullptr;

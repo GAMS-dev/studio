@@ -258,6 +258,8 @@ void TextView::adjustOuterScrollAction()
         break;
     case QScrollBar::SliderMove: {
         int lineNr = verticalScrollBar()->sliderPosition() - verticalScrollBar()->minimum();
+
+
         if (mMapper->knownLineNrs() >= lineNr) {
             mMapper->setVisibleTopLine(lineNr);
         } else {
@@ -478,8 +480,9 @@ void TextView::appendedLines(const QStringList &lines, bool append, bool overwri
     cur.insertText(lines.join("\n")+"\n");
 
     for (int row = 0; row < formats.size(); ++row) {
-        QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+row);
         const LineFormat &fmt = formats.at(row);
+        if (fmt.start < 0) continue;
+        QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+row);
         if (fmt.extraLstFormat) {
             cur.setPosition(block.position());
             cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);

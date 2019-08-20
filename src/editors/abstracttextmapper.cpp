@@ -329,8 +329,8 @@ bool AbstractTextMapper::setVisibleTopLine(int lineNr)
     if (lineNr > maxVisLineNr) lineNr = maxVisLineNr;
 
     int tl = absTopLine();
-    if (visibleOffset() >= 0 && tl >= 0 && lineNr == tl + visibleOffset())
-        return true; // nothing changed
+//    if (visibleOffset() >= 0 && tl >= 0 && lineNr == tl + visibleOffset())
+//        return true; // nothing changed
 
     // calculate the topLine for this visibleTopLine
     tl = qBound(0, lineNr - visibleLineCount(), qMax(0, qAbs(lineCount())- bufferedLines()));
