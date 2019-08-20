@@ -2727,6 +2727,8 @@ void MainWindow::showResults(SearchResultList* results)
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
 
     ui->dockLogView->show();
+    ui->dockLogView->activateWindow();
+    ui->dockLogView->raise();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
