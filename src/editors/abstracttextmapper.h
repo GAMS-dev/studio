@@ -35,12 +35,18 @@ namespace studio {
 
 struct LineFormat {
     LineFormat() {}
+    LineFormat(const LineFormat &other) { *this = other; }
     LineFormat(int _start, int _end, QTextCharFormat _format)
         : start(_start), end(_end), format(_format) {}
     LineFormat(int _start, int _end, QTextCharFormat _format, QString tip, QString ref)
         : start(_start), end(_end), format(_format) {
         format.setAnchorHref(ref);
         format.setToolTip(tip);
+    }
+    LineFormat &operator=(const LineFormat &other) {
+        start = other.start; end = other.end; format = other.format;
+        extraLstFormat = other.extraLstFormat; extraLstHRef = other.extraLstHRef;
+        return *this;
     }
     int start = -1;
     int end = -1;

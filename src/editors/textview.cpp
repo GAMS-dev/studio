@@ -502,7 +502,7 @@ void TextView::appendedLines(const QStringList &lines, bool append, bool overwri
                         , QTextCursor::KeepAnchor);
         cur.removeSelectedText();
     }
-    mMapper->moveVisibleTopLine(lines.count() - remainLineSpace);
+    mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount());
     updatePosAndAnchor();
     mEdit->blockSignals(true);
     mEdit->verticalScrollBar()->setSliderPosition(mMapper->visibleOffset());
