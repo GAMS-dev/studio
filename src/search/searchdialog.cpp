@@ -444,8 +444,11 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         colNr = t->position().x();
     }
 
-    QList<Result> resultList = mCachedResults->resultsAsList();
-    if (resultList.size() == 0) return;
+    QList<Result> resultList = mCachedResults->resultsAsList();;
+    if (resultList.size() == 0) {
+        setSearchStatus(SearchStatus::NoResults);
+        return;
+    }
 
     const Result* res = nullptr;
     int iterator = backwards ? -1 : 1;

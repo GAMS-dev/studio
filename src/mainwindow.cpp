@@ -1961,6 +1961,7 @@ bool MainWindow::eventFilter(QObject*, QEvent* event)
         keyPressEvent(keyEvent);
         return true;
     }
+
     return false;
 }
 
