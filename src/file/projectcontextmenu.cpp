@@ -21,7 +21,6 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QDesktopServices>
-#include <QMessageBox>
 #include "projectcontextmenu.h"
 #include "file.h"
 #include "commonpaths.h"
@@ -197,10 +196,9 @@ void ProjectContextMenu::onAddExisitingFile()
     QString sourcePath = "";
     emit getSourcePath(sourcePath);
 
-    QStringList filePaths = QFileDialog::getOpenFileNames(mParent,
-                                                    "Add existing files",
-                                                    sourcePath,
-                                                    tr("GAMS code (*.gms *.inc *.gdx *.lst *.opt *ref);;"
+    QStringList filePaths = QFileDialog::getOpenFileNames(mParent, "Add existing files", sourcePath,
+                                                    tr("GAMS Source (*.gms);;"
+                                                       "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
                                                        "Option files (*.opt *.op* *.o*);;"
                                                        "Reference files (*.ref);;"
                                                        "Text files (*.txt);;"
@@ -263,23 +261,15 @@ void ProjectContextMenu::onRenameGroup()
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
-    QString sourcePath = "";
-    emit getSourcePath(sourcePath);
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (!groups.contains(group))
+            groups << group;
+    }
 
-    QString filePath = QFileDialog::getSaveFileName(mParent,
-                                                    QString("Create %1 option file...").arg(solverName),
-                                                    QDir(QFileInfo(sourcePath).absolutePath()).filePath(QString("%1.opt").arg(solverName)),
-                                                    tr(QString("%1 option file (%1.opt %1.op*);;All files (*.*)").arg(solverName).toLatin1()),
-                                                    nullptr,
-                                                    DONT_RESOLVE_SYMLINKS_ON_MACOS);
-
-    if (filePath.isEmpty()) return;
-
-    QFileInfo fi(filePath);
-    if (fi.suffix().isEmpty())
-        filePath += ".opt";
-
-    addNewFile(filePath);
+    emit newFileDialog(groups, solverName);
 }
 
 void ProjectContextMenu::onOpenFileLoc()
@@ -340,27 +330,6 @@ void ProjectContextMenu::onReOpenSolverOptionFileAsText()
 void ProjectContextMenu::onOpenLog()
 {
     if (mNodes.first()) emit openLogFor(mNodes.first(), true, true);
-}
-
-void ProjectContextMenu::addNewFile(const QString &filePath)
-{
-    QFile file(filePath);
-    if (!file.exists()) { // create
-        file.open(QIODevice::WriteOnly);
-        file.close();
-    } else { // replace old
-        file.resize(0);
-    }
-    QVector<ProjectGroupNode*> groups;
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
-    }
-    for (ProjectGroupNode *group: groups) {
-        emit addExistingFile(group, filePath);
-    }
 }
 
 void ProjectContextMenu::onSelectAll()

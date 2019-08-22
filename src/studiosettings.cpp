@@ -47,6 +47,13 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
         initDefaultColors();
     }
     if (resetViews) resetViewSettings();
+
+    QFileInfo file(mAppSettings->fileName());
+    QDir location(file.path());
+    foreach (const QString &fileName, location.entryList({"*.lock"})) {
+        QFile f(location.path() +  "/" + fileName);
+        f.remove();
+    }
 }
 
 StudioSettings::~StudioSettings()
@@ -231,6 +238,11 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->setValue("historySize", historySize());
 
+    mUserSettings->setValue("solverOptionOverrideExisting", overridExistingOption());
+    mUserSettings->setValue("solverOptionAddCommentAbove", addCommentDescriptionAboveOption());
+    mUserSettings->setValue("solverOptionAddEOLComment", addEOLCommentDescriptionOption());
+    mUserSettings->setValue("solverOptionDeleteCommentAbove", deleteAllCommentsAboveOption());
+
     mUserSettings->endGroup();
 
     mUserSettings->sync();
@@ -359,6 +371,11 @@ void StudioSettings::loadUserSettings()
 
     setHistorySize(mUserSettings->value("historySize", 12).toInt());
 
+    setOverrideExistingOption( mUserSettings->value("solverOptionOverrideExisting", overridExistingOption()).toBool() );
+    setAddCommentDescriptionAboveOption( mUserSettings->value("solverOptionAddCommentAbove", addCommentDescriptionAboveOption()).toBool() );
+    setAddEOLCommentDescriptionOption( mUserSettings->value("solverOptionAddEOLComment", addEOLCommentDescriptionOption()).toBool() );
+    setDeleteAllCommentsAboveOption( mUserSettings->value("solverOptionDeleteCommentAbove", deleteAllCommentsAboveOption()).toBool() );
+
     mUserSettings->endGroup();
 }
 
@@ -370,6 +387,46 @@ int StudioSettings::historySize() const
 void StudioSettings::setHistorySize(int historySize)
 {
     mHistorySize = historySize;
+}
+
+bool StudioSettings::overridExistingOption() const
+{
+    return mOverrideExistingOption;
+}
+
+void StudioSettings::setOverrideExistingOption(bool value)
+{
+    mOverrideExistingOption = value;
+}
+
+bool StudioSettings::addCommentDescriptionAboveOption() const
+{
+    return mAddCommentAboveOption;
+}
+
+void StudioSettings::setAddCommentDescriptionAboveOption(bool value)
+{
+    mAddCommentAboveOption = value;
+}
+
+bool StudioSettings::addEOLCommentDescriptionOption() const
+{
+    return mAddEOLCommentOption;
+}
+
+void StudioSettings::setAddEOLCommentDescriptionOption(bool value)
+{
+    mAddEOLCommentOption = value;
+}
+
+bool StudioSettings::deleteAllCommentsAboveOption() const
+{
+    return mDeleteCommentsAboveOption;
+}
+
+void StudioSettings::setDeleteAllCommentsAboveOption(bool value)
+{
+    mDeleteCommentsAboveOption = value;
 }
 
 void StudioSettings::restoreLastFilesUsed(MainWindow *main)

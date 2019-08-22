@@ -35,4 +35,3 @@ SUBDIRS += testcommonpaths              \
            testgurobioption             \
            testoptionapi                \
            testdoclocation
-

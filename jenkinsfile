@@ -167,27 +167,50 @@ pipeline {
                             # create folder structure
                             mkdir -p appdir/usr/bin
                             mkdir -p appdir/usr/share/pixmaps
+                            mkdir -p appdir/usr/resources
 
                             # collect files
                             cp src/bin/studio appdir/usr/bin/
-                            cp gamsstudio.desktop appdir/usr/share/studio.desktop
+                            cp platform/linux/gamsstudio.desktop appdir/usr/share/studio.desktop
                             cp icons/* appdir/usr/share/pixmaps
+                            cp CHANGELOG appdir/usr/resources/Changelog
 
                             # TODO (AF) take a look at linuxdeployqt
                             # workaround for linuxdeployqt and svg
                             mkdir -p appdir/usr/plugins/imageformats
                             cp /opt/Qt/5.11.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
 
-                            linuxdeployqt-5-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
+                            STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION version | cut -f2 -d"=")
+                            STUDIO_MINOR_VERSION=$(grep ^STUDIO_MINOR_VERSION version | cut -f2 -d"=")
+                            STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL version | cut -f2 -d"=")
+                            export VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
+
+                            linuxdeployqt-6-x86_64.AppImage appdir/usr/share/studio.desktop -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
+
+                            # Workaround to increase compatibility with older systems;
+                            # see https://github.com/darealshinji/AppImageKit-checkrt amd
+                            # https://docs.appimage.org/packaging-guide/advanced/troubleshooting.html?highlight=libstdc for details
+                            mkdir -p appdir/usr/optional/
+                            wget -c https://github.com/darealshinji/AppImageKit-checkrt/releases/download/continuous/exec-x86_64.so -O ./appdir/usr/optional/exec.so
+                            mkdir -p appdir/usr/optional/libstdc++/
+                            cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ./appdir/usr/optional/libstdc++/
+                            mkdir -p appdir/usr/optional/libgcc_s/
+                            cp /lib/x86_64-linux-gnu/libgcc_s.so.1 ./appdir/usr/optional/libgcc_s/libgcc_s.so.1
+                            cd appdir
+                            rm AppRun
+                            wget -c https://github.com/darealshinji/AppImageKit-checkrt/releases/download/continuous/AppRun-patched-x86_64 -O AppRun
+                            chmod a+x AppRun
+                            cd ..
+
+                            linuxdeployqt-6-x86_64.AppImage appdir/usr/share/studio.desktop -appimage
                         '''
                         script {
                             def versionData = artifactVersion()
                             if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-x86_64.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
+                                sh "mv GAMS_Studio-*.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
                                 archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
                             } else {
-                                sh "mv GAMS_Studio-x86_64.AppImage GAMS_Studio-${versionData}-x86_64.AppImage"
-                                archiveArtifacts artifacts: 'GAMS*.AppImage', fingerprint: true
+                                archiveArtifacts artifacts: '*.AppImage', fingerprint: true
                             }
                         }
                     }
@@ -198,6 +221,7 @@ pipeline {
                         bat '''
                             windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
 
+                            copy CHANGELOG "src\\bin\\resources\\Changelog"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Redist\\MSVC\\14.15.26706\\x86\\Microsoft.VC141.CRT\\*" "src\\bin"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Redist\\MSVC\\14.15.26706\\vc_redist.x86.exe" "src\\bin"
                         '''
@@ -227,6 +251,7 @@ pipeline {
                         bat '''
                             windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
 
+                            copy CHANGELOG "src\\bin\\resources\\Changelog"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.12.25810\\x64\\Microsoft.VC141.CRT\\*" "src\\bin"
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.12.25810\\vc_redist.x64.exe" "src\\bin"
                         '''
@@ -256,8 +281,15 @@ pipeline {
                         fileOperations([folderRenameOperation(destination: 'src/bin/GAMS Studio.app', source: 'src/bin/studio.app')])
                         withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
                             sh '''
+                                cd src/bin
                                 security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
-                                macdeployqt "src/bin/GAMS Studio.app" -dmg -always-overwrite -codesign=${CODESIGN_IDENTITY}
+
+                                macdeployqt "GAMS Studio.app" -always-overwrite
+                                cp ../../CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
+                                codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
+                                codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --timestamp --entitlements ../../platform/macos/webengine.entitlements.plist "GAMS Studio.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
+                                hdiutil create -volname "GAMS Studio" -srcfolder "GAMS Studio.app" -ov -fs HFS+ -format UDZO "GAMS Studio.dmg"
+
                                 security lock-keychain
                             '''
                             sh '''

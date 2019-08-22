@@ -28,6 +28,7 @@
 #include <QApplication>
 #include <QLocalServer>
 
+
 namespace gams {
 namespace studio {
 

@@ -96,18 +96,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
     createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload );
     createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop );
 
-    HelpToolBar* toolbar = new HelpToolBar(ui->actionHome,
-                               ui->webEngineView->pageAction(QWebEnginePage::Back),
-                               ui->webEngineView->pageAction(QWebEnginePage::Forward),
-                               ui->webEngineView->pageAction(QWebEnginePage::Reload),
-                               ui->webEngineView->pageAction(QWebEnginePage::Stop),
-                               bookmarkToolButton,
-                               helpToolButton,
-                               this);
-    connect(this, &HelpWidget::webActionEnabledChanged, toolbar, &HelpToolBar::on_webActionEnabledChanged);
-    connect(toolbar, &HelpToolBar::webActionTriggered, this, &HelpWidget::on_webActionTriggered);
-
-    ui->toolbarVlLayout->addWidget(toolbar);
+    setupToolbar(bookmarkToolButton, helpToolButton);
 
     if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
         ui->webEngineView->load( getStartPageUrl() );
@@ -127,6 +116,25 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     clearStatusBar();
     ui->searchbarWidget->hide();
+}
+
+void HelpWidget::setupToolbar(QToolButton* bookmarkToolButton, QToolButton* helpToolButton)
+{
+    ui->toolbarWidget->addAction(ui->actionHome);
+    ui->toolbarWidget->addSeparator();
+    ui->toolbarWidget->addActionBack(ui->webEngineView->pageAction(QWebEnginePage::Back));
+    ui->toolbarWidget->addActionForward(ui->webEngineView->pageAction(QWebEnginePage::Forward));
+    ui->toolbarWidget->addSeparator();
+    ui->toolbarWidget->addActionReload(ui->webEngineView->pageAction(QWebEnginePage::Reload));
+    ui->toolbarWidget->addSeparator();
+    ui->toolbarWidget->addActionStop(ui->webEngineView->pageAction(QWebEnginePage::Stop));
+    ui->toolbarWidget->addSeparator();
+    ui->toolbarWidget->addWidget(bookmarkToolButton);
+    ui->toolbarWidget->addSpacer();
+    ui->toolbarWidget->addWidget(helpToolButton);
+
+    connect(this, &HelpWidget::webActionEnabledChanged, ui->toolbarWidget, &HelpToolBar::on_webActionEnabledChanged);
+    connect(ui->toolbarWidget, &HelpToolBar::webActionTriggered, this, &HelpWidget::on_webActionTriggered);
 }
 
 HelpWidget::~HelpWidget()
@@ -557,10 +565,15 @@ QUrl HelpWidget::getOnlineStartPageUrl()
     if (!c4uWrapper.isValid())
         return HelpData::getLatestOnlineHelpUrl();
 
-    if (c4uWrapper.distribIsLatest())
+    if (c4uWrapper.distribIsLatest()) {
         return HelpData::getLatestOnlineHelpUrl();
-    else
-       return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
+    } else {
+        int marjorversion = c4uWrapper.currentDistribVersion()/100;
+        if (marjorversion>=26)
+            return QUrl( QString("https://www.gams.com/%1").arg( marjorversion ));
+        else
+          return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
+    }
 }
 
 bool HelpWidget::isDocumentAvailable(const QString &path, const QString &chapter)

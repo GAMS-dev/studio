@@ -46,19 +46,23 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
     mOption = new Option(CommonPaths::systemDir(), optionDefFileName);
     mOPTAvailable = mOption->available();
 
-    // option parser
-    char msg[GMS_SSSIZE];
-    optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
-    if (msg[0] != '\0') {
-        logger()->append(msg, LogMsgType::Error);
-        optFree(&mOPTHandle);
-        mOPTAvailable = false;
-    }
+    if (mOPTAvailable) {
+        optSetExitIndicator(0); // switch of exit() call
+        optSetScreenIndicator(0);
+        optSetErrorCallback(Option::errorCallback);
 
-    if (optReadDefinition(mOPTHandle, QDir(mOption->getOptionDefinitionPath()).filePath(mOption->getOptionDefinitionFile()).toLatin1())) {
-        logAndClearMessage(mOPTHandle);
-        optFree(&mOPTHandle);
-        mOPTAvailable = false;
+       // option parser
+       char msg[GMS_SSSIZE];
+       optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
+       if (msg[0] != '\0') {
+          logger()->append(msg, LogMsgType::Error);
+          mOPTAvailable = false;
+       }
+
+       if (optReadDefinition(mOPTHandle, QDir(mOption->getOptionDefinitionPath()).filePath(mOption->getOptionDefinitionFile()).toLatin1())) {
+           logAndClearMessage(mOPTHandle);
+           mOPTAvailable = false;
+       }
     }
 
     // default is the first EOL char defined, unless user specifies otherwise
@@ -93,7 +97,8 @@ OptionTokenizer::~OptionTokenizer()
         delete mOptionLogger;
     if (mOption)
         delete mOption;
-    optFree(&mOPTHandle);
+    if (mOPTAvailable && mOPTHandle)
+       optFree(&mOPTHandle);
 }
 
 
@@ -699,11 +704,6 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
     }
     QList<OptionError> errList = this->format( tokenizedItems );
     this->formatLineEdit(lineEdit, errList);
-}
-
-void OptionTokenizer::on_EOLCommentChar_changed(const QChar ch)
-{
-    mEOLCommentChar = ch;
 }
 
 OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)

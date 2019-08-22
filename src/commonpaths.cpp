@@ -20,6 +20,10 @@
 #include "commonpaths.h"
 #include "exception.h"
 
+#ifdef __APPLE__
+#include "../platform/macos/macospathfinder.h"
+#endif
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -50,45 +54,31 @@ const QString& CommonPaths::systemDir()
 
 void CommonPaths::setSystemDir(const QString &sysdir)
 {
-    QString gamsPath;
-    if (sysdir.isEmpty()) {
-        const QString subPath = QString(QDir::separator()).append("..");
+    if (!sysdir.isEmpty()) {
+        auto path = QFileInfo(QStandardPaths::findExecutable("gams", {sysdir})).absolutePath();
+        SystemDir = QDir::cleanPath(path);
+        return;
+    }
+
 #ifdef __APPLE__
-        gamsPath = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
-        if (!QDir(gamsPath).exists()) {
-            QDir applications("/Applications");
-            QRegExp regex("^GAMS(\\d\\d).(\\d)$");
-            for (auto dir : applications.entryList({"GAMS*"}, QDir::Dirs)) {
-               if (!regex.exactMatch(dir))
-                   continue;
-               if (regex.cap(1).toInt() > GAMS_DISTRIB_MAJOR) {
-                   gamsPath = "/Applications/" + dir + "/sysdir";
-                   break;
-               }
-               if (regex.cap(1).toInt() == GAMS_DISTRIB_MAJOR &&
-                   regex.cap(2).toInt() >= GAMS_DISTRIB_MINOR) {
-                   gamsPath = "/Applications/" + dir + "/sysdir";
-                   break;
-               }
-            }
-        }
-#elif __unix__
-        QFileInfo fileInfo(qgetenv("APPIMAGE"));
-        gamsPath = fileInfo.absoluteDir().path().append(subPath);
+    SystemDir = MacOSPathFinder::systemDir();
 #else
-        gamsPath = QCoreApplication::applicationDirPath().append(subPath);
+    QString gamsPath;
+    const QString subPath = QString(QDir::separator()).append("..");
+#ifdef __unix__
+    QFileInfo fileInfo(qgetenv("APPIMAGE"));
+    gamsPath = fileInfo.absoluteDir().path().append(subPath);
+#else
+    gamsPath = QCoreApplication::applicationDirPath().append(subPath);
 #endif
 
-        QString path = QStandardPaths::findExecutable("gams", {gamsPath});
-        if (path.isEmpty()) {
-            gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
-        }
-    }
-    else {
-        gamsPath = QFileInfo(QStandardPaths::findExecutable("gams", {sysdir})).absolutePath();
+    QString path = QStandardPaths::findExecutable("gams", {gamsPath});
+    if (path.isEmpty()) {
+        gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     }
 
     SystemDir = QDir::cleanPath(gamsPath);
+#endif
 }
 
 bool CommonPaths::isSystemDirValid()
@@ -149,6 +139,17 @@ QString CommonPaths::licenseFile()
 {
     QDir licenseFile(systemDir() + "/" + LicenseFile);
     return licenseFile.path();
+}
+
+QString CommonPaths::changelog()
+{
+#ifdef __APPLE__
+    return QDir::cleanPath(MacOSPathFinder::bundlePath().append("/Contents/Resources/Changelog"));
+#elif __unix__
+    return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/../resources/Changelog"));
+#else
+    return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/resources/Changelog"));
+#endif
 }
 
 }

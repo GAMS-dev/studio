@@ -22,16 +22,27 @@
 
 #include "libraryitem.h"
 
+#include <QTextStream>
+
 namespace gams {
 namespace studio {
 
 class GlbParser
 {
 public:
-    static QList<LibraryItem> parseFile(QString glbFile);
+    GlbParser();
+    bool parseFile(QString glbFile);
+    QList<LibraryItem> libraryItems() const;
+    QString errorMessage() const;
 
 private:
-    GlbParser();
+    QList<LibraryItem> mLibraryItems;
+    QString mErrorMessage;
+    bool checkListSize(const QStringList& list, int expectedSize);
+    bool checkKey(QString key, QString expected);
+    QString readLine(QTextStream& in);
+    int mLineNr = 0;
+    QString mGlbFile;
 };
 
 } // namespace studio

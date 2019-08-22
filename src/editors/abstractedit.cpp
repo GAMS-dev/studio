@@ -237,7 +237,7 @@ bool AbstractEdit::event(QEvent *e)
     }
     if (e->type() == QEvent::FontChange) {
         QFontMetrics metric(font());
-        setTabStopDistance(8*metric.width(' '));
+        setTabStopDistance(SettingsLocator::settings()->tabSize() * metric.width(' '));
     }
     return QPlainTextEdit::event(e);
 }

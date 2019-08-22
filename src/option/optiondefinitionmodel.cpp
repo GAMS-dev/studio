@@ -27,12 +27,6 @@ namespace option {
 OptionDefinitionModel::OptionDefinitionModel(Option* data, int optionGroup, QObject* parent)
     : QAbstractItemModel(parent), mOptionGroup(optionGroup), mOption(data)
 {
-    QList<QVariant> rootData;
-    rootData << "Option" << "Synonym" << "DefValue" << "Range"
-             << "Type" << "Description" << "Debug Entry" ;
-    rootItem = new OptionDefinitionItem(rootData);
-
-    setupTreeItemModelData(mOption, rootItem);
 }
 
 OptionDefinitionModel::~OptionDefinitionModel()

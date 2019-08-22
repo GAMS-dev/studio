@@ -96,7 +96,7 @@ public:
     void marksChanged(QSet<int> lines = QSet<int>());
     void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
-    void setLocation(const QString &location);
+    void setLocation(QString location);
 
 public slots:
     void reload();

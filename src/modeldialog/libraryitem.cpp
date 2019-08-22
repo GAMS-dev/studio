@@ -22,8 +22,8 @@
 namespace gams {
 namespace studio {
 
-LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files):
-    mLibrary(library), mDescription(description), mLongDescription(longDescription), mFiles(files), mValues(values)
+LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files, int suffixNumber):
+    mLibrary(library), mDescription(description), mLongDescription(longDescription), mFiles(files), mValues(values), mSuffixNumber(suffixNumber)
 {
 }
 
@@ -53,6 +53,13 @@ QString LibraryItem::longDescription() const
     return mLongDescription;
 }
 
+QString LibraryItem::nameWithSuffix() const
+{
+    QString name = this->name();
+    if (mSuffixNumber>0)
+        name.append("_" + QString::number(mSuffixNumber));
+    return name;
+}
 
 } // namespace studio
 } // namespace gams

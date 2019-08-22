@@ -45,9 +45,11 @@ void DistributionValidator::checkBitness()
 {
 #ifdef _WIN32
     auto gamsPath = CommonPaths::systemDir();
-    QFileInfo joat64(gamsPath + QDir::separator() + "joatdclib64.dll");
+    QFileInfo joat64(gamsPath + '/' + "joatdclib64.dll");
     bool is64 = (sizeof(void*) == 8);
     QStringList messages;
+    if (gamsPath.isEmpty())
+        return; //we can check the bitness of GAMS if no GAMS was found
     if (!is64 && joat64.exists())
         messages << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:"
                  << gamsPath;
@@ -63,7 +65,7 @@ void DistributionValidator::checkCompatibility()
     GamsProcess gp;
     QString about = gp.aboutGAMS();
     if (about.isEmpty()) {
-        QString error = QString("Could not find GAMS. Please check our GAMS setup. %1\n%2")
+        QString error = QString("Could not find GAMS. Please check your GAMS setup. %1\n%2")
                                 .arg("The installation instructions can be found at www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL")
                                 .arg("Current path to GAMS: " + CommonPaths::systemDir());
         emit newError(error);

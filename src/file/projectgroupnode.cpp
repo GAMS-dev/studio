@@ -40,8 +40,10 @@ namespace gams {
 namespace studio {
 
 ProjectGroupNode::ProjectGroupNode(QString name, QString location, NodeType type)
-    : ProjectAbstractNode(name, type), mLocation(location)
-{}
+    : ProjectAbstractNode(name, type)
+{
+    setLocation(location);
+}
 
 ProjectGroupNode::~ProjectGroupNode()
 {
@@ -92,7 +94,7 @@ QString ProjectGroupNode::location() const
 
 void ProjectGroupNode::setLocation(const QString& location)
 {
-    mLocation = location;
+    mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(location) : location;
     emit changed(id());
 }
 
@@ -111,8 +113,9 @@ QString ProjectGroupNode::errorText(int lstLine)
     return parentNode() ? parentNode()->errorText(lstLine) : QString();
 }
 
-ProjectFileNode *ProjectGroupNode::findFile(const QString &location, bool recurse) const
+ProjectFileNode *ProjectGroupNode::findFile(QString location, bool recurse) const
 {
+    if (location.contains('\\')) location = QDir::fromNativeSeparators(location);
     QFileInfo fi(location);
     for (ProjectAbstractNode* node: mChildNodes) {
         ProjectFileNode* file = node->toFile();
@@ -285,16 +288,16 @@ ProjectLogNode *ProjectRunGroupNode::logNode()
 /// \brief ProjectGroupNode::setLogLocation sets the location of the log. Filename can be determined automatically from path.
 /// \param path
 ///
-void ProjectRunGroupNode::setLogLocation(const QString& path)
+void ProjectRunGroupNode::setLogLocation(QString path)
 {
+    if (path.contains('\\'))
+        path = QDir::fromNativeSeparators(path);
     QFileInfo log(path);
-    QString fullPath;
+    QString fullPath = log.filePath();
 
-    fullPath = log.filePath();
     if (log.isDir()) {
-
-        if (!fullPath.endsWith(QDir::separator()))
-            fullPath.append(QDir::separator());
+        if (!fullPath.endsWith('/'))
+            fullPath.append('/');
 
         QFileInfo filename(mLogNode->file()->location());
         fullPath.append(filename.completeBaseName() + "." + FileType::from(FileKind::Log).defaultSuffix());
@@ -477,14 +480,14 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     // if wdir is relative, it is appended to cdir
     if (!wdir.isEmpty()) {
         if (!cdir.isEmpty() && QDir(wdir).isRelative())
-            path += QDir::separator() + wdir;
+            path += '/' + wdir;
         else path = wdir;
     }
 
     QFileInfo fi(gmsLocation);
-    if (filestem.isEmpty()) filestem = fi.path() + QDir::separator() + fi.completeBaseName();
+    if (filestem.isEmpty()) filestem = fi.path() + '/' + fi.completeBaseName();
     if (path.isEmpty()) path = fi.path();
-    else if (QDir(path).isRelative()) path = fi.path() + QDir::separator() + path;
+    else if (QDir(path).isRelative()) path = fi.path() + '/' + path;
 
     setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
 
@@ -496,10 +499,12 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     // iterate options
     for (option::OptionItem item : itemList) {
 
+        // keep unmodified value as option for output
+        gamsArgs[item.key] = item.value;
+
         // convert to native seperator
         QString value = item.value;
-        value = value.replace('/', QDir::separator());
-        value = value.replace('\\', QDir::separator());
+        value = value.replace('\\', '/');
 
         // regex to remove dots at the end of a filename
         QRegularExpression notDotAsEnding("[\\w\\d](\\.)[\"\\\\ ]*$");
@@ -509,7 +514,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         // set parameters
         if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
-
             mParameterHash.remove("lst"); // remove default
 
             if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
@@ -517,25 +521,20 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             setParameter("lst", cleanPath(path, value));
 
         } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
-
             if (value == "default") value = "\"" + filestem + ".gdx\"";
             setParameter("gdx", cleanPath(path, value));
 
         } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
-
             if (value == "default") value = "\"" + filestem + ".ref\"";
             setParameter("ref", cleanPath(path, value));
 
         } else if (QString::compare(item.key, "lf", Qt::CaseInsensitive) == 0) {
-
             if (!value.endsWith(".log")) value.append("." + FileType::from(FileKind::Log).defaultSuffix());
             setLogLocation(cleanPath(path, value));
         }
 
         if (defaultGamsArgs.contains(item.key))
             defaultOverride = true;
-
-        gamsArgs[item.key] = value;
     }
 
     if (defaultOverride)
@@ -571,18 +570,18 @@ QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
 
     QString ret = "";
 
-    path.remove("\"");
+    path.remove("\""); // remove quotes from path
     QDir dir(path);
     if (dir.isRelative()) {
-        path = location() + QDir::separator() + path;
+        path = location() + '/' + path;
     }
 
     file.remove("\""); // remove quotes from filename
     file = file.trimmed();
     if (file.isEmpty() || QFileInfo(file).isRelative()) {
         ret = path;
-        if (! ret.endsWith(QDir::separator()))
-            ret += QDir::separator();
+        if (! ret.endsWith('/'))
+            ret += '/';
     }
     ret.append(file);
 
@@ -655,9 +654,9 @@ void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
         mParameterHash.remove(kind);
         return;
     }
-    QString fullPath = path;
-    if (QFileInfo(path).isRelative())
-        fullPath = QFileInfo(location()).canonicalFilePath() + "/" + path;
+    QString fullPath = path.contains('\\') ? QDir::fromNativeSeparators(path) : path;
+    if (QFileInfo(fullPath).isRelative())
+        fullPath = QFileInfo(location()).canonicalFilePath() + "/" + fullPath;
 
     fullPath.remove("\"");
 

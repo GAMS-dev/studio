@@ -74,10 +74,6 @@ private:
 
 struct HistoryData {
     QStringList lastOpenedFiles;
-
-    // TODO: implement projects & sessions
-    // QStringList mLastOpenedProjects;
-    // QStringList mLastOpenedSessions;
 };
 
 class MainWindow : public QMainWindow
@@ -90,9 +86,7 @@ class MainWindow : public QMainWindow
 public:
     ///
     /// \brief Constructs the GAMS Stuido main windows based on the given settings.
-    /// \param settings The GAMS Studio settings.
     /// \param parent The parent widget.
-    /// \remark <c>MainWindow</c> takes control of the <c>StudioSettings</c> pointer.
     ///
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -137,11 +131,14 @@ public:
     void ensureInScreen();
     void setExtendedEditorVisibility(bool visible);
     void resetLoadAmount();
+    void openSearchDialog();
+    void setSearchWidgetPos(const QPoint& searchWidgetPos);
 
 #ifdef QWEBENGINE
     HelpWidget *helpWidget() const;
 #endif
     option::OptionWidget *gamsOptionWidget() const;
+
 
 signals:
     void saved();
@@ -150,7 +147,7 @@ signals:
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void receiveAction(const QString &action);
-    void receiveModLibLoad(QString gmsFile);
+    void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
@@ -164,8 +161,9 @@ public slots:
     void appendSystemLog(const QString &text);
     void showErrorMessage(QString text);
     void optionRunChanged();
-    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>());
-
+    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
+    bool eventFilter(QObject*, QEvent* event);
+    void dockTopLevelChanged(bool);
 
 private slots:
     void openInitialFiles();
@@ -179,7 +177,7 @@ private slots:
     void fileClosed(const FileId fileId);
     void fileEvent(const FileEvent &e);
     void processFileEvents();
-    void postGamsRun(NodeId origin);
+    void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
     void closeGroup(ProjectGroupNode* group);
     void closeNodeConditionally(ProjectFileNode *node);
@@ -281,11 +279,15 @@ private slots:
 
     void focusCmdLine();
     void focusProjectExplorer();
+    void focusProcessLogs();
 
     void on_actionToggleBookmark_triggered();
     void on_actionNextBookmark_triggered();
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
+    void on_actionDeleteScratchDirs_triggered();
+
+    void on_actionChangelog_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -305,7 +307,7 @@ private:
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId, bool ask, int count = 1);
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
-    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
+    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 
@@ -325,6 +327,7 @@ private:
     int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
     void initToolBar();
     void updateToolbar(QWidget* current);
+    void deleteScratchDirs(const QString& path);
 
 private:
     QTime mTestTimer;
@@ -336,6 +339,7 @@ private:
 
     WelcomePage *mWp;
     SearchDialog *mSearchDialog = nullptr;
+    QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
     HelpWidget *mHelpWidget = nullptr;
 #endif

@@ -421,7 +421,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         emit searchFindNextPressed();
 
     // smart typing:
-    if (SettingsLocator::settings()->autoCloseBraces())  {
+    if (SettingsLocator::settings()->autoCloseBraces() && !isReadOnly())  {
         QSet<int> moveKeys;
         moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                  << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
@@ -446,7 +446,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             setTextCursor(tc);
             return;
 
-        // jump only(!) over closing character thats already in place
+        // jump over closing character if already in place
         } else if (mSmartType && indexClosing != -1 &&
                    mClosing.indexOf(document()->characterAt(textCursor().position())) == indexClosing) {
             QTextCursor tc = textCursor();
@@ -1032,7 +1032,7 @@ CodeEdit::CharType CodeEdit::charType(QChar c)
 void CodeEdit::updateTabSize()
 {
     QFontMetrics metric(font());
-    setTabStopDistance(8*metric.width(' '));
+    setTabStopDistance(mSettings->tabSize() * metric.width(' '));
 }
 
 int CodeEdit::findAlphaNum(const QString &text, int start, bool back)

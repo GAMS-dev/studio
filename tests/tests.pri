@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,19 +25,13 @@ CONFIG -= app_bundle
 
 DESTDIR = ../bin
 
-#include(../gamsdependency.pri)
-
-#unix : LIBS += -ldl -L../../bin
-#win32: LIBS += -L../../bin/
-
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 
 macx {
-# ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
-# ! On mac osX type the command: iconutil -c icns [base-folder]/gams.iconset to create gams.icns
-#    ICON = studio.icns
-#    QMAKE_INFO_PLIST=Info.plist
+    HEADERS += ../../platform/macos/macospathfinder.h
+
+    SOURCES += ../../platform/macos/macospathfinder.cpp
 }
 unix {
     LIBS += -ldl

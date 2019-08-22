@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -220,6 +220,8 @@
     <addaction name="actionAbout_Qt"/>
     <addaction name="actionAbout_Studio"/>
     <addaction name="separator"/>
+    <addaction name="actionChangelog"/>
+    <addaction name="separator"/>
     <addaction name="actionUpdate"/>
    </widget>
    <widget class="QMenu" name="menu_GAMs">
@@ -236,6 +238,7 @@
     <addaction name="actionStop"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
+    <addaction name="actionDeleteScratchDirs"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -379,6 +382,9 @@
        </property>
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
+       </property>
+       <property name="documentMode">
+        <bool>true</bool>
        </property>
        <property name="tabsClosable">
         <bool>true</bool>
@@ -1097,6 +1103,19 @@
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionChangelog">
+   <property name="text">
+    <string>What's New</string>
+   </property>
+  </action>
+  <action name="actionDeleteScratchDirs">
+   <property name="text">
+    <string>Delete scratch directories</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete leftover scratch directories in current working directory</string>
    </property>
   </action>
  </widget>

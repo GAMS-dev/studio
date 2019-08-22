@@ -90,6 +90,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
+    connect(ui->sbPrecision, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
+
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -162,6 +164,8 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
+        ui->sbPrecision->setValue(ui->sbPrecision->maximum()); // this is not to be confused with "MAX". The value will be 6
+        ui->cbSqueezeZeroes->setChecked(true);
         if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
@@ -223,6 +227,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
 
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
+    connect(ui->cbSqueezeZeroes, &QCheckBox::stateChanged, this, &GdxSymbolView::updateNumericalPrecision);
 
     refreshView();
 }
@@ -291,6 +296,13 @@ void GdxSymbolView::toggleColumnHidden()
     toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
 }
 
+void GdxSymbolView::updateNumericalPrecision()
+{
+    this->mSym->setNumericalPrecision(ui->sbPrecision->value(), ui->cbSqueezeZeroes->isChecked());
+    if (mTvModel)
+        ui->tvTableView->reset();
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
@@ -302,8 +314,11 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::autoResizeColumns()
 {
-    if (mTableView)
-        ui->tvTableView->resizeColumnsToContents();
+    if (mTableView) {
+        ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
+        for (int i=0; i<mTVResizeColNr; i++)
+            ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+    }
     else
         ui->tvListView->resizeColumnsToContents();
 }
@@ -331,7 +346,7 @@ void GdxSymbolView::showTableView()
     ui->tvListView->hide();
     ui->tvTableView->show();
     mTableView = true;
-    ui->tvTableView->resizeColumnsToContents();
+    autoResizeColumns();
 }
 
 void GdxSymbolView::toggleView()

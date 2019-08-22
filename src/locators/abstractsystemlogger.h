@@ -20,7 +20,7 @@
 #ifndef ABSTRACTSYSTEMLOGGER_H
 #define ABSTRACTSYSTEMLOGGER_H
 
-#include <QString>
+class QString;
 namespace gams {
 namespace studio {
 

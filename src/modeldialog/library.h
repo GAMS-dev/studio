@@ -30,11 +30,12 @@ namespace studio {
 class Library
 {
 public:
-    Library(QString name, int version, int nrColumns, QStringList columns, QStringList toolTips, QList<int> colOrder, QString glbFile);
+    Library(QString name, int version, int nrColumns, QStringList columns, int initSortCol, QStringList toolTips, QList<int> colOrder, QString glbFile);
 
     int version() const;
     QString name() const;
     int nrColumns() const;
+    int initSortCol() const;
     QStringList columns() const;
     QList<int> colOrder() const;
     QStringList toolTips() const;
@@ -48,6 +49,7 @@ private:
     QString mLongName;
     int mVersion;
     int mNrColumns;
+    int mInitSortCol;
     QStringList mColumns;
     QStringList mtoolTips;
     QList<int> mColOrder;

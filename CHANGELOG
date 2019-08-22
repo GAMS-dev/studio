@@ -1,17 +1,13 @@
-Version 0.12.0
-========================
+Version 0.12.4
+===================
 
 ## General
-- **added GAMS Solver Option Editor (requires GAMS 27.0)**
-- fixed crash when running studio with --ignore-settings and double clicking a word (fixes #1031)
-- fixed freeze when exiting studio during startup procedure
-- added Ctrl+H to focus main editor
-- added Ctrl+Shift+G to focus logs
-- added Esc to close several widgets
-- added icons to toolbar to show/hide project explorer, logs, and help
-- adjusted row height of all tables to be equal (#1002)
-- discarded file stays marked as modified (fixes #1018)
-
-## Search
-- fixed cursor not jumping to first match on first try in lst file (fixes #1039)
+- improved robustness of glb parser
+- added "What's new" menu entry to show latest changes of Studio
+- changed appearance of log tabs on macOS to be more consistent with main tabs
+- added missing extension for file filter in open/add file dialogs
+- added possible fix for stale lock file leading to a freeze and crash
+- improved Studio startup time when many tabs are open
+- fixed possibility to insert certain characters in read only files
+- fixed new gms file not marked as main
 
