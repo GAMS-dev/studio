@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,17 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "defaultsystemlogger.h"
-#include <QtGlobal>
+#ifndef TEST_MODEL_DIALOG_H
+#define TEST_MODEL_DIALOG_H
 
-namespace gams {
-namespace studio {
+#include <QtTest/QTest>
+#include "modeldialog.h"
 
-void DefaultSystemLogger::append(const QString &msg, LogMsgType type)
+using namespace gams::studio;
+
+class testmodeldialog : public QObject
 {
-    Q_UNUSED(msg);
-    Q_UNUSED(type);
-}
+    Q_OBJECT
 
-}
-}
+private Q_SLOTS:
+    void initTestCase();
+    void cleanupTestCase();
+
+    void test_fileLoad();
+    void test_tabWidget();
+
+private:
+    ModelDialog* mDialog = nullptr;
+};
+
+#endif // TEST_MODEL_DIALOG_H

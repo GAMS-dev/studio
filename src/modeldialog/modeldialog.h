@@ -42,15 +42,17 @@ public:
     explicit ModelDialog(QString userLibPath, QWidget* parent = nullptr);
     ~ModelDialog();
     LibraryItem *selectedLibraryItem() const;
+    QTableView* tableAt(int i);
 
 public slots:
-    void changeHeader();
+    void changeHeader(int tabIndex);
     void updateSelectedLibraryItem();
     void clearSelections();
 
 private slots:
     void on_pbDescription_clicked();
     void on_cbRegEx_toggled(bool checked);
+    void applyFilter(QString filterString, int proxyModelIndex);
 
 private:
     void loadUserLibs();

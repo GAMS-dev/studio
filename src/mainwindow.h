@@ -74,10 +74,6 @@ private:
 
 struct HistoryData {
     QStringList lastOpenedFiles;
-
-    // TODO: implement projects & sessions
-    // QStringList mLastOpenedProjects;
-    // QStringList mLastOpenedSessions;
 };
 
 class MainWindow : public QMainWindow
@@ -90,9 +86,7 @@ class MainWindow : public QMainWindow
 public:
     ///
     /// \brief Constructs the GAMS Stuido main windows based on the given settings.
-    /// \param settings The GAMS Studio settings.
     /// \param parent The parent widget.
-    /// \remark <c>MainWindow</c> takes control of the <c>StudioSettings</c> pointer.
     ///
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -137,6 +131,7 @@ public:
     void ensureInScreen();
     void setExtendedEditorVisibility(bool visible);
     void resetLoadAmount();
+    void openSearchDialog();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
 
 #ifdef QWEBENGINE
@@ -152,7 +147,7 @@ signals:
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void receiveAction(const QString &action);
-    void receiveModLibLoad(QString gmsFile);
+    void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateEditorPos();
     void updateEditorMode();
@@ -312,7 +307,7 @@ private:
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId, bool ask, int count = 1);
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
-    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile);
+    void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 

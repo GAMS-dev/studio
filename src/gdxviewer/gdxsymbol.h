@@ -78,6 +78,8 @@ public:
     bool filterHasChanged() const;
     void setFilterHasChanged(bool filterHasChanged);
 
+    void setNumericalPrecision(int numericalPrecision, bool squeezeTrailingZeroes);
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();
@@ -130,6 +132,9 @@ private:
     std::vector<int> mRecFilterIdx;
 
     bool mFilterHasChanged = false;
+
+    int mNumericalPrecision = 6;
+    bool mSqueezeTrailingZeroes = true;
 };
 
 } // namespace gdxviewer

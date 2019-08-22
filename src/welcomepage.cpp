@@ -80,7 +80,7 @@ void WelcomePage::on_relayAction(QString action)
 
 void WelcomePage::on_relayModLibLoad(QString lib)
 {
-    emit relayModLibLoad(lib);
+    emit relayModLibLoad(lib, false);
 }
 
 void WelcomePage::on_relayOpenDoc(QString doc, QString anchor)

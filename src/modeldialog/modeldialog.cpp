@@ -99,6 +99,10 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
     }
+
+    // bind filter mechanism to textChanged
+    for (int i=0; i<proxyModelList.size(); i++)
+        connect(ui->lineEdit, &QLineEdit::textChanged, [this, i]( const QString &value ) { this->applyFilter(value, i); });
 }
 
 ModelDialog::~ModelDialog()
@@ -106,15 +110,20 @@ ModelDialog::~ModelDialog()
     delete ui;
 }
 
-//TODO(CW): updating the header and displaying the number of models in a library works but this solution is not optimal
-void ModelDialog::changeHeader()
+void ModelDialog::changeHeader(int tabIndex)
 {
-    for (int i=0; i<ui->tabWidget->count(); i++) {
-        QTableView *tv = tableViewList.at(i);
-        int rowCount = tv->model()->rowCount();
-        QString baseName = ui->tabWidget->tabText(i).split("(").at(0).trimmed();
-        ui->tabWidget->setTabText(i, baseName + " (" + QString::number(rowCount) + ")");
-    }
+    QTableView *tv = tableViewList.at(tabIndex);
+    int rowCount = tv->model()->rowCount();
+    QString baseName = ui->tabWidget->tabText(tabIndex).split("(").at(0).trimmed();
+    ui->tabWidget->setTabText(tabIndex, baseName + " (" + QString::number(rowCount) + ")");
+}
+
+QTableView* ModelDialog::tableAt(int i)
+{
+    if (i >= 0 && i < tableViewList.size())
+        return tableViewList.at(i);
+    else
+        return nullptr;
 }
 
 void ModelDialog::updateSelectedLibraryItem()
@@ -183,14 +192,9 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     connect(ui->pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
     connect(ui->pbCancel, &QPushButton::clicked     , this, &ModelDialog::reject);
 
-    connect(ui->lineEdit, &QLineEdit::textChanged, proxyModel, &QSortFilterProxyModel::setFilterWildcard);
-
-    connect(proxyModel, &QAbstractProxyModel::rowsRemoved, this, &ModelDialog::changeHeader);
-    connect(proxyModel, &QAbstractProxyModel::rowsInserted, this, &ModelDialog::changeHeader);
-
     tableView->horizontalHeader()->setResizeContentsPrecision(100);
     tableView->resizeColumnsToContents();
-    tableView->sortByColumn(0, Qt::AscendingOrder);
+    tableView->sortByColumn(items.at(0).library()->initSortCol(), Qt::AscendingOrder);
     tableView->setSortingEnabled(true);
 }
 
@@ -228,19 +232,18 @@ void ModelDialog::on_pbDescription_clicked()
 
 void ModelDialog::on_cbRegEx_toggled(bool checked)
 {
-    if (checked) {
-        for (auto proxy : proxyModelList) {
-            disconnect(ui->lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
-            connect(ui->lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
-        }
-    }
-    else {
-        for (auto proxy : proxyModelList) {
-            disconnect(ui->lineEdit, SIGNAL(textChanged(const QString &)), proxy, SLOT(setFilterRegExp(const QString &)));
-            connect(ui->lineEdit, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterWildcard);
-        }
-    }
+    Q_UNUSED(checked)
+    // trigger update
     emit ui->lineEdit->textChanged(ui->lineEdit->text());
+}
+
+void ModelDialog::applyFilter(QString filterString, int proxyModelIndex)
+{
+    if (ui->cbRegEx->isChecked())
+        proxyModelList[proxyModelIndex]->setFilterRegExp(filterString);
+    else
+        proxyModelList[proxyModelIndex]->setFilterWildcard(filterString);
+    this->changeHeader(proxyModelIndex);
 }
 
 }
