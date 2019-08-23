@@ -44,37 +44,10 @@ QString LogParser::parseLine(const QByteArray &data, QString &line, bool &hasErr
 
     hasError = false;
     mbState.marks = MarkData();
-    QString newLine;
-
-    if (mbState.inErrorText) {
-        if (line.startsWith(" ")) {
-            if (mbState.deep) {
-                if (mbState.errData.text.isEmpty()) {
-                    if (mbState.errData.errNr)
-                        mbState.errData.text += QString("%1\t").arg(mbState.errData.errNr)+line.trimmed();
-                    else
-                        mbState.errData.text += '\t'+line.trimmed();
-                } else {
-                    mbState.errData.text += "\n\t"+line.trimmed();
-                }
-            }
-            newLine = line;
-        } else {
-            if (mbState.deep) {
-                emit setErrorText(mbState.errData.lstLine, mbState.errData.text);
-                mbState.errData.text = "";
-            }
-            mbState.inErrorText = false;
-        }
-    }
-    if (!mbState.inErrorText) {
-        newLine = extractLinks(line, hasError, mbState);
-        if (mbState.errData.errNr) mbState.inErrorText = true;
-    }
-    return newLine;
+    return extractLinks(line, hasError, mbState);
 }
 
-void LogParser::quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart)
+void LogParser::quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart, int &lstLine)
 {
     linkStart = -1;
     if (end < start+7 || data.at(end-1) != ']') { // 7 = minimal size of a link [LST:1]
@@ -83,7 +56,8 @@ void LogParser::quickParse(const QByteArray &data, int start, int end, QString &
     }
     // To be fast, this algorithm assumes that TWO links are always ERR followed by LST
     int inQuote = 0;
-    for (int i = end-1 ; i > start; --i) {
+    int cutEnd = end;
+    for (int i = end-2 ; i > start; --i) {
         // backwards-search to find first '[' of the link(s)
         switch (data.at(i)) {
         case '\'': if (inQuote != 2) inQuote = inQuote? 0 : 1; break;
@@ -91,10 +65,15 @@ void LogParser::quickParse(const QByteArray &data, int start, int end, QString &
         case '[':
             if (!inQuote) {
                 if (data.at(i+4) == ':') {
-                    end = i;
+                    cutEnd = i;
                     if (linkStart < 0) linkStart = i;
-                    if (i-1 > start && data.at(i-1) == ']') --i; // another link found
-                    else inQuote = -1;
+                    if (i-1 > start && data.at(i-1) == ']') {
+                        // get the lstLine here
+                        bool ok;
+                        lstLine = data.mid(i+5, end-i-6).toInt(&ok);
+                        if (!ok) lstLine = -1;
+                        --i; // another link found
+                    } else inQuote = -1;
                 } else {
                     inQuote = -1;
                 }
@@ -105,7 +84,7 @@ void LogParser::quickParse(const QByteArray &data, int start, int end, QString &
         }
         if (inQuote < 0) break;
     }
-    line = data.mid(start, end-start);
+    line = data.mid(start, cutEnd-start);
 
 }
 

@@ -734,6 +734,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         connect(parser, &LogParser::hasFile, runGroup, &ProjectRunGroupNode::hasFile);
         connect(parser, &LogParser::setErrorText, runGroup, &ProjectRunGroupNode::setErrorText);
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
+        tView->setDebugMode(mFileRepo->debugMode());
         connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
         connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
         connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);
@@ -742,6 +743,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLst;
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, tabWidget), type);
+        tView->setDebugMode(mFileRepo->debugMode());
         res = tView;
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
@@ -751,10 +753,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     } else {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-//        if (kind() == FileKind::Log) {
-//            edit = ViewHelper::initEditorType(new ProcessLogEdit(tabWidget));
-//        } else {
-//        }
         codeEdit  = new CodeEdit(tabWidget);
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);

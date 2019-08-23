@@ -126,6 +126,8 @@ private:
     int mShrinkLineCount = 0;
     QTimer mRunFinishedTimer;
     int mErrCount = 0;
+    int mCurrentLstLineRef = -1;
+    QString mCurrentErrText;
 
     bool mLastLineIsOpen = false;
     int mLastLineLen = 0;

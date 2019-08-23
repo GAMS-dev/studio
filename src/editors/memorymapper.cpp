@@ -320,8 +320,8 @@ void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref)
                 mbState.errData.text.append('\n');
             mbState.errData.text += data;
         }
-        emit mLogParser->setErrorText(mbState.errData.lstLine, mbState.errData.text);
-//        DEB() << "Created mark at " << mbState.errData.lstLine << ": " << mbState.errData.text;
+        if (!mbState.errData.text.isEmpty())
+            emit mLogParser->setErrorText(mbState.errData.lstLine, mbState.errData.text);
     }
     emit createMarks(mbState.marks);
 }
@@ -362,7 +362,6 @@ void MemoryMapper::updateOutputCache()
     if (!mDisplayQuickFormats.size())
         mDisplayCacheChanged.start();
 
-    QByteArray data;
     Chunk *chunk = mChunks.last();
     if (!chunk || !chunk->lineCount())
         return;
@@ -372,7 +371,22 @@ void MemoryMapper::updateOutputCache()
     QString line;
     int lastLinkStart = -1;
     LineFormat fmt;
-    mLogParser->quickParse(chunk->bArray, start, end, line, lastLinkStart);
+    int lstLine = -1;
+    mLogParser->quickParse(chunk->bArray, start, end, line, lastLinkStart, lstLine);
+    if (mCurrentLstLineRef >= 0) {
+        if (end >= start+3 && chunk->bArray.at(start)==' ' && chunk->bArray.at(start+1)==' ') {
+            if (!mCurrentErrText.isEmpty())
+                mCurrentErrText.append('\n');
+            mCurrentErrText += line;
+        } else {
+            emit mLogParser->setErrorText(mCurrentLstLineRef, mCurrentErrText);
+            mCurrentErrText.clear();
+            mCurrentLstLineRef = -1;
+        }
+    }
+    if (mErrCount < CErrorBound-1 && lstLine >= 0)
+        mCurrentLstLineRef = lstLine;
+
     if (lastLinkStart >= start) {
         if (lastLinkStart > start+line.length() || line.startsWith("*** Error")) {
             fmt = LineFormat(4, line.length(), mBaseFormat.at(error));
@@ -646,13 +660,13 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
                 formats << LineFormat(0, line.length(),mBaseFormat.at(error));
             } else
                 formats << LineFormat();
-            if (actErrFormat) {
-                if (mbState.inErrorText) {
-                    actErrFormat->format.setToolTip(mbState.errData.text);
-                } else {
-                    actErrFormat = nullptr;
-                }
-            }
+//            if (actErrFormat) {
+//                if (mbState.inErrorText) {
+//                    actErrFormat->format.setToolTip(mbState.errData.text);
+//                } else {
+//                    actErrFormat = nullptr;
+//                }
+//            }
         }
 
         from = next;

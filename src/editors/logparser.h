@@ -50,7 +50,6 @@ public:
     struct MarksBlockState {
         MarkData marks;
         ErrorData errData;
-        bool inErrorText = false;
         bool deep = false;
     };
 
@@ -63,10 +62,10 @@ public:
     LogParser(QTextCodec *codec);
     void setDirectory(QString dir);
     QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);
-    void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart);
+    void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart, int &lstLine);
 
 signals:
-    void setErrorText(int line, QString text);
+    void setErrorText(int lstLine, QString text);
     void hasFile(QString fName, bool &exists);
 
 private:

@@ -181,8 +181,9 @@ void AbstractEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
     viewport()->setCursor(shape);
 }
 
-QPoint AbstractEdit::toolTipPos()
+QPoint AbstractEdit::toolTipPos(int mouseX)
 {
+    Q_UNUSED(mouseX);
     QPoint pos;
     if (!mMarksAtMouse.isEmpty()) {
         QTextCursor cursor(document()->findBlockByNumber(mMarksAtMouse.first()->line()));
@@ -190,6 +191,7 @@ QPoint AbstractEdit::toolTipPos()
         cursor.setPosition(cursor.position() + mMarksAtMouse.first()->column(), QTextCursor::MoveAnchor);
         pos = cursorRect(cursor).bottomLeft();
         if (pos.x() < 10) pos.setX(10);
+        if (pos.x() > width()-200) pos.setX(width()-200);
     }
     return pos;
 }
@@ -248,10 +250,10 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
     if (e->type() == QEvent::ToolTip) {
         QHelpEvent* helpEvent = static_cast<QHelpEvent*>(e);
         QVector<int> lstLines = toolTipLstNumbers();
-        QPoint pos = toolTipPos();
+        mTipPos = helpEvent->pos();
+        QPoint pos = toolTipPos(mTipPos.x());
         if (!lstLines.isEmpty())
             showToolTip(lstLines, pos);
-        mTipPos = helpEvent->pos();
         return !lstLines.isEmpty();
     }
     return QPlainTextEdit::eventFilter(o, e);

@@ -524,7 +524,8 @@ void TextView::setDebugMode(bool debug)
 {
     if (mMapper->debugMode() != debug) {
         mMapper->setDebugMode(debug);
-        topLineMoved();
+        if (mMapper->lineCount() > 0)
+            topLineMoved();
     }
 }
 

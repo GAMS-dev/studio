@@ -94,7 +94,7 @@ protected:
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
     virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
-    virtual QPoint toolTipPos();
+    virtual QPoint toolTipPos(int mouseX);
     virtual QVector<int> toolTipLstNumbers();
 
 private:

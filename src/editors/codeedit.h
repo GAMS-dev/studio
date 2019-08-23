@@ -150,6 +150,7 @@ protected:
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
+    QPoint toolTipPos(int mouseX) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
