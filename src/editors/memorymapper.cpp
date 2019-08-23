@@ -293,7 +293,7 @@ void MemoryMapper::runFinished()
     }
 
     for (int i = CDirectErrors; i < mMarkers.size(); ++i) {
-        createErrorMarks(mMarkers.at(i));
+        createErrorMarks(mMarkers.at(i), true);
     }
 
     mMarksHead.clear();
@@ -302,7 +302,7 @@ void MemoryMapper::runFinished()
     PEEKTIME() << " ms FINISH for " << mMarkers.size() << " Markers";
 }
 
-void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref)
+void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref, bool readErrorText)
 {
     QByteArray data = lineData(ref);
     QString rawLine;
@@ -310,15 +310,17 @@ void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref)
     LogParser::MarksBlockState mbState;
     QString line = mLogParser->parseLine(data, rawLine, hasError, mbState);
     LogParser::MarksBlockState mbFollowState = mbState;
-    if (mbState.errData.errNr > 0) {
+    if (readErrorText && mbState.errData.errNr > 0) {
         // compile-time error have descriptions in the following lines
         while (true) {
             ref = nextRef(ref);
             data = lineData(ref);
             if (!data.startsWith("   ")) break;
-            if (!mbState.errData.text.isEmpty())
-                mbState.errData.text.append('\n');
-            mbState.errData.text += data;
+            if (mbState.errData.text.isEmpty()) {
+                mbState.errData.text.append(QString("%1\t").arg(mbState.errData.errNr));
+            } else
+                mbState.errData.text.append("\n\t");
+            mbState.errData.text += data.trimmed();
         }
         if (!mbState.errData.text.isEmpty())
             emit mLogParser->setErrorText(mbState.errData.lstLine, mbState.errData.text);
@@ -374,18 +376,32 @@ void MemoryMapper::updateOutputCache()
     int lstLine = -1;
     mLogParser->quickParse(chunk->bArray, start, end, line, lastLinkStart, lstLine);
     if (mCurrentLstLineRef >= 0) {
-        if (end >= start+3 && chunk->bArray.at(start)==' ' && chunk->bArray.at(start+1)==' ') {
-            if (!mCurrentErrText.isEmpty())
-                mCurrentErrText.append('\n');
-            mCurrentErrText += line;
+        if (end >= start+3 && chunk->bArray.at(start)==' ') {
+            if (mCurrentErrText.isEmpty()) {
+                mCurrentErrText.append(mCurrentErrorNr >= 0 ? QString("%1\t").arg(mCurrentErrorNr) : "\t");
+            } else {
+                mCurrentErrText.append("\n\t");
+            }
+            mCurrentErrText += line.trimmed();
         } else {
             emit mLogParser->setErrorText(mCurrentLstLineRef, mCurrentErrText);
             mCurrentErrText.clear();
             mCurrentLstLineRef = -1;
+            mCurrentErrorNr = -1;
         }
     }
-    if (mErrCount < CErrorBound-1 && lstLine >= 0)
+    if (mErrCount < CDirectErrors && lstLine >= 0) {
         mCurrentLstLineRef = lstLine;
+        if (line.startsWith("*** Error ") && line.length() > 25) {
+            int i = 9;
+            while (line.size() > i+1 && line.at(i+1) == ' ') ++i;
+            int len = 0;
+            while (line.size() > i+len+1 && line.at(i+len+1) >= '0' && line.at(i+len+1) <= '9') ++len;
+            bool ok = false;
+            if (len > 0) mCurrentErrorNr = line.mid(i, len+1).toInt(&ok);
+            if (!ok) mCurrentErrorNr = -1;
+        }
+    }
 
     if (lastLinkStart >= start) {
         if (lastLinkStart > start+line.length() || line.startsWith("*** Error")) {
@@ -396,11 +412,11 @@ void MemoryMapper::updateOutputCache()
             int lineNr = currentRunLines();
             if (mErrCount < CErrorBound) {
                 if (mMarksHead.isEmpty() || mMarksHead.last() != lineNr) {
-                    ++mErrCount;
                     mMarksHead << lineNr;
                     if (mErrCount < CDirectErrors) {
-                        createErrorMarks(logLineToRef(lineNr));
+                        createErrorMarks(logLineToRef(lineNr), false);
                     }
+                    ++mErrCount;
                 }
             } else if (mMarksTail.isEmpty() || mMarksTail.last() != lineNr) {
                 ++mErrCount;
@@ -658,15 +674,9 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
                 }
             } else if (hasError) {
                 formats << LineFormat(0, line.length(),mBaseFormat.at(error));
-            } else
+            } else {
                 formats << LineFormat();
-//            if (actErrFormat) {
-//                if (mbState.inErrorText) {
-//                    actErrFormat->format.setToolTip(mbState.errData.text);
-//                } else {
-//                    actErrFormat = nullptr;
-//                }
-//            }
+            }
         }
 
         from = next;

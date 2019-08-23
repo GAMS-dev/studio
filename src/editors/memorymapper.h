@@ -91,7 +91,7 @@ private:
     void updateOutputCache();
     void fetchLog();
     void fetchDisplay();
-    void createErrorMarks(LineRef ref);
+    void createErrorMarks(LineRef ref, bool readErrorText);
     LineRef nextRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
     Chunk *addChunk(bool startUnit = false);
@@ -127,6 +127,7 @@ private:
     QTimer mRunFinishedTimer;
     int mErrCount = 0;
     int mCurrentLstLineRef = -1;
+    int mCurrentErrorNr = -1;
     QString mCurrentErrText;
 
     bool mLastLineIsOpen = false;

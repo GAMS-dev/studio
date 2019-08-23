@@ -353,7 +353,11 @@ void ProjectRunGroupNode::setErrorText(int lstLine, QString text)
         DEB() << "Empty LST-text ignored for line " << lstLine;
         return;
     }
-    mErrorTexts.insert(lstLine, text);
+    if (mErrorTexts.contains(lstLine)) {
+        mErrorTexts.insert(lstLine, mErrorTexts.value(lstLine)+"\n"+text);
+    } else {
+        mErrorTexts.insert(lstLine, text);
+    }
 }
 
 void ProjectRunGroupNode::hasHRef(const QString &href, bool &exist)
