@@ -1493,7 +1493,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
     }
-    DEB() << "-------------- ELAPSED: " << (QTime::currentTime().msecsSinceStartOfDay() - xDebTime);
+//    DEB() << "-------------- ELAPSED: " << (QTime::currentTime().msecsSinceStartOfDay() - xDebTime);
 }
 
 void MainWindow::postGamsLibRun()

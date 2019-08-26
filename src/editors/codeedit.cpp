@@ -1360,11 +1360,13 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
-QPoint CodeEdit::toolTipPos(int mouseX)
+QPoint CodeEdit::toolTipPos(const QPoint &mousePos)
 {
-    QPoint pos = AbstractEdit::toolTipPos(mouseX);
-    if (mouseX < mLineNumberArea->width())
-        pos.setX(mLineNumberArea->width()+2);
+    QPoint pos = AbstractEdit::toolTipPos(mousePos);
+    if (mousePos.x() < mLineNumberArea->width())
+        pos.setX(mLineNumberArea->width()+6);
+    else
+        pos.setX(pos.x() + mLineNumberArea->width()+2);
     return pos;
 }
 

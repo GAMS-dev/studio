@@ -646,7 +646,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
             QString line = mLogParser->parseLine(lineData, rawLine, hasError, mbState);
             if (debugMode()) {
                 res << rawLine;
-                formats << LineFormat(0, rawLine.length(),mBaseFormat.at(debug));
+                formats << LineFormat(0, rawLine.length(), mBaseFormat.at(debug));
             }
             res << line;
             if (res.size() < activationLine) {
@@ -654,23 +654,23 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
             } else if (mbState.marks.hasMark()) {
                 if (mbState.marks.hasErr()) {
                     QString toolTip = mbState.errData.text.isEmpty() ? mbState.marks.hRef : mbState.errData.text;
-                    formats << LineFormat(4, line.length(), mBaseFormat.at(error), toolTip, mbState.marks.errRef);
+                    formats << LineFormat(4, line.length(), mBaseFormat.at(error), mbState.marks.errRef);
                     if (!mbState.marks.hRef.isEmpty()) {
                         formats.last().extraLstFormat = &mBaseFormat.at(lstLink);
                         formats.last().extraLstHRef = mbState.marks.hRef;
                     }
                     actErrFormat = &formats.last();
                 } else if (hasError) {
-                    formats << LineFormat(4, line.length(), mBaseFormat.at(error), mbState.errData.text, mbState.marks.hRef);
+                    formats << LineFormat(4, line.length(), mBaseFormat.at(error), mbState.marks.hRef);
                     if (!mbState.marks.hRef.isEmpty()) {
                         formats.last().extraLstFormat = &mBaseFormat.at(lstLink);
                         formats.last().extraLstHRef = mbState.marks.hRef;
                     }
                     actErrFormat = &formats.last();
                 } else if (mbState.marks.hRef.startsWith("FIL:")) {
-                    formats << LineFormat(4, line.length(), mBaseFormat.at(fileLink), mbState.errData.text, mbState.marks.hRef);
+                    formats << LineFormat(4, line.length(), mBaseFormat.at(fileLink), mbState.marks.hRef);
                 } else if (mbState.marks.hRef.startsWith("LST:")) {
-                    formats << LineFormat(4, line.length(), mBaseFormat.at(lstLink), mbState.errData.text, mbState.marks.hRef);
+                    formats << LineFormat(4, line.length(), mBaseFormat.at(lstLink), mbState.marks.hRef);
                 }
             } else if (hasError) {
                 formats << LineFormat(0, line.length(),mBaseFormat.at(error));

@@ -537,6 +537,7 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
 
 QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
 {
+    Q_UNUSED(formats)
     return lines(localLineNrFrom, lineCount);
 }
 

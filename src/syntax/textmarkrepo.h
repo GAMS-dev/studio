@@ -18,6 +18,17 @@ class LineMarks: public QMultiMap<int, TextMark*>
 public:
     LineMarks();
     bool hasVisibleMarks() const;
+    TextMark* firstError(NodeId groupId) const {
+        QList<TextMark*> marks = values(firstKey());
+        TextMark* res = nullptr;
+        for (TextMark* mark: marks) {
+            if (mark->type() != TextMark::error) continue;
+            if (groupId.isValid() && groupId != mark->groupId()) continue;
+            if (!res || res->column() > mark->column())
+                res = mark;
+        }
+        return res;
+    }
 };
 
 class TextMarkRepo: public QObject

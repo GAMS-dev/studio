@@ -211,7 +211,7 @@ void FileMetaRepo::setDebugMode(bool debug)
 {
     mDebug = debug;
     if (!debug) return;
-    DEB() << "\n--------------- FileMetas (Editors) ---------------";
+//    DEB() << "\n--------------- FileMetas (Editors) ---------------";
     QMap<int, AbstractEdit*> edits;
     for (QWidget* wid: editors()) {
         AbstractEdit*ed = ViewHelper::toAbstractEdit(wid);

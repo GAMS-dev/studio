@@ -35,7 +35,7 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
-//    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     mResizeTimer.setSingleShot(true);
     mResizeTimer.setInterval(30);
@@ -213,6 +213,21 @@ bool TextViewEdit::viewportEvent(QEvent *event)
         mResizeTimer.start();
     }
     return QAbstractScrollArea::viewportEvent(event);
+}
+
+QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
+{
+    QVector<int> res = CodeEdit::toolTipLstNumbers(mousePos);
+    if (res.isEmpty()) {
+        QTextCursor cursor = cursorForPosition(mousePos);
+        cursor.setPosition(cursor.block().position());
+        if (cursor.charFormat().anchorHref().length() > 4 && cursor.charFormat().anchorHref().at(3) == ':') {
+            bool ok = false;
+            int lstNr = cursor.charFormat().anchorHref().mid(4, cursor.charFormat().anchorHref().length()-4).toInt(&ok);
+            if (ok) res << lstNr;
+        }
+    }
+    return res;
 }
 
 bool TextViewEdit::existHRef(QString href)

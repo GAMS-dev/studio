@@ -181,23 +181,26 @@ void AbstractEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
     viewport()->setCursor(shape);
 }
 
-QPoint AbstractEdit::toolTipPos(int mouseX)
+QPoint AbstractEdit::toolTipPos(const QPoint &mousePos)
 {
-    Q_UNUSED(mouseX);
-    QPoint pos;
+    QPoint pos = mousePos;
     if (!mMarksAtMouse.isEmpty()) {
-        QTextCursor cursor(document()->findBlockByNumber(mMarksAtMouse.first()->line()));
-                //(marks.first()->textCursor());
+        QTextCursor cursor(document()->findBlockByNumber(effectiveBlockNr(mMarksAtMouse.first()->line())));
         cursor.setPosition(cursor.position() + mMarksAtMouse.first()->column(), QTextCursor::MoveAnchor);
-        pos = cursorRect(cursor).bottomLeft();
-        if (pos.x() < 10) pos.setX(10);
-        if (pos.x() > width()-200) pos.setX(width()-200);
+        pos.setY(cursorRect(cursor).bottom());
+    } else {
+        QTextCursor cursor = cursorForPosition(mousePos);
+        cursor.setPosition(cursor.block().position());
+        pos.setY(cursorRect(cursor).bottom());
     }
+    if (pos.x() < 10) pos.setX(10);
+    if (pos.x() > width()-100) pos.setX(width()-100);
     return pos;
 }
 
-QVector<int> AbstractEdit::toolTipLstNumbers()
+QVector<int> AbstractEdit::toolTipLstNumbers(const QPoint &pos)
 {
+    Q_UNUSED(pos)
     QVector<int> lstLines;
     for (TextMark *mark: mMarksAtMouse) {
         int lstLine = mark->value();
@@ -249,9 +252,9 @@ bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
     Q_UNUSED(o);
     if (e->type() == QEvent::ToolTip) {
         QHelpEvent* helpEvent = static_cast<QHelpEvent*>(e);
-        QVector<int> lstLines = toolTipLstNumbers();
         mTipPos = helpEvent->pos();
-        QPoint pos = toolTipPos(mTipPos.x());
+        QVector<int> lstLines = toolTipLstNumbers(mTipPos);
+        QPoint pos = toolTipPos(mTipPos);
         if (!lstLines.isEmpty())
             showToolTip(lstLines, pos);
         return !lstLines.isEmpty();
@@ -321,7 +324,7 @@ const QList<TextMark *> &AbstractEdit::marksAtMouse() const
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseMoveEvent(e);
-    if (QToolTip::isVisible() && (mTipPos-e->pos()).manhattanLength() > 3) {
+    if (QToolTip::isVisible() && (mTipPos-e->pos()).manhattanLength() > 5) {
         mTipPos = QPoint();
         QToolTip::hideText();
     }
@@ -334,10 +337,8 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
     QTextCursor cursor = cursorForPosition(e->pos());
     QList<TextMark*> marks = mMarks->values(effectiveBlockNr(cursor.blockNumber()));
     mMarksAtMouse.clear();
-    int col = cursor.positionInBlock();
     for (TextMark* mark: marks) {
-        if ((!mark->groupId().isValid() || mark->groupId() == groupId())
-                && (mark->inColumn(col) || e->x() < 0))
+        if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
             mMarksAtMouse << mark;
     }
     if (!mMarksAtMouse.isEmpty() && (isReadOnly() || e->x() < 0))

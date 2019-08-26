@@ -94,8 +94,8 @@ protected:
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
     virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
-    virtual QPoint toolTipPos(int mouseX);
-    virtual QVector<int> toolTipLstNumbers();
+    virtual QPoint toolTipPos(const QPoint &mousePos);
+    virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
 
 private:
     const LineMarks* mMarks = nullptr;
