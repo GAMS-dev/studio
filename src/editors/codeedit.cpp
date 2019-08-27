@@ -61,6 +61,8 @@ CodeEdit::CodeEdit(QWidget *parent)
 
 CodeEdit::~CodeEdit()
 {
+    disconnect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
+    disconnect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
 }
