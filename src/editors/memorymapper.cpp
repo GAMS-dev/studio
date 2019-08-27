@@ -65,6 +65,7 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     fmt.setUnderlineColor(Qt::darkGreen);
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
+    addChunk(true);
 }
 
 void MemoryMapper::setLogParser(LogParser *parser)

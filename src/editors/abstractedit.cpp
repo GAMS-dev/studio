@@ -42,7 +42,9 @@ AbstractEdit::AbstractEdit(QWidget *parent)
 }
 
 AbstractEdit::~AbstractEdit()
-{}
+{
+    mSelUpdater.stop();
+}
 
 void AbstractEdit::setOverwriteMode(bool overwrite)
 {
