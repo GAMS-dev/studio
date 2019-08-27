@@ -1223,7 +1223,6 @@ void MainWindow::fileChanged(const FileId fileId)
 void MainWindow::fileClosed(const FileId fileId)
 {
     Q_UNUSED(fileId)
-    // TODO(JM) check if anything needs to be updated
 }
 
 int MainWindow::externChangedMessageBox(QString filePath, bool deleted, bool modified, int count)
@@ -2366,7 +2365,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (groupId.isValid()) runGroup = mProjectRepo.findRunGroup(groupId);
         }
         if (focus) {
-            // TODO(JM)  check what happens to the group here
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             if (tabWidget == ui->mainTab) {
@@ -2581,7 +2579,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
         FileType fType = FileType::from(fInfo.suffix());
 
         if (fType == FileKind::Gsp) {
-            // TODO(JM) Read project and create all nodes for associated files
+            // Placeholder to read the project and create all nodes for associated files
         } else {
             node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group);
         }
@@ -2821,7 +2819,6 @@ void MainWindow::writeTabs(QJsonObject &json) const
         if (!fm) continue;
         QJsonObject tabObject;
         tabObject["location"] = fm->location();
-        // TODO(JM) store current tab index
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;

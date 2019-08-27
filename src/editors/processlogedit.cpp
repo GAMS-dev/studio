@@ -50,8 +50,6 @@ void ProcessLogEdit::jumpToLst(QPoint pos, bool fuzzy)
     QTextCursor cursor = cursorForPosition(pos);
     if (marks()->values(cursor.blockNumber()).isEmpty() || fuzzy) {
 
-        // TODO(JM) only check for TextMark::error
-
         int line = cursor.blockNumber();
         TextMark* linkMark = nullptr;
         for (TextMark *mark: *marks()) {
