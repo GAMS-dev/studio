@@ -36,6 +36,7 @@ public:
     bool showLineNr() const override { return false; }
     void protectWordUnderCursor(bool protect);
     bool hasSelection() const override;
+    void disconnectTimers() override;
 
 signals:
     void keyPressed(QKeyEvent *event);

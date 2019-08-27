@@ -61,8 +61,6 @@ CodeEdit::CodeEdit(QWidget *parent)
 
 CodeEdit::~CodeEdit()
 {
-    disconnect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
-    disconnect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
 }
@@ -230,6 +228,13 @@ QString CodeEdit::wordUnderCursor() const
 bool CodeEdit::hasSelection() const
 {
     return textCursor().hasSelection();
+}
+
+void CodeEdit::disconnectTimers()
+{
+    AbstractEdit::disconnectTimers();
+    disconnect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
+    disconnect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
 }
 
 void CodeEdit::clearSelection()

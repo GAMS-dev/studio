@@ -130,6 +130,7 @@ public:
     EditorType type() override;
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
+    void disconnectTimers() override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

@@ -95,6 +95,11 @@ void AbstractEdit::updateGroupId()
     marksChanged();
 }
 
+void AbstractEdit::disconnectTimers()
+{
+    disconnect(&mSelUpdater, &QTimer::timeout, this, &AbstractEdit::internalExtraSelUpdate);
+}
+
 void AbstractEdit::updateExtraSelections()
 {
     mSelUpdater.start();

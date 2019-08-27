@@ -437,7 +437,8 @@ void MemoryMapper::updateOutputCache()
     }
 
     // update log-file cache
-    mNewLogLines << line;
+    if (!mLastLineIsOpen || mLastLineLen != line.length())
+        mNewLogLines << line;
 
     // update display cache
     if (mDisplayNewLines.length()) {

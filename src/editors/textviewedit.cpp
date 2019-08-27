@@ -52,6 +52,12 @@ bool TextViewEdit::hasSelection() const
     return mMapper.hasSelection();
 }
 
+void TextViewEdit::disconnectTimers()
+{
+    CodeEdit::disconnectTimers();
+    disconnect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
+}
+
 void TextViewEdit::copySelection()
 {
     int selSize = mMapper.selectionSize();

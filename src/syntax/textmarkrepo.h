@@ -19,6 +19,7 @@ public:
     LineMarks();
     bool hasVisibleMarks() const;
     TextMark* firstError(NodeId groupId) const {
+        if (isEmpty()) return nullptr;
         QList<TextMark*> marks = values(firstKey());
         TextMark* res = nullptr;
         for (TextMark* mark: marks) {

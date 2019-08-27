@@ -48,6 +48,7 @@ public:
     void jumpTo(int line, int column = 0);
 
     void updateGroupId();
+    virtual void disconnectTimers();
 
 signals:
 //    void requestMarkTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
