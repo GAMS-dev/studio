@@ -65,7 +65,6 @@ public:
     int lineCount() const override;
     int knownLineNrs() const override;
     void setDebugMode(bool debug) override;
-    void reset() override;
     void dump();
 
 signals:
@@ -75,6 +74,7 @@ signals:
 
 
 public slots:
+    void reset() override;
     void addProcessData(const QByteArray &data);
 
 protected:

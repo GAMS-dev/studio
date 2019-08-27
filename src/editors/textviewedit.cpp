@@ -128,6 +128,12 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
         }
         lastAct = act;
     }
+    if (mMapper.kind() == AbstractTextMapper::memoryMapper) {
+        QAction act("Clear Log", this);
+        connect(&act, &QAction::triggered, &mMapper, &AbstractTextMapper::reset);
+        menu->insertAction(menu->actions().at(1), &act);
+    }
+
     menu->exec(e->globalPos());
     delete menu;
 }

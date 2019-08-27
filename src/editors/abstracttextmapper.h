@@ -136,7 +136,6 @@ public:
     virtual void createSection();
     virtual qint64 size() const;                                    // share FM + MM
     virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
-    virtual void reset();
 
     virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
     virtual void setVisibleLineCount(int visibleLines);                 // share FM + MM
@@ -171,6 +170,9 @@ public:
     bool debugMode() const { return mDebugMode; }
     void dumpMetrics();
     virtual void invalidate();
+
+public slots:
+    virtual void reset();
 
 signals:
     void blockCountChanged();

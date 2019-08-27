@@ -590,6 +590,7 @@ void MemoryMapper::reset()
     mUnits.clear();
     invalidateSize();
     mLineCount = 0;
+    addChunk(true);
     emit blockCountChanged();
 }
 
