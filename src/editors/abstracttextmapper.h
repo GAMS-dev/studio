@@ -121,7 +121,11 @@ protected:
     };
 
 public:
+    enum Kind {fileMapper, memoryMapper};
+
+public:
     ~AbstractTextMapper();
+    virtual AbstractTextMapper::Kind kind() = 0;
 
     QTextCodec *codec() const;                                  // share FM + MM (FileMapper + MemoryMapper)
     void setCodec(QTextCodec *codec);                           // share FM + MM

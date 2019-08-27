@@ -52,6 +52,8 @@ private:
 
 public:
     explicit MemoryMapper(QObject *parent = nullptr);
+    AbstractTextMapper::Kind kind() override { return AbstractTextMapper::memoryMapper; }
+
     void setLogParser(LogParser *parser);
     void setLogFile(DynamicFile *logFile);
     qint64 size() const override;
@@ -65,7 +67,6 @@ public:
     void setDebugMode(bool debug) override;
     void reset() override;
     void dump();
-
 
 signals:
     void createMarks(const LogParser::MarkData &marks);

@@ -185,7 +185,7 @@ QPoint AbstractEdit::toolTipPos(const QPoint &mousePos)
 {
     QPoint pos = mousePos;
     if (!mMarksAtMouse.isEmpty()) {
-        QTextCursor cursor(document()->findBlockByNumber(effectiveBlockNr(mMarksAtMouse.first()->line())));
+        QTextCursor cursor(document()->findBlockByNumber(effectiveBlockNr(mMarksAtMouse.first()->line()+1)));
         cursor.setPosition(cursor.position() + mMarksAtMouse.first()->column(), QTextCursor::MoveAnchor);
         pos.setY(cursorRect(cursor).bottom());
     } else {
