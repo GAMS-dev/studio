@@ -67,11 +67,12 @@ MainWindow::MainWindow(QWidget *parent)
       ui(new Ui::MainWindow),
       mFileMetaRepo(this),
       mProjectRepo(this),
-      mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
+      mTextMarkRepo(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this)
 {
+    mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
     mHistory = new HistoryData();
 //    QFile css(":/data/style.css");
