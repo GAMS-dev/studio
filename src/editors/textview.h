@@ -88,6 +88,7 @@ public slots:
     void updateExtraSelections();
     void contentChanged();
     void sendAddedLines();
+    void updateView();
 
 private slots:
     void editScrollChanged();

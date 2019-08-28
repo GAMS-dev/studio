@@ -71,7 +71,7 @@ signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines);
     void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QVector<LineFormat> &formats);
-
+    void updateView();
 
 public slots:
     void reset() override;

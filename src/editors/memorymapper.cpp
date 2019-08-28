@@ -593,6 +593,7 @@ void MemoryMapper::reset()
     mLineCount = 0;
     addChunk(true);
     emit blockCountChanged();
+    emit updateView();
 }
 
 QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
