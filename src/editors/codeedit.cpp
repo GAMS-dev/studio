@@ -1430,9 +1430,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 
-            if (hasMarks && marks()->contains(effectiveBlockNr(blockNumber))) {
+            if (hasMarks && marks()->contains(absoluteBlockNr(blockNumber))) {
                 int iTop = (2+top+bottom-iconSize())/2;
-                painter.drawPixmap(1, iTop, marks()->value(effectiveBlockNr(blockNumber))->icon().pixmap(QSize(iconSize(),iconSize())));
+                painter.drawPixmap(1, iTop, marks()->value(absoluteBlockNr(blockNumber))->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 

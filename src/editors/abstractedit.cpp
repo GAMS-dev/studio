@@ -60,7 +60,7 @@ void AbstractEdit::sendToggleBookmark()
 {
     FileId fi = fileId();
     if (fi.isValid()) {
-        emit toggleBookmark(fi, effectiveBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+        emit toggleBookmark(fi, absoluteBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
     }
 }
 
@@ -68,7 +68,7 @@ void AbstractEdit::sendJumpToNextBookmark()
 {
     FileId fi = fileId();
     if (fi.isValid()) {
-        emit jumpToNextBookmark(false, fi, effectiveBlockNr(textCursor().blockNumber()));
+        emit jumpToNextBookmark(false, fi, absoluteBlockNr(textCursor().blockNumber()));
     }
 }
 
@@ -76,7 +76,7 @@ void AbstractEdit::sendJumpToPrevBookmark()
 {
     FileId fi = fileId();
     if (fi.isValid()) {
-        emit jumpToNextBookmark(true, fi, effectiveBlockNr(textCursor().blockNumber()));
+        emit jumpToNextBookmark(true, fi, absoluteBlockNr(textCursor().blockNumber()));
     }
 }
 
@@ -119,9 +119,14 @@ const LineMarks* AbstractEdit::marks() const
     return mMarks;
 }
 
-int AbstractEdit::effectiveBlockNr(const int &localBlockNr) const
+int AbstractEdit::absoluteBlockNr(const int &localBlockNr) const
 {
     return localBlockNr;
+}
+
+int AbstractEdit::localBlockNr(const int &absoluteBlockNr) const
+{
+    return absoluteBlockNr;
 }
 
 int AbstractEdit::topVisibleLine()
@@ -192,7 +197,7 @@ QPoint AbstractEdit::toolTipPos(const QPoint &mousePos)
 {
     QPoint pos = mousePos;
     if (!mMarksAtMouse.isEmpty()) {
-        QTextCursor cursor(document()->findBlockByNumber(effectiveBlockNr(mMarksAtMouse.first()->line()+1)));
+        QTextCursor cursor(document()->findBlockByNumber(localBlockNr(mMarksAtMouse.first()->line())));
         cursor.setPosition(cursor.position() + mMarksAtMouse.first()->column(), QTextCursor::MoveAnchor);
         pos.setY(cursorRect(cursor).bottom());
     } else {
@@ -342,7 +347,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         return;
     }
     QTextCursor cursor = cursorForPosition(e->pos());
-    QList<TextMark*> marks = mMarks->values(effectiveBlockNr(cursor.blockNumber()));
+    QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cursor.blockNumber()));
     mMarksAtMouse.clear();
     for (TextMark* mark: marks) {
         if ((!mark->groupId().isValid() || mark->groupId() == groupId()))

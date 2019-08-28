@@ -151,13 +151,24 @@ void TextViewEdit::recalcWordUnderCursor()
     }
 }
 
-int TextViewEdit::effectiveBlockNr(const int &localBlockNr) const
+int TextViewEdit::absoluteBlockNr(const int &localBlockNr) const
 {
     int res = mMapper.absTopLine();
     if (res < 0) {
         res -= localBlockNr;
     } else {
         res += localBlockNr;
+    }
+    return res;
+}
+
+int TextViewEdit::localBlockNr(const int &absoluteBlockNr) const
+{
+    int res = mMapper.absTopLine();
+    if (res < 0) {
+        res = absoluteBlockNr + res + 1;
+    } else {
+        res = absoluteBlockNr - res + 1;
     }
     return res;
 }

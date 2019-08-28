@@ -90,7 +90,8 @@ protected:
     }
     virtual void setMarks(const LineMarks *marks);
     virtual const LineMarks* marks() const;
-    virtual int effectiveBlockNr(const int &localBlockNr) const;
+    virtual int absoluteBlockNr(const int &localBlockNr) const;
+    virtual int localBlockNr(const int &absoluteBlockNr) const;
     virtual int topVisibleLine();
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
