@@ -407,7 +407,6 @@ void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
 void ProjectRunGroupNode::clearErrorTexts()
 {
     mErrorTexts.clear();
-    // TODO(JM) remove marks for this groups NodeId
 }
 
 bool ProjectRunGroupNode::hasErrorText(int lstLine)

@@ -131,7 +131,6 @@ QIcon TextMark::icon()
         return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
     case bookmark: {
         QIcon ico(":/img/bookmark");
-        // TODO(JM) insert bookmark-number from value (0-9)
         return ico;
     }
     default:

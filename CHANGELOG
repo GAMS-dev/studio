@@ -1,13 +1,13 @@
-Version 0.12.4
+Version 0.12.5
 ===================
 
 ## General
-- improved robustness of glb parser
-- added "What's new" menu entry to show latest changes of Studio
-- changed appearance of log tabs on macOS to be more consistent with main tabs
-- added missing extension for file filter in open/add file dialogs
-- added possible fix for stale lock file leading to a freeze and crash
-- improved Studio startup time when many tabs are open
-- fixed possibility to insert certain characters in read only files
-- fixed new gms file not marked as main
-
+- fixed search status update when having no results
+- added raise to result view to pop up over help
+- fixed crash when jumping to a result after invalidating cache
+- Read and use InitialSort key in GLB files
+- Enhanced icon size in Help on Mac OS
+- Allow to adjust the numerical precision in the GDX Viewer
+- make model library explorer aware of initial sort column
+- Better tooltip for GDX Viewer precision spin box
+- Model Library Explorer feels slow on macOS fixed
