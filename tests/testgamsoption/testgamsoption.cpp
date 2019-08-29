@@ -469,7 +469,7 @@ void TestGamsOption::testDeprecatedOption()
     QFETCH(QString, optionDescription);
 
     QVERIFY( gamsOption->isValid(deprecatedOption) );
-// TODO   QVERIFY( gamsOption->isDeprecated(deprecatedOption) );
+// TODO (JP)  QVERIFY( gamsOption->isDeprecated(deprecatedOption) );
     QCOMPARE( gamsOption->getGroupNumber(deprecatedOption), 4 );
     QCOMPARE( gamsOption->getOptionTypeName(gamsOption->getOptionType(deprecatedOption)), optionType );
     QCOMPARE( gamsOption->getDescription(deprecatedOption).trimmed().toUpper(), optionDescription.trimmed().toUpper());
