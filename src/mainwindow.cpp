@@ -3214,14 +3214,12 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
         window->resetLoadAmount();
     }
-    window->searchDialog()->setActiveEditWidget(nullptr);
     mEditor = editor;
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditor)) {
         MainWindow::connect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-        window->searchDialog()->setActiveEditWidget(edit);
     } else if (soEdit) {
         MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
     }
@@ -3230,8 +3228,6 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 //        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
         MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
-
-        window->searchDialog()->setActiveEditWidget(tv);
     }
     window->updateEditorMode();
     window->updateEditorPos();

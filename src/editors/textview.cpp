@@ -640,12 +640,6 @@ void TextView::contentChanged()
 
 }
 
-void TextView::sendAddedLines()
-{
-    // TODO(JM) use this to adapt editors document
-    //    if (mMapper->)
-}
-
 void TextView::updateView()
 {
     topLineMoved();

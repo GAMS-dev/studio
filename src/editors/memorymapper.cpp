@@ -280,7 +280,6 @@ int MemoryMapper::firstErrorLine()
 
 void MemoryMapper::runFinished()
 {
-    TRACETIME();
     mMarksTail.normalizeIndexes();
     mMarkers.clear();
     mMarkers.reserve(mMarksHead.size() + mMarksTail.size());
@@ -300,7 +299,6 @@ void MemoryMapper::runFinished()
     mMarksHead.clear();
     mMarksTail.clear();
     recalcLineCount();
-    PEEKTIME() << " ms FINISH for " << mMarkers.size() << " Markers";
 }
 
 void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref, bool readErrorText)
