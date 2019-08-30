@@ -797,7 +797,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = mRecent.path;
+    QString path = (!groups.isEmpty()) ? groups.first()->location() : mRecent.path;
     if (path.isEmpty()) path = ".";
 
     if (mRecent.editFileId >= 0) {
