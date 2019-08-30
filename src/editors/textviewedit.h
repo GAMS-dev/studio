@@ -66,6 +66,8 @@ protected:
     bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
 
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     int topVisibleLine() override;
     bool existHRef(QString href);

@@ -41,6 +41,7 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     mResizeTimer.setSingleShot(true);
     mResizeTimer.setInterval(30);
     connect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
+    installEventFilter(this);
 }
 
 void TextViewEdit::protectWordUnderCursor(bool protect)
@@ -252,6 +253,15 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
         }
     }
     return res;
+}
+
+bool TextViewEdit::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::Wheel)
+        DEB() << "Wheel: " << static_cast<QWheelEvent*>(event)->delta();
+    if (event->type() == QEvent::KeyPress)
+        DEB() << "Key: " << static_cast<QKeyEvent*>(event)->key();
+    return false;
 }
 
 bool TextViewEdit::existHRef(QString href)
