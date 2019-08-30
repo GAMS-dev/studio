@@ -215,7 +215,7 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
 
     LineMarks::const_iterator it = interval.first;
     while (true) {
-        if (it == lMarks->constEnd()) break;
+        if (it == interval.second) break;
         TextMark *tm = it.value();
         if (refType == TextMark::all || refType == tm->type()) {
             if (!groupId.isValid() || !tm->groupId().isValid() || groupId == tm->groupId()) {
