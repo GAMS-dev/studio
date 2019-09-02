@@ -63,10 +63,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void updateCursorShape(const Qt::CursorShape &defaultShape) override;
-    bool viewportEvent(QEvent *event) override;
+//    bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
-
-    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     int topVisibleLine() override;
@@ -77,7 +75,7 @@ private:
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
     QPoint mHRefClickPos;
-    QTimer mResizeTimer;
+//    QTimer mResizeTimer;
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;

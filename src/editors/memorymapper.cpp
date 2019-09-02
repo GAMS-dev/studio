@@ -685,7 +685,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
         to = next;
         next = -1;
     }
-    res << "";
+//    res << "";
     return res.join("\n");
 }
 

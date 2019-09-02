@@ -69,7 +69,7 @@ public:
     void reset();
     void setDebugMode(bool debug);
     void invalidate();
-    void scrollToEnd();
+    void jumpToEnd();
     int firstErrorLine();
 
 signals:
@@ -90,10 +90,10 @@ public slots:
     void updateView();
 
 private slots:
-    void editScrollChanged();
+//    void editScrollChanged();
     void outerScrollAction(int action);
     void horizontalScrollAction(int action);
-    void adjustOuterScrollAction();
+//    void adjustOuterScrollAction();
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
@@ -108,6 +108,8 @@ protected:
     friend class FileMeta;
     void setMarks(const LineMarks *marks);
     const LineMarks* marks() const;
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
@@ -125,7 +127,7 @@ protected:
 private:
     void init();
     void updateVScrollZone();
-    void syncVScroll();
+//    void syncVScroll();
     void topLineMoved();
 
 private:

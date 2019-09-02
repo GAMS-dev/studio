@@ -35,13 +35,11 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
-//    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
-    mResizeTimer.setSingleShot(true);
-    mResizeTimer.setInterval(30);
-    connect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
-    installEventFilter(this);
+//    mResizeTimer.setSingleShot(true);
+//    mResizeTimer.setInterval(30);
+//    connect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
 }
 
 void TextViewEdit::protectWordUnderCursor(bool protect)
@@ -57,7 +55,7 @@ bool TextViewEdit::hasSelection() const
 void TextViewEdit::disconnectTimers()
 {
     CodeEdit::disconnectTimers();
-    disconnect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
+//    disconnect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
 }
 
 void TextViewEdit::copySelection()
@@ -155,7 +153,7 @@ void TextViewEdit::recalcWordUnderCursor()
 
 int TextViewEdit::absoluteBlockNr(const int &localBlockNr) const
 {
-    int res = mMapper.absTopLine();
+    int res = mMapper.visibleTopLine();
     if (res < 0) {
         res -= localBlockNr;
     } else {
@@ -166,7 +164,7 @@ int TextViewEdit::absoluteBlockNr(const int &localBlockNr) const
 
 int TextViewEdit::localBlockNr(const int &absoluteBlockNr) const
 {
-    int res = mMapper.absTopLine();
+    int res = mMapper.visibleTopLine();
     if (res < 0) {
         res = absoluteBlockNr + res + 1;
     } else {
@@ -232,13 +230,13 @@ void TextViewEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
     viewport()->setCursor(shape);
 }
 
-bool TextViewEdit::viewportEvent(QEvent *event)
-{
-    if (event->type() == QEvent::Resize) {
-        mResizeTimer.start();
-    }
-    return QAbstractScrollArea::viewportEvent(event);
-}
+//bool TextViewEdit::viewportEvent(QEvent *event)
+//{
+//    if (event->type() == QEvent::Resize) {
+//        mResizeTimer.start();
+//    }
+//    return QAbstractScrollArea::viewportEvent(event);
+//}
 
 QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 {
@@ -255,15 +253,6 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
     return res;
 }
 
-bool TextViewEdit::eventFilter(QObject *obj, QEvent *event)
-{
-    if (event->type() == QEvent::Wheel)
-        DEB() << "Wheel: " << static_cast<QWheelEvent*>(event)->delta();
-    if (event->type() == QEvent::KeyPress)
-        DEB() << "Key: " << static_cast<QKeyEvent*>(event)->key();
-    return false;
-}
-
 bool TextViewEdit::existHRef(QString href)
 {
     bool exist = false;
@@ -273,7 +262,7 @@ bool TextViewEdit::existHRef(QString href)
 
 int TextViewEdit::topVisibleLine()
 {
-    return mMapper.absTopLine() + mMapper.visibleOffset();
+    return mMapper.visibleTopLine();
 }
 
 } // namespace studio

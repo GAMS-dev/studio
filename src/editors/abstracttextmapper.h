@@ -68,7 +68,6 @@ private:
         int chunkNr = 0;
         qint64 absStart = 0;
         int localLine = 0;
-//        int lineCount = 0;
     };
 
     struct CursorPosition {
@@ -143,12 +142,11 @@ public:
     virtual bool setVisibleTopLine(double region);                      // share FM + MM
     virtual bool setVisibleTopLine(int lineNr);                         // share FM + MM
     virtual int moveVisibleTopLine(int lineDelta);                      // share FM + MM
+    virtual int visibleTopLine() const;                                 // share FM + MM
     virtual void scrollToPosition();                                    // share FM + MM
 
     int topChunk() const; // TODO(JM) deprecated!
 
-    virtual int visibleOffset() const;                                  // share FM + MM
-    virtual int absTopLine() const;                                     // share FM + MM
     virtual int lineCount() const;                                      // share FM + MM    // 2FF
     virtual int knownLineNrs() const;                                   // share FM + MM
 
@@ -165,7 +163,6 @@ public:
     virtual QPoint anchor(bool local = false) const;                    // share FM + MM
     virtual bool hasSelection() const;                                  // share FM + MM
     virtual int selectionSize() const;                                  // share FM + MM
-    int bufferedLines() const;
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     void dumpMetrics();
@@ -226,7 +223,6 @@ private:
 
     LinePosition mTopLine;
     LinePosition mMaxTopLine;
-    int mVisibleOffset = 0;
     int mVisibleLineCount = 0;
     CursorPosition mAnchor;
     CursorPosition mPosition;
