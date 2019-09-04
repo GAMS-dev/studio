@@ -135,9 +135,7 @@ private:
     int mLastLineLen = 0;
     QStringList mNewLogLines;
     QTime mDisplayCacheChanged;
-    QStringList mDisplayNewLines;
-    QVector<LineFormat> mDisplayQuickFormats;
-    int mDisplayLastLineLen = 0;
+    int mNewLines = 0;
     bool mDisplayLinesOverwrite = false;
     int mConcealPos = 0;
     int mAddedLines = 0;

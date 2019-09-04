@@ -35,7 +35,7 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     setMouseTracking(true);
     connect(&mScrollTimer, &QTimer::timeout, this, &TextViewEdit::scrollStep);

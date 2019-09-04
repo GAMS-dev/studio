@@ -90,6 +90,8 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
 
 TextView::~TextView()
 {
+    if (mStayAtTail) delete mStayAtTail;
+    mStayAtTail = nullptr;
     mMapper->deleteLater();
 }
 
@@ -116,13 +118,15 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 void TextView::prepareRun()
 {
     mMapper->startRun();
-    mStayAtTail = true;
+    mStayAtTail = new bool(true);
     updateView();
 }
 
 void TextView::endRun()
 {
     mMapper->endRun();
+    if (mStayAtTail) delete mStayAtTail;
+    mStayAtTail = nullptr;
     updateView();
 }
 
@@ -219,6 +223,7 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 
 void TextView::outerScrollAction(int action)
 {
+    TRACE();
     if (mDocChanging) return;
     switch (action) {
     case QScrollBar::SliderSingleStepAdd: mMapper->moveVisibleTopLine(1); break;
@@ -288,15 +293,28 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
 
 void TextView::jumpToEnd()
 {
+    TRACE();
     if (mMapper->lineCount() > 0) {
         mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount());
     } else
         mMapper->setVisibleTopLine(1.0);
-    updateView();
+    verticalScrollBar()->setSliderPosition(mMapper->visibleTopLine());
+    topLineMoved();
+}
+
+void TextView::updateView()
+{
+    TRACE();
+    if (mStayAtTail && *mStayAtTail) {
+        jumpToEnd();
+    }
+    verticalScrollBar()->setSliderPosition(mMapper->visibleTopLine());
+    topLineMoved();
 }
 
 int TextView::firstErrorLine()
 {
+    TRACE();
     MemoryMapper *memMapper = qobject_cast<MemoryMapper*>(mMapper);
     if (!memMapper) return -1;
     return memMapper->firstErrorLine();
@@ -363,7 +381,9 @@ void TextView::updateVScrollZone()
 
 void TextView::topLineMoved()
 {
+    TRACE();
     if (!mDocChanging) {
+        if (mStayAtTail && mMapper->atTail()) *mStayAtTail = true;
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
         mEdit->setTextCursor(QTextCursor(mEdit->document()));
@@ -394,6 +414,8 @@ void TextView::topLineMoved()
         mEdit->protectWordUnderCursor(false);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
+    } else {
+        DEB() << "topLineMoved() skipped";
     }
 }
 
@@ -401,8 +423,8 @@ void TextView::appendedLines(const QStringList &lines, bool append, bool overwri
 {
     mLinesAddedCount += lines.length();
     if (append || overwriteLast) --mLinesAddedCount;
-    bool atTail = mMapper->lineCount()-mMapper->visibleLineCount() < mMapper->visibleTopLine()+2;
-    if (!atTail) return;
+//    mStayAtTail = (mEdit->verticalScrollBar()->sliderPosition() >= mEdit->verticalScrollBar()->maximum()-3);
+    if (!mStayAtTail || !*mStayAtTail) return;
 
     int remainLineSpace = qMax(0, mMapper->visibleLineCount() - mEdit->blockCount());
 
@@ -560,12 +582,6 @@ void TextView::textDoubleClicked(const QTextCursor &cursor, bool &done)
 void TextView::updateExtraSelections()
 {
     mEdit->updateExtraSelections();
-}
-
-void TextView::updateView()
-{
-    verticalScrollBar()->setSliderPosition(mMapper->visibleTopLine());
-    topLineMoved();
 }
 
 void TextView::marksChanged(const QSet<int> dirtyLines)

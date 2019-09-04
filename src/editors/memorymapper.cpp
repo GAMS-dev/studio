@@ -250,9 +250,9 @@ void MemoryMapper::startRun()
 
     mErrCount = 0;
     mAddedLines = 0;
-    mDisplayLastLineLen = 0;
     mDisplayLinesOverwrite = false;
     mInputState = InputState();
+    mNewLines = 0;
     appendEmptyLine();
 }
 
@@ -360,7 +360,7 @@ void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
 
 void MemoryMapper::updateOutputCache()
 {
-    if (!mDisplayQuickFormats.size())
+    if (!mNewLines)
         mDisplayCacheChanged.start();
 
     Chunk *chunk = mChunks.last();
@@ -438,32 +438,17 @@ void MemoryMapper::updateOutputCache()
     if (!mLastLineIsOpen || mLastLineLen != line.length())
         mNewLogLines << line;
 
-    // update display cache
-    if (mDisplayNewLines.length()) {
-        mDisplayNewLines.replace(mDisplayNewLines.length()-1, line);            // extend (replace) last Line
-        mDisplayQuickFormats.replace(mDisplayQuickFormats.length()-1, fmt);  // update last format
-    } else {
-        // nothing to replace - append new part of the line
-        mDisplayNewLines << line.right(line.length()-mLastLineLen);
-        mDisplayQuickFormats << fmt;
-    }
     mLastLineLen = line.length();
     if (mDisplayLinesOverwrite) {
         // last line has to be overwritten - update immediately
         fetchDisplay();
     }
-
+    ++mNewLines;
 }
 
 void MemoryMapper::appendEmptyLine()
 {
-    // update cached lines in edit and log
-    while (mDisplayNewLines.length() > visibleLineCount()) {
-        mDisplayNewLines.removeAt(0);
-        mDisplayQuickFormats.removeAt(0);
-    }
-
-    if (mDisplayQuickFormats.length() && mDisplayCacheChanged.elapsed() > CRefreshTimeMax)
+    if (mDisplayCacheChanged.elapsed() > CRefreshTimeMax)
         fetchDisplay();
     if (mNewLogLines.length() >= CParseLinesMax)
         fetchLog();
@@ -476,13 +461,9 @@ void MemoryMapper::appendEmptyLine()
     chunk->lineBytes << chunk->lineBytes.last()+1;
     chunk->bArray[chunk->lineBytes.last()-1] = '\n';
 
-    // update output cache (states)
-    if (mDisplayNewLines.isEmpty()) {
-        mDisplayLastLineLen = 0;
+    // update output states
+    if (!mNewLines) {
         mDisplayLinesOverwrite = false;
-    } else {
-        mDisplayNewLines << QString();
-        mDisplayQuickFormats << LineFormat();
     }
     mLastLineIsOpen = false;
     mLastLineLen = 0;
@@ -500,13 +481,7 @@ void MemoryMapper::clearLastLine()
         chunk->lineBytes.last() = start+1;
         chunk->bArray[start] = '\n';
     }
-    // update output-cache
-    if (!mDisplayNewLines.isEmpty()) {
-        fetchDisplay();
-        mDisplayNewLines << QString();
-        mDisplayQuickFormats << LineFormat();
-    }
-    mDisplayLastLineLen = 0;
+    if (mNewLines) fetchDisplay();
     mDisplayLinesOverwrite = true;
     mLastLineLen = 0;
 }
@@ -519,10 +494,8 @@ void MemoryMapper::fetchLog()
 
 void MemoryMapper::fetchDisplay()
 {
-    emit appendDisplayLines(mDisplayNewLines, mDisplayLastLineLen, mDisplayLinesOverwrite, mDisplayQuickFormats);
-    mDisplayNewLines.clear();
-    mDisplayQuickFormats.clear();
-    mDisplayLastLineLen = mLastLineLen;
+    emit updateView();
+    mNewLines = 0;
     mDisplayLinesOverwrite = false;
 }
 

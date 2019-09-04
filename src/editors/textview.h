@@ -138,7 +138,7 @@ private:
     QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
     LineMarks *mMarks = nullptr;
     QTimer mLinesAddedTimer;
-    bool mStayAtTail = false;
+    bool *mStayAtTail = nullptr;
     int mLinesAddedCount = 0;
 
 private:

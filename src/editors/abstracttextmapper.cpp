@@ -759,6 +759,11 @@ void AbstractTextMapper::invalidate()
 
 }
 
+bool AbstractTextMapper::atTail()
+{
+    return (lineCount() >= 0 && mMaxTopLine == mTopLine);
+}
+
 void AbstractTextMapper::selectAll()
 {
     mAnchor.chunkNr = 0;

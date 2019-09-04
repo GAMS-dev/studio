@@ -65,6 +65,9 @@ class AbstractTextMapper: public QObject
 
 private:
     struct LinePosition {
+        bool operator == (const LinePosition &other) const {
+            return chunkNr == other.chunkNr && localLine == other.localLine;
+        }
         int chunkNr = 0;
         qint64 absStart = 0;
         int localLine = 0;
@@ -167,6 +170,7 @@ public:
     bool debugMode() const { return mDebugMode; }
     void dumpMetrics();
     virtual void invalidate();
+    bool atTail();
 
 public slots:
     virtual void reset();
