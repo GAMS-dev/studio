@@ -37,9 +37,8 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setLineWrapMode(QPlainTextEdit::NoWrap);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
-//    mResizeTimer.setSingleShot(true);
-//    mResizeTimer.setInterval(30);
-//    connect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
+    setMouseTracking(true);
+    connect(&mScrollTimer, &QTimer::timeout, this, &TextViewEdit::scrollStep);
 }
 
 void TextViewEdit::protectWordUnderCursor(bool protect)
@@ -85,6 +84,33 @@ void TextViewEdit::selectAllText()
 {
     mMapper.selectAll();
     emit updatePosAndAnchor();
+}
+
+void TextViewEdit::scrollStep()
+{
+    if (!mScrollDelta) {
+        mScrollTimer.stop();
+        return;
+    }
+    int step = mScrollDelta > 0 ? 1 : -1;
+    step = step + mScrollDelta / 10;
+    mMapper.moveVisibleTopLine(step);
+    QTextCursor cursor = QTextCursor(document());
+    if (mScrollDelta > 0) {
+        cursor.movePosition(QTextCursor::End);
+        cursor.movePosition(QTextCursor::Left);
+    }
+    mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
+    emit topLineMoved();
+    int msec = scrollMs(mScrollDelta);
+    if (msec != mScrollTimer.interval())
+        mScrollTimer.setInterval(msec);
+}
+
+int TextViewEdit::scrollMs(int delta)
+{
+    int msec = 500 - qMin(delta*delta, 495);
+    return msec;
 }
 
 void TextViewEdit::keyPressEvent(QKeyEvent *event)
@@ -191,16 +217,44 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
         QTextCursor cursor = cursorForPosition(e->pos());
         if (existHRef(cursor.charFormat().anchorHref())) {
             mHRefClickPos = e->pos();
+        } else if (e->buttons() == Qt::LeftButton) {
+            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock());
         }
+    }
+}
+
+void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
+{
+    if (e->buttons() == Qt::LeftButton
+            && !(e->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier))) {
+        mScrollDelta = e->y() < 0 ? e->y() : (e->y() < viewport()->height() ? 0 : e->y() - viewport()->height());
+        if (mScrollDelta) {
+            if (!mScrollTimer.isActive()) {
+                mScrollTimer.start(0);
+            } else {
+                int remain = qMax(0, scrollMs(mScrollDelta) - mScrollTimer.interval() + mScrollTimer.remainingTime());
+                mScrollTimer.start(remain);
+            }
+        } else {
+            mScrollTimer.stop();
+            QTextCursor cursor = cursorForPosition(e->pos());
+            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
+            updatePosAndAnchor();
+        }
+    } else {
+        CodeEdit::mouseMoveEvent(e);
     }
 }
 
 void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     CodeEdit::mouseReleaseEvent(e);
+    mScrollDelta = 0;
+    mScrollTimer.stop();
     if (!marks() || marks()->isEmpty()) {
         // no regular marks, check for temporary hrefs
-        if ((mHRefClickPos-e->pos()).manhattanLength() >= 4) return;
+        if ((mHRefClickPos-e->pos()).manhattanLength() >= 4)
+            return;
         QTextCursor cursor = cursorForPosition(e->pos());
         if (!existHRef(cursor.charFormat().anchorHref())) return;
         emit jumpToHRef(cursor.charFormat().anchorHref());

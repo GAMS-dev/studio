@@ -175,7 +175,6 @@ signals:
     void blockCountChanged();
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
-    void contentChanged();
 
 protected:
     AbstractTextMapper(QObject *parent = nullptr);

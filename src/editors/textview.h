@@ -57,7 +57,6 @@ public:
     QPoint position() const;                // JM: changes on Debug / pos only in regular lines
     QPoint anchor() const;                  // JM: changes on Debug / no selection
     bool hasSelection() const;              // JM: changes on Debug / no selection
-//    int findLine(int lineNr);
     void copySelection();
     QString selectedText() const;
     void selectAllText();
@@ -86,14 +85,11 @@ signals:
 
 public slots:
     void updateExtraSelections();
-    void contentChanged();
     void updateView();
 
 private slots:
-//    void editScrollChanged();
     void outerScrollAction(int action);
     void horizontalScrollAction(int action);
-//    void adjustOuterScrollAction();
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
@@ -127,7 +123,6 @@ protected:
 private:
     void init();
     void updateVScrollZone();
-//    void syncVScroll();
     void topLineMoved();
 
 private:
