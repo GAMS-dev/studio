@@ -68,6 +68,9 @@ private:
         bool operator == (const LinePosition &other) const {
             return chunkNr == other.chunkNr && localLine == other.localLine;
         }
+        bool operator > (const LinePosition &other) const {
+            return chunkNr > other.chunkNr || (chunkNr == other.chunkNr && localLine > other.localLine);
+        }
         int chunkNr = 0;
         qint64 absStart = 0;
         int localLine = 0;

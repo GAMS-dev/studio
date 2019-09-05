@@ -97,7 +97,7 @@ private slots:
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
-    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats);
+//    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats);
     void recalcVisibleLines();          // JM: changes on Debug
 
 protected:

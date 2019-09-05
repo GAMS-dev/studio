@@ -273,6 +273,7 @@ bool AbstractTextMapper::setTopOffset(qint64 absPos)
         mTopLine.localLine = i;
     }
     mTopLine.absStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
+    if (mTopLine > mMaxTopLine) mTopLine = mMaxTopLine;
     return true;
 }
 
@@ -302,7 +303,7 @@ bool AbstractTextMapper::setVisibleTopLine(double region)
         line = i;
     }
     if (line < 0) {
-        DEB() << "Catched line " << line;
+//        DEB() << "Catched line " << line;
         line = 0;
     }
     setTopOffset(chunk->bStart + chunk->lineBytes.at(line));
