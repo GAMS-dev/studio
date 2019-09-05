@@ -57,7 +57,6 @@ public:
     QPoint position() const;                // JM: changes on Debug / pos only in regular lines
     QPoint anchor() const;                  // JM: changes on Debug / no selection
     bool hasSelection() const;              // JM: changes on Debug / no selection
-//    int findLine(int lineNr);
     void copySelection();
     QString selectedText() const;
     void selectAllText();
@@ -69,7 +68,7 @@ public:
     void reset();
     void setDebugMode(bool debug);
     void invalidate();
-    void scrollToEnd();
+    void jumpToEnd();
     int firstErrorLine();
 
 signals:
@@ -86,14 +85,11 @@ signals:
 
 public slots:
     void updateExtraSelections();
-    void contentChanged();
     void updateView();
 
 private slots:
-    void editScrollChanged();
     void outerScrollAction(int action);
     void horizontalScrollAction(int action);
-    void adjustOuterScrollAction();
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
@@ -101,13 +97,15 @@ private slots:
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
-    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats);
+//    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats);
     void recalcVisibleLines();          // JM: changes on Debug
 
 protected:
     friend class FileMeta;
     void setMarks(const LineMarks *marks);
     const LineMarks* marks() const;
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
@@ -125,7 +123,6 @@ protected:
 private:
     void init();
     void updateVScrollZone();
-    void syncVScroll();
     void topLineMoved();
 
 private:
@@ -141,7 +138,7 @@ private:
     QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
     LineMarks *mMarks = nullptr;
     QTimer mLinesAddedTimer;
-    bool mStayAtTail = false;
+    bool *mStayAtTail = nullptr;
     int mLinesAddedCount = 0;
 
 private:

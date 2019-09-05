@@ -70,7 +70,7 @@ public:
 signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines);
-    void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QVector<LineFormat> &formats);
+//    void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QVector<LineFormat> &formats);
     void updateView();
 
 public slots:
@@ -83,6 +83,7 @@ protected:
 
 private slots:
     void runFinished();
+    void fetchDisplay();
 
 private:
     void appendLineData(const QByteArray &data, Chunk *&chunk);
@@ -91,7 +92,6 @@ private:
 //    void logLastLine();
     void updateOutputCache();
     void fetchLog();
-    void fetchDisplay();
     void createErrorMarks(LineRef ref, bool readErrorText);
     LineRef nextRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
@@ -135,10 +135,8 @@ private:
     int mLastLineLen = 0;
     QStringList mNewLogLines;
     QTime mDisplayCacheChanged;
-    QStringList mDisplayNewLines;
-    QVector<LineFormat> mDisplayQuickFormats;
-    int mDisplayLastLineLen = 0;
-    bool mDisplayLinesOverwrite = false;
+    int mNewLines = 0;
+    bool mInstantRefresh = false;
     int mConcealPos = 0;
     int mAddedLines = 0;
     InputState mInputState;

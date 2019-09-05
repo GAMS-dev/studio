@@ -44,11 +44,13 @@ signals:
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
     void recalcVisibleLines();
+    void topLineMoved();
     void textDoubleClicked(const QTextCursor &cursor, bool &done);
 
 public slots:
     void copySelection() override;
     void selectAllText() override;
+    void scrollStep();
 
 protected:
     friend class TextView;
@@ -60,22 +62,25 @@ protected:
     int localBlockNr(const int &absoluteBlockNr) const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
     void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void updateCursorShape(const Qt::CursorShape &defaultShape) override;
-    bool viewportEvent(QEvent *event) override;
+//    bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
 
 private:
     int topVisibleLine() override;
     bool existHRef(QString href);
+    int scrollMs(int delta);
 
 private:
     AbstractTextMapper &mMapper;
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
     QPoint mHRefClickPos;
-    QTimer mResizeTimer;
+    QTimer mScrollTimer;
+    int mScrollDelta = 0;
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;

@@ -65,10 +65,15 @@ class AbstractTextMapper: public QObject
 
 private:
     struct LinePosition {
+        bool operator == (const LinePosition &other) const {
+            return chunkNr == other.chunkNr && localLine == other.localLine;
+        }
+        bool operator > (const LinePosition &other) const {
+            return chunkNr > other.chunkNr || (chunkNr == other.chunkNr && localLine > other.localLine);
+        }
         int chunkNr = 0;
         qint64 absStart = 0;
         int localLine = 0;
-//        int lineCount = 0;
     };
 
     struct CursorPosition {
@@ -143,12 +148,11 @@ public:
     virtual bool setVisibleTopLine(double region);                      // share FM + MM
     virtual bool setVisibleTopLine(int lineNr);                         // share FM + MM
     virtual int moveVisibleTopLine(int lineDelta);                      // share FM + MM
+    virtual int visibleTopLine() const;                                 // share FM + MM
     virtual void scrollToPosition();                                    // share FM + MM
 
     int topChunk() const; // TODO(JM) deprecated!
 
-    virtual int visibleOffset() const;                                  // share FM + MM
-    virtual int absTopLine() const;                                     // share FM + MM
     virtual int lineCount() const;                                      // share FM + MM    // 2FF
     virtual int knownLineNrs() const;                                   // share FM + MM
 
@@ -165,11 +169,11 @@ public:
     virtual QPoint anchor(bool local = false) const;                    // share FM + MM
     virtual bool hasSelection() const;                                  // share FM + MM
     virtual int selectionSize() const;                                  // share FM + MM
-    int bufferedLines() const;
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     void dumpMetrics();
     virtual void invalidate();
+    bool atTail();
 
 public slots:
     virtual void reset();
@@ -178,7 +182,6 @@ signals:
     void blockCountChanged();
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
-    void contentChanged();
 
 protected:
     AbstractTextMapper(QObject *parent = nullptr);
@@ -226,7 +229,6 @@ private:
 
     LinePosition mTopLine;
     LinePosition mMaxTopLine;
-    int mVisibleOffset = 0;
     int mVisibleLineCount = 0;
     CursorPosition mAnchor;
     CursorPosition mPosition;

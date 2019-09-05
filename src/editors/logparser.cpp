@@ -41,9 +41,6 @@ QString LogParser::parseLine(const QByteArray &data, QString &line, bool &hasErr
         QTextCodec* locCodec = QTextCodec::codecForLocale();
         line = locCodec->toUnicode(data.constData(), data.size(), &convState);
     }
-
-    hasError = false;
-    mbState.marks = MarkData();
     return extractLinks(line, hasError, mbState);
 }
 
@@ -98,25 +95,26 @@ inline QStringRef capture(const QString &line, int &a, int &b, const int offset,
 
 QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::MarksBlockState &mbState)
 {
+    mbState.marks = MarkData();
+    hasError = false;
     if (!line.endsWith(']') || line.length() < 5) return line;
 
+    mbState.errData.errNr = 0;
     QString result;
-    bool errFound = false;
-    bool isRuntimeError = false;
     int posA = 0;
     int posB = 0;
 
+    // quick check for error
+
     if (line.startsWith("*** Error ")) {
         hasError = true;
-        errFound = true;
         mbState.errData.lstLine = -1;
         mbState.errData.text = "";
 
         posB = 0;
         if (line.midRef(9, 9) == " at line ") {
-            isRuntimeError = true;
             result = capture(line, posA, posB, 0, ':').toString();
-            mbState.errData.errNr = 0;
+            mbState.errData.errNr = -1;
             if (posB+2 < line.length()) {
                 int subLen = (line.contains('[') ? line.indexOf('['): line.length()) - (posB+2);
                 mbState.errData.text = line.mid(posB+2, subLen);
@@ -139,6 +137,7 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
             posB = end+1;
         }
     }
+
     // Now we should have a system output
 
     while (posA < line.length()) {
@@ -151,10 +150,9 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
             // LST:
             if (line.midRef(posB+1,4) == "LST:") {
                 int lineNr = capture(line, posA, posB, 5, ']').toInt();
-
                 mbState.errData.lstLine = lineNr;
                 mbState.marks.setMark(line.mid(start, posB-start), mbState.errData.lstLine);
-                errFound = false;
+                if (mbState.errData.errNr < 0) mbState.marks.errNr = mbState.errData.errNr;
                 ++posB;
 
                 // FIL + REF
@@ -165,8 +163,6 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
 
                 bool fileExists = false;
                 emit hasFile(fName, fileExists);
-                if (fileExists)         // if (mRunGroup->findFile(fName))
-                    errFound = false;
                 capture(line, posA, posB, 1, ']');
                 ++posB;
 
