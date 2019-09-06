@@ -1,13 +1,8 @@
-Version 0.12.5
-===================
+Version 0.12.6
+========================
 
 ## General
-- fixed search status update when having no results
-- added raise to result view to pop up over help
-- fixed crash when jumping to a result after invalidating cache
-- Read and use InitialSort key in GLB files
-- Enhanced icon size in Help on Mac OS
-- Allow to adjust the numerical precision in the GDX Viewer
-- make model library explorer aware of initial sort column
-- Better tooltip for GDX Viewer precision spin box
-- Model Library Explorer feels slow on macOS fixed
+- fixed bookmarks sometimes not being able to be set
+- improved add new/existing file dialog: now opens dialog in group folder if available
+- fixed crash when GLB file does not contain any models, added proper warning/error instead
+
