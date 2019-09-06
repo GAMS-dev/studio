@@ -32,7 +32,6 @@ static int CRefreshTimeMax = 50;    // The maximum time (in ms) to wait until th
 
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
-    mState.deep = true;
     mRunFinishedTimer.setInterval(10);
     mRunFinishedTimer.setSingleShot(true);
     connect(&mRunFinishedTimer, &QTimer::timeout, this, &MemoryMapper::runFinished);
@@ -76,17 +75,12 @@ void MemoryMapper::setLogParser(LogParser *parser)
 qint64 MemoryMapper::size() const
 {
     if (mSize < 0) {
-        recalcSize();
+        mSize = 0;
+        for (Chunk* chunk: mChunks) {
+            mSize += chunk->size();
+        }
     }
     return mSize;
-}
-
-void MemoryMapper::recalcSize() const
-{
-    mSize = 0;
-    for (Chunk* chunk: mChunks) {
-        mSize += chunk->size();
-    }
 }
 
 void MemoryMapper::invalidateSize()
@@ -249,9 +243,7 @@ void MemoryMapper::startRun()
     mShrinkLineCount = 0;   // count of lines removed by shrinking
 
     mErrCount = 0;
-    mAddedLines = 0;
     mInstantRefresh = false;
-    mInputState = InputState();
     mNewLines = 0;
     appendEmptyLine();
 }
@@ -355,10 +347,10 @@ void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
     chunk->lineBytes.last() = lastLineEnd+data.length()+1;
     chunk->bArray[lastLineEnd+data.length()] = '\n';
     updateChunkMetrics(changedChunk);
-    updateOutputCache();
+    parseNewLine();
 }
 
-void MemoryMapper::updateOutputCache()
+void MemoryMapper::parseNewLine()
 {
     if (!mNewLines)
         mDisplayCacheChanged.start();
@@ -522,7 +514,7 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 // concealing standalone CR - "\r"
                 start = i + 1;
                 if (len || mLastLineIsOpen) {
-                    updateOutputCache();
+                    parseNewLine();
                     mInstantRefresh = true;
                 }
                 clearLastLine();

@@ -187,11 +187,6 @@ int FileMapper::lineCount() const
     return int(res);
 }
 
-void FileMapper::invalidate()
-{
-    openFile(mFile.fileName(), true);
-}
-
 void FileMapper::peekChunksForLineNrs()
 {
     // peek and keep timer alive if not done

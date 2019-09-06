@@ -52,7 +52,6 @@ public:
     void startRun() override;
     void endRun() override;
     int lineCount() const override;
-    void invalidate() override;
 
 public slots:
     void peekChunksForLineNrs();

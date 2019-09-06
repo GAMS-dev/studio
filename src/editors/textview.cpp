@@ -238,7 +238,7 @@ void TextView::outerScrollAction(int action)
             mMapper->setVisibleTopLine(double(lineNr) / (max));
     }
         break;
-    default: mActiveScrollAction = QScrollBar::SliderNoAction; break;
+    default: break;
     }
     topLineMoved();
 }
@@ -408,65 +408,8 @@ void TextView::topLineMoved()
         mEdit->protectWordUnderCursor(false);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
-//    } else {
-//        DEB() << "topLineMoved() skipped";
     }
 }
-
-//void TextView::appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats)
-//{
-//    mLinesAddedCount += lines.length();
-//    if (append || overwriteLast) --mLinesAddedCount;
-// //    mStayAtTail = (mEdit->verticalScrollBar()->sliderPosition() >= mEdit->verticalScrollBar()->maximum()-3);
-//    if (!mStayAtTail || !*mStayAtTail) return;
-
-//    int remainLineSpace = qMax(0, mMapper->visibleLineCount() - mEdit->blockCount());
-
-//    ChangeKeeper x(mDocChanging);
-//    QTextCursor cur(mEdit->document());
-//    cur.movePosition(QTextCursor::End);
-//    if (append || overwriteLast) {
-//        cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
-//        if (overwriteLast)
-//            cur.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
-//        cur.removeSelectedText();
-//        ++remainLineSpace;
-//    }
-//    int firstLine = cur.blockNumber();
-//    cur.insertText(lines.join("\n")+"\n");
-
-//    for (int row = 0; row < formats.size(); ++row) {
-//        const LineFormat &fmt = formats.at(row);
-//        if (fmt.start < 0) continue;
-//        QTextBlock block = mEdit->document()->findBlockByNumber(firstLine+row);
-//        if (fmt.extraLstFormat) {
-//            cur.setPosition(block.position());
-//            cur.setPosition(block.position()+3, QTextCursor::KeepAnchor);
-//            cur.setCharFormat(*fmt.extraLstFormat);
-//        }
-//        cur.setPosition(block.position() + fmt.start);
-//        cur.setPosition(block.position() + fmt.end, QTextCursor::KeepAnchor);
-//        cur.setCharFormat(fmt.format);
-//        cur.setPosition(block.position() + fmt.end);
-//        cur.setCharFormat(QTextCharFormat());
-//    }
-
-//    int topLinesToRemove = mEdit->blockCount() - mMapper->visibleLineCount();
-//    if (topLinesToRemove > 0) {
-//        cur.setPosition(0);
-//        cur.setPosition(mEdit->document()->findBlockByNumber(topLinesToRemove).position()
-//                        , QTextCursor::KeepAnchor);
-//        cur.removeSelectedText();
-//    }
-//    mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount());
-//    updatePosAndAnchor();
-//    updateVScrollZone();
-//    mEdit->updateExtraSelections();
-//    mEdit->protectWordUnderCursor(false);
-//    mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
-//    mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
-//    mEdit->repaint();
-//}
 
 TextView::TextKind TextView::textKind() const
 {
@@ -476,7 +419,7 @@ TextView::TextKind TextView::textKind() const
 void TextView::setLogParser(LogParser *logParser)
 {
     if (qobject_cast<MemoryMapper*>(mMapper))
-        qobject_cast<MemoryMapper*>(mMapper)->setLogParser(logParser);
+        static_cast<MemoryMapper*>(mMapper)->setLogParser(logParser);
 }
 
 void TextView::setDebugMode(bool debug)

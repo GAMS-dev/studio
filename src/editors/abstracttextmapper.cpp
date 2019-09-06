@@ -147,11 +147,6 @@ void AbstractTextMapper::reset()
     mDelimiter.clear();
 }
 
-void AbstractTextMapper::createSection()
-{
-    return;
-}
-
 qint64 AbstractTextMapper::size() const
 {
     return 0;
@@ -452,12 +447,6 @@ QByteArray AbstractTextMapper::rawLines(int localLineNrFrom, int lineCount, int 
     return res;
 }
 
-int AbstractTextMapper::topChunk() const
-{
-    Chunk *chunk = mChunkCache.isEmpty() ? nullptr : mChunkCache.last();
-    return chunk ? chunk->nr : -1;
-}
-
 QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
 {
     QString res;
@@ -482,7 +471,6 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
 
     }
     return res;
-    // get the text of the line
 }
 
 QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
@@ -748,16 +736,6 @@ void AbstractTextMapper::dumpPos()
 {
     DEB() << "pos:  chunk " << mPosition.chunkNr << ",  p " << mPosition.absLinePos;
     DEB() << "anc:  chunk " << mAnchor.chunkNr << ",  p " << mAnchor.absLinePos;
-}
-
-void AbstractTextMapper::dumpMetrics()
-{
-
-}
-
-void AbstractTextMapper::invalidate()
-{
-
 }
 
 bool AbstractTextMapper::atTail()

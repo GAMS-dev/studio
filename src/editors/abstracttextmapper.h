@@ -103,15 +103,6 @@ private:
         int startLineNr = -1;
     };
 
-    struct BufferMeter {
-        BufferMeter(int _visibleLines = 0, int _linesTotal = 0): visibleLines(_visibleLines), linesTotal(_linesTotal) {}
-        int size() { return qMin(visibleLines*3, linesTotal); }
-        int centerTop() { return (size()-visibleLines)/2; }
-        int maxTop() { return qMax(size()-visibleLines, 0); }
-        int visibleLines;
-        int linesTotal;
-    };
-
 protected:
     struct Chunk {  // a mapped part of a file OR a standalone part of memory
         int nr = -1;
@@ -132,47 +123,42 @@ public:
     ~AbstractTextMapper();
     virtual AbstractTextMapper::Kind kind() = 0;
 
-    QTextCodec *codec() const;                                  // share FM + MM (FileMapper + MemoryMapper)
-    void setCodec(QTextCodec *codec);                           // share FM + MM
+    QTextCodec *codec() const;
+    void setCodec(QTextCodec *codec);
 
     bool isEmpty() const;
     virtual void startRun() = 0;
     virtual void endRun() = 0;
-    virtual void createSection();
-    virtual qint64 size() const;                                    // share FM + MM
-    virtual QByteArray& delimiter() const { return mDelimiter; }        // share FM + MM
+    virtual qint64 size() const;
+    virtual QByteArray& delimiter() const { return mDelimiter; }
 
-    virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024); // share FM + MM
-    virtual void setVisibleLineCount(int visibleLines);                 // share FM + MM
-    virtual int visibleLineCount() const;                               // share FM + MM
-    virtual bool setVisibleTopLine(double region);                      // share FM + MM
-    virtual bool setVisibleTopLine(int lineNr);                         // share FM + MM
-    virtual int moveVisibleTopLine(int lineDelta);                      // share FM + MM
-    virtual int visibleTopLine() const;                                 // share FM + MM
-    virtual void scrollToPosition();                                    // share FM + MM
+    virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
+    virtual void setVisibleLineCount(int visibleLines);
+    virtual int visibleLineCount() const;
+    virtual bool setVisibleTopLine(double region);
+    virtual bool setVisibleTopLine(int lineNr);
+    virtual int moveVisibleTopLine(int lineDelta);
+    virtual int visibleTopLine() const;
+    virtual void scrollToPosition();
 
-    int topChunk() const; // TODO(JM) deprecated!
+    virtual int lineCount() const;
+    virtual int knownLineNrs() const;
 
-    virtual int lineCount() const;                                      // share FM + MM    // 2FF
-    virtual int knownLineNrs() const;                                   // share FM + MM
-
-    virtual QString lines(int localLineNrFrom, int lineCount) const;    // share FM + MM    //    CC?
+    virtual QString lines(int localLineNrFrom, int lineCount) const;
     virtual QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const;
-    virtual bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);   // share FM + MM
+    virtual bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
 
-    virtual QString selectedText() const;                               // share FM + MM    //    CC?
-    virtual void copyToClipboard();                                     // share FM + MM
+    virtual QString selectedText() const;
+    virtual void copyToClipboard();
 
-    virtual void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // share FM + MM
-    virtual void selectAll();                                           // share FM + MM
-    virtual QPoint position(bool local = false) const;                  // share FM + MM
-    virtual QPoint anchor(bool local = false) const;                    // share FM + MM
-    virtual bool hasSelection() const;                                  // share FM + MM
-    virtual int selectionSize() const;                                  // share FM + MM
+    virtual void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+    virtual void selectAll();
+    virtual QPoint position(bool local = false) const;
+    virtual QPoint anchor(bool local = false) const;
+    virtual bool hasSelection() const;
+    virtual int selectionSize() const;
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
-    void dumpMetrics();
-    virtual void invalidate();
     bool atTail();
 
 public slots:
@@ -187,7 +173,7 @@ protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
     virtual int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
-    virtual QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
+    QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
     Chunk *setActiveChunk(int chunkNr) const;
     Chunk *activeChunk();
     void uncacheChunk(Chunk *&chunk);

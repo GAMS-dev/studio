@@ -54,13 +54,7 @@ public:
     };
 
 public:
-    // Functionality that needs to be implemented in calling structure:
-    //  - editor move to end
-    //  - conceal lines that only break with '\r'
-    //  - create textmarks for all MarkData and link them together
-
     LogParser(QTextCodec *codec);
-    void setDirectory(QString dir);
     QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);
     void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart, int &lstLine);
 
@@ -70,13 +64,7 @@ signals:
 
 private:
     QString extractLinks(const QString &line, bool &hasError, MarksBlockState &mbState);
-    QString extractLinksX(const QString &line, bool &hasError, MarksBlockState &mbState);
 
-//    TextMarkRepo* mMarkRepo;
-//    FileMetaRepo* mMetaRepo;
-//    ProjectRunGroupNode *mRunGroup;
-//    FileId mFileId;
-//    ProjectFileNode *mLstNode = nullptr;
     QString mDirectory;
     QTextCodec *mCodec;
 };

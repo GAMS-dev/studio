@@ -49,7 +49,7 @@ public:
     void prepareRun();
     void endRun();
     qint64 size() const;
-    int lineCount() const;                  // JM: changes on Debug
+    int lineCount() const;
     int knownLines() const;
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
@@ -97,8 +97,7 @@ private slots:
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
-//    void appendedLines(const QStringList &lines, bool append, bool overwriteLast, const QVector<LineFormat> &formats);
-    void recalcVisibleLines();          // JM: changes on Debug
+    void recalcVisibleLines();
 
 protected:
     friend class FileMeta;
@@ -133,13 +132,7 @@ private:
 
     AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
-    QTextCodec *mCodec = nullptr;
-    int mLineToFind = -1;
-    QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
-    LineMarks *mMarks = nullptr;
-    QTimer mLinesAddedTimer;
     bool *mStayAtTail = nullptr;
-    int mLinesAddedCount = 0;
 
 private:
 

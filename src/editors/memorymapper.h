@@ -30,8 +30,6 @@ namespace gams {
 namespace studio {
 
 class DynamicFile;
-//struct LogParser_MarksBlockState;
-//class LogParser;
 
 class MemoryMapper : public AbstractTextMapper
 {
@@ -55,7 +53,6 @@ public:
     AbstractTextMapper::Kind kind() override { return AbstractTextMapper::memoryMapper; }
 
     void setLogParser(LogParser *parser);
-    void setLogFile(DynamicFile *logFile);
     qint64 size() const override;
     void startRun() override;
     void endRun() override;
@@ -70,7 +67,6 @@ public:
 signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines);
-//    void appendDisplayLines(const QStringList &lines, int startOpen, bool overwriteLast, const QVector<LineFormat> &formats);
     void updateView();
 
 public slots:
@@ -83,15 +79,14 @@ protected:
 
 private slots:
     void runFinished();
-    void fetchDisplay();
 
 private:
     void appendLineData(const QByteArray &data, Chunk *&chunk);
     void appendEmptyLine();
     void clearLastLine();
-//    void logLastLine();
-    void updateOutputCache();
+    void parseNewLine();
     void fetchLog();
+    void fetchDisplay();
     void createErrorMarks(LineRef ref, bool readErrorText);
     LineRef nextRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
@@ -102,7 +97,6 @@ private:
     Chunk *nextChunk(Chunk *chunk);
     int currentRunLines();
     void updateChunkMetrics(Chunk *chunk, bool cutRemain = false);
-    void recalcSize() const;
     void invalidateSize();
 
 private:
@@ -112,15 +106,12 @@ private:
         int lineState = 0;      // 0: content    1: line-end (\n or \r\n)    2: conceal-prev-line (\r)
     };
 
-    QMutex mSkipper;
     QVector<Chunk*> mChunks;
     QVector<Unit> mUnits;
     QVector<QTextCharFormat> mBaseFormat;
     mutable qint64 mSize = 0;   // this is only a caching value
     int mLineCount = 0;
-    bool mShrunk = false;
     LogParser *mLogParser = nullptr;
-    LogParser::MarksBlockState mState;
     QVector<int> mMarksHead;
     QContiguousCache<int> mMarksTail;
     QVector<LineRef> mMarkers;
@@ -137,9 +128,6 @@ private:
     QTime mDisplayCacheChanged;
     int mNewLines = 0;
     bool mInstantRefresh = false;
-    int mConcealPos = 0;
-    int mAddedLines = 0;
-    InputState mInputState;
 };
 
 } // namespace studio
