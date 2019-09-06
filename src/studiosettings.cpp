@@ -251,7 +251,6 @@ void StudioSettings::saveSettings(MainWindow *main)
 void StudioSettings::loadViewStates(MainWindow *main)
 {
     mAppSettings->beginGroup("settings");
-    // TODO: write settings converter
     mAppSettings->value("version").toString();
     mAppSettings->endGroup();
 

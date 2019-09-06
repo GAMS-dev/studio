@@ -157,6 +157,11 @@ bool GlbParser::parseFile(QString glbFile)
         else
             line = readLine(in);
     }
+    // we need to have at least one model, otherwise the GLB file is not valid
+    if (mLibraryItems.isEmpty()) {
+        mErrorMessage = "Error while loading model library from GLB file. Library is empty but needs to contain at least one model: " + mGlbFile + " (line " + QString::number(mLineNr) + ")";
+        return false;
+    }
     return true;
 }
 

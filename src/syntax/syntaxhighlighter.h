@@ -77,8 +77,6 @@ private:
     int mLastSyntaxKind = 0;
     Kinds mKinds;
     Codes mCodes;
-    // TODO(JM) process events after a couple of ms
-    // http://enki-editor.org/2014/08/22/Syntax_highlighting.html
 };
 
 } // namespace syntax

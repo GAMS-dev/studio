@@ -335,7 +335,7 @@ QStringList Option::getValidNonDeprecatedKeyList() const
 
 QStringList Option::getKeyAndSynonymList() const
 {
-    // TODO
+    // TODO (JP)
     return getKeyList();
 }
 

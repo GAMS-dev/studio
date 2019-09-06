@@ -67,11 +67,12 @@ MainWindow::MainWindow(QWidget *parent)
       ui(new Ui::MainWindow),
       mFileMetaRepo(this),
       mProjectRepo(this),
-      mTextMarkRepo(&mFileMetaRepo, &mProjectRepo, this),
+      mTextMarkRepo(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this)
 {
+    mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
     mHistory = new HistoryData();
 //    QFile css(":/data/style.css");
@@ -796,7 +797,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = mRecent.path;
+    QString path = (!groups.isEmpty()) ? groups.first()->location() : mRecent.path;
     if (path.isEmpty()) path = ".";
 
     if (mRecent.editFileId >= 0) {
@@ -1222,7 +1223,6 @@ void MainWindow::fileChanged(const FileId fileId)
 void MainWindow::fileClosed(const FileId fileId)
 {
     Q_UNUSED(fileId)
-    // TODO(JM) check if anything needs to be updated
 }
 
 int MainWindow::externChangedMessageBox(QString filePath, bool deleted, bool modified, int count)
@@ -2140,7 +2140,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
     if (gmsFilePath == "") {
         mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
-        ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
+        ui->actionShow_System_Log->trigger(); // TODO (rogo) move this out of here, do on every append
         return;
     }
     if (gmsFileNode)
@@ -2365,7 +2365,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (groupId.isValid()) runGroup = mProjectRepo.findRunGroup(groupId);
         }
         if (focus) {
-            // TODO(JM)  check what happens to the group here
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             if (tabWidget == ui->mainTab) {
@@ -2580,7 +2579,7 @@ ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileNam
         FileType fType = FileType::from(fInfo.suffix());
 
         if (fType == FileKind::Gsp) {
-            // TODO(JM) Read project and create all nodes for associated files
+            // Placeholder to read the project and create all nodes for associated files
         } else {
             node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), group);
         }
@@ -2820,7 +2819,6 @@ void MainWindow::writeTabs(QJsonObject &json) const
         if (!fm) continue;
         QJsonObject tabObject;
         tabObject["location"] = fm->location();
-        // TODO(JM) store current tab index
         tabArray.append(tabObject);
     }
     json["mainTabs"] = tabArray;
@@ -3116,7 +3114,6 @@ void MainWindow::toggleDebugMode()
 
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
-    // TODO: remove duplicates?
     if (mClosedTabs.isEmpty())
         return;
 

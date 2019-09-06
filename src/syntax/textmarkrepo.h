@@ -24,9 +24,9 @@ class TextMarkRepo: public QObject
 {
     Q_OBJECT
 public:
-    // TODO(JM) initialize fileRepo and projectRepo later (not in constructor)
-    explicit TextMarkRepo(FileMetaRepo* fileRepo, ProjectRepo *projectRepo, QObject *parent = nullptr);
+    explicit TextMarkRepo(QObject *parent = nullptr);
     ~TextMarkRepo() override;
+    void init(FileMetaRepo *fileRepo, ProjectRepo *projectRepo);
 
     void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
     void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
