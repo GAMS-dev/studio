@@ -208,7 +208,6 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
 void ProjectRunGroupNode::updateRunState(const QProcess::ProcessState &state)
 {
     Q_UNUSED(state)
-    // TODO(JM) visualize if a state is running
 }
 
 GamsProcess *ProjectRunGroupNode::gamsProcess() const
@@ -334,7 +333,6 @@ void ProjectRunGroupNode::setLstErrorText(int line, QString text)
 void ProjectRunGroupNode::clearLstErrorTexts()
 {
     mLstErrorTexts.clear();
-    // TODO(JM) remove marks for this groups NodeId
 }
 
 bool ProjectRunGroupNode::hasLstErrorText(int line)

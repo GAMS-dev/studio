@@ -54,7 +54,7 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     mSpecValSortVal.push_back(GMS_SV_PINF); // GMS_SV_PINF
     mSpecValSortVal.push_back(-std::numeric_limits<double>::max()); // GMS_SV_MINF
     mSpecValSortVal.push_back(4.94066E-324); // GMS_SV_EPS
-    mSpecValSortVal.push_back(0);  //TODO: Acronyms
+    mSpecValSortVal.push_back(0);  //TODO (CW) Acronyms
 }
 
 GdxSymbol::~GdxSymbol()
@@ -495,7 +495,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         uint uel;
         for(int rec=0; rec<mRecordCount; rec++) {
             uel = mKeys[mRecSortIdx[rec]*mDim + column];
-            if (uel >= labelCompIdx.size())  //TODO: workaround for bad UELS. Bad uels are sorted by their internal number separately from normal UELS
+            if (uel >= labelCompIdx.size())  //TODO (CW) workaround for bad UELS. Bad uels are sorted by their internal number separately from normal UELS
                 l.append(QPair<int, int>(uel, mRecSortIdx[rec]));
             else
                 l.append(QPair<int, int>(labelCompIdx[uel], mRecSortIdx[rec]));

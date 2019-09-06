@@ -53,7 +53,7 @@ public:
     void jumpToResult(int selectedRow, bool focus = true);
 
 signals:
-    void updateMatchLabel(int row);
+    void updateMatchLabel(int row, int max);
 
 private slots:
     void on_tableView_doubleClicked(const QModelIndex &index);

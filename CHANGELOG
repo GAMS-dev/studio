@@ -1,13 +1,8 @@
-Version 0.12.4
-===================
+Version 0.12.6
+========================
 
 ## General
-- improved robustness of glb parser
-- added "What's new" menu entry to show latest changes of Studio
-- changed appearance of log tabs on macOS to be more consistent with main tabs
-- added missing extension for file filter in open/add file dialogs
-- added possible fix for stale lock file leading to a freeze and crash
-- improved Studio startup time when many tabs are open
-- fixed possibility to insert certain characters in read only files
-- fixed new gms file not marked as main
+- fixed bookmarks sometimes not being able to be set
+- improved add new/existing file dialog: now opens dialog in group folder if available
+- fixed crash when GLB file does not contain any models, added proper warning/error instead
 

@@ -298,6 +298,8 @@ void GdxSymbolView::toggleColumnHidden()
 
 void GdxSymbolView::updateNumericalPrecision()
 {
+    if (!mSym)
+        return;
     this->mSym->setNumericalPrecision(ui->sbPrecision->value(), ui->cbSqueezeZeroes->isChecked());
     if (mTvModel)
         ui->tvTableView->reset();

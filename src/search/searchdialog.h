@@ -92,7 +92,7 @@ public slots:
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate();
-    void updateNrMatches(int current = 0);
+    void updateNrMatches(int current = 0, int max = -1);
 
 protected slots:
     void searchResume();

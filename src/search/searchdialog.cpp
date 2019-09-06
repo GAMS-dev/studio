@@ -444,8 +444,11 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         colNr = t->position().x();
     }
 
-    QList<Result> resultList = mCachedResults->resultsAsList();
-    if (resultList.size() == 0) return;
+    QList<Result> resultList = mCachedResults->resultsAsList();;
+    if (resultList.size() == 0) {
+        setSearchStatus(SearchStatus::NoResults);
+        return;
+    }
 
     const Result* res = nullptr;
     int iterator = backwards ? -1 : 1;
@@ -534,7 +537,6 @@ void SearchDialog::on_searchPrev()
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
-    //TODO: make smarter
     Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
     searchParameterChanged();
 }
@@ -819,15 +821,16 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->setFocus();
 }
 
-void SearchDialog::updateNrMatches(int current)
+void SearchDialog::updateNrMatches(int current, int max)
 {
     SearchResultList* list = mCachedResults;
+    int size = list ? list->size() : max;
 
     if (current == 0) {
         if (list->size() == 1)
-            ui->lbl_nrResults->setText(QString::number(list->size()) + " match");
+            ui->lbl_nrResults->setText(QString::number(size) + " match");
         else
-            ui->lbl_nrResults->setText(QString::number(list->size()) + " matches");
+            ui->lbl_nrResults->setText(QString::number(size) + " matches");
 
         if (list->size() > MAX_SEARCH_RESULTS-1) {
             ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
@@ -836,10 +839,8 @@ void SearchDialog::updateNrMatches(int current)
             ui->lbl_nrResults->setToolTip("");
         }
 
-    } else {
-        int max = list->size();
-        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(max) + " matches");
-    }
+    } else
+        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(size) + " matches");
 
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 }

@@ -115,18 +115,7 @@ void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
     } else {
         int top = rect.y();
         int bottom = top + rect.height();
-        // TODO(JM) major performance issue on calling :blockBoundingGeometry()
-//        QTextBlock b = firstVisibleBlock();
-//        while (b.isValid() && b.isVisible()) {
-//            QRect blockBounds = blockBoundingGeometry(b).translated(contentOffset()).toAlignedRect();
-//            if (top > blockBounds.top() && top < blockBounds.bottom())
-//                top = blockBounds.top();
-//            if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
-//                bottom = blockBounds.bottom()-1;
-//            if (blockBounds.bottom() >= rect.bottom())
-//                break;
-//            b = b.next();
-//        }
+        // NOTE! major performance issue on calling :blockBoundingGeometry()
         mLineNumberArea->update(0, top, mLineNumberArea->width(), bottom-top);
     }
 
