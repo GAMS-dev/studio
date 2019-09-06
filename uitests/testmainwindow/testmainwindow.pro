@@ -109,8 +109,6 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/syntax.h \
            $$SRCPATH/syntax/basehighlighter.h \
            $$SRCPATH/syntax/blockcode.h \
-           $$SRCPATH/syntax/syntaxdata.h \
-           $$SRCPATH/syntax/syntaxdata.h \
            $$SRCPATH/syntax/syntaxdeclaration.h \
            $$SRCPATH/syntax/syntaxformats.h \
            $$SRCPATH/syntax/syntaxhighlighter.h \
