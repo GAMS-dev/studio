@@ -267,6 +267,9 @@
    <property name="accessibleName">
     <string>Project Explorer</string>
    </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Project Explorer</string>
    </property>
@@ -346,6 +349,9 @@
    <property name="floating">
     <bool>false</bool>
    </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Output</string>
    </property>
@@ -398,6 +404,9 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockHelpView">
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Help</string>
    </property>
