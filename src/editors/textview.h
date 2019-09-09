@@ -94,6 +94,7 @@ private slots:
     void handleSelectionChange();
     void updatePosAndAnchor();
     void textDoubleClicked(const QTextCursor &cursor, bool &done);
+    void updateVScrollZone();
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
@@ -121,7 +122,6 @@ protected:
 
 private:
     void init();
-    void updateVScrollZone();
     void topLineMoved();
 
 private:

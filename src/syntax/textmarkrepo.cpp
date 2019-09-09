@@ -68,6 +68,8 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
             }
         }
     }
+    if (marks->isEmpty()) mMarks.remove(fileId);
+
     if (!remainingBookmarks) mBookmarkedFiles.removeAll(fileId);
     if (groups.isEmpty()) return;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
