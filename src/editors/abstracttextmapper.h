@@ -192,6 +192,7 @@ protected:
     void initTopLine();
     void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC
     void emitBlockCountChanged();
+    void shiftChunksUp();
 
     void dumpPos();
 

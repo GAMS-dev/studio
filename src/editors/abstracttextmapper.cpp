@@ -139,7 +139,10 @@ qint64 AbstractTextMapper::lastTopAbsPos()
 
 void AbstractTextMapper::reset()
 {
-    mChunkCache.clear();
+    while (!mChunkCache.isEmpty()) {
+        Chunk* chunk = mChunkCache.takeLast();
+        chunkUncached(chunk);
+    }
     mLastChunkWithLineNr = -1;
     mBytesPerLine = 20.0;
     mChunkLineNrs.clear();
@@ -732,6 +735,37 @@ void AbstractTextMapper::emitBlockCountChanged()
     emit blockCountChanged();
 }
 
+void AbstractTextMapper::shiftChunksUp()
+{
+
+    if (mTopLine.chunkNr > 0) {
+        --mTopLine.chunkNr;
+    } else {
+
+    }
+
+    if (mPosition.chunkNr > 0) {
+        --mPosition.chunkNr;
+    } else if (mPosition.chunkNr == 0) {
+        Chunk *chunk = getChunk(0);
+        mPosition.localLine = 0;
+        mPosition.localLinePos = 0;
+        mPosition.lineLen = chunk->lineBytes.at(1) - mPosition.localLinePos - mDelimiter.size();
+        mPosition.absLinePos = chunk->bStart + mPosition.localLinePos;
+        mPosition.charNr = 0;
+    }
+    if (mAnchor.chunkNr > 0) {
+        --mAnchor.chunkNr;
+    } else if (mAnchor.chunkNr == 0) {
+        Chunk *chunk = getChunk(0);
+        mAnchor.localLine = 0;
+        mAnchor.localLinePos = 0;
+        mAnchor.lineLen = chunk->lineBytes.at(1) - mAnchor.localLinePos - mDelimiter.size();
+        mAnchor.absLinePos = chunk->bStart + mAnchor.localLinePos;
+        mAnchor.charNr = 0;
+    }
+}
+
 void AbstractTextMapper::dumpPos()
 {
     DEB() << "pos:  chunk " << mPosition.chunkNr << ",  p " << mPosition.absLinePos;
@@ -844,7 +878,9 @@ int AbstractTextMapper::selectionSize() const
 
 void AbstractTextMapper::chunkUncached(Chunk *&chunk) const
 {
-    Q_UNUSED(chunk);
+    Q_UNUSED(chunk)
+    if (mChunkCache.contains(chunk))
+        mChunkCache.removeAll(chunk);
 }
 
 

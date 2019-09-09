@@ -29,6 +29,7 @@ static int CErrorBound = 50;        // The count of errors created at the beginn
 static int CDirectErrors = 3;       // The count of errors created immediately
 static int CParseLinesMax = 23;     // The maximum count of gathered lines befor updating the display
 static int CRefreshTimeMax = 50;    // The maximum time (in ms) to wait until the output is updated (after changed)
+static int CKeptRunCount = 5;
 
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
@@ -67,8 +68,19 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     addChunk(true);
 }
 
+MemoryMapper::~MemoryMapper()
+{
+    while (!mChunks.isEmpty()) {
+        Chunk *chunk = mChunks.takeLast();
+        chunkUncached(chunk);
+        delete chunk;
+    }
+    setLogParser(nullptr);
+}
+
 void MemoryMapper::setLogParser(LogParser *parser)
 {
+    if (mLogParser) delete mLogParser;
     mLogParser = parser;
 }
 
@@ -114,10 +126,15 @@ AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
         mShrinkLineCount = 0;
     }
     ++mUnits.last().chunkCount;
+//    if (mUnits.count() > CKeptRunCount) {
+//        Chunk * delChunk = mUnits.first().firstChunk;
+
+//        recalcLineCount();
+//    }
     return mChunks.last();
 }
 
-void MemoryMapper::shrinkLog()
+void MemoryMapper::shrinkLog(qint64 minBytes)
 {
     const QByteArray ellipsis(QString("\n...\n\n").toLatin1().data());
 
@@ -151,7 +168,10 @@ void MemoryMapper::shrinkLog()
         --mUnits.last().chunkCount;
         for (int i = chunk->nr; i < mChunks.size(); ++i)
             mChunks.at(i)->nr = i;
-        chunk = mChunks.size() > chunk->nr ? mChunks.at(chunk->nr) : nullptr;
+        Chunk *delChunk = chunk;
+        chunk = (mChunks.size() > chunk->nr) ? mChunks.at(chunk->nr) : nullptr;
+        chunkUncached(delChunk);
+        delete delChunk;
         updateChunkMetrics(chunk, true);
     }
 
@@ -161,6 +181,15 @@ void MemoryMapper::shrinkLog()
         chunk = mChunks.size() > chunk->nr+1 ? mChunks[chunk->nr+1] : nullptr;
     }
     recalcLineCount();
+}
+
+bool MemoryMapper::ensureSpace(qint64 bytes)
+{
+    if (size() - mUnits.last().firstChunk->bStart + bytes >= chunkSize() * 2) {
+        shrinkLog(bytes);
+        return true;
+    }
+    return false;
 }
 
 void MemoryMapper::recalcLineCount()
@@ -329,6 +358,7 @@ void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
     if (lastLineEnd + data.length() +1 > chunkSize()) {
         // move last line data to new chunk
         QByteArray part;
+        // TODO(JM) need to call shrinkLog around here
         Chunk *newChunk = addChunk();
         if (lastLineEnd > lastLineStart) {
             part.setRawData(chunk->bArray.data() + lastLineStart, uint(lastLineEnd-lastLineStart));
@@ -425,6 +455,7 @@ void MemoryMapper::parseNewLine()
         mNewLogLines << line;
 
     if (mLastLineIsOpen && mLastLineLen > line.length()) {
+        ensureSpace(1);
         appendEmptyLine();
         mLastLineLen = 0;
         mLastLineIsOpen = false;
@@ -496,6 +527,7 @@ void MemoryMapper::addProcessData(const QByteArray &data)
     int len = 0;
     int start = 0;
     QByteArray midData;
+    bool cleaned = false;
 
     for (int i = 0 ; i < data.length() ; ++i) {
         // check for line breaks
@@ -506,9 +538,11 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 ++i;
                 if (len) {
                     midData.setRawData(data.data()+start, uint(len));
+                    cleaned = ensureSpace(midData.size()+1);
                     appendLineData(midData, chunk);
                 }
                 start = i + 1;
+                cleaned = ensureSpace(1);
                 appendEmptyLine();
             } else {
                 // concealing standalone CR - "\r"
@@ -524,9 +558,11 @@ void MemoryMapper::addProcessData(const QByteArray &data)
             len = i-start;
             if (len) {
                 midData.setRawData(data.data()+start, uint(len));
+                cleaned = ensureSpace(midData.size()+1);
                 appendLineData(midData, chunk);
             }
             start = i + 1;
+            cleaned = ensureSpace(1);
             appendEmptyLine();
         }
     }
@@ -534,13 +570,12 @@ void MemoryMapper::addProcessData(const QByteArray &data)
         len = data.length()-start;
         if (len) {
             midData.setRawData(data.data()+start, uint(len));
+            cleaned = ensureSpace(midData.size()+1);
             appendLineData(midData, chunk);
             mLastLineIsOpen = true;
         }
     }
-    if (size() - mUnits.last().firstChunk->bStart > chunkSize() * 2)
-        shrinkLog();
-    else {
+    if (!cleaned) {
         updateChunkMetrics(chunk);
         recalcLineCount();
     }
@@ -549,6 +584,10 @@ void MemoryMapper::addProcessData(const QByteArray &data)
 void MemoryMapper::reset()
 {
     AbstractTextMapper::reset();
+    for (Chunk *chunk: mChunks) {
+        chunkUncached(chunk);
+        delete chunk;
+    }
     mChunks.clear();
     mUnits.clear();
     invalidateSize();

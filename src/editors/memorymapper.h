@@ -50,6 +50,7 @@ private:
 
 public:
     explicit MemoryMapper(QObject *parent = nullptr);
+    ~MemoryMapper() override;
     AbstractTextMapper::Kind kind() override { return AbstractTextMapper::memoryMapper; }
 
     void setLogParser(LogParser *parser);
@@ -91,7 +92,8 @@ private:
     LineRef nextRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
     Chunk *addChunk(bool startUnit = false);
-    void shrinkLog();
+    void shrinkLog(qint64 minBytes);
+    bool ensureSpace(qint64 bytes);
     void recalcLineCount();
     LineRef logLineToRef(const int &lineNr);
     Chunk *nextChunk(Chunk *chunk);
