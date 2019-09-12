@@ -371,6 +371,7 @@ void TextView::updateVScrollZone()
 {
     verticalScrollBar()->setPageStep(mMapper->visibleLineCount());
     verticalScrollBar()->setMaximum(qAbs(mMapper->lineCount()) - mMapper->visibleLineCount());
+    verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));
     topLineMoved();
 }
 
