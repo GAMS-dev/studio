@@ -70,9 +70,8 @@ HelpWidget::HelpWidget(QWidget *parent) :
     bookmarkToolButton->setMenu(mBookmarkMenu);
 
     QMenu* helpMenu = new QMenu;
-    QString onlineStartPageUrl = getOnlineStartPageUrl().toString();
-    ui->actionOnlineHelp->setText("View This Page from "+onlineStartPageUrl);
-    ui->actionOnlineHelp->setStatusTip("View This Page from "+onlineStartPageUrl);
+    ui->actionOnlineHelp->setText("View This Page Online");
+    ui->actionOnlineHelp->setStatusTip("View This Page Online");
     ui->actionOnlineHelp->setCheckable(true);
     helpMenu->addAction(ui->actionOnlineHelp);
     helpMenu->addSeparator();
@@ -304,13 +303,16 @@ void HelpWidget::on_loadFinished(bool ok)
     ui->actionOnlineHelp->setChecked( false );
     if (ok) {
        if (ui->webEngineView->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
-           if (ui->webEngineView->url().path().contains( getCurrentReleaseVersion()) )
-               ui->actionOnlineHelp->setChecked( true );
-           else if (ui->webEngineView->url().path().contains("latest") && isCurrentReleaseTheLatestVersion())
-               ui->actionOnlineHelp->setChecked( true );
-           else
+           if (onlineStartPageUrl.isValid()) {
+               if (ui->webEngineView->url().path().contains( onlineStartPageUrl.path()))
+                   ui->actionOnlineHelp->setChecked( true );
+               else if (ui->webEngineView->url().path().contains("latest"))
+                   ui->actionOnlineHelp->setChecked( true );
+               else
+                   ui->actionOnlineHelp->setEnabled( false );
+           } else {
                ui->actionOnlineHelp->setEnabled( false );
-
+           }
        } else {
            if (ui->webEngineView->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
                ui->actionOnlineHelp->setEnabled( false );
@@ -366,7 +368,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 {
    QUrl url = ui->webEngineView->url();
    QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
-   QUrl onlineStartPageUrl = getOnlineStartPageUrl();
+   onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
         QString urlStr = url.toDisplayString();
         urlStr.replace( urlStr.indexOf("file://"), 7, "");
@@ -375,18 +377,27 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                         onlineStartPageUrl.toDisplayString() );
         url = QUrl(urlStr);
     } else {
-        if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
-            QString urlStr = url.toDisplayString();
-            urlStr.replace( urlStr.indexOf( onlineStartPageUrl.toDisplayString() ),
-                            onlineStartPageUrl.toDisplayString().size(),
-                            baseLocation);
-            url.setUrl(urlStr);
-            url.setScheme("file");
-        } else {
-            QString htmlText;
-            getErrorHTMLText( htmlText, getStartPageUrl() );
-            ui->webEngineView->setHtml( htmlText );
-        }
+       if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
+           if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
+               QString urlStr = url.toDisplayString();
+               int docsidx = HelpData::getURLIndexFrom(urlStr);
+               if (docsidx > -1) {
+                   urlStr.replace( 0, docsidx, baseLocation );
+                   url.setUrl(urlStr);
+                   url.setScheme("file");
+                   qDebug() << url.toString();
+               }  else {
+                   ui->webEngineView->load( getStartPageUrl() );
+               }
+           } else {
+               QString htmlText;
+               getErrorHTMLText( htmlText, getStartPageUrl() );
+               ui->webEngineView->setHtml( htmlText );
+           }
+
+       }  else {
+           ui->webEngineView->load( getStartPageUrl() );
+       }
     }
     ui->actionOnlineHelp->setChecked( checked );
     ui->webEngineView->load( url );
