@@ -302,9 +302,10 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
             ParenthesesMatch pm = matchParentheses();
             QTextCursor::MoveMode mm = (e == Hotkey::SelectParentheses) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            if (pm.inOutMatch >= 0) {
+            if (pm.match >= 0) {
                 QTextCursor cur = textCursor();
-                cur.setPosition(pm.inOutMatch, mm);
+                cur.movePosition(QTextCursor::Left);
+                cur.setPosition(pm.match+1, mm);
                 setTextCursor(cur);
             }
         } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
@@ -1100,8 +1101,8 @@ ParenthesesMatch CodeEdit::matchParentheses()
     int start = -1;
     for (int i = parList.count()-1; i >= 0; --i) {
         if (parList.at(i).relPos == pos || parList.at(i).relPos == pos-1) {
-            start = i;
-            break;
+//            if (start < 0 || i < start) // prefer left-side parenthesis
+                start = i;
         }
     }
     if (start < 0) return ParenthesesMatch();
@@ -1109,7 +1110,6 @@ ParenthesesMatch CodeEdit::matchParentheses()
     int ci = parentheses.indexOf(parList.at(start).character);
     bool back = ci >= pSplit;
     ci = ci % pSplit;
-    bool inPar = back ^ (parList.at(start).relPos != pos);
     ParenthesesMatch result(block.position() + parList.at(start).relPos);
     QStringRef parEnter = parentheses.midRef(back ? pSplit : 0, pSplit);
     QStringRef parLeave = parentheses.midRef(back ? 0 : pSplit, pSplit);
@@ -1141,14 +1141,12 @@ ParenthesesMatch CodeEdit::matchParentheses()
                     if (parentheses.at(ci) == 'E') return ParenthesesMatch(); // only mark embedded on mismatch
                     result.valid = true;
                     result.match = block.position() + parList.at(pi).relPos;
-                    result.inOutMatch = result.match + (inPar^back ? 0 : 1);
                     return result;
                 }
             } else {
                 // Mark bad parentheses
                 parStack.clear();
                 result.match = block.position() + parList.at(pi).relPos;
-                result.inOutMatch = result.match + (inPar^back ? 0 : 1);
                 return result;
             }
         } else {
