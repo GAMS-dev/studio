@@ -301,10 +301,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     } else {
         if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
             ParenthesesMatch pm = matchParentheses();
-            QTextCursor::MoveMode mm = (e == Hotkey::SelectParentheses) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            bool sel = (e == Hotkey::SelectParentheses);
+            QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
             if (pm.match >= 0) {
                 QTextCursor cur = textCursor();
-                cur.movePosition(QTextCursor::Left);
+                if (sel) cur.clearSelection();
+                if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
                 cur.setPosition(pm.match+1, mm);
                 setTextCursor(cur);
             }
@@ -1101,8 +1103,7 @@ ParenthesesMatch CodeEdit::matchParentheses()
     int start = -1;
     for (int i = parList.count()-1; i >= 0; --i) {
         if (parList.at(i).relPos == pos || parList.at(i).relPos == pos-1) {
-//            if (start < 0 || i < start) // prefer left-side parenthesis
-                start = i;
+            start = i;
         }
     }
     if (start < 0) return ParenthesesMatch();
