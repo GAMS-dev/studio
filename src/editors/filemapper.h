@@ -69,7 +69,8 @@ private:
     void stopPeeking();
 
 private:
-    mutable QFile mFile;        // mutable to provide consistant logical const-correctness
+    mutable QFile mFile;                // mutable to provide consistant logical const-correctness
+    mutable QVector<Chunk*> mChunkCache;
     mutable QMutex mMutex;
     mutable QTimer mTimer;
 

@@ -70,11 +70,9 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 
 MemoryMapper::~MemoryMapper()
 {
-    while (!mChunks.isEmpty()) {
-        Chunk *chunk = mChunks.takeLast();
-        chunkUncached(chunk);
-        delete chunk;
-    }
+    while (!mChunks.isEmpty())
+        removeChunk(mChunks.last()->nr);
+
     setLogParser(nullptr);
 }
 
@@ -157,28 +155,32 @@ void MemoryMapper::shrinkLog(qint64 minBytes)
 
     // remove some lines at the start of the second active chunk
     chunk = mChunks[chunk->nr+1];
-    int linesToRemove = (chunk->lineBytes.size() > 4 ? 4 : chunk->lineCount());
+    int linesToRemove = 1;
+    while (minBytes > chunk->lineBytes.at(linesToRemove)) {
+        ++linesToRemove;
+        if (linesToRemove > chunk->lineCount()) break;
+    }
     invalidateSize();
     chunk->lineBytes.remove(0, linesToRemove);
     mShrinkLineCount += linesToRemove;
 
     // remove chunk if it is empty
     if (!chunk->size()) {
-        mChunks.removeAt(chunk->nr);
-        --mUnits.last().chunkCount;
-        for (int i = chunk->nr; i < mChunks.size(); ++i)
-            mChunks.at(i)->nr = i;
+//        mChunks.removeAt(chunk->nr);
+//        --mUnits.last().chunkCount;
+//        for (int i = chunk->nr; i < mChunks.size(); ++i)
+//            mChunks.at(i)->nr = i;
         Chunk *delChunk = chunk;
-        chunk = (mChunks.size() > chunk->nr) ? mChunks.at(chunk->nr) : nullptr;
-        chunkUncached(delChunk);
-        delete delChunk;
-        updateChunkMetrics(chunk, true);
+        chunk = (mChunks.size() > chunk->nr+1) ? mChunks.at(chunk->nr+1) : nullptr;
+        removeChunk(delChunk->nr);
+        if (chunk)
+            updateChunkMetrics(chunk, true);
     }
 
     // update internal data to new sizes
     while (chunk) {
         updateChunkMetrics(chunk);
-        chunk = mChunks.size() > chunk->nr+1 ? mChunks[chunk->nr+1] : nullptr;
+        chunk = (mChunks.size() > chunk->nr+1) ? mChunks.at(chunk->nr+1) : nullptr;
     }
     recalcLineCount();
 }
@@ -539,10 +541,12 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 if (len) {
                     midData.setRawData(data.data()+start, uint(len));
                     cleaned = ensureSpace(midData.size()+1);
+                    chunk = mChunks.last();
                     appendLineData(midData, chunk);
                 }
                 start = i + 1;
                 cleaned = ensureSpace(1);
+                chunk = mChunks.last();
                 appendEmptyLine();
             } else {
                 // concealing standalone CR - "\r"
@@ -559,10 +563,12 @@ void MemoryMapper::addProcessData(const QByteArray &data)
             if (len) {
                 midData.setRawData(data.data()+start, uint(len));
                 cleaned = ensureSpace(midData.size()+1);
+                chunk = mChunks.last();
                 appendLineData(midData, chunk);
             }
             start = i + 1;
             cleaned = ensureSpace(1);
+            chunk = mChunks.last();
             appendEmptyLine();
         }
     }
@@ -571,6 +577,7 @@ void MemoryMapper::addProcessData(const QByteArray &data)
         if (len) {
             midData.setRawData(data.data()+start, uint(len));
             cleaned = ensureSpace(midData.size()+1);
+            chunk = mChunks.last();
             appendLineData(midData, chunk);
             mLastLineIsOpen = true;
         }
@@ -583,15 +590,12 @@ void MemoryMapper::addProcessData(const QByteArray &data)
 
 void MemoryMapper::reset()
 {
-    AbstractTextMapper::reset();
-    for (Chunk *chunk: mChunks) {
-        chunkUncached(chunk);
-        delete chunk;
-    }
-    mChunks.clear();
+    while (!mChunks.isEmpty())
+        removeChunk(mChunks.last()->nr);
     mUnits.clear();
     invalidateSize();
     mLineCount = 0;
+    AbstractTextMapper::reset();
     addChunk(true);
     emit blockCountChanged();
     emit updateView();
@@ -727,9 +731,32 @@ int MemoryMapper::chunkCount() const
     return mChunks.size();
 }
 
+void MemoryMapper::internalRemoveChunk(int chunkNr)
+{
+    Chunk *chunk = mChunks.takeAt(chunkNr);
+    int delIndex = -1;
+    for (int i = 0; i < mUnits.size() ; ++i) {
+        Unit &u = mUnits[i];
+        if (u.firstChunk->nr <= chunkNr && u.firstChunk->nr+u.chunkCount > chunkNr) {
+            if (u.chunkCount == 1)
+                delIndex = i;
+            else {
+                if (u.firstChunk->nr == chunkNr)
+                    u.firstChunk = getChunk(chunkNr+1);
+                --u.chunkCount;
+            }
+        }
+    }
+    if (delIndex >= 0)
+        mUnits.remove(delIndex);
+    delete chunk;
+}
+
 AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const
 {
-    return mChunks.at(chunkNr);
+    if (chunkNr >= 0 && mChunks.size() > chunkNr)
+        return mChunks.at(chunkNr);
+    return nullptr;
 }
 
 MemoryMapper::LineRef MemoryMapper::nextRef(const MemoryMapper::LineRef &ref)

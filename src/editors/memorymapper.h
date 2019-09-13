@@ -77,6 +77,7 @@ public slots:
 protected:
     Chunk *getChunk(int chunkNr) const override;
     int chunkCount() const override;
+    void internalRemoveChunk(int chunkNr) override;
 
 private slots:
     void runFinished();

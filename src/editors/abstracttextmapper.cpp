@@ -145,7 +145,7 @@ void AbstractTextMapper::reset()
     }
     mLastChunkWithLineNr = -1;
     mBytesPerLine = 20.0;
-    mChunkLineNrs.clear();
+//    mChunkLineNrs.clear();
     mChunkLineNrs.squeeze();
     mDelimiter.clear();
 }
@@ -231,7 +231,7 @@ void AbstractTextMapper::updateLineOffsets(Chunk *chunk) const
 bool AbstractTextMapper::setMappingSizes(int visibleLines, int chunkSizeInBytes, int chunkOverlap)
 {
     // check constraints
-    mVisibleLineCount = qBound(20, visibleLines, 100);
+    mVisibleLineCount = qBound(1, visibleLines, 100);
     mMaxLineWidth = qBound(100, chunkOverlap, 10000);
     mChunkSize = qMax(chunkOverlap *8, chunkSizeInBytes);
     updateMaxTop();
@@ -240,7 +240,7 @@ bool AbstractTextMapper::setMappingSizes(int visibleLines, int chunkSizeInBytes,
 
 void AbstractTextMapper::setVisibleLineCount(int visibleLines)
 {
-    mVisibleLineCount = qMax(visibleLines, 20);
+    mVisibleLineCount = qMax(1, visibleLines);
     updateMaxTop();
 }
 
@@ -502,6 +502,7 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
         int startLine = part==2 ? refPos->localLine : 0;
         int lineCount = part==1 ? refPos->localLine+1 : -1;
         Chunk *chunk = getChunk(mFindChunk);
+        if (!chunk) return false;
         QString textBlock = lines(chunk, startLine, lineCount);
         QStringRef partRef(&textBlock);
         int ind = backwards ? -1 : 0;
@@ -735,35 +736,73 @@ void AbstractTextMapper::emitBlockCountChanged()
     emit blockCountChanged();
 }
 
-void AbstractTextMapper::shiftChunksUp()
+void AbstractTextMapper::removeChunk(int chunkNr)
 {
-
-    if (mTopLine.chunkNr > 0) {
-        --mTopLine.chunkNr;
-    } else {
-
+    Chunk *chunk = getChunk(mTopLine.chunkNr);
+    CursorPosition topLine;
+    if (chunk) {
+        topLine = mPosition;
+        setPosAbsolute(chunk, mMaxTopLine.localLine, 0, QTextCursor::KeepAnchor);
+        qSwap(topLine, mPosition);
     }
 
-    if (mPosition.chunkNr > 0) {
-        --mPosition.chunkNr;
-    } else if (mPosition.chunkNr == 0) {
-        Chunk *chunk = getChunk(0);
-        mPosition.localLine = 0;
-        mPosition.localLinePos = 0;
-        mPosition.lineLen = chunk->lineBytes.at(1) - mPosition.localLinePos - mDelimiter.size();
-        mPosition.absLinePos = chunk->bStart + mPosition.localLinePos;
-        mPosition.charNr = 0;
+    if (mFindChunk>chunkNr) --mFindChunk;
+
+    // ensure chunk isn't cached anymore
+    chunk = getChunk(chunkNr);
+    if (chunk) uncacheChunk(chunk);
+
+    // move stored ChunkLines data
+    const ChunkLines &clRem = mChunkLineNrs.at(chunkNr);
+    for (int i = chunkNr+1; i < mChunkLineNrs.size(); ++i) {
+        ChunkLines &cl = mChunkLineNrs[i];
+        if (cl.linesStartPos) cl.linesStartPos -= clRem.linesByteSize;
+        if (cl.startLineNr) cl.startLineNr -= clRem.lineCount;
+        --cl.chunkNr;
     }
-    if (mAnchor.chunkNr > 0) {
-        --mAnchor.chunkNr;
-    } else if (mAnchor.chunkNr == 0) {
-        Chunk *chunk = getChunk(0);
-        mAnchor.localLine = 0;
-        mAnchor.localLinePos = 0;
-        mAnchor.lineLen = chunk->lineBytes.at(1) - mAnchor.localLinePos - mDelimiter.size();
-        mAnchor.absLinePos = chunk->bStart + mAnchor.localLinePos;
-        mAnchor.charNr = 0;
+    mChunkLineNrs.removeAt(chunkNr);
+
+    // shift position, anchor and topline if necessary
+    QVector<CursorPosition*> cps;
+    cps << &mPosition << &mAnchor << &topLine;
+    for (CursorPosition *cp: cps) {
+        if (cp->chunkNr > chunkNr) {
+            --cp->chunkNr;
+        } else if (cp->chunkNr == 0) {
+            Chunk *chunk = getChunk((chunkCount() < chunkNr+1) ? chunkNr+1 : chunkNr-1);
+            if (!chunk) {
+                *cp = CursorPosition();
+            } else {
+                cp->chunkNr = chunkNr;
+                if (chunk->nr > chunkNr) {
+                    cp->localLine = 0;
+                    cp->localLinePos = 0;
+                    cp->lineLen = chunk->lineBytes.at(1) - cp->localLinePos - mDelimiter.size();
+                    cp->absLinePos = chunk->bStart + cp->localLinePos;
+                    cp->charNr = 0;
+                } else {
+                    cp->localLine = chunk->lineCount()-1;
+                    cp->localLinePos = chunk->lineBytes.at(cp->localLine);
+                    cp->lineLen = chunk->lineBytes.at(cp->localLine+1) - cp->localLinePos - mDelimiter.size();
+                    cp->absLinePos = chunk->bStart + cp->localLinePos;
+                    cp->charNr = cp->lineLen;
+                }
+            }
+        }
     }
+
+    // FIRST: remove desired chunk
+    internalRemoveChunk(chunkNr);
+
+    // THEN: calc new maxTopLine
+    updateMaxTop();
+    if (mTopLine > mMaxTopLine)
+        mTopLine = mMaxTopLine;
+}
+
+void AbstractTextMapper::internalRemoveChunk(int chunkNr)
+{
+    Q_UNUSED(chunkNr)
 }
 
 void AbstractTextMapper::dumpPos()

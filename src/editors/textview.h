@@ -29,6 +29,7 @@
 #include <QStringBuilder>
 #include <QScrollBar>
 #include <QTimer>
+#include <QTime>
 
 namespace gams {
 namespace studio {
@@ -86,6 +87,7 @@ signals:
 public slots:
     void updateExtraSelections();
     void updateView();
+    void requestUpdateView();
 
 private slots:
     void outerScrollAction(int action);
@@ -133,6 +135,7 @@ private:
     AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
     bool *mStayAtTail = nullptr;
+    QTime mViewUpdateTime;
 
 private:
 

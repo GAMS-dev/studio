@@ -192,7 +192,8 @@ protected:
     void initTopLine();
     void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC
     void emitBlockCountChanged();
-    void shiftChunksUp();
+    void removeChunk(int chunkNr);
+    virtual void internalRemoveChunk(int chunkNr);
 
     void dumpPos();
 
@@ -216,9 +217,9 @@ private:
 
     LinePosition mTopLine;
     LinePosition mMaxTopLine;
-    int mVisibleLineCount = 0;
     CursorPosition mAnchor;
     CursorPosition mPosition;
+    int mVisibleLineCount = 0;
     int mFindChunk = 0;
 
     QTextCodec *mCodec = nullptr;
