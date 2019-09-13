@@ -37,6 +37,8 @@ AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 
 AbstractTextMapper::Chunk *AbstractTextMapper::setActiveChunk(int chunkNr) const
 {
+    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
+    //   AND -> replace setActiveChunk() by getChunk()
     int foundIndex = -1;
     for (int i = mChunkCache.size()-1; i >= 0; --i) {
         if (mChunkCache.at(i)->nr == chunkNr) {
@@ -61,11 +63,13 @@ AbstractTextMapper::Chunk *AbstractTextMapper::setActiveChunk(int chunkNr) const
 
 AbstractTextMapper::Chunk *AbstractTextMapper::activeChunk()
 {
+    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
     return mChunkCache.isEmpty() ? nullptr : mChunkCache.last();
 }
 
 void AbstractTextMapper::uncacheChunk(AbstractTextMapper::Chunk *&chunk)
 {
+    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
     if (chunk && mChunkCache.contains(chunk)) {
         mChunkCache.removeAll(chunk);
         chunkUncached(chunk);
@@ -94,7 +98,7 @@ bool AbstractTextMapper::isEmpty() const
 bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mVisibleLineCount
 {
     if (isEmpty()) return false;
-    Chunk *chunk = setActiveChunk(chunkCount()-1);
+    Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
 
     int remainingLines = debugMode() ? (visibleLineCount()-1)/2 : visibleLineCount();
@@ -111,7 +115,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
             mMaxTopLine.localLine = 0;
             break;
         }
-        chunk = setActiveChunk(chunk->nr -1);
+        chunk = getChunk(chunk->nr -1);
     }
     return true;
 }
@@ -119,7 +123,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
 qint64 AbstractTextMapper::lastTopAbsPos()
 {
     if (isEmpty()) return size();
-    Chunk *chunk = setActiveChunk(chunkCount()-1);
+    Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return size();
 
     qint64 lastPos = 0LL;
@@ -132,7 +136,7 @@ qint64 AbstractTextMapper::lastTopAbsPos()
         } else if (chunk->nr == 0) {
             break;
         }
-        chunk = setActiveChunk(chunk->nr -1);
+        chunk = getChunk(chunk->nr -1);
     }
     return lastPos;
 }
@@ -258,7 +262,7 @@ bool AbstractTextMapper::setTopOffset(qint64 absPos)
         --iChunk;
     while (iChunk < chunkCount()-1 && mChunkLineNrs.at(iChunk).linesEndPos() <= absPos)
         ++iChunk;
-    Chunk *chunk = (iChunk < 0) ? nullptr : setActiveChunk(iChunk);
+    Chunk *chunk = (iChunk < 0) ? nullptr : getChunk(iChunk);
     if (!chunk) return false;
 
     // adjust top line
@@ -289,7 +293,7 @@ bool AbstractTextMapper::setVisibleTopLine(double region)
         while (iChunk < chunkCount()-1 && mChunkLineNrs.at(iChunk).linesEndPos() <= absPos)
             ++iChunk;
     }
-    Chunk *chunk = (iChunk < 0) ? nullptr : setActiveChunk(iChunk);
+    Chunk *chunk = (iChunk < 0) ? nullptr : getChunk(iChunk);
     if (!chunk) return false;
 
     // get the chunk-local line number for the visibleTopLine
@@ -314,7 +318,7 @@ bool AbstractTextMapper::setVisibleTopLine(int lineNr)
         return false; // out of counted-lines region
     int chunkNr = findChunk(lineNr);
     if (chunkNr >= 0) {
-        Chunk* chunk = setActiveChunk(chunkNr);
+        Chunk* chunk = getChunk(chunkNr);
         if (!chunk) return false;
         int byte = chunk->lineBytes.at(lineNr - mChunkLineNrs.at(chunkNr).startLineNr);
         setTopOffset(chunk->bStart + byte);
@@ -328,7 +332,7 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
     if (!lineDelta) return 0;
     if (debugMode())
         lineDelta /= 2;
-    Chunk *chunk = setActiveChunk(mTopLine.chunkNr);
+    Chunk *chunk = getChunk(mTopLine.chunkNr);
     if (!chunk) return 0;
 
     while (lineDelta < 0) { // move up
@@ -339,7 +343,7 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
                 mTopLine.localLine = 0;
                 return 0;
             } else { // continue with previous chunk
-                chunk = setActiveChunk(chunk->nr - 1);
+                chunk = getChunk(chunk->nr - 1);
                 if (!chunk) return 0;
                 mTopLine.chunkNr = chunk->nr;
                 mTopLine.localLine = chunk->lineCount();
@@ -366,7 +370,7 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
             mTopLine.absStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
             return 0;
         } else if (chunk->nr < chunkCount()-1) { // switch to next chunk
-            chunk = setActiveChunk(chunk->nr + 1);
+            chunk = getChunk(chunk->nr + 1);
             if (!chunk) return 0;
             mTopLine.chunkNr = chunk->nr;
             mTopLine.localLine = 0;
@@ -386,7 +390,7 @@ void AbstractTextMapper::scrollToPosition()
 
 int AbstractTextMapper::visibleTopLine() const
 {
-    Chunk *chunk = setActiveChunk(mTopLine.chunkNr);
+    Chunk *chunk = getChunk(mTopLine.chunkNr);
     if (!chunk) return 0;
     const ChunkLines &topCL = mChunkLineNrs.at(chunk->nr);
     if (topCL.startLineNr < 0) {
@@ -553,7 +557,7 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
         --chunkNr;
         if (chunkNr < 0) return nullptr;
         if (mChunkLineNrs.at(chunkNr).lineCount <= 0)
-            if (!setActiveChunk(chunkNr)) return nullptr;
+            if (!getChunk(chunkNr)) return nullptr;
         chunkLineDelta += mChunkLineNrs.at(chunkNr).lineCount;
     }
     while (chunkLineDelta >= mChunkLineNrs.at(chunkNr).lineCount) {
@@ -561,15 +565,16 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
         ++chunkNr;
         if (chunkNr >= chunkCount()) return nullptr;
         if (chunkNr >= mChunkLineNrs.size() || mChunkLineNrs.at(chunkNr).lineCount <= 0) {
-            if (!setActiveChunk(chunkNr)) return nullptr;
+            if (!getChunk(chunkNr)) return nullptr;
         }
     }
     if (lineInChunk) *lineInChunk = chunkLineDelta;
-    return setActiveChunk(chunkNr);
+    return getChunk(chunkNr);
 }
 
 bool AbstractTextMapper::isCached(AbstractTextMapper::Chunk *chunk)
 {
+    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
     return mChunkCache.contains(chunk);
 }
 
@@ -592,7 +597,7 @@ QString AbstractTextMapper::selectedText() const
     CursorPosition pFrom = qMin(mAnchor, mPosition);
     CursorPosition pTo = qMax(mAnchor, mPosition);
     all.reserve(int(pTo.absLinePos - pFrom.absLinePos) + 2*pTo.charNr - pFrom.charNr);
-    Chunk *chunk = setActiveChunk(pFrom.chunkNr);
+    Chunk *chunk = getChunk(pFrom.chunkNr);
     while (chunk && chunk->nr <= pTo.chunkNr) {
         int from = chunk->lineBytes.at(0);
         if (chunk->nr == pFrom.chunkNr) {
@@ -611,7 +616,7 @@ QString AbstractTextMapper::selectedText() const
         all.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
         if (chunk->nr == chunkCount()-1) break;
 
-        chunk = setActiveChunk(chunk->nr + 1);
+        chunk = getChunk(chunk->nr + 1);
     }
     return mCodec ? mCodec->toUnicode(all) : all;
 }
@@ -749,8 +754,8 @@ void AbstractTextMapper::removeChunk(int chunkNr)
     if (mFindChunk>chunkNr) --mFindChunk;
 
     // ensure chunk isn't cached anymore
-    chunk = getChunk(chunkNr);
-    if (chunk) uncacheChunk(chunk);
+    chunk = getChunk(chunkNr, true);
+//    if (chunk) uncacheChunk(chunk);
 
     // move stored ChunkLines data
     const ChunkLines &clRem = mChunkLineNrs.at(chunkNr);
@@ -824,7 +829,7 @@ void AbstractTextMapper::selectAll()
     mAnchor.absLinePos = 0;
     mAnchor.charNr = 0;
     mAnchor.lineLen = 0; // wrong size but irrelevant in this special case
-    Chunk *chunk = setActiveChunk(chunkCount()-1);
+    Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || chunk->lineBytes.size() < 2) {
         mPosition = mAnchor;
         return;
@@ -917,6 +922,7 @@ int AbstractTextMapper::selectionSize() const
 
 void AbstractTextMapper::chunkUncached(Chunk *&chunk) const
 {
+    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
     Q_UNUSED(chunk)
     if (mChunkCache.contains(chunk))
         mChunkCache.removeAll(chunk);

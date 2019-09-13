@@ -177,7 +177,7 @@ protected:
     Chunk *setActiveChunk(int chunkNr) const;
     Chunk *activeChunk();
     void uncacheChunk(Chunk *&chunk);
-    virtual Chunk *getChunk(int chunkNr) const = 0;
+    virtual Chunk *getChunk(int chunkNr, bool noCaching = false) const = 0;
     void initDelimiter(Chunk *chunk) const;
     virtual bool updateMaxTop();
     qint64 lastTopAbsPos();

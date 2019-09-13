@@ -75,7 +75,7 @@ public slots:
     void addProcessData(const QByteArray &data);
 
 protected:
-    Chunk *getChunk(int chunkNr) const override;
+    Chunk *getChunk(int chunkNr, bool noCaching = false) const override;
     int chunkCount() const override;
     void internalRemoveChunk(int chunkNr) override;
 
