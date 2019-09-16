@@ -28,6 +28,8 @@
 namespace gams {
 namespace studio {
 
+static const int CMaxChunksInCache = 5;
+
 FileMapper::FileMapper(QObject *parent): AbstractTextMapper(parent)
 {
     mTimer.setInterval(200);
@@ -56,7 +58,7 @@ bool FileMapper::openFile(const QString &fileName, bool initAnchor)
         mSize = mFile.size();
         int chunkCount = int(mFile.size()/chunkSize())+1;
         initChunkCount(chunkCount);
-        Chunk *chunk = setActiveChunk(0);
+        Chunk *chunk = getChunk(0);
         if (chunk && chunk->isValid()) {
             emitBlockCountChanged();
             if (initAnchor) initTopLine();
@@ -79,15 +81,11 @@ bool FileMapper::reload()
 
 void FileMapper::closeAndReset()
 {
-    Chunk * chunk = activeChunk();
-    while (chunk) {
-        uncacheChunk(chunk);
-        chunk = activeChunk();
+    while (mChunkCache.size()) {
+        chunkUncached(mChunkCache.takeFirst());
     }
     closeFile();
-
-    // JM: Workaround for file kept locked (due to chunk maps)
-    mFile.setFileName(mFile.fileName());
+    mFile.setFileName(mFile.fileName()); // JM: Workaround for file kept locked (close wasn't enough)
 
     mSize = 0;
     reset();
@@ -95,8 +93,13 @@ void FileMapper::closeAndReset()
     stopPeeking();
 }
 
-FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
+FileMapper::Chunk* FileMapper::getChunk(int chunkNr, bool cache) const
 {
+    // if the is cached, return it directly
+    Chunk *res = getFromCache(chunkNr);
+    if (res) return res;
+
+    // determine start of the chunk
     qint64 chunkStart = qint64(chunkNr) * chunkSize();
     if (chunkStart < 0 || chunkStart >= size()) return nullptr;
 
@@ -118,7 +121,7 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
     if (!map) return nullptr;
 
     // mapping succeeded: initialise chunk
-    Chunk *res = new Chunk();
+    res = new Chunk();
     res->nr = chunkNr;
     res->bStart = cStart;
     int bSize = int(cEnd - cStart);
@@ -147,14 +150,19 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr) const
         res->lineBytes << (bSize + delimiter().size());
 
     updateLineOffsets(res);
+    if (cache) {
+        //
+        if (mChunkCache.size() == CMaxChunksInCache)
+            chunkUncached(mChunkCache.takeFirst());
+        mChunkCache << res;
+    }
     return res;
 }
 
-void FileMapper::chunkUncached(AbstractTextMapper::Chunk *&chunk) const
+void FileMapper::chunkUncached(AbstractTextMapper::Chunk *chunk) const
 {
     mFile.unmap(reinterpret_cast<uchar*>(chunk->bArray.data()));
     delete chunk;
-    chunk = nullptr;
 }
 
 void FileMapper::startRun()
@@ -176,6 +184,21 @@ void FileMapper::closeFile()
     }
 }
 
+AbstractTextMapper::Chunk *FileMapper::getFromCache(int chunkNr) const
+{
+    int foundIndex = -1;
+    for (int i = mChunkCache.size()-1; i >= 0; --i) {
+        if (mChunkCache.at(i)->nr == chunkNr) {
+            foundIndex = i;
+            break;
+        }
+    }
+    if (foundIndex < 0) return nullptr;
+    if (foundIndex < mChunkCache.size()-1)
+        mChunkCache.move(foundIndex, mChunkCache.size()-1);
+    return mChunkCache.last();
+}
+
 int FileMapper::lineCount() const
 {
     int res = 0;
@@ -193,9 +216,8 @@ void FileMapper::peekChunksForLineNrs()
     int known = lastChunkWithLineNr();
     Chunk *chunk = nullptr;
     for (int i = 1; i <= 4; ++i) {
-        chunk = getChunk(known + i);
+        chunk = getChunk(known + i, false);
         if (!chunk) break;
-        if (!isCached(chunk)) chunkUncached(chunk);
     }
     if (lastChunkWithLineNr() < this->chunkCount()-1) mPeekTimer.start(50);
 
@@ -207,6 +229,15 @@ void FileMapper::peekChunksForLineNrs()
         emitBlockCountChanged();
         emit selectionChanged();
     }
+}
+
+void FileMapper::reset()
+{
+    while (!mChunkCache.isEmpty()) {
+        Chunk* chunk = mChunkCache.takeLast();
+        chunkUncached(chunk);
+    }
+    AbstractTextMapper::reset();
 }
 
 void FileMapper::stopPeeking()

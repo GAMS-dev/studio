@@ -36,8 +36,8 @@ namespace studio {
 
 ///
 /// class FileMapper
-/// Opens a file into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
-/// model on the fly.
+/// Opens a file into (equal sized) chunks of QByteArrays that are loaded on request. Uses indexes to build the lines
+/// for the model on the fly.
 ///
 class FileMapper: public AbstractTextMapper
 {
@@ -46,6 +46,7 @@ public:
     FileMapper(QObject *parent = nullptr);
     ~FileMapper() override;
     AbstractTextMapper::Kind kind() override { return AbstractTextMapper::fileMapper; }
+    int chunkCount() const override { return int(qMax(0LL,size()-1)/chunkSize()) + 1; }
 
     bool openFile(const QString &fileName, bool initAnchor);
     qint64 size() const override { return mSize; }
@@ -55,16 +56,18 @@ public:
 
 public slots:
     void peekChunksForLineNrs();
+    virtual void reset() override;
 
 protected:
-    Chunk *getChunk(int chunkNr) const override;
-    void chunkUncached(Chunk *&chunk) const override;
+    Chunk *getChunk(int chunkNr, bool cache = true) const override;
 
 private slots:
     void closeAndReset();
     void closeFile();                                           //2FF
 
 private:
+    Chunk *getFromCache(int chunkNr) const;
+    void chunkUncached(Chunk *chunk) const;
     bool reload();
     void stopPeeking();
 

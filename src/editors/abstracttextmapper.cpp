@@ -35,50 +35,8 @@ AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
     setPosAbsolute(nullptr, 0, 0);
 }
 
-AbstractTextMapper::Chunk *AbstractTextMapper::setActiveChunk(int chunkNr) const
-{
-    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
-    //   AND -> replace setActiveChunk() by getChunk()
-    int foundIndex = -1;
-    for (int i = mChunkCache.size()-1; i >= 0; --i) {
-        if (mChunkCache.at(i)->nr == chunkNr) {
-            foundIndex = i;
-            break;
-        }
-    }
-    if (foundIndex < 0) {
-        if (mChunkCache.size() == maxChunksInCache()) {
-            Chunk * delChunk = mChunkCache.takeFirst();
-            chunkUncached(delChunk);
-        }
-        Chunk *newChunk = getChunk(chunkNr);
-        if (!newChunk) return nullptr;
-        mChunkCache << newChunk;
-
-    } else if (foundIndex < mChunkCache.size()-1) {
-        mChunkCache.move(foundIndex, mChunkCache.size()-1);
-    }
-    return mChunkCache.last();
-}
-
-AbstractTextMapper::Chunk *AbstractTextMapper::activeChunk()
-{
-    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
-    return mChunkCache.isEmpty() ? nullptr : mChunkCache.last();
-}
-
-void AbstractTextMapper::uncacheChunk(AbstractTextMapper::Chunk *&chunk)
-{
-    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
-    if (chunk && mChunkCache.contains(chunk)) {
-        mChunkCache.removeAll(chunk);
-        chunkUncached(chunk);
-    }
-}
-
 AbstractTextMapper::~AbstractTextMapper()
-{
-}
+{}
 
 QTextCodec *AbstractTextMapper::codec() const
 {
@@ -143,13 +101,8 @@ qint64 AbstractTextMapper::lastTopAbsPos()
 
 void AbstractTextMapper::reset()
 {
-    while (!mChunkCache.isEmpty()) {
-        Chunk* chunk = mChunkCache.takeLast();
-        chunkUncached(chunk);
-    }
     mLastChunkWithLineNr = -1;
     mBytesPerLine = 20.0;
-//    mChunkLineNrs.clear();
     mChunkLineNrs.squeeze();
     mDelimiter.clear();
 }
@@ -257,12 +210,12 @@ bool AbstractTextMapper::setTopOffset(qint64 absPos)
 {
     // find chunk index
     absPos = qBound(0LL, absPos, size()-1);
-    int iChunk = mChunkCache.isEmpty() ? 0 : mChunkCache.last()->nr;
-    while (iChunk > 0 && mChunkLineNrs.at(iChunk).linesStartPos > absPos)
-        --iChunk;
-    while (iChunk < chunkCount()-1 && mChunkLineNrs.at(iChunk).linesEndPos() <= absPos)
-        ++iChunk;
-    Chunk *chunk = (iChunk < 0) ? nullptr : getChunk(iChunk);
+    if (mCurrentChunkNr < 0) mCurrentChunkNr = 0;
+    while (mCurrentChunkNr > 0 && mChunkLineNrs.at(mCurrentChunkNr).linesStartPos > absPos)
+        --mCurrentChunkNr;
+    while (mCurrentChunkNr < chunkCount()-1 && mChunkLineNrs.at(mCurrentChunkNr).linesEndPos() <= absPos)
+        ++mCurrentChunkNr;
+    Chunk *chunk = getChunk(mCurrentChunkNr);
     if (!chunk) return false;
 
     // adjust top line
@@ -425,7 +378,7 @@ int AbstractTextMapper::knownLineNrs() const
 QByteArray AbstractTextMapper::rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const
 {
     QByteArray res;
-    if (mChunkCache.isEmpty()) return res;
+    if (!size()) return res;
     QPair<int,int> interval = QPair<int,int>(localLineNrFrom, lineCount); // <start, size>
     res.clear();
     borderLine = 0;
@@ -457,7 +410,7 @@ QByteArray AbstractTextMapper::rawLines(int localLineNrFrom, int lineCount, int 
 QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
 {
     QString res;
-    if (mChunkCache.isEmpty()) return QString();
+    if (!size()) return QString();
     QPair<int,int> interval = QPair<int,int>(localLineNrFrom, lineCount); // <start, size>
     while (interval.second) {
         QPair<int,int> chunkInterval;
@@ -505,7 +458,7 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
     while (continueFind) {
         int startLine = part==2 ? refPos->localLine : 0;
         int lineCount = part==1 ? refPos->localLine+1 : -1;
-        Chunk *chunk = getChunk(mFindChunk);
+        Chunk *chunk = getChunk(mFindChunk, false);
         if (!chunk) return false;
         QString textBlock = lines(chunk, startLine, lineCount);
         QStringRef partRef(&textBlock);
@@ -528,10 +481,8 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
             setPosAbsolute(chunk, line+startLine, charNr);
             setPosAbsolute(chunk, line+startLine, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
             continueFind = false;
-            if (!isCached(chunk)) chunkUncached(chunk);
             return true;
         }
-        if (!isCached(chunk)) chunkUncached(chunk);
 
         if (refPos->chunkNr == mFindChunk && backwards == (part==2)) {
             // reached start-chunk again - nothing found
@@ -572,12 +523,6 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
     return getChunk(chunkNr);
 }
 
-bool AbstractTextMapper::isCached(AbstractTextMapper::Chunk *chunk)
-{
-    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
-    return mChunkCache.contains(chunk);
-}
-
 void AbstractTextMapper::updateBytesPerLine(const ChunkLines &chunkLines) const
 {
     int absKnownLines = chunkLines.lineCount;
@@ -591,7 +536,7 @@ void AbstractTextMapper::updateBytesPerLine(const ChunkLines &chunkLines) const
 
 QString AbstractTextMapper::selectedText() const
 {
-    if (mChunkCache.isEmpty()) return QString();
+    if (size()) return QString();
     if (mPosition.chunkNr < 0 || mAnchor.chunkNr < 0 || mPosition == mAnchor) return QString();
     QByteArray all;
     CursorPosition pFrom = qMin(mAnchor, mPosition);
@@ -634,8 +579,7 @@ QString AbstractTextMapper::line(AbstractTextMapper::Chunk *chunk, int chunkLine
 {
     QByteArray raw;
     raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(chunkLineNr),
-                   uint(mChunkCache.last()->lineBytes.at(chunkLineNr+1)
-                        - mChunkCache.last()->lineBytes.at(chunkLineNr) - mDelimiter.size()));
+                   uint(chunk->lineBytes.at(chunkLineNr+1) - chunk->lineBytes.at(chunkLineNr) - mDelimiter.size()));
     return mCodec ? mCodec->toUnicode(raw) : QString(raw);
 }
 
@@ -646,9 +590,8 @@ int AbstractTextMapper::lastChunkWithLineNr() const
 
 void AbstractTextMapper::initTopLine()
 {
-    if (mChunkCache.size()) {
-//        mTopLine.lineCount = mChunkCache.last()->lineCount();
-        mTopLine.localLine = 0;
+    if (size()) {
+        mTopLine = LinePosition();
     }
 }
 
@@ -919,15 +862,6 @@ int AbstractTextMapper::selectionSize() const
     if (selSize >= std::numeric_limits<int>::max() / 20) return -1;
     return int(selSize);
 }
-
-void AbstractTextMapper::chunkUncached(Chunk *&chunk) const
-{
-    // TODO(JM) [Move Chunk-Cache to FileMapper] -> move this method to FileMapper
-    Q_UNUSED(chunk)
-    if (mChunkCache.contains(chunk))
-        mChunkCache.removeAll(chunk);
-}
-
 
 void AbstractTextMapper::initDelimiter(Chunk *chunk) const
 {

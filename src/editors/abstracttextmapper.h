@@ -172,19 +172,14 @@ signals:
 protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
-    virtual int chunkCount() const { return int(qMax(0LL,size()-1)/mChunkSize) + 1; }
+    virtual int chunkCount() const = 0;
     QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
-    Chunk *setActiveChunk(int chunkNr) const;
-    Chunk *activeChunk();
-    void uncacheChunk(Chunk *&chunk);
-    virtual Chunk *getChunk(int chunkNr, bool noCaching = false) const = 0;
+    virtual Chunk *getChunk(int chunkNr, bool cache = true) const = 0;
     void initDelimiter(Chunk *chunk) const;
     virtual bool updateMaxTop();
     qint64 lastTopAbsPos();
-    virtual void chunkUncached(Chunk *&chunk) const;
     void invalidateLineOffsets(Chunk *chunk, bool cutRemain = false) const;
     void updateLineOffsets(Chunk *chunk) const;
-    bool isCached(Chunk *chunk);
     int chunkSize() const;
     int maxLineWidth() const;
     void initChunkCount(int count) const;
@@ -210,7 +205,6 @@ private:
 
 private:
     mutable QByteArray mDelimiter;
-    mutable QVector<Chunk*> mChunkCache;
     mutable QVector<ChunkLines> mChunkLineNrs;
     mutable int mLastChunkWithLineNr = -1;
     mutable double mBytesPerLine = 20.0;
@@ -221,6 +215,7 @@ private:
     CursorPosition mPosition;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
+    int mCurrentChunkNr = 0;
 
     QTextCodec *mCodec = nullptr;
     int mMaxChunksInCache = 5;

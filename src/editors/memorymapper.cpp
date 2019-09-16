@@ -752,8 +752,9 @@ void MemoryMapper::internalRemoveChunk(int chunkNr)
     delete chunk;
 }
 
-AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr) const
+AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr, bool cache) const
 {
+    Q_UNUSED(cache)
     if (chunkNr >= 0 && mChunks.size() > chunkNr)
         return mChunks.at(chunkNr);
     return nullptr;
