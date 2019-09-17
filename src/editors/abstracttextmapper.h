@@ -64,6 +64,9 @@ class AbstractTextMapper: public QObject
     Q_OBJECT
 
 private:
+    /// class LinePosition
+    /// Data of a line start
+    ///
     struct LinePosition {
         bool operator == (const LinePosition &other) const {
             return chunkNr == other.chunkNr && localLine == other.localLine;
@@ -72,26 +75,32 @@ private:
             return chunkNr > other.chunkNr || (chunkNr == other.chunkNr && localLine > other.localLine);
         }
         int chunkNr = 0;
-        qint64 absStart = 0;
+        qint64 absLineStart = 0;
         int localLine = 0;
     };
 
+    /// class CursorPosition
+    /// Caches necessary data of a position in the text to avoid reloading the chunk
+    ///
     struct CursorPosition {
         bool operator ==(const CursorPosition &other) const {
-            return chunkNr == other.chunkNr && absLinePos == other.absLinePos && charNr == other.charNr; }
+            return chunkNr == other.chunkNr && absLineStart == other.absLineStart && charNr == other.charNr; }
         bool operator <(const CursorPosition &other) const {
-            return absLinePos + charNr < other.absLinePos + other.charNr; }
+            return absLineStart + charNr < other.absLineStart + other.charNr; }
         int effectiveCharNr() const { return qMin(charNr, lineLen); }
         int chunkNr = -1;
-        qint64 absLinePos = -1;
+        qint64 absLineStart = -1;
         int charNr = -1;
         int localLine = -1;
-        int localLinePos = -1;
+        int localLineStart = -1;
         int lineLen = -1;
     };
 
-    struct ChunkLines {
-        ChunkLines(int nr = 0, int lines = -1, int lineOffset = -1)
+    /// class ChunkMetrics
+    /// Stores necessary size and line count of a chunk to avoid reloading the chunk
+    ///
+    struct ChunkMetrics {
+        ChunkMetrics(int nr = 0, int lines = -1, int lineOffset = -1)
             : chunkNr(nr), lineCount(lines), startLineNr(lineOffset) {}
         inline bool isKnown() const { return lineCount >= 0; }
         inline bool hasLineNrs() const { return lineCount >= 0 && startLineNr >= 0; }
@@ -104,6 +113,9 @@ private:
     };
 
 protected:
+    /// class Chunk
+    /// Stores content, global position, and all starts of lines of a part of the text
+    ///
     struct Chunk {  // a mapped part of a file OR a standalone part of memory
         int nr = -1;
         qint64 bStart = -1;
@@ -161,6 +173,7 @@ public:
     bool debugMode() const { return mDebugMode; }
     bool atTail();
 
+
 public slots:
     virtual void reset();
 
@@ -173,6 +186,7 @@ protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
     virtual int chunkCount() const = 0;
+    ChunkMetrics* chunkMetrics(int chunkNr) const;
     QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
     virtual Chunk *getChunk(int chunkNr, bool cache = true) const = 0;
     void initDelimiter(Chunk *chunk) const;
@@ -196,7 +210,7 @@ private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;
     QString line(Chunk *chunk, int chunkLineNr) const;
     bool setTopOffset(qint64 absPos);
-    void updateBytesPerLine(const ChunkLines &chunkLines) const;
+    void updateBytesPerLine(const ChunkMetrics &chunkMetrics) const;
     int maxChunksInCache() const;
     int findChunk(int lineNr);
     Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
@@ -205,7 +219,7 @@ private:
 
 private:
     mutable QByteArray mDelimiter;
-    mutable QVector<ChunkLines> mChunkLineNrs;
+    mutable QVector<ChunkMetrics> mChunkMetrics;
     mutable int mLastChunkWithLineNr = -1;
     mutable double mBytesPerLine = 20.0;
 
@@ -215,7 +229,6 @@ private:
     CursorPosition mPosition;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
-    int mCurrentChunkNr = 0;
 
     QTextCodec *mCodec = nullptr;
     int mMaxChunksInCache = 5;

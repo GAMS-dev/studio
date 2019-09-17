@@ -151,7 +151,6 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr, bool cache) const
 
     updateLineOffsets(res);
     if (cache) {
-        //
         if (mChunkCache.size() == CMaxChunksInCache)
             chunkUncached(mChunkCache.takeFirst());
         mChunkCache << res;

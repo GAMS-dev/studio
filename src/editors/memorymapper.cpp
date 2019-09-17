@@ -166,10 +166,6 @@ void MemoryMapper::shrinkLog(qint64 minBytes)
 
     // remove chunk if it is empty
     if (!chunk->size()) {
-//        mChunks.removeAt(chunk->nr);
-//        --mUnits.last().chunkCount;
-//        for (int i = chunk->nr; i < mChunks.size(); ++i)
-//            mChunks.at(i)->nr = i;
         Chunk *delChunk = chunk;
         chunk = (mChunks.size() > chunk->nr+1) ? mChunks.at(chunk->nr+1) : nullptr;
         removeChunk(delChunk->nr);
@@ -710,9 +706,9 @@ void MemoryMapper::dump()
 //        sum += chunk->size();
 //        ++iCh;
 //    }
-    for (const Unit &u : mUnits) {
-        DEB() << "  UNIT: from " << u.firstChunk->nr << "+" << u.chunkCount-1 << "  size1: " << u.firstChunk->size();
-    }
+//    for (const Unit &u : mUnits) {
+//        DEB() << "  UNIT: from " << u.firstChunk->nr << "+" << u.chunkCount-1 << "  size1: " << u.firstChunk->size();
+//    }
     dumpPos();
 }
 
