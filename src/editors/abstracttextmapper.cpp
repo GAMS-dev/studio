@@ -673,9 +673,9 @@ void AbstractTextMapper::setPosAbsolute(AbstractTextMapper::Chunk *chunk, int li
     // requesting the line moved the chunk to the top, so we can use the last chunk here
     mPosition.chunkNr = chunk->nr;
     mPosition.localLine = lineInChunk;
-    mPosition.localLinePos = chunk->lineBytes.at(lineInChunk);
-    mPosition.lineLen = chunk->lineBytes.at(lineInChunk+1) - mPosition.localLinePos - mDelimiter.size();
-    mPosition.absLineStart = chunk->bStart + mPosition.localLinePos;
+    mPosition.localLineStart = chunk->lineBytes.at(lineInChunk);
+    mPosition.lineLen = chunk->lineBytes.at(lineInChunk+1) - mPosition.localLineStart - mDelimiter.size();
+    mPosition.absLineStart = chunk->bStart + mPosition.localLineStart;
     mPosition.charNr = charNr;
     if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
 }
@@ -726,15 +726,15 @@ void AbstractTextMapper::removeChunk(int chunkNr)
                 cp->chunkNr = chunkNr;
                 if (chunk->nr > chunkNr) {
                     cp->localLine = 0;
-                    cp->localLinePos = 0;
-                    cp->lineLen = chunk->lineBytes.at(1) - cp->localLinePos - mDelimiter.size();
-                    cp->absLineStart = chunk->bStart + cp->localLinePos;
+                    cp->localLineStart = 0;
+                    cp->lineLen = chunk->lineBytes.at(1) - cp->localLineStart - mDelimiter.size();
+                    cp->absLineStart = chunk->bStart + cp->localLineStart;
                     cp->charNr = 0;
                 } else {
                     cp->localLine = chunk->lineCount()-1;
-                    cp->localLinePos = chunk->lineBytes.at(cp->localLine);
-                    cp->lineLen = chunk->lineBytes.at(cp->localLine+1) - cp->localLinePos - mDelimiter.size();
-                    cp->absLineStart = chunk->bStart + cp->localLinePos;
+                    cp->localLineStart = chunk->lineBytes.at(cp->localLine);
+                    cp->lineLen = chunk->lineBytes.at(cp->localLine+1) - cp->localLineStart - mDelimiter.size();
+                    cp->absLineStart = chunk->bStart + cp->localLineStart;
                     cp->charNr = cp->lineLen;
                 }
             }
@@ -780,7 +780,7 @@ AbstractTextMapper::ChunkMetrics *AbstractTextMapper::chunkMetrics(int chunkNr) 
 void AbstractTextMapper::selectAll()
 {
     mAnchor.chunkNr = 0;
-    mAnchor.localLinePos = 0;
+    mAnchor.localLineStart = 0;
     mAnchor.localLine = 0;
     mAnchor.absLineStart = 0;
     mAnchor.charNr = 0;
@@ -792,9 +792,9 @@ void AbstractTextMapper::selectAll()
     }
     mPosition.chunkNr = chunk->nr;
     mPosition.localLine = chunk->lineBytes.size()-2;
-    mPosition.localLinePos = chunk->lineBytes.at(mPosition.localLine);
-    mPosition.lineLen = chunk->lineBytes.at(mPosition.localLine+1) - mPosition.localLinePos - mDelimiter.size();
-    mPosition.absLineStart = chunk->bStart + mPosition.localLinePos;
+    mPosition.localLineStart = chunk->lineBytes.at(mPosition.localLine);
+    mPosition.lineLen = chunk->lineBytes.at(mPosition.localLine+1) - mPosition.localLineStart - mDelimiter.size();
+    mPosition.absLineStart = chunk->bStart + mPosition.localLineStart;
     mPosition.charNr = line(chunk, mPosition.localLine).length();
 }
 
@@ -836,7 +836,7 @@ QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
     ChunkMetrics *cm = chunkMetrics(pos.chunkNr);
     int line = 0;
     if (cm->startLineNr < 0) {
-        qint64 absPos = cm->linesStartPos + pos.localLinePos;
+        qint64 absPos = cm->linesStartPos + pos.localLineStart;
         double estimateLine = absPos / mBytesPerLine;
         line = -int(estimateLine);
     } else {
