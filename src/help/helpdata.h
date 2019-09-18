@@ -42,6 +42,7 @@ enum struct DocumentType {
     APIsMain,
     APIs,
     Index,
+    StudioMain,
     ModLibs,
 };
 
@@ -64,6 +65,7 @@ public:
             {DocumentType::APIsMain, "docs/API_MAIN.html"},
             {DocumentType::ToolsMain, "docs/T_MAIN.html"},
             {DocumentType::Index, "docs/keyword.html"},
+            {DocumentType::StudioMain, "docs/T_STUDIO.html"},
         };
         return list;
     }
@@ -176,6 +178,14 @@ public:
                 return list.second;
         }
         return getChapterLocation(DocumentType::Solvers);
+    }
+
+    inline static QString getStudioSectionAnchor(const QString &section) {
+        if (section.isEmpty()) return section;
+
+        QString str = section.toUpper().simplified();
+        str.replace(" ", "_");
+        return QString("STUDIO_%1").arg(str);
     }
 
     inline static int getURLIndexFrom(const QString &urlStr)  {

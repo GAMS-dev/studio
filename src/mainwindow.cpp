@@ -1513,7 +1513,13 @@ void MainWindow::on_actionHelp_triggered()
 #ifdef QWEBENGINE
     QWidget* widget = focusWidget();
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
-        mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, mGamsOptionWidget->getSelectedOptionName(widget));
+        QString optionName = mGamsOptionWidget->getSelectedOptionName(widget);
+        if (optionName.isEmpty())
+            mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Option Editor");
+        else
+            mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, optionName);
+    } else if (ui->projectView == widget) {
+               mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Project Explorer");
     } else if (mRecent.editor() != nullptr) {
         if (widget == mRecent.editor()) {
            CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
@@ -1532,15 +1538,35 @@ void MainWindow::on_actionHelp_triggered()
             }
         } else {
             option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
-            if (optionEdit) {
-                if (optionEdit->isAnOptionWidgetFocused(widget))
+            if (optionEdit && optionEdit->isAnOptionWidgetFocused(widget)) {
+                QString optionName = optionEdit->getSelectedOptionName(widget);
+                if (optionName.isEmpty())
+                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Solver Option Editor");
+                else
                     mHelpWidget->on_helpContentRequested( DocumentType::Solvers,
-                                                          optionEdit->getSelectedOptionName(widget),
+                                                          optionName,
                                                           optionEdit->getSolverName());
+            } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
+                       mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "GDX Viewer");
+            } else if (ViewHelper::toReferenceViewer(mRecent.editor())) {
+                       mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Reference File Viewer");
+            } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
+                       mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Listing Viewer");
+            } else {
+                mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
             }
         }
     } else {
-        mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+        QWidget* editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+        if (editWidget) {
+            FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
+            if (!fm)
+                mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Welcome Page");
+            else
+                mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+        } else {
+                mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+        }
     }
 
     if (ui->dockHelpView->isHidden())
