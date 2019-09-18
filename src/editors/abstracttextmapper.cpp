@@ -698,9 +698,7 @@ void AbstractTextMapper::removeChunk(int chunkNr)
 
     if (mFindChunk > chunkNr) --mFindChunk;
 
-    // ensure chunk isn't cached anymore
     chunk = getChunk(chunkNr, true);
-//    if (chunk) uncacheChunk(chunk);
 
     // move stored ChunkLines data
     const ChunkMetrics &clRem = mChunkMetrics.at(chunkNr);
@@ -711,6 +709,8 @@ void AbstractTextMapper::removeChunk(int chunkNr)
         --cl.chunkNr;
     }
     mChunkMetrics.removeAt(chunkNr);
+
+    // TODO(JM) instead of changing anchor and position provide alternatives during chunk-hidden-phase
 
     // shift position, anchor and topline if necessary
     QVector<CursorPosition*> cps;

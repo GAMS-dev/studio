@@ -158,6 +158,11 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr, bool cache) const
     return res;
 }
 
+void FileMapper::internalRemoveChunk(int chunkNr)
+{
+
+}
+
 void FileMapper::chunkUncached(AbstractTextMapper::Chunk *chunk) const
 {
     mFile.unmap(reinterpret_cast<uchar*>(chunk->bArray.data()));

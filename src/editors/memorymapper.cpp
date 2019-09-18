@@ -102,7 +102,7 @@ AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 {
     // IF we already have an empty chunk at the end, take it
     if (mChunks.size() && !mChunks.last()->size()) {
-        // IF the Unit contains more than this empty chunk, cut it and append a new Unit
+        // IF the Unit has content, cut it and append a new Unit
         if (startUnit && mUnits.size() && mUnits.last().chunkCount > 1) {
             --mUnits.last().chunkCount;
             mUnits << Unit(mChunks.last());
@@ -124,11 +124,9 @@ AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
         mShrinkLineCount = 0;
     }
     ++mUnits.last().chunkCount;
-//    if (mUnits.count() > CKeptRunCount) {
-//        Chunk * delChunk = mUnits.first().firstChunk;
-
-//        recalcLineCount();
-//    }
+    while (mUnits.count() > CKeptRunCount) {
+        removeChunk(mUnits.first().firstChunk->nr);
+    }
     return mChunks.last();
 }
 
@@ -615,7 +613,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
 
     QStringList res;
     LogParser::MarksBlockState mbState;
-    LineFormat *actErrFormat = nullptr;
+//    LineFormat *actErrFormat = nullptr;
     mbState.deep = false;
     QString rawLine;
     int from = 0;
@@ -665,7 +663,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
                         formats.last().extraLstFormat = &mBaseFormat.at(lstLink);
                         formats.last().extraLstHRef = mbState.marks.hRef;
                     }
-                    actErrFormat = &formats.last();
+//                    actErrFormat = &formats.last();
                 } else if (mbState.marks.hRef.startsWith("FIL:")) {
                     formats << LineFormat(4, line.length(), mBaseFormat.at(fileLink), mbState.marks.hRef);
                 } else if (mbState.marks.hRef.startsWith("LST:")) {
@@ -729,16 +727,22 @@ int MemoryMapper::chunkCount() const
 
 void MemoryMapper::internalRemoveChunk(int chunkNr)
 {
+    // remove chunk and adjust chunk-numbers
     Chunk *chunk = mChunks.takeAt(chunkNr);
+    for (int i = chunkNr; i < mChunks.size(); ++i) {
+        --mChunks[i]->nr;
+        mChunks[i]->bStart -= chunk->size();
+    }
+    // adjust the unit containing the removed chunk
     int delIndex = -1;
     for (int i = 0; i < mUnits.size() ; ++i) {
         Unit &u = mUnits[i];
-        if (u.firstChunk->nr <= chunkNr && u.firstChunk->nr+u.chunkCount > chunkNr) {
+        if (u.firstChunk->nr <= chunkNr && u.firstChunk->nr + u.chunkCount > chunkNr) {
             if (u.chunkCount == 1)
                 delIndex = i;
             else {
                 if (u.firstChunk->nr == chunkNr)
-                    u.firstChunk = getChunk(chunkNr+1);
+                    u.firstChunk = getChunk(chunkNr);
                 --u.chunkCount;
             }
         }
