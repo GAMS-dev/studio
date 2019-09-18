@@ -233,11 +233,10 @@ void TextView::outerScrollAction(int action)
     case QScrollBar::SliderPageStepSub: mMapper->moveVisibleTopLine(-mMapper->visibleLineCount()+1); break;
     case QScrollBar::SliderMove: {
         int lineNr = verticalScrollBar()->sliderPosition();
-        int max = verticalScrollBar()->maximum();
-        if (mMapper->knownLineNrs() >= lineNr)
+        if (mMapper->knownLineNrs() - mMapper->visibleLineCount() >= lineNr)
             mMapper->setVisibleTopLine(lineNr);
          else
-            mMapper->setVisibleTopLine(double(lineNr) / (max));
+            mMapper->setVisibleTopLine(double(lineNr) / verticalScrollBar()->maximum());
     }
         break;
     default: break;

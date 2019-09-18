@@ -197,7 +197,7 @@ protected:
     int chunkSize() const;
     int maxLineWidth() const;
     void initChunkCount(int count) const;
-    int lastChunkWithLineNr() const;
+    virtual int lastChunkWithLineNr() const;
     void initTopLine();
     void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC
     void emitBlockCountChanged();

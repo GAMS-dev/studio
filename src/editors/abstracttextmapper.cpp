@@ -114,6 +114,7 @@ qint64 AbstractTextMapper::size() const
 
 void AbstractTextMapper::invalidateLineOffsets(Chunk *chunk, bool cutRemain) const
 {
+    // TODO(JM) only called from MemoryMapper -> may be moved there OR joined with updateLineOffsets(..)
     if (!chunk) return;
     ChunkMetrics *cm = chunkMetrics(chunk->nr);
     cm->lineCount = chunk->lineCount();
@@ -126,26 +127,19 @@ void AbstractTextMapper::invalidateLineOffsets(Chunk *chunk, bool cutRemain) con
         if (prevCm && prevCm->startLineNr >= 0)
             cm->startLineNr = prevCm->startLineNr + prevCm->lineCount;
     }
-    if (mLastChunkWithLineNr < cm->chunkNr) {
-        mLastChunkWithLineNr = cm->chunkNr;
-        updateBytesPerLine(*cm);
-    }
     if (cutRemain) {
-        if (mLastChunkWithLineNr > cm->chunkNr) {
-            mLastChunkWithLineNr = cm->chunkNr;
-            updateBytesPerLine(*cm);
-        }
         for (int i = chunk->nr + 1; i < chunkCount(); ++i) {
-            ChunkMetrics *cl = chunkMetrics(i);
-            if (cl->lineCount < 0) break;
-            cl->lineCount = -1;
-            cl->startLineNr = -1;
+            ChunkMetrics *cm = chunkMetrics(i);
+            if (cm->lineCount < 0) break;
+            cm->lineCount = -1;
+            cm->startLineNr = -1;
         }
     }
 }
 
 void AbstractTextMapper::updateLineOffsets(Chunk *chunk) const
 {
+    // TODO(JM) only called from FileMapper -> may be moved there OR joined with invalidateLineOffsets(..)
     if (!chunk) return;
     ChunkMetrics *cm = chunkMetrics(chunk->nr);
     if (cm->lineCount < 0) { // init ChunkLines on first visit
@@ -234,7 +228,7 @@ bool AbstractTextMapper::setVisibleTopLine(double region)
     qint64 absPos = qint64(region * lastTopAbsPos());
 
     int iChunk = qMin(int(absPos / mChunkSize), chunkCount()-1);
-    if (iChunk <= mLastChunkWithLineNr) {
+    if (iChunk <= lastChunkWithLineNr()) {
         while (iChunk >= 0 && chunkMetrics(iChunk)->linesStartPos > absPos)
             --iChunk;
         while (iChunk < chunkCount()-1 && chunkMetrics(iChunk)->linesEndPos() <= absPos)
@@ -354,8 +348,8 @@ int AbstractTextMapper::visibleTopLine() const
 int AbstractTextMapper::lineCount() const
 {
     qint64 count = 0;
-    if (mLastChunkWithLineNr == chunkCount()-1) {
-        ChunkMetrics *cm = chunkMetrics(mLastChunkWithLineNr);
+    if (lastChunkWithLineNr() == chunkCount()-1) {
+        ChunkMetrics *cm = chunkMetrics(lastChunkWithLineNr());
         count = cm->startLineNr + cm->lineCount;  // counted
     } else {
         count = -qint64(size() / mBytesPerLine) - 1; // estimated
@@ -367,8 +361,8 @@ int AbstractTextMapper::lineCount() const
 
 int AbstractTextMapper::knownLineNrs() const
 {
-    if (mLastChunkWithLineNr < 0) return 0;
-    ChunkMetrics *cm = chunkMetrics(mLastChunkWithLineNr);
+    if (lastChunkWithLineNr() < 0) return 0;
+    ChunkMetrics *cm = chunkMetrics(lastChunkWithLineNr());
     if (cm->startLineNr < 0) return 0;
     return cm->startLineNr + cm->lineCount;
 }
@@ -637,7 +631,7 @@ QString AbstractTextMapper::lines(Chunk *chunk, int startLine, int &lineCount) c
 int AbstractTextMapper::findChunk(int lineNr)
 {
     int clFirst = 0;
-    int clLast = mLastChunkWithLineNr;
+    int clLast = lastChunkWithLineNr();
     ChunkMetrics *cm = chunkMetrics(clLast);
     if (lineNr < 0 || lineNr >= cm->startLineNr + cm->lineCount)
         return -1;

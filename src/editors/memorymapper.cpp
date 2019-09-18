@@ -110,7 +110,7 @@ AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
         }
         return mChunks.last();
     }
-    // create the new chunk
+    // ELSE create the new chunk
     Chunk *chunk = new Chunk();
     chunk->bArray.resize(chunkSize());
     chunk->bStart = mChunks.size() ? mChunks.last()->bStart + mChunks.last()->size() : 0;
@@ -280,6 +280,7 @@ void MemoryMapper::endRun()
     mLastLineIsOpen = false;
     fetchLog();
     runFinished();
+//    dump();
 }
 
 int MemoryMapper::firstErrorLine()
@@ -354,7 +355,6 @@ void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
     if (lastLineEnd + data.length() +1 > chunkSize()) {
         // move last line data to new chunk
         QByteArray part;
-        // TODO(JM) need to call shrinkLog around here
         Chunk *newChunk = addChunk();
         if (lastLineEnd > lastLineStart) {
             part.setRawData(chunk->bArray.data() + lastLineStart, uint(lastLineEnd-lastLineStart));
@@ -688,9 +688,9 @@ void MemoryMapper::dump()
 {
 //    int iCh = 0;
     DEB() << "\n";
-    DEB() << "---- size: " << mSize ;
-//    int sum = 0;
-//    for (Chunk *chunk : mChunks) {
+    DEB() << "---- size: " << mSize << "  lineCount: " << lineCount();
+    int sum = 0;
+    for (Chunk *chunk : mChunks) {
 //        for (int lineNr = 0; lineNr < chunk->lineBytes.size()-1; ++lineNr) {
 //            QString line;
 //            for (int i = chunk->lineBytes.at(lineNr); i < chunk->lineBytes.at(lineNr+1); ++i) {
@@ -698,16 +698,17 @@ void MemoryMapper::dump()
 //                else if (chunk->bArray.at(i) == '\n') line += "\\n";
 //                else line += chunk->bArray.at(i);
 //            }
-//            DEB() << iCh << " DATA: " << line;
+//            DEB() << chunk->nr << " DATA: " << line;
 //        }
-//        DEB() << iCh << " size: " << chunk->size();
-//        sum += chunk->size();
-//        ++iCh;
-//    }
+        DEB() << chunk->nr << " from: " << chunk->bStart
+              << " size: " << chunk->size()
+              << "  lineCount " << chunk->lineCount();
+        sum += chunk->size();
+    }
 //    for (const Unit &u : mUnits) {
 //        DEB() << "  UNIT: from " << u.firstChunk->nr << "+" << u.chunkCount-1 << "  size1: " << u.firstChunk->size();
 //    }
-    dumpPos();
+//    dumpPos();
 }
 
 int MemoryMapper::knownLineNrs() const
@@ -727,29 +728,36 @@ int MemoryMapper::chunkCount() const
 
 void MemoryMapper::internalRemoveChunk(int chunkNr)
 {
-    // remove chunk and adjust chunk-numbers
-    Chunk *chunk = mChunks.takeAt(chunkNr);
-    for (int i = chunkNr; i < mChunks.size(); ++i) {
-        --mChunks[i]->nr;
-        mChunks[i]->bStart -= chunk->size();
-    }
+    Chunk *chunk = mChunks.at(chunkNr);
     // adjust the unit containing the removed chunk
-    int delIndex = -1;
+    int delUnit = -1;
     for (int i = 0; i < mUnits.size() ; ++i) {
         Unit &u = mUnits[i];
+        // chunk belongs to this unit
         if (u.firstChunk->nr <= chunkNr && u.firstChunk->nr + u.chunkCount > chunkNr) {
             if (u.chunkCount == 1)
-                delIndex = i;
+                delUnit = i;
             else {
                 if (u.firstChunk->nr == chunkNr)
-                    u.firstChunk = getChunk(chunkNr);
+                    u.firstChunk = getChunk(chunkNr+1);
                 --u.chunkCount;
             }
         }
     }
-    if (delIndex >= 0)
-        mUnits.remove(delIndex);
+    if (delUnit >= 0)
+        mUnits.remove(delUnit);
+    // remove chunk and adjust chunk-numbers
+    mChunks.removeAt(chunkNr);
+    for (int i = chunkNr; i < mChunks.size(); ++i) {
+        --mChunks[i]->nr;
+        mChunks[i]->bStart -= chunk->size();
+    }
     delete chunk;
+}
+
+int MemoryMapper::lastChunkWithLineNr() const
+{
+    return mChunks.count()-1;
 }
 
 AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr, bool cache) const
