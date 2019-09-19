@@ -1515,58 +1515,64 @@ void MainWindow::on_actionHelp_triggered()
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
         QString optionName = mGamsOptionWidget->getSelectedOptionName(widget);
         if (optionName.isEmpty())
-            mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Option Editor");
+            mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
+                                                  HelpData::getStudioSectionName(StudioSection::OptionEditor));
         else
             mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, optionName);
-    } else if (ui->projectView == widget) {
-               mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Project Explorer");
-    } else if (mRecent.editor() != nullptr) {
-        if (widget == mRecent.editor()) {
-           CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
-           if (ce) {
-               QString word;
-               int iKind = 0;
-               ce->wordInfo(ce->textCursor(), word, iKind);
-
-               if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
-                   mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, "title");
-               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
-                   mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, word);
-               } else {
-                   mHelpWidget->on_helpContentRequested(DocumentType::Index, word);
-               }
-            }
-        } else {
-            option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
-            if (optionEdit && optionEdit->isAnOptionWidgetFocused(widget)) {
-                QString optionName = optionEdit->getSelectedOptionName(widget);
-                if (optionName.isEmpty())
-                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Solver Option Editor");
-                else
-                    mHelpWidget->on_helpContentRequested( DocumentType::Solvers,
-                                                          optionName,
-                                                          optionEdit->getSolverName());
-            } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
-                       mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "GDX Viewer");
-            } else if (ViewHelper::toReferenceViewer(mRecent.editor())) {
-                       mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Reference File Viewer");
-            } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
-                       mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Listing Viewer");
-            } else {
-                mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
-            }
-        }
     } else {
-        QWidget* editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
-        if (editWidget) {
-            FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
-            if (!fm)
-                mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "", "Welcome Page");
-            else
-                mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
-        } else {
-                mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
-        }
+         QWidget* editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+         if (editWidget) {
+             FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
+             if (!fm) {
+                 mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
+                                                       HelpData::getStudioSectionName(StudioSection::WelcomePage));
+             } else {
+                 if (mRecent.editor() != nullptr) {
+                     if (widget == mRecent.editor()) {
+                        CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+                        if (ce) {
+                            QString word;
+                            int iKind = 0;
+                            ce->wordInfo(ce->textCursor(), word, iKind);
+
+                            if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
+                                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, "title");
+                            } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
+                                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, word);
+                            } else {
+                                mHelpWidget->on_helpContentRequested(DocumentType::Index, word);
+                            }
+                         }
+                     } else {
+                         option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
+                         if (optionEdit) {
+                             QString optionName = optionEdit->getSelectedOptionName(widget);
+                             if (optionName.isEmpty())
+                                 mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
+                                                                       HelpData::getStudioSectionName(StudioSection::SolverOptionEditor));
+                             else
+                                 mHelpWidget->on_helpContentRequested( DocumentType::Solvers, optionName,
+                                                                       optionEdit->getSolverName());
+                         } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
+                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
+                                                                          HelpData::getStudioSectionName(StudioSection::GDXViewer));
+                         } else if (ViewHelper::toReferenceViewer(mRecent.editor())) {
+                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
+                                                                          HelpData::getStudioSectionName(StudioSection::ReferenceFileViewer));
+                         } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
+                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
+                                                                          HelpData::getStudioSectionName(StudioSection::ListingViewer));
+                         } else {
+                             mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+                         }
+                     }
+                 } else {
+                     mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+                 }
+             }
+         } else {
+             mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+         }
     }
 
     if (ui->dockHelpView->isHidden())
