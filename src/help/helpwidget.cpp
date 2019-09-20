@@ -178,7 +178,7 @@ void HelpWidget::on_helpContentRequested(const DocumentType &type, const QString
     QDir dir = QDir(CommonPaths::systemDir()).filePath( HelpData::getChapterLocation(type) );
     if (!submoduleName.isEmpty()) {
         if (type == DocumentType::Solvers) {
-            dir = QDir(CommonPaths::systemDir()).filePath( HelpData::getSolverChapterLocation(submoduleName) );
+            dir.setPath( QDir(CommonPaths::systemDir()).filePath( HelpData::getSolverChapterLocation(submoduleName) ));
         }
     }
     if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
