@@ -106,6 +106,7 @@ private:
     QMultiMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
     QLabel mStatusBarLabel;
+    QUrl onlineStartPageUrl;
 
     QUrl getStartPageUrl();
     QUrl getOnlineStartPageUrl();

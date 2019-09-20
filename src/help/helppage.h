@@ -31,7 +31,7 @@ class HelpPage : public QWebEnginePage
     Q_OBJECT
 
 public:
-    HelpPage(QWidget *parent = 0);
+    HelpPage(QWidget *parent = nullptr);
 
 protected:
     bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool isMainFrame);

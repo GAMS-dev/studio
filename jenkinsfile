@@ -185,7 +185,10 @@ pipeline {
                             STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL version | cut -f2 -d"=")
                             export VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
 
-                            linuxdeployqt-6-x86_64.AppImage appdir/usr/share/studio.desktop -bundle-non-qt-libs -no-translations -extra-plugins=iconengines -exclude-libs=libnss3,libnssutil3
+                            linuxdeployqt-6-x86_64.AppImage appdir/usr/share/studio.desktop -bundle-non-qt-libs -no-translations -extra-plugins=iconengines
+
+                            # Chromium crash workaround
+                            cp /usr/lib/x86_64-linux-gnu/nss/* ./appdir/usr/lib
 
                             # Workaround to increase compatibility with older systems;
                             # see https://github.com/darealshinji/AppImageKit-checkrt amd
