@@ -22,8 +22,11 @@
 #include "gamsprocess.h"
 #include "checkforupdatewrapper.h"
 #include "solvertablemodel.h"
+#include "commonpaths.h"
 
 #include <QClipboard>
+#include <QFile>
+#include <QMessageBox>
 #include <QSortFilterProxyModel>
 
 namespace gams {
@@ -35,6 +38,8 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     ui(new Ui::AboutGAMSDialog)
 {
     ui->setupUi(this);
+
+    createLicenseFile(parent);
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
@@ -94,6 +99,67 @@ QString AboutGAMSDialog::gamsLicense()
     return about.join("");
 }
 
+void AboutGAMSDialog::createLicenseFile(QWidget *parent)
+{
+    auto clipboard = QGuiApplication::clipboard();
+    auto licenseLines = clipboard->text().split('\n', QString::SkipEmptyParts);
+    if (!isValidLicense(licenseLines))
+        return;
+
+    QFile licenseFile(CommonPaths::systemDir() + "/gamslice.txt");
+    if (licenseFile.exists()) {
+        auto result = QMessageBox::question(parent,
+                                            "Overwrite current GAMS license file?",
+                                            "It looks like there is a GAMS license on the clipboard. "
+                                            "Do you want to overwrite your current license file from this text? "
+                                            "Your current license location is: " + licenseFile.fileName());
+        if (result == QMessageBox::No)
+            return;
+    } else {
+        auto result = QMessageBox::question(parent,
+                                            "Create GAMS license file?",
+                                            "It looks like there is a GAMS license on the clipboard. "
+                                            "Do you want to create a license file from this text? "
+                                            "Your GAMS license location will be: " + licenseFile.fileName());
+        if (result == QMessageBox::No)
+            return;
+    }
+
+    if (licenseFile.open(QFile::WriteOnly)) {
+        QTextStream stream(&licenseFile);
+        stream << licenseLines.join("\n");
+        licenseFile.close();
+    }
+}
+
+bool AboutGAMSDialog::isValidLicense(QStringList &license)
+{
+    if (license.count() < 5)
+        return false;
+
+    for (int i=0; i<license.size(); ++i) {
+        license[i] = license[i].trimmed();
+        if (license[i].count() == 65)
+            continue;
+        else
+            return false;
+    }
+
+    if (license[0].at(54) != ':' && license[0].at(54) != '/')
+        return false;
+
+    // Most of the platform keys listed below are relevant for Studio.
+    // WIN, WEX, LEX, DEX, SOX, AIX, SIS, BGP, LNX, SOL, DAR, DII, GEN, ALL
+    if (!license[0].endsWith("-WIN") && !license[0].endsWith("-LNX") &&
+        !license[0].endsWith("-DAR") && !license[0].endsWith("-GEN") &&
+        !license[0].endsWith("-ALL"))
+        return false;
+
+    if (!license[4].startsWith("DC"))
+        return false;
+    return true;
+}
+
 void AboutGAMSDialog::on_copylicense_clicked()
 {
     GamsProcess gproc;
@@ -103,7 +169,7 @@ void AboutGAMSDialog::on_copylicense_clicked()
 
 QString AboutGAMSDialog::header()
 {
-    return "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";//<br/><br/>";
+    return "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";
 }
 
 QString AboutGAMSDialog:: aboutStudio()

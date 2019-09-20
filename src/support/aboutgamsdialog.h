@@ -44,6 +44,8 @@ public:
 
 private:
     QString gamsLicense();
+    void createLicenseFile(QWidget *parent);
+    bool isValidLicense(QStringList &license);
 
 private slots:
     void on_copylicense_clicked();
