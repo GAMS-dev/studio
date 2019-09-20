@@ -1932,6 +1932,8 @@ void MainWindow::dropEvent(QDropEvent* e)
 
         int answer;
         if(pathList.size() > 25) {
+            raise();
+            activateWindow();
             QMessageBox msgBox;
             msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
                            " files at once. Depending on the file sizes this may take a long time.");
