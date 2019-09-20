@@ -1,8 +1,9 @@
-Version 0.12.6
+Version 0.12.7
 ========================
-
-## General
-- fixed bookmarks sometimes not being able to be set
-- improved add new/existing file dialog: now opens dialog in group folder if available
-- fixed crash when GLB file does not contain any models, added proper warning/error instead
+- added dialog to create license file (pops up when a license is in the user's clipboard and the "About GAMS" is opened)
+- disabled top dockwidget area for all widgets as it should be used solely by the extended parameter editor
+- fixed behavior of jumping to matching parenthesis ([Shift+]F8)
+- fixed missing parenthesis highlighting for variables
+- reduced flickering when minimizing/maximizing Studio
+- removed online version check on Studio startup
 
