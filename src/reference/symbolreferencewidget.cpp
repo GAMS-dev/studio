@@ -47,7 +47,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->setAlternatingRowColors(true);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
-    ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->symbolView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     ui->symbolView->verticalHeader()->setMinimumSectionSize(1);
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
@@ -63,11 +63,9 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);
-    ui->referenceView->expandAll();
-    ui->referenceView->resizeColumnToContents(0);
-    ui->referenceView->resizeColumnToContents(1);
     ui->referenceView->setAlternatingRowColors(true);
     ui->referenceView->setColumnHidden(3, true);
+    expandResetModel();
 
     connect(ui->referenceView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToReferenceItem);
     connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
@@ -142,8 +140,10 @@ void SymbolReferenceWidget::resetModel()
 
 void SymbolReferenceWidget::initModel()
 {
-    if (!mSymbolTableModel->isModelLoaded())
+    if (!mSymbolTableModel->isModelLoaded()) {
         mSymbolTableModel->initModel(mReference);
+        resizeColumnToContents();
+    }
 
     mReferenceTreeModel->resetModel();
 }
@@ -181,6 +181,11 @@ void SymbolReferenceWidget::updateSymbolSelection()
     } else {
          mReferenceTreeModel->resetModel();
     }
+}
+
+void SymbolReferenceWidget::resizeColumnToContents()
+{
+    ui->symbolView->resizeColumnsToContents();
 }
 
 } // namespace reference

@@ -59,6 +59,7 @@ public slots:
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
     void updateSymbolSelection();
+    void resizeColumnToContents();
 
 private:
     Ui::SymbolReferenceWidget *ui;
