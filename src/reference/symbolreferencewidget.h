@@ -21,6 +21,7 @@
 #define SYMBOLREFERENCEWIDGET_H
 
 #include <QWidget>
+#include <QMenu>
 #include <QSortFilterProxyModel>
 #include <QItemSelection>
 
@@ -60,9 +61,11 @@ public slots:
     void jumpToReferenceItem(const QModelIndex &index);
     void updateSymbolSelection();
     void resizeColumnToContents();
+    void showContextMenu(QPoint p);
 
 private:
     Ui::SymbolReferenceWidget *ui;
+    QMenu mContextMenu;
 
     SymbolTableModel* mSymbolTableModel;
     ReferenceTreeModel* mReferenceTreeModel;

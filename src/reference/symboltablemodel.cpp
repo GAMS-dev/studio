@@ -375,6 +375,28 @@ void SymbolTableModel::setFilterPattern(const QString &pattern)
     emit symbolSelectionToBeUpdated();
 }
 
+int SymbolTableModel::getLastSectionIndex()
+{
+    switch(mType) {
+    case SymbolDataType::Set :
+    case SymbolDataType::Acronym :
+    case SymbolDataType::Parameter :
+    case SymbolDataType::Variable :
+    case SymbolDataType::Equation :
+        return 4;
+    case SymbolDataType::Model :
+    case SymbolDataType::Funct :
+    case SymbolDataType::File :
+        return 2;
+    case SymbolDataType::FileUsed :
+        return 0;
+    case SymbolDataType::Unknown :
+    case SymbolDataType::Unused :
+        return 5;
+    }
+    return 0;
+}
+
 SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const
 {
     switch(mType) {
