@@ -2834,10 +2834,11 @@ void MainWindow::writeTabs(QJsonObject &json) const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp))
-        return;
+    if ((ui->mainTab->currentWidget() == mWp)) return;
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
+    if (!codeEdit && !tv) return;
+
     int maxLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
     GoToDialog dialog(this, maxLines, bool(tv));
     int result = dialog.exec();
