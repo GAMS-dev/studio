@@ -27,8 +27,6 @@
 #include <QSet>
 #include <QTextCursor>
 #include <QTextDocument>
-#include <QTimer>
-//#include "syntax.h"
 
 namespace gams {
 namespace studio {
@@ -88,6 +86,7 @@ private:
         bool operator <(const CursorPosition &other) const {
             return absLineStart + charNr < other.absLineStart + other.charNr; }
         int effectiveCharNr() const { return qMin(charNr, lineLen); }
+        bool isValid() const { return chunkNr >= 0; }
         int chunkNr = -1;
         qint64 absLineStart = -1;
         int charNr = -1;
@@ -209,7 +208,7 @@ protected:
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;
     QString line(Chunk *chunk, int chunkLineNr) const;
-    bool setTopOffset(qint64 absPos);
+    bool setTopLine(const Chunk *chunk, int localLine);
     void updateBytesPerLine(const ChunkMetrics &chunkMetrics) const;
     int maxChunksInCache() const;
     int findChunk(int lineNr);

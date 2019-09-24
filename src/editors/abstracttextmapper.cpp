@@ -59,7 +59,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
 
-    int remainingLines = debugMode() ? (visibleLineCount()-1)/2 : visibleLineCount();
+    int remainingLines = visibleLineCount();
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -73,6 +73,9 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
             mMaxTopLine.localLine = 0;
             break;
         }
+        if (mTopLine > mMaxTopLine) {
+            mTopLine = mMaxTopLine;
+        }
         chunk = getChunk(chunk->nr -1);
     }
     return true;
@@ -85,7 +88,7 @@ qint64 AbstractTextMapper::lastTopAbsPos()
     if (!chunk || !chunk->isValid()) return size();
 
     qint64 lastPos = 0LL;
-    int remainingLines = debugMode() ? (visibleLineCount()-1)/2 : visibleLineCount()-1;
+    int remainingLines = visibleLineCount();
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -194,27 +197,12 @@ int AbstractTextMapper::visibleLineCount() const
     return mVisibleLineCount;
 }
 
-bool AbstractTextMapper::setTopOffset(qint64 absPos)
+bool AbstractTextMapper::setTopLine(const Chunk* chunk, int localLine)
 {
-    // find chunk index
-    absPos = qBound(0LL, absPos, size()-1);
-    int chunkNr = qBound(0, mTopLine.chunkNr, chunkCount());
-    while (chunkNr > 0 && chunkMetrics(chunkNr)->linesStartPos > absPos)
-        --chunkNr;
-    while (chunkNr < chunkCount()-1 && chunkMetrics(chunkNr)->linesEndPos() <= absPos)
-        ++chunkNr;
-    Chunk *chunk = getChunk(chunkNr);
     if (!chunk) return false;
-
     // adjust top line
-    int localByteNr = int(absPos - chunk->bStart);
     mTopLine.chunkNr = chunk->nr;
-    mTopLine.localLine = 0;
-    for (int i = 0; i < chunk->lineCount(); ++i) {
-        if (chunk->lineBytes.at(i) > localByteNr)
-            break;
-        mTopLine.localLine = i;
-    }
+    mTopLine.localLine = localLine;
     mTopLine.absLineStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
     if (mTopLine > mMaxTopLine) mTopLine = mMaxTopLine;
     return true;
@@ -239,17 +227,13 @@ bool AbstractTextMapper::setVisibleTopLine(double region)
 
     // get the chunk-local line number for the visibleTopLine
     int localByteNr = int(absPos - chunk->bStart);
-    int line = -1;
+    int line = 0;
     for (int i = 0; i < chunk->lineCount(); ++i) {
         if (chunk->lineBytes.at(i) > localByteNr)
             break;
         line = i;
     }
-    if (line < 0) {
-//        DEB() << "Catched line " << line;
-        line = 0;
-    }
-    setTopOffset(chunk->bStart + chunk->lineBytes.at(line));
+    setTopLine(chunk, line);
     return true;
 }
 
@@ -261,8 +245,7 @@ bool AbstractTextMapper::setVisibleTopLine(int lineNr)
     if (chunkNr < 0) return false;
     Chunk* chunk = getChunk(chunkNr);
     if (!chunk) return false;
-    int byte = chunk->lineBytes.at(lineNr - chunkMetrics(chunkNr)->startLineNr);
-    setTopOffset(chunk->bStart + byte);
+    setTopLine(chunk, lineNr - chunkMetrics(chunkNr)->startLineNr);
     return true;
 }
 
@@ -531,7 +514,7 @@ void AbstractTextMapper::updateBytesPerLine(const ChunkMetrics &chunkLines) cons
 QString AbstractTextMapper::selectedText() const
 {
     if (size()) return QString();
-    if (mPosition.chunkNr < 0 || mAnchor.chunkNr < 0 || mPosition == mAnchor) return QString();
+    if (!mPosition.isValid() || !mAnchor.isValid() || mPosition == mAnchor) return QString();
     QByteArray all;
     CursorPosition pFrom = qMin(mAnchor, mPosition);
     CursorPosition pTo = qMax(mAnchor, mPosition);
@@ -684,8 +667,9 @@ void AbstractTextMapper::removeChunk(int chunkNr)
 {
     Chunk *chunk = getChunk(mTopLine.chunkNr);
     CursorPosition topLine;
-    if (chunk) {
+    if (chunk && mPosition.isValid() && mPosition.chunkNr >= 0) {
         topLine = mPosition;
+        // TODO(JM) crash on this:
         setPosAbsolute(chunk, mMaxTopLine.localLine, 0, QTextCursor::KeepAnchor);
         qSwap(topLine, mPosition);
     }
@@ -708,7 +692,9 @@ void AbstractTextMapper::removeChunk(int chunkNr)
 
     // shift position, anchor and topline if necessary
     QVector<CursorPosition*> cps;
-    cps << &mPosition << &mAnchor << &topLine;
+    if (mPosition.isValid()) cps << &mPosition;
+    if (mAnchor.isValid()) cps << &mAnchor;
+    if (topLine.isValid()) cps << &topLine;
     for (CursorPosition *cp: cps) {
         if (cp->chunkNr > chunkNr) {
             --cp->chunkNr;
@@ -821,6 +807,7 @@ void AbstractTextMapper::setDebugMode(bool debug)
 {
     mDebugMode = debug;
     updateMaxTop();
+    emitBlockCountChanged();
 }
 
 QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
@@ -844,26 +831,26 @@ QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
 
 QPoint AbstractTextMapper::position(bool local) const
 {
-    if (mPosition.chunkNr < 0) return QPoint(-1,-1);
+    if (!mPosition.isValid()) return QPoint(-1,-1);
     return (local ? convertPosLocal(mPosition) : convertPos(mPosition));
 }
 
 
 QPoint AbstractTextMapper::anchor(bool local) const
 {
-    if (mPosition.chunkNr < 0 || mAnchor.chunkNr < 0) return QPoint(-1,-1);
+    if (!mPosition.isValid() || !mAnchor.isValid()) return QPoint(-1,-1);
     return local ? convertPosLocal(mAnchor) : convertPos(mAnchor);
 }
 
 
 bool AbstractTextMapper::hasSelection() const
 {
-    return !((mPosition.chunkNr < 0) || (mAnchor.chunkNr < 0) || (mPosition == mAnchor));
+    return (mPosition.isValid() && mAnchor.isValid() && !(mPosition == mAnchor));
 }
 
 int AbstractTextMapper::selectionSize() const
 {
-    if ((mPosition.chunkNr < 0) || (mAnchor.chunkNr < 0) || (mPosition == mAnchor)) return 0;
+    if (!mPosition.isValid() || !mAnchor.isValid() || mPosition == mAnchor) return 0;
     qint64 selSize = qAbs( qAbs(mPosition.absLineStart)+mPosition.effectiveCharNr()
                            - qAbs(mAnchor.absLineStart)+mAnchor.effectiveCharNr() );
     if (selSize >= std::numeric_limits<int>::max() / 20) return -1;

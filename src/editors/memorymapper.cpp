@@ -28,14 +28,18 @@ enum BaseFormat {old, debug, error, lstLink, fileLink};
 static int CErrorBound = 50;        // The count of errors created at the beginning and the end (each the count)
 static int CDirectErrors = 3;       // The count of errors created immediately
 static int CParseLinesMax = 23;     // The maximum count of gathered lines befor updating the display
-static int CRefreshTimeMax = 50;    // The maximum time (in ms) to wait until the output is updated (after changed)
+static int CRefreshTimeMax = 100;    // The maximum time (in ms) to wait until the output is updated (after changed)
 static int CKeptRunCount = 5;
 
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
     mRunFinishedTimer.setInterval(10);
     mRunFinishedTimer.setSingleShot(true);
+    mNewLogLines.reserve(CParseLinesMax+1);
     connect(&mRunFinishedTimer, &QTimer::timeout, this, &MemoryMapper::runFinished);
+    connect(&mPendingTimer, &QTimer::timeout, this, &MemoryMapper::processPending);
+    mPendingTimer.setSingleShot(true);
+    mPending = PendingNothing;
     mMarksHead.reserve(CErrorBound);
     mMarksTail.setCapacity(CErrorBound);
     // old
@@ -190,17 +194,20 @@ bool MemoryMapper::ensureSpace(qint64 bytes)
 
 void MemoryMapper::recalcLineCount()
 {
-    mLineCount = 0;
+    int lineCount = 0;
     for (const Unit &u: mUnits) {
-        if (u.folded) ++mLineCount;
+        if (u.folded) ++lineCount;
         else {
             for (int i = 0; i < u.chunkCount; ++i) {
-                mLineCount += mChunks.at(u.firstChunk->nr + i)->lineCount();
+                lineCount += mChunks.at(u.firstChunk->nr + i)->lineCount();
             }
         }
     }
-    updateMaxTop();
-    emitBlockCountChanged();
+    if (mLineCount != lineCount) {
+        mLineCount = lineCount;
+        updateMaxTop();
+        newPending(PendingBlockCountChange);
+    }
 }
 
 MemoryMapper::LineRef MemoryMapper::logLineToRef(const int &lineNr)
@@ -256,7 +263,7 @@ void MemoryMapper::updateChunkMetrics(Chunk *chunk, bool cutRemain)
 
 int MemoryMapper::lineCount() const
 {
-    return mLineCount * (debugMode() ? 2 : 1);
+    return mLineCount /* * (debugMode() ? 2 : 1) */;
 }
 
 void MemoryMapper::startRun()
@@ -275,7 +282,7 @@ void MemoryMapper::startRun()
 
 void MemoryMapper::endRun()
 {
-    fetchDisplay();
+    processPending();
     mLastLineLen = 0;
     mLastLineIsOpen = false;
     fetchLog();
@@ -389,7 +396,7 @@ void MemoryMapper::parseNewLine()
 
     QString line;
     int lastLinkStart = -1;
-    LineFormat fmt;
+//    LineFormat fmt;
     int lstLine = -1;
     mLogParser->quickParse(chunk->bArray, start, end, line, lastLinkStart, lstLine);
     if (mCurrentLstLineRef >= 0) {
@@ -422,10 +429,10 @@ void MemoryMapper::parseNewLine()
 
     if (lastLinkStart >= start) {
         if (lastLinkStart > start+line.length() || line.startsWith("*** Error")) {
-            fmt = LineFormat(4, line.length(), mBaseFormat.at(error));
-            if (lastLinkStart > start+line.length()) {
-                fmt.extraLstFormat = &mBaseFormat.at(lstLink);
-            }
+//            fmt = LineFormat(4, line.length(), mBaseFormat.at(error));
+//            if (lastLinkStart > start+line.length()) {
+//                fmt.extraLstFormat = &mBaseFormat.at(lstLink);
+//            }
             int lineNr = currentRunLines();
             if (mErrCount < CErrorBound) {
                 if (mMarksHead.isEmpty() || mMarksHead.last() != lineNr) {
@@ -439,10 +446,10 @@ void MemoryMapper::parseNewLine()
                 ++mErrCount;
                 mMarksTail.append(lineNr);
             }
-        } else if (chunk->bArray.mid(start+line.length()+1, 3) == "LST") {
-            fmt = LineFormat(4, line.length(), mBaseFormat.at(lstLink));
-        } else {
-            fmt = LineFormat(4, line.length(), mBaseFormat.at(fileLink));
+//        } else if (chunk->bArray.mid(start+line.length()+1, 3) == "LST") {
+//            fmt = LineFormat(4, line.length(), mBaseFormat.at(lstLink));
+//        } else {
+//            fmt = LineFormat(4, line.length(), mBaseFormat.at(fileLink));
         }
     }
 
@@ -460,7 +467,7 @@ void MemoryMapper::parseNewLine()
     mLastLineLen = line.length();
     if (mInstantRefresh) {
         // last line has to be overwritten - update immediately
-        fetchDisplay();
+        processPending();
     }
     ++mNewLines;
 }
@@ -469,8 +476,6 @@ void MemoryMapper::appendEmptyLine()
 {
     if (mNewLogLines.length() >= CParseLinesMax)
         fetchLog();
-    if (mDisplayCacheChanged.elapsed() > CRefreshTimeMax)
-        fetchDisplay();
 
     // update chunk (switch to new if filled up)
     Chunk *chunk = mChunks.last();
@@ -483,6 +488,7 @@ void MemoryMapper::appendEmptyLine()
     mInstantRefresh = false;
     mLastLineIsOpen = false;
     mLastLineLen = 0;
+    newPending(PendingContentChange);
 }
 
 void MemoryMapper::clearLastLine()
@@ -498,7 +504,7 @@ void MemoryMapper::clearLastLine()
         chunk->bArray[start] = '\n';
     }
     if (mNewLines)
-        fetchDisplay();
+        newPending(PendingContentChange);
     mInstantRefresh = true;
     mLastLineLen = 0;
 }
@@ -514,6 +520,32 @@ void MemoryMapper::fetchDisplay()
     emit updateView();
     mNewLines = 0;
     mInstantRefresh = false;
+}
+
+void MemoryMapper::newPending(MemoryMapper::Pending pending)
+{
+    if (mPending == PendingNothing) {
+        mDisplayCacheChanged.start();
+    }
+    mPending.setFlag(pending);
+
+    if (mDisplayCacheChanged.elapsed() > CRefreshTimeMax) {
+        processPending();
+    } else if (!mPendingTimer.isActive() || mPendingTimer.remainingTime() < 10) {
+        mPendingTimer.start(2*CRefreshTimeMax);
+    }
+}
+
+void MemoryMapper::processPending()
+{
+    mPendingTimer.stop();
+    if (mPending.testFlag(PendingBlockCountChange)) {
+        emitBlockCountChanged();
+    }
+    if (mPending.testFlag(PendingContentChange)) {
+        fetchDisplay();
+    }
+    mPending = PendingNothing;
 }
 
 void MemoryMapper::addProcessData(const QByteArray &data)
@@ -591,8 +623,8 @@ void MemoryMapper::reset()
     mLineCount = 0;
     AbstractTextMapper::reset();
     addChunk(true);
-    emit blockCountChanged();
-    emit updateView();
+    newPending(PendingBlockCountChange);
+    newPending(PendingContentChange);
 }
 
 QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
@@ -605,7 +637,6 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
     formats.reserve(lineCount);
     if (debugMode()) {
         localLineNrFrom /= 2;
-        lineCount /= 2;
     }
     int activationLine;
     QByteArray data = rawLines(localLineNrFrom, lineCount, mUnits.last().firstChunk->nr, activationLine);
@@ -716,11 +747,6 @@ int MemoryMapper::knownLineNrs() const
     return lineCount();
 }
 
-void MemoryMapper::setDebugMode(bool debug)
-{
-    AbstractTextMapper::setDebugMode(debug);
-}
-
 int MemoryMapper::chunkCount() const
 {
     return mChunks.size();
@@ -758,6 +784,11 @@ void MemoryMapper::internalRemoveChunk(int chunkNr)
 int MemoryMapper::lastChunkWithLineNr() const
 {
     return mChunks.count()-1;
+}
+
+int MemoryMapper::visibleLineCount() const
+{
+    return AbstractTextMapper::visibleLineCount() / (debugMode() ? 2 : 1);
 }
 
 AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr, bool cache) const

@@ -24,6 +24,7 @@
 #include "logparser.h"
 #include <QMutex>
 #include <QTime>
+#include <QTimer>
 #include <QContiguousCache>
 
 namespace gams {
@@ -35,6 +36,9 @@ class MemoryMapper : public AbstractTextMapper
 {
     Q_OBJECT
 private:
+    enum Pending { PendingNothing, PendingBlockCountChange, PendingContentChange };
+    Q_DECLARE_FLAGS(Pendings, Pending)
+
     struct Unit {
         Unit(Chunk *chunk = nullptr, QString text = QString())
             : firstChunk(chunk), foldText(text) {}
@@ -62,7 +66,6 @@ public:
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
     int lineCount() const override;
     int knownLineNrs() const override;
-    void setDebugMode(bool debug) override;
     void dump();
 
 signals:
@@ -79,9 +82,12 @@ protected:
     int chunkCount() const override;
     void internalRemoveChunk(int chunkNr) override;
     int lastChunkWithLineNr() const override;
+    int visibleLineCount() const override;
 
 private slots:
     void runFinished();
+    void fetchDisplay();
+    void processPending();
 
 private:
     void appendLineData(const QByteArray &data, Chunk *&chunk);
@@ -89,7 +95,6 @@ private:
     void clearLastLine();
     void parseNewLine();
     void fetchLog();
-    void fetchDisplay();
     void createErrorMarks(LineRef ref, bool readErrorText);
     LineRef nextRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
@@ -102,6 +107,7 @@ private:
     int currentRunLines();
     void updateChunkMetrics(Chunk *chunk, bool cutRemain = false);
     void invalidateSize();
+    void newPending(Pending pending);
 
 private:
     struct InputState {
@@ -125,11 +131,13 @@ private:
     int mCurrentLstLineRef = -1;
     int mCurrentErrorNr = -1;
     QString mCurrentErrText;
+    Pendings mPending;
 
     bool mLastLineIsOpen = false;
     int mLastLineLen = 0;
     QStringList mNewLogLines;
     QTime mDisplayCacheChanged;
+    QTimer mPendingTimer;
     int mNewLines = 0;
     bool mInstantRefresh = false;
 };
