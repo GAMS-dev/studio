@@ -203,7 +203,7 @@ protected:
     void removeChunk(int chunkNr);
     virtual void internalRemoveChunk(int chunkNr);
 
-    void dumpPos();
+    void dumpPos() const;
 
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;

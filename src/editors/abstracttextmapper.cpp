@@ -513,7 +513,7 @@ void AbstractTextMapper::updateBytesPerLine(const ChunkMetrics &chunkLines) cons
 
 QString AbstractTextMapper::selectedText() const
 {
-    if (size()) return QString();
+    if (!size()) return QString();
     if (!mPosition.isValid() || !mAnchor.isValid() || mPosition == mAnchor) return QString();
     QByteArray all;
     CursorPosition pFrom = qMin(mAnchor, mPosition);
@@ -735,10 +735,10 @@ void AbstractTextMapper::internalRemoveChunk(int chunkNr)
     Q_UNUSED(chunkNr)
 }
 
-void AbstractTextMapper::dumpPos()
+void AbstractTextMapper::dumpPos() const
 {
-    DEB() << "pos:  chunk " << mPosition.chunkNr << ",  p " << mPosition.absLineStart;
-    DEB() << "anc:  chunk " << mAnchor.chunkNr << ",  p " << mAnchor.absLineStart;
+    DEB() << "anc:  chunk " << mAnchor.chunkNr << ",  p " << (mAnchor.absLineStart+mAnchor.effectiveCharNr());
+    DEB() << "pos:  chunk " << mPosition.chunkNr << ",  p " << (mPosition.absLineStart+mPosition.effectiveCharNr());
 }
 
 bool AbstractTextMapper::atTail()

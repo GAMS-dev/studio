@@ -188,7 +188,7 @@ int TextView::knownLines() const
 
 void TextView::copySelection()
 {
-    mEdit->copySelection();
+    mMapper->copyToClipboard();
 }
 
 QString TextView::selectedText() const

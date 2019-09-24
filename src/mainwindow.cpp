@@ -2905,26 +2905,22 @@ void MainWindow::on_actionCopy_triggered()
 {
     if (!focusWidget()) return;
 
-    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
-    if (!fm) return;
+    // KEEP-ORDER: FIRST check focus THEN check recent-edit (in descending inheritance)
 
-    if (fm->kind() == FileKind::Gdx) {
-        gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
+    if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+        tv->copySelection();
+    } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor())) {
         gdx->copyAction();
     } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->copy();
+    } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
+        tv->copySelection();
     } else if (CodeEdit *ce = ViewHelper::toCodeEdit(mRecent.editor())) {
         ce->copySelection();
     } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(mRecent.editor())) {
         ae->copy();
-    } else if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
-        // this MUST stay BEFORE the other tv-cast (here: checking for log FIRST)
-        tv->copySelection();
-    } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
-        // this MUST stay AFTER the other tv-cast  (here: checking for lst/txt SECOND)
-        tv->copySelection();
     }
 }
 
