@@ -33,6 +33,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mReferenceViewer(parent)
 {
     ui->setupUi(this);
+    ui->symbolReferenceSplitter->setSizes(QList<int>({2500,1500}));
 
     mSymbolTableModel = new SymbolTableModel(mType, this);
     ui->symbolView->setModel( mSymbolTableModel );
@@ -66,6 +67,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->setAlternatingRowColors(true);
     ui->referenceView->setColumnHidden(3, true);
     expandResetModel();
+
 
     connect(ui->referenceView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToReferenceItem);
     connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
