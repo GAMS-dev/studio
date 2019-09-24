@@ -92,7 +92,7 @@ bool SymbolReferenceWidget::isModelLoaded() const
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
-    Q_UNUSED(deselected);
+    Q_UNUSED(deselected)
     if (selected.indexes().size() > 0) {
         if (mType == SymbolDataType::FileUsed) {
             mCurrentSymbolID = -1;

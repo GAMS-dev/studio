@@ -175,7 +175,7 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
          case SymbolDataType::Model :
              switch(index.column()) {
              case 0: return QString::number( refList.at(idx)->id() );
-             case 1: return refList.at(idx)->name();;
+             case 1: return refList.at(idx)->name();
              case 2: return SymbolDataType::from( refList.at(idx)->type() ).name();
              case 3: return refList.at(idx)->explanatoryText();
              default: break;
