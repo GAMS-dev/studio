@@ -27,6 +27,9 @@
 #include <QDialog>
 #include <QToolBar>
 
+using namespace gdxviewer;
+using namespace option;
+
 void testmainwindow::initTestCase()
 {
     CommonPaths::setSystemDir(GAMS_DISTRIB_PATH);
@@ -36,10 +39,13 @@ void testmainwindow::initTestCase()
 
     mMainWindow = new MainWindow();
     QVERIFY(mMainWindow);
+}
 
+void testmainwindow::init()
+{
     // make sure a file to work with is there
     mMainWindow->receiveModLibLoad("trnsport", true);
-    QTest::qWait(200); // needed for filesystem to finish writing
+    QTest::qWait(100); // needed for filesystem to finish writing
 
     mGms = QFileInfo(mSettings->defaultWorkspace()+"/trnsport.gms");
     Q_ASSERT(mGms.exists());
@@ -49,6 +55,42 @@ void testmainwindow::cleanupTestCase()
 {
     delete mMainWindow;
     delete mSettings;
+}
+
+void testmainwindow::test_gdxValue()
+{
+//    - Press F6
+//    - Select trnsport
+//    - Add rf=xxx to the command line
+//    - Press F10
+//    - Open trnsport.gdx and check that the result for x is right
+//    - Check that table view of x works
+//    - Open xxx.rf
+//    - Look at the entries of d
+
+    // go to trnsport.gms
+    mMainWindow->openFilePath(mGms.filePath(), true);
+    Q_ASSERT(mMainWindow->recent()->editor());
+    QVERIFY2(mMainWindow->recent()->editor()->property("location").toString() == mGms.filePath(), "Wrong file focussed. Expected: trnsport.gms");
+
+    // set gams options
+    CommandLineOption* combobox = mMainWindow->gamsOptionWidget()->findChild<option::CommandLineOption*>("gamsOptionCommandLine");
+    Q_ASSERT(combobox);
+    combobox->setCurrentText("rf=xxx.rf");
+
+    // run gams
+    QTest::keyPress(mMainWindow, Qt::Key_F10);
+    QTest::qWait(500); // wait for gams to run
+
+    // open gdx
+    QFileInfo gdx(mGms.path() + "/" + mGms.baseName() + ".gdx");
+    mMainWindow->openFilePath(gdx.filePath());
+    QVERIFY2(mMainWindow->recent()->editor()->property("location").toString() == gdx.filePath(), "Wrong file focussed. Expected: trnsport.gdx");
+    GdxViewer* gdxViewer = static_cast<GdxViewer*>(mMainWindow->recent()->editor());
+    Q_ASSERT(gdxViewer);
+
+    // TODO(rogo): add selection of gdx viewer cell
+//    int x = gdxViewer->
 }
 
 void testmainwindow::test_search()
