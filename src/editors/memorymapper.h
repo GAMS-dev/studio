@@ -80,6 +80,7 @@ public slots:
 protected:
     Chunk *getChunk(int chunkNr, bool cache = true) const override;
     int chunkCount() const override;
+//    ChunkMetrics* chunkMetrics(int chunkNr) const override;
     void internalRemoveChunk(int chunkNr) override;
     int lastChunkWithLineNr() const override;
     int visibleLineCount() const override;

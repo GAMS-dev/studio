@@ -484,6 +484,7 @@ void MemoryMapper::appendEmptyLine()
     invalidateSize();
     chunk->lineBytes << chunk->lineBytes.last()+1;
     chunk->bArray[chunk->lineBytes.last()-1] = '\n';
+    updateChunkMetrics(chunk);
 
     mInstantRefresh = false;
     mLastLineIsOpen = false;
@@ -733,7 +734,10 @@ void MemoryMapper::dump()
 //        }
         DEB() << chunk->nr << " from: " << chunk->bStart
               << " size: " << chunk->size()
-              << "  lineCount " << chunk->lineCount();
+              << "  lineCount " << chunk->lineCount() << "  metr:" << chunkMetrics(chunk->nr)->lineCount;
+        int len = chunk->lineCount() ? chunk->lineBytes.at(1) - chunk->lineBytes.at(0) : 0;
+        if (len)
+            DEB() << "   starts with: " << chunk->bArray.mid(chunk->lineBytes.at(0), len);
         sum += chunk->size();
     }
 //    for (const Unit &u : mUnits) {
@@ -751,6 +755,11 @@ int MemoryMapper::chunkCount() const
 {
     return mChunks.size();
 }
+
+//AbstractTextMapper::ChunkMetrics *MemoryMapper::chunkMetrics(int chunkNr) const
+//{
+//    ChunkMetrics
+//}
 
 void MemoryMapper::internalRemoveChunk(int chunkNr)
 {

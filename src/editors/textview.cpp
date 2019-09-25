@@ -418,6 +418,8 @@ void TextView::topLineMoved()
         updatePosAndAnchor();
         mEdit->updateExtraSelections();
         mEdit->protectWordUnderCursor(false);
+        if (mEdit->verticalScrollBar()->sliderPosition())
+            mEdit->verticalScrollBar()->setSliderPosition(0);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
     }

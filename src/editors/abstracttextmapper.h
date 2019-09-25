@@ -95,6 +95,7 @@ private:
         int lineLen = -1;
     };
 
+protected:
     /// class ChunkMetrics
     /// Stores necessary size and line count of a chunk to avoid reloading the chunk
     ///
@@ -185,7 +186,7 @@ protected:
     AbstractTextMapper(QObject *parent = nullptr);
 
     virtual int chunkCount() const = 0;
-    ChunkMetrics* chunkMetrics(int chunkNr) const;
+    virtual ChunkMetrics* chunkMetrics(int chunkNr) const;
     QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
     virtual Chunk *getChunk(int chunkNr, bool cache = true) const = 0;
     void initDelimiter(Chunk *chunk) const;

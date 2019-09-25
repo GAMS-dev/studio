@@ -60,7 +60,6 @@ public slots:
 
 protected:
     Chunk *getChunk(int chunkNr, bool cache = true) const override;
-    void internalRemoveChunk(int chunkNr) override;
 
 private slots:
     void closeAndReset();

@@ -649,9 +649,11 @@ void AbstractTextMapper::setPosAbsolute(AbstractTextMapper::Chunk *chunk, int li
     }
     // requesting the line moved the chunk to the top, so we can use the last chunk here
     mPosition.chunkNr = chunk->nr;
-    mPosition.localLine = lineInChunk;
-    mPosition.localLineStart = chunk->lineBytes.at(lineInChunk);
-    mPosition.lineLen = chunk->lineBytes.at(lineInChunk+1) - mPosition.localLineStart - mDelimiter.size();
+    mPosition.localLine = qBound(0, lineInChunk, chunk->lineBytes.size()-2);
+    if (mPosition.localLine != lineInChunk)
+        DEB() << "Wrong lineInChunk! " << lineInChunk << " [0-" << chunk->lineBytes.size()-2 << "]";
+    mPosition.localLineStart = chunk->lineBytes.at(mPosition.localLine);
+    mPosition.lineLen = chunk->lineBytes.at(mPosition.localLine+1) - mPosition.localLineStart - mDelimiter.size();
     mPosition.absLineStart = chunk->bStart + mPosition.localLineStart;
     mPosition.charNr = charNr;
     if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
@@ -659,17 +661,16 @@ void AbstractTextMapper::setPosAbsolute(AbstractTextMapper::Chunk *chunk, int li
 
 void AbstractTextMapper::emitBlockCountChanged()
 {
-    // TODO(JM) internal adjustment
     emit blockCountChanged();
 }
 
 void AbstractTextMapper::removeChunk(int chunkNr)
 {
-    Chunk *chunk = getChunk(mTopLine.chunkNr);
+    Chunk *chunk = getChunk(mMaxTopLine.chunkNr);
     CursorPosition topLine;
     if (chunk && mPosition.isValid() && mPosition.chunkNr >= 0) {
+        // generate a CursorPosition for mMaxTopLine
         topLine = mPosition;
-        // TODO(JM) crash on this:
         setPosAbsolute(chunk, mMaxTopLine.localLine, 0, QTextCursor::KeepAnchor);
         qSwap(topLine, mPosition);
     }
