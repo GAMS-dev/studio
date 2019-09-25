@@ -35,3 +35,8 @@ void MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(bool flag)
 {
     [NSWindow setAllowsAutomaticWindowTabbing: flag];
 }
+
+void MacOSCocoaBridge::setFullScreenMenuItemEverywhere(bool flag)
+{
+    [[NSUserDefaults standardUserDefaults] setBool:flag forKey:@"NSFullScreenMenuItemEverywhere"];
+}
