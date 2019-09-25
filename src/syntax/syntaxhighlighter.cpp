@@ -148,9 +148,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     if (!code.isValid()) code = 0;
     int index = 0;
     QTextBlock textBlock = currentBlock();
-    if (textBlock.blockNumber() == 35) {
-        DEB() << textBlock.text();
-    }
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
     bool emptyLineKinds = true;
