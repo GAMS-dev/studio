@@ -25,6 +25,7 @@
 #include "commonpaths.h"
 
 #include <QDialog>
+#include <QSplitter>
 #include <QToolBar>
 
 using namespace gdxviewer;
@@ -89,8 +90,22 @@ void testmainwindow::test_gdxValue()
     GdxViewer* gdxViewer = static_cast<GdxViewer*>(mMainWindow->recent()->editor());
     Q_ASSERT(gdxViewer);
 
-    // TODO(rogo): add selection of gdx viewer cell
-//    int x = gdxViewer->
+    QTableView* symbolView = gdxViewer->findChild<QTableView*>("tvSymbols");
+    Q_ASSERT(symbolView);
+
+    QAbstractItemModel *model = symbolView->model();
+    QModelIndexList matches = model->match(model->index(0,1), Qt::DisplayRole, "x", 1, Qt::MatchFixedString);
+
+    QModelIndex symX = matches.first();
+    int xPos = symbolView->columnViewportPosition(symX.column()) + 5;
+    int yPos = symbolView->rowViewportPosition(symX.row()) + 5;
+
+    QWidget* pViewport = symbolView->viewport();
+    QTest::mouseClick (pViewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
+    QTest::qWait(100);
+
+    QSplitter* splitter = gdxViewer->findChild<QSplitter*>("splitter");
+    qDebug() /*rogo: delete*/ << splitter->widget(0);
 }
 
 void testmainwindow::test_search()
