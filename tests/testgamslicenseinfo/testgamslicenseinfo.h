@@ -45,6 +45,9 @@ private slots:
 
     void testSolverNames();
 
+    void testSolverOptDefFilename_data();
+    void testSolverOptDefFilename();
+
     void testModelTypeNames();
 
     void testSolverCapability();

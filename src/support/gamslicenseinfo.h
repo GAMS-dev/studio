@@ -46,6 +46,11 @@ public:
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
 
+    bool isSolverHidden(const QString &solverName);
+
+    QString solverOptDefFileName(const QString &solverName) const;
+    QMap<QString, QString> solverOptDefFileNames();
+
     QMap<int, int> solverIndices();
 
     QMap<int, QString> modelTypeNames();

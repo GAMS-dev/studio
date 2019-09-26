@@ -109,6 +109,35 @@ QMap<int, QString> GamsLicenseInfo::solverNames()
     return names;
 }
 
+bool GamsLicenseInfo::isSolverHidden(const QString &solverName)
+{
+    return cfgAlgHidden(mCFG, solverId(solverName));
+}
+
+QString GamsLicenseInfo::solverOptDefFileName(const QString &solverName) const
+{
+#if CFGAPIVERSION > 2
+    char name[GMS_SSSIZE];
+    if (cfgDefFileName(mCFG, solverName.toStdString().c_str(), name))
+        return QString("%1").arg(name);
+    else
+        return QString();
+#else
+        return QString();
+#endif
+}
+
+QMap<QString, QString> GamsLicenseInfo::solverOptDefFileNames()
+{
+    QMap<QString, QString> fileNames;
+    for (int i=1; i<=solvers(); ++i) {
+        if (!cfgAlgHidden(mCFG, i)) {
+            fileNames[solverName(i)] = solverOptDefFileName( solverName(i) );
+        }
+    }
+    return fileNames;
+}
+
 QMap<int, int> GamsLicenseInfo::solverIndices()
 {
     QMap<int, int> indices;
