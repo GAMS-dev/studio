@@ -130,6 +130,7 @@ protected:
 
 public:
     enum Kind {fileMapper, memoryMapper};
+    enum SpecialCursorPosition { cursorInvalid = -1, cursorBeforeStart = -2, cursorBeyondEnd = -3 };
 
 public:
     ~AbstractTextMapper();

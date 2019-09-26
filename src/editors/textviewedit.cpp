@@ -71,7 +71,7 @@ void TextViewEdit::copySelection()
         QString unit("bytes");
         while (selSize >= 1024.0 && i.hasNext()) {
             unit = i.next();
-            selSize /= 1024.0;
+            selSize = int(selSize / 1024.0);
         }
         QString text = QString("Your selection is very large (%1 %2). Do you want to proceed?").arg(selSize,'f',2).arg(unit);
         QMessageBox::StandardButton choice = QMessageBox::question(this, "Large selection", text);
@@ -202,23 +202,28 @@ int TextViewEdit::localBlockNr(const int &absoluteBlockNr) const
 void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
     if (!mSettings->highlightCurrentLine()) return;
+    int line = mMapper.position(true).y();
+    if (line <= AbstractTextMapper::cursorInvalid) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = QTextCursor(document()->findBlockByNumber(mMapper.position(true).y()));
+    selection.cursor = QTextCursor(document()->findBlockByNumber(line));
     selections.append(selection);
 }
 
 void TextViewEdit::mousePressEvent(QMouseEvent *e)
 {
     CodeEdit::mousePressEvent(e);
+    setCursorWidth(2);
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(e->pos());
         if (existHRef(cursor.charFormat().anchorHref())) {
             mHRefClickPos = e->pos();
         } else if (e->buttons() == Qt::LeftButton) {
-            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock());
+            QTextCursor::MoveMode mode = e->modifiers().testFlag(Qt::ShiftModifier) ? QTextCursor::KeepAnchor
+                                                                                    : QTextCursor::MoveAnchor;
+            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), mode);
         }
     }
 }
@@ -305,6 +310,11 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
         }
     }
     return res;
+}
+
+void TextViewEdit::paintEvent(QPaintEvent *e)
+{
+    AbstractEdit::paintEvent(e);
 }
 
 bool TextViewEdit::existHRef(QString href)

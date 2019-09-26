@@ -637,6 +637,10 @@ void AbstractTextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor
     int lineInChunk;
     if (debugMode()) localLineNr = localLineNr / 2;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
+    if (!chunk) {
+        chunk = chunkForRelativeLine(visibleLineCount()-1, &lineInChunk);
+        if (!chunk) return;
+    }
     setPosAbsolute(chunk, lineInChunk, charNr, mode);
 }
 
@@ -656,7 +660,9 @@ void AbstractTextMapper::setPosAbsolute(AbstractTextMapper::Chunk *chunk, int li
     mPosition.lineLen = chunk->lineBytes.at(mPosition.localLine+1) - mPosition.localLineStart - mDelimiter.size();
     mPosition.absLineStart = chunk->bStart + mPosition.localLineStart;
     mPosition.charNr = charNr;
-    if (mode == QTextCursor::MoveAnchor) mAnchor = mPosition;
+    if (mode == QTextCursor::MoveAnchor) {
+        mAnchor = mPosition;
+    }
 }
 
 void AbstractTextMapper::emitBlockCountChanged()
@@ -782,18 +788,20 @@ void AbstractTextMapper::selectAll()
 QPoint AbstractTextMapper::convertPosLocal(const CursorPosition &pos) const
 {
     // no position or it starts before the topLine
-    if (pos.chunkNr < 0 || pos.chunkNr < mTopLine.chunkNr ||
+    if (pos.chunkNr < 0)
+        return QPoint(0, cursorInvalid);
+    if (pos.chunkNr < mTopLine.chunkNr ||
             (pos.chunkNr == mTopLine.chunkNr && pos.localLine < mTopLine.localLine))
-        return QPoint(0, 0);
+        return QPoint(0, cursorBeforeStart);
 
     int lineNr = -mTopLine.localLine;
     int chunkNr = mTopLine.chunkNr;
     while (pos.chunkNr >= chunkNr) {
         // count forward
         lineNr += (pos.chunkNr > chunkNr) ? chunkMetrics(chunkNr)->lineCount : pos.localLine;
-        if (lineNr >= visibleLineCount()) {
+        if (lineNr > visibleLineCount()) {
             // position is beyond the end of the buffer
-            return QPoint(lines(visibleLineCount()-1, 1).length(), visibleLineCount()-1);
+            return QPoint(lines(visibleLineCount(), 1).length(), cursorBeyondEnd);
         }
         if (pos.chunkNr == chunkNr) {
             return QPoint(pos.charNr, lineNr);
@@ -813,7 +821,7 @@ void AbstractTextMapper::setDebugMode(bool debug)
 
 QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
 {
-    if (pos.chunkNr < 0) return QPoint(0,0);
+    if (pos.chunkNr < 0) return QPoint(0, cursorInvalid);
     int debLine = debugMode() ? 1 : 0;
     ChunkMetrics *cm = chunkMetrics(pos.chunkNr);
     int line = 0;
@@ -832,14 +840,14 @@ QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
 
 QPoint AbstractTextMapper::position(bool local) const
 {
-    if (!mPosition.isValid()) return QPoint(-1,-1);
+    if (!mPosition.isValid()) return QPoint(-1, cursorInvalid);
     return (local ? convertPosLocal(mPosition) : convertPos(mPosition));
 }
 
 
 QPoint AbstractTextMapper::anchor(bool local) const
 {
-    if (!mPosition.isValid() || !mAnchor.isValid()) return QPoint(-1,-1);
+    if (!mPosition.isValid() || !mAnchor.isValid()) return QPoint(-1, cursorInvalid);
     return local ? convertPosLocal(mAnchor) : convertPos(mAnchor);
 }
 

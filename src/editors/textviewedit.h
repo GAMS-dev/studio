@@ -68,6 +68,8 @@ protected:
     void updateCursorShape(const Qt::CursorShape &defaultShape) override;
 //    bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
+    void paintEvent(QPaintEvent *e) override;
+
 
 private:
     int topVisibleLine() override;

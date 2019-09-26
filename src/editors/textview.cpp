@@ -355,15 +355,11 @@ void TextView::handleSelectionChange()
     if (mDocChanging) return;
     QTextCursor cur = mEdit->textCursor();
     if (cur.hasSelection()) {
-        if (!mMapper->hasSelection()) {
-            QTextCursor anc = mEdit->textCursor();
-            anc.setPosition(cur.anchor());
-            mMapper->setPosRelative(anc.blockNumber(), anc.positionInBlock());
-        }
         mMapper->setPosRelative(cur.blockNumber(), cur.positionInBlock(), QTextCursor::KeepAnchor);
     } else {
         mMapper->setPosRelative(cur.blockNumber(), cur.positionInBlock());
     }
+    updatePosAndAnchor();
     emit selectionChanged();
 }
 
@@ -392,7 +388,9 @@ void TextView::topLineMoved()
         if (mStayAtTail && mMapper->atTail()) *mStayAtTail = true;
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
+        disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
         mEdit->setTextCursor(QTextCursor(mEdit->document()));
+        connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
         QVector<LineFormat> formats;
         QString dat = mMapper->lines(0, mMapper->visibleLineCount()+1, formats);
         mEdit->setPlainText(dat);
@@ -461,25 +459,45 @@ void TextView::updatePosAndAnchor()
 {
     QPoint pos = mMapper->position(true);
     QPoint anchor = mMapper->anchor(true);
-    if (pos.y() < 0) return;
+    if (pos.y() == AbstractTextMapper::cursorInvalid
+            || ( pos.y() < AbstractTextMapper::cursorInvalid
+                 && (pos.y() == anchor.y() || !mMapper->hasSelection()) )) {
+        mEdit->setCursorWidth(0);
+        return;
+    }
+    mEdit->setCursorWidth( (pos.y() > AbstractTextMapper::cursorInvalid) ? 2 : 0 );
     if (mMapper->debugMode()) {
-        pos.setY(pos.y()*2 + 1);
-        anchor.setY(anchor.y()*2 + 1);
+        if (pos.y() > AbstractTextMapper::cursorInvalid)
+            pos.setY(qMin(pos.y()*2 + 1, mMapper->visibleLineCount()));
+        if (anchor.y() > AbstractTextMapper::cursorInvalid)
+            anchor.setY(qMin(anchor.y()*2 + 1, mMapper->visibleLineCount()));
     }
 
     ChangeKeeper x(mDocChanging);
-    QTextCursor cursor = mEdit->textCursor();
-    if (anchor.y() < 0 && pos == anchor) {
-        QTextBlock block = mEdit->document()->findBlockByNumber(pos.y());
-        int p = block.position() + qMin(block.length(), pos.x());
+    QTextCursor cursor = QTextCursor(mEdit->document());
+    if (mMapper->hasSelection()) {
+        QTextBlock block = anchor.y() == AbstractTextMapper::cursorBeforeStart ?
+                    mEdit->document()->firstBlock()
+                  : anchor.y() == AbstractTextMapper::cursorBeyondEnd ?
+                        mEdit->document()->lastBlock()
+                      : mEdit->document()->findBlockByNumber(qMax(0, anchor.y()));
+        int p = block.position() + qBound(0, anchor.x(), block.length()-1);
         cursor.setPosition(p);
-    } else {
-        QTextBlock block = mEdit->document()->findBlockByNumber(anchor.y());
-        int p = block.position() + qMin(block.length(), anchor.x());
-        cursor.setPosition(p);
-        block = mEdit->document()->findBlockByNumber(pos.y());
-        p = block.position() + qMin(block.length(), pos.x());
+        block = pos.y() == AbstractTextMapper::cursorBeforeStart ?
+                    mEdit->document()->firstBlock()
+                  : pos.y() == AbstractTextMapper::cursorBeyondEnd ?
+                        mEdit->document()->lastBlock()
+                      : mEdit->document()->findBlockByNumber(qMax(0, pos.y()));
+        p = block.position() + qBound(0, pos.x(), block.length()-1);
         cursor.setPosition(p, QTextCursor::KeepAnchor);
+    } else {
+        QTextBlock block = pos.y() == AbstractTextMapper::cursorBeforeStart ?
+                    mEdit->document()->firstBlock()
+                  : pos.y() == AbstractTextMapper::cursorBeyondEnd ?
+                        mEdit->document()->lastBlock()
+                      : mEdit->document()->findBlockByNumber(qMax(0, pos.y()));
+        int p = block.position() + qBound(0, pos.x(), block.length()-1);
+        cursor.setPosition(p);
     }
     disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     mEdit->setTextCursor(cursor);
