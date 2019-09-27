@@ -29,6 +29,7 @@ public:
     static void disableDictationMenuItem(bool flag);
     static void disableCharacterPaletteMenuItem(bool flag);
     static void setAllowsAutomaticWindowTabbing(bool flag);
+    static void setFullScreenMenuItemEverywhere(bool flag);
 };
 
 #endif // MACOSCOCOABRIDGE_H

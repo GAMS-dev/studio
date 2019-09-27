@@ -40,12 +40,11 @@ class LineNumberArea;
 class SearchWidget;
 
 struct ParenthesesMatch {
-    ParenthesesMatch(int _pos = -1, int _match = -1, int _inOutMatch = -1, bool _valid = false)
-        : pos(_pos), match(_match), inOutMatch(_inOutMatch), valid(_valid) {}
+    ParenthesesMatch(int _pos = -1, int _match = -1, bool _valid = false)
+        : pos(_pos), match(_match), valid(_valid) {}
     bool isValid() {return pos>=0;}
     int pos;
     int match;
-    int inOutMatch;
     bool valid;
 };
 

@@ -422,7 +422,6 @@ void FileMeta::load(int codecMib, bool init)
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
     mData = Data(location(), mData.type);
 
-    // TODO(JM) Later, this method should be moved to the new DataWidget
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {

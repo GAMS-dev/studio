@@ -1,13 +1,9 @@
-Version 0.12.5
-===================
+Version 0.12.7
+========================
+- added dialog to create license file (pops up when a license is in the user's clipboard and the "About GAMS" is opened)
+- disabled top dockwidget area for all widgets as it should be used solely by the extended parameter editor
+- fixed behavior of jumping to matching parenthesis ([Shift+]F8)
+- fixed missing parenthesis highlighting for variables
+- reduced flickering when minimizing/maximizing Studio
+- removed online version check on Studio startup
 
-## General
-- fixed search status update when having no results
-- added raise to result view to pop up over help
-- fixed crash when jumping to a result after invalidating cache
-- Read and use InitialSort key in GLB files
-- Enhanced icon size in Help on Mac OS
-- Allow to adjust the numerical precision in the GDX Viewer
-- make model library explorer aware of initial sort column
-- Better tooltip for GDX Viewer precision spin box
-- Model Library Explorer feels slow on macOS fixed

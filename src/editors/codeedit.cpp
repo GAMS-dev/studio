@@ -115,18 +115,7 @@ void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
     } else {
         int top = rect.y();
         int bottom = top + rect.height();
-        // TODO(JM) major performance issue on calling :blockBoundingGeometry()
-//        QTextBlock b = firstVisibleBlock();
-//        while (b.isValid() && b.isVisible()) {
-//            QRect blockBounds = blockBoundingGeometry(b).translated(contentOffset()).toAlignedRect();
-//            if (top > blockBounds.top() && top < blockBounds.bottom())
-//                top = blockBounds.top();
-//            if (bottom > blockBounds.top() && bottom < blockBounds.bottom()-1)
-//                bottom = blockBounds.bottom()-1;
-//            if (blockBounds.bottom() >= rect.bottom())
-//                break;
-//            b = b.next();
-//        }
+        // NOTE! major performance issue on calling :blockBoundingGeometry()
         mLineNumberArea->update(0, top, mLineNumberArea->width(), bottom-top);
     }
 
@@ -319,10 +308,13 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     } else {
         if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
             ParenthesesMatch pm = matchParentheses();
-            QTextCursor::MoveMode mm = (e == Hotkey::SelectParentheses) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            if (pm.inOutMatch >= 0) {
+            bool sel = (e == Hotkey::SelectParentheses);
+            QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            if (pm.match >= 0) {
                 QTextCursor cur = textCursor();
-                cur.setPosition(pm.inOutMatch, mm);
+                if (sel) cur.clearSelection();
+                if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
+                cur.setPosition(pm.match+1, mm);
                 setTextCursor(cur);
             }
         } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
@@ -1119,7 +1111,6 @@ ParenthesesMatch CodeEdit::matchParentheses()
     for (int i = parList.count()-1; i >= 0; --i) {
         if (parList.at(i).relPos == pos || parList.at(i).relPos == pos-1) {
             start = i;
-            break;
         }
     }
     if (start < 0) return ParenthesesMatch();
@@ -1127,7 +1118,6 @@ ParenthesesMatch CodeEdit::matchParentheses()
     int ci = parentheses.indexOf(parList.at(start).character);
     bool back = ci >= pSplit;
     ci = ci % pSplit;
-    bool inPar = back ^ (parList.at(start).relPos != pos);
     ParenthesesMatch result(block.position() + parList.at(start).relPos);
     QStringRef parEnter = parentheses.midRef(back ? pSplit : 0, pSplit);
     QStringRef parLeave = parentheses.midRef(back ? 0 : pSplit, pSplit);
@@ -1159,14 +1149,12 @@ ParenthesesMatch CodeEdit::matchParentheses()
                     if (parentheses.at(ci) == 'E') return ParenthesesMatch(); // only mark embedded on mismatch
                     result.valid = true;
                     result.match = block.position() + parList.at(pi).relPos;
-                    result.inOutMatch = result.match + (inPar^back ? 0 : 1);
                     return result;
                 }
             } else {
                 // Mark bad parentheses
                 parStack.clear();
                 result.match = block.position() + parList.at(pi).relPos;
-                result.inOutMatch = result.match + (inPar^back ? 0 : 1);
                 return result;
             }
         } else {

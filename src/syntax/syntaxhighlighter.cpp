@@ -269,21 +269,26 @@ int SyntaxHighlighter::getKindIdx(SyntaxKind kind) const
     return -1;
 }
 
-const QVector<SyntaxKind> validParenthesesSyntax = {
-    SyntaxKind::Standard,
-    SyntaxKind::Identifier,
-    SyntaxKind::IdentifierTable,
-    SyntaxKind::IdentifierAssignment,
-    SyntaxKind::IdentifierAssignmentEnd,
-    SyntaxKind::IdentifierTableAssignmentHead,
-    SyntaxKind::IdentifierTableAssignmentRow,
-    SyntaxKind::Reserved,
-    SyntaxKind::Formula,
-    SyntaxKind::Solve,
-    SyntaxKind::SolveBody,
-    SyntaxKind::Option,
-    SyntaxKind::OptionBody,
-    SyntaxKind::EmbeddedBody,
+const QVector<SyntaxKind> invalidParenthesesSyntax = {
+    SyntaxKind::Directive,
+    SyntaxKind::DirectiveBody,
+    SyntaxKind::DirectiveComment,
+    SyntaxKind::Title,
+    SyntaxKind::String,
+    SyntaxKind::Assignment,
+    SyntaxKind::AssignmentLabel,
+    SyntaxKind::AssignmentValue,
+    SyntaxKind::CommentLine,
+    SyntaxKind::CommentBlock,
+    SyntaxKind::CommentEndline,
+    SyntaxKind::CommentInline,
+    SyntaxKind::DeclarationSetType,
+    SyntaxKind::DeclarationVariableType,
+    SyntaxKind::Declaration,
+    SyntaxKind::DeclarationTable,
+    SyntaxKind::IdentifierDescription,
+    SyntaxKind::Embedded,
+    SyntaxKind::EmbeddedEnd,
 };
 
 const QString validParentheses("{[(}])/");
@@ -299,7 +304,7 @@ void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len,
         parentheses << ParenthesesPos('e', start);
         return;
     }
-    if (!validParenthesesSyntax.contains(kind)) return;
+    if (invalidParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
         int iPara = validParentheses.indexOf(text.at(i));
         if (iPara == 6) {

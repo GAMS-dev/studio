@@ -193,8 +193,17 @@ void ProjectContextMenu::onCloseFile()
 
 void ProjectContextMenu::onAddExisitingFile()
 {
+    QVector<ProjectGroupNode*> groups;
+    for (ProjectAbstractNode *node: mNodes) {
+        ProjectGroupNode *group = node->toGroup();
+        if (!group) group = node->parentNode();
+        if (!groups.contains(group))
+            groups << group;
+    }
+
     QString sourcePath = "";
-    emit getSourcePath(sourcePath);
+    if (!groups.isEmpty()) sourcePath = groups.first()->location();
+    else emit getSourcePath(sourcePath);
 
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent, "Add existing files", sourcePath,
                                                     tr("GAMS Source (*.gms);;"
@@ -207,13 +216,6 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    QVector<ProjectGroupNode*> groups;
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
-    }
     for (ProjectGroupNode *group: groups) {
         for (QString filePath: filePaths) {
             emit addExistingFile(group, filePath);

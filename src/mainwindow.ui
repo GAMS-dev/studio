@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -208,6 +208,8 @@
     <addaction name="separator"/>
     <addaction name="menuBookmarks"/>
     <addaction name="actionReset_Views"/>
+    <addaction name="separator"/>
+    <addaction name="actionFull_Screen"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -266,6 +268,9 @@
    </property>
    <property name="accessibleName">
     <string>Project Explorer</string>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
     <string>Project Explorer</string>
@@ -346,6 +351,9 @@
    <property name="floating">
     <bool>false</bool>
    </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Output</string>
    </property>
@@ -398,6 +406,9 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockHelpView">
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Help</string>
    </property>
@@ -1116,6 +1127,20 @@
    </property>
    <property name="toolTip">
     <string>Delete leftover scratch directories in current working directory</string>
+   </property>
+  </action>
+  <action name="actionFull_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Full Screen</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Return</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
  </widget>

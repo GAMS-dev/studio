@@ -33,6 +33,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mReferenceViewer(parent)
 {
     ui->setupUi(this);
+    ui->symbolReferenceSplitter->setSizes(QList<int>({2500,1500}));
 
     mSymbolTableModel = new SymbolTableModel(mType, this);
     ui->symbolView->setModel( mSymbolTableModel );
@@ -45,15 +46,23 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
         ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
     ui->symbolView->setSortingEnabled(true);
     ui->symbolView->setAlternatingRowColors(true);
+    ui->symbolView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
-    ui->symbolView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->symbolView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+    ui->symbolView->horizontalHeader()->setSectionResizeMode( mSymbolTableModel->getLastSectionIndex(), QHeaderView::Stretch );
     ui->symbolView->verticalHeader()->setMinimumSectionSize(1);
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
+    QAction* resizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { resizeColumnToContents(); }, QKeySequence("Ctrl+R"));
+    resizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    resizeColumn->setShortcutVisibleInContextMenu(true);
+    ui->symbolView->addAction(resizeColumn);
 
     connect(mSymbolTableModel, &SymbolTableModel::symbolSelectionToBeUpdated, this, &SymbolReferenceWidget::updateSymbolSelection);
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
+    connect(ui->symbolView, &QTableView::customContextMenuRequested, this, &SymbolReferenceWidget::showContextMenu);
     connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
     connect(ui->allColumnToggleSearch, &QCheckBox::toggled, mSymbolTableModel, &SymbolTableModel::toggleSearchColumns);
 
@@ -63,11 +72,9 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->referenceView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);
-    ui->referenceView->expandAll();
-    ui->referenceView->resizeColumnToContents(0);
-    ui->referenceView->resizeColumnToContents(1);
     ui->referenceView->setAlternatingRowColors(true);
     ui->referenceView->setColumnHidden(3, true);
+    expandResetModel();
 
     connect(ui->referenceView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToReferenceItem);
     connect( mReferenceTreeModel, &ReferenceTreeModel::modelReset, this, &SymbolReferenceWidget::expandResetModel);
@@ -92,7 +99,7 @@ bool SymbolReferenceWidget::isModelLoaded() const
 
 void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
-    Q_UNUSED(deselected);
+    Q_UNUSED(deselected)
     if (selected.indexes().size() > 0) {
         if (mType == SymbolDataType::FileUsed) {
             mCurrentSymbolID = -1;
@@ -142,8 +149,10 @@ void SymbolReferenceWidget::resetModel()
 
 void SymbolReferenceWidget::initModel()
 {
-    if (!mSymbolTableModel->isModelLoaded())
+    if (!mSymbolTableModel->isModelLoaded()) {
         mSymbolTableModel->initModel(mReference);
+        resizeColumnToContents();
+    }
 
     mReferenceTreeModel->resetModel();
 }
@@ -180,6 +189,28 @@ void SymbolReferenceWidget::updateSymbolSelection()
         ui->symbolView->selectionModel()->select( QItemSelection(topLeftIdx, bottomRightIdx), QItemSelectionModel::Select);
     } else {
          mReferenceTreeModel->resetModel();
+    }
+}
+
+void SymbolReferenceWidget::resizeColumnToContents()
+{
+    ui->symbolView->resizeColumnsToContents();
+    ui->symbolView->horizontalHeader()->setSectionResizeMode( mSymbolTableModel->getLastSectionIndex(), QHeaderView::Stretch );
+}
+
+void SymbolReferenceWidget::showContextMenu(QPoint p)
+{
+    QModelIndexList indexSelection = ui->symbolView->selectionModel()->selectedIndexes();
+    if (indexSelection.size()<=0)
+        return;
+
+    if (mSymbolTableModel->rowCount()>0 && ui->symbolView->horizontalHeader()->logicalIndexAt(p)>=0) {
+        QMenu m(this);
+        for(QAction* action : ui->symbolView->actions()) {
+            action->setEnabled(true);
+            m.addAction(action);
+        }
+        m.exec(ui->symbolView->viewport()->mapToGlobal(p));
     }
 }
 

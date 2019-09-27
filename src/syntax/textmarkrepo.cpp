@@ -206,18 +206,32 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
     QList<TextMark*> res;
     if (!mMarks.contains(fileId)) return res;
 
-    // TODO(JM) take iterator instead of values()
-    QList<TextMark*> marks = (lineNr < 0) ? mMarks.value(fileId)->values() : mMarks.value(fileId)->values(lineNr);
-    if (groupId < 0 && refType == TextMark::all) return marks;
-    int i = 0;
-    if (marks.size()) res.reserve(marks.size());
-    for (TextMark* mark: marks) {
-        if (refType != TextMark::all && refType != mark->type()) continue;
-        if (groupId.isValid() && mark->groupId().isValid() && groupId != mark->groupId()) continue;
-        res << mark;
-        i++;
-        if (i == max) break;
+    LineMarks *lMarks = mMarks.value(fileId);
+    if (lMarks->isEmpty() || (lineNr >= 0 && !lMarks->contains(lineNr)) ) return res;
+
+    res.reserve(lMarks->size());
+    QPair<LineMarks::const_iterator, LineMarks::const_iterator> interval;
+    if (lineNr < 0) {
+        interval.first = lMarks->constBegin();
+        interval.second = lMarks->constEnd();
+    } else {
+        interval = lMarks->equal_range(lineNr);
     }
+
+    LineMarks::const_iterator it = interval.first;
+    while (true) {
+        if (it == interval.second) break;
+        TextMark *tm = it.value();
+        if (refType == TextMark::all || refType == tm->type()) {
+            if (!groupId.isValid() || !tm->groupId().isValid() || groupId == tm->groupId()) {
+                res << tm;
+            }
+        }
+        if (res.size() == max) break;
+        if (it == interval.second) break;
+        ++it;
+    }
+
     return res;
 }
 
@@ -232,7 +246,7 @@ const LineMarks *TextMarkRepo::marks(FileId fileId)
 void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
 {
     LineMarks *marks = mMarks.value(fileId);
-    if (!marks->size() || !lineShift) return;
+    if (!marks || !marks->size() || !lineShift) return;
     QSet<int> changedLines;
     changedLines.reserve(marks->size()*2);
     QMutableMapIterator<int, TextMark*> it(*marks);

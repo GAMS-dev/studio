@@ -98,6 +98,8 @@ MainWindow::MainWindow(QWidget *parent)
     MacOSCocoaBridge::disableDictationMenuItem(true);
     MacOSCocoaBridge::disableCharacterPaletteMenuItem(true);
     MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
+    MacOSCocoaBridge::setFullScreenMenuItemEverywhere(false);
+    ui->actionFull_Screen->setShortcut(QKeySequence::FullScreen);
 #endif
 
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
@@ -219,7 +221,6 @@ MainWindow::MainWindow(QWidget *parent)
     SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
-
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 }
 
@@ -799,7 +800,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = mRecent.path;
+    QString path = (!groups.isEmpty()) ? groups.first()->location() : mRecent.path;
     if (path.isEmpty()) path = ".";
 
     if (mRecent.editFileId >= 0) {
@@ -1662,7 +1663,10 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
-    if (isResults) mSearchDialog->clearResults();
+    if (isResults) {
+        mSearchDialog->clearResults();
+        return;
+    }
 
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
@@ -1954,6 +1958,8 @@ void MainWindow::dropEvent(QDropEvent* e)
 
         int answer;
         if(pathList.size() > 25) {
+            raise();
+            activateWindow();
             QMessageBox msgBox;
             msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
                            " files at once. Depending on the file sizes this may take a long time.");
@@ -2168,7 +2174,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
     if (gmsFilePath == "") {
         mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
-        ui->actionShow_System_Log->trigger(); // TODO: move this out of here, do on every append
+        ui->actionShow_System_Log->trigger(); // TODO (rogo) move this out of here, do on every append
         return;
     }
     if (gmsFileNode)
@@ -2863,10 +2869,11 @@ void MainWindow::writeTabs(QJsonObject &json) const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp))
-        return;
+    if ((ui->mainTab->currentWidget() == mWp)) return;
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
+    if (!codeEdit && !tv) return;
+
     int maxLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
     GoToDialog dialog(this, maxLines, bool(tv));
     int result = dialog.exec();
@@ -3145,7 +3152,6 @@ void MainWindow::toggleDebugMode()
 
 void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 {
-    // TODO: remove duplicates?
     if (mClosedTabs.isEmpty())
         return;
 
@@ -3403,6 +3409,19 @@ void MainWindow::deleteScratchDirs(const QString &path)
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
 {
     mSearchWidgetPos = searchWidgetPos;
+}
+
+void MainWindow::on_actionFull_Screen_triggered()
+{
+    if (isFullScreen()) {
+        if (mMaximizedBeforeFullScreen)
+            showMaximized();
+        else
+            showNormal();
+    } else {
+        mMaximizedBeforeFullScreen = isMaximized();
+        showFullScreen();
+    }
 }
 
 }

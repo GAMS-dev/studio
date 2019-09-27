@@ -44,6 +44,7 @@ public:
 
 private:
     QString gamsLicense();
+    void createLicenseFile(QWidget *parent);
 
 private slots:
     void on_copylicense_clicked();
