@@ -35,6 +35,7 @@
 #include "locators/settingslocator.h"
 #include "studiosettings.h"
 #include "exception.h"
+#include "support/gamslicenseinfo.h"
 
 namespace gams {
 namespace studio {
@@ -64,9 +65,14 @@ SolverOptionWidget::~SolverOptionWidget()
 
 bool SolverOptionWidget::init()
 {
-    mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(mSolverName));
+    support::GamsLicenseInfo licenseInfo;
+    QString optDefFileName = licenseInfo.solverOptDefFileName(mSolverName);
+    if (optDefFileName.isEmpty())
+        optDefFileName = QString("opt%1.def").arg(mSolverName);
+
+    mOptionTokenizer = new OptionTokenizer(optDefFileName);
     if (!mOptionTokenizer->getOption()->available())
-       EXCEPT() << "Could not load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
+       EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);
