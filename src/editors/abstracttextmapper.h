@@ -230,6 +230,7 @@ private:
     CursorPosition mPosition;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
+    int mCursorColumn = 0;
 
     QTextCodec *mCodec = nullptr;
     int mMaxChunksInCache = 5;

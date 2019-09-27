@@ -115,9 +115,14 @@ int TextViewEdit::scrollMs(int delta)
 
 void TextViewEdit::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown
-            || event->key() == Qt::Key_Up || event->key() == Qt::Key_Down
-            || event->key() == Qt::Key_Home || event->key() == Qt::Key_End ) {
+//    if (event->key() == Qt::Key_Control) {
+//        QPoint pos = mapFromGlobal(QCursor::pos());
+//        QTextCursor cursor = cursorForPosition(pos);
+//        bool done = false;
+//        emit findNearLst(cursor, done, false);
+//        // modify the mouse-cursor if link found (done==true)
+//    }
+    if (event->key() >= Qt::Key_Home && event->key() <= Qt::Key_PageDown) {
         emit keyPressed(event);
         if (!event->isAccepted())
             CodeEdit::keyPressEvent(event);
@@ -218,11 +223,16 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
     setCursorWidth(2);
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(e->pos());
+        if (e->modifiers() & Qt::ControlModifier) {
+            bool done = false;
+            emit findNearLst(cursor, done, true);
+            if (done) return;
+        }
         if (existHRef(cursor.charFormat().anchorHref())) {
             mHRefClickPos = e->pos();
         } else if (e->buttons() == Qt::LeftButton) {
-            QTextCursor::MoveMode mode = e->modifiers().testFlag(Qt::ShiftModifier) ? QTextCursor::KeepAnchor
-                                                                                    : QTextCursor::MoveAnchor;
+            QTextCursor::MoveMode mode = e->modifiers() & Qt::ShiftModifier ? QTextCursor::KeepAnchor
+                                                                            : QTextCursor::MoveAnchor;
             mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), mode);
         }
     }
@@ -270,8 +280,14 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QTextCursor cursor = cursorForPosition(event->pos());
     bool done = false;
-    emit textDoubleClicked(cursor, done);
+    if (event->modifiers() & Qt::ControlModifier)
+        emit findNearLst(cursor, done, true);
     if (!done) {
+        QTextCursor cur = textCursor();
+        QTextCursor::MoveMode mode = event->modifiers() & Qt::ShiftModifier ? QTextCursor::KeepAnchor
+                                                                            : QTextCursor::MoveAnchor;
+        cur.movePosition(QTextCursor::StartOfWord, mode);
+        setTextCursor(cur);
         CodeEdit::mouseDoubleClickEvent(event);
     }
 }

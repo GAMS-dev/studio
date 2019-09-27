@@ -38,7 +38,6 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
 {
     setViewportMargins(0,0,0,0);
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
-    setFocusPolicy(Qt::NoFocus);
     if (kind == FileText) {
         mMapper = new FileMapper();
     }
@@ -59,7 +58,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     if (kind == MemoryText)
-        connect(mEdit, &TextViewEdit::textDoubleClicked, this, &TextView::textDoubleClicked);
+        connect(mEdit, &TextViewEdit::findNearLst, this, &TextView::findNearLst);
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
@@ -79,6 +78,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(mMapper, &AbstractTextMapper::selectionChanged, this, &TextView::selectionChanged);
 //    connect(mMapper, &AbstractTextMapper::contentChanged, this, &TextView::contentChanged);
     mEdit->verticalScrollBar()->installEventFilter(this);
+    mEdit->installEventFilter(this);
 
 /* --- scrollbar controlling qt-methods
     QObject::connect(control, SIGNAL(documentSizeChanged(QSizeF)), q, SLOT(_q_adjustScrollbars()));
@@ -162,7 +162,7 @@ bool TextView::jumpTo(int lineNr, int charNr, int length)
     mMapper->setPosRelative(lineNr - mMapper->visibleTopLine(), charNr + length, QTextCursor::MoveAnchor);
     updatePosAndAnchor();
     emit selectionChanged();
-    setFocus();
+    mEdit->setFocus();
     return true;
 }
 
@@ -242,6 +242,7 @@ void TextView::outerScrollAction(int action)
         break;
     default: break;
     }
+    mEdit->setFocus();
     topLineMoved();
 }
 
@@ -294,6 +295,12 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
         } else topLineMoved();
         return true;
     }
+    if (event->type() == QEvent::FocusOut) {
+        mEdit->setCursorWidth(0);
+    }
+    if (event->type() == QEvent::FocusIn) {
+        updatePosAndAnchor();
+    }
     return false;
 }
 
@@ -331,18 +338,77 @@ int TextView::firstErrorLine()
 
 void TextView::editKeyPressEvent(QKeyEvent *event)
 {
+    QPoint p = mMapper->position(true);
+    QTextCursor::MoveMode mode = event->modifiers() & Qt::ShiftModifier ? QTextCursor::KeepAnchor
+                                                                        : QTextCursor::MoveAnchor;
     switch (event->key()) {
-    case Qt::Key_Up: mMapper->moveVisibleTopLine(-1); break;
-    case Qt::Key_Down: mMapper->moveVisibleTopLine(1); break;
+    case Qt::Key_Home:
+        if (event->modifiers() & Qt::ControlModifier) {
+            mMapper->setVisibleTopLine(0);
+            if (p.y() >= 0) {
+                mMapper->setPosRelative(0, mode);
+                updatePosAndAnchor();
+            }
+        } else if (p.y() > AbstractTextMapper::cursorInvalid) {
+            mMapper->setPosRelative(p.y(), 0, mode);
+            updatePosAndAnchor();
+        }
+        break;
+    case Qt::Key_End:
+        if (event->modifiers() & Qt::ControlModifier) {
+            jumpToEnd();
+            if (p.y() > AbstractTextMapper::cursorInvalid) {
+                mMapper->setPosRelative(mMapper->visibleLineCount(), -1, mode);
+                updatePosAndAnchor();
+            }
+        } else if (p.y() > AbstractTextMapper::cursorInvalid) {
+            mMapper->setPosRelative(p.y()+1, -1, mode);
+            updatePosAndAnchor();
+        }
+        break;
+    case Qt::Key_Left:
+        if (p.y() >= 0) {
+            mMapper->setPosRelative(p.y(), p.x()-1, mode);
+            if (mMapper->visibleTopLine() > 0 && p.y() < 2 && p.y() > mMapper->position(true).y())
+                mMapper->moveVisibleTopLine(-1);
+            else updatePosAndAnchor();
+        }
+        break;
+    case Qt::Key_Up:
+        if (event->modifiers() & Qt::ControlModifier || p.y() <= AbstractTextMapper::cursorInvalid)
+            mMapper->moveVisibleTopLine(-1);
+        else {
+            QPoint p = mMapper->position(true);
+            mMapper->setPosRelative(p.y()-1, -2, mode);
+            if (mMapper->visibleTopLine() > 0 && p.y() < 2)
+                mMapper->moveVisibleTopLine(-1);
+            else updatePosAndAnchor();
+        }
+        break;
+    case Qt::Key_Right:
+        if (p.y() >= 0) {
+            QTextCursor cur = mEdit->textCursor();
+            if (cur.positionInBlock() < cur.block().length()) {
+                mMapper->setPosRelative(p.y(), p.x()+1, mode);
+                if (p.y() > mMapper->visibleLineCount()-2 && p.y() < mMapper->position(true).y())
+                    mMapper->moveVisibleTopLine(1);
+                else updatePosAndAnchor();
+            }
+        }
+        break;
+    case Qt::Key_Down:
+        if (event->modifiers() & Qt::ControlModifier || mMapper->position().y() <= AbstractTextMapper::cursorInvalid)
+            mMapper->moveVisibleTopLine(1);
+        else {
+            mMapper->setPosRelative(p.y()+1, -2, mode);
+            if (p.y() > mMapper->visibleLineCount()-2)
+                mMapper->moveVisibleTopLine(1);
+            else updatePosAndAnchor();
+        }
+        break;
+
     case Qt::Key_PageUp: mMapper->moveVisibleTopLine(-mMapper->visibleLineCount()+1); break;
     case Qt::Key_PageDown: mMapper->moveVisibleTopLine(mMapper->visibleLineCount()-1); break;
-    case Qt::Key_Home: mMapper->setVisibleTopLine(0); break;
-    case Qt::Key_End:
-        if (mMapper->lineCount() > 0) {
-            mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount() + 1);
-        } else
-            mMapper->setVisibleTopLine(1.0);
-        break;
     default:
         event->ignore();
         break;
@@ -517,7 +583,7 @@ QString findLstHRef(const QTextBlock &block)
     return QString();
 }
 
-void TextView::textDoubleClicked(const QTextCursor &cursor, bool &done)
+void TextView::findNearLst(const QTextCursor &cursor, bool &done, bool jump)
 {
     QTextBlock blockUp = cursor.block();
     QTextBlock blockDn = cursor.block();
@@ -546,7 +612,7 @@ void TextView::textDoubleClicked(const QTextCursor &cursor, bool &done)
     }
     if (!href.isEmpty()) {
         done = true;
-        jumpToHRef(href);
+        if (jump) jumpToHRef(href);
     }
 }
 

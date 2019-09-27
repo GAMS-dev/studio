@@ -634,18 +634,23 @@ int AbstractTextMapper::findChunk(int lineNr)
 
 void AbstractTextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode)
 {
-    int lineInChunk;
+    int lineInChunk = -1;
     if (debugMode()) localLineNr = localLineNr / 2;
+    bool up = (localLineNr > 0) && (charNr == -1);
+    if (up) --localLineNr;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
-    if (!chunk) {
-        chunk = chunkForRelativeLine(visibleLineCount()-1, &lineInChunk);
-        if (!chunk) return;
+    if (!chunk) return;
+    if (charNr == -2) charNr = mCursorColumn;
+    else {
+        if (up) charNr = chunk->lineBytes.at(lineInChunk+1) - chunk->lineBytes.at(lineInChunk);
+        mCursorColumn = charNr;
     }
     setPosAbsolute(chunk, lineInChunk, charNr, mode);
 }
 
 void AbstractTextMapper::setPosAbsolute(AbstractTextMapper::Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode)
 {
+    mCursorColumn = charNr;
     if (!chunk) {
         mPosition = CursorPosition();
         mAnchor = CursorPosition();

@@ -45,7 +45,7 @@ signals:
     void jumpToHRef(const QString &href);
     void recalcVisibleLines();
     void topLineMoved();
-    void textDoubleClicked(const QTextCursor &cursor, bool &done);
+    void findNearLst(const QTextCursor &cursor, bool &done, bool jump);
 
 public slots:
     void copySelection() override;
