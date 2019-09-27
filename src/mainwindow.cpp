@@ -1645,7 +1645,10 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
-    if (isResults) mSearchDialog->clearResults();
+    if (isResults) {
+        mSearchDialog->clearResults();
+        return;
+    }
 
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
