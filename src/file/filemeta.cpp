@@ -30,6 +30,7 @@
 #include "editors/viewhelper.h"
 #include "locators/sysloglocator.h"
 #include "locators/abstractsystemlogger.h"
+#include "support/gamslicenseinfo.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -751,8 +752,18 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
-        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+            QFileInfo fileInfo(name());
+            support::GamsLicenseInfo gamsLicenseInfo;
+            QString defFileName = gamsLicenseInfo.solverOptDefFileName(fileInfo.baseName());
+            if (!defFileName.isEmpty())
+                res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+            else
+                forcedAsTextEdit = true;
     } else {
+        forcedAsTextEdit = true;
+    }
+
+    if (forcedAsTextEdit) {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
         codeEdit  = new CodeEdit(tabWidget);
