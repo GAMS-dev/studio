@@ -212,6 +212,7 @@ void TestGamsLicenseInfo::testSolverOptDefFilename_data()
     QTest::newRow("PYOMO")        << "PYOMO"          << "optpyomo.def"         << false;
 
     QTest::newRow("QUADMINOS")    << "QUADMINOS"      << "optminos.def"         << true;
+    QTest::newRow("quadminos")    << "quadminos"      << "optminos.def"         << true;
 
     QTest::newRow("SBB")          << "SBB"            << "optsbb.def"           << false;
 
@@ -227,6 +228,8 @@ void TestGamsLicenseInfo::testSolverOptDefFilename_data()
 
     QTest::newRow("BADSOLVERNAME")  << "BADSOLVERNAME"   << ""        << false;
     QTest::newRow("EMPTYNAME")      << ""                << ""        << false;
+    QTest::newRow("CPOPTIMIZER")    << ""                << ""        << false;
+    QTest::newRow("GAMS")           << ""                << ""        << false;
 
 }
 
