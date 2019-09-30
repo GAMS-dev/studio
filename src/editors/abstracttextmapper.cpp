@@ -636,14 +636,13 @@ void AbstractTextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor
 {
     int lineInChunk = -1;
     if (debugMode()) localLineNr = localLineNr / 2;
-    bool up = (localLineNr > 0) && (charNr == -1);
-    if (up) --localLineNr;
+    bool toEnd = (localLineNr > 0) && (charNr == -1);
+    if (toEnd) --localLineNr;
     Chunk * chunk = chunkForRelativeLine(localLineNr, &lineInChunk);
     if (!chunk) return;
     if (charNr == -2) charNr = mCursorColumn;
-    else {
-        if (up) charNr = chunk->lineBytes.at(lineInChunk+1) - chunk->lineBytes.at(lineInChunk);
-        mCursorColumn = charNr;
+    else if (toEnd) {
+        charNr = chunk->lineBytes.at(lineInChunk+1) - chunk->lineBytes.at(lineInChunk) - mDelimiter.size();
     }
     setPosAbsolute(chunk, lineInChunk, charNr, mode);
 }
@@ -796,8 +795,10 @@ QPoint AbstractTextMapper::convertPosLocal(const CursorPosition &pos) const
     if (pos.chunkNr < 0)
         return QPoint(0, cursorInvalid);
     if (pos.chunkNr < mTopLine.chunkNr ||
-            (pos.chunkNr == mTopLine.chunkNr && pos.localLine < mTopLine.localLine))
+            (pos.chunkNr == mTopLine.chunkNr && pos.localLine < mTopLine.localLine)) {
+        // position is before the start of the buffer
         return QPoint(0, cursorBeforeStart);
+    }
 
     int lineNr = -mTopLine.localLine;
     int chunkNr = mTopLine.chunkNr;
@@ -809,11 +810,12 @@ QPoint AbstractTextMapper::convertPosLocal(const CursorPosition &pos) const
             return QPoint(lines(visibleLineCount(), 1).length(), cursorBeyondEnd);
         }
         if (pos.chunkNr == chunkNr) {
-            return QPoint(pos.charNr, lineNr);
+            return QPoint(qMin(pos.charNr, pos.lineLen), lineNr);
         }
         ++chunkNr;
     }
-    return QPoint(lines(visibleLineCount()-1, 1).length(), visibleLineCount()-1);
+    return QPoint(lines(visibleLineCount(), 1).length(), cursorBeyondEnd);
+//    return QPoint(lines(visibleLineCount()-1, 1).length() - mDelimiter.size(), visibleLineCount()-1);
 }
 
 
@@ -839,7 +841,7 @@ QPoint AbstractTextMapper::convertPos(const CursorPosition &pos) const
     }
     QPoint res;
     res.setY(line + debLine);
-    res.setX(pos.charNr);
+    res.setX(qMin(pos.charNr, pos.lineLen/*-mDelimiter.size()*/));
     return res;
 }
 

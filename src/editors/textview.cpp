@@ -346,7 +346,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         if (event->modifiers() & Qt::ControlModifier) {
             mMapper->setVisibleTopLine(0);
             if (p.y() >= 0) {
-                mMapper->setPosRelative(0, mode);
+                mMapper->setPosRelative(p.y(), 0, mode);
                 updatePosAndAnchor();
             }
         } else if (p.y() > AbstractTextMapper::cursorInvalid) {
@@ -388,9 +388,14 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
     case Qt::Key_Right:
         if (p.y() >= 0) {
             QTextCursor cur = mEdit->textCursor();
-            if (cur.positionInBlock() < cur.block().length()) {
+            if (cur.positionInBlock() < cur.block().length()-1) {
                 mMapper->setPosRelative(p.y(), p.x()+1, mode);
                 if (p.y() > mMapper->visibleLineCount()-2 && p.y() < mMapper->position(true).y())
+                    mMapper->moveVisibleTopLine(1);
+                else updatePosAndAnchor();
+            } else {
+                mMapper->setPosRelative(p.y()+1, 0, mode);
+                if (p.y() > mMapper->visibleLineCount()-2)
                     mMapper->moveVisibleTopLine(1);
                 else updatePosAndAnchor();
             }
@@ -526,8 +531,7 @@ void TextView::updatePosAndAnchor()
     QPoint pos = mMapper->position(true);
     QPoint anchor = mMapper->anchor(true);
     if (pos.y() == AbstractTextMapper::cursorInvalid
-            || ( pos.y() < AbstractTextMapper::cursorInvalid
-                 && (pos.y() == anchor.y() || !mMapper->hasSelection()) )) {
+            || ( pos.y() < AbstractTextMapper::cursorInvalid && (pos.y() == anchor.y() || !mMapper->hasSelection()) )) {
         mEdit->setCursorWidth(0);
         return;
     }
