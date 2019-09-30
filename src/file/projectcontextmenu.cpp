@@ -25,7 +25,7 @@
 #include "file.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
-#include "support/gamslicenseinfo.h"
+#include "support/solverconfiginfo.h"
 
 namespace gams {
 namespace studio {
@@ -81,8 +81,8 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
     int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
 
-    support::GamsLicenseInfo licenseInfo;
-    QMap<QString, QString> solverDefFileNames = licenseInfo.solverOptDefFileNames();
+    support::SolverConfigInfo solverInfo;
+    QMap<QString, QString> solverDefFileNames = solverInfo.solverOptDefFileNames();
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);

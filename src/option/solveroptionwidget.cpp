@@ -35,7 +35,7 @@
 #include "locators/settingslocator.h"
 #include "studiosettings.h"
 #include "exception.h"
-#include "support/gamslicenseinfo.h"
+#include "support/solverconfiginfo.h"
 
 namespace gams {
 namespace studio {
@@ -65,8 +65,8 @@ SolverOptionWidget::~SolverOptionWidget()
 
 bool SolverOptionWidget::init()
 {
-    support::GamsLicenseInfo licenseInfo;
-    QString optDefFileName = licenseInfo.solverOptDefFileName(mSolverName);
+    support::SolverConfigInfo solverInfo;
+    QString optDefFileName = solverInfo.solverOptDefFileName(mSolverName);
     if (optDefFileName.isEmpty())
         optDefFileName = QString("opt%1.def").arg(mSolverName);
 

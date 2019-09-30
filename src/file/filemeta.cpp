@@ -30,7 +30,7 @@
 #include "editors/viewhelper.h"
 #include "locators/sysloglocator.h"
 #include "locators/abstractsystemlogger.h"
-#include "support/gamslicenseinfo.h"
+#include "support/solverconfiginfo.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -756,8 +756,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             if (QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)==0) {
                 forcedAsTextEdit = true;
             } else {
-                support::GamsLicenseInfo gamsLicenseInfo;
-                QString defFileName = gamsLicenseInfo.solverOptDefFileName(fileInfo.baseName());
+                support::SolverConfigInfo solverConfigInfo;
+                QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
                 if (!defFileName.isEmpty())
                   res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
                 else if (QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists())
