@@ -55,7 +55,7 @@ private:
 public:
     explicit MemoryMapper(QObject *parent = nullptr);
     ~MemoryMapper() override;
-    AbstractTextMapper::Kind kind() override { return AbstractTextMapper::memoryMapper; }
+    AbstractTextMapper::Kind kind() const override { return AbstractTextMapper::memoryMapper; }
 
     void setLogParser(LogParser *parser);
     qint64 size() const override;

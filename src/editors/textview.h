@@ -45,6 +45,7 @@ public:
     ~TextView() override;
 
     bool loadFile(const QString &fileName, int codecMib, bool initAnchor);
+    TextKind kind() const;
     void prepareRun();
     void endRun();
     qint64 size() const;
@@ -104,8 +105,6 @@ protected:
     void setMarks(const LineMarks *marks);
     const LineMarks* marks() const;
     bool eventFilter(QObject *watched, QEvent *event) override;
-
-
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
     inline FileId fileId() {

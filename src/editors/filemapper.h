@@ -45,7 +45,7 @@ class FileMapper: public AbstractTextMapper
 public:
     FileMapper(QObject *parent = nullptr);
     ~FileMapper() override;
-    AbstractTextMapper::Kind kind() override { return AbstractTextMapper::fileMapper; }
+    AbstractTextMapper::Kind kind() const override { return AbstractTextMapper::fileMapper; }
     int chunkCount() const override { return int(qMax(0LL,size()-1)/chunkSize()) + 1; }
 
     bool openFile(const QString &fileName, bool initAnchor);

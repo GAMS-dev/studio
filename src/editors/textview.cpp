@@ -117,6 +117,13 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
     return true;
 }
 
+TextView::TextKind TextView::kind() const
+{
+    if (mMapper->kind() == AbstractTextMapper::memoryMapper)
+        return MemoryText;
+    return FileText;
+}
+
 void TextView::prepareRun()
 {
     mMapper->startRun();
@@ -456,7 +463,7 @@ void TextView::updateVScrollZone()
 void TextView::topLineMoved()
 {
     if (!mDocChanging) {
-        if (mStayAtTail && mMapper->atTail()) *mStayAtTail = true;
+        if (mStayAtTail) *mStayAtTail = mMapper->atTail();
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
         disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);

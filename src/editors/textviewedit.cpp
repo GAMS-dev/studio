@@ -32,6 +32,7 @@ namespace studio {
 TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings())
 {
+    setMarks(nullptr);
     setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);

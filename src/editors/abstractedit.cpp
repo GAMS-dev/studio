@@ -261,7 +261,7 @@ bool AbstractEdit::event(QEvent *e)
 
 bool AbstractEdit::eventFilter(QObject *o, QEvent *e)
 {
-    Q_UNUSED(o);
+    Q_UNUSED(o)
     if (e->type() == QEvent::ToolTip) {
         QHelpEvent* helpEvent = static_cast<QHelpEvent*>(e);
         mTipPos = helpEvent->pos();
@@ -370,7 +370,7 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 
 void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 {
-    Q_UNUSED(dirtyLines);
+    Q_UNUSED(dirtyLines)
 }
 
 

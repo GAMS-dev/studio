@@ -73,11 +73,9 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
             mMaxTopLine.localLine = 0;
             break;
         }
-        if (mTopLine > mMaxTopLine) {
-            mTopLine = mMaxTopLine;
-        }
         chunk = getChunk(chunk->nr -1);
     }
+    if (mTopLine > mMaxTopLine) mTopLine = mMaxTopLine;
     return true;
 }
 

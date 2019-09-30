@@ -134,7 +134,7 @@ public:
 
 public:
     ~AbstractTextMapper();
-    virtual AbstractTextMapper::Kind kind() = 0;
+    virtual AbstractTextMapper::Kind kind() const = 0;
 
     QTextCodec *codec() const;
     void setCodec(QTextCodec *codec);

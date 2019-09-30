@@ -354,7 +354,8 @@ void FileMeta::addEditor(QWidget *edit)
         connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
-        tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+        if (tv->kind() == TextView::FileText)
+            tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     }
     if (soEdit) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
