@@ -753,12 +753,18 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
             QFileInfo fileInfo(name());
-            support::GamsLicenseInfo gamsLicenseInfo;
-            QString defFileName = gamsLicenseInfo.solverOptDefFileName(fileInfo.baseName());
-            if (!defFileName.isEmpty())
-                res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
-            else
+            if (QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)==0) {
                 forcedAsTextEdit = true;
+            } else {
+                support::GamsLicenseInfo gamsLicenseInfo;
+                QString defFileName = gamsLicenseInfo.solverOptDefFileName(fileInfo.baseName());
+                if (!defFileName.isEmpty())
+                  res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+                else if (QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists())
+                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+                else
+                    forcedAsTextEdit = true;
+            }
     } else {
         forcedAsTextEdit = true;
     }
