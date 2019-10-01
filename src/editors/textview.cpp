@@ -112,7 +112,6 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
     recalcVisibleLines();
     if (initAnchor)
         mMapper->setVisibleTopLine(0);
-//    QTimer::singleShot(0, this, &TextView::updateView);
     updateView();
     return true;
 }
@@ -135,9 +134,13 @@ void TextView::prepareRun()
 void TextView::endRun()
 {
     mMapper->endRun();
-    if (mStayAtTail) delete mStayAtTail;
+    if (mStayAtTail) {
+        jumpToEnd(); // in case this has been left out (on a fast run)
+        delete mStayAtTail;
+    }
     mStayAtTail = nullptr;
     updateView();
+    topLineMoved(); // force repaint directly (missed at updateView if slider hasn't changed)
 }
 
 qint64 TextView::size() const
@@ -315,12 +318,15 @@ void TextView::jumpToEnd()
 {
     if (mMapper->lineCount() > 0) {
         mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount());
-    } else
+    } else {
         mMapper->setVisibleTopLine(1.0);
-    if (verticalScrollBar()->maximum()) {
+    }
+    if (verticalScrollBar()->maximum() && verticalScrollBar()->sliderPosition() != qAbs(mMapper->visibleTopLine())) {
         verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));
         verticalScrollBar()->setValue(verticalScrollBar()->sliderPosition());
-    } else topLineMoved();
+    } else {
+        topLineMoved();
+    }
 }
 
 void TextView::updateView()
