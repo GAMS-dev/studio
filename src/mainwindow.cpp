@@ -488,6 +488,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
             }
         } else {
             // continuing will replace old file
+            fm->renameToBackup();
         }
     }
 

@@ -23,6 +23,7 @@
 #include "modeldialog/modeldialog.h"
 #include "search/searchdialog.h"
 #include "commonpaths.h"
+#include "gdxviewer/gdxsymbolview.h"
 
 #include <QDialog>
 #include <QSplitter>
@@ -40,6 +41,7 @@ void testmainwindow::initTestCase()
 
     mMainWindow = new MainWindow();
     QVERIFY(mMainWindow);
+    mMainWindow->show();
 }
 
 void testmainwindow::init()
@@ -54,7 +56,7 @@ void testmainwindow::init()
 
 void testmainwindow::cleanupTestCase()
 {
-    delete mMainWindow;
+//    delete mMainWindow; // crashes at end of test
     delete mSettings;
 }
 
@@ -80,7 +82,8 @@ void testmainwindow::test_gdxValue()
     combobox->setCurrentText("rf=xxx.rf");
 
     // run gams
-    QTest::keyPress(mMainWindow, Qt::Key_F10);
+    QTest::keyEvent(QTest::Click, mMainWindow, Qt::Key_F10, Qt::NoModifier, 200);
+    QApplication::processEvents();
     QTest::qWait(500); // wait for gams to run
 
     // open gdx
@@ -90,22 +93,25 @@ void testmainwindow::test_gdxValue()
     GdxViewer* gdxViewer = static_cast<GdxViewer*>(mMainWindow->recent()->editor());
     Q_ASSERT(gdxViewer);
 
-    QTableView* symbolView = gdxViewer->findChild<QTableView*>("tvSymbols");
-    Q_ASSERT(symbolView);
-
-    QAbstractItemModel *model = symbolView->model();
+    // find x
+    QTableView* tvSymbols = gdxViewer->findChild<QTableView*>("tvSymbols");
+    Q_ASSERT(tvSymbols);
+    QAbstractItemModel *model = tvSymbols->model();
     QModelIndexList matches = model->match(model->index(0,1), Qt::DisplayRole, "x", 1, Qt::MatchFixedString);
 
+    // click on x
     QModelIndex symX = matches.first();
-    int xPos = symbolView->columnViewportPosition(symX.column()) + 5;
-    int yPos = symbolView->rowViewportPosition(symX.row()) + 5;
+    int xPos = tvSymbols->columnViewportPosition(symX.column()) + 5;
+    int yPos = tvSymbols->rowViewportPosition(symX.row()) + 5;
 
-    QWidget* pViewport = symbolView->viewport();
-    QTest::mouseClick (pViewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
+    QWidget* pViewport = tvSymbols->viewport();
+    QTest::mouseClick(pViewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
     QTest::qWait(100);
 
+    // checking value of x
     QSplitter* splitter = gdxViewer->findChild<QSplitter*>("splitter");
-    qDebug() /*rogo: delete*/ << splitter->widget(0);
+    GdxSymbolView* symbolView = static_cast<GdxSymbolView*>(splitter->widget(1));
+    qDebug() /*rogo: delete*/ << QTime::currentTime() << symbolView;
 }
 
 void testmainwindow::test_search()
