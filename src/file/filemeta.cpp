@@ -753,18 +753,17 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
             QFileInfo fileInfo(name());
-            if (QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)==0) {
-                forcedAsTextEdit = true;
-            } else {
-                support::SolverConfigInfo solverConfigInfo;
-                QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
-                if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists())
-                    res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
-                                                                                     id(), mCodec, tabWidget));
-                else if (QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists())
-                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+            support::SolverConfigInfo solverConfigInfo;
+            QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
+            if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
+                 res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+                                                                                  id(), mCodec, tabWidget));
+            } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
+                        QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
+                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
                                                                                          id(), mCodec, tabWidget));
-                else
+            } else {
+                    SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
                     forcedAsTextEdit = true;
             }
     } else {
