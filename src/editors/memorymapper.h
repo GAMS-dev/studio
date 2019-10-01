@@ -134,7 +134,7 @@ private:
                 memmove(&dat[len-end], &left[0], size_t(left.length()) * sizeof(T));
                 end = len % dat.size();
             }
-            return dat;
+            return dat.mid(0, len);
         }
     private:
         QVector<T> dat;
