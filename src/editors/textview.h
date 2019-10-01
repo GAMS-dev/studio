@@ -53,7 +53,7 @@ public:
     int knownLines() const;
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
-    bool jumpTo(int lineNr, int charNr, int length = 0);
+    bool jumpTo(int lineNr, int charNr, int length = 0, bool focus = false);
     QPoint position() const;                // JM: changes on Debug / pos only in regular lines
     QPoint anchor() const;                  // JM: changes on Debug / no selection
     bool hasSelection() const;              // JM: changes on Debug / no selection

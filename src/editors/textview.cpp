@@ -160,7 +160,7 @@ void TextView::zoomOut(int range)
     recalcVisibleLines();
 }
 
-bool TextView::jumpTo(int lineNr, int charNr, int length)
+bool TextView::jumpTo(int lineNr, int charNr, int length, bool focus)
 {
     if (lineNr > mMapper->knownLineNrs()) return false;
     int vTop = mMapper->visibleTopLine();
@@ -172,7 +172,7 @@ bool TextView::jumpTo(int lineNr, int charNr, int length)
     mMapper->setPosRelative(lineNr - mMapper->visibleTopLine(), charNr + length, QTextCursor::MoveAnchor);
     updatePosAndAnchor();
     emit selectionChanged();
-    mEdit->setFocus();
+    if (focus) mEdit->setFocus();
     return true;
 }
 
@@ -252,7 +252,6 @@ void TextView::outerScrollAction(int action)
         break;
     default: break;
     }
-    mEdit->setFocus();
     topLineMoved();
 }
 
