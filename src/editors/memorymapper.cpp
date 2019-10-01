@@ -41,7 +41,7 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     mPendingTimer.setSingleShot(true);
     mPending = PendingNothing;
     mMarksHead.reserve(CErrorBound);
-    mMarksTail.setCapacity(CErrorBound);
+    mMarksTail.resize(CErrorBound);
     // old
     QTextCharFormat fmt;
     fmt.setForeground(QColor(165,165,165));
@@ -305,15 +305,15 @@ int MemoryMapper::firstErrorLine()
 
 void MemoryMapper::runFinished()
 {
-    mMarksTail.normalizeIndexes();
     mMarkers.clear();
     mMarkers.reserve(mMarksHead.size() + mMarksTail.size());
     for (const int &lineNr: mMarksHead) {
         LineRef ref = logLineToRef(lineNr);
         if (ref.chunk) mMarkers << ref;
     }
-    for (int i = mMarksTail.firstIndex(); i <= mMarksTail.lastIndex(); ++i) {
-        LineRef ref = logLineToRef(mMarksTail.at(i));
+    QVector<int> tail = mMarksTail.data();
+    for (const int &lineNr: tail) {
+        LineRef ref = logLineToRef(lineNr);
         if (ref.chunk) mMarkers << ref;
     }
 
@@ -442,7 +442,7 @@ void MemoryMapper::parseNewLine()
                     }
                     ++mErrCount;
                 }
-            } else if (mMarksTail.isEmpty() || mMarksTail.last() != lineNr) {
+            } else if (!mMarksTail.size() || mMarksTail.last() != lineNr) {
                 ++mErrCount;
                 mMarksTail.append(lineNr);
             }

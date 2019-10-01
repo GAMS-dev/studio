@@ -22,7 +22,6 @@
 
 #include "projectfilenode.h"
 #include "dynamicfile.h"
-#include <QContiguousCache>
 
 #include "editors/logparser.h"
 
@@ -98,7 +97,6 @@ private:
     int mRepaintCount = -1;
     QVector<QTextCharFormat> mFormat;
     int mErrorCount = 0;
-    QContiguousCache<LinksCache> mLastErrors;
 
     LogParser::MarksBlockState *mbState;
 };

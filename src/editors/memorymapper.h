@@ -25,7 +25,6 @@
 #include <QMutex>
 #include <QTime>
 #include <QTimer>
-#include <QContiguousCache>
 
 namespace gams {
 namespace studio {
@@ -116,7 +115,32 @@ private:
         int refStart = -1;      // index of possible reference start
         int lineState = 0;      // 0: content    1: line-end (\n or \r\n)    2: conceal-prev-line (\r)
     };
-
+    template<typename T>
+    class RingBuffer {
+    public:
+        void resize(int size) { dat.resize(size); }
+        int size() { return len; }
+        void clear() { len = 0; end = 0; }
+        T last() { return (end > 0) ? dat.at(end-1) : len ? dat.last() : T(); }
+        void append(const T &val) {
+            dat[end] = val;
+            end = (end+1) % dat.size();
+            if (len < dat.size()) ++len;
+        }
+        QVector<T> data() {
+            if (end && end != len) { // adjust data to split-point
+                QVector<T> left = dat.mid(0, end);
+                memmove(&dat[0], &dat[end], size_t(len-end) * sizeof(T));
+                memmove(&dat[len-end], &left[0], size_t(left.length()) * sizeof(T));
+                end = len % dat.size();
+            }
+            return dat;
+        }
+    private:
+        QVector<T> dat;
+        int end = 0;
+        int len = 0;
+    };
     QVector<Chunk*> mChunks;
     QVector<Unit> mUnits;
     QVector<QTextCharFormat> mBaseFormat;
@@ -124,7 +148,7 @@ private:
     int mLineCount = 0;
     LogParser *mLogParser = nullptr;
     QVector<int> mMarksHead;
-    QContiguousCache<int> mMarksTail;
+    RingBuffer<int> mMarksTail;
     QVector<LineRef> mMarkers;
     int mShrinkLineCount = 0;
     QTimer mRunFinishedTimer;
