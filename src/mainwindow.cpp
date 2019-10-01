@@ -74,7 +74,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
-    mHistory = new HistoryData();
 //    QFile css(":/data/style.css");
 //    if (css.open(QFile::ReadOnly | QFile::Text)) {
 //        this->setStyleSheet(css.readAll());
@@ -1715,7 +1714,7 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
 
 HistoryData *MainWindow::history()
 {
-    return mHistory;
+    return &mHistory;
 }
 
 void MainWindow::addToOpenedFiles(QString filePath)

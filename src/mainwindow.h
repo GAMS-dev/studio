@@ -352,7 +352,7 @@ private:
     QActionGroup *mCodecGroupSwitch;
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
-    HistoryData *mHistory;
+    HistoryData mHistory;
     StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
