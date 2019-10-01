@@ -30,7 +30,7 @@ namespace gams {
 namespace studio {
 namespace support {
 
-GamsLicenseInfo::GamsLicenseInfo() : mSolverInfo()
+GamsLicenseInfo::GamsLicenseInfo()
 {
     auto logger = SysLogLocator::systemLog();
     char msg[GMS_SSSIZE];
