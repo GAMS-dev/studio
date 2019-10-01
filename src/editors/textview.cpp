@@ -283,6 +283,12 @@ void TextView::showEvent(QShowEvent *event)
     if (mInit) init();
 }
 
+void TextView::focusInEvent(QFocusEvent *event)
+{
+    QAbstractScrollArea::focusInEvent(event);
+    mEdit->setFocus();
+}
+
 void TextView::setMarks(const LineMarks *marks)
 {
     mEdit->setMarks(marks);

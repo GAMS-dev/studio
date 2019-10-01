@@ -107,6 +107,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
     inline FileId fileId() {
         bool ok;
         FileId file = property("fileId").toInt(&ok);
