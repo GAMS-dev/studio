@@ -35,13 +35,13 @@
 #include "locators/settingslocator.h"
 #include "studiosettings.h"
 #include "exception.h"
-#include "support/solverconfiginfo.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QTextCodec* codec, QWidget *parent) :
+SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
+                                       FileId id, QTextCodec* codec, QWidget *parent) :
           QWidget(parent),
           ui(new Ui::SolverOptionWidget),
           mFileId(id),
@@ -53,7 +53,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     setFocusProxy(ui->solverOptionTableView);
     addActions();
 
-    init();
+    init(optDefFileName);
 }
 
 SolverOptionWidget::~SolverOptionWidget()
@@ -63,13 +63,8 @@ SolverOptionWidget::~SolverOptionWidget()
     delete mOptionTableModel;
 }
 
-bool SolverOptionWidget::init()
+bool SolverOptionWidget::init(const QString &optDefFileName)
 {
-    support::SolverConfigInfo solverInfo;
-    QString optDefFileName = solverInfo.solverOptDefFileName(mSolverName);
-    if (optDefFileName.isEmpty())
-        optDefFileName = QString("opt%1.def").arg(mSolverName);
-
     mOptionTokenizer = new OptionTokenizer(optDefFileName);
     if (!mOptionTokenizer->getOption()->available())
        EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";

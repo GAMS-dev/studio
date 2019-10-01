@@ -758,10 +758,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             } else {
                 support::SolverConfigInfo solverConfigInfo;
                 QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
-                if (!defFileName.isEmpty())
-                  res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+                if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists())
+                    res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+                                                                                     id(), mCodec, tabWidget));
                 else if (QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists())
-                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+                                                                                         id(), mCodec, tabWidget));
                 else
                     forcedAsTextEdit = true;
             }
