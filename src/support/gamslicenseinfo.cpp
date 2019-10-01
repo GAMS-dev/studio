@@ -23,7 +23,6 @@
 #include "commonpaths.h"
 #include "exception.h"
 #include "common.h"
-#include "cfgmcc.h"
 #include "palmcc.h"
 #include "gclgms.h"
 
@@ -31,27 +30,10 @@ namespace gams {
 namespace studio {
 namespace support {
 
-GamsLicenseInfo::GamsLicenseInfo()
+GamsLicenseInfo::GamsLicenseInfo() : mSolverInfo()
 {
     auto logger = SysLogLocator::systemLog();
-
-    cfgSetExitIndicator(0); // switch of exit() call
-    cfgSetScreenIndicator(0);
-    cfgSetErrorCallback(GamsLicenseInfo::errorCallback);
-
     char msg[GMS_SSSIZE];
-    if (!cfgCreateD(&mCFG,
-                    CommonPaths::systemDir().toStdString().c_str(),
-                    msg,
-                    sizeof(msg))) {
-        logger->append(msg, LogMsgType::Error);
-        EXCEPT() << "Could not open About GAMS dialog. " << msg;
-    }
-    if (cfgReadConfig(mCFG,
-                      CommonPaths::configFile().toStdString().c_str())) {
-        cfgGetMsg(mCFG, msg);
-        logger->append(msg, LogMsgType::Error);
-    }
 
     palSetExitIndicator(0); // switch of exit() call
     palSetScreenIndicator(0);
@@ -75,94 +57,42 @@ GamsLicenseInfo::GamsLicenseInfo()
 
 GamsLicenseInfo::~GamsLicenseInfo()
 {
-    if (mCFG) cfgFree(&mCFG);
     if (mPAL) palFree(&mPAL);
 }
 
 int GamsLicenseInfo::solvers() const
 {
-    return cfgNumAlgs(mCFG);
+    return mSolverInfo.solvers();
 }
 
 int GamsLicenseInfo::solverId(const QString &name)
 {
-    return cfgAlgNumber(mCFG, name.toStdString().c_str());
+    return mSolverInfo.solverId(name);
 }
 
 QString GamsLicenseInfo::solverName(int id) const
 {
-    char name[GMS_SSSIZE];
-    QString result = cfgAlgName(mCFG, id, name);
-    if (result == "UnknownSolver")
-        return QString();
-    return result;
+    return mSolverInfo.solverName(id);
 }
 
 QMap<int, QString> GamsLicenseInfo::solverNames()
 {
-    QMap<int, QString> names;
-    for (int i=1, j=1; i<=solvers(); ++i) {
-        if (!cfgAlgHidden(mCFG, i)) {
-            names[j++] = solverName(i);
-        }
-    }
-    return names;
-}
-
-bool GamsLicenseInfo::isSolverHidden(const QString &solverName)
-{
-    return cfgAlgHidden(mCFG, solverId(solverName));
-}
-
-QString GamsLicenseInfo::solverOptDefFileName(const QString &solverName) const
-{
-#if CFGAPIVERSION > 2
-    char name[GMS_SSSIZE];
-    if (cfgDefFileName(mCFG, solverName.toStdString().c_str(), name))
-        return QString("%1").arg(name);
-    else
-        return QString();
-#else
-        return QString();
-#endif
-}
-
-QMap<QString, QString> GamsLicenseInfo::solverOptDefFileNames()
-{
-    QMap<QString, QString> fileNames;
-    for (int i=1; i<=solvers(); ++i) {
-        if (!cfgAlgHidden(mCFG, i)) {
-            fileNames[solverName(i)] = solverOptDefFileName( solverName(i) );
-        }
-    }
-    return fileNames;
+    return mSolverInfo.solverNames();
 }
 
 QMap<int, int> GamsLicenseInfo::solverIndices()
 {
-    QMap<int, int> indices;
-    for (int i=1, j=1; i<=solvers(); ++i) {
-        if (!cfgAlgHidden(mCFG, i)) {
-            indices[j++] = i;
-        }
-    }
-    return indices;
+    return mSolverInfo.solverIndices();
 }
 
 QMap<int, QString> GamsLicenseInfo::modelTypeNames()
 {
-    QMap<int, QString> modelTypes;
-    char modelType[GMS_SSSIZE];
-    for (int i=1; i<cfgProc_nrofmodeltypes; ++i) {
-        cfgModelTypeName(mCFG, i, modelType);
-        modelTypes[i] = modelType;
-    }
-    return modelTypes;
+    return mSolverInfo.modelTypeNames();
 }
 
 bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
 {
-    return cfgAlgCapability(mCFG, solver, modelType);
+    return mSolverInfo.solverCapability(solver,modelType);
 }
 
 QString GamsLicenseInfo::solverLicense(int solverId) const
@@ -193,9 +123,7 @@ bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
 
 char* GamsLicenseInfo::solverCodes(int solverId) const
 {
-    char msg[GMS_SSSIZE];
-    char *codes = cfgAlgCode(mCFG, solverId, msg);
-    return codes;
+    return mSolverInfo.solverCodes(solverId);
 }
 
 int GamsLicenseInfo::errorCallback(int count, const char *message)

@@ -44,7 +44,7 @@ SolverConfigInfo::SolverConfigInfo()
                     msg,
                     sizeof(msg))) {
         logger->append(msg, LogMsgType::Error);
-        EXCEPT() << "Could not open About GAMS dialog. " << msg;
+        EXCEPT() << "Could not intialize from gams system directory. " << msg;
     }
     if (cfgReadConfig(mCFG,
                       CommonPaths::configFile().toStdString().c_str())) {
@@ -55,7 +55,6 @@ SolverConfigInfo::SolverConfigInfo()
 
 SolverConfigInfo::~SolverConfigInfo()
 {
-    qDebug() << "Solver Config Info destructor";
     if (mCFG) cfgFree(&mCFG);
 }
 

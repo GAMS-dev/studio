@@ -23,8 +23,7 @@
 #include <QMap>
 #include <QString>
 
-struct cfgRec;
-typedef struct cfgRec *cfgHandle_t;
+#include "solverconfiginfo.h"
 
 struct palRec;
 typedef struct palRec *palHandle_t;
@@ -46,11 +45,6 @@ public:
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
 
-    bool isSolverHidden(const QString &solverName);
-
-    QString solverOptDefFileName(const QString &solverName) const;
-    QMap<QString, QString> solverOptDefFileNames();
-
     QMap<int, int> solverIndices();
 
     QMap<int, QString> modelTypeNames();
@@ -67,7 +61,7 @@ private:
     static int errorCallback(int count, const char *message);
 
 private:
-    cfgHandle_t mCFG;
+    SolverConfigInfo mSolverInfo;
     palHandle_t mPAL;
 };
 
