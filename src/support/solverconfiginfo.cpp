@@ -109,11 +109,13 @@ QString SolverConfigInfo::solverOptDefFileName(const QString &solverName) const
 QMap<QString, QString> SolverConfigInfo::solverOptDefFileNames()
 {
     QMap<QString, QString> fileNames;
+#if CFGAPIVERSION > 2
     for (int i=1; i<=solvers(); ++i) {
         if (!cfgAlgHidden(mCFG, i)) {
             fileNames[solverName(i)] = solverOptDefFileName( solverName(i) );
         }
     }
+#endif
     return fileNames;
 }
 
