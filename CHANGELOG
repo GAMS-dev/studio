@@ -2,6 +2,7 @@ Version 0.13.0
 ===============
 
 # General
+- **dropped support for Windows 32bit systems**
 - **reworked log to better handle long and fast log output**
 - improved behavior of F1 (Help) Key. Studio now opens widget specific help if available
 - fixed search status update when having no results
