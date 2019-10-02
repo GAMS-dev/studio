@@ -119,7 +119,7 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
         auto result = QMessageBox::question(parent,
                                             "Overwrite current GAMS license file?",
                                             "It looks like there is a GAMS license in the clipboard. "
-                                            "Do you want to overwrite your current license file from this text? "
+                                            "Do you want to overwrite your current license file from this clipboard text? "
                                             "Your current license location is: " +
                                             QDir::toNativeSeparators(licenseFile.fileName()));
         if (result == QMessageBox::No)
@@ -128,7 +128,7 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
         auto result = QMessageBox::question(parent,
                                             "Create GAMS license file?",
                                             "It looks like there is a GAMS license in the clipboard. "
-                                            "Do you want to create a license file from this text? "
+                                            "Do you want to create a license file from this clipboard text? "
                                             "Your GAMS license location will be: " +
                                             QDir::toNativeSeparators(licenseFile.fileName()));
         if (result == QMessageBox::No)

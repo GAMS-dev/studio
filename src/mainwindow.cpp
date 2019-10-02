@@ -99,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent)
     MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
     MacOSCocoaBridge::setFullScreenMenuItemEverywhere(false);
     ui->actionFull_Screen->setShortcut(QKeySequence::FullScreen);
+#else
+    ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
 
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
@@ -2021,7 +2023,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 {
     if (event->buttons()) {
         QWidget* child = childAt(event->pos());
-        Q_UNUSED(child);
+        Q_UNUSED(child)
     }
     QMainWindow::mouseMoveEvent(event);
 }

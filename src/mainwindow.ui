@@ -1136,9 +1136,6 @@
    <property name="text">
     <string>Full Screen</string>
    </property>
-   <property name="shortcut">
-    <string>Alt+Return</string>
-   </property>
    <property name="shortcutContext">
     <enum>Qt::WindowShortcut</enum>
    </property>
