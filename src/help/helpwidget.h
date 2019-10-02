@@ -120,7 +120,7 @@ private:
         Backward = 1
     };
     void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
-    void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
+    void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction, QIcon icon);
 
     void wheelEvent(QWheelEvent* e);
 };
