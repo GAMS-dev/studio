@@ -433,12 +433,14 @@ QWidgetList MainWindow::openEditors()
     return res;
 }
 
-QList<AbstractEdit*> MainWindow::openLogs()
+QList<QWidget*> MainWindow::openLogs()
 {
-    QList<AbstractEdit*> resList;
+    QList<QWidget*> resList;
     for (int i = 0; i < ui->logTabs->count(); i++) {
-        AbstractEdit* ed = ViewHelper::toAbstractEdit(ui->logTabs->widget(i));
-        if (ed) resList << ed;
+        if (AbstractEdit* ed = ViewHelper::toAbstractEdit(ui->logTabs->widget(i)))
+            resList << ed;
+        if (TextView* tv = ViewHelper::toTextView(ui->logTabs->widget(i)))
+            resList << tv;
     }
     return resList;
 }
@@ -1424,6 +1426,8 @@ void MainWindow::showErrorMessage(QString text)
     mSyslog->append(text, LogMsgType::Error);
 }
 
+static int xDebTime;
+
 void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
     if (origin == -1) {
@@ -1461,13 +1465,28 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         mSyslog->append("Invalid runable attached to process", LogMsgType::Error);
         return;
     }
+    if (groupNode && groupNode->hasLogNode()) {
+        ProjectLogNode *logNode = groupNode->logNode();
+        logNode->logDone();
+        if (logNode->file()->editors().size()) {
+            if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
+                if (mSettings->jumpToError()) {
+                    int errLine = tv->firstErrorLine();
+                    if (errLine >= 0) tv->jumpTo(errLine, 0);
+                }
+                MainWindow::disconnect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos);
+                MainWindow::disconnect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount);
+                MainWindow::disconnect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount);
+            }
+        }
+    }
     if (groupNode && runMeta->exists(true)) {
         QString lstFile = groupNode->parameter("lst");
         bool doFocus = groupNode == mRecent.group;
 
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
         for (QWidget *edit: lstNode->file()->editors())
-            if (TextView* tv = ViewHelper::toTextView(edit)) tv->reopenFile();
+            if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 
         bool alreadyJumped = false;
         if (mSettings->jumpToError())
@@ -1476,8 +1495,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
     }
-    if (groupNode && groupNode->hasLogNode())
-        groupNode->logNode()->logDone();
+//    DEB() << "-------------- ELAPSED: " << (QTime::currentTime().msecsSinceStartOfDay() - xDebTime);
 }
 
 void MainWindow::postGamsLibRun()
@@ -1688,8 +1706,12 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
         if (log) log->removeEditor(edit);
         ui->logTabs->removeTab(index);
+
+        // keeps internal data of syslog
         AbstractEdit* ed = ViewHelper::toAbstractEdit(edit);
         if (ed) ed->setDocument(nullptr);
+
+        // remark to keep process-logs remove the TextView from the tab-bar without deleting
 
         // dont remove syslog and dont delete resultsView
         if (!(edit == mSyslog || isResults))
@@ -2084,6 +2106,7 @@ option::OptionWidget *MainWindow::gamsOptionWidget() const
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
+    xDebTime = QTime::currentTime().msecsSinceStartOfDay();
     mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
@@ -2093,7 +2116,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     }
 
     runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
-    runGroup->clearLstErrorTexts();
+    runGroup->clearErrorTexts();
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;
@@ -2147,11 +2170,15 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-        if (ViewHelper::toCodeEdit(wid) || ViewHelper::toLogEdit(wid))
-            ViewHelper::toAbstractEdit(wid)->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-        if (ViewHelper::toAbstractEdit(wid))
-            ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-                                                                                          : AbstractEdit::NoWrap);
+        wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        if (ViewHelper::toTextView(wid))
+            ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+                                                                                      : AbstractEdit::NoWrap);
+    }
+    if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
+        MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
     }
     // cleanup bookmarks
     QVector<QString> cleanupKinds;
@@ -2165,9 +2192,10 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     }
 
     if (!mSettings->clearLog()) {
-        logNode->markOld();
+        logNode->prepareRun();
     } else {
         logNode->clearLog();
+        logNode->prepareRun();
     }
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
@@ -2198,7 +2226,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
         for (QWidget *wid: lstNode->file()->editors()) {
-            if (TextView *tv = ViewHelper::toTextView(wid)) tv->closeFile();
+            if (TextView *tv = ViewHelper::toTextView(wid)) tv->prepareRun();
         }
     }
     process->setGroupId(runGroup->id());
@@ -2207,7 +2235,8 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     process->execute();
     ui->toolBar->repaint();
 
-    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
+    logNode->linkToProcess(process);
+//    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
     ui->dockLogView->raise();
 }
@@ -2309,26 +2338,25 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
             wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-            if (ViewHelper::toAbstractEdit(wid))
-                ViewHelper::toAbstractEdit(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-                                                                                              : AbstractEdit::NoWrap);
-//            if (ViewHelper::toTextView(wid))
-//                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-//                                                                                          : AbstractEdit::NoWrap);
+            if (ViewHelper::toTextView(wid))
+                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
+                                                                                          : AbstractEdit::NoWrap);
+        }
+        if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
+            MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
         }
     }
     if (logNode->file()->isOpen()) {
-        ProcessLogEdit* logEdit = ViewHelper::toLogEdit(logNode->file()->editors().first());
-        if (logEdit) {
+        if (TextView* logEdit = ViewHelper::toTextView(logNode->file()->editors().first())) {
             if (openOutput) setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
                 if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
             }
             if (moveToEnd) {
-                QTextCursor cursor = logEdit->textCursor();
-                cursor.movePosition(QTextCursor::End);
-                logEdit->setTextCursor(cursor);
+                logEdit->jumpTo(logEdit->lineCount()-1, 0);
             }
         }
     }
@@ -2444,8 +2472,9 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             tv->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
             connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+
         }
-        if (ViewHelper::toCodeEdit(edit) || ViewHelper::toLogEdit(edit)) {
+        if (ViewHelper::toCodeEdit(edit)) {
             AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
             ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (!ae->isReadOnly())
@@ -2786,7 +2815,7 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
     QFont font(fontFamily, fontSize);
     for (QWidget* edit: openEditors()) {
-        if (ViewHelper::toCodeEdit(edit) || ViewHelper::toLogEdit(edit))
+        if (ViewHelper::toCodeEdit(edit))
             ViewHelper::toAbstractEdit(edit)->setFont(font);
         else if (ViewHelper::toTextView(edit))
             ViewHelper::toTextView(edit)->edit()->setFont(font);
@@ -2807,11 +2836,13 @@ void MainWindow::updateEditorLineWrapping()
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
             ed->blockCountChanged(0); // force redraw for line number area
-            ed->setLineWrapMode(ViewHelper::toLogEdit(ed) ? wrapModeProcess : wrapModeEditor);
+            ed->setLineWrapMode(ViewHelper::editorType(ed) == EditorType::syslog ? wrapModeProcess
+                                                                                 : wrapModeEditor);
         }
         if (TextView* tv = ViewHelper::toTextView(editList.at(i))) {
-            tv->blockCountChanged(0); // force redraw for line number area
-            tv->setLineWrapMode(ViewHelper::toLogEdit(tv) ? wrapModeProcess : wrapModeEditor);
+            tv->blockCountChanged(); // force redraw for line number area
+            tv->setLineWrapMode(ViewHelper::editorType(tv) == EditorType::log ? wrapModeProcess
+                                                                              : wrapModeEditor);
         }
     }
 }
@@ -2914,22 +2945,22 @@ void MainWindow::on_actionCopy_triggered()
 {
     if (!focusWidget()) return;
 
-    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
-    if (!fm) return;
+    // KEEP-ORDER: FIRST check focus THEN check recent-edit (in descending inheritance)
 
-    if (fm->kind() == FileKind::Gdx) {
-        gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
+    if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+        tv->copySelection();
+    } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor())) {
         gdx->copyAction();
     } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
     } else if (focusWidget() == mSyslog) {
         mSyslog->copy();
-    } else if (CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget())) {
-        ce->copySelection();
-    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(focusWidget())) {
-        ae->copy();
-    } else if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
+    } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->copySelection();
+    } else if (CodeEdit *ce = ViewHelper::toCodeEdit(mRecent.editor())) {
+        ce->copySelection();
+    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(mRecent.editor())) {
+        ae->copy();
     }
 }
 
@@ -3222,24 +3253,20 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
         MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
         window->resetLoadAmount();
     }
-    window->searchDialog()->setActiveEditWidget(nullptr);
     mEditor = editor;
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditor)) {
         MainWindow::connect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
         MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-        window->searchDialog()->setActiveEditWidget(edit);
     } else if (soEdit) {
         MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
     }
     if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
+        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos, Qt::UniqueConnection);
 //        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
-
-        window->searchDialog()->setActiveEditWidget(tv);
+        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
     }
     window->updateEditorMode();
     window->updateEditorPos();

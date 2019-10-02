@@ -17,8 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "testtextmapper.h"
-#include "editors/textmapper.h"
+#include "testfilemapper.h"
 #include "logger.h"
 
 #include <QtGlobal>
@@ -26,11 +25,11 @@
 #include <QClipboard>
 #include <QApplication>
 
-using gams::studio::TextMapper;
+using gams::studio::FileMapper;
 
 const QString testFileName("testtextmapper.tmp");
 
-void TestTextMapper::initTestCase()
+void TestFileMapper::initTestCase()
 {
     mCurrentPath = QDir::current();
     QFile file(mCurrentPath.absoluteFilePath(testFileName));
@@ -60,30 +59,30 @@ void TestTextMapper::initTestCase()
     stream << trUtf8("Some characters 'äüößÄÜÖê€µ@' to test the codec.") << flush;
     file.close();
 }
-void TestTextMapper::cleanupTestCase()
+void TestFileMapper::cleanupTestCase()
 {
     QFile file(mCurrentPath.absoluteFilePath(testFileName));
     file.remove();
 }
 
 
-void TestTextMapper::init()
+void TestFileMapper::init()
 {
-    mMapper = new TextMapper();
+    mMapper = new FileMapper();
     mMapper->setCodec(QTextCodec::codecForName("utf-8"));
     mMapper->setMappingSizes(100, 1024*16, 512);
     QVERIFY2(mMapper->openFile(mCurrentPath.absoluteFilePath(testFileName), true),
              "TextMapper: Error on opening test file.");
 }
 
-void TestTextMapper::cleanup()
+void TestFileMapper::cleanup()
 {
-    mMapper->closeAndReset(true);
+    mMapper->startRun();
     delete mMapper;
     mMapper = nullptr;
 }
 
-void TestTextMapper::testFile()
+void TestFileMapper::testFile()
 {
     QFile file(mCurrentPath.absoluteFilePath(testFileName));
     qint64 size = file.size();
@@ -91,7 +90,7 @@ void TestTextMapper::testFile()
 }
 
 
-void TestTextMapper::testReadChunk0()
+void TestFileMapper::testReadChunk0()
 {
     int max = 1234567890;
     int c[] = {0,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000};
@@ -105,7 +104,7 @@ void TestTextMapper::testReadChunk0()
     QCOMPARE(mMapper->topChunk(), 0);
 }
 
-void TestTextMapper::testReadChunk1()
+void TestFileMapper::testReadChunk1()
 {
     // ---------- check reading chunk 1
     mMapper->setVisibleTopLine(0.005);
@@ -114,7 +113,7 @@ void TestTextMapper::testReadChunk1()
     QCOMPARE(mMapper->absTopLine(), 217);
 }
 
-void TestTextMapper::testMoveBackAChunk()
+void TestFileMapper::testMoveBackAChunk()
 {
     // ---------- check moving back across the chunk border
     mMapper->setVisibleTopLine(0.005);
@@ -123,7 +122,7 @@ void TestTextMapper::testMoveBackAChunk()
     QCOMPARE(mMapper->topChunk(), 0);
 }
 
-void TestTextMapper::testFetchBeyondChunk()
+void TestFileMapper::testFetchBeyondChunk()
 {
     // ---------- check reading multiple chunks in a row
     mMapper->moveVisibleTopLine(193);
@@ -141,7 +140,7 @@ void TestTextMapper::testFetchBeyondChunk()
     QCOMPARE(mMapper->topChunk(), 0);
 }
 
-void TestTextMapper::testReadLines()
+void TestFileMapper::testReadLines()
 {
     // ---------- check read lines
     mMapper->setVisibleTopLine(0.0104);
@@ -158,7 +157,7 @@ void TestTextMapper::testReadLines()
 }
 
 
-void TestTextMapper::testUpdateLineCounting()
+void TestFileMapper::testUpdateLineCounting()
 {
     // ---------- check updating of lineCounting
     mMapper->setVisibleTopLine(0.004);
@@ -189,32 +188,31 @@ void TestTextMapper::testUpdateLineCounting()
     mMapper->setVisibleTopLine(20000);
     mMapper->setVisibleTopLine(1.0);
     qDebug() << mMapper->lines(0,1);
-    QCOMPARE(mMapper->topChunk(), mMapper->chunkCount()-1);
 }
 
-void TestTextMapper::testPeekChunkLineNrs()
+void TestFileMapper::testPeekChunkLineNrs()
 {
     // ---------- check peek chunk line numbers
     mMapper->setVisibleTopLine(0.015);
     QVERIFY(mMapper->absTopLine() < 0);
-    mMapper->peekChunksForLineNrs(4);
+    mMapper->peekChunksForLineNrs();
     QCOMPARE(mMapper->absTopLine(), 717);
 }
 
-void TestTextMapper::testLineNrEstimation()
+void TestFileMapper::testLineNrEstimation()
 {
     // ---------- check line number esimation
     mMapper->setVisibleTopLine(0.04);
     QCOMPARE(mMapper->absTopLine(), -1971);
-    mMapper->peekChunksForLineNrs(1);
+    mMapper->peekChunksForLineNrs();
     for (int i = 1; i < 11; ++i) {
         if (i==1) QCOMPARE(mMapper->absTopLine(), -1971);
-        mMapper->peekChunksForLineNrs(1);
+        mMapper->peekChunksForLineNrs();
     }
     QCOMPARE(mMapper->absTopLine(), 1967);
 }
 
-void TestTextMapper::testPosAndAnchor()
+void TestFileMapper::testPosAndAnchor()
 {
     // ---------- check position and anchor handling
     QPoint pos;
@@ -227,7 +225,7 @@ void TestTextMapper::testPosAndAnchor()
     QCOMPARE(pos.x(), 10);
     QVERIFY(anc.y() < 0);
     QCOMPARE(anc.x(), 10);
-    mMapper->peekChunksForLineNrs(4);
+    mMapper->peekChunksForLineNrs();
     pos = mMapper->position();
     anc = mMapper->anchor();
     QCOMPARE(pos.y(), 397);
@@ -240,7 +238,10 @@ void TestTextMapper::testPosAndAnchor()
     QCOMPARE(anc.y(), 397);
     QCOMPARE(anc.x(), 10);
 
-    mMapper->peekChunksForLineNrs(16);
+    mMapper->peekChunksForLineNrs();
+    mMapper->peekChunksForLineNrs();
+    mMapper->peekChunksForLineNrs();
+    mMapper->peekChunksForLineNrs();
     mMapper->setVisibleTopLine(1620);
     mMapper->setPosRelative(0, 0);
     mMapper->setPosRelative(310, 1, QTextCursor::KeepAnchor);
@@ -251,4 +252,4 @@ void TestTextMapper::testPosAndAnchor()
 }
 
 
-QTEST_MAIN(TestTextMapper)
+QTEST_MAIN(TestFileMapper)

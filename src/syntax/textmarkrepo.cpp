@@ -68,6 +68,11 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
             }
         }
     }
+    if (marks->isEmpty()) {
+        // TODO(JM) This is shared in the editor and MUST be NULLed there FIRST
+//        mMarks.remove(fileId);
+    }
+
     if (!remainingBookmarks) mBookmarkedFiles.removeAll(fileId);
     if (groups.isEmpty()) return;
     FileMeta *fm = mFileRepo->fileMeta(fileId);

@@ -126,7 +126,10 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/editors/editorhelper.h \
            $$SRCPATH/editors/processlogedit.h \
            $$SRCPATH/editors/systemlogedit.h \
-           $$SRCPATH/editors/textmapper.h \
+           $$SRCPATH/editors/abstracttextmapper.h \
+           $$SRCPATH/editors/logparser.h \
+           $$SRCPATH/editors/filemapper.h \
+           $$SRCPATH/editors/memorymapper.h \
            $$SRCPATH/editors/textview.h \
            $$SRCPATH/editors/textviewedit.h \
            $$SRCPATH/editors/viewhelper.h \
@@ -240,7 +243,10 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/editors/editorhelper.cpp \
            $$SRCPATH/editors/processlogedit.cpp \
            $$SRCPATH/editors/systemlogedit.cpp \
-           $$SRCPATH/editors/textmapper.cpp \
+           $$SRCPATH/editors/abstracttextmapper.cpp \
+           $$SRCPATH/editors/logparser.cpp \
+           $$SRCPATH/editors/filemapper.cpp \
+           $$SRCPATH/editors/memorymapper.cpp \
            $$SRCPATH/editors/textview.cpp \
            $$SRCPATH/editors/textviewedit.cpp \
            $$SRCPATH/editors/viewhelper.cpp \
