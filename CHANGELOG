@@ -2,13 +2,15 @@ Version 0.13.0
 ===============
 
 # General
+- **reworked log to better handle long and fast log output**
+- improved behavior of F1 (Help) Key. Studio now opens widget specific help if available
 - fixed search status update when having no results
 - added raise to result view to pop up over help
 - fixed crash when jumping to a result after invalidating cache
 - Enhanced icon size in Help on Mac OS
 - fixed bookmarks sometimes not being able to be set
 - improved add new/existing file dialog: now opens dialog in group folder if available
-- added dialog to create license file (pops up when a license is in the user's clipboard and the "About GAMS" is opened)
+- **added dialog to create license file (pops up when a license is in the user's clipboard and the "About GAMS" is opened)**
 - disabled top dockwidget area for all widgets as it should be used solely by the extended parameter editor
 - fixed behavior of jumping to matching parenthesis ([Shift+]F8)
 - fixed missing parenthesis highlighting for variables
@@ -17,11 +19,11 @@ Version 0.13.0
 - fixed Studio not popping up for warning when drag'n'droping many files
 - disabled GoTo dialog for all non-applicable widgets
 - fixed crash when opening files with certain parenthesis constructs
-- added fullscreen mode (win/linux: ALT+Return, macos: META+CMD+F)
+- **added fullscreen mode (win/linux: ALT+Return, macos: META+CMD+F)**
 - fixed accidental closing of log tab when closing results page
 
 # GDX Viewer
-- added adjustment of numerical precision in the GDX Viewer
+- **added adjustment of numerical precision in the GDX Viewer**
 - improved tooltip for GDX Viewer precision spin box
 
 # GLB Parser
@@ -33,6 +35,6 @@ Version 0.13.0
 - fixed Model Library Explorer feeling slow on macOS
 
 # Reference Viewer
-- added auto resize when opening
+- **added auto resize when opening**
 - added context menu to let users auto resize after doing manual changes
 
