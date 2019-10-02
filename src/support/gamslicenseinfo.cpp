@@ -152,6 +152,16 @@ QString GamsLicenseInfo::solverLicense(int solverId) const
     return "Expired";
 }
 
+bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
+{
+    int i = 1;
+    for (auto line: license) {
+        palLicenseRegisterGAMS(mPAL, i++, line.toStdString().c_str());
+    }
+    palLicenseRegisterGAMSDone(mPAL);
+    return palLicenseValidation(mPAL) ? false : true;
+}
+
 char* GamsLicenseInfo::solverCodes(int solverId) const
 {
     char msg[GMS_SSSIZE];
@@ -161,7 +171,7 @@ char* GamsLicenseInfo::solverCodes(int solverId) const
 
 int GamsLicenseInfo::errorCallback(int count, const char *message)
 {
-    Q_UNUSED(count);
+    Q_UNUSED(count)
     auto logger = SysLogLocator::systemLog();
     logger->append(InvalidGAMS, LogMsgType::Error);
     logger->append(message, LogMsgType::Error);

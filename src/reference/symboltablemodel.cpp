@@ -175,7 +175,7 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
          case SymbolDataType::Model :
              switch(index.column()) {
              case 0: return QString::number( refList.at(idx)->id() );
-             case 1: return refList.at(idx)->name();;
+             case 1: return refList.at(idx)->name();
              case 2: return SymbolDataType::from( refList.at(idx)->type() ).name();
              case 3: return refList.at(idx)->explanatoryText();
              default: break;
@@ -373,6 +373,28 @@ void SymbolTableModel::setFilterPattern(const QString &pattern)
     filterRows();
     layoutChanged();
     emit symbolSelectionToBeUpdated();
+}
+
+int SymbolTableModel::getLastSectionIndex()
+{
+    switch(mType) {
+    case SymbolDataType::Set :
+    case SymbolDataType::Acronym :
+    case SymbolDataType::Parameter :
+    case SymbolDataType::Variable :
+    case SymbolDataType::Equation :
+        return 4;
+    case SymbolDataType::Model :
+    case SymbolDataType::Funct :
+    case SymbolDataType::File :
+        return 2;
+    case SymbolDataType::FileUsed :
+        return 0;
+    case SymbolDataType::Unknown :
+    case SymbolDataType::Unused :
+        return 5;
+    }
+    return 0;
 }
 
 SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const

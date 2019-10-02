@@ -51,6 +51,7 @@ public:
     int getSortedIndexOf(const QString &name) const;
     void toggleSearchColumns(bool checked);
     void setFilterPattern(const QString& pattern);
+    int getLastSectionIndex();
 
     static const int COLUMN_SYMBOL_ID = 0;
     static const int COLUMN_SYMBOL_NAME = 1;

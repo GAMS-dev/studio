@@ -23,8 +23,12 @@
 #include "checkforupdatewrapper.h"
 #include "solvertablemodel.h"
 #include "commonpaths.h"
+#include "locators/abstractsystemlogger.h"
+#include "locators/sysloglocator.h"
+#include "gamslicenseinfo.h"
 
 #include <QClipboard>
+#include <QDir>
 #include <QFile>
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
@@ -103,61 +107,45 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
 {
     auto clipboard = QGuiApplication::clipboard();
     auto licenseLines = clipboard->text().split('\n', QString::SkipEmptyParts);
-    if (!isValidLicense(licenseLines))
+    for (int i=0; i<licenseLines.size(); ++i)
+        licenseLines[i] = licenseLines[i].trimmed();
+
+    GamsLicenseInfo licenseInfo;
+    if (!licenseInfo.isLicenseValid(licenseLines))
         return;
 
     QFile licenseFile(CommonPaths::systemDir() + "/gamslice.txt");
     if (licenseFile.exists()) {
         auto result = QMessageBox::question(parent,
                                             "Overwrite current GAMS license file?",
-                                            "It looks like there is a GAMS license on the clipboard. "
-                                            "Do you want to overwrite your current license file from this text? "
-                                            "Your current license location is: " + licenseFile.fileName());
+                                            "It looks like there is a GAMS license in the clipboard. "
+                                            "Do you want to overwrite your current license file from this clipboard text? "
+                                            "Your current license location is: " +
+                                            QDir::toNativeSeparators(licenseFile.fileName()));
         if (result == QMessageBox::No)
             return;
     } else {
         auto result = QMessageBox::question(parent,
                                             "Create GAMS license file?",
-                                            "It looks like there is a GAMS license on the clipboard. "
-                                            "Do you want to create a license file from this text? "
-                                            "Your GAMS license location will be: " + licenseFile.fileName());
+                                            "It looks like there is a GAMS license in the clipboard. "
+                                            "Do you want to create a license file from this clipboard text? "
+                                            "Your GAMS license location will be: " +
+                                            QDir::toNativeSeparators(licenseFile.fileName()));
         if (result == QMessageBox::No)
             return;
     }
 
-    if (licenseFile.open(QFile::WriteOnly)) {
+    if (licenseFile.open(QFile::WriteOnly | QFile::Text)) {
         QTextStream stream(&licenseFile);
         stream << licenseLines.join("\n");
         licenseFile.close();
+    } else {
+        auto logger = SysLogLocator::systemLog();
+        logger->append("Unable to open file " +
+                       QDir::toNativeSeparators(licenseFile.fileName()) +
+                       ": " + licenseFile.errorString(),
+                       LogMsgType::Error);
     }
-}
-
-bool AboutGAMSDialog::isValidLicense(QStringList &license)
-{
-    if (license.count() < 5)
-        return false;
-
-    for (int i=0; i<license.size(); ++i) {
-        license[i] = license[i].trimmed();
-        if (license[i].count() == 65)
-            continue;
-        else
-            return false;
-    }
-
-    if (license[0].at(54) != ':' && license[0].at(54) != '/')
-        return false;
-
-    // Most of the platform keys listed below are relevant for Studio.
-    // WIN, WEX, LEX, DEX, SOX, AIX, SIS, BGP, LNX, SOL, DAR, DII, GEN, ALL
-    if (!license[0].endsWith("-WIN") && !license[0].endsWith("-LNX") &&
-        !license[0].endsWith("-DAR") && !license[0].endsWith("-GEN") &&
-        !license[0].endsWith("-ALL"))
-        return false;
-
-    if (!license[4].startsWith("DC"))
-        return false;
-    return true;
 }
 
 void AboutGAMSDialog::on_copylicense_clicked()

@@ -54,6 +54,8 @@ public:
 
     QString solverLicense(int solverId) const;
 
+    bool isLicenseValid(const QStringList &license);
+
 private:
     char* solverCodes(int solverId) const;
 

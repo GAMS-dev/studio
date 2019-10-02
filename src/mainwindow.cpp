@@ -74,7 +74,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
-    mHistory = new HistoryData();
 //    QFile css(":/data/style.css");
 //    if (css.open(QFile::ReadOnly | QFile::Text)) {
 //        this->setStyleSheet(css.readAll());
@@ -98,6 +97,10 @@ MainWindow::MainWindow(QWidget *parent)
     MacOSCocoaBridge::disableDictationMenuItem(true);
     MacOSCocoaBridge::disableCharacterPaletteMenuItem(true);
     MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
+    MacOSCocoaBridge::setFullScreenMenuItemEverywhere(false);
+    ui->actionFull_Screen->setShortcut(QKeySequence::FullScreen);
+#else
+    ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
 
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
@@ -219,7 +222,6 @@ MainWindow::MainWindow(QWidget *parent)
     SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
-
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 }
 
@@ -1644,7 +1646,10 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
-    if (isResults) mSearchDialog->clearResults();
+    if (isResults) {
+        mSearchDialog->clearResults();
+        return;
+    }
 
     QWidget* edit = ui->logTabs->widget(index);
     if (edit) {
@@ -1711,7 +1716,7 @@ void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
 
 HistoryData *MainWindow::history()
 {
-    return mHistory;
+    return &mHistory;
 }
 
 void MainWindow::addToOpenedFiles(QString filePath)
@@ -1932,6 +1937,8 @@ void MainWindow::dropEvent(QDropEvent* e)
 
         int answer;
         if(pathList.size() > 25) {
+            raise();
+            activateWindow();
             QMessageBox msgBox;
             msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
                            " files at once. Depending on the file sizes this may take a long time.");
@@ -2016,7 +2023,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 {
     if (event->buttons()) {
         QWidget* child = childAt(event->pos());
-        Q_UNUSED(child);
+        Q_UNUSED(child)
     }
     QMainWindow::mouseMoveEvent(event);
 }
@@ -2832,10 +2839,11 @@ void MainWindow::writeTabs(QJsonObject &json) const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp))
-        return;
+    if ((ui->mainTab->currentWidget() == mWp)) return;
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
+    if (!codeEdit && !tv) return;
+
     int maxLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
     GoToDialog dialog(this, maxLines, bool(tv));
     int result = dialog.exec();
@@ -3375,6 +3383,19 @@ void MainWindow::deleteScratchDirs(const QString &path)
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
 {
     mSearchWidgetPos = searchWidgetPos;
+}
+
+void MainWindow::on_actionFull_Screen_triggered()
+{
+    if (isFullScreen()) {
+        if (mMaximizedBeforeFullScreen)
+            showMaximized();
+        else
+            showNormal();
+    } else {
+        mMaximizedBeforeFullScreen = isMaximized();
+        showFullScreen();
+    }
 }
 
 }

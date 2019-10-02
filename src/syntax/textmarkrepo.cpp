@@ -241,7 +241,7 @@ const LineMarks *TextMarkRepo::marks(FileId fileId)
 void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
 {
     LineMarks *marks = mMarks.value(fileId);
-    if (!marks->size() || !lineShift) return;
+    if (!marks || !marks->size() || !lineShift) return;
     QSet<int> changedLines;
     changedLines.reserve(marks->size()*2);
     QMutableMapIterator<int, TextMark*> it(*marks);
