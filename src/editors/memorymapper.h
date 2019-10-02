@@ -34,9 +34,15 @@ class DynamicFile;
 class MemoryMapper : public AbstractTextMapper
 {
     Q_OBJECT
-private:
+private: // types
     enum Pending { PendingNothing, PendingBlockCountChange, PendingContentChange };
     Q_DECLARE_FLAGS(Pendings, Pending)
+
+    struct InputState {
+        int inQuote = 0;        // 0: outside    1: in single quotes    2: in double quotes
+        int refStart = -1;      // index of possible reference start
+        int lineState = 0;      // 0: content    1: line-end (\n or \r\n)    2: conceal-prev-line (\r)
+    };
 
     struct Unit {
         Unit(Chunk *chunk = nullptr, QString text = QString())
@@ -49,6 +55,33 @@ private:
     struct LineRef {
         Chunk *chunk = nullptr;
         int relLine = 0;
+    };
+
+    template<typename T>
+    class RingBuffer {
+    public:
+        void resize(int size) { dat.resize(size); }
+        int size() { return len; }
+        void clear() { len = 0; end = 0; }
+        T last() { return (end > 0) ? dat.at(end-1) : len ? dat.last() : T(); }
+        void append(const T &val) {
+            dat[end] = val;
+            end = (end+1) % dat.size();
+            if (len < dat.size()) ++len;
+        }
+        QVector<T> data() {
+            if (end && end != len) { // swap data at split-point
+                QVector<T> left = dat.mid(0, end);
+                memmove(&dat[0], &dat[end], size_t(len-end) * sizeof(T));
+                memmove(&dat[len-end], &left[0], size_t(left.length()) * sizeof(T));
+                end = len % dat.size();
+            }
+            return dat.mid(0, len);
+        }
+    private:
+        QVector<T> dat;
+        int end = 0;
+        int len = 0;
     };
 
 public:
@@ -89,7 +122,7 @@ private slots:
     void fetchDisplay();
     void processPending();
 
-private:
+private: // methods
     void appendLineData(const QByteArray &data, Chunk *&chunk);
     void appendEmptyLine();
     void clearLastLine();
@@ -109,38 +142,7 @@ private:
     void invalidateSize();
     void newPending(Pending pending);
 
-private:
-    struct InputState {
-        int inQuote = 0;        // 0: outside    1: in single quotes    2: in double quotes
-        int refStart = -1;      // index of possible reference start
-        int lineState = 0;      // 0: content    1: line-end (\n or \r\n)    2: conceal-prev-line (\r)
-    };
-    template<typename T>
-    class RingBuffer {
-    public:
-        void resize(int size) { dat.resize(size); }
-        int size() { return len; }
-        void clear() { len = 0; end = 0; }
-        T last() { return (end > 0) ? dat.at(end-1) : len ? dat.last() : T(); }
-        void append(const T &val) {
-            dat[end] = val;
-            end = (end+1) % dat.size();
-            if (len < dat.size()) ++len;
-        }
-        QVector<T> data() {
-            if (end && end != len) { // adjust data to split-point
-                QVector<T> left = dat.mid(0, end);
-                memmove(&dat[0], &dat[end], size_t(len-end) * sizeof(T));
-                memmove(&dat[len-end], &left[0], size_t(left.length()) * sizeof(T));
-                end = len % dat.size();
-            }
-            return dat.mid(0, len);
-        }
-    private:
-        QVector<T> dat;
-        int end = 0;
-        int len = 0;
-    };
+private: // members
     QVector<Chunk*> mChunks;
     QVector<Unit> mUnits;
     QVector<QTextCharFormat> mBaseFormat;

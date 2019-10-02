@@ -174,6 +174,8 @@ public:
     bool debugMode() const { return mDebugMode; }
     bool atTail();
 
+    void dumpPos() const;
+
 
 public slots:
     virtual void reset();
@@ -204,8 +206,6 @@ protected:
     void emitBlockCountChanged();
     void removeChunk(int chunkNr);
     virtual void internalRemoveChunk(int chunkNr);
-
-    void dumpPos() const;
 
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;

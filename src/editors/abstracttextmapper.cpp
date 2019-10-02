@@ -748,6 +748,8 @@ void AbstractTextMapper::dumpPos() const
 {
     DEB() << "anc:  chunk " << mAnchor.chunkNr << ",  p " << (mAnchor.absLineStart+mAnchor.effectiveCharNr());
     DEB() << "pos:  chunk " << mPosition.chunkNr << ",  p " << (mPosition.absLineStart+mPosition.effectiveCharNr());
+    DEB() << "top:  chunk " << mTopLine.chunkNr << ",  line " << mTopLine.localLine;
+    DEB() << "max:  chunk " << mMaxTopLine.chunkNr << ",  line " << mMaxTopLine.localLine;
 }
 
 bool AbstractTextMapper::atTail()

@@ -137,8 +137,8 @@ void TextView::endRun()
     if (mStayAtTail) {
         jumpToEnd(); // in case this has been left out (on a fast run)
         delete mStayAtTail;
+        mStayAtTail = nullptr;
     }
-    mStayAtTail = nullptr;
     updateView();
     topLineMoved(); // force repaint directly (missed at updateView if slider hasn't changed)
 }
@@ -301,13 +301,39 @@ const LineMarks *TextView::marks() const
 
 bool TextView::eventFilter(QObject *watched, QEvent *event)
 {
-    Q_UNUSED(watched)
+    if (watched == verticalScrollBar() && mStayAtTail) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            mSliderMouseStart = static_cast<QMouseEvent*>(event)->y();
+            mSliderStartedAtTail = *mStayAtTail;
+            if (mSliderStartedAtTail) *mStayAtTail = false;
+        }
+        if (event->type() == QEvent::MouseMove) {
+            QMouseEvent *me = static_cast<QMouseEvent*>(event);
+            if (me->buttons() & Qt::LeftButton && me->y() > verticalScrollBar()->height() - verticalScrollBar()->width())
+                mSliderStartedAtTail = true;
+        }
+        if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent *me = static_cast<QMouseEvent*>(event);
+            if (mSliderStartedAtTail && (mSliderMouseStart-3 < me->y())) {
+                *mStayAtTail = true;
+            } else if (mSliderMouseStart-3 > me->y()) {
+                *mStayAtTail = false;
+            }
+        }
+    }
     if (event->type() == QEvent::Wheel) {
-        mMapper->moveVisibleTopLine(static_cast<QWheelEvent*>(event)->delta() / -40);
+        int delta = static_cast<QWheelEvent*>(event)->delta();
+        mMapper->moveVisibleTopLine(delta / -40);
         if (verticalScrollBar()->maximum()) {
             verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));
             verticalScrollBar()->setValue(verticalScrollBar()->sliderPosition());
         } else topLineMoved();
+        if (mStayAtTail) {
+            if (delta > 0) *mStayAtTail = false;
+            else {
+                if (!*mStayAtTail) *mStayAtTail = mMapper->atTail();
+            }
+        }
         return true;
     }
     if (event->type() == QEvent::FocusOut) {
@@ -323,6 +349,7 @@ void TextView::jumpToEnd()
 {
     if (mMapper->lineCount() > 0) {
         mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount());
+        if (mStayAtTail) *mStayAtTail = mMapper->atTail();
     } else {
         mMapper->setVisibleTopLine(1.0);
     }
@@ -379,6 +406,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
                 mMapper->setPosRelative(mMapper->visibleLineCount(), -1, mode);
                 updatePosAndAnchor();
             }
+            return;
         } else if (p.y() > AbstractTextMapper::cursorInvalid) {
             mMapper->setPosRelative(p.y()+1, -1, mode);
             updatePosAndAnchor();
@@ -436,6 +464,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         event->ignore();
         break;
     }
+    if (mStayAtTail) *mStayAtTail = mMapper->atTail();
     updateView();
 }
 
@@ -474,7 +503,6 @@ void TextView::updateVScrollZone()
 void TextView::topLineMoved()
 {
     if (!mDocChanging) {
-        if (mStayAtTail) *mStayAtTail = mMapper->atTail();
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
         disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
