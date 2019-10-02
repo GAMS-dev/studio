@@ -80,10 +80,6 @@ equals(GAMS_BUILD_ENV, "") {
         DEFINES += WEI
         DEFINES += CIA_WEX
     }
-    equals(GSYS_ENV, "vs8") {
-        DEFINES += VS8
-        DEFINES += CIA_WIN
-    }
     equals(GSYS_ENV, "leg") {
         DEFINES += LEG
         DEFINES += CIA_LEX
