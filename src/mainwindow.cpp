@@ -1878,7 +1878,11 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             ui->logTabs->currentWidget()->setFocus();
             e->accept(); return;
         } else if (focusWidget() == ui->projectView) {
-            setProjectViewVisibility(false);
+                  setProjectViewVisibility(false);
+        } else if (mGamsOptionWidget->isAnOptionWidgetFocused(focusWidget())) {
+                   mGamsOptionWidget->deSelectOptions();
+        } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+                  ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
         }
 
         // search widget

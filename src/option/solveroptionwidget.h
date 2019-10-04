@@ -94,6 +94,7 @@ public slots:
     void copyAction();
 
     void selectAllOptions();
+    void deSelectOptions();
 
 private slots:
     void showOptionDefinition();

@@ -798,6 +798,12 @@ void SolverOptionWidget::selectAllOptions()
     ui->solverOptionTableView->selectAll();
 }
 
+void SolverOptionWidget::deSelectOptions()
+{
+    ui->solverOptionTreeView->selectionModel()->clearSelection();
+    ui->solverOptionTableView->selectionModel()->clearSelection();
+}
+
 void SolverOptionWidget::selectAnOption()
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();

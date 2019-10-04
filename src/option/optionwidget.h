@@ -98,6 +98,8 @@ public slots:
     void selectSearchField();
     void optionItemCommitted(QWidget *editor);
 
+    void deSelectOptions();
+
 private slots:
     void findAndSelectionOptionFromDefinition();
 
