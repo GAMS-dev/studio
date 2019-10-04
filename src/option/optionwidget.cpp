@@ -126,6 +126,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
     ui->gamsOptionTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
     connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
     connect(ui->gamsOptionTreeView, &QTreeView::customContextMenuRequested, this, &OptionWidget::showDefinitionContextMenu);
 
@@ -287,11 +288,7 @@ void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
 
     QMenu menu(this);
     for(QAction* action : ui->gamsOptionTreeView->actions()) {
-        if (action->objectName().compare("actionFindThisOption")==0) {
-            action->setEnabled(  hasSelectionBeenAdded );
-            menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionAddThisOption")==0) {
+        if (action->objectName().compare("actionAddThisOption")==0) {
             action->setEnabled( !hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
@@ -802,15 +799,6 @@ void OptionWidget::addActions()
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(showDefinitionAction);
-
-    QAction* findThisOptionAction = mContextMenu.addAction("Show selection of this parameter", [this]() {
-        findAndSelectionOptionFromDefinition();
-    });
-    findThisOptionAction->setObjectName("actionFindThisOption");
-    findThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+F1") );
-    findThisOptionAction->setShortcutVisibleInContextMenu(true);
-    findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->gamsOptionTreeView->addAction(findThisOptionAction);
 
     QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "Add this parameter", [this]() {
         QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();

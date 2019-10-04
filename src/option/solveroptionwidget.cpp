@@ -195,6 +195,7 @@ bool SolverOptionWidget::init()
         connect(ui->solverOptionSearch, &QLineEdit::textChanged,
                 proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
+        connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
         connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
         connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
 
@@ -336,11 +337,7 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
 
     QMenu menu(this);
     for(QAction* action : ui->solverOptionTreeView->actions()) {
-        if (action->objectName().compare("actionFindThisOption")==0) {
-            action->setEnabled( hasSelectionBeenAdded );
-            menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionAddThisOption")==0) {
+        if (action->objectName().compare("actionAddThisOption")==0) {
             action->setEnabled( !hasSelectionBeenAdded );
             menu.addAction(action);
             menu.addSeparator();
@@ -1149,15 +1146,6 @@ void SolverOptionWidget::addActions()
     anotehrSelectAll->setShortcutVisibleInContextMenu(true);
     anotehrSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(anotehrSelectAll);
-
-    QAction* findThisOptionAction = mContextMenu.addAction("show Option of this definition", [this]() {
-        findAndSelectionOptionFromDefinition();
-    });
-    findThisOptionAction->setObjectName("actionFindThisOption");
-    findThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+F1") );
-    findThisOptionAction->setShortcutVisibleInContextMenu(true);
-    findThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->solverOptionTreeView->addAction(findThisOptionAction);
 
     QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "Add this option", [this]() {
         QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
