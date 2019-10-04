@@ -456,6 +456,8 @@ void OptionWidget::showOptionDefinition()
     if (selection.count() <= 0)
        return;
 
+    disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
+
     ui->gamsOptionTreeView->selectionModel()->clearSelection();
     for (int i=0; i<selection.count(); i++) {
             QModelIndex index = selection.at(i);
@@ -482,6 +484,8 @@ void OptionWidget::showOptionDefinition()
                 ui->gamsOptionTreeView->horizontalScrollBar()->setValue(r.x());
             }
     }
+
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
 }
 
 void OptionWidget::deleteOption()

@@ -665,6 +665,8 @@ void SolverOptionWidget::showOptionDefinition()
     if (indexSelection.count() <= 0)
         return;
 
+    disconnect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
+
     ui->solverOptionGroup->setCurrentIndex(0);
     ui->solverOptionSearch->clear();
     ui->solverOptionTreeView->selectionModel()->clearSelection();
@@ -698,6 +700,8 @@ void SolverOptionWidget::showOptionDefinition()
             }
         }
     }
+
+    connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
 }
 
 void SolverOptionWidget::copyDefinitionToClipboard(int column)
