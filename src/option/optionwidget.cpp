@@ -424,7 +424,9 @@ void OptionWidget::deSelectOptions()
 
 void OptionWidget::findAndSelectionOptionFromDefinition()
 {
-    ui->gamsOptionTableView->selectionModel()->clearSelection();
+    if (ui->gamsOptionTableView->model()->rowCount() <= 0)
+        return;
+
     QModelIndex index = ui->gamsOptionTreeView->selectionModel()->currentIndex();
     QModelIndex parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
 

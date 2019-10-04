@@ -746,7 +746,9 @@ void SolverOptionWidget::copyDefinitionToClipboard(int column)
 
 void SolverOptionWidget::findAndSelectionOptionFromDefinition()
 {
-    ui->solverOptionTableView->selectionModel()->clearSelection();
+    if (ui->solverOptionTableView->model()->rowCount() <= 0)
+        return;
+
     QModelIndex index = ui->solverOptionTreeView->selectionModel()->currentIndex();
     QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
 
