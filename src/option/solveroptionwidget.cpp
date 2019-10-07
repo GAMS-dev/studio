@@ -365,8 +365,6 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 {
     setModified(true);
 
-    disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
-
     QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
     QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
                                                           ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
@@ -380,7 +378,11 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QVariant data = ui->solverOptionTreeView->model()->data(optionNameIndex, Qt::CheckStateRole);
     if (Qt::CheckState(data.toUInt())==Qt::Checked) {
         findAndSelectionOptionFromDefinition();
+        deleteOption();
+        return;
     }
+
+    disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
 
     bool replaceExistingEntry = false;
     QString optionNameData = ui->solverOptionTreeView->model()->data(optionNameIndex).toString();
