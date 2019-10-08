@@ -167,7 +167,7 @@ bool SolverOptionWidget::init()
 
     setModified(false);
 
-    ui->solverOptionTableView->setTabKeyNavigation(false);
+    ui->solverOptionTableView->setTabKeyNavigation(true);
 
     setTabOrder(ui->solverOptionGroup, ui->solverOptionSearch);
     setTabOrder(ui->solverOptionSearch, ui->solverOptionTreeView);
