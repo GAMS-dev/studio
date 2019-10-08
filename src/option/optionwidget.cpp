@@ -322,6 +322,14 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QModelIndex parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
     QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
                                                           ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
+
+    QVariant data = ui->gamsOptionTreeView->model()->data(optionNameIndex, Qt::CheckStateRole);
+    if (Qt::CheckState(data.toUInt())==Qt::Checked) {
+        findAndSelectionOptionFromDefinition();
+        deleteOption();
+        return;
+    }
+
     QModelIndex synonymIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_SYNONYM) :
                                                        ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_SYNONYM) ;
     QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
@@ -329,6 +337,7 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QModelIndex entryNumberIndex = (parentIndex.row()<0) ? ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
                                                            ui->gamsOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
     QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex : index ;
+
 
     QString optionNameData = ui->gamsOptionTreeView->model()->data(optionNameIndex).toString();
     QString synonymData = ui->gamsOptionTreeView->model()->data(synonymIndex).toString();
