@@ -418,8 +418,12 @@ void OptionWidget::optionItemCommitted(QWidget *editor)
 
 void OptionWidget::deSelectOptions()
 {
-    ui->gamsOptionTreeView->selectionModel()->clearSelection();
-    ui->gamsOptionTableView->selectionModel()->clearSelection();
+    if (ui->gamsOptionTableView->hasFocus() && ui->gamsOptionTableView->selectionModel()->hasSelection())
+        ui->gamsOptionTableView->selectionModel()->clearSelection();
+    else if (ui->gamsOptionTreeView->hasFocus() && ui->gamsOptionTreeView->selectionModel()->hasSelection())
+             ui->gamsOptionTreeView->selectionModel()->clearSelection();
+    else
+        this->focusNextChild();
 }
 
 void OptionWidget::findAndSelectionOptionFromDefinition()
