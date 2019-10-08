@@ -90,10 +90,10 @@ HelpWidget::HelpWidget(QWidget *parent) :
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     helpToolButton->setMenu(helpMenu);
 
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back );
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward );
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload );
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop );
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back, QIcon(":/img/backward"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward, QIcon(":/img/forward"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload, QIcon(":/img/reload"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop, QIcon(":/img/stop"));
 
     setupToolbar(bookmarkToolButton, helpToolButton);
 
@@ -510,10 +510,10 @@ qreal HelpWidget::getZoomFactor()
 QWebEngineView *HelpWidget::createHelpView()
 {
     HelpPage* page = new HelpPage(ui->webEngineView);
-    createWebActionTrigger(page, QWebEnginePage::Back );
-    createWebActionTrigger(page, QWebEnginePage::Forward );
-    createWebActionTrigger(page, QWebEnginePage::Reload );
-    createWebActionTrigger(page, QWebEnginePage::Stop );
+    createWebActionTrigger(page, QWebEnginePage::Back, QIcon(":/img/backward"));
+    createWebActionTrigger(page, QWebEnginePage::Forward, QIcon(":/img/forward"));
+    createWebActionTrigger(page, QWebEnginePage::Reload, QIcon(":/img/reload"));
+    createWebActionTrigger(page, QWebEnginePage::Stop, QIcon(":/img/stop"));
     ui->webEngineView->setPage( page );
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     return ui->webEngineView;
@@ -524,10 +524,11 @@ void HelpWidget::on_webActionTriggered(QWebEnginePage::WebAction webAction, bool
     ui->webEngineView->page()->triggerAction(webAction, checked);
 }
 
-void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction webAction)
+void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction webAction, QIcon icon)
 {
     QAction *action = page->action(webAction);
     action->setEnabled(false);
+    action->setIcon(icon);
     connect(action, &QAction::changed, [this, action, webAction]{
         emit webActionEnabledChanged(webAction, action->isEnabled());
     });
