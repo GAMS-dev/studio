@@ -1444,6 +1444,7 @@ void CodeEdit::BlockEdit::selectToEnd()
     for (QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine))
          ; block.blockNumber() <= qMax(mStartLine, mCurrentLine); block=block.next()) {
         if (end < block.length()-1) end = block.length()-1;
+        if (!block.isValid()) break;
     }
     setSize(end - mColumn);
 }
