@@ -804,8 +804,12 @@ void SolverOptionWidget::selectAllOptions()
 
 void SolverOptionWidget::deSelectOptions()
 {
-    ui->solverOptionTreeView->selectionModel()->clearSelection();
-    ui->solverOptionTableView->selectionModel()->clearSelection();
+    if (ui->solverOptionTableView->hasFocus() && ui->solverOptionTableView->selectionModel()->hasSelection())
+        ui->solverOptionTableView->selectionModel()->clearSelection();
+    else if (ui->solverOptionTreeView->hasFocus() && ui->solverOptionTreeView->selectionModel()->hasSelection())
+             ui->solverOptionTreeView->selectionModel()->clearSelection();
+    else
+        this->focusNextChild();
 }
 
 void SolverOptionWidget::selectAnOption()
