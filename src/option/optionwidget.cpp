@@ -99,6 +99,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     connect(this, &OptionWidget::optionTableModelChanged, this, &OptionWidget::on_optionTableModelChanged);
     connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
     connect(mOptionTableModel, &GamsOptionTableModel::optionNameChanged, this, &OptionWidget::on_optionTableNameChanged);
+    connect(mOptionTableModel, &GamsOptionTableModel::optionValueChanged, this, &OptionWidget::on_optionValueChanged);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     GamsOptionDefinitionModel* optdefmodel =  new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
@@ -694,6 +695,41 @@ void OptionWidget::on_optionTableNameChanged(const QString &from, const QString 
     for(QModelIndex item : toDefinitionItems) {
         QModelIndex index = ui->gamsOptionTreeView->model()->index(item.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
         ui->gamsOptionTreeView->model()->setData(index, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
+    }
+
+    ui->gamsOptionTreeView->selectionModel()->clearSelection();
+    if (toDefinitionItems.size() > 0) {
+        ui->gamsOptionTreeView->selectionModel()->select(
+                    QItemSelection (
+                        ui->gamsOptionTreeView->model ()->index (toDefinitionItems.first().row() , 0),
+                        ui->gamsOptionTreeView->model ()->index (toDefinitionItems.first().row(), ui->gamsOptionTreeView->model ()->columnCount () - 1)),
+                    QItemSelectionModel::Select);
+        ui->gamsOptionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
+    }
+}
+
+void OptionWidget::on_optionValueChanged(const QModelIndex &index)
+{
+    ui->gamsOptionTreeView->selectionModel()->clearSelection();
+
+    QModelIndex idx = index.sibling(index.row(), GamsOptionTableModel::COLUMN_OPTION_KEY);
+    QString data = ui->gamsOptionTableView->model()->data(idx, Qt::DisplayRole).toString();
+    QModelIndexList toDefinitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+                                                                     Qt::DisplayRole,
+                                                                     data, 1);
+    if (toDefinitionItems.size() <= 0) {
+        toDefinitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_SYNONYM),
+                                                                         Qt::DisplayRole,
+                                                                         data, 1);
+    }
+
+    if (toDefinitionItems.size() > 0) {
+        ui->gamsOptionTreeView->selectionModel()->select(
+                    QItemSelection (
+                        ui->gamsOptionTreeView->model ()->index (toDefinitionItems.first().row() , 0),
+                        ui->gamsOptionTreeView->model ()->index (toDefinitionItems.first().row(), ui->gamsOptionTreeView->model ()->columnCount () - 1)),
+                    QItemSelectionModel::Select);
+        ui->gamsOptionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
     }
 }
 
