@@ -638,6 +638,8 @@ void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 
     if (ui->compactViewCheckBox->isChecked())
         on_compactViewCheckBox_stateChanged(Qt::Checked);
+
+    showOptionDefinition(true);
 }
 
 void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
