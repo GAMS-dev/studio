@@ -536,7 +536,19 @@ void OptionWidget::deleteOption()
                                                                      Qt::DisplayRole,
                                                                      optionName, 1);
 
-    ui->gamsOptionTableView->model()->removeRow(index.row(), QModelIndex());
+    QList<int> rows;
+    for(const QModelIndex & index : ui->gamsOptionTableView->selectionModel()->selectedRows()) {
+        rows.append( index.row() );
+    }
+    std::sort(rows.begin(), rows.end());
+    int prev = -1;
+    for(int i=rows.count()-1; i>=0; i--) {
+        int current = rows[i];
+        if (current != prev) {
+            ui->gamsOptionTableView->model()->removeRows( current, 1 );
+            prev = current;
+        }
+    }
 
     if (items.size() <= 1) {  // only set Unchecked if it's the only optionName in the table
         mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
