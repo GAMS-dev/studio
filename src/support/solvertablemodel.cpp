@@ -71,8 +71,11 @@ QVariant SolverTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (index.column() == 0)
-        return mLicenseInfo.solverLicense(mVerticalHeaderIndices.value(index.row()+RowShift));
+    if (index.column() == 0) {
+        auto solverName = headerData(index.row(), Qt::Vertical).toString();
+        auto solverId = mLicenseInfo.solverId(solverName);
+        return mLicenseInfo.solverLicense(solverName, solverId);
+    }
 
     if (mLicenseInfo.solverCapability(mVerticalHeaderIndices.value(index.row()+RowShift), index.column()))
         return "X";
