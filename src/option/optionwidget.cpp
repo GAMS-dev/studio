@@ -24,6 +24,7 @@
 
 #include "addoptionheaderview.h"
 #include "commonpaths.h"
+#include "definitionitemdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "gamsoptiondefinitionmodel.h"
 #include "mainwindow.h"
@@ -116,6 +117,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setDragEnabled(true);
     ui->gamsOptionTreeView->setDragDropMode(QAbstractItemView::DragOnly);
 
+    ui->gamsOptionTreeView->setItemDelegate( new DefinitionItemDelegate(ui->gamsOptionTreeView) );
     ui->gamsOptionTreeView->setItemsExpandable(true);
     ui->gamsOptionTreeView->setSortingEnabled(true);
     ui->gamsOptionTreeView->sortByColumn(0, Qt::AscendingOrder);

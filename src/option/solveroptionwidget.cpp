@@ -27,6 +27,7 @@
 #include "ui_solveroptionwidget.h"
 
 #include "addoptionheaderview.h"
+#include "definitionitemdelegate.h"
 #include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"
@@ -151,6 +152,7 @@ bool SolverOptionWidget::init()
     ui->solverOptionTreeView->setDragEnabled(true);
     ui->solverOptionTreeView->setDragDropMode(QAbstractItemView::DragOnly);
 
+    ui->solverOptionTreeView->setItemDelegate( new DefinitionItemDelegate(ui->solverOptionTreeView) );
     ui->solverOptionTreeView->setItemsExpandable(true);
     ui->solverOptionTreeView->setSortingEnabled(true);
     ui->solverOptionTreeView->sortByColumn(0, Qt::AscendingOrder);
