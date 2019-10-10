@@ -360,9 +360,9 @@ QVariant GdxSymbol::formatValue(double val) const
     if (val<GMS_SV_UNDEF) {
         int prec = mNumericalPrecision;
         if (prec == -1) // Max
-            prec = 15;
+            prec = mMaxPrecision;
 
-        QString strFullPrec = QString::number(val, 'g', 15);
+        QString strFullPrec = QString::number(val, 'g', mMaxPrecision);
         QString str = QString::number(val, 'f', prec);
 
         if (strFullPrec.contains('e'))
