@@ -3294,7 +3294,8 @@ void MainWindow::on_actionNextTab_triggered()
         }
         wid = wid->parentWidget();
     }
-    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() + 1) % tabs->count());
+    if (tabs && tabs->count() > 0)
+        tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() + 1) % tabs->count());
 }
 
 void MainWindow::on_actionPreviousTab_triggered()
@@ -3312,7 +3313,8 @@ void MainWindow::on_actionPreviousTab_triggered()
         }
         wid = wid->parentWidget();
     }
-    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
+    if (tabs && tabs->count() > 0)
+        tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
 }
 
 void MainWindow::on_actionToggleBookmark_triggered()
