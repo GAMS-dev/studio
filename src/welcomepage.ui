@@ -216,8 +216,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>470</width>
-              <height>924</height>
+              <width>468</width>
+              <height>883</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -338,8 +338,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>470</width>
-              <height>924</height>
+              <width>468</width>
+              <height>883</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -513,7 +513,7 @@
                   <number>4</number>
                  </property>
                  <property name="documentation" stdset="0">
-                  <string>docs/T_STUDIO.html</string>
+                  <string>T_STUDIO.html</string>
                  </property>
                  <property name="anchor" stdset="0">
                   <string/>
@@ -550,7 +550,7 @@
                   <number>4</number>
                  </property>
                  <property name="documentation" stdset="0">
-                  <string>docs/UG_MAIN.html</string>
+                  <string>UG_MAIN.html</string>
                  </property>
                  <property name="anchor" stdset="0">
                   <string>UG_Tutorial_Examples</string>
@@ -656,7 +656,7 @@
               <number>4</number>
              </property>
              <property name="documentation" stdset="0">
-              <string>docs/RN_MAIN.html</string>
+              <string>RN_MAIN.html</string>
              </property>
              <property name="anchor" stdset="0">
               <string/>

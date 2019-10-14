@@ -32,6 +32,12 @@
 namespace gams {
 namespace studio {
 
+#if defined(__APPLE__)
+    const QString CommonPaths::DocumentationDir = "../../../Resources/docs";
+#else
+    const QString CommonPaths::DocumentationDir = "docs";
+#endif
+
 QString CommonPaths::SystemDir = QString();
 
 #if defined(__APPLE__) || defined(__unix__)
@@ -45,6 +51,11 @@ const QString CommonPaths::LicenseFile = "gamslice.txt";
 CommonPaths::CommonPaths()
 {
 
+}
+
+const QString& CommonPaths::documentationDir()
+{
+    return DocumentationDir;
 }
 
 const QString& CommonPaths::systemDir()

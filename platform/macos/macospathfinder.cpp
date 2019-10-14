@@ -6,7 +6,8 @@
 #include <QDir>
 #include <QStandardPaths>
 
-const QString MacOSPathFinder::SubPath = "/../sysdir";
+const QString MacOSPathFinder::Sysdir = "/GAMS Terminal.app/Contents/MacOS";
+const QString MacOSPathFinder::SubPath = "/.." + Sysdir;
 
 MacOSPathFinder::MacOSPathFinder()
 {
@@ -38,7 +39,7 @@ QString MacOSPathFinder::bundlePath()
 
 QString MacOSPathFinder::searchApplications()
 {
-    QString path = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT "/sysdir";
+    QString path = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT + Sysdir;
     if (!QDir(path).exists()) {
         QDir applications("/Applications");
         QRegExp regex("^GAMS(\\d\\d).(\\d)$");
@@ -46,12 +47,12 @@ QString MacOSPathFinder::searchApplications()
            if (!regex.exactMatch(dir))
                continue;
            if (regex.cap(1).toInt() > GAMS_DISTRIB_MAJOR) {
-               path = "/Applications/" + dir + "/sysdir";
+               path = "/Applications/" + dir + Sysdir;
                break;
            }
            if (regex.cap(1).toInt() == GAMS_DISTRIB_MAJOR &&
                regex.cap(2).toInt() >= GAMS_DISTRIB_MINOR) {
-               path = "/Applications/" + dir + "/sysdir";
+               path = "/Applications/" + dir + Sysdir;
                break;
            }
         }
