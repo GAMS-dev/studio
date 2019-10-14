@@ -448,7 +448,7 @@ void GdxSymbol::resetSortFilter()
         for(int uel : *mUelsInColumn.at(dim))
             mShowUelInColumn.at(dim)[uel] = true;
     }
-    mFilterRecCount = mLoadedRecCount; //TODO(CW): use mRecordCount ?
+    mFilterRecCount = mLoadedRecCount;
     layoutChanged();
 }
 
