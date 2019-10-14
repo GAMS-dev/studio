@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "welcomepage.h"
+#include "commonpaths.h"
 #include "studiosettings.h"
 #include "ui_welcomepage.h"
 #include "mainwindow.h"
@@ -32,6 +33,14 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent)
     ui->setupUi(this);
     historyChanged(history);
     mOutputVisible = mMain->outputViewVisibility();
+
+    QString path = CommonPaths::documentationDir() + "/";
+    QString docs = ui->label_doc_studio->property("documentation").toString();
+    ui->label_doc_studio->setProperty("documentation", path + docs);
+    docs = ui->label_doc_release->property("documentation").toString();
+    ui->label_doc_release->setProperty("documentation", path + docs);
+    docs = ui->label_doc_tut->property("documentation").toString();
+    ui->label_doc_tut->setProperty("documentation", path + docs);
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
@@ -95,14 +104,14 @@ void WelcomePage::linkActivated(const QString &link)
 
 void WelcomePage::showEvent(QShowEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     mOutputVisible = mMain->outputViewVisibility();
     mMain->setOutputViewVisibility(false);
 }
 
 void WelcomePage::hideEvent(QHideEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     mMain->setOutputViewVisibility(mOutputVisible);
 }
 
