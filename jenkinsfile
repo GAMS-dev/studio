@@ -175,11 +175,6 @@ pipeline {
                             cp icons/* appdir/usr/share/pixmaps
                             cp CHANGELOG appdir/usr/resources/Changelog
 
-                            # TODO (AF) take a look at linuxdeployqt
-                            # workaround for linuxdeployqt and svg
-                            mkdir -p appdir/usr/plugins/imageformats
-                            cp /opt/Qt/5.11.0/plugins/imageformats/libqsvg.so appdir/usr/plugins/imageformats/
-
                             STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION version | cut -f2 -d"=")
                             STUDIO_MINOR_VERSION=$(grep ^STUDIO_MINOR_VERSION version | cut -f2 -d"=")
                             STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL version | cut -f2 -d"=")
