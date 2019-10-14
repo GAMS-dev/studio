@@ -493,7 +493,8 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         uint uel;
         for(int rec=0; rec<mRecordCount; rec++) {
             uel = mKeys[mRecSortIdx[rec]*mDim + column];
-            if (uel >= labelCompIdx.size())  //TODO (CW) workaround for bad UELS. Bad uels are sorted by their internal number separately from normal UELS
+            // bad uels are sorted by their internal number separately from normal UELS
+            if (uel >= labelCompIdx.size())
                 l.append(QPair<int, int>(uel, mRecSortIdx[rec]));
             else
                 l.append(QPair<int, int>(labelCompIdx[uel], mRecSortIdx[rec]));
