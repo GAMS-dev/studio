@@ -70,7 +70,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
     ui->gamsOptionTableView->setSelectionBehavior(QAbstractItemView::SelectItems);
-    ui->gamsOptionTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->gamsOptionTableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->gamsOptionTableView->setAutoScroll(true);
     ui->gamsOptionTableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->gamsOptionTableView->setSortingEnabled(false);
@@ -600,8 +600,13 @@ void OptionWidget::insertOption()
 
         ui->gamsOptionTableView->scrollTo(index, QAbstractItemView::EnsureVisible);
     } else if (selection.count() > 0) {
-        QModelIndex index = selection.at(0);
-        ui->gamsOptionTableView->model()->insertRows(index.row(), 1, QModelIndex());
+        QList<int> rows;
+        for(QModelIndex idx : selection) {
+            rows.append( idx.row() );
+        }
+        std::sort(rows.begin(), rows.end());
+        ui->gamsOptionTableView->model()->insertRows(rows.at(0), 1, QModelIndex());
+        QModelIndex index = ui->gamsOptionTableView->model()->index(rows.at(0), GamsOptionTableModel::COLUMN_OPTION_KEY);
         ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
         ui->gamsOptionTableView->edit( mOptionTableModel->index(index.row(), GamsOptionTableModel::COLUMN_OPTION_KEY) );
 
