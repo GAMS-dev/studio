@@ -878,9 +878,13 @@ void SolverOptionWidget::insertOption()
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     int rowToBeInserted = -1;
-    if (isThereARowSelection())  {
-        QModelIndex index = ui->solverOptionTableView->selectionModel()->selectedRows().at(0);
-        rowToBeInserted = index.row();
+    if (isThereARowSelection()) {
+        QList<int> rows;
+        for(QModelIndex idx : ui->solverOptionTableView->selectionModel()->selectedRows()) {
+            rows.append( idx.row() );
+        }
+        std::sort(rows.begin(), rows.end());
+        rowToBeInserted = rows.at(0);
         ui->solverOptionTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
         QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
         QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
@@ -941,8 +945,12 @@ void SolverOptionWidget::insertComment()
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     int rowToBeInserted = -1;
     if (isThereARowSelection() ) {
-        QModelIndex index = ui->solverOptionTableView->selectionModel()->selectedRows().at(0);
-        rowToBeInserted = index.row();
+        QList<int> rows;
+        for(QModelIndex idx : ui->solverOptionTableView->selectionModel()->selectedRows()) {
+            rows.append( idx.row() );
+        }
+        std::sort(rows.begin(), rows.end());
+        rowToBeInserted = rows.at(0);
         ui->solverOptionTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
         QModelIndex insertKeyIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY);
         QModelIndex insertValueIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_VALUE);
