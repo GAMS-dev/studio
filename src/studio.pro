@@ -125,6 +125,7 @@ SOURCES += \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
     option/commandlineoption.cpp \
+    option/definitionitemdelegate.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsoptiontablemodel.cpp \
     option/lineeditcompleteevent.cpp \
@@ -240,6 +241,7 @@ HEADERS += \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
     option/commandlineoption.h \
+    option/definitionitemdelegate.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsoptiontablemodel.h \
     option/lineeditcompleteevent.h \

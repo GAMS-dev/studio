@@ -115,6 +115,14 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         }
         return QVariant();
     }
+    case Qt::TextColorRole: {
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+        OptionDefinitionItem *parentItem = item->parentItem();
+        if (parentItem == rootItem &&  item->modified())
+            return  QVariant::fromValue(QColor(Qt::darkGreen));
+        else
+            return  QVariant::fromValue(QColor(Qt::black));
+    }
     default:
          break;
     }

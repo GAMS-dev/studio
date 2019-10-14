@@ -22,6 +22,7 @@
 
 #include <QMenu>
 #include <QWidget>
+#include <QStyledItemDelegate>
 
 #include "common.h"
 #include "solveroptiontablemodel.h"
@@ -77,7 +78,7 @@ public slots:
     void showDefinitionContextMenu(const QPoint &pos);
     void addOptionFromDefinition(const QModelIndex &index);
 
-    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_newTableRowDropped(const QModelIndex &index);
 
     bool saveOptionFile(const QString &location);
@@ -94,9 +95,12 @@ public slots:
     void copyAction();
 
     void selectAllOptions();
+    void deSelectOptions();
+
+    void completeEditingOption(QWidget *editor, QAbstractItemDelegate::EndEditHint hint = QStyledItemDelegate::NoHint);
 
 private slots:
-    void showOptionDefinition();
+    void showOptionDefinition(bool selectRow = true);
     void copyDefinitionToClipboard(int column);
     void findAndSelectionOptionFromDefinition();
     void toggleCommentOption();

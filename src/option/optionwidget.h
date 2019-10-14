@@ -98,6 +98,8 @@ public slots:
     void selectSearchField();
     void optionItemCommitted(QWidget *editor);
 
+    void deSelectOptions();
+
 private slots:
     void findAndSelectionOptionFromDefinition();
 
@@ -111,6 +113,7 @@ private slots:
 
     void on_newTableRowDropped(const QModelIndex &index);
     void on_optionTableNameChanged(const QString &from, const QString &to);
+    void on_optionValueChanged(const QModelIndex &index);
     void on_optionTableModelChanged(const QString &commandLineStr);
 
     void resizeColumnsToContents();
