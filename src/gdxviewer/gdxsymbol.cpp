@@ -181,8 +181,8 @@ void GdxSymbol::loadData()
         }
 
         int dummy;
-        int* keys = new int[GMS_MAX_INDEX_DIM];
-        double* values = new double[GMS_VAL_MAX];
+        int keys[GMS_MAX_INDEX_DIM];
+        double values[GMS_VAL_MAX];
         if (!gdxDataReadRawStart(mGdx, mNr, &dummy)) {
             char msg[GMS_SSSIZE];
             gdxErrorStr(mGdx, gdxGetLastError(mGdx), msg);
@@ -192,12 +192,9 @@ void GdxSymbol::loadData()
         //skip records that have already been loaded
         for(int i=0; i<mLoadedRecCount; i++) {
             gdxDataReadRaw(mGdx, keys, values, &dummy);
-            //TODO(CW): redundant code (see below)
             if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                delete[] keys;
-                delete[] values;
                 return;
             }
         }
@@ -235,11 +232,9 @@ void GdxSymbol::loadData()
                 beginResetModel();
                 endResetModel();
             }
-            if (stopLoading) {
+            if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                delete[] keys;
-                delete[] values;
                 return;
             }
         }
@@ -251,10 +246,6 @@ void GdxSymbol::loadData()
         calcUelsInColumn();
 
         mIsLoaded = true;
-
-        delete[] keys;
-        delete[] values;
-
         emit loadFinished();
     }
 }
