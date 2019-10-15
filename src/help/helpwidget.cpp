@@ -179,7 +179,6 @@ void HelpWidget::on_helpContentRequested(const DocumentType &type, const QString
     if (!submoduleName.isEmpty()) {
         if (type == DocumentType::Solvers)
             dir = QDir(CommonPaths::systemDir()).filePath( HelpData::getSolverChapterLocation(submoduleName) );
-        // TODO (JP) other DocumentType(s)
     }
     if (dir.canonicalPath().isEmpty() || !QFileInfo::exists(dir.canonicalPath())) {
         QString htmlText;

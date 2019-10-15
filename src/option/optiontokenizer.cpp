@@ -921,7 +921,6 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                       optReadFromListStr( mOPTHandle, name, j, svalue );
                       strList << QString::fromLatin1(svalue);
                    }
-                   // TODO (JP)
                    QString sv = QString(svalue);
                    definedValue = getValueFromStr(str, itype, ioptsubtype, definedKey, sv);
                    valueRead = true;

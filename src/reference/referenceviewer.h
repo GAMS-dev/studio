@@ -49,8 +49,6 @@ signals:
     void jumpTo(ReferenceItem item);
 
 public slots:
-    // TODO (JP): on_referenceFileChagned to be removed when
-    //            a ReferenceViewer does not create own Reference Object
     void on_referenceFileChanged(QTextCodec* codec);
     void on_tabBarClicked(int index);
     void updateView(bool status);
