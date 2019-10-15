@@ -948,9 +948,15 @@ void MainWindow::on_actionSave_As_triggered()
             filters << tr("All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp)");
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
-            QString *selFilter = &filters.last();
-            if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
-            if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
+
+            QString *selFilter = &filters.first();
+            foreach (QString f, filters) {
+                if (f.contains("*."+fi.suffix())) {
+                    selFilter = &f;
+                    break;
+                }
+            }
+
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
                                                     filePath, filters.join(";;"),
                                                     selFilter,
@@ -1012,8 +1018,15 @@ void MainWindow::on_actionSave_As_triggered()
                                                , "Select other", "Overwrite", "Abort", 0, 2);
 
             if (choice == 1) {
+                FileKind oldKind = node->file()->kind();
                 mProjectRepo.saveNodeAs(node, filePath);
-                ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
+                if (oldKind == node->file()->kind()) { // if old == new
+                    ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
+                } else { // reopen in new editor
+                    int index = ui->mainTab->currentIndex();
+                    openFileNode(node, true);
+                    on_mainTab_tabCloseRequested(index);
+                }
                 mStatusWidgets->setFileName(filePath);
 
                 mSettings->saveSettings(this);

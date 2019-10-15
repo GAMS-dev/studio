@@ -124,33 +124,6 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
     }
 }
 
-void FileMeta::internalSave(const QString &location)
-{
-    if (document()) {
-        QFile file(location);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-            EXCEPT() << "Can't save " << location;
-        QTextStream out(&file);
-        if (mCodec) out.setCodec(mCodec);
-        mActivelySaved = true;
-        out << document()->toPlainText();
-        out.flush();
-        file.close();
-        mData = Data(location, mData.type);
-        setModified(false);
-        mFileRepo->watch(this);
-    } else if (kind() == FileKind::Opt) {
-        option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
-        if (solverOptionWidget) {
-            mActivelySaved = true;
-            solverOptionWidget->saveOptionFile(location);
-            mData = Data(location, mData.type);
-            setModified(false);
-            mFileRepo->watch(this);
-        }
-    }
-}
-
 bool FileMeta::checkActivelySavedAndReset()
 {
     bool res = mActivelySaved;
@@ -497,12 +470,45 @@ void FileMeta::load(int codecMib, bool init)
     return;
 }
 
-void FileMeta::save()
+void FileMeta::save(const QString &newLocation)
 {
-    if (!isModified()) return;
-    if (location().isEmpty() || location().startsWith('['))
-        EXCEPT() << "Can't save file '" << location() << "'";
-    internalSave(location());
+    QString location = newLocation.isEmpty() ? mLocation : newLocation;
+    QFile file(location);
+    if (location == mLocation && !isModified()) return;
+
+    if (location.isEmpty() || location.startsWith('['))
+        EXCEPT() << "Can't save file '" << location << "'";
+
+    if (document()) {
+        mActivelySaved = true;
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            EXCEPT() << "Can't save " << location;
+        QTextStream out(&file);
+        if (mCodec) out.setCodec(mCodec);
+        out << document()->toPlainText();
+        out.flush();
+        file.close();
+
+    } else if (kind() == FileKind::Opt) {
+        mActivelySaved = true;
+        option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
+        if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
+
+    } else { // no document, e.g. lst
+        if (location != mLocation) {
+            mActivelySaved = true;
+            QFile old(mLocation);
+            if (!old.copy(location)) EXCEPT() << "Can't save " << location;
+        } else {
+            return;
+        }
+    }
+    setLocation(location);
+    QFileInfo f(file);
+    FileType* newFT = &FileType::from(f.suffix());
+    mData = Data(location, newFT); // react to changes in location and extension
+    setModified(false);
+    mFileRepo->watch(this);
 }
 
 void FileMeta::renameToBackup()
@@ -650,10 +656,10 @@ void FileMeta::setModified(bool modified)
     if (document()) {
         document()->setModified(modified);
     } else if (kind() == FileKind::Opt) {
-              for (QWidget *e : mEditors) {
-                   option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
-                   if (so) so->setModified(modified);
-              }
+          for (QWidget *e : mEditors) {
+               option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
+               if (so) so->setModified(modified);
+          }
     }
 }
 
