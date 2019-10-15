@@ -353,26 +353,21 @@ QVariant GdxSymbol::formatValue(double val) const
     if (val<GMS_SV_UNDEF) {
         int prec = mNumericalPrecision;
         if (prec == -1) // Max
-            prec = 15;
-        if (prec == 0 && qAbs(val) < 1e15) // this is requried in case of rounding numbers that increase the number of digits e.g. 9999.9 -> 10000 (1e4)
-            return QString::number(val, 'f', 0);
-        QString str = QString::number(QString::number(val, 'f', prec).toDouble(), 'g', prec);
+            prec = mMaxPrecision;
+
+        QString strFullPrec = QString::number(val, 'g', mMaxPrecision);
+        QString str = QString::number(val, 'f', prec);
+
+        if (strFullPrec.contains('e'))
+            str = QString::number(str.toDouble(), 'g', prec);
 
         if (mSqueezeTrailingZeroes) {
-            if (str.contains('e'))
-                str = QString::number(val, 'g', prec+1);
-            else {
-                str = QString::number(val, 'f', prec);
-                while (str.back() == '0')
+            if (str.contains(QLocale::c().decimalPoint())) {
+                while (str.back() == '0') // remove trailing zeroes
                     str.chop(1);
                 if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
                     str.chop(1);
             }
-        } else {
-            if (str.contains('e'))
-                str = QString::number(val, 'e', prec);
-            else
-                str = QString::number(val, 'f', prec);
         }
         return str;
     }
