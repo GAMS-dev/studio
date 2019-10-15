@@ -948,9 +948,15 @@ void MainWindow::on_actionSave_As_triggered()
             filters << tr("All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp)");
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
-            QString *selFilter = &filters.last();
-            if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
-            if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
+
+            QString *selFilter = &filters.first();
+            foreach (QString f, filters) {
+                if (f.contains("*."+fi.suffix())) {
+                    selFilter = &f;
+                    break;
+                }
+            }
+
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
                                                     filePath, filters.join(";;"),
                                                     selFilter,
