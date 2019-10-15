@@ -1426,8 +1426,6 @@ void MainWindow::showErrorMessage(QString text)
     mSyslog->append(text, LogMsgType::Error);
 }
 
-static int xDebTime;
-
 void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
     if (origin == -1) {
@@ -1495,7 +1493,6 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
     }
-//    DEB() << "-------------- ELAPSED: " << (QTime::currentTime().msecsSinceStartOfDay() - xDebTime);
 }
 
 void MainWindow::postGamsLibRun()
@@ -2106,7 +2103,6 @@ option::OptionWidget *MainWindow::gamsOptionWidget() const
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
-    xDebTime = QTime::currentTime().msecsSinceStartOfDay();
     mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
@@ -2191,12 +2187,9 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         }
     }
 
-    if (!mSettings->clearLog()) {
-        logNode->prepareRun();
-    } else {
-        logNode->clearLog();
-        logNode->prepareRun();
-    }
+    if (mSettings->clearLog()) logNode->clearLog();
+    logNode->prepareRun();
+
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
     }
