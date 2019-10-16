@@ -2164,7 +2164,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
     if (gmsFilePath == "") {
         mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
-        ui->actionShow_System_Log->trigger(); // TODO (rogo) move this out of here, do on every append
+        ui->actionShow_System_Log->trigger();
         return;
     }
     if (gmsFileNode)

@@ -632,7 +632,6 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
         colNr = tc.columnNumber();
     }
 
-    // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
     // find match by cursor position
     QList<Result> list = mCachedResults->resultsAsList();
     for (int i = 0; i < list.size(); i++) {
