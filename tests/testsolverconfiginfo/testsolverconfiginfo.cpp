@@ -225,7 +225,7 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("SNOPT")        << "SNOPT"          << "optsnopt.def"         << false;
     QTest::newRow("SOLVEENGINE")  << "SOLVEENGINE"    << "optsolveengine.def"   << false;
     QTest::newRow("SOPLEX")       << "SOPLEX"         << "optsoplex.def"        << false;
-    QTest::newRow("XA")           << "XA"             <<  "optxa.def"           << false;
+    QTest::newRow("XA")           << "XA"             << "optxa.def"           << false;
     QTest::newRow("XPRESS")       << "XPRESS"         << "optxpress.def"        << false;
 
     QTest::newRow("BADSOLVERNAME")  << "BADSOLVERNAME"   << ""        << false;
@@ -236,7 +236,6 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
 
 void TestSolverConfigInfo::testSolverOptDefFilename()
 {
-#if CFGAPIVERSION > 2
     QFETCH(QString, solverName);
     QFETCH(QString, optDefFilename);
     QFETCH(bool, hidden);
@@ -244,9 +243,6 @@ void TestSolverConfigInfo::testSolverOptDefFilename()
     SolverConfigInfo solverConfigInfo;
     QCOMPARE( optDefFilename, solverConfigInfo.solverOptDefFileName(solverName));
     QCOMPARE( hidden, solverConfigInfo.isSolverHidden(solverName) );
-#else
-    QVERIFY("require CFGAPIVERSION > 2", false);
-#endif
 }
 
 void TestSolverConfigInfo::testModelTypeNames()
