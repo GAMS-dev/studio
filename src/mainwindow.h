@@ -105,7 +105,7 @@ public:
     void setEncodingMIBs(QList<int> mibs, int active = -1);
     void setActiveMIB(int active = -1);
     HistoryData* history();
-    void setOutputViewVisibility(bool visibility);
+    void setProcessLogVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
@@ -233,7 +233,7 @@ private slots:
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
     // View
-    void on_actionOutput_View_triggered(bool checked);
+    void on_actionProcess_Log_triggered(bool checked);
     void on_actionProject_View_triggered(bool checked);
     void on_actionToggle_Extended_Option_Editor_toggled(bool checked);
     void on_actionHelp_View_triggered(bool checked);
@@ -241,10 +241,10 @@ private slots:
     void on_actionShow_Welcome_Page_triggered();
     void on_actionFull_Screen_triggered();
     // Other
-    void on_mainTab_tabCloseRequested(int index);
+    void on_mainTabs_tabCloseRequested(int index);
     void on_logTabs_tabCloseRequested(int index);
     void on_projectView_activated(const QModelIndex &index);
-    void on_mainTab_currentChanged(int index);
+    void on_mainTabs_currentChanged(int index);
 
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();

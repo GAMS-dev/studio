@@ -276,7 +276,7 @@ void StudioSettings::loadViewStates(MainWindow *main)
     // tool-/menubar
     mAppSettings->beginGroup("viewMenu");
     main->setProjectViewVisibility(mAppSettings->value("projectView", true).toBool());
-    main->setOutputViewVisibility(mAppSettings->value("outputView", false).toBool());
+    main->setProcessLogVisibility(mAppSettings->value("outputView", false).toBool());
     main->setExtendedEditorVisibility(mAppSettings->value("gamsArguments", false).toBool());
     main->setHelpViewVisibility(mAppSettings->value("helpView", false).toBool());
     main->setEncodingMIBs(mAppSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
