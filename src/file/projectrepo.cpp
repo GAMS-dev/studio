@@ -596,11 +596,18 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
     }
 }
 
-void ProjectRepo::lstTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)
+//void ProjectRepo::markTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)
+//{
+//    ProjectRunGroupNode *runGroup = asRunGroup(groupId);
+//    if (runGroup)
+//        runGroup->markTexts(marks, result);
+//}
+
+void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result)
 {
     ProjectRunGroupNode *runGroup = asRunGroup(groupId);
     if (runGroup)
-        runGroup->lstTexts(marks, result);
+        runGroup->errorTexts(lstLines, result);
 }
 
 void ProjectRepo::stepRunAnimation()
@@ -752,6 +759,13 @@ void ProjectRepo::setDebugMode(bool debug)
     mTreeModel->setDebugMode(debug);
     mFileRepo->setDebugMode(debug);
     mTextMarkRepo->setDebugMode(debug);
+    for (ProjectAbstractNode *node: mNodes.values()) {
+        ProjectLogNode *log = asLogNode(node);
+        if (log && log->file()->editors().size()) {
+            TextView *tv = ViewHelper::toTextView(log->file()->editors().first());
+            if (tv) tv->setDebugMode(debug);
+        }
+    }
 }
 
 } // namespace studio

@@ -30,13 +30,15 @@ Start Qt Creator, open the project file 'gams-studio.pro' and click 'Build/Run q
 
 On Windows the file contains:
 ```
-GAMS_DISTRIB=C:/GAMS/win64/24.9
-GAMS_DISTRIB_API=$$GAMS_DISTRIB/apifiles/C/api
+GAMS_DISTRIB=C:/GAMS/win64/29.0
+GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api
+GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api
 ```
 On Unix it will look like:
 ```
-GAMS_DISTRIB=$$(HOME)/gams/gams24.9_linux_x64_64_sfx
-GAMS_DISTRIB_API=$$GAMS_DISTRIB/apifiles/C/api
+GAMS_DISTRIB=$$(HOME)/gams/gams29.0_linux_x64_64_sfx
+GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api
+GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api
 ```
 
 Then perform a 'Build All' operation (Build->Build All) to build the project. Finally, the GAMS Studio can be executed by triggering Run button or pressing 'Ctrl+R'.

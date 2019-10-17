@@ -44,7 +44,17 @@ enum struct DocumentType {
     APIsMain,
     APIs,
     Index,
+    StudioMain,
     ModLibs,
+};
+enum struct StudioSection {
+    WelcomePage,
+    ListingViewer,
+    GDXViewer,
+    ReferenceFileViewer,
+    SolverOptionEditor,
+    Toolbar,
+    OptionEditor,
 };
 
 class HelpData
@@ -68,6 +78,18 @@ public:
             {DocumentType::APIsMain, docs + "/API_MAIN.html"},
             {DocumentType::ToolsMain, docs + "/T_MAIN.html"},
             {DocumentType::Index, docs + "/keyword.html"},
+            {DocumentType::StudioMain, "docs/T_STUDIO.html"}
+        };
+        return list;
+    }
+    static QList<QPair<StudioSection, QString>> studioSectionName() {
+        QList<QPair<StudioSection, QString>> list = {
+            {StudioSection::WelcomePage, "Welcome Page"},
+            {StudioSection::ListingViewer, "Listing Viewer"},
+            {StudioSection::GDXViewer, "GDX Viewer"},
+            {StudioSection::ReferenceFileViewer, "Reference File Viewer"},
+            {StudioSection::SolverOptionEditor, "Solver Option Editor"},
+            {StudioSection::OptionEditor, "Option Editor"},
         };
         return list;
     }
@@ -143,6 +165,15 @@ public:
         return location;
     }
 
+    inline static QString getStudioSectionName(const StudioSection section) {
+        QString name;
+        for (const QPair<StudioSection, QString> &list: studioSectionName()) {
+            if (list.first == section)
+                return list.second;
+        }
+        return name;
+    }
+
     inline static QString getGamsCallOptionAnchor(const QString &keyword) {
         if (keyword.isEmpty())
             return keyword;
@@ -181,6 +212,14 @@ public:
                 return list.second;
         }
         return getChapterLocation(DocumentType::Solvers);
+    }
+
+    inline static QString getStudioSectionAnchor(const QString &section) {
+        if (section.isEmpty()) return section;
+
+        QString str = section.toUpper().simplified();
+        str.replace(" ", "_");
+        return QString("STUDIO_%1").arg(str);
     }
 
     inline static int getURLIndexFrom(const QString &urlStr)  {

@@ -864,22 +864,21 @@ bool OptionWidget::isAnOptionTableFocused(QWidget *focusWidget) const
 
 QString OptionWidget::getSelectedOptionName(QWidget *widget) const
 {
-    QString selectedOptions = "";
     if (widget == ui->gamsOptionTableView) {
-        QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
+        QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
         if (selection.count() > 0) {
             QModelIndex index = selection.at(0);
             QVariant headerData = ui->gamsOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
-            if (Qt::CheckState(headerData.toUInt())==Qt::Checked) {
+            if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
                 return "";
             }
             QVariant data = ui->gamsOptionTableView->model()->data( index.sibling(index.row(),0) );
-            if (mOptionTokenizer->getOption()->isDoubleDashedOption(data.toString())) {
+            if (mOptionTokenizer->getOption()->isValid(data.toString()))
+               return data.toString();
+            else if (mOptionTokenizer->getOption()->isASynonym(data.toString()))
+                    return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
+            else
                return "";
-            } else if (mOptionTokenizer->getOption()->isASynonym(data.toString())) {
-                return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
-            }
-            return data.toString();
         }
     } else if (widget == ui->gamsOptionTreeView) {
         QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
@@ -893,7 +892,7 @@ QString OptionWidget::getSelectedOptionName(QWidget *widget) const
             }
         }
     }
-    return selectedOptions;
+    return "";
 }
 
 QString OptionWidget::getCurrentCommandLineData() const

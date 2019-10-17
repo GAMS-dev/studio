@@ -25,27 +25,6 @@ pipeline {
                         }
                     }
                 }
-                stage ('windowsX86') {
-                    agent { label 'windowsX86' }
-                    steps {
-                        step([$class: 'WsCleanup'])
-                        checkout scm
-                        bat '''
-                            @echo off
-                            echo Setting up environment for VS 2017 usage...
-                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build"
-                            call vcvars32.bat
-                            cd %WORKSPACE%
-                            qmake gams-studio.pro "CONFIG+=release"
-                            nmake
-                        '''
-                    }
-                    post {
-                        always {
-                            recordIssues aggregatingResults: true, enabledForFailure: true, tools: [msBuild(id: 'windowsX86', name: 'MSBuild-x86', reportEncoding: 'UTF-8')]
-                        }
-                    }
-                }
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     steps {
@@ -93,21 +72,6 @@ pipeline {
                             for f in *; do
                                 xvfb-run -a ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
-                        '''
-                    }
-                    post {
-                        always {
-                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
-                        }
-                    }
-                }
-                stage ('windowsX86') {
-                    agent { label 'windowsX86' }
-                    steps {
-                        bat '''
-                            mkdir reports
-                            cd tests/bin
-                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
                     }
                     post {

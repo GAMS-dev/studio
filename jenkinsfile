@@ -33,27 +33,6 @@ pipeline {
                         }
                     }
                 }
-                stage ('windowsX86') {
-                    agent { label 'windowsX86' }
-                    steps {
-                        step([$class: 'WsCleanup'])
-                        checkout scm
-                        bat '''
-                            @echo off
-                            echo Setting up environment for VS 2017 usage...
-                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build"
-                            call vcvars32.bat
-                            cd %WORKSPACE%
-                            qmake gams-studio.pro "CONFIG+=release"
-                            nmake
-                        '''
-                    }
-                    post {
-                        always {
-                            recordIssues aggregatingResults: true, enabledForFailure: true, tools: [msBuild(id: 'windowsX86', name: 'MSBuild-x86', reportEncoding: 'UTF-8')]
-                        }
-                    }
-                }
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     steps {
@@ -101,21 +80,6 @@ pipeline {
                             for f in *; do
                                 xvfb-run -a ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
-                        '''
-                    }
-                    post {
-                        always {
-                            junit allowEmptyResults: true, testResults: 'reports/*.xml'
-                        }
-                    }
-                }
-                stage ('windowsX86') {
-                    agent { label 'windowsX86' }
-                    steps {
-                        bat '''
-                            mkdir reports
-                            cd tests/bin
-                            for %%f in (*) do %%f -xunitxml -o %WORKSPACE%/reports/%%f.xml
                         '''
                     }
                     post {
@@ -214,36 +178,6 @@ pipeline {
                                 archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
                             } else {
                                 archiveArtifacts artifacts: '*.AppImage', fingerprint: true
-                            }
-                        }
-                    }
-                }
-                stage ('windowsX86') {
-                    agent { label 'windowsX86' }
-                    steps {
-                        bat '''
-                            windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
-
-                            copy CHANGELOG "src\\bin\\resources\\Changelog"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Redist\\MSVC\\14.15.26706\\x86\\Microsoft.VC141.CRT\\*" "src\\bin"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Redist\\MSVC\\14.15.26706\\vc_redist.x86.exe" "src\\bin"
-                        '''
-                        fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
-                            withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
-                            bat '''
-                                echo Setting up environment for VS 2017 usage...
-                                cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build"
-                                call vcvars32.bat
-                                cd %WORKSPACE%\\tmp\\studio
-                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com studio.exe
-                            '''
-                        }
-                        script {
-                            def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master') {
-                                zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_32.zip", archive: true, dir: 'tmp'
-                            } else {
-                                zip zipFile: "GAMS_Studio-${versionData}-x86_32.zip", archive: true, dir: 'tmp'
                             }
                         }
                     }

@@ -168,11 +168,11 @@ SOURCES += \
     wplabel.cpp \
     gotodialog.cpp \
     editors/abstractedit.cpp \
+    editors/abstracttextmapper.cpp \
     editors/codeedit.cpp \
     editors/editorhelper.cpp \
     editors/processlogedit.cpp \
     editors/systemlogedit.cpp \
-    editors/textmapper.cpp \
     editors/textview.cpp \
     editors/textviewedit.cpp \
     editors/viewhelper.cpp \
@@ -186,7 +186,10 @@ SOURCES += \
     support/solvertablemodel.cpp        \
     maintabcontextmenu.cpp \
     logtabcontextmenu.cpp \
-    search/searchworker.cpp
+    search/searchworker.cpp \
+    editors/filemapper.cpp \
+    editors/memorymapper.cpp \
+    editors/logparser.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -273,8 +276,6 @@ HEADERS += \
     syntax.h \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
-    syntax/syntaxdata.h \
-    syntax/syntaxdata.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \
@@ -288,11 +289,11 @@ HEADERS += \
     wplabel.h \
     gotodialog.h \
     editors/abstractedit.h \
+    editors/abstracttextmapper.h \
     editors/codeedit.h \
     editors/editorhelper.h \
     editors/processlogedit.h \
     editors/systemlogedit.h \
-    editors/textmapper.h \
     editors/textview.h \
     editors/textviewedit.h \
     editors/viewhelper.h \
@@ -307,7 +308,10 @@ HEADERS += \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
     logtabcontextmenu.h \
-    search/searchworker.h
+    search/searchworker.h \
+    editors/filemapper.h \
+    editors/memorymapper.h \
+    editors/logparser.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -360,6 +364,7 @@ OTHER_FILES +=                                      \
     ../platform/macos/studio.entitlements.plist     \
     ../platform/macos/webengine.entitlements.plist  \
     ../platform/linux/gamsstudio.desktop            \
+    ../CHANGELOG                                    \
     ../jenkinsfile                                  \
     ../jenkinsfile-ci                               \
     ../gamsstudio.desktop                           \

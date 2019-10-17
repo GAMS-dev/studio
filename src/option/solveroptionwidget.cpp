@@ -1351,22 +1351,21 @@ bool SolverOptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget) const
 
 QString SolverOptionWidget::getSelectedOptionName(QWidget *widget) const
 {
-    QString selectedOptions = "";
     if (widget == ui->solverOptionTableView) {
-        QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+        QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
         if (selection.count() > 0) {
             QModelIndex index = selection.at(0);
             QVariant headerData = ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
-            if (Qt::CheckState(headerData.toUInt())==Qt::Checked) {
+            if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
                 return "";
             }
             QVariant data = ui->solverOptionTableView->model()->data( index.sibling(index.row(),0) );
-            if (mOptionTokenizer->getOption()->isDoubleDashedOption(data.toString())) {
+            if (mOptionTokenizer->getOption()->isValid(data.toString()))
+               return data.toString();
+            else if (mOptionTokenizer->getOption()->isASynonym(data.toString()))
+                    return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
+            else
                return "";
-            } else if (mOptionTokenizer->getOption()->isASynonym(data.toString())) {
-                return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
-            }
-            return data.toString();
         }
     } else if (widget == ui->solverOptionTreeView) {
         QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
@@ -1380,7 +1379,7 @@ QString SolverOptionWidget::getSelectedOptionName(QWidget *widget) const
             }
         }
     }
-    return selectedOptions;
+    return "";
 }
 
 
