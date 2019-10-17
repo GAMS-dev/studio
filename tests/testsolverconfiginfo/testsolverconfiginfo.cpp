@@ -245,7 +245,7 @@ void TestSolverConfigInfo::testSolverOptDefFilename()
     QCOMPARE( optDefFilename, solverConfigInfo.solverOptDefFileName(solverName));
     QCOMPARE( hidden, solverConfigInfo.isSolverHidden(solverName) );
 #else
-    QVERIFY(true);
+    QVERIFY("require CFGAPIVERSION > 2", false);
 #endif
 }
 
