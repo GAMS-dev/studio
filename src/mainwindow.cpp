@@ -50,6 +50,7 @@
 #include "support/checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "support/distributionvalidator.h"
+#include "gdxdiffdialog/gdxdiffdialog.h"
 #include "tabdialog.h"
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
@@ -1845,6 +1846,12 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
         triggerGamsLibFileCreation(item);
     }
+}
+
+void MainWindow::on_actionGDX_Diff_triggered()
+{
+    gdxdiffdialog::GdxDiffDialog dialog(this);
+    dialog.exec();
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)

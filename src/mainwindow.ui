@@ -240,6 +240,7 @@
     <addaction name="actionStop"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
+    <addaction name="actionGDX_Diff"/>
     <addaction name="actionDeleteScratchDirs"/>
    </widget>
    <addaction name="menuFile"/>
@@ -1138,6 +1139,11 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::WindowShortcut</enum>
+   </property>
+  </action>
+  <action name="actionGDX_Diff">
+   <property name="text">
+    <string>GDX Diff</string>
    </property>
   </action>
  </widget>

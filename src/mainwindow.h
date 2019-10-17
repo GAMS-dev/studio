@@ -226,6 +226,7 @@ private slots:
     void on_actionInterrupt_triggered();
     void on_actionStop_triggered();
     void on_actionGAMS_Library_triggered();
+    void on_actionGDX_Diff_triggered();
     // About
     void on_actionHelp_triggered();
     void on_actionAbout_Studio_triggered();

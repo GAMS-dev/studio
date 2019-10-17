@@ -191,7 +191,8 @@ SOURCES += \
     search/searchworker.cpp \
     editors/filemapper.cpp \
     editors/memorymapper.cpp \
-    editors/logparser.cpp
+    editors/logparser.cpp \
+    gdxdiffdialog/gdxdiffdialog.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -315,7 +316,8 @@ HEADERS += \
     search/searchworker.h \
     editors/filemapper.h \
     editors/memorymapper.h \
-    editors/logparser.h
+    editors/logparser.h \
+    gdxdiffdialog/gdxdiffdialog.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -336,7 +338,8 @@ FORMS += \
     gotodialog.ui \
     encodingsdialog.ui \
     tabdialog.ui \
-    support/aboutgamsdialog.ui
+    support/aboutgamsdialog.ui \
+    gdxdiffdialog/gdxdiffdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc
