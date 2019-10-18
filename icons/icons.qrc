@@ -76,6 +76,8 @@
         <file alias="hide">angle-double-up.svg</file>
         <file alias="square-darkyellow">square-darkyellow.svg</file>
         <file alias="option-file">option.svg</file>
+        <file>square-green-yellow.svg</file>
+        <file>square-red-yellow.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>
