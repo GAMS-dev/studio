@@ -160,7 +160,7 @@ QString AboutGAMSDialog::header()
     return "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";
 }
 
-QString AboutGAMSDialog:: aboutStudio()
+QString AboutGAMSDialog::aboutStudio()
 {
     QString about = studioInfo();
     about += "Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com><br/>";

@@ -54,7 +54,7 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     mSpecValSortVal.push_back(GMS_SV_PINF); // GMS_SV_PINF
     mSpecValSortVal.push_back(-std::numeric_limits<double>::max()); // GMS_SV_MINF
     mSpecValSortVal.push_back(4.94066E-324); // GMS_SV_EPS
-    mSpecValSortVal.push_back(0);  //TODO (CW) Acronyms
+    // no entry for acronyms. They are sorted by their internal value (>10.0E300 e.g. 1.35e+303 is the smallest acronym value)
 }
 
 GdxSymbol::~GdxSymbol()
@@ -347,12 +347,14 @@ double GdxSymbol::specVal2SortVal(double val)
         return mSpecValSortVal[GMS_SVIDX_UNDEF];
     else if (val == GMS_SV_NA)
         return  mSpecValSortVal[GMS_SVIDX_NA];
+    else if (val == GMS_SV_PINF)
+        return  mSpecValSortVal[GMS_SVIDX_PINF];
     else if (val == GMS_SV_MINF)
         return  mSpecValSortVal[GMS_SVIDX_MINF];
     else if (val == GMS_SV_EPS)
         return  mSpecValSortVal[GMS_SVIDX_EPS];
     else
-        return val;
+        return val; // should be an acronym
 }
 
 QVariant GdxSymbol::formatValue(double val) const
@@ -484,10 +486,6 @@ int GdxSymbol::subType() const
  */
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
-    //TODO(CW): This is a workaround for not sorting if the selcted symbol is updated and column and order haven't changed
-    //if(column == mSortColumn && order == mSortOrder)
-    //    return;
-
     // sort by key column
     if(column<mDim) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
