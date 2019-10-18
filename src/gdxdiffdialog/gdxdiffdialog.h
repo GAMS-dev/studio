@@ -2,6 +2,8 @@
 #define GAMS_STUDIO_GDXDIFFDIALOG_H
 
 #include <QDialog>
+#include <mainwindow.h>
+#include "gdxdiffprocess.h"
 
 namespace gams {
 namespace studio {
@@ -16,7 +18,7 @@ class GdxDiffDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit GdxDiffDialog(QWidget *parent = nullptr);
+    explicit GdxDiffDialog(QString recentPath, QWidget *parent = nullptr);
     ~GdxDiffDialog();
 
 private slots:
@@ -27,8 +29,13 @@ private slots:
 
     void on_pushButton_3_clicked();
 
+    void on_pbCancel_clicked();
+
+    void on_pbOK_clicked();
+
 private:
     Ui::GdxDiffDialog *ui;
+    QString mRecentPath;
 };
 
 } // namespace gdxdiffdialog

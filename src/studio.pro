@@ -192,7 +192,8 @@ SOURCES += \
     editors/filemapper.cpp \
     editors/memorymapper.cpp \
     editors/logparser.cpp \
-    gdxdiffdialog/gdxdiffdialog.cpp
+    gdxdiffdialog/gdxdiffdialog.cpp \
+    gdxdiffdialog/gdxdiffprocess.cpp
 
 HEADERS += \
     abstractprocess.h \
@@ -317,7 +318,8 @@ HEADERS += \
     editors/filemapper.h \
     editors/memorymapper.h \
     editors/logparser.h \
-    gdxdiffdialog/gdxdiffdialog.h
+    gdxdiffdialog/gdxdiffdialog.h \
+    gdxdiffdialog/gdxdiffprocess.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \

@@ -1850,7 +1850,8 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_actionGDX_Diff_triggered()
 {
-    gdxdiffdialog::GdxDiffDialog dialog(this);
+    QString path = QFileInfo(mRecent.path).path();
+    gdxdiffdialog::GdxDiffDialog dialog(path, this);
     dialog.exec();
 }
 
