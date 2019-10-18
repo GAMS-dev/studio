@@ -235,7 +235,7 @@ private slots:
     // View
     void on_actionProcess_Log_triggered(bool checked);
     void on_actionProject_View_triggered(bool checked);
-    void on_actionToggle_Extended_Option_Editor_toggled(bool checked);
+    void on_actionToggle_Extended_Parameter_Editor_toggled(bool checked);
     void on_actionHelp_View_triggered(bool checked);
     void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();

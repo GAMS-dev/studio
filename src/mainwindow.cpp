@@ -269,8 +269,8 @@ void MainWindow::initToolBar()
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionSettings);
-    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
-    ui->toolBar->insertWidget(ui->actionToggle_Extended_Option_Editor, mGamsOptionWidget);
+    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
+    ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsOptionWidget);
     ui->toolBar->insertSeparator(ui->actionProject_View);
 }
 
@@ -3167,17 +3167,17 @@ void MainWindow::on_actionSelect_encodings_triggered()
 
 void MainWindow::setExtendedEditorVisibility(bool visible)
 {
-    ui->actionToggle_Extended_Option_Editor->setChecked(visible);
+    ui->actionToggle_Extended_Parameter_Editor->setChecked(visible);
 }
 
-void MainWindow::on_actionToggle_Extended_Option_Editor_toggled(bool checked)
+void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
 {
     if (checked) {
-        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/hide"));
-        ui->actionToggle_Extended_Option_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/hide"));
+        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     } else {
-        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/show") );
-        ui->actionToggle_Extended_Option_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/show") );
+        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     }
 
     mGamsOptionWidget->setEditorExtended(checked);
