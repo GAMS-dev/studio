@@ -60,21 +60,42 @@ QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation
             return mCheckState[index];
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            if (mOptionItem[index].recurrent)
+            if (mOptionItem.at(index).recurrent)
                return QVariant::fromValue(QIcon(":/img/square-red-yellow"));
             else
                return QVariant::fromValue(QIcon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
                   return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
-            if (mOptionItem[index].recurrent)
+            if (mOptionItem.at(index).recurrent)
                 return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
             else
                 return QVariant::fromValue(QIcon(":/img/square-green"));
         }
     case Qt::ToolTipRole:
-        if (mOptionItem[index].recurrent)
-            return QVariant("Duplicated parameters");
+        QString tooltipText = "";
+        switch(mOptionItem.at(index).error) {
+        case Invalid_Key:
+            tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(index).key) );
+            break;
+        case Incorrect_Value_Type:
+            tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(index).key) );
+            break;
+        case Value_Out_Of_Range:
+            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(index).value).arg(mOptionItem.at(index).key) );
+            break;
+        case Deprecated_Option:
+            tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index).key) );
+            break;
+        default:
+            break;
+        }
+        if (mOptionItem.at(index).recurrent) {
+            if (!tooltipText.isEmpty())
+                tooltipText.append("\n");
+            tooltipText.append( QString("Recurrent parameter '%1', only last entry value of same parameters will not be ignored").arg(mOptionItem.at(index).key));
+        }
+        return tooltipText;
     }
     return QVariant();
 }
