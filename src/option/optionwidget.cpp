@@ -265,10 +265,13 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
             }
             action->setEnabled( thereIsAnOptionSelection );
             menu.addAction(action);
+        } else if (action->objectName().compare("actionShowRecurrence_option")==0) {
+                  action->setEnabled( indexSelection.size()==1 && getRecurrentOption(indexSelection.at(0)).size()>0 );
+                  menu.addAction(action);
+                  menu.addSeparator();
         } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setEnabled( thereIsARow );
-            menu.addAction(action);
-            menu.addSeparator();
+                  action->setEnabled( thereIsARow );
+                  menu.addAction(action);
         }
     }
     menu.exec(ui->gamsOptionTableView->viewport()->mapToGlobal(pos));
@@ -510,6 +513,39 @@ void OptionWidget::showOptionDefinition()
     }
 
     connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
+}
+
+void OptionWidget::showOptionRecurrence()
+{
+    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus()) {
+        return;
+    }
+
+    QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedRows();
+    if (indexSelection.size() != 1) {
+        showOptionDefinition();
+        return;
+    }
+
+    QItemSelection selection = ui->gamsOptionTableView->selectionModel()->selection();
+    selection.select(ui->gamsOptionTableView->model()->index(indexSelection.at(0).row(), 0),
+                     ui->gamsOptionTableView->model()->index(indexSelection.at(0).row(), GamsOptionTableModel::COLUMN_ENTRY_NUMBER));
+    ui->gamsOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
+
+    QList<int> rowList = getRecurrentOption(indexSelection.at(0));
+    if (rowList.size() < 0) {
+        showOptionDefinition();
+        return;
+    }
+
+    for(int row : rowList) {
+        QItemSelection rowSelection = ui->gamsOptionTableView->selectionModel()->selection();
+        rowSelection.select(ui->gamsOptionTableView->model()->index(row, 0),
+                            ui->gamsOptionTableView->model()->index(row, GamsOptionTableModel::COLUMN_ENTRY_NUMBER));
+        ui->gamsOptionTableView->selectionModel()->select(rowSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
+    }
+
+    showOptionDefinition();
 }
 
 void OptionWidget::deleteOption()
@@ -880,6 +916,13 @@ void OptionWidget::addActions()
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(showDefinitionAction);
 
+    QAction* showDuplicationAction = mContextMenu.addAction("Show all parameters of the same definition", [this]() { showOptionRecurrence(); });
+    showDuplicationAction->setObjectName("actionShowRecurrence_option");
+    showDuplicationAction->setShortcut( QKeySequence("Ctrl+D") );
+    showDuplicationAction->setShortcutVisibleInContextMenu(true);
+    showDuplicationAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->gamsOptionTableView->addAction(showDuplicationAction);
+
     QAction* addThisOptionAction = mContextMenu.addAction(QIcon(":/img/plus"), "Add this parameter", [this]() {
         QModelIndexList selection = ui->gamsOptionTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
@@ -908,6 +951,26 @@ void OptionWidget::addActions()
     resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(resizeColumns);
     ui->gamsOptionTreeView->addAction(resizeColumns);
+}
+
+QList<int> OptionWidget::getRecurrentOption(const QModelIndex &index)
+{
+    QList<int> optionList;
+    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
+        return optionList;
+
+    QString optionId = ui->gamsOptionTableView->model()->data( index.sibling(index.row(), GamsOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole).toString();
+    QModelIndexList indices = ui->gamsOptionTableView->model()->match(ui->gamsOptionTableView->model()->index(0, GamsOptionTableModel::COLUMN_ENTRY_NUMBER),
+                                                                      Qt::DisplayRole,
+                                                                      optionId, -1);
+
+    for(QModelIndex idx : indices) {
+        if (idx.row() == index.row())
+            continue;
+        else
+            optionList << idx.row();
+    }
+    return optionList;
 }
 
 QDockWidget* OptionWidget::extendedEditor() const

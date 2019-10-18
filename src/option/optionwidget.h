@@ -104,6 +104,7 @@ private slots:
     void findAndSelectionOptionFromDefinition();
 
     void showOptionDefinition();
+    void showOptionRecurrence();
     void deleteOption();
     void deleteAllOptions();
     void insertOption();
@@ -125,6 +126,8 @@ private:
     void setInterruptActionsEnabled(bool enable);
 
     void addActions();
+
+    QList<int> getRecurrentOption(const QModelIndex &index);
 
     Ui::OptionWidget *ui;
     QDockWidget *mExtendedEditor = nullptr;

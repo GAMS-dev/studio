@@ -33,10 +33,13 @@ namespace option {
 struct OptionError {
     OptionError() { }
     OptionError(QTextLayout::FormatRange fr, QString m):
-         formatRange(fr), message(m) { }
+        formatRange(fr), message(m) { }
+    OptionError(QTextLayout::FormatRange fr, QString m, bool w):
+         formatRange(fr), message(m), warning(w) { }
 
     QTextLayout::FormatRange formatRange;
     QString message;
+    bool warning =  false;
 };
 
 class OptionTokenizer : public QObject
@@ -101,6 +104,7 @@ private:
     QTextCharFormat mInvalidValueFormat;
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
+    QTextCharFormat mDuplicateOptionFormat;
 
     AbstractSystemLogger* mOptionLogger = nullptr;
     static AbstractSystemLogger* mNullLogger;

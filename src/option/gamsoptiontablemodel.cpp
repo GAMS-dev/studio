@@ -60,14 +60,22 @@ QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation
             return mCheckState[index];
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            return QVariant::fromValue(QIcon(":/img/square-red"));
+            if (mOptionItem[index].recurrent)
+               return QVariant::fromValue(QIcon(":/img/square-red-yellow"));
+            else
+               return QVariant::fromValue(QIcon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-            return QVariant::fromValue(QIcon(":/img/square-gray"));
+                  return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
-            return QVariant::fromValue(QIcon(":/img/square-green"));
+            if (mOptionItem[index].recurrent)
+                return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
+            else
+                return QVariant::fromValue(QIcon(":/img/square-green"));
         }
+    case Qt::ToolTipRole:
+        if (mOptionItem[index].recurrent)
+            return QVariant("Duplicated parameters");
     }
-
     return QVariant();
 }
 
@@ -96,18 +104,12 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole: {
-        if (col==0) {
+        if (col==GamsOptionTableModel::COLUMN_OPTION_KEY) {
             return mOptionItem.at(row).key;
-        } else if (col== 1) {
+        } else if (col== GamsOptionTableModel::COLUMN_OPTION_VALUE) {
                  return mOptionItem.at(row).value;
-        } else if (col==2) {
-            QString key = mOptionItem.at(row).key;
-            if (mOption->isASynonym(mOptionItem.at(row).key))
-                key = mOption->getNameFromSynonym(mOptionItem.at(row).key);
-            if (mOption->isValid(key) || mOption->isASynonym(key))
-                return QVariant(mOption->getOptionDefinition(key).number);
-            else
-                return QVariant(-1);
+        } else if (col==GamsOptionTableModel::COLUMN_ENTRY_NUMBER) {
+                  return mOptionItem.at(row).optionId;
         } else {
             break;
         }
@@ -148,6 +150,9 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
     case Qt::TextColorRole: {
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
+
+        if (mOptionItem[index.row()].recurrent && index.column()==COLUMN_OPTION_KEY)
+            return QVariant::fromValue(QColor(Qt::darkYellow));
 
         if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
@@ -434,17 +439,18 @@ void GamsOptionTableModel::on_optionTableModelChanged(const QString &text)
     for (int i=0; i<mOptionItem.size(); ++i) {
         setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, 2), QVariant(mOptionItem.at(i).optionId), Qt::EditRole);
         if (mOptionItem.at(i).error == No_Error)
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
         else if (mOptionItem.at(i).error == Deprecated_Option)
-            setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::PartiallyChecked),
-                              Qt::CheckStateRole );
+                setHeaderData( i, Qt::Vertical,
+                                  Qt::CheckState(Qt::PartiallyChecked),
+                                  Qt::CheckStateRole );
         else setHeaderData( i, Qt::Vertical,
-                          Qt::CheckState(Qt::Checked),
-                          Qt::CheckStateRole );
+                               Qt::CheckState(Qt::Checked),
+                               Qt::CheckStateRole );
     }
     endResetModel();
     emit optionModelChanged(mOptionItem);

@@ -48,11 +48,13 @@ struct OptionItem {
     OptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos), disabled(disabledFlag) { }
 
+    int optionId = -1;
     QString key;
     QString value;
     int keyPosition = -1;
     int valuePosition = -1;
     bool disabled = false;
+    bool recurrent = false;
     OptionErrorType error = No_Error;
 };
 

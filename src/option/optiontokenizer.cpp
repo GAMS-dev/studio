@@ -83,6 +83,10 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
     mInvalidValueFormat.setBackground(Qt::lightGray);
     mInvalidValueFormat.setForeground(Qt::red/*Qt::blue*/);
 
+    mDuplicateOptionFormat.setFontItalic(true);
+    mDuplicateOptionFormat.setBackground(Qt::lightGray);
+    mDuplicateOptionFormat.setForeground(Qt::yellow);
+
     mDeprecateOptionFormat.setFontItalic(true);
     mDeprecateOptionFormat.setBackground(Qt::lightGray);
     mDeprecateOptionFormat.setForeground(Qt::white);
@@ -140,6 +144,14 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
         }
     }
 
+    for (OptionItem& item : commandLineList) {
+        QString key = item.key;
+        if (mOption->isASynonym(item.key))
+           key = mOption->getNameFromSynonym(item.key);
+        if (mOption->isValid(key) || mOption->isASynonym(key))
+            item.optionId = mOption->getOptionDefinition(key).number;
+    }
+
     return commandLineList;
 }
 
@@ -189,6 +201,8 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
     if (!mOption->available())
         return optionErrorList;
 
+    QList<int> idList;
+    QList<OptionItem> itemList;
     for (OptionItem item : items) {
         if (item.disabled) {
             QTextLayout::FormatRange fr;
@@ -226,7 +240,6 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
            fr.format = mInvalidValueFormat;
            optionErrorList.append(OptionError(fr, item.value + QString(" (Option keyword expected for value \"%1\")").arg(item.value)) );
         } else {
-
             if (!mOption->isValid(key) && (!mOption->isASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
                ) {
                 QTextLayout::FormatRange fr;
@@ -258,6 +271,10 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                 QString keyStr = key;
                 if (!mOption->isValid(key))
                     key = mOption->getNameFromSynonym(key);
+
+                int optionId = mOption->getOrdinalNumber(key);
+                idList << optionId;
+                itemList << item;
 
                 QString value = item.value;
 
@@ -365,6 +382,16 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
               }
         } // if (key.isEmpty()) { } else {
     } // for (OptionItem item : items)
+
+    for (OptionItem item : itemList) {
+        if (idList.count(item.optionId)>1) {
+            QTextLayout::FormatRange fr;
+            fr.start = item.keyPosition;
+            fr.length = item.key.length();
+            fr.format = mDuplicateOptionFormat;
+            optionErrorList.append(OptionError(fr, item.key + QString(" (Recurrent), only last entry of same parameter will not be ignored"), true));
+        }
+    }
     return optionErrorList;
 }
 
@@ -1218,7 +1245,9 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
 void OptionTokenizer::validateOption(QList<OptionItem> &items)
 {
    mOption->resetModficationFlag();
+   QList<int> idList;
    for(OptionItem& item : items) {
+       idList << item.optionId;
        item.error = OptionErrorType::No_Error;
        if (mOption->isDoubleDashedOption(item.key)) { // double dashed parameter
            if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item.key)) )
@@ -1237,7 +1266,10 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
        } else { // invalid option
            item.error = OptionErrorType::Invalid_Key;
        }
-
+   }
+   for(OptionItem& item : items) {
+       if (idList.count(item.optionId) > 1)
+          item.recurrent = true;
    }
 }
 
@@ -1289,9 +1321,11 @@ bool OptionTokenizer::isValidEOLCommentChar(const QChar &ch)
 }
 
 void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {
-    QString errorMessage = "";
+    QString warningMessage = "";
     QList<QInputMethodEvent::Attribute> attributes;
     for(const OptionError &err : errorList)   {
+        if (!err.warning)
+            continue;
         QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
         int start = err.formatRange.start - lineEdit->cursorPosition();
         int length = err.formatRange.length;
@@ -1299,15 +1333,35 @@ void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionErro
         attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
 
         if (!err.message.isEmpty())
-            errorMessage.append("\n    " + err.message);
+            warningMessage.append("\n    " + err.message);
+    }
+
+    if (!warningMessage.isEmpty()) {
+        warningMessage.prepend("Warning: Parameter warning(s)");
+    }
+
+    QString errorMessage = "";
+    for(const OptionError &err : errorList)   {
+        if (err.warning)
+            continue;
+        QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
+        int start = err.formatRange.start - lineEdit->cursorPosition();
+        int length = err.formatRange.length;
+        QVariant value = err.formatRange.format;
+        attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
+
+        if (!err.message.isEmpty())
+            errorMessage.prepend("\n    " + err.message);
     }
 
     if (!errorMessage.isEmpty()) {
         errorMessage.prepend("Error: Parameter error(s)");
-        lineEdit->setToolTip(errorMessage);
-    } else {
-        lineEdit->setToolTip("");
+        if (!warningMessage.isEmpty())
+            errorMessage.append("\n\n");
     }
+
+    lineEdit->setToolTip(QString("%1%2").arg(errorMessage).arg(warningMessage));
+
     QInputMethodEvent event(QString(), attributes);
     QCoreApplication::sendEvent(lineEdit, &event);
 }
