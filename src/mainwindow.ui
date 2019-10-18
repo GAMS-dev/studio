@@ -453,7 +453,7 @@
    <addaction name="actionSave"/>
    <addaction name="actionSettings"/>
    <addaction name="actionGAMS_Library"/>
-   <addaction name="actionToggle_Extended_Option_Editor"/>
+   <addaction name="actionToggle_Extended_Parameter_Editor"/>
    <addaction name="actionProject_View"/>
    <addaction name="actionProcess_Log"/>
    <addaction name="actionHelp_View"/>
@@ -1092,7 +1092,7 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionToggle_Extended_Option_Editor">
+  <action name="actionToggle_Extended_Parameter_Editor">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1101,10 +1101,10 @@
      <normaloff>:/img/show</normaloff>:/img/show</iconset>
    </property>
    <property name="text">
-    <string>Toggle Extended Option Editor</string>
+    <string>Toggle Extended Parameter Editor</string>
    </property>
    <property name="toolTip">
-    <string>Show Extended Option Editor</string>
+    <string>Show Extended Parameter Editor</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+L</string>
