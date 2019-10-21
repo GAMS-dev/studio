@@ -185,7 +185,7 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
                  return QVariant::fromValue(QColor(Qt::black));
         }
         if (mOption->isValid(mOptionItem.at(row).key) || mOption->isASynonym(mOptionItem.at(row).key)) { // valid option
-            if (col==0) { // key
+            if (col==GamsOptionTableModel::COLUMN_OPTION_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
                 } else {
@@ -204,7 +204,7 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
                   }
             }
         } else { // invalid option
-            if (col == 0)
+            if (col == GamsOptionTableModel::COLUMN_OPTION_KEY)
                return QVariant::fromValue(QColor(Qt::red));
             else
                 return QVariant::fromValue(QColor(Qt::black));
@@ -461,9 +461,9 @@ void GamsOptionTableModel::on_optionTableModelChanged(const QString &text)
     setRowCount(mOptionItem.size());
 
     for (int i=0; i<mOptionItem.size(); ++i) {
-        setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
-        setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
-        setData(QAbstractTableModel::createIndex(i, 2), QVariant(mOptionItem.at(i).optionId), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, GamsOptionTableModel::COLUMN_OPTION_KEY), QVariant(mOptionItem.at(i).key), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, GamsOptionTableModel::COLUMN_OPTION_VALUE), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, GamsOptionTableModel::COLUMN_ENTRY_NUMBER), QVariant(mOptionItem.at(i).optionId), Qt::EditRole);
         if (mOptionItem.at(i).error == No_Error)
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
