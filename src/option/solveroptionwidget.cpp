@@ -209,6 +209,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
 
         connect(mOptionTableModel, &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
         connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, mOptionTableModel, &SolverOptionTableModel::updateRecurrentStatus);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
@@ -291,6 +292,10 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             }
             action->setEnabled( thereIsAnOptionSelection );
             menu.addAction(action);
+        } else if (action->objectName().compare("actionShowRecurrence_option")==0) {
+            action->setEnabled( indexSelection.size()==1 && getRecurrentOption(indexSelection.at(0)).size()>0 );
+            menu.addAction(action);
+            menu.addSeparator();
         } else if (action->objectName().compare("actionResize_columns")==0) {
             action->setEnabled( isThereARow() );
             menu.addAction(action);
@@ -739,6 +744,39 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
     connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
 }
 
+void SolverOptionWidget::showOptionRecurrence()
+{
+    if (!isAnOptionWidgetFocused(focusWidget()))
+        return;
+
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedRows();
+    if (indexSelection.size() != 1) {
+        showOptionDefinition();
+        return;
+    }
+
+    QItemSelection selection = ui->solverOptionTableView->selectionModel()->selection();
+    selection.select(ui->solverOptionTableView->model()->index(indexSelection.at(0).row(), 0),
+                     ui->solverOptionTableView->model()->index(indexSelection.at(0).row(), GamsOptionTableModel::COLUMN_ENTRY_NUMBER));
+    ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
+
+    QList<int> rowList = getRecurrentOption(indexSelection.at(0));
+    if (rowList.size() < 0) {
+        showOptionDefinition();
+        return;
+    }
+
+    for(int row : rowList) {
+        QItemSelection rowSelection = ui->solverOptionTableView->selectionModel()->selection();
+        rowSelection.select(ui->solverOptionTableView->model()->index(row, 0),
+                            ui->solverOptionTableView->model()->index(row, GamsOptionTableModel::COLUMN_ENTRY_NUMBER));
+        ui->solverOptionTableView->selectionModel()->select(rowSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
+    }
+
+    showOptionDefinition();
+
+}
+
 void SolverOptionWidget::copyDefinitionToClipboard(int column)
 {
     if (ui->solverOptionTreeView->selectionModel()->selectedRows().count() <= 0)
@@ -1135,6 +1173,26 @@ void SolverOptionWidget::resizeColumnsToContents()
     }
 }
 
+QList<int> SolverOptionWidget::getRecurrentOption(const QModelIndex &index)
+{
+    QList<int> optionList;
+
+    if (!isAnOptionWidgetFocused(focusWidget()))
+        return optionList;
+
+    QString optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), mOptionTableModel->getColumnEntryNumber()), Qt::DisplayRole).toString();
+    QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
+                                                                        Qt::DisplayRole,
+                                                                        optionId, -1);
+    for(QModelIndex idx : indices) {
+        if (idx.row() == index.row())
+            continue;
+        else
+            optionList << idx.row();
+    }
+    return optionList;
+}
+
 void SolverOptionWidget::refreshOptionTableModel(bool hideAllComments)
 {
     if (hideAllComments) {
@@ -1265,6 +1323,13 @@ void SolverOptionWidget::addActions()
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(showDefinitionAction);
+
+    QAction* showDuplicationAction = mContextMenu.addAction("Show all parameters of the same definition", [this]() { showOptionRecurrence(); });
+    showDuplicationAction->setObjectName("actionShowRecurrence_option");
+    showDuplicationAction->setShortcut( QKeySequence("Ctrl+D") );
+    showDuplicationAction->setShortcutVisibleInContextMenu(true);
+    showDuplicationAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    ui->solverOptionTableView->addAction(showDuplicationAction);
 
     QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
     resizeColumns->setObjectName("actionResize_columns");

@@ -71,6 +71,7 @@ struct SolverOptionItem {
     QVariant value = "";
     QString text = "";
     bool disabled = false;
+    bool recurrent = false;
     OptionErrorType error = No_Error;
 };
 

@@ -82,8 +82,9 @@ public slots:
     void on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeSolverOptionItem();
     void on_toggleRowHeader(int logicalIndex);
+    void updateRecurrentStatus();
 
-protected:
+private:
     QList<SolverOptionItem *> mOptionItem;
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;

@@ -1180,6 +1180,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
        QTextStream in(&inputFile);
        in.setCodec(codec);
 
+       QList<int> idList;
        while (!in.atEnd()) {
            i++;
            SolverOptionItem* item = new SolverOptionItem();
@@ -1188,6 +1189,10 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
            else
                item->key = in.readLine();
            items.append( item );
+           idList << item->optionId;
+       }
+       for(SolverOptionItem* item : items) {
+           item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
        }
        inputFile.close();
     }
@@ -1272,14 +1277,14 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
        }
    }
    for(OptionItem& item : items) {
-       if (idList.count(item.optionId) > 1)
-          item.recurrent = true;
+       item.recurrent = (item.optionId != -1 && idList.count(item.optionId) > 1);
    }
 }
 
 void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
 {
     mOption->resetModficationFlag();
+    QList<int> idList;
     for(SolverOptionItem* item : items) {
         if (item->disabled)
             continue;
@@ -1287,9 +1292,11 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
         QString key = item->key;
         QString value = item->value.toString();
         QString text = item->text;
-//        QString str = QString("%1 %2 %3").arg(key).arg(value).arg(text);
-//        qDebug() << "validating[" << str << "]";
         updateOptionItem(key, value, text, item);
+        idList << item->optionId;
+    }
+    for(SolverOptionItem* item : items) {
+        item->recurrent = (!item->disabled && item->optionId != -1 &&  idList.count(item->optionId) > 1);
     }
 }
 

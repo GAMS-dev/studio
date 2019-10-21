@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
@@ -84,16 +84,20 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
     }
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            if (mOptionItem.at(index)->error == Deprecated_Option)
-                return QVariant::fromValue(QIcon(":/img/square-darkyellow"));
+            if (mOptionItem.at(index)->recurrent)
+               return QVariant::fromValue(QIcon(":/img/square-red-yellow"));
             else
-                return QVariant::fromValue(QIcon(":/img/square-red"));
+               return QVariant::fromValue(QIcon(":/img/square-red"));
+
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-            return QVariant::fromValue(QIcon(":/img/square-gray"));
+                  if (mOptionItem.at(index)->recurrent)
+                      return QVariant::fromValue(QIcon(":/img/square-gray-yellow"));
+                  else
+                     return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
-            if (mOptionItem.at(index)->error == Deprecated_Option)
-                return QVariant::fromValue(QIcon(":/img/square-square-darkyellow"));
-            else
+            if (mOptionItem.at(index)->recurrent)
+               return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
+           else
                return QVariant::fromValue(QIcon(":/img/square-green"));
         }
     }
@@ -184,14 +188,21 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             case Value_Out_Of_Range:
                  return QVariant::fromValue(QColor(Qt::red));
             case Deprecated_Option:
-                 return QVariant::fromValue(QColor(Qt::darkYellow));
+                if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
+                    return QVariant::fromValue(QColor(Qt::darkYellow));
+                else return QVariant::fromValue(QColor(Qt::gray));
             case No_Error:
-                if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
+                if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
+                    return QVariant::fromValue(QColor(Qt::darkYellow));
+                else if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
                     return QVariant::fromValue(QColor(Qt::gray));
                 else
                     return QVariant::fromValue(QColor(Qt::black));
             default:
-                return QVariant::fromValue(QColor(Qt::black));
+                if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
+                    return QVariant::fromValue(QColor(Qt::darkYellow));
+                else
+                    return QVariant::fromValue(QColor(Qt::black));
             }
         }
      }
@@ -519,6 +530,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         itemList.clear();
 
         connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        updateRecurrentStatus();
         return true;
     }
 
@@ -583,6 +595,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
+            setData( index(i, getColumnEntryNumber()), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
         } else {
            setData( index(i, COLUMN_OPTION_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
            setData( index(i, COLUMN_OPTION_VALUE), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
@@ -667,6 +680,7 @@ void SolverOptionTableModel::on_removeSolverOptionItem()
         }
     }
     emit solverOptionModelChanged(mOptionItem);
+    updateRecurrentStatus();
     endResetModel();
 }
 
@@ -718,6 +732,18 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
+}
+
+void SolverOptionTableModel::updateRecurrentStatus()
+{
+    QList<int> idList;
+    for(SolverOptionItem* item : mOptionItem) {
+        idList << item->optionId;
+    }
+    for(SolverOptionItem* item : mOptionItem) {
+        item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
+    }
+    headerDataChanged(Qt::Vertical, 0, mOptionItem.size());
 }
 
 void SolverOptionTableModel::setRowCount(int rows)
