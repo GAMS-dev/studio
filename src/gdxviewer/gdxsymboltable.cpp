@@ -123,7 +123,6 @@ void GdxSymbolTable::loadGDXSymbols()
     locker.unlock();
 }
 
-//TODO (CW): refactor
 void GdxSymbolTable::createSortIndex()
 {
     QList<QPair<QString, int>> l;

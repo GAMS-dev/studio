@@ -63,7 +63,7 @@ int SolverConfigInfo::solvers() const
     return cfgNumAlgs(mCFG);
 }
 
-int SolverConfigInfo::solverId(const QString &name)
+int SolverConfigInfo::solverId(const QString &name) const
 {
     return cfgAlgNumber(mCFG, name.toStdString().c_str());
 }
@@ -102,7 +102,8 @@ QString SolverConfigInfo::solverOptDefFileName(const QString &solverName) const
     else
         return QString();
 #else
-        return QString();
+    Q_UNUSED(solverName)
+    return QString();
 #endif
 }
 
@@ -146,10 +147,10 @@ bool SolverConfigInfo::solverCapability(int solver, int modelType) const
     return cfgAlgCapability(mCFG, solver, modelType);
 }
 
-char *SolverConfigInfo::solverCodes(int solverId) const
+QString SolverConfigInfo::solverCodes(int solverId) const
 {
-    char msg[GMS_SSSIZE];
-    char *codes = cfgAlgCode(mCFG, solverId, msg);
+    char codes[GMS_SSSIZE];
+    cfgAlgCode(mCFG, solverId, codes);
     return codes;
 }
 

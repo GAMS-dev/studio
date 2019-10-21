@@ -65,7 +65,7 @@ int GamsLicenseInfo::solvers() const
     return mSolverInfo.solvers();
 }
 
-int GamsLicenseInfo::solverId(const QString &name)
+int GamsLicenseInfo::solverId(const QString &name) const
 {
     return mSolverInfo.solverId(name);
 }
@@ -95,13 +95,13 @@ bool GamsLicenseInfo::solverCapability(int solver, int modelType) const
     return mSolverInfo.solverCapability(solver,modelType);
 }
 
-QString GamsLicenseInfo::solverLicense(int solverId) const
+QString GamsLicenseInfo::solverLicense(const QString &name, int id) const
 {
-    int days;
-    char *codes = solverCodes(solverId);
+    int days = -1;
+    auto codes = solverCodes(id);
     if (palLicenseCheckSubX(mPAL,
-                            solverName(solverId).toStdString().c_str(),
-                            codes,
+                            name.toStdString().c_str(),
+                            codes.toStdString().c_str(),
                             &days))
         return "Demo";
     if (days == 0)
@@ -121,7 +121,7 @@ bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
     return palLicenseValidation(mPAL) ? false : true;
 }
 
-char* GamsLicenseInfo::solverCodes(int solverId) const
+QString GamsLicenseInfo::solverCodes(int solverId) const
 {
     return mSolverInfo.solverCodes(solverId);
 }

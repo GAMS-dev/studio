@@ -40,7 +40,7 @@ public:
 
     int solvers() const;
 
-    int solverId(const QString &name);
+    int solverId(const QString &name) const;
 
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
@@ -51,12 +51,12 @@ public:
 
     bool solverCapability(int solver, int modelType) const;
 
-    QString solverLicense(int solverId) const;
+    QString solverLicense(const QString &name, int id) const;
 
     bool isLicenseValid(const QStringList &license);
 
 private:
-    char* solverCodes(int solverId) const;
+    QString solverCodes(int solverId) const;
 
     static int errorCallback(int count, const char *message);
 

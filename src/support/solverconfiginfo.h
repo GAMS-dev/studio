@@ -38,7 +38,7 @@ public:
 
     int solvers() const;
 
-    int solverId(const QString &name);
+    int solverId(const QString &name) const;
 
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
@@ -54,7 +54,7 @@ public:
 
     bool solverCapability(int solver, int modelType) const;
 
-    char* solverCodes(int solverId) const;
+    QString solverCodes(int solverId) const;
 
 private:
     static int errorCallback(int count, const char *message);
