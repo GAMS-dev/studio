@@ -65,7 +65,10 @@ QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation
             else
                return QVariant::fromValue(QIcon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-                  return QVariant::fromValue(QIcon(":/img/square-gray"));
+                  if (mOptionItem.at(index).recurrent)
+                     return QVariant::fromValue(QIcon(":/img/square-gray-yellow"));
+                  else
+                     return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
             if (mOptionItem.at(index).recurrent)
                 return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
@@ -93,7 +96,7 @@ QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation
         if (mOptionItem.at(index).recurrent) {
             if (!tooltipText.isEmpty())
                 tooltipText.append("\n");
-            tooltipText.append( QString("Recurrent parameter '%1', only last entry value of same parameters will not be ignored").arg(mOptionItem.at(index).key));
+            tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(mOptionItem.at(index).key));
         }
         return tooltipText;
     }

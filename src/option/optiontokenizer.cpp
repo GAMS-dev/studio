@@ -256,6 +256,10 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                    fr.length = (item.valuePosition + item.value.length()) - item.keyPosition;
                 fr.format = mDeprecateOptionFormat;
 
+                int optionId = mOption->getOrdinalNumber(key);
+                idList << optionId;
+                itemList << item;
+
                 switch (mOption->getValueErrorType(key, item.value)) {
                 case Incorrect_Value_Type:
                 case Value_Out_Of_Range:
