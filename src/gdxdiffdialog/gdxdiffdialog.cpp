@@ -66,7 +66,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     GdxDiffProcess* proc = new GdxDiffProcess(this);
     QString input1 = ui->leInput1->text().trimmed();
 
-    //TODO: check for valid input
+    //TODO (CW): check for valid input
 
     proc->setInput1(input1);
     proc->setInput2(ui->leInput2->text().trimmed());
