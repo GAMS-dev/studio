@@ -52,7 +52,6 @@ GamsLicenseInfo::GamsLicenseInfo()
                          msg,
                          &rc))
         logger->append(msg, LogMsgType::Error);
-
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
