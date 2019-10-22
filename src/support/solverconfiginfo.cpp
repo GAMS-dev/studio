@@ -44,7 +44,7 @@ SolverConfigInfo::SolverConfigInfo()
                     msg,
                     sizeof(msg))) {
         logger->append(msg, LogMsgType::Error);
-        EXCEPT() << "Could not intialize from gams system directory. " << msg;
+        EXCEPT() << "Could not initialize from gams system directory. " << msg;
     }
     if (cfgReadConfig(mCFG,
                       CommonPaths::configFile().toStdString().c_str())) {
