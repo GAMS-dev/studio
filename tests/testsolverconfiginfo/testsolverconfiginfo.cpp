@@ -201,7 +201,11 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("MPSGE")        << "MPSGE"          << "optmpsge.def"         << false;
     QTest::newRow("MSNLP")        << "MSNLP"          << "optmsnlp.def"         << false;
     QTest::newRow("NLPEC")        << "NLPEC"          << "optnlpec.def"         << false;
+#ifdef __APPLE__
+    QTest::newRow("ODHCPLEX")     << "ODHCPLEX"       << ""                     << false;
+#else
     QTest::newRow("ODHCPLEX")     << "ODHCPLEX"       << "optodhcplex.def"      << false;
+#endif
     QTest::newRow("OSICPLEX")     << "OSICPLEX"       << "optosicplex.def"      << false;
     QTest::newRow("OSIGUROBI")    << "OSIGUROBI"      << "optosigurobi.def"     << false;
     QTest::newRow("OSIMOSEK")     << "OSIMOSEK"       << "optosimosek.def"      << false;
@@ -225,7 +229,11 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("SNOPT")        << "SNOPT"          << "optsnopt.def"         << false;
     QTest::newRow("SOLVEENGINE")  << "SOLVEENGINE"    << "optsolveengine.def"   << false;
     QTest::newRow("SOPLEX")       << "SOPLEX"         << "optsoplex.def"        << false;
+#ifdef __APPLE__
+    QTest::newRow("XA")           << "XA"             << ""                    << false;
+#else
     QTest::newRow("XA")           << "XA"             << "optxa.def"           << false;
+#endif
     QTest::newRow("XPRESS")       << "XPRESS"         << "optxpress.def"        << false;
 
     QTest::newRow("BADSOLVERNAME")  << "BADSOLVERNAME"   << ""        << false;
