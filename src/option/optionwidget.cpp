@@ -484,33 +484,65 @@ void OptionWidget::showOptionDefinition()
 
     disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
 
-    ui->gamsOptionTreeView->selectionModel()->clearSelection();
+    QModelIndexList selectIndices;
     for (int i=0; i<selection.count(); i++) {
             QModelIndex index = selection.at(i);
             if (Qt::CheckState(ui->gamsOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
                 continue;
 
+            QString value = ui->gamsOptionTableView->model()->data( index.sibling(index.row(), GamsOptionTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
             QVariant optionId = ui->gamsOptionTableView->model()->data( index.sibling(index.row(), ui->gamsOptionTableView->model()->columnCount()-1), Qt::DisplayRole);
             QModelIndexList indices = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
                                                                                optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
             for(QModelIndex idx : indices) {
                 QModelIndex  parentIndex =  ui->gamsOptionTreeView->model()->parent(index);
-
-                if (parentIndex.row() < 0 && !ui->gamsOptionTreeView->isExpanded(idx))
-                    ui->gamsOptionTreeView->expand(idx);
-                QItemSelection selection = ui->gamsOptionTreeView->selectionModel()->selection();
-                selection.select(ui->gamsOptionTreeView->model()->index(idx.row(), 0),
-                                 ui->gamsOptionTreeView->model()->index(idx.row(), ui->gamsOptionTreeView->model()->columnCount()-1));
-                ui->gamsOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
-            }
-            if (indices.size() > 0) {
-                ui->gamsOptionTreeView->scrollTo(indices.first(), QAbstractItemView::EnsureVisible);
-                const QRect r = ui->gamsOptionTreeView->visualRect(indices.first());
-                ui->gamsOptionTreeView->horizontalScrollBar()->setValue(r.x());
+                QModelIndex optionIdx = ui->gamsOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
+                if (parentIndex.row() < 0) {
+                    if (ui->gamsOptionTreeView->model()->hasChildren(optionIdx) && !ui->gamsOptionTreeView->isExpanded(optionIdx))
+                        ui->gamsOptionTreeView->expand(optionIdx);
+                }
+                bool found = false;
+                for(int r=0; r <ui->gamsOptionTreeView->model()->rowCount(optionIdx); ++r) {
+                    QModelIndex i = ui->gamsOptionTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
+                    QString enumValue = ui->gamsOptionTreeView->model()->data(i, Qt::DisplayRole).toString();
+                    if (QString::compare(value, enumValue, Qt::CaseInsensitive) == 0) {
+                        selectIndices << i;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                   selectIndices << optionIdx;
             }
     }
-
+    ui->gamsOptionTreeView->selectionModel()->clearSelection();
+    for(QModelIndex idx : selectIndices) {
+        QItemSelection selection = ui->gamsOptionTreeView->selectionModel()->selection();
+        QModelIndex  parentIdx =  ui->gamsOptionTreeView->model()->parent(idx);
+        if (parentIdx.row() < 0) {
+            selection.select(ui->gamsOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
+                             ui->gamsOptionTreeView->model()->index(idx.row(), ui->gamsOptionTreeView->model()->columnCount()-1));
+        } else  {
+            selection.select(ui->gamsOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIdx),
+                             ui->gamsOptionTreeView->model()->index(idx.row(), ui->gamsOptionTreeView->model()->columnCount()-1, parentIdx));
+        }
+        ui->gamsOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::Select);
+    }
+    if (selectIndices.size() > 0) {
+        QModelIndex parentIndex = ui->gamsOptionTreeView->model()->parent(selectIndices.first());
+        QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->gamsOptionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                            : ui->gamsOptionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
+        ui->gamsOptionTreeView->scrollTo(scrollToIndex, QAbstractItemView::EnsureVisible);
+        if (parentIndex.row() >= 0)  {
+            ui->gamsOptionTreeView->scrollTo(parentIndex, QAbstractItemView::EnsureVisible);
+            const QRect r = ui->gamsOptionTreeView->visualRect(parentIndex);
+            ui->gamsOptionTreeView->horizontalScrollBar()->setValue(r.x());
+        } else {
+            const QRect r = ui->gamsOptionTreeView->visualRect(scrollToIndex);
+            ui->gamsOptionTreeView->horizontalScrollBar()->setValue(r.x());
+        }
+    }
     connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
 }
 

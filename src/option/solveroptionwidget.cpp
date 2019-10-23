@@ -597,7 +597,6 @@ void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QM
         ui->solverOptionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
     }
     ui->solverOptionTableView->selectionModel()->select(topLeft, QItemSelectionModel::Select);
-
 }
 
 bool SolverOptionWidget::saveOptionFile(const QString &location)
@@ -703,7 +702,6 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
 
     ui->solverOptionGroup->setCurrentIndex(0);
     ui->solverOptionSearch->clear();
-    ui->solverOptionTreeView->selectionModel()->clearSelection();
 
     QModelIndexList selection;
     if (selectRow) {
@@ -714,30 +712,65 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
          ui->solverOptionTableView->selectionModel()->setCurrentIndex ( selection.first(), QItemSelectionModel::Select );
     }
 
+    QModelIndexList selectIndices;
     for (int i=0; i<selection.count(); i++) {
          QModelIndex index = selection.at(i);
          if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
                 continue;
 
+         QString value = ui->solverOptionTableView->model()->data( index.sibling(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE), Qt::DisplayRole).toString();
          QVariant optionId = ui->solverOptionTableView->model()->data( index.sibling(index.row(), mOptionTableModel->getColumnEntryNumber()), Qt::DisplayRole);
          QModelIndexList indices = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
                                                                                optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
          for(QModelIndex idx : indices) {
-             QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(index);
+             QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(idx);
+             QModelIndex optionIdx = ui->solverOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
 
-            if (parentIndex.row() < 0 && !ui->solverOptionTreeView->isExpanded(idx))
-                ui->solverOptionTreeView->expand(idx);
-            QItemSelection selection = ui->solverOptionTreeView->selectionModel()->selection();
-            selection.select(ui->solverOptionTreeView->model()->index(idx.row(), 0),
+             if (parentIndex.row() < 0) {
+                if (ui->solverOptionTreeView->model()->hasChildren(optionIdx) && !ui->solverOptionTreeView->isExpanded(optionIdx))
+                    ui->solverOptionTreeView->expand(optionIdx);
+            }
+            bool found = false;
+            for(int r=0; r <ui->solverOptionTreeView->model()->rowCount(optionIdx); ++r) {
+                QModelIndex i = ui->solverOptionTreeView->model()->index(r, OptionDefinitionModel::COLUMN_OPTION_NAME, optionIdx);
+                QString enumValue = ui->solverOptionTreeView->model()->data(i, Qt::DisplayRole).toString();
+                if (QString::compare(value, enumValue, Qt::CaseInsensitive) == 0) {
+                    selectIndices << i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+               selectIndices << optionIdx;
+        }
+    }
+    ui->solverOptionTreeView->selectionModel()->clearSelection();
+    for(QModelIndex idx : selectIndices) {
+        QItemSelection selection = ui->solverOptionTreeView->selectionModel()->selection();
+        QModelIndex  parentIdx =  ui->solverOptionTreeView->model()->parent(idx);
+        if (parentIdx.row() < 0) {
+            selection.select(ui->solverOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME),
                              ui->solverOptionTreeView->model()->index(idx.row(), ui->solverOptionTreeView->model()->columnCount()-1));
-            ui->solverOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
-         }
-         if (indices.size() > 0) {
-             ui->solverOptionTreeView->scrollTo(indices.first(), QAbstractItemView::EnsureVisible);
-             const QRect r = ui->solverOptionTreeView->visualRect(indices.first());
-             ui->solverOptionTreeView->horizontalScrollBar()->setValue(r.x());
-         }
+        } else  {
+            selection.select(ui->solverOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIdx),
+                             ui->solverOptionTreeView->model()->index(idx.row(), ui->solverOptionTreeView->model()->columnCount()-1, parentIdx));
+        }
+        ui->solverOptionTreeView->selectionModel()->select(selection, QItemSelectionModel::Select);
+    }
+    if (selectIndices.size() > 0) {
+        QModelIndex parentIndex = ui->solverOptionTreeView->model()->parent(selectIndices.first());
+        QModelIndex scrollToIndex = (parentIndex.row() < 0  ? ui->solverOptionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME)
+                                                            : ui->solverOptionTreeView->model()->index(selectIndices.first().row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex));
+        ui->solverOptionTreeView->scrollTo(scrollToIndex, QAbstractItemView::EnsureVisible);
+        if (parentIndex.row() >= 0) {
+            ui->solverOptionTreeView->scrollTo(parentIndex, QAbstractItemView::EnsureVisible);
+            const QRect r = ui->solverOptionTreeView->visualRect(parentIndex);
+            ui->solverOptionTreeView->horizontalScrollBar()->setValue(r.x());
+        } else {
+            const QRect r = ui->solverOptionTreeView->visualRect(scrollToIndex);
+            ui->solverOptionTreeView->horizontalScrollBar()->setValue(r.x());
+        }
     }
 
     connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
