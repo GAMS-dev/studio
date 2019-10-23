@@ -160,7 +160,6 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_OPTION_NAME);
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_SYNONYM);
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_DEF_VALUE);
-    ui->solverOptionTreeView->setAlternatingRowColors(true);
     ui->solverOptionTreeView->setExpandsOnDoubleClick(false);
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
