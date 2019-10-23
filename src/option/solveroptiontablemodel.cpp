@@ -446,8 +446,11 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         if (singleEntryExisted) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Option Entry exists");
-            msgBox.setText("Option '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()+ "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to add new entry or replace the entry?");
+            msgBox.setText(QString("Option '%1' already exists in your option file.").arg(data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()));
+            msgBox.setInformativeText("How do you want to proceed?");
+            msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(overrideIdRowList.at(0)))
+                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
+                    .arg("The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -467,8 +470,16 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         } else if (multipleEntryExisted) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Multiple Option Entries exist");
-            msgBox.setText("Multiple entries of Option '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString() + "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to replace first entry (and delete other entries) or add new entry?");
+            msgBox.setText(QString("%1 entries of Option '%2' already exist in your option file.").arg(overrideIdRowList.size())
+                     .arg(data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()));
+            msgBox.setInformativeText("How do you want to proceed?");
+            QString entryDetailedText = QString("Entries:\n");
+            int i = 0;
+            for (int id : overrideIdRowList)
+                entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
+            msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
+                     .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
+                     .arg("The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
