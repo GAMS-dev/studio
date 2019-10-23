@@ -1852,7 +1852,11 @@ void MainWindow::on_actionGDX_Diff_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     gdxdiffdialog::GdxDiffDialog dialog(path, this);
-    dialog.exec();
+    if (dialog.exec()) {
+        QString diffFile = dialog.diffFile();
+        if (!diffFile.isEmpty())
+            openFile(mFileMetaRepo.findOrCreateFileMeta(diffFile), true);
+    }
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)

@@ -24,7 +24,7 @@ void GdxDiffProcess::execute()
     args << "Eps=" + mEps;
     args << "RelEps=" + mRelEps;
     if (mFieldOnly) {
-        args << "FldOnly=" + mFieldOnly;
+        args << "FldOnly";
         args << "Field=" + mFieldToCompare;
     }
     connect(this, &AbstractProcess::newStdChannelData, this, &GdxDiffProcess::appendSystemLog);
@@ -83,9 +83,19 @@ void GdxDiffProcess::setWorkingDir(const QString &workingDir)
     mWorkingDir = workingDir;
 }
 
+QString GdxDiffProcess::diffFile() const
+{
+    return mDiffFile;
+}
+
 void GdxDiffProcess::appendSystemLog(const QString &text)
 {
     SysLogLocator::systemLog()->append(text, LogMsgType::Info);
+    if (text.contains("Output:")) {
+        mDiffFile = text.split("Output:").last().trimmed();
+        if (QFileInfo(mDiffFile).isRelative())
+            mDiffFile = QDir::cleanPath(mWorkingDir + QDir::separator() + mDiffFile);
+    }
 }
 
 } // namespace gdxdiffdialog

@@ -2,6 +2,7 @@
 #include "ui_gdxdiffdialog.h"
 #include <QFileDialog>
 #include <QDebug>
+#include <QMessageBox>
 
 namespace gams {
 namespace studio {
@@ -64,11 +65,10 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbCancel_clicked()
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 {
     GdxDiffProcess* proc = new GdxDiffProcess(this);
-    QString input1 = ui->leInput1->text().trimmed();
 
-    //TODO (CW): check for valid input
+    //TODO(CW): do we want to check the input before calling gdxdiff?
 
-    proc->setInput1(input1);
+    proc->setInput1(ui->leInput1->text().trimmed());
     proc->setInput2(ui->leInput2->text().trimmed());
     proc->setDiff(ui->leDiff->text().trimmed());
     proc->setEps(ui->lineEdit_4->text().trimmed());
@@ -80,6 +80,22 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 
     proc->setWorkingDir(mRecentPath);
     proc->execute();
+
+    mDiffFile = proc->diffFile();
+    if (mDiffFile.isEmpty()) { // give an error pop up that no diff file was created
+        //TODO(CW): in case of error add extra error text to system output
+        QMessageBox msgBox;
+        msgBox.setText("Unable to create diff file. gdxdiff return code: " + QString::number(proc->exitCode()) + ". See the system output for details.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+    }
+
     delete proc;
-    this->close();
+    accept();
+}
+
+QString gams::studio::gdxdiffdialog::GdxDiffDialog::diffFile()
+{
+    return mDiffFile;
 }

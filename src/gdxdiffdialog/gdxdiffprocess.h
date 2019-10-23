@@ -37,6 +37,8 @@ public:
 
     void setWorkingDir(const QString &workingDir);
 
+    QString diffFile() const;
+
 private:
     QString mInput1;
     QString mInput2;
@@ -49,6 +51,7 @@ private:
     QString mFieldToCompare;
 
     QString mWorkingDir;
+    QString mDiffFile;
 
 private slots:
     void appendSystemLog(const QString &text);
