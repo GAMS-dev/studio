@@ -866,11 +866,24 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
     ui->solverOptionTableView->clearSelection();
     QItemSelection selection;
     for(QModelIndex i :indices) {
-        QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(i.row(), 0);
-        QModelIndex rightIndex = ui->solverOptionTableView->model()->index(i.row(), ui->solverOptionTableView->model()->columnCount() -1);
+        QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE);
+        QString value =  ui->solverOptionTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
+        bool selected = false;
+        if (parentIndex.row() < 0) {
+            selected = true;
+        } else {
+            QModelIndex enumIndex = ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            QString enumValue = ui->solverOptionTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
+            if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
+                selected = true;
+        }
+        if (selected) {
+            QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(i.row(), 0);
+            QModelIndex rightIndex = ui->solverOptionTableView->model()->index(i.row(), ui->solverOptionTableView->model()->columnCount() -1);
 
-        QItemSelection rowSelection(leftIndex, rightIndex);
-        selection.merge(rowSelection, QItemSelectionModel::Select);
+            QItemSelection rowSelection(leftIndex, rightIndex);
+            selection.merge(rowSelection, QItemSelectionModel::Select);
+        }
     }
 
     ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);

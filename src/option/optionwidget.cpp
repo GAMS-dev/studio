@@ -457,11 +457,24 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
     ui->gamsOptionTableView->clearSelection();
     QItemSelection selection;
     for(QModelIndex i :indices) {
-        QModelIndex leftIndex  = ui->gamsOptionTableView->model()->index(i.row(), 0);
-        QModelIndex rightIndex = ui->gamsOptionTableView->model()->index(i.row(), ui->gamsOptionTableView->model()->columnCount() -1);
+        QModelIndex valueIndex = ui->gamsOptionTableView->model()->index(i.row(), GamsOptionTableModel::COLUMN_OPTION_VALUE);
+        QString value =  ui->gamsOptionTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
+        bool selected = false;
+        if (parentIndex.row() < 0) {
+            selected = true;
+        } else {
+            QModelIndex enumIndex = ui->gamsOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex);
+            QString enumValue = ui->gamsOptionTreeView->model()->data( enumIndex, Qt::DisplayRole).toString();
+            if (QString::compare(value, enumValue, Qt::CaseInsensitive)==0)
+                selected = true;
+        }
+        if (selected) {
+           QModelIndex leftIndex  = ui->gamsOptionTableView->model()->index(i.row(), 0);
+           QModelIndex rightIndex = ui->gamsOptionTableView->model()->index(i.row(), ui->gamsOptionTableView->model()->columnCount() -1);
 
-        QItemSelection rowSelection(leftIndex, rightIndex);
-        selection.merge(rowSelection, QItemSelectionModel::Select);
+           QItemSelection rowSelection(leftIndex, rightIndex);
+           selection.merge(rowSelection, QItemSelectionModel::Select);
+        }
     }
 
     ui->gamsOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
