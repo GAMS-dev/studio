@@ -30,6 +30,8 @@ void GdxDiffProcess::execute()
         args << "FldOnly";
     if (mDiffOnly)
         args << "DiffOnly";
+    if (mIgnoreSetText)
+        args << "SetDesc=0";
     connect(this, &AbstractProcess::newStdChannelData, this, &GdxDiffProcess::appendSystemLog);
     mProcess.setWorkingDirectory(mWorkingDir);
     mProcess.start(nativeAppPath(), args);

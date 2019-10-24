@@ -119,3 +119,28 @@ QString gams::studio::gdxdiffdialog::GdxDiffDialog::diffFile()
 {
     return mDiffFile;
 }
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldOnly_toggled(bool checked)
+{
+    if(checked) {
+        // uncheck diff only
+        ui->cbDiffOnly->setChecked(false);
+        // Deselect "All" in the fields-to-compare combo box and select the second entry(L) instead
+        if (ui->cbFieldToCompare->currentIndex() == 0)
+            ui->cbFieldToCompare->setCurrentIndex(1);
+    }
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbDiffOnly_toggled(bool checked)
+{
+    if(checked)
+        // uncheck field only
+        ui->cbFieldOnly->setChecked(false);
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldToCompare_currentIndexChanged(int index)
+{
+    // uncheck the fild only check box if "All" is selected
+    if (index==0)
+        ui->cbFieldOnly->setChecked(false);
+}

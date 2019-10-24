@@ -34,6 +34,12 @@ private slots:
 
     void on_pbOK_clicked();
 
+    void on_cbFieldOnly_toggled(bool checked);
+
+    void on_cbDiffOnly_toggled(bool checked);
+
+    void on_cbFieldToCompare_currentIndexChanged(int index);
+
 private:
     Ui::GdxDiffDialog *ui;
     QString mRecentPath;
