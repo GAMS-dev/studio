@@ -287,8 +287,6 @@ pipeline {
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --timestamp --entitlements ../../platform/macos/webengine.entitlements.plist "GAMS Studio.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
                                 hdiutil create -volname "GAMS Studio" -srcfolder "GAMS Studio.app" -ov -fs HFS+ -format UDZO "GAMS Studio.dmg"
-
-                                security lock-keychain
                             '''
                             sh '''
                                 codesign --verify --verbose "src/bin/GAMS Studio.app"
