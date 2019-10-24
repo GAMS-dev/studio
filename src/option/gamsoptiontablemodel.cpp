@@ -18,7 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QIcon>
-#include <QDebug>
+#include <QMessageBox>
+
 #include "option.h"
 #include "gamsoptiontablemodel.h"
 
@@ -256,7 +257,7 @@ bool GamsOptionTableModel::setData(const QModelIndex &index, const QVariant &val
                   mOptionItem[index.row()].value = dataValue;
                   emit optionValueChanged(index);
         }
-        emit optionModelChanged(  mOptionItem );
+       emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
         if (index.row() > mOptionItem.size())
             return false;
@@ -383,7 +384,7 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
        ++rows;
     }
 
-    int beginRow;
+    int beginRow = -1;
 
     if (row != -1) {
         beginRow = row;
@@ -393,50 +394,127 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
         beginRow = rowCount(QModelIndex());
     }
 
+//    StudioSettings* settings = SettingsLocator::settings();
     if (action ==  Qt::CopyAction) {
 
-        QList<int> insertRowList;
-        insertRows(beginRow, rows, QModelIndex());
-
-        for (const QString &text : newItems) {          
-            insertRowList.append( beginRow );
-
-            QStringList textList = text.split("=");
-            QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY, QModelIndex());
-            setData(idx, textList.at(0), Qt::EditRole);
-            idx = index(beginRow, COLUMN_OPTION_VALUE, QModelIndex());
-            setData(idx, textList.at(1), Qt::EditRole);
-            idx = index(beginRow, COLUMN_ENTRY_NUMBER, QModelIndex());
-            setData(idx, textList.at(2), Qt::EditRole);
-            emit newTableRowDropped(index(beginRow, 0, QModelIndex()));
-            beginRow++;
-        }
-
+        QList<OptionItem> itemList;
+        QList<int> overrideIdRowList;
         for (const QString &text : newItems) {
             QStringList textList = text.split("=");
-            QModelIndex idx;
-            for(int i=0; i<rowCount(); ++i) {
-                if (insertRowList.contains(i))
-                    continue;
+            int optionid = mOption->getOptionDefinition(textList.at(0)).number;
+            itemList.append(OptionItem(optionid, textList.at( COLUMN_OPTION_KEY ), textList.at( COLUMN_OPTION_VALUE )));
+            QModelIndexList indices = match(index(GamsOptionTableModel::COLUMN_OPTION_KEY, GamsOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
+                                            QVariant(optionid), Qt::MatchRecursive);
+//          if (settings && settings->overridExistingOption()) {
+              for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
+//          }
+         }
+         std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
-                idx = index(i, COLUMN_OPTION_KEY, QModelIndex());
-                QString key = data(idx, Qt::DisplayRole).toString();
-                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
-                    break;
-            }
-            if (idx.row() == rowCount())
-               removeRows(idx.row(), COLUMN_OPTION_VALUE, QModelIndex());
-        }
-        return true;
+         bool replaceExistingEntry = false;
+         bool singleEntryExisted = (overrideIdRowList.size()==1);
+         bool multipleEntryExisted = (overrideIdRowList.size()>1);
+         if (singleEntryExisted) {
+             QMessageBox msgBox;
+             msgBox.setWindowTitle("Parameter Entry exists");
+             msgBox.setText("Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()+ "' already exists.");
+             msgBox.setInformativeText("How do you want to proceed?");
+             msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(overrideIdRowList.at(0)))
+                     .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.")
+                     .arg("The value of all other entries except the last entry will be ignored."));
+             msgBox.setStandardButtons(QMessageBox::Abort);
+             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
+             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
+             switch(msgBox.exec()) {
+             case 0: // replace
+                replaceExistingEntry = true;
+                beginRow = overrideIdRowList.at(0);
+                break;
+             case 1: // add
+                break;
+             case QMessageBox::Abort:
+                itemList.clear();
+                return false;
+             }
+         } else if (multipleEntryExisted) {
+             QMessageBox msgBox;
+             msgBox.setWindowTitle("Multiple Parameter Entries exist");
+             msgBox.setText(QString("%1 entries of Parmaeter '%2' already exist.").arg(overrideIdRowList.size())
+                      .arg(data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()));
+             msgBox.setInformativeText("How do you want to proceed?");
+             QString entryDetailedText = QString("Entries:\n");
+             int i = 0;
+             for (int id : overrideIdRowList)
+                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
+             msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
+                      .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.")
+                      .arg("The value of all other entries except the last entry will be ignored."));
+             msgBox.setText("Multiple entries of Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString() + "' already exist.");
+             msgBox.setInformativeText("How do you want to proceed?");
+             msgBox.setStandardButtons(QMessageBox::Abort);
+             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
+             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
+
+             switch(msgBox.exec()) {
+             case 0: { // delete and replace
+                 int prev = -1;
+                 for(int i=overrideIdRowList.count()-1; i>=0; i--) {
+                     int current = overrideIdRowList[i];
+                     if (i==0)
+                         continue;
+                     if (current != prev) {
+                         removeRows( current, 1 );
+                         prev = current;
+                     }
+                 }
+
+                 replaceExistingEntry = true;
+                 beginRow = overrideIdRowList.at(0);
+                 break;
+             }
+             case 1: { // add
+                 break;
+             }
+             case QMessageBox::Abort: {
+                 itemList.clear();
+                 return false;
+             }
+             }
+         } // else entry not exist
+
+         for (const OptionItem &item : itemList) {
+             if (!replaceExistingEntry)
+                 insertRows(beginRow, 1, QModelIndex());
+
+             QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+             setData(idx, item.key, Qt::EditRole);
+             setData( index(beginRow, COLUMN_OPTION_VALUE), item.value, Qt::EditRole);
+             setData( index(beginRow, COLUMN_ENTRY_NUMBER), item.optionId, Qt::EditRole);
+             setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
+             emit newTableRowDropped( idx );
+             beginRow++;
+         }
+
+         itemList.clear();
+         return true;
+    } else {
+         return false;
     }
-
-    return false;
 }
 
 QList<OptionItem> GamsOptionTableModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
+}
+
+QString GamsOptionTableModel::getOptionTableEntry(int row)
+{
+    QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
+    QVariant optionKey = data(keyIndex, Qt::DisplayRole);
+    QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
+    QVariant optionValue = data(valueIndex, Qt::DisplayRole);
+    return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
 }
 
 void GamsOptionTableModel::toggleActiveOptionItem(int index)

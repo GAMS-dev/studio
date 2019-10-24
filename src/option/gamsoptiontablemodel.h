@@ -59,6 +59,7 @@ public:
     bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
     QList<OptionItem> getCurrentListOfOptionItems();
+    QString getOptionTableEntry(int row);
 
     static const int COLUMN_OPTION_KEY = 0;
     static const int COLUMN_OPTION_VALUE = 1;
