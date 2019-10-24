@@ -93,7 +93,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     proc->setIgnoreSetText(ui->cbIgnoreSetText->isChecked());
     proc->setDiffOnly(ui->cbDiffOnly->isChecked());
     proc->setFieldOnly(ui->cbFieldOnly->isChecked());
-    proc->setFieldToCompare(ui->cbFieldOnly->text().trimmed());
+    proc->setFieldToCompare(ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex()));
 
     //TODO(CW): close diff GDX file if already open since it will prevent gdxdiff from writing the file
     //MainWindow* mainWindow = static_cast<MainWindow*>(parent());

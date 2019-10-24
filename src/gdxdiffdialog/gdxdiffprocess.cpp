@@ -27,8 +27,8 @@ void GdxDiffProcess::execute()
         args << "RelEps=" + mRelEps;
     if (mFieldOnly) {
         args << "FldOnly";
-        args << "Field=" + mFieldToCompare;
     }
+    args << "Field=" + mFieldToCompare;
     connect(this, &AbstractProcess::newStdChannelData, this, &GdxDiffProcess::appendSystemLog);
     mProcess.setWorkingDirectory(mWorkingDir);
     mProcess.start(nativeAppPath(), args);
