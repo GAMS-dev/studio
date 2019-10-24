@@ -21,8 +21,10 @@ void GdxDiffProcess::execute()
     args << QDir::toNativeSeparators(mInput2);
     if (!mDiff.isEmpty())
         args << QDir::toNativeSeparators(mDiff);
-    args << "Eps=" + mEps;
-    args << "RelEps=" + mRelEps;
+    if (!mEps.isEmpty())
+        args << "Eps=" + mEps;
+    if (!mRelEps.isEmpty())
+        args << "RelEps=" + mRelEps;
     if (mFieldOnly) {
         args << "FldOnly";
         args << "Field=" + mFieldToCompare;

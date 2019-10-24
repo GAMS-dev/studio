@@ -14,8 +14,13 @@ GdxDiffDialog::GdxDiffDialog(QString recentPath, QWidget *parent) :
     mRecentPath(recentPath)
 {
     ui->setupUi(this);
+
+    ui->lineEdit_4->setValidator(new QDoubleValidator());
+    ui->lineEdit_5->setValidator(new QDoubleValidator());
+
     QDir::setCurrent(mRecentPath);
-    qDebug() << "recent:" << mRecentPath;
+
+
 }
 
 GdxDiffDialog::~GdxDiffDialog()
@@ -59,7 +64,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_3_clicked()
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbCancel_clicked()
 {
-    this->close();
+    reject();
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
@@ -68,8 +73,20 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 
     //TODO(CW): do we want to check the input before calling gdxdiff?
 
-    proc->setInput1(ui->leInput1->text().trimmed());
-    proc->setInput2(ui->leInput2->text().trimmed());
+    QString input1 = ui->leInput1->text().trimmed();
+    QString input2 = ui->leInput2->text().trimmed();
+    if (input1.isEmpty() || input2.isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("GDX Diff");
+        msgBox.setText("Please specify two GDX files to be compared.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    proc->setInput1(input1);
+    proc->setInput2(input2);
     proc->setDiff(ui->leDiff->text().trimmed());
     proc->setEps(ui->lineEdit_4->text().trimmed());
     proc->setRelEps(ui->lineEdit_5->text().trimmed());
@@ -78,6 +95,9 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     proc->setFieldOnly(ui->cbFieldOnly->isChecked());
     proc->setFieldToCompare(ui->cbFieldOnly->text().trimmed());
 
+    //TODO(CW): close diff GDX file if already open since it will prevent gdxdiff from writing the file
+    //MainWindow* mainWindow = static_cast<MainWindow*>(parent());
+
     proc->setWorkingDir(mRecentPath);
     proc->execute();
 
@@ -85,12 +105,12 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     if (mDiffFile.isEmpty()) { // give an error pop up that no diff file was created
         //TODO(CW): in case of error add extra error text to system output
         QMessageBox msgBox;
+        msgBox.setWindowTitle("GDX Diff");
         msgBox.setText("Unable to create diff file. gdxdiff return code: " + QString::number(proc->exitCode()) + ". See the system output for details.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
     }
-
     delete proc;
     accept();
 }
