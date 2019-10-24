@@ -40,7 +40,8 @@ namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QTextCodec* codec, QWidget *parent) :
+SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
+                                       FileId id, QTextCodec* codec, QWidget *parent) :
           QWidget(parent),
           ui(new Ui::SolverOptionWidget),
           mFileId(id),
@@ -52,7 +53,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     setFocusProxy(ui->solverOptionTableView);
     addActions();
 
-    init();
+    init(optDefFileName);
 }
 
 SolverOptionWidget::~SolverOptionWidget()
@@ -62,11 +63,11 @@ SolverOptionWidget::~SolverOptionWidget()
     delete mOptionTableModel;
 }
 
-bool SolverOptionWidget::init()
+bool SolverOptionWidget::init(const QString &optDefFileName)
 {
-    mOptionTokenizer = new OptionTokenizer(QString("opt%1.def").arg(mSolverName));
+    mOptionTokenizer = new OptionTokenizer(optDefFileName);
     if (!mOptionTokenizer->getOption()->available())
-       EXCEPT() << "Could not load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
+       EXCEPT() << "Could not find or load OPT library for opening '" << mLocation << "'. Please check your GAMS installation.";
 
     SystemLogEdit* logEdit = new SystemLogEdit(this);
     mOptionTokenizer->provideLogger(logEdit);

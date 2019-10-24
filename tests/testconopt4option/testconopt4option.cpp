@@ -90,7 +90,8 @@ void TestConopt4Option::testOptionEnumIntType_data()
     QTest::addColumn<int>("numberOfEnumint");
     QTest::addColumn<int>("defaultValue");
 
-    QTest::newRow("DF_Method")  << "DF_Method"   << true  << 2  << 0;
+    QTest::newRow("DF_Method")  << "Mtd_RedHess"   << true  << 2  << 0;
+    QTest::newRow("Mtd_Scale")  << "Mtd_Scale"     << true  << 4  << 3;
 }
 
 void TestConopt4Option::testOptionEnumIntType()
@@ -150,7 +151,6 @@ void TestConopt4Option::testOptionIntegerType_data()
     QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1  << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
     QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 2  << gams::studio::option::OPTION_VALUE_MAXINT  << 100;
     QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1 << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
-    QTest::newRow("Mtd_RedHess")   << "Mtd_RedHess"   << true   << 0  << 1                                  << 0;
 }
 
 void TestConopt4Option::testOptionIntegerType()
@@ -206,11 +206,9 @@ void TestConopt4Option::testOptionGroup_data()
     QTest::addColumn<QString>("optionGroupDescription");
     QTest::addColumn<QString>("optionType");
 
-    QTest::newRow("DF_Method_1")      << "DF_Method"       << 1 << "a" << "Algorithmic options" << "enumint";
     QTest::newRow("Flg_Convex_1")     << "Flg_Convex"      << 1 << "a" << "Algorithmic options" << "boolean";
     QTest::newRow("Flg_Square_1")     << "Flg_Square"      << 1 << "a" << "Algorithmic options" << "boolean";
     QTest::newRow("Lim_Iteration_1")  << "Lim_Iteration"   << 1 << "a" << "Algorithmic options" << "integer";
-    QTest::newRow("Mtd_Scale_1")      << "Mtd_Scale"       << 1 << "a" << "Algorithmic options" << "integer";
     QTest::newRow("Num_Rounds_1")     << "Num_Rounds"      << 1 << "a" << "Algorithmic options" << "integer";
     QTest::newRow("Rat_NoPen_1")      << "Rat_NoPen"       << 1 << "a" << "Algorithmic options" << "double";
     QTest::newRow("Tol_Feas_Max_1")   << "Tol_Feas_Max"    << 1 << "a" << "Algorithmic options" << "double";
@@ -271,15 +269,14 @@ void TestConopt4Option::testInvalidOption_data()
     QTest::addColumn<bool>("nameValid");
     QTest::addColumn<bool>("synonymValid");
 
-    QTest::newRow("DF_Method_valid")   << "DF_Method"   << true     << false;
     QTest::newRow("FLG_CONVEX_valid")  << "FLG_CONVEX"  << true     << false;
     QTest::newRow("Flg_Interv_valid")  << "Flg_Interv"  << true     << false;
     QTest::newRow("domlim_valid")      << "domlim"      << false    << true;
     QTest::newRow("iterlim_valid")     << "iterlim"     << false    << true;
     QTest::newRow("reslim_valid")      << "reslim"      << false    << true;
 
+    QTest::newRow("DF_Method_invalid")      << "DF_Method"       << false    << false;
     QTest::newRow("LimNewSuper_invalid")    << "LimNewSuper"     << false    << false;
-    QTest::newRow("Mtd_RedHessian_invalid") << "Mtd_RedHessian"  << false    << false;
     QTest::newRow("Tol_IFix_invalid")       << "Tol_IFix"        << false    << false;
 }
 
@@ -302,7 +299,7 @@ void TestConopt4Option::testReadOptionFile_data()
 
     QTextStream out(&outputFile);
     out << "* This is comment line" << endl;
-    out << "DF_Method 1" << endl;
+    out << "* DF_Method 1" << endl;
     out << "Lim_Iteration=100" << endl;
     out << "Lim_Iteration 100" << endl;
     out << "Flg_Hessian 1" << endl;
@@ -341,11 +338,11 @@ void TestConopt4Option::testReadOptionFile_data()
             << items.at(0)->optionId << -1
             << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
     QTest::newRow("DF_Method 1")
-            << items.at(1)->disabled <<  false
-            << items.at(1)->key      << "DF_Method"
-            << items.at(1)->value    << QVariant("1")  << false
-            << items.at(1)->text     << ""
-            << items.at(1)->optionId << 64
+            << items.at(1)->disabled <<  true
+            << items.at(1)->key      << "* DF_Method 1"
+            << items.at(0)->value    << QVariant("")   << false
+            << items.at(0)->text     << ""
+            << items.at(0)->optionId << -1
             << static_cast<int>(items.at(1)->error)    << static_cast<int>(No_Error);
     QTest::newRow("Lim_Iteration=100")
             << items.at(2)->disabled <<  false

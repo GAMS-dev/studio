@@ -30,6 +30,7 @@
 #include "editors/viewhelper.h"
 #include "locators/sysloglocator.h"
 #include "locators/abstractsystemlogger.h"
+#include "support/solverconfiginfo.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -751,8 +752,25 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
-        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+            QFileInfo fileInfo(name());
+            support::SolverConfigInfo solverConfigInfo;
+            QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
+            if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
+                 res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+                                                                                  id(), mCodec, tabWidget));
+            } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
+                        QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
+                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
+                                                                                         id(), mCodec, tabWidget));
+            } else {
+                    SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
+                    forcedAsTextEdit = true;
+            }
     } else {
+        forcedAsTextEdit = true;
+    }
+
+    if (forcedAsTextEdit) {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
         codeEdit  = new CodeEdit(tabWidget);

@@ -24,6 +24,7 @@ SUBDIRS += testcommonpaths              \
            testeditors                  \
            testservicelocators          \
            testgamslicenseinfo          \
+           testsolverconfiginfo         \
            testcheckforupdatewrapper    \
            testmemorymapper             \
 #           testfilemapper               \

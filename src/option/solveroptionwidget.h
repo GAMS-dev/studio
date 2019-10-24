@@ -44,7 +44,8 @@ class SolverOptionWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
+    explicit SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
+                                FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
     ~SolverOptionWidget();
 
     bool isInFocused(QWidget* focusWidget);
@@ -135,7 +136,7 @@ private:
     bool isThereARowSelection() const;
     bool isEverySelectionARow() const;
 
-    bool init();
+    bool init(const QString &optDefFileName);
 
     MainWindow* getMainWindow();
 

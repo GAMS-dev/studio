@@ -27,13 +27,12 @@ INCLUDEPATH += $$SRCPATH            \
                $$SRCPATH/support
 
 HEADERS +=                  \
-    testgamslicenseinfo.h
+    testsolverconfiginfo.h
 
-SOURCES +=                                      \
-    testgamslicenseinfo.cpp                     \
-    $$SRCPATH/locators/defaultsystemlogger.cpp  \
-    $$SRCPATH/locators/sysloglocator.cpp        \
+SOURCES +=                                       \
+    testsolverconfiginfo.cpp                     \
+    $$SRCPATH/locators/defaultsystemlogger.cpp   \
+    $$SRCPATH/locators/sysloglocator.cpp         \
     $$SRCPATH/support/solverconfiginfo.cpp       \
-    $$SRCPATH/support/gamslicenseinfo.cpp       \
-    $$SRCPATH/commonpaths.cpp                   \
+    $$SRCPATH/commonpaths.cpp                    \
     $$SRCPATH/exception.cpp

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
@@ -17,26 +17,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSLICENSEINFO_H
-#define GAMSLICENSEINFO_H
+#ifndef SOLVERCONFIGINFO_H
+#define SOLVERCONFIGINFO_H
 
 #include <QMap>
 #include <QString>
 
-#include "solverconfiginfo.h"
-
-struct palRec;
-typedef struct palRec *palHandle_t;
+struct cfgRec;
+typedef struct cfgRec *cfgHandle_t;
 
 namespace gams {
 namespace studio {
 namespace support {
 
-class GamsLicenseInfo
+class SolverConfigInfo
 {
 public:
-    GamsLicenseInfo();
-    ~GamsLicenseInfo();
+    SolverConfigInfo();
+    ~SolverConfigInfo();
 
     int solvers() const;
 
@@ -45,28 +43,28 @@ public:
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
 
+    bool isSolverHidden(const QString &solverName);
+
+    QString solverOptDefFileName(const QString &solverName) const;
+    QMap<QString, QString> solverOptDefFileNames();
+
     QMap<int, int> solverIndices();
 
     QMap<int, QString> modelTypeNames();
 
     bool solverCapability(int solver, int modelType) const;
 
-    QString solverLicense(const QString &name, int id) const;
-
-    bool isLicenseValid(const QStringList &license);
-
-private:
     QString solverCodes(int solverId) const;
 
+private:
     static int errorCallback(int count, const char *message);
 
 private:
-    SolverConfigInfo mSolverInfo;
-    palHandle_t mPAL;
+    cfgHandle_t mCFG;
 };
 
 }
 }
 }
 
-#endif // GAMSLICENSEINFO_H
+#endif // SOLVERCONFIGINFO_H
