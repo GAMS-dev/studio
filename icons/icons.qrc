@@ -79,6 +79,7 @@
         <file>square-green-yellow.svg</file>
         <file>square-red-yellow.svg</file>
         <file>square-gray-yellow.svg</file>
+        <file>gdxdiff.svg</file>
     </qresource>
     <qresource prefix="/data">
         <file>style.css</file>

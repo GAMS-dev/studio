@@ -1148,6 +1148,10 @@
    </property>
   </action>
   <action name="actionGDX_Diff">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/gdxdiff.svg</normaloff>:/img/gdxdiff.svg</iconset>
+   </property>
    <property name="text">
     <string>GDX Diff</string>
    </property>
