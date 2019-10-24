@@ -85,7 +85,7 @@ public:
     void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib, bool init = true);
-    void save(const QString& newLocation = "");
+    void save();
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
@@ -128,6 +128,7 @@ private:
     FileMeta(FileMetaRepo* fileRepo, FileId id, QString location, FileType *knownType = nullptr);
     QVector<QPoint> getEditPositions();
     void setEditPositions(QVector<QPoint> edPositions);
+    void internalSave(const QString &location);
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();

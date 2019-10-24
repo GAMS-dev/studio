@@ -1018,15 +1018,8 @@ void MainWindow::on_actionSave_As_triggered()
                                                , "Select other", "Overwrite", "Abort", 0, 2);
 
             if (choice == 1) {
-                FileKind oldKind = node->file()->kind();
                 mProjectRepo.saveNodeAs(node, filePath);
-                if (oldKind == node->file()->kind()) { // if old == new
-                    ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::editState));
-                } else { // reopen in new editor
-                    int index = ui->mainTabs->currentIndex();
-                    openFileNode(node, true);
-                    on_mainTabs_tabCloseRequested(index);
-                }
+                ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::editState));
                 mStatusWidgets->setFileName(filePath);
 
                 mSettings->saveSettings(this);
