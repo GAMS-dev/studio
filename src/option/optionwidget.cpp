@@ -607,6 +607,8 @@ void OptionWidget::deleteOption()
      if (selection.count() <= 0)
         return;
 
+    disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
+
     QModelIndex index = selection.at(0);
     QModelIndex removeTableIndex = ui->gamsOptionTableView->model()->index(index.row(), 0);
     QVariant optionName = ui->gamsOptionTableView->model()->data(removeTableIndex, Qt::DisplayRole);
@@ -639,6 +641,9 @@ void OptionWidget::deleteOption()
        }
     }
 
+    ui->gamsOptionTreeView->clearSelection();
+    ui->gamsOptionTableView->setFocus();
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::deleteAllOptions()
@@ -752,6 +757,7 @@ bool OptionWidget::isEditorExtended()
 
 void OptionWidget::on_newTableRowDropped(const QModelIndex &index)
 {
+    disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
     ui->gamsOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
 
     QString optionName = ui->gamsOptionTableView->model()->data(index, Qt::DisplayRole).toString();
@@ -767,6 +773,9 @@ void OptionWidget::on_newTableRowDropped(const QModelIndex &index)
         mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
         mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
         ui->gamsOptionTableView->edit( mOptionTableModel->index(index.row(), GamsOptionTableModel::COLUMN_OPTION_VALUE) );
+
+    showOptionDefinition();
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::on_optionTableNameChanged(const QString &from, const QString &to)
@@ -774,6 +783,7 @@ void OptionWidget::on_optionTableNameChanged(const QString &from, const QString 
     if (QString::compare(from, to, Qt::CaseInsensitive)==0)
         return;
 
+    disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
     QModelIndexList fromDefinitionItems = ui->gamsOptionTreeView->model()->match(ui->gamsOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
                                                                      Qt::DisplayRole,
                                                                      from, 1);
@@ -809,10 +819,12 @@ void OptionWidget::on_optionTableNameChanged(const QString &from, const QString 
                     QItemSelectionModel::Select);
         ui->gamsOptionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
     }
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::on_optionValueChanged(const QModelIndex &index)
 {
+    disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
     ui->gamsOptionTreeView->selectionModel()->clearSelection();
 
     QModelIndex idx = index.sibling(index.row(), GamsOptionTableModel::COLUMN_OPTION_KEY);
@@ -834,6 +846,7 @@ void OptionWidget::on_optionValueChanged(const QModelIndex &index)
                     QItemSelectionModel::Select);
         ui->gamsOptionTreeView->scrollTo(toDefinitionItems.first(), QAbstractItemView::EnsureVisible);
     }
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::on_optionTableModelChanged(const QString &commandLineStr)
