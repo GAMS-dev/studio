@@ -29,7 +29,7 @@ SUBDIRS += testcommonpaths              \
            testblockcode                \
            testgamsoption               \
            testcplexoption              \
-           testconopt4option            \
+           #testconopt4option            \ TODO (AF): switch on
            testminosoption              \
            testgurobioption             \
            testoptionapi                \
