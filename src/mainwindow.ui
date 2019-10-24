@@ -240,12 +240,18 @@
     <addaction name="actionStop"/>
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
-    <addaction name="actionGDX_Diff"/>
     <addaction name="actionDeleteScratchDirs"/>
+   </widget>
+   <widget class="QMenu" name="menuUtilities">
+    <property name="title">
+     <string>Utilities</string>
+    </property>
+    <addaction name="actionGDX_Diff"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menu_GAMs"/>
+   <addaction name="menuUtilities"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
