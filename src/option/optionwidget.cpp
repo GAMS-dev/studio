@@ -49,18 +49,18 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     setFocusPolicy(Qt::StrongFocus);
 
     ui->gamsOptionWidget->hide();
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged, main, &MainWindow::optionRunChanged);
-    connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged, ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, this, &OptionWidget::updateOptionTableModel );
-    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionEditCancelled, this, [this]() { ui->gamsOptionCommandLine->clearFocus(); });
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionRunChanged, main, &MainWindow::optionRunChanged, Qt::UniqueConnection);
+    connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged, ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption, Qt::UniqueConnection);
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, mOptionTokenizer, &OptionTokenizer::formatTextLineEdit, Qt::UniqueConnection);
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, this, &OptionWidget::updateOptionTableModel, Qt::UniqueConnection );
+    connect(ui->gamsOptionCommandLine, &CommandLineOption::optionEditCancelled, this, &CommandLineOption::clearFocus, Qt::UniqueConnection);
 
     QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsOptionCommandLine->lineEdit()->text());
     QString normalizedText = mOptionTokenizer->normalize(optionItem);
     mOptionTableModel = new GamsOptionTableModel(normalizedText, mOptionTokenizer,  this);
     ui->gamsOptionTableView->setModel( mOptionTableModel );
-    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
-    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr),  Qt::UniqueConnection);
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
 
     mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->gamsOptionTableView);
     ui->gamsOptionTableView->setItemDelegate( mOptionCompleter );
@@ -96,11 +96,11 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->gamsOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu);
-    connect(this, &OptionWidget::optionTableModelChanged, this, &OptionWidget::on_optionTableModelChanged);
-    connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped);
-    connect(mOptionTableModel, &GamsOptionTableModel::optionNameChanged, this, &OptionWidget::on_optionTableNameChanged);
-    connect(mOptionTableModel, &GamsOptionTableModel::optionValueChanged, this, &OptionWidget::on_optionValueChanged);
+    connect(ui->gamsOptionTableView, &QTableView::customContextMenuRequested,this, &OptionWidget::showOptionContextMenu, Qt::UniqueConnection);
+    connect(this, &OptionWidget::optionTableModelChanged, this, &OptionWidget::on_optionTableModelChanged, Qt::UniqueConnection);
+    connect(mOptionTableModel, &GamsOptionTableModel::newTableRowDropped, this, &OptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
+    connect(mOptionTableModel, &GamsOptionTableModel::optionNameChanged, this, &OptionWidget::on_optionTableNameChanged, Qt::UniqueConnection);
+    connect(mOptionTableModel, &GamsOptionTableModel::optionValueChanged, this, &OptionWidget::on_optionValueChanged, Qt::UniqueConnection);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     GamsOptionDefinitionModel* optdefmodel =  new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
@@ -128,11 +128,11 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
     ui->gamsOptionTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
-    connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition);
-    connect(ui->gamsOptionTreeView, &QTreeView::customContextMenuRequested, this, &OptionWidget::showDefinitionContextMenu);
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
+    connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition, Qt::UniqueConnection);
+    connect(ui->gamsOptionTreeView, &QTreeView::customContextMenuRequested, this, &OptionWidget::showDefinitionContextMenu, Qt::UniqueConnection);
 
-    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, optdefmodel, &GamsOptionDefinitionModel::modifyOptionDefinition);
+    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, optdefmodel, &GamsOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
 
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
@@ -140,7 +140,7 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     mExtendedEditor->setFeatures(QDockWidget::NoDockWidgetFeatures);
     mExtendedEditor->setTitleBarWidget(new QWidget(this));
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
-    connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility);
+    connect(mExtendedEditor, &QDockWidget::visibilityChanged, main, &MainWindow::setExtendedEditorVisibility, Qt::UniqueConnection);
     mExtendedEditor->setVisible(false);
 
 #ifdef __APPLE__
@@ -399,13 +399,13 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
     }
 
     connect(ui->gamsOptionCommandLine, &QComboBox::editTextChanged,
-            ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption);
+            ui->gamsOptionCommandLine, &CommandLineOption::validateChangedOption, Qt::UniqueConnection);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
+            mOptionTokenizer, &OptionTokenizer::formatTextLineEdit, Qt::UniqueConnection);
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            this, &OptionWidget::updateOptionTableModel );
-    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
-    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+            this, &OptionWidget::updateOptionTableModel, Qt::UniqueConnection);
+    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr), Qt::UniqueConnection);
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
 
     if (history.isEmpty()) {
         ui->gamsOptionCommandLine->insertItem(0, " ");
@@ -556,7 +556,7 @@ void OptionWidget::showOptionDefinition()
             ui->gamsOptionTreeView->horizontalScrollBar()->setValue(r.x());
         }
     }
-    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::showOptionRecurrence()
@@ -732,9 +732,13 @@ void OptionWidget::moveOptionDown()
 void OptionWidget::setEditorExtended(bool extended)
 {
     if (extended) {
+        disconnect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, this, &OptionWidget::updateOptionTableModel );
+
         ui->gamsOptionTreeView->clearSelection();
         ui->gamsOptionTreeView->collapseAll();
         emit optionTableModelChanged(ui->gamsOptionCommandLine->currentText());
+    } else  {
+        connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged, this, &OptionWidget::updateOptionTableModel, Qt::UniqueConnection );
     }
     mExtendedEditor->setVisible(extended);
     main->updateRunState();
@@ -842,9 +846,9 @@ void OptionWidget::on_optionTableModelChanged(const QString &commandLineStr)
     mOptionTableModel->on_optionTableModelChanged(commandLineStr);
 
     connect(ui->gamsOptionCommandLine, &CommandLineOption::commandLineOptionChanged,
-            this, &OptionWidget::updateOptionTableModel );
-    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr));
-    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+            this, &OptionWidget::updateOptionTableModel, Qt::UniqueConnection);
+    connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, this, static_cast<void(OptionWidget::*)(const QList<OptionItem> &)> (&OptionWidget::updateCommandLineStr), Qt::UniqueConnection);
+    connect(this, static_cast<void(OptionWidget::*)(QLineEdit*, const QList<OptionItem> &)>(&OptionWidget::commandLineOptionChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
 }
 
 void OptionWidget::resizeColumnsToContents()
