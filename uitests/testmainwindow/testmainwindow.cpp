@@ -60,6 +60,20 @@ void testmainwindow::cleanupTestCase()
     delete mSettings;
 }
 
+void testmainwindow::clickRowByName(QTableView* source, const QString& name)
+{
+    QAbstractItemModel *model = source->model();
+    QModelIndexList matches = model->match(model->index(0,1), Qt::DisplayRole, name, 1, Qt::MatchFixedString);
+
+    // click on x
+    QModelIndex symX = matches.first();
+    int xPos = source->columnViewportPosition(symX.column()) + 5;
+    int yPos = source->rowViewportPosition(symX.row()) + 5;
+    QWidget* pViewport = source->viewport();
+    QTest::mouseClick(pViewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
+    QTest::qWait(100);
+}
+
 void testmainwindow::test_gdxValue()
 {
 //    - Press F6
@@ -79,12 +93,13 @@ void testmainwindow::test_gdxValue()
     // set gams options
     CommandLineOption* combobox = mMainWindow->gamsOptionWidget()->findChild<option::CommandLineOption*>("gamsOptionCommandLine");
     Q_ASSERT(combobox);
-    combobox->setCurrentText("rf=xxx.rf");
+    QString refFileName = "xxx.rf";
+    combobox->setCurrentText("rf=" + refFileName);
 
     // run gams
-    QTest::keyEvent(QTest::Click, mMainWindow, Qt::Key_F10, Qt::NoModifier, 200);
-    QApplication::processEvents();
+    QTest::keyEvent(QTest::Click, mMainWindow, Qt::Key_F10, Qt::NoModifier);
     QTest::qWait(500); // wait for gams to run
+    QApplication::processEvents();
 
     // open gdx
     QFileInfo gdx(mGms.path() + "/" + mGms.baseName() + ".gdx");
@@ -96,22 +111,18 @@ void testmainwindow::test_gdxValue()
     // find x
     QTableView* tvSymbols = gdxViewer->findChild<QTableView*>("tvSymbols");
     Q_ASSERT(tvSymbols);
-    QAbstractItemModel *model = tvSymbols->model();
-    QModelIndexList matches = model->match(model->index(0,1), Qt::DisplayRole, "x", 1, Qt::MatchFixedString);
-
-    // click on x
-    QModelIndex symX = matches.first();
-    int xPos = tvSymbols->columnViewportPosition(symX.column()) + 5;
-    int yPos = tvSymbols->rowViewportPosition(symX.row()) + 5;
-
-    QWidget* pViewport = tvSymbols->viewport();
-    QTest::mouseClick(pViewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
-    QTest::qWait(100);
+    clickRowByName(tvSymbols, "x");
 
     // checking value of x
     QSplitter* splitter = gdxViewer->findChild<QSplitter*>("splitter");
-    GdxSymbolView* symbolView = static_cast<GdxSymbolView*>(splitter->widget(1));
-    qDebug() /*rogo: delete*/ << QTime::currentTime() << symbolView;
+    GdxSymbolView* symbolView = static_cast<GdxSymbolView*>(splitter->widget(1)); // this is shakey
+    // TODO(rg): get qtableview from gdxsymbolview, or find some other way
+
+    // open ref file
+    QFileInfo ref(mGms.path() + "/" + refFileName);
+    mMainWindow->openFilePath(ref.filePath());
+    QTest::qWait(500);
+    QApplication::processEvents();
 }
 
 void testmainwindow::test_search()

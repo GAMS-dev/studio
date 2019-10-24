@@ -42,6 +42,7 @@ private:
     MainWindow* mMainWindow = nullptr;
     StudioSettings* mSettings = nullptr;
     QFileInfo mGms;
+    void clickRowByName(QTableView* source, const QString& name);
 };
 
 #endif // TEST_MAIN_WINDOW_H
