@@ -160,7 +160,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_OPTION_NAME);
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_SYNONYM);
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_DEF_VALUE);
-    ui->solverOptionTreeView->setExpandsOnDoubleClick(false);
+    ui->solverOptionTreeView->setExpandsOnDoubleClick(true);
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
     ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
@@ -199,7 +199,6 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
                 proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
         connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
-        connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
         connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
 
         connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
@@ -378,14 +377,6 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QModelIndex parentIndex =  ui->solverOptionTreeView->model()->parent(index);
     QModelIndex optionNameIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) :
                                                           ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ;
-
-    QVariant data = ui->solverOptionTreeView->model()->data(optionNameIndex, Qt::CheckStateRole);
-    if (Qt::CheckState(data.toUInt())==Qt::Checked) {
-        findAndSelectionOptionFromDefinition();
-        deleteOption();
-        return;
-    }
-
     QModelIndex defValueIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) :
                                                         ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
@@ -467,6 +458,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
         } // else entry not exist
     }
+    ui->solverOptionTableView->selectionModel()->clearSelection();
 //    QString synonymData = ui->solverOptionTreeView->model()->data(synonymIndex).toString();
     QString selectedValueData = ui->solverOptionTreeView->model()->data(selectedValueIndex).toString();
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
