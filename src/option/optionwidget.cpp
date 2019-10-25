@@ -634,13 +634,6 @@ void OptionWidget::deleteOption()
         }
     }
 
-    if (items.size() <= 1) {  // only set Unchecked if it's the only optionName in the table
-        mOptionTokenizer->getOption()->setModified(optionName.toString(), false);
-       for(QModelIndex item : definitionItems) {
-           ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
-       }
-    }
-
     ui->gamsOptionTreeView->clearSelection();
     ui->gamsOptionTableView->setFocus();
     connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
@@ -660,6 +653,7 @@ void OptionWidget::deleteAllOptions()
     for(QModelIndex item : items) {
         ui->gamsOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole);
     }
+    ui->gamsOptionTreeView->collapseAll();
     ui->gamsOptionTableView->model()->removeRows(0, ui->gamsOptionTableView->model()->rowCount(), QModelIndex());
 
     emit optionTableModelChanged("");
