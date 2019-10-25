@@ -438,8 +438,6 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         }
         std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
-        emit optionDefinitionSelected();
-
         bool replaceExistingEntry = false;
         bool singleEntryExisted = (overrideIdRowList.size()==1);
         bool multipleEntryExisted = (overrideIdRowList.size()>1);

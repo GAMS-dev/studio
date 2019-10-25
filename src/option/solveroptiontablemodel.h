@@ -75,7 +75,6 @@ signals:
     void solverOptionItemRemoved();
     void columnSpanned(int row);
     void columnUnspanned(int row);
-    void optionDefinitionSelected();
 
 public slots:
     void reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem);

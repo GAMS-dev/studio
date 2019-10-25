@@ -211,7 +211,6 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
-        connect(mOptionTableModel, &SolverOptionTableModel::optionDefinitionSelected, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
 
         connect( optionCompleter, &OptionCompleterDelegate::closeEditor, this, &SolverOptionWidget::completeEditingOption );
 
