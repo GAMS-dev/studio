@@ -198,7 +198,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(ui->solverOptionSearch, &QLineEdit::textChanged,
                 proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
-        connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
+        connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
         connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
 
         connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
@@ -1445,6 +1445,7 @@ void SolverOptionWidget::setFileChangedExtern(bool value)
 
 void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
 {
+    disconnect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
     updateTableColumnSpan();
     ui->solverOptionTableView->selectRow(index.row());
 
@@ -1463,6 +1464,9 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
         mOptionTokenizer->getOption()->getOptionType(optionName) != optTypeEnumInt &&
         mOptionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue)
         ui->solverOptionTableView->edit( mOptionTableModel->index(index.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE ));
+
+    showOptionDefinition(true);
+    connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void SolverOptionWidget::setModified(bool modified)
