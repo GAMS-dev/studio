@@ -190,31 +190,31 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         return false;
     }
     else {
-        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectAndToggleRow);
-        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
-        connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu);
-        connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped);
+        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &SolverOptionWidget::on_selectAndToggleRow, Qt::UniqueConnection);
+        connect(ui->solverOptionTableView->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu, Qt::UniqueConnection);
+        connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu, Qt::UniqueConnection);
+        connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
 
         connect(ui->solverOptionSearch, &QLineEdit::textChanged,
-                proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
+                proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp), Qt::UniqueConnection);
 
         connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
-        connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu);
+        connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu, Qt::UniqueConnection);
 
         connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
              optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
         });
 
-        connect(mOptionTableModel, &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged);
-        connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
-        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, mOptionTableModel, &SolverOptionTableModel::updateRecurrentStatus);
-        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition);
-        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem);
-        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
+        connect(mOptionTableModel, &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged, Qt::UniqueConnection);
+        connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem, Qt::UniqueConnection);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, mOptionTableModel, &SolverOptionTableModel::updateRecurrentStatus, Qt::UniqueConnection);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
+        connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem, Qt::UniqueConnection);
 
-        connect( optionCompleter, &OptionCompleterDelegate::closeEditor, this, &SolverOptionWidget::completeEditingOption );
+        connect( optionCompleter, &OptionCompleterDelegate::closeEditor, this, &SolverOptionWidget::completeEditingOption, Qt::UniqueConnection );
 
-        connect(this, &SolverOptionWidget::compactViewChanged, optdefmodel, &SolverOptionDefinitionModel::on_compactViewChanged);
+        connect(this, &SolverOptionWidget::compactViewChanged, optdefmodel, &SolverOptionDefinitionModel::on_compactViewChanged, Qt::UniqueConnection);
 
         mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
         return true;
@@ -411,7 +411,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                 if (settings && settings->deleteAllCommentsAboveOption() && indices.size()>0) {
                     disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                     deleteCommentsBeforeOption(indices.at(0).row());
-                    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
+                    connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem, Qt::UniqueConnection);
                 }
                 replaceExistingEntry = true;
                 indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
@@ -442,7 +442,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                 }
                 deleteOption();
                 deleteCommentsBeforeOption(indices.at(0).row());
-                connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
+                connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem, Qt::UniqueConnection);
                 replaceExistingEntry = true;
                 indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                     Qt::DisplayRole,
@@ -548,7 +548,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                   ui->solverOptionTableView->model()->index(lastRow, lastColumn),
                                                   {Qt::EditRole});
 
-    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem, Qt::UniqueConnection);
     updateTableColumnSpan();
     if (isViewCompact())
         refreshOptionTableModel(true);
@@ -764,7 +764,7 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
         }
     }
 
-    connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
+    connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void SolverOptionWidget::showOptionRecurrence()
@@ -997,7 +997,7 @@ void SolverOptionWidget::insertOption()
         ui->solverOptionTableView->scrollTo(insertKeyIndex, QAbstractItemView::EnsureVisible);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
     }
-    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem, Qt::UniqueConnection);
     updateTableColumnSpan();
     setModified(true);
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
@@ -1051,7 +1051,7 @@ void SolverOptionWidget::insertComment()
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
     }
-    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
+    connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem, Qt::UniqueConnection);
     updateTableColumnSpan();
     setModified(true);
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
