@@ -60,6 +60,7 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
 {
     if (Qt::LeftButton == event->button() && isAddOptionCoordinate(event->pos())) {
         QTableView* tableView = static_cast<QTableView*>(this->parent());
+        tableView->selectionModel()->clearSelection();
         tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
 
         QModelIndex keyIndex = tableView->model()->index(tableView->model()->rowCount()-1, 0);

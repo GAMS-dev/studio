@@ -181,8 +181,8 @@ void GdxSymbol::loadData()
         }
 
         int dummy;
-        int* keys = new int[GMS_MAX_INDEX_DIM];
-        double* values = new double[GMS_VAL_MAX];
+        int keys[GMS_MAX_INDEX_DIM];
+        double values[GMS_VAL_MAX];
         if (!gdxDataReadRawStart(mGdx, mNr, &dummy)) {
             char msg[GMS_SSSIZE];
             gdxErrorStr(mGdx, gdxGetLastError(mGdx), msg);
@@ -192,12 +192,9 @@ void GdxSymbol::loadData()
         //skip records that have already been loaded
         for(int i=0; i<mLoadedRecCount; i++) {
             gdxDataReadRaw(mGdx, keys, values, &dummy);
-            //TODO(CW): redundant code (see below)
             if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                delete[] keys;
-                delete[] values;
                 return;
             }
         }
@@ -235,11 +232,9 @@ void GdxSymbol::loadData()
                 beginResetModel();
                 endResetModel();
             }
-            if (stopLoading) {
+            if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                delete[] keys;
-                delete[] values;
                 return;
             }
         }
@@ -251,10 +246,6 @@ void GdxSymbol::loadData()
         calcUelsInColumn();
 
         mIsLoaded = true;
-
-        delete[] keys;
-        delete[] values;
-
         emit loadFinished();
     }
 }
@@ -362,26 +353,21 @@ QVariant GdxSymbol::formatValue(double val) const
     if (val<GMS_SV_UNDEF) {
         int prec = mNumericalPrecision;
         if (prec == -1) // Max
-            prec = 15;
-        if (prec == 0 && qAbs(val) < 1e15) // this is requried in case of rounding numbers that increase the number of digits e.g. 9999.9 -> 10000 (1e4)
-            return QString::number(val, 'f', 0);
-        QString str = QString::number(QString::number(val, 'f', prec).toDouble(), 'g', prec);
+            prec = mMaxPrecision;
+
+        QString strFullPrec = QString::number(val, 'g', mMaxPrecision);
+        QString str = QString::number(val, 'f', prec);
+
+        if (strFullPrec.contains('e'))
+            str = QString::number(str.toDouble(), 'g', prec);
 
         if (mSqueezeTrailingZeroes) {
-            if (str.contains('e'))
-                str = QString::number(val, 'g', prec+1);
-            else {
-                str = QString::number(val, 'f', prec);
-                while (str.back() == '0')
+            if (str.contains(QLocale::c().decimalPoint())) {
+                while (str.back() == '0') // remove trailing zeroes
                     str.chop(1);
                 if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
                     str.chop(1);
             }
-        } else {
-            if (str.contains('e'))
-                str = QString::number(val, 'e', prec);
-            else
-                str = QString::number(val, 'f', prec);
         }
         return str;
     }
@@ -457,7 +443,7 @@ void GdxSymbol::resetSortFilter()
         for(int uel : *mUelsInColumn.at(dim))
             mShowUelInColumn.at(dim)[uel] = true;
     }
-    mFilterRecCount = mLoadedRecCount; //TODO(CW): use mRecordCount ?
+    mFilterRecCount = mLoadedRecCount;
     layoutChanged();
 }
 
@@ -493,7 +479,8 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         uint uel;
         for(int rec=0; rec<mRecordCount; rec++) {
             uel = mKeys[mRecSortIdx[rec]*mDim + column];
-            if (uel >= labelCompIdx.size())  //TODO (CW) workaround for bad UELS. Bad uels are sorted by their internal number separately from normal UELS
+            // bad uels are sorted by their internal number separately from normal UELS
+            if (uel >= labelCompIdx.size())
                 l.append(QPair<int, int>(uel, mRecSortIdx[rec]));
             else
                 l.append(QPair<int, int>(labelCompIdx[uel], mRecSortIdx[rec]));
@@ -507,7 +494,6 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             mRecSortIdx[rec] = l.at(rec).second;
     }
 
-    //TODO(CW): make string pool sorting index like for uels for increasing sort speed on explanatory text
     //sort set and alias by explanatory text
     else if (mType == GMS_DT_SET || mType == GMS_DT_ALIAS) {
         QList<QPair<QString, int>> l;

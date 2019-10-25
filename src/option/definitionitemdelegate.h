@@ -17,52 +17,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef DEFINITIONITEMDELEGATE_H
+#define DEFINITIONITEMDELEGATE_H
 
-#ifndef REFERENCEVIEWER_H
-#define REFERENCEVIEWER_H
-
-#include <QWidget>
-#include <QList>
-#include <QMap>
-#include <QTabWidget>
-#include "common.h"
-#include "reference.h"
-
-namespace Ui {
-class ReferenceViewer;
-}
+#include <QStyledItemDelegate>
 
 namespace gams {
 namespace studio {
-namespace reference {
+namespace option {
 
-class ReferenceViewer : public QWidget
+class DefinitionItemDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT
-
 public:
-    explicit ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent = nullptr);
-    ~ReferenceViewer();
-    void selectSearchField() const;
-
-signals:
-    void jumpTo(ReferenceItem item);
-
-public slots:
-    void on_referenceFileChanged(QTextCodec* codec);
-    void on_tabBarClicked(int index);
-    void updateView(bool status);
-
-private:
-    Ui::ReferenceViewer *ui;
-
-    QTextCodec *mCodec;
-
-    Reference* mReference;
+    DefinitionItemDelegate(QObject* parent = nullptr);
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
-} // namespace reference
+} // namespace option
 } // namespace studio
 } // namespace gams
 
-#endif // REFERENCEVIEWER_H
+#endif // DEFINITIONITEMDELEGATE_H

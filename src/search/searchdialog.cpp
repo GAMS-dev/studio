@@ -116,13 +116,8 @@ void SearchDialog::finalUpdate()
     } else {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
-        if (edit && !edit->textCursor().hasSelection()) {
-            selectNextMatch(SearchDirection::Forward);
-        } else if (edit) {
-            edit->textCursor().clearSelection();
-        } else if (tv) {
-            selectNextMatch(SearchDirection::Forward);
-        }
+
+        if (edit || tv) selectNextMatch(SearchDirection::Forward);
     }
 
     updateEditHighlighting();
@@ -135,11 +130,10 @@ void SearchDialog::setSearchOngoing(bool searching)
 {
     mSearching = searching;
 
-    if (searching) {
+    if (searching)
         ui->btn_FindAll->setText("Abort");
-    } else {
+    else
         ui->btn_FindAll->setText("Find All");
-    }
 }
 
 ///
@@ -638,7 +632,6 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
         colNr = tc.columnNumber();
     }
 
-    // TODO(rogo): performance improvements possible? replace mCR->rL with mCR->rH and iterate only once
     // find match by cursor position
     QList<Result> list = mCachedResults->resultsAsList();
     for (int i = 0; i < list.size(); i++) {

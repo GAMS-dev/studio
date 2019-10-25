@@ -135,6 +135,8 @@ private:
 
     int mNumericalPrecision = 6;
     bool mSqueezeTrailingZeroes = true;
+
+    int mMaxPrecision = 15;
 };
 
 } // namespace gdxviewer

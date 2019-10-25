@@ -225,6 +225,7 @@ bool GamsOptionTableModel::setData(const QModelIndex &index, const QVariant &val
                 emit optionNameChanged(from, dataValue);
         } else if (index.column() == 1) { // value
                   mOptionItem[index.row()].value = dataValue;
+                  emit optionValueChanged(index);
         }
         emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
