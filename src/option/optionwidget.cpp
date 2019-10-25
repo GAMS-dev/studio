@@ -366,6 +366,8 @@ void OptionWidget::addOptionFromDefinition(const QModelIndex &index)
     ui->gamsOptionTableView->model()->setData( insertEntryIndex, entryNumberData, Qt::EditRole);
     ui->gamsOptionTableView->selectionModel()->select( mOptionTableModel->index(ui->gamsOptionTableView->model()->rowCount()-1, 0),
                                                        QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    showOptionDefinition();
+
     if (parentIndex.row()<0)
         ui->gamsOptionTableView->edit(insertValueIndex);
 }
@@ -473,7 +475,7 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
 
 void OptionWidget::showOptionDefinition()
 {
-   if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
+   if (!mExtendedEditor->isVisible())
        return;
 
     QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
@@ -552,7 +554,7 @@ void OptionWidget::showOptionDefinition()
 
 void OptionWidget::showOptionRecurrence()
 {
-    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus()) {
+    if (!mExtendedEditor->isVisible()) {
         return;
     }
 
@@ -585,7 +587,7 @@ void OptionWidget::showOptionRecurrence()
 
 void OptionWidget::deleteOption()
 {
-    if (!mExtendedEditor->isVisible())
+    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
         return;
 
      QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
@@ -652,7 +654,7 @@ void OptionWidget::deleteAllOptions()
 
 void OptionWidget::insertOption()
 {
-    if (!mExtendedEditor->isVisible())
+    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
         return;
 
     QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
@@ -1002,7 +1004,7 @@ void OptionWidget::addActions()
 QList<int> OptionWidget::getRecurrentOption(const QModelIndex &index)
 {
     QList<int> optionList;
-    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
+    if (!mExtendedEditor->isVisible())
         return optionList;
 
     QString optionId = ui->gamsOptionTableView->model()->data( index.sibling(index.row(), GamsOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole).toString();
