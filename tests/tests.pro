@@ -28,7 +28,7 @@ SUBDIRS += testcommonpaths              \
            testmemorymapper             \
 #           testfilemapper               \
            testblockcode                \
-           testgamsoption               \
+           #testgamsoption               \
            testcplexoption              \
            #testconopt4option            \
            testminosoption              \
