@@ -130,7 +130,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
             if (index.row() % 2 == 0)
                return QVariant::fromValue(QColor(Qt::white));
             else
-                return QVariant::fromValue(QColor(240, 240, 240));
+                return QVariant::fromValue(QColor(245, 245, 245));
         } else {
             return QVariant::fromValue(QColor(Qt::white));
         }
