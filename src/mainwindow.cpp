@@ -2198,7 +2198,6 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     }
 
     if (mSettings->clearLog()) logNode->clearLog();
-    logNode->prepareRun();
 
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
@@ -2221,12 +2220,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
     }
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
-    logNode->setJumpToLogEnd(true);
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
     GamsProcess* process = runGroup->gamsProcess();
     process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+    logNode->prepareRun();
+    logNode->setJumpToLogEnd(true);
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
         for (QWidget *wid: lstNode->file()->editors()) {
             if (TextView *tv = ViewHelper::toTextView(wid)) tv->prepareRun();
