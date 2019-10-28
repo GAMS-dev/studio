@@ -620,11 +620,13 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         QString key = "";
         QString value = "";
         QString eolComment = "";
+        int foundId = -1;
         for (int i = 1; i <= optCount(mOPTHandle); ++i) {
             int idefined, idefinedR, irefnr, itype, iopttype, ioptsubtype;
             optGetInfoNr(mOPTHandle, i, &idefined, &idefinedR, &irefnr, &itype, &iopttype, &ioptsubtype);
 
             if (idefined || idefinedR) {
+                foundId = i;
                 char name[GMS_SSSIZE];
                 int group = 0;
                 int helpContextNr;
@@ -707,6 +709,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
             item->text = commentStr;
             item->error = errorType;
             item->disabled = false;
+            item->optionId = (foundId != -1) ? foundId :mOption->getOrdinalNumber(keyStr);
        }
     }
 
