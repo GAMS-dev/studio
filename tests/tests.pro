@@ -33,5 +33,5 @@ SUBDIRS += testcommonpaths              \
            #testconopt4option            \
            testminosoption              \
            testgurobioption             \
-           testoptionapi                \
-           testdoclocation
+           testoptionapi                
+           #testdoclocation
