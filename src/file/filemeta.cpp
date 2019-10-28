@@ -507,13 +507,11 @@ void FileMeta::save(const QString &newLocation)
         if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
 
     } else { // no document, e.g. lst
-        if (location != mLocation) {
-            mActivelySaved = true;
-            QFile old(mLocation);
-            if (!old.copy(location)) EXCEPT() << "Can't save " << location;
-        } else {
-            return;
-        }
+        mActivelySaved = true;
+        QFile old(mLocation);
+        if (file.exists()) QFile::remove(file.fileName());
+
+        if (!old.copy(location)) EXCEPT() << "Can't save " << location;
     }
     setLocation(location);
     QFileInfo f(file);
