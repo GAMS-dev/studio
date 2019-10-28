@@ -69,16 +69,16 @@ public:
     static QList<QPair<DocumentType, QString>> chapterLocation() {
         auto docs = CommonPaths::documentationDir();
         QList<QPair<DocumentType, QString>> list = {
-            {DocumentType::Main, "docs/index.html"},
-            {DocumentType::ReleaseNotes, "docs/RN_MAIN.html"},
-            {DocumentType::DollarControl, "docs/UG_DollarControlOptions.html"},
-            {DocumentType::GamsCall, "docs/UG_GamsCall.html"},
-            {DocumentType::Options, "docs/UG_OptionStatement.html"},
-            {DocumentType::SolversMain, "docs/S_MAIN.html"},
-            {DocumentType::APIsMain, "docs/API_MAIN.html"},
-            {DocumentType::ToolsMain, "docs/T_MAIN.html"},
-            {DocumentType::Index, "docs/keyword.html"},
-            {DocumentType::StudioMain, "docs/T_STUDIO.html"},
+            {DocumentType::Main, docs + "/index.html"},
+            {DocumentType::ReleaseNotes, docs + "/RN_MAIN.html"},
+            {DocumentType::DollarControl, docs + "/UG_DollarControlOptions.html"},
+            {DocumentType::GamsCall, docs + "/UG_GamsCall.html"},
+            {DocumentType::Options, docs + "/UG_OptionStatement.html"},
+            {DocumentType::SolversMain, docs + "/S_MAIN.html"},
+            {DocumentType::APIsMain, docs + "/API_MAIN.html"},
+            {DocumentType::ToolsMain, docs + "/T_MAIN.html"},
+            {DocumentType::Index, docs + "/keyword.html"},
+            {DocumentType::StudioMain, "docs/T_STUDIO.html"}
         };
         return list;
     }
