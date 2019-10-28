@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  */
-﻿#include "tableviewmodel.h"
+#include "tableviewmodel.h"
 
 namespace gams {
 namespace studio {
