@@ -30,7 +30,7 @@ SUBDIRS += testcommonpaths              \
            testblockcode                \
            testgamsoption               \
            testcplexoption              \
-           testconopt4option            \
+           #testconopt4option            \
            testminosoption              \
            testgurobioption             \
            testoptionapi                \
