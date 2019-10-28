@@ -951,17 +951,17 @@ void MainWindow::on_actionSave_As_triggered()
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
 
-            QString *selFilter = &filters.first();
+            QString selFilter = filters.first();
             foreach (QString f, filters) {
                 if (f.contains("*."+fi.suffix())) {
-                    selFilter = &f;
+                    selFilter = f;
                     break;
                 }
             }
 
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
                                                     filePath, filters.join(";;"),
-                                                    selFilter,
+                                                    &selFilter,
                                                     QFileDialog::DontConfirmOverwrite);
         }
         if (filePath.isEmpty()) return;
