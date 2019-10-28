@@ -39,6 +39,8 @@ class CommonPaths
 {
 public:
 
+    static const QString& documentationDir();
+
     ///
     /// \brief Get GAMS system directory.
     /// \return Returns the GAMS system directory.
@@ -106,6 +108,7 @@ private:
 private:
     static QString SystemDir;
     static const QString ConfigFile;
+    static const QString DocumentationDir;
     static const QString LicenseFile;
 };
 

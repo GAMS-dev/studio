@@ -105,7 +105,7 @@ public:
     void setEncodingMIBs(QList<int> mibs, int active = -1);
     void setActiveMIB(int active = -1);
     HistoryData* history();
-    void setProcessLogVisibility(bool visibility);
+    void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
@@ -114,7 +114,7 @@ public:
     TextMarkRepo* textMarkRepo();
 
     QWidgetList openEditors();
-    QList<AbstractEdit*> openLogs();
+    QList<QWidget *> openLogs();
     SearchDialog* searchDialog() const;
     void showResults(SearchResultList* results);
     void closeResultsPage();

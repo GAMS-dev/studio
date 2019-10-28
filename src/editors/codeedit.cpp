@@ -219,6 +219,13 @@ bool CodeEdit::hasSelection() const
     return textCursor().hasSelection();
 }
 
+void CodeEdit::disconnectTimers()
+{
+    AbstractEdit::disconnectTimers();
+    disconnect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
+    disconnect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
+}
+
 void CodeEdit::clearSelection()
 {
     if (isReadOnly()) return;
@@ -1348,6 +1355,16 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
+QPoint CodeEdit::toolTipPos(const QPoint &mousePos)
+{
+    QPoint pos = AbstractEdit::toolTipPos(mousePos);
+    if (mousePos.x() < mLineNumberArea->width())
+        pos.setX(mLineNumberArea->width()+6);
+    else
+        pos.setX(pos.x() + mLineNumberArea->width()+2);
+    return pos;
+}
+
 QString CodeEdit::lineNrText(int blockNr)
 {
     return QString::number(blockNr);
@@ -1401,9 +1418,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 
-            if (hasMarks && marks()->contains(effectiveBlockNr(blockNumber))) {
+            if (hasMarks && marks()->contains(absoluteBlockNr(blockNumber))) {
                 int iTop = (2+top+bottom-iconSize())/2;
-                painter.drawPixmap(1, iTop, marks()->value(effectiveBlockNr(blockNumber))->icon().pixmap(QSize(iconSize(),iconSize())));
+                painter.drawPixmap(1, iTop, marks()->value(absoluteBlockNr(blockNumber))->icon().pixmap(QSize(iconSize(),iconSize())));
             }
         }
 

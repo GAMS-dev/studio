@@ -48,9 +48,11 @@ public:
     void jumpTo(int line, int column = 0);
 
     void updateGroupId();
+    virtual void disconnectTimers();
 
 signals:
-    void requestLstTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
+//    void requestMarkTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
+    void requestLstTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void toggleBookmark(FileId fileId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
@@ -65,7 +67,8 @@ protected:
     friend class FileMeta;
 
     AbstractEdit(QWidget *parent);
-    void showToolTip(const QList<TextMark *> marks);
+//    void showToolTip(const QList<TextMark *> &marks, const QPoint &pos);
+    void showToolTip(const QVector<int> &lstNumbers, const QPoint &pos);
     QMimeData* createMimeDataFromSelection() const override;
     bool event(QEvent *event) override;
     bool eventFilter(QObject *o, QEvent *e) override;
@@ -87,10 +90,14 @@ protected:
     }
     virtual void setMarks(const LineMarks *marks);
     virtual const LineMarks* marks() const;
-    virtual int effectiveBlockNr(const int &localBlockNr) const;
+    virtual int absoluteBlockNr(const int &localBlockNr) const;
+    virtual int localBlockNr(const int &absoluteBlockNr) const;
     virtual int topVisibleLine();
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
+    virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
+    virtual QPoint toolTipPos(const QPoint &mousePos);
+    virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
 
 private:
     const LineMarks* mMarks = nullptr;

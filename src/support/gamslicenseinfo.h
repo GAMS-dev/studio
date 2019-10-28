@@ -23,8 +23,7 @@
 #include <QMap>
 #include <QString>
 
-struct cfgRec;
-typedef struct cfgRec *cfgHandle_t;
+#include "solverconfiginfo.h"
 
 struct palRec;
 typedef struct palRec *palHandle_t;
@@ -62,7 +61,7 @@ private:
     static int errorCallback(int count, const char *message);
 
 private:
-    cfgHandle_t mCFG;
+    SolverConfigInfo mSolverInfo;
     palHandle_t mPAL;
 };
 

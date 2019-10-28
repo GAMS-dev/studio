@@ -33,6 +33,7 @@ private:
     static QString searchApplications();
 
 private:
+    static const QString Sysdir;
     static const QString SubPath;
 };
 

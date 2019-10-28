@@ -30,6 +30,7 @@
 #include "editors/viewhelper.h"
 #include "locators/sysloglocator.h"
 #include "locators/abstractsystemlogger.h"
+#include "support/solverconfiginfo.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -308,6 +309,15 @@ void FileMeta::reload()
     load(mCodec->mibEnum(), false);
 }
 
+void FileMeta::invalidate()
+{
+    for (QWidget *wid: mEditors) {
+        if (TextView* tv = ViewHelper::toTextView(wid)) {
+            tv->invalidate();
+        }
+    }
+}
+
 void FileMeta::addEditor(QWidget *edit)
 {
     if (!edit) return;
@@ -329,7 +339,7 @@ void FileMeta::addEditor(QWidget *edit)
             linkDocument(aEdit->document());
         else
             aEdit->setDocument(mDocument);
-        connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::lstTexts);
+        connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
 
@@ -342,9 +352,11 @@ void FileMeta::addEditor(QWidget *edit)
 
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
+        connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
-        tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
+        if (tv->kind() == TextView::FileText)
+            tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     }
     if (soEdit) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
@@ -371,6 +383,7 @@ void FileMeta::removeEditor(QWidget *edit)
 
     if (aEdit) {
         aEdit->setMarks(nullptr);
+        aEdit->disconnectTimers();
         QTextDocument *doc = new QTextDocument(aEdit);
         doc->setDocumentLayout(new QPlainTextDocumentLayout(doc)); // w/o layout the setDocument() fails
         aEdit->setDocument(doc);
@@ -385,6 +398,7 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
+        tv->edit()->disconnectTimers();
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
@@ -407,9 +421,7 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
 
 void FileMeta::load(int codecMib, bool init)
 {
-    // TODO(JM) Later, this method should be moved to the new DataWidget
     if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
-
     mData = Data(location(), mData.type);
 
     if (kind() == FileKind::Gdx) {
@@ -720,24 +732,50 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
+    } else if (kind() == FileKind::Log) {
+        LogParser *parser = new LogParser(mCodec);
+        connect(parser, &LogParser::hasFile, runGroup, &ProjectRunGroupNode::hasFile);
+        connect(parser, &LogParser::setErrorText, runGroup, &ProjectRunGroupNode::setErrorText);
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
+        tView->setDebugMode(mFileRepo->debugMode());
+        connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
+        connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
+        connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);
+        tView->setLogParser(parser);
+        res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
-        TextView* tView = ViewHelper::initEditorType(new TextView(tabWidget));
+        EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLst;
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, tabWidget), type);
+        tView->setDebugMode(mFileRepo->debugMode());
         res = tView;
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
-        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+            QFileInfo fileInfo(name());
+            support::SolverConfigInfo solverConfigInfo;
+            QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
+            if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
+                 res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+                                                                                  id(), mCodec, tabWidget));
+            } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
+                        QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
+                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
+                                                                                         id(), mCodec, tabWidget));
+            } else {
+                    SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
+                    forcedAsTextEdit = true;
+            }
     } else {
+        forcedAsTextEdit = true;
+    }
+
+    if (forcedAsTextEdit) {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        if (kind() == FileKind::Log) {
-            edit = ViewHelper::initEditorType(new ProcessLogEdit(tabWidget));
-        } else {
-            codeEdit  = new CodeEdit(tabWidget);
-            edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
-                                             : ViewHelper::initEditorType(codeEdit);
-        }
+        codeEdit  = new CodeEdit(tabWidget);
+        edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
+                                         : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);

@@ -24,12 +24,14 @@ SUBDIRS += testcommonpaths              \
            testeditors                  \
            testservicelocators          \
            testgamslicenseinfo          \
+           testsolverconfiginfo         \
            testcheckforupdatewrapper    \
-           testtextmapper               \
+           testmemorymapper             \
+#           testfilemapper               \
            testblockcode                \
            testgamsoption               \
            testcplexoption              \
-           #testconopt4option            \ TODO (AF): switch on
+           testconopt4option            \
            testminosoption              \
            testgurobioption             \
            testoptionapi                \

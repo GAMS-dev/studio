@@ -79,7 +79,6 @@ public:
     void invalidateCache();
 
     SearchResultList* results();
-    void setActiveEditWidget(QWidget *edit);
 
     ResultsView *resultsView() const;
     void setResultsView(ResultsView *resultsView);
@@ -152,7 +151,6 @@ private:
     MainWindow *mMain;
     ResultsView *mResultsView = nullptr;
     SearchResultList *mCachedResults = nullptr;
-    QWidget *mActiveEdit = nullptr;
     bool mHasChanged = true;
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;

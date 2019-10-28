@@ -20,75 +20,94 @@
 #ifndef TEXTVIEW_H
 #define TEXTVIEW_H
 
-#include "textmapper.h"
+#include "abstracttextmapper.h"
 #include "syntax/textmarkrepo.h"
 #include "editors/abstractedit.h"
+#include "editors/logparser.h"
 #include <QAbstractScrollArea>
 #include <QPlainTextEdit>
 #include <QStringBuilder>
 #include <QScrollBar>
-#include <QTimer>
 
 namespace gams {
 namespace studio {
 
 class TextViewEdit;
+class LogParser;
 
 class TextView : public QAbstractScrollArea
 {
     Q_OBJECT
 public:
-    explicit TextView(QWidget *parent = nullptr);
+    enum TextKind { FileText, MemoryText };
+
+    explicit TextView(TextKind kind, QWidget *parent = nullptr);
+    ~TextView() override;
+
     bool loadFile(const QString &fileName, int codecMib, bool initAnchor);
-    void closeFile();
-    void reopenFile();
-    qint64 fileSize() const;
+    TextKind kind() const;
+    void prepareRun();
+    void endRun();
+    qint64 size() const;
     int lineCount() const;
     int knownLines() const;
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
-    bool jumpTo(int lineNr, int charNr, int length = 0);
-    QPoint position() const;
-    QPoint anchor() const;
-    bool hasSelection() const;
-//    int findLine(int lineNr);
+    bool jumpTo(int lineNr, int charNr, int length = 0, bool focus = false);
+    QPoint position() const;                // JM: changes on Debug / pos only in regular lines
+    QPoint anchor() const;                  // JM: changes on Debug / no selection
+    bool hasSelection() const;              // JM: changes on Debug / no selection
     void copySelection();
     QString selectedText() const;
     void selectAllText();
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    TextKind textKind() const;
+    void setLogParser(LogParser *logParser);
+    void reset();
+    void setDebugMode(bool debug);
+    void invalidate();
+    void jumpToEnd();
+    int firstErrorLine();
 
 signals:
-    void blockCountChanged(int newBlockCount);
+    void addProcessData(const QByteArray &data);
+    void blockCountChanged();
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();
     void searchFindNextPressed();
     void searchFindPrevPressed();
+    void hasHRef(const QString &href, bool &exist);
+    void jumpToHRef(const QString &href);
+    void createMarks(const LogParser::MarkData &marks);
+    void appendLines(const QStringList &lines);
 
 public slots:
     void updateExtraSelections();
+    void updateView();
 
 private slots:
-    void editScrollChanged();
-    void peekMoreLines();
     void outerScrollAction(int action);
     void horizontalScrollAction(int action);
-    void adjustOuterScrollAction();
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
+    void findNearLst(const QTextCursor &cursor, bool &done, bool jump);
+    void updateVScrollZone();
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
+    void recalcVisibleLines();
 
 protected:
     friend class FileMeta;
     void setMarks(const LineMarks *marks);
     const LineMarks* marks() const;
-
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
     inline FileId fileId() {
         bool ok;
         FileId file = property("fileId").toInt(&ok);
@@ -102,26 +121,19 @@ protected:
 
 private:
     void init();
-    void updateVScrollZone();
-    void syncVScroll();
     void topLineMoved();
 
 private:
-    int mTopLine = 0;
-    int mTopVisibleLine = 0;
-    int mVisibleLines = 0;
+    TextKind mTextKind;
     const int mDocChanging = 0;
     bool mInit = true;
     int mHScrollValue = 0;
 
-    TextMapper mMapper;
+    AbstractTextMapper *mMapper = nullptr;
     TextViewEdit *mEdit;
-    QTimer mPeekTimer;
-    QTextCodec *mCodec = nullptr;
-    int mLineToFind = -1;
-    int mTopBufferLines = 100;
-    QScrollBar::SliderAction mActiveScrollAction = QScrollBar::SliderNoAction;
-    LineMarks *mMarks = nullptr;
+    bool *mStayAtTail = nullptr;
+    bool mSliderStartedAtTail = false;
+    int mSliderMouseStart = 0;
 
 private:
 
@@ -131,7 +143,6 @@ private:
         ChangeKeeper(const int &_changeCounter) : changeCounter(const_cast<int&>(_changeCounter)) {++changeCounter;}
         ~ChangeKeeper() {--changeCounter;}
     };
-
 };
 
 } // namespace studio

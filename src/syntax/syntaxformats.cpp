@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "syntaxformats.h"
-#include "logger.h"
 #include "syntaxdata.h"
+#include "logger.h"
 #include "exception.h"
 
 namespace gams {

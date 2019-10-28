@@ -709,8 +709,10 @@ void SearchDialog::clearSearch()
 
 void SearchDialog::updateEditHighlighting()
 {
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mActiveEdit)) ce->updateExtraSelections();
-    if (TextView* tv = ViewHelper::toTextView(mActiveEdit)) tv->updateExtraSelections();
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor()))
+        ce->updateExtraSelections();
+    if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
+        tv->updateExtraSelections();
 }
 
 void SearchDialog::clearResults()
@@ -895,11 +897,6 @@ void SearchDialog::setSelectedScope(int index)
 SearchResultList* SearchDialog::results()
 {
     return mCachedResults;
-}
-
-void SearchDialog::setActiveEditWidget(QWidget *edit)
-{
-    mActiveEdit = edit;
 }
 
 ResultsView* SearchDialog::resultsView() const

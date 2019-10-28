@@ -33,6 +33,7 @@ SOURCES +=                                      \
     testgamslicenseinfo.cpp                     \
     $$SRCPATH/locators/defaultsystemlogger.cpp  \
     $$SRCPATH/locators/sysloglocator.cpp        \
+    $$SRCPATH/support/solverconfiginfo.cpp       \
     $$SRCPATH/support/gamslicenseinfo.cpp       \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/exception.cpp

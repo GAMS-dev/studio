@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,11 +26,17 @@ INCLUDEPATH += $$SRCPATH \
                $$SRCPATH/editors
 
 HEADERS += \
-    testtextmapper.h \
-    $$SRCPATH/editors/textmapper.h
+    $$SRCPATH/editors/abstracttextmapper.h \
+    $$SRCPATH/editors/logparser.h \
+    $$SRCPATH/editors/memorymapper.h \
+    $$SRCPATH/file/dynamicfile.h \
+    testmemorymapper.h
 
 SOURCES += \
-    testtextmapper.cpp \
-    $$SRCPATH/editors/textmapper.cpp \
+    $$SRCPATH/editors/abstracttextmapper.cpp \
+    $$SRCPATH/editors/logparser.cpp \
+    $$SRCPATH/editors/memorymapper.cpp \
+    $$SRCPATH/file/dynamicfile.cpp \
     $$SRCPATH/exception.cpp \
-    $$SRCPATH/logger.cpp
+    $$SRCPATH/logger.cpp \
+    testmemorymapper.cpp

@@ -100,6 +100,7 @@ public:
 
 public slots:
     void reload();
+    void invalidate();
 
 signals:
     void changed(FileId fileId);
