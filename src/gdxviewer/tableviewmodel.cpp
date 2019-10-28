@@ -43,7 +43,7 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
             else if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
                 for (int i=0; i<mTvColHeaders[section].size()-1; i++) {
                     uint uel = mTvColHeaders[section][i];
-                    header << mGdxSymbolTable->uel2Label(uel);
+                    header << mGdxSymbolTable->uel2Label(int(uel));
                 }
                 switch(mTvColHeaders[section].last()) {
                 case GMS_VAL_LEVEL: header << "Level"; break;
@@ -55,7 +55,7 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
             }
             else {
                 for (uint uel: mTvColHeaders[section])
-                    header << mGdxSymbolTable->uel2Label(uel);
+                    header << mGdxSymbolTable->uel2Label(int(uel));
             }
         }
         else {
@@ -67,7 +67,7 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
             }
             else {
                 for (uint uel: mTvRowHeaders[section])
-                    header << mGdxSymbolTable->uel2Label(uel);
+                    header << mGdxSymbolTable->uel2Label(int(uel));
             }
         }
         return header;
@@ -107,9 +107,9 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
         else
             keys = mTvRowHeaders[index.row()] + mTvColHeaders[index.column()];
         if (mTvKeysToValIdx.contains(keys)) {
-            double val = mSym->mValues[mTvKeysToValIdx[keys]];
+            double val = mSym->mValues[size_t(mTvKeysToValIdx[keys])];
             if (mSym->mType == GMS_DT_SET)
-                return mGdxSymbolTable->getElementText((int) val);
+                return mGdxSymbolTable->getElementText(int(val));
             else
                 return mSym->formatValue(val);
         } else
@@ -144,7 +144,7 @@ void TableViewModel::calcDefaultColumnsTableView()
                 keys = mTvRowHeaders[row] + mTvColHeaders[col];
             double val = defVal;
             if (mTvKeysToValIdx.contains(keys))
-                val = mSym->mValues[mTvKeysToValIdx[keys]];
+                val = mSym->mValues[size_t(mTvKeysToValIdx[keys])];
             if(defVal != val) {
                 mDefaultColumnTableView[col] = false;
                 break;
@@ -176,7 +176,7 @@ void TableViewModel::calcLabelsInRows()
     }
     for (int c=0; c<uelsInRows.size(); c++) {
         for(uint uel : uelsInRows[c])
-            mlabelsInRows[c].append(mGdxSymbolTable->uel2Label(uel));
+            mlabelsInRows[c].append(mGdxSymbolTable->uel2Label(int(uel)));
     }
 }
 
@@ -218,21 +218,21 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
         lastColHeader[i] = 0;
     int r;
     for (int rec=0; rec<mSym->mFilterRecCount; rec++) {
-        r = mSym->mRecSortIdx[mSym->mRecFilterIdx[rec]];
+        r = mSym->mRecSortIdx[size_t(mSym->mRecFilterIdx[size_t(rec)])];
         int keyIdx = r*mSym->mDim;
         QVector<uint> rowHeader;
         QVector<uint> colHeader;
 
         for(int i=0; i<mSym->mDim-mTvColDim; i++)
-            rowHeader.push_back(mSym->mKeys[keyIdx+mTvDimOrder[i]]);
+            rowHeader.push_back(mSym->mKeys[size_t(keyIdx+mTvDimOrder[i])]);
         for(int i=mSym->mDim-mTvColDim; i<mSym->mDim; i++)
-            colHeader.push_back(mSym->mKeys[keyIdx+mTvDimOrder[i]]);
+            colHeader.push_back(mSym->mKeys[size_t(keyIdx+mTvDimOrder[i])]);
 
         if (mSym->mType == GMS_DT_VAR || mSym->mType == GMS_DT_EQU) {
             colHeader.push_back(0);
             for (int valIdx=0; valIdx<GMS_VAL_MAX; valIdx++) {
                 colHeader.pop_back();
-                colHeader.push_back(valIdx);
+                colHeader.push_back(uint(valIdx));
 
                 QVector<uint> keys = rowHeader + colHeader;
                 mTvKeysToValIdx[keys] = r*GMS_VAL_MAX + valIdx;
