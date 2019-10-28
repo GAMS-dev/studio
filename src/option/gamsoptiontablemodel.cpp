@@ -144,33 +144,32 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
     }
 //    case Qt::DecorationRole
     case Qt::ToolTipRole: {
-//        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
-//            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
-        if (col==0) {
-            if ( mOption->isDoubleDashedOption(mOptionItem.at(row).key) ) {
-                if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key))) {
-                    return QString("'%1' is an invalid double dashed option (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))").arg(mOption->getOptionKey(mOptionItem.at(row).key));
-                } else {
-                    break;
-                }
-            } else if ( !mOption->isValid(mOptionItem.at(row).key) &&
-                        !mOption->isASynonym(mOptionItem.at(row).key)
-                      )  {
-                         return QString("'%1' is an unknown option Key").arg(mOptionItem.at(row).key);
-            } else if (mOption->isDeprecated(mOptionItem.at(row).key)) {
-                      return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key);
-            }
-        } else if (col==1) {
-            switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
-              case Incorrect_Value_Type:
-                   return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
-              case Value_Out_Of_Range:
-                   return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key);
-              default:
-                   break;
-            }
+        QString tooltipText = "";
+        switch(mOptionItem.at(row).error) {
+        case Invalid_Key:
+            tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(row).key));
+            break;
+        case Incorrect_Value_Type:
+            tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(row).key) );
+            break;
+        case Value_Out_Of_Range:
+            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key) );
+            break;
+        case Deprecated_Option:
+            tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key) );
+            break;
+        case UserDefined_Error:
+            tooltipText.append( QString("Invalid parameter key or value or comment defined") );
+            break;
+        default:
+            break;
         }
-        break;
+        if (mOptionItem.at(row).recurrent) {
+            if (!tooltipText.isEmpty())
+                tooltipText.append("\n");
+            tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(mOptionItem.at(row).key));
+        }
+        return tooltipText;
     }
     case Qt::TextColorRole: {
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))

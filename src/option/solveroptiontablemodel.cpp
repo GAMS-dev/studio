@@ -67,18 +67,29 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
             else
                 return QString("%1 %2 %3").arg(lineComment).arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString()); //->text);
         } else {
-          switch(mOptionItem.at(index)->error) {
-          case Invalid_Key:
-              return QString("Unknown option '%1'").arg(mOptionItem.at(index)->key);
-          case Incorrect_Value_Type:
-              return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key);
-          case Value_Out_Of_Range:
-              return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key);
-          case Deprecated_Option:
-              return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key);
-          default:
-             break;
-          }
+            QString tooltipText = "";
+            switch(mOptionItem.at(index)->error) {
+            case Invalid_Key:
+                tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(index)->key) );
+                break;
+            case Incorrect_Value_Type:
+                tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key));
+                break;
+            case Value_Out_Of_Range:
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key));
+                break;
+            case Deprecated_Option:
+                tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key));
+                break;
+            default:
+               break;
+            }
+            if (mOptionItem.at(index)->recurrent) {
+              if (!tooltipText.isEmpty())
+                  tooltipText.append("\n");
+              tooltipText.append( QString("Recurrent option '%1', only last entry of same options will not be ignored").arg(mOptionItem.at(index)->key));
+            }
+            return tooltipText;
         }
         break;
     }
@@ -160,22 +171,33 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         if (mOptionItem.at(row)->disabled) {
             return mOptionItem.at(row)->key;
         } else {
-          switch(mOptionItem.at(row)->error) {
-          case Invalid_Key:
-              return QString("Unknown option '%1'").arg(mOptionItem.at(row)->key);
-          case Incorrect_Value_Type:
-             return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key);
-          case Value_Out_Of_Range:
-             return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key);
-          case Deprecated_Option:
-              return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key);
-          case UserDefined_Error:
-              return QString("Invalid option key or value or comment defined");
-          default:
-             break;
-          }
+            QString tooltipText = "";
+            switch(mOptionItem.at(row)->error) {
+            case Invalid_Key:
+                tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(row)->key));
+                break;
+            case Incorrect_Value_Type:
+                tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key) );
+                break;
+            case Value_Out_Of_Range:
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key) );
+                break;
+            case Deprecated_Option:
+                tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key) );
+                break;
+            case UserDefined_Error:
+                tooltipText.append( QString("Invalid option key or value or comment defined") );
+                break;
+            default:
+                break;
+            }
+            if (mOptionItem.at(row)->recurrent) {
+                if (!tooltipText.isEmpty())
+                    tooltipText.append("\n");
+                tooltipText.append( QString("Recurrent option '%1', only last entry of same options will not be ignored").arg(mOptionItem.at(row)->key));
+            }
+            return tooltipText;
         }
-        break;
     }
     case Qt::TextColorRole: {
         if (mOptionItem.at(row)->disabled) {
