@@ -145,7 +145,9 @@ void TableViewModel::calcDefaultColumnsTableView()
             double val = defVal;
             if (mTvKeysToValIdx.contains(keys))
                 val = mSym->mValues[size_t(mTvKeysToValIdx[keys])];
-            if(defVal != val) {
+
+            // We really need (defVal != val) here - but that leads to compiler-warning
+            if(defVal < val || defVal > val) {
                 mDefaultColumnTableView[col] = false;
                 break;
             }
