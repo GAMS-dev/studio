@@ -1362,7 +1362,7 @@ void SolverOptionWidget::addActions()
 
     QAction* showDuplicationAction = mContextMenu.addAction("Show all parameters of the same definition", [this]() { showOptionRecurrence(); });
     showDuplicationAction->setObjectName("actionShowRecurrence_option");
-    showDuplicationAction->setShortcut( QKeySequence("Ctrl+D") );
+    showDuplicationAction->setShortcut( QKeySequence("Shift+F1") );
     showDuplicationAction->setShortcutVisibleInContextMenu(true);
     showDuplicationAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(showDuplicationAction);
