@@ -644,6 +644,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
         }
     }
     emit solverOptionModelChanged(mOptionItem);
+    updateRecurrentStatus();
     endResetModel();
     connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
 }
@@ -684,7 +685,7 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
                   emit solverOptionModelChanged(mOptionItem);
        }
     }
-
+    updateRecurrentStatus();
 }
 
 void SolverOptionTableModel::on_removeSolverOptionItem()

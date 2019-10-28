@@ -1299,7 +1299,10 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
         idList << item->optionId;
     }
     for(SolverOptionItem* item : items) {
-        item->recurrent = (!item->disabled && item->optionId != -1 &&  idList.count(item->optionId) > 1);
+        if (item->disabled)
+            item->recurrent = false;
+        else
+            item->recurrent = (item->optionId != -1 &&  idList.count(item->optionId) > 1);
     }
 }
 
