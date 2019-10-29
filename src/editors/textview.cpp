@@ -58,7 +58,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     if (kind == MemoryText)
-        connect(mEdit, &TextViewEdit::findNearLst, this, &TextView::findNearLst);
+        connect(mEdit, &TextViewEdit::findNearLst, this, &TextView::findClosestLst);
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
@@ -633,7 +633,7 @@ QString findLstHRef(const QTextBlock &block)
     return QString();
 }
 
-void TextView::findNearLst(const QTextCursor &cursor, bool &done, bool jump)
+void TextView::findClosestLst(const QTextCursor &cursor, bool jump)
 {
     QTextBlock blockUp = cursor.block();
     QTextBlock blockDn = cursor.block();
@@ -643,7 +643,7 @@ void TextView::findNearLst(const QTextCursor &cursor, bool &done, bool jump)
             break;
         blockUp = blockUp.previous();
     }
-    // while in error description, upwards
+    // while in error description, downwards
     while (blockDn.isValid()) {
         if (!blockDn.text().startsWith(" "))
             break;
@@ -660,10 +660,7 @@ void TextView::findNearLst(const QTextCursor &cursor, bool &done, bool jump)
             }
         }
     }
-    if (!href.isEmpty()) {
-        done = true;
-        if (jump) jumpToHRef(href);
-    }
+    if (!href.isEmpty() && jump) jumpToHRef(href);
 }
 
 void TextView::updateExtraSelections()

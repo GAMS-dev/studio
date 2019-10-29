@@ -751,6 +751,20 @@ int MemoryMapper::knownLineNrs() const
     return lineCount();
 }
 
+void MemoryMapper::findClosestLst(const int &localLine)
+{
+    int activationLine;
+    int backLine = localLine;
+    int foreLine = localLine;
+    while(true) {
+        QByteArray ba = rawLines(backLine, 1, mUnits.last().firstChunk->nr, activationLine);
+        if (!ba.startsWith(' ')) break;
+        if (activationLine > 0) break;
+        --backLine;
+    }
+
+}
+
 int MemoryMapper::chunkCount() const
 {
     return mChunks.size();

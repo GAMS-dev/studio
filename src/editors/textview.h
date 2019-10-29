@@ -93,7 +93,7 @@ private slots:
     void editKeyPressEvent(QKeyEvent *event);
     void handleSelectionChange();
     void updatePosAndAnchor();
-    void findNearLst(const QTextCursor &cursor, bool &done, bool jump);
+    void findClosestLst(const QTextCursor &cursor, bool jump);
     void updateVScrollZone();
 
 protected slots:

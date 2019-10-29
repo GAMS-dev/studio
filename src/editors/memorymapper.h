@@ -98,6 +98,7 @@ public:
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
     int lineCount() const override;
     int knownLineNrs() const override;
+    void findClosestLst(const int &localLine);
     void dump();
 
 signals:
