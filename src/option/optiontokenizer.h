@@ -36,10 +36,13 @@ struct OptionError {
         formatRange(fr), message(m) { }
     OptionError(QTextLayout::FormatRange fr, QString m, bool w):
          formatRange(fr), message(m), warning(w) { }
+    OptionError(QTextLayout::FormatRange fr, QString m, bool w, int id):
+         formatRange(fr), message(m), warning(w), optionId(id) { }
 
     QTextLayout::FormatRange formatRange;
     QString message;
     bool warning =  false;
+    int optionId = -1;
 };
 
 class OptionTokenizer : public QObject

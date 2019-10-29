@@ -393,7 +393,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
             fr.start = item.keyPosition;
             fr.length = item.key.length();
             fr.format = mDuplicateOptionFormat;
-            optionErrorList.append(OptionError(fr, item.key + QString(" (Recurrent), only last entry of same parameter will not be ignored"), true));
+            optionErrorList.append(OptionError(fr, item.key + QString(" (Recurrent), only last entry of same parameter will not be ignored"), true, item.optionId));
         }
     }
     return optionErrorList;
@@ -1340,6 +1340,7 @@ bool OptionTokenizer::isValidEOLCommentChar(const QChar &ch)
 void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList) {
     QString warningMessage = "";
     QList<QInputMethodEvent::Attribute> attributes;
+    QList<int> warningOptionIdList;
     for(const OptionError &err : errorList)   {
         if (!err.warning)
             continue;
@@ -1349,8 +1350,10 @@ void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionErro
         QVariant value = err.formatRange.format;
         attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
 
-        if (!err.message.isEmpty())
+        if (!err.message.isEmpty() && !warningOptionIdList.contains(err.optionId)) {
             warningMessage.append("\n    " + err.message);
+            warningOptionIdList << err.optionId;
+        }
     }
 
     if (!warningMessage.isEmpty()) {
