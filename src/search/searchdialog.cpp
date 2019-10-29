@@ -814,6 +814,7 @@ void SearchDialog::autofillSearchField()
     }
 
     ui->combo_search->setFocus();
+    ui->combo_search->lineEdit()->selectAll();
 }
 
 void SearchDialog::updateNrMatches(int current, int max)
