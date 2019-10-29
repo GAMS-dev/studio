@@ -211,7 +211,7 @@ void FileMetaRepo::setDebugMode(bool debug)
 {
     mDebug = debug;
     if (!debug) return;
-    DEB() << "\n--------------- FileMetas (Editors) ---------------";
+//    DEB() << "\n--------------- FileMetas (Editors) ---------------";
     QMap<int, AbstractEdit*> edits;
     for (QWidget* wid: editors()) {
         AbstractEdit*ed = ViewHelper::toAbstractEdit(wid);
@@ -265,6 +265,7 @@ void FileMetaRepo::fileChanged(const QString &path)
 //            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
 //                                                                      : FileEventKind::changedExtern;
             FileEvent e(file->id(), FileEventKind::changedExtern);
+            file->invalidate();
             emit fileEvent(e);
         }
     }
@@ -285,6 +286,7 @@ void FileMetaRepo::reviewRemoved()
                 FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
                                                                           : FileEventKind::changedExtern;
                 FileEvent e(file->id(), feKind);
+                file->invalidate();
                 emit fileEvent(e);
             }
         } else {
@@ -310,6 +312,7 @@ void FileMetaRepo::checkMissing()
             FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
                                                                       : FileEventKind::changedExtern;
             FileEvent e(file->id(), feKind);
+            file->invalidate();
             emit fileEvent(e);
         } else {
             remainMissList << fileName;

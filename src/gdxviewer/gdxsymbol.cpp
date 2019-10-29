@@ -484,10 +484,6 @@ int GdxSymbol::subType() const
  */
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
-    //TODO(CW): This is a workaround for not sorting if the selcted symbol is updated and column and order haven't changed
-    //if(column == mSortColumn && order == mSortOrder)
-    //    return;
-
     // sort by key column
     if(column<mDim) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();

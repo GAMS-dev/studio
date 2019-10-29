@@ -51,6 +51,7 @@ void DynamicFile::closeFile()
 {
     QMutexLocker locker(&mMutex);
     if (mFile.isOpen()) {
+        mFile.write("\n");
         mFile.flush();
         mFile.close();
         runBackupCircle();

@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTTEXTMAPPER_H
-#define TESTTEXTMAPPER_H
+#ifndef TESTFILEMAPPER_H
+#define TESTFILEMAPPER_H
 
-#include "editors/textmapper.h"
+#include "editors/filemapper.h"
 #include <QtTest/QTest>
 
-using gams::studio::TextMapper;
+using gams::studio::FileMapper;
 
-class TestTextMapper : public QObject
+class TestFileMapper : public QObject
 {
     Q_OBJECT
 
@@ -47,8 +47,8 @@ private slots:
     void testPosAndAnchor();
 
 private:
-    TextMapper *mMapper;
+    FileMapper *mMapper;
     QDir mCurrentPath;
 };
 
-#endif // TESTTEXTMAPPER_H
+#endif // TESTFILEMAPPER_H

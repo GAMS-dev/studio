@@ -21,7 +21,7 @@
 #define TEXTVIEWEDIT_H
 
 #include "codeedit.h"
-#include "textmapper.h"
+#include "abstracttextmapper.h"
 #include "locators/settingslocator.h"
 #include <QWidget>
 
@@ -32,18 +32,25 @@ class TextViewEdit : public CodeEdit
 {
     Q_OBJECT
 public:
-    TextViewEdit(TextMapper &mapper, QWidget *parent = nullptr);
+    TextViewEdit(AbstractTextMapper &mapper, QWidget *parent = nullptr);
     bool showLineNr() const override { return false; }
     void protectWordUnderCursor(bool protect);
     bool hasSelection() const override;
+    void disconnectTimers() override;
 
 signals:
     void keyPressed(QKeyEvent *event);
     void updatePosAndAnchor();
+    void hasHRef(const QString &href, bool &exist);
+    void jumpToHRef(const QString &href);
+    void recalcVisibleLines();
+    void topLineMoved();
+    void findNearLst(const QTextCursor &cursor, bool &done, bool jump);
 
 public slots:
     void copySelection() override;
     void selectAllText() override;
+    void scrollStep();
 
 protected:
     friend class TextView;
@@ -51,16 +58,30 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
     void recalcWordUnderCursor() override;
-    int effectiveBlockNr(const int &localBlockNr) const override;
+    int absoluteBlockNr(const int &localBlockNr) const override;
+    int localBlockNr(const int &absoluteBlockNr) const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void updateCursorShape(const Qt::CursorShape &defaultShape) override;
+//    bool viewportEvent(QEvent *event) override;
+    QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
+    void paintEvent(QPaintEvent *e) override;
 
 private:
     int topVisibleLine() override;
+    bool existHRef(QString href);
+    int scrollMs(int delta);
 
 private:
-    TextMapper &mMapper;
+    AbstractTextMapper &mMapper;
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
+    QPoint mHRefClickPos;
+    QTimer mScrollTimer;
+    int mScrollDelta = 0;
     int mSubOffset = 0;
     int mDigits = 3;
     bool mKeepWordUnderCursor = false;

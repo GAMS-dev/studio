@@ -108,9 +108,9 @@ QString ProjectGroupNode::tooltip()
     return QString(res);
 }
 
-QString ProjectGroupNode::lstErrorText(int line)
+QString ProjectGroupNode::errorText(int lstLine)
 {
-    return parentNode() ? parentNode()->lstErrorText(line) : QString();
+    return parentNode() ? parentNode()->errorText(lstLine) : QString();
 }
 
 ProjectFileNode *ProjectGroupNode::findFile(QString location, bool recurse) const
@@ -195,6 +195,11 @@ void ProjectGroupNode::moveChildNode(int from, int to)
     mChildNodes.move(from, to);
 }
 
+void ProjectGroupNode::hasFile(QString fName, bool &exists)
+{
+    exists = findFile(fName);
+}
+
 ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
     : ProjectGroupNode(name, path, NodeType::runGroup)
     , mGamsProcess(new GamsProcess())
@@ -203,11 +208,6 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
     }
-}
-
-void ProjectRunGroupNode::updateRunState(const QProcess::ProcessState &state)
-{
-    Q_UNUSED(state)
 }
 
 GamsProcess *ProjectRunGroupNode::gamsProcess() const
@@ -243,6 +243,31 @@ void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
         for (const QString &file: files) {
             mParameterHash.remove(file);
         }
+    }
+}
+
+void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create)
+{
+    exist = false;
+    node = nullptr;
+    line = 0;
+    col = 0;
+    if (href.length() < 5) return;
+    QStringRef code = href.leftRef(3);
+    QVector<QStringRef> parts = href.rightRef(href.length()-4).split(',');
+    if (code.compare(QString("LST")) == 0) {
+        QString lstFile = parameter("lst");
+        exist = QFile(lstFile).exists();
+        if (!create || !exist) return;
+        line = parts.first().toInt();
+        node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
+    } else if (parts.first().startsWith('"')) {
+        QString fName = parts.first().mid(1, parts.first().length()-2).toString();
+        exist = QFile(fName).exists();
+        if (!create || !exist) return;
+        node = projectRepo()->findOrCreateFileNode(fName, this);
+        if (parts.size() > 1) line = parts.at(1).toInt();
+        if (parts.size() > 2) col = parts.at(2).toInt();
     }
 }
 
@@ -317,27 +342,76 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     if (hasLogNode()) logNode()->resetLst();
 }
 
-QString ProjectRunGroupNode::lstErrorText(int line)
+QString ProjectRunGroupNode::errorText(int lstLine)
 {
-    return mLstErrorTexts.value(line);
+    return mErrorTexts.value(lstLine);
 }
 
-void ProjectRunGroupNode::setLstErrorText(int line, QString text)
+void ProjectRunGroupNode::setErrorText(int lstLine, QString text)
 {
-    if (text.isEmpty())
-        DEB() << "Empty LST-text ignored for line " << line;
-    else
-        mLstErrorTexts.insert(line, text);
+    if (text.isEmpty()) {
+        DEB() << "Empty LST-text ignored for line " << lstLine;
+        return;
+    }
+    if (mErrorTexts.contains(lstLine)) {
+        mErrorTexts.insert(lstLine, mErrorTexts.value(lstLine)+"\n"+text);
+    } else {
+        mErrorTexts.insert(lstLine, text);
+    }
 }
 
-void ProjectRunGroupNode::clearLstErrorTexts()
+void ProjectRunGroupNode::hasHRef(const QString &href, bool &exist)
 {
-    mLstErrorTexts.clear();
+    ProjectFileNode *node;
+    int line;
+    int column;
+    resolveHRef(href, exist, node, line, column);
 }
 
-bool ProjectRunGroupNode::hasLstErrorText(int line)
+void ProjectRunGroupNode::jumpToHRef(const QString &href)
 {
-    return (line < 0) ? mLstErrorTexts.size() > 0 : mLstErrorTexts.contains(line);
+    bool exist;
+    ProjectFileNode *node;
+    int line;
+    int column;
+    resolveHRef(href, exist, node, line, column, true);
+    if (node) node->file()->jumpTo(node->runGroupId(), true, line-1, column);
+}
+
+void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
+{
+    if (marks.hasErr() && !marks.hRef.isEmpty()) {
+        bool exist;
+        int col;
+        ProjectFileNode *errNode;
+        int errLine;
+        ProjectFileNode *lstNode;
+        int lstLine;
+        resolveHRef(marks.hRef, exist, lstNode, lstLine, col, true);
+        resolveHRef(marks.errRef, exist, errNode, errLine, col, true);
+        TextMark *errMark = nullptr;
+        TextMark *lstMark = nullptr;
+        if (errNode)
+            errMark = textMarkRepo()->createMark(errNode->file()->id(), id(), TextMark::error, lstLine, errLine-1, col-1, 1);
+        if (lstNode) {
+            lstMark = textMarkRepo()->createMark(lstNode->file()->id(), id(), TextMark::link, lstLine, lstLine-1, -1, 1);
+            if (errMark) {
+                errMark->setValue(lstLine);
+                errMark->setRefMark(lstMark);
+                lstMark->setRefMark(errMark);
+            }
+        }
+    }
+}
+
+void ProjectRunGroupNode::clearErrorTexts()
+{
+    mErrorTexts.clear();
+}
+
+bool ProjectRunGroupNode::hasErrorText(int lstLine)
+{
+    return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);
 }
 
 void ProjectRunGroupNode::addRunParametersHistory(QString runParameters)
@@ -526,8 +600,9 @@ bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
 bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
 {
     if (!runnableGms()) return false;
-    QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
-    TextMark* textMark = marks.size() ? marks.first() : nullptr;
+//    QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
+//    TextMark* textMark = marks.size() ? marks.first() : nullptr;
+    TextMark* textMark = textMarkRepo()->marks(runnableGms()->id())->firstError(id());
 
     if (textMark) {
         if (SettingsLocator::settings()->openLst()) {
@@ -545,12 +620,10 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     return false;
 }
 
-void ProjectRunGroupNode::lstTexts(const QList<TextMark *> &marks, QStringList &result)
+void ProjectRunGroupNode::errorTexts(const QVector<int> &lstLines, QStringList &result)
 {
-    for (TextMark* mark: marks) {
-        int lstLine = mark->value();
-        if (lstLine < 0 && mark->refMark()) lstLine = mark->refMark()->value();
-        QString newTip = lstErrorText(lstLine);
+    for (int lstLine: lstLines) {
+        QString newTip = errorText(lstLine);
         if (!result.contains(newTip))
             result << newTip;
     }
@@ -568,12 +641,12 @@ bool ProjectRunGroupNode::hasParameter(const QString &kind) const
 
 void ProjectRunGroupNode::addNodesForSpecialFiles()
 {
-    FileMeta* runNode = runnableGms();
+    FileMeta* runFile = runnableGms();
     for (QString loc : mParameterHash.values()) {
 
         if (QFileInfo::exists(loc)) {
             ProjectFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
-            if (runNode) node->file()->setCodec(runNode->codec());
+            if (runFile) node->file()->setCodec(runFile->codec());
         } else {
             SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
         }
@@ -634,7 +707,6 @@ QString ProjectRunGroupNode::tooltip()
 void ProjectRunGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
     Q_UNUSED(newState);
-    updateRunState(newState);
     emit gamsProcessStateChanged(this);
 }
 
