@@ -587,7 +587,7 @@ void OptionWidget::showOptionRecurrence()
 
 void OptionWidget::deleteOption()
 {
-    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
+    if (!mExtendedEditor->isVisible())
         return;
 
      QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
