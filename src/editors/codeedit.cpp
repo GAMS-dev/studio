@@ -1780,7 +1780,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
             int pos = block.position()+fromCol;
             int rmSize = block.position()+qMin(block.length()-1, toCol) - pos;
             cursor.setPosition(pos);
-            if (rmSize) {
+            if (rmSize > 0) {
                 cursor.setPosition(cursor.position()+rmSize, QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();
             }
