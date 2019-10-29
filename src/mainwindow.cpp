@@ -247,7 +247,7 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    mWp = new WelcomePage(history(), this);
+    mWp = new WelcomePage(this);
     connect(mWp, &WelcomePage::openFilePath, this, &MainWindow::openFilePath);
     if (mSettings->skipWelcomePage())
         mWp->hide();
@@ -1324,8 +1324,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
             if (group->childCount() == 0)
                 closeGroup(group);
         }
-        history()->lastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged(history());
+        history()->mLastOpenedFiles.removeAll(file->location());
+        mWp->historyChanged();
         return 0;
     }
 
@@ -1337,8 +1337,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     if (choice == 0) {
         if (file->exists(true)) return 0;
         closeFileEditors(fileId);
-        history()->lastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged(history());
+        history()->mLastOpenedFiles.removeAll(file->location());
+        mWp->historyChanged();
     } else if (!file->isReadOnly()) {
         if (file->exists(true)) return 0;
         file->setModified();
@@ -1789,18 +1789,18 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
     if (filePath.startsWith("[")) return; // invalid
 
-    while (history()->lastOpenedFiles.size() > mSettings->historySize()
-           && !history()->lastOpenedFiles.isEmpty())
-        history()->lastOpenedFiles.removeLast();
+    while (history()->mLastOpenedFiles.size() > mSettings->historySize()
+           && !history()->mLastOpenedFiles.isEmpty())
+        history()->mLastOpenedFiles.removeLast();
 
     if (mSettings->historySize() == 0) return;
 
-    if (!history()->lastOpenedFiles.contains(filePath))
-        history()->lastOpenedFiles.insert(0, filePath);
+    if (!history()->mLastOpenedFiles.contains(filePath))
+        history()->mLastOpenedFiles.insert(0, filePath);
     else
-        history()->lastOpenedFiles.move(history()->lastOpenedFiles.indexOf(filePath), 0);
+        history()->mLastOpenedFiles.move(history()->mLastOpenedFiles.indexOf(filePath), 0);
 
-    if (mWp) mWp->historyChanged(history());
+    if (mWp) mWp->historyChanged();
 }
 
 bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
