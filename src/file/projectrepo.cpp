@@ -508,12 +508,9 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
     QString oldFile = node->location();
-    if (!sourceFM->document() && sourceFM->kind() != FileKind::Opt) return;
 
     // set location to new file
-    sourceFM->setLocation(target);
-    sourceFM->setModified(true);
-    sourceFM->save();
+    sourceFM->save(target);
 
     // re-add old file
     findOrCreateFileNode(oldFile, node->assignedRunGroup());
