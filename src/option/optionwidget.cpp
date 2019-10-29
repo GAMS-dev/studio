@@ -293,11 +293,11 @@ void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
     QMenu menu(this);
     for(QAction* action : ui->gamsOptionTreeView->actions()) {
         if (action->objectName().compare("actionAddThisOption")==0) {
-            action->setEnabled( !hasSelectionBeenAdded );
+            action->setEnabled( !hasSelectionBeenAdded && ui->gamsOptionTableView->selectionModel()->selectedRows().size() <= 0);
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            action->setEnabled( hasSelectionBeenAdded  );
+            action->setEnabled( hasSelectionBeenAdded && ui->gamsOptionTableView->selectionModel()->selectedRows().size() > 0 );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionResize_columns")==0) {

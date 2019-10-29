@@ -346,11 +346,11 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
     QMenu menu(this);
     for(QAction* action : ui->solverOptionTreeView->actions()) {
         if (action->objectName().compare("actionAddThisOption")==0) {
-            action->setEnabled( !hasSelectionBeenAdded );
+            action->setEnabled( !hasSelectionBeenAdded && ui->solverOptionTableView->selectionModel()->selectedRows().size() <= 0 );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            action->setEnabled( hasSelectionBeenAdded );
+            action->setEnabled( hasSelectionBeenAdded && ui->solverOptionTableView->selectionModel()->selectedRows().size() > 0);
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionCopyDefinitionOptionName")==0) {
