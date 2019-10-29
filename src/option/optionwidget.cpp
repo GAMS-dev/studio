@@ -558,8 +558,8 @@ void OptionWidget::showOptionRecurrence()
         return;
     }
 
-    QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedRows();
-    if (indexSelection.size() != 1) {
+    QModelIndexList indexSelection = ui->gamsOptionTableView->selectionModel()->selectedIndexes();
+    if (indexSelection.size() <= 0) {
         showOptionDefinition();
         return;
     }
@@ -570,7 +570,7 @@ void OptionWidget::showOptionRecurrence()
     ui->gamsOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
 
     QList<int> rowList = getRecurrentOption(indexSelection.at(0));
-    if (rowList.size() < 0) {
+    if (rowList.size() <= 0) {
         showOptionDefinition();
         return;
     }

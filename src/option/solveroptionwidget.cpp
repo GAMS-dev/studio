@@ -772,8 +772,8 @@ void SolverOptionWidget::showOptionRecurrence()
     if (!isAnOptionWidgetFocused(focusWidget()))
         return;
 
-    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedRows();
-    if (indexSelection.size() != 1) {
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+    if (indexSelection.size() <= 0) {
         showOptionDefinition();
         return;
     }
@@ -784,7 +784,7 @@ void SolverOptionWidget::showOptionRecurrence()
     ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows );
 
     QList<int> rowList = getRecurrentOption(indexSelection.at(0));
-    if (rowList.size() < 0) {
+    if (rowList.size() <= 0) {
         showOptionDefinition();
         return;
     }
@@ -797,7 +797,6 @@ void SolverOptionWidget::showOptionRecurrence()
     }
 
     showOptionDefinition();
-
 }
 
 void SolverOptionWidget::copyDefinitionToClipboard(int column)
