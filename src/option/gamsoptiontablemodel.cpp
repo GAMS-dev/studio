@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -225,6 +225,7 @@ bool GamsOptionTableModel::setData(const QModelIndex &index, const QVariant &val
                 emit optionNameChanged(from, dataValue);
         } else if (index.column() == 1) { // value
                   mOptionItem[index.row()].value = dataValue;
+                  emit optionValueChanged(index);
         }
         emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,13 +42,13 @@ MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 
 void MainTabContextMenu::close()
 {
-    mParent->on_mainTab_tabCloseRequested(mTabIndex);
+    mParent->on_mainTabs_tabCloseRequested(mTabIndex);
 }
 
 void MainTabContextMenu::closeAllLeft()
 {
     for (int i = mTabIndex - 1; i >= 0; i--)
-        mParent->on_mainTab_tabCloseRequested(i);
+        mParent->on_mainTabs_tabCloseRequested(i);
 }
 
 void MainTabContextMenu::closeAllRight()
@@ -62,7 +62,7 @@ void MainTabContextMenu::closeAllRight()
         int next = tabs->indexOf(idxPtr);
         idxPtr = tabs->widget(++next);
 
-        mParent->on_mainTab_tabCloseRequested(tabs->indexOf(old));
+        mParent->on_mainTabs_tabCloseRequested(tabs->indexOf(old));
     }
 }
 

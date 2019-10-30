@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,7 +131,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // TODO(JM) it is possible to put the QTabBar into the docks title:
     //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
-//    ui->dockLogView->setTitleBarWidget(ui->tabLog->tabBar());
+//    ui->dockProcessLog->setTitleBarWidget(ui->tabLog->tabBar());
 
 #ifdef QWEBENGINE
     mHelpWidget = new HelpWidget(this);
@@ -145,7 +145,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
-    connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -169,8 +169,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
 
-    ui->mainTab->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->mainTab->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
+    ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mainTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
     ui->logTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->logTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::logTabContextMenuRequested);
 
@@ -178,11 +178,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this, &MainWindow::reOpenFileNode);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
-    connect(ui->dockLogView, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
+    connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
 
     connect(ui->dockProjectView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
-    connect(ui->dockLogView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
+    connect(ui->dockProcessLog, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
     connect(ui->dockHelpView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
 
 
@@ -198,7 +198,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (mSettings->resetSettingsSwitch()) mSettings->resetSettings();
 
     // stack help under output
-    tabifyDockWidget(ui->dockHelpView, ui->dockLogView);
+    tabifyDockWidget(ui->dockHelpView, ui->dockProcessLog);
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
@@ -206,10 +206,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
-    QPushButton *tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTab);
+    QPushButton *tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
-    ui->mainTab->setCornerWidget(tabMenu);
+    ui->mainTabs->setCornerWidget(tabMenu);
     tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->logTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
@@ -269,8 +269,8 @@ void MainWindow::initToolBar()
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionSettings);
-    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Option_Editor);
-    ui->toolBar->insertWidget(ui->actionToggle_Extended_Option_Editor, mGamsOptionWidget);
+    ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
+    ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsOptionWidget);
     ui->toolBar->insertSeparator(ui->actionProject_View);
 }
 
@@ -316,7 +316,7 @@ int MainWindow::currentLogTab()
 
 QTabWidget* MainWindow::mainTabs()
 {
-    return ui->mainTab;
+    return ui->mainTabs;
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
@@ -347,8 +347,8 @@ void MainWindow::updateMenuToCodec(int mib)
 
 void MainWindow::setOutputViewVisibility(bool visibility)
 {
-    ui->actionOutput_View->setChecked(visibility);
-    ui->dockLogView->setVisible(visibility);
+    ui->actionProcess_Log->setChecked(visibility);
+    ui->dockProcessLog->setVisible(visibility);
 }
 
 void MainWindow::setProjectViewVisibility(bool visibility)
@@ -376,7 +376,7 @@ void MainWindow::setHelpViewVisibility(bool visibility)
 
 bool MainWindow::outputViewVisibility()
 {
-    return ui->actionOutput_View->isChecked();
+    return ui->actionProcess_Log->isChecked();
 }
 
 bool MainWindow::projectViewVisibility()
@@ -394,9 +394,9 @@ bool MainWindow::helpViewVisibility()
     return ui->actionHelp_View->isChecked();
 }
 
-void MainWindow::on_actionOutput_View_triggered(bool checked)
+void MainWindow::on_actionProcess_Log_triggered(bool checked)
 {
-    dockWidgetShow(ui->dockLogView, checked);
+    dockWidgetShow(ui->dockProcessLog, checked);
 }
 
 void MainWindow::on_actionProject_View_triggered(bool checked)
@@ -427,8 +427,8 @@ TextMarkRepo *MainWindow::textMarkRepo()
 QWidgetList MainWindow::openEditors()
 {
     QWidgetList res;
-    for (int i = 0; i < ui->mainTab->count(); ++i) {
-        res << ui->mainTab->widget(i);
+    for (int i = 0; i < ui->mainTabs->count(); ++i) {
+        res << ui->mainTabs->widget(i);
     }
     return res;
 }
@@ -493,6 +493,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
             }
         } else {
             // continuing will replace old file
+            fm->renameToBackup();
         }
     }
 
@@ -641,9 +642,9 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
 
 void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
 {
-    int tabIndex = ui->mainTab->tabBar()->tabAt(pos);
+    int tabIndex = ui->mainTabs->tabBar()->tabAt(pos);
     mMainTabContextMenu.setTabIndex(tabIndex);
-    mMainTabContextMenu.exec(ui->mainTab->tabBar()->mapToGlobal(pos));
+    mMainTabContextMenu.exec(ui->mainTabs->tabBar()->mapToGlobal(pos));
 }
 
 void MainWindow::logTabContextMenuRequested(const QPoint& pos)
@@ -671,7 +672,7 @@ void MainWindow::closeHelpView()
 
 void MainWindow::outputViewVisibiltyChanged(bool visibility)
 {
-    ui->actionOutput_View->setChecked(visibility || tabifiedDockWidgets(ui->dockLogView).count());
+    ui->actionProcess_Log->setChecked(visibility || tabifiedDockWidgets(ui->dockProcessLog).count());
 }
 
 void MainWindow::projectViewVisibiltyChanged(bool visibility)
@@ -686,7 +687,7 @@ void MainWindow::helpViewVisibilityChanged(bool visibility)
 
 void MainWindow::showMainTabsMenu()
 {
-    TabDialog *tabDialog = new TabDialog(ui->mainTab, this);
+    TabDialog *tabDialog = new TabDialog(ui->mainTabs, this);
     tabDialog->exec();
     tabDialog->deleteLater();
 }
@@ -726,8 +727,8 @@ void MainWindow::focusProjectExplorer()
 void MainWindow::focusProcessLogs()
 {
     setOutputViewVisibility(true);
-    ui->dockLogView->activateWindow();
-    ui->dockLogView->raise();
+    ui->dockProcessLog->activateWindow();
+    ui->dockProcessLog->raise();
     ui->logTabs->currentWidget()->setFocus();
 }
 
@@ -950,12 +951,18 @@ void MainWindow::on_actionSave_As_triggered()
             filters << tr("All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp)");
             filters << tr("Text files (*.txt)");
             filters << tr("All files (*.*)");
-            QString *selFilter = &filters.last();
-            if (filters.first().contains("*."+fi.suffix())) selFilter = &filters.first();
-            if (filters[1].contains("*."+fi.suffix())) selFilter = &filters[1];
+
+            QString selFilter = filters.first();
+            foreach (QString f, filters) {
+                if (f.contains("*."+fi.suffix())) {
+                    selFilter = f;
+                    break;
+                }
+            }
+
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
                                                     filePath, filters.join(";;"),
-                                                    selFilter,
+                                                    &selFilter,
                                                     QFileDialog::DontConfirmOverwrite);
         }
         if (filePath.isEmpty()) return;
@@ -1014,8 +1021,16 @@ void MainWindow::on_actionSave_As_triggered()
                                                , "Select other", "Overwrite", "Abort", 0, 2);
 
             if (choice == 1) {
+                FileKind oldKind = node->file()->kind();
                 mProjectRepo.saveNodeAs(node, filePath);
-                ui->mainTab->tabBar()->setTabText(ui->mainTab->currentIndex(), fileMeta->name(NameModifier::editState));
+
+                if (oldKind == node->file()->kind()) { // if old == new
+                    ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::editState));
+                } else { // reopen in new editor
+                    int index = ui->mainTabs->currentIndex();
+                    openFileNode(node, true);
+                    on_mainTabs_tabCloseRequested(index);
+                }
                 mStatusWidgets->setFileName(filePath);
 
                 mSettings->saveSettings(this);
@@ -1039,27 +1054,27 @@ void MainWindow::on_actionSave_All_triggered()
 
 void MainWindow::on_actionClose_triggered()
 {
-    on_mainTab_tabCloseRequested(ui->mainTab->currentIndex());
+    on_mainTabs_tabCloseRequested(ui->mainTabs->currentIndex());
 }
 
 void MainWindow::on_actionClose_All_triggered()
 {
-    disconnect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
-    if (ui->mainTab->count() > 1)
-        ui->mainTab->tabBar()->moveTab(ui->mainTab->currentIndex(), ui->mainTab->count()-1);
+    disconnect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    if (ui->mainTabs->count() > 1)
+        ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), ui->mainTabs->count()-1);
 
-    for(int i = ui->mainTab->count(); i > 0; i--) {
-        on_mainTab_tabCloseRequested(0);
+    for(int i = ui->mainTabs->count(); i > 0; i--) {
+        on_mainTabs_tabCloseRequested(0);
     }
-    connect(ui->mainTab, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 }
 
 void MainWindow::on_actionClose_All_Except_triggered()
 {
-    int except = ui->mainTab->currentIndex();
-    for(int i = ui->mainTab->count(); i >= 0; i--) {
+    int except = ui->mainTabs->currentIndex();
+    for(int i = ui->mainTabs->count(); i >= 0; i--) {
         if(i != except) {
-            on_mainTab_tabCloseRequested(i);
+            on_mainTabs_tabCloseRequested(i);
         }
     }
 }
@@ -1137,7 +1152,7 @@ void MainWindow::activeTabChanged(int index)
 {
     ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
     mRecent.setEditor(nullptr, this);
-    QWidget *editWidget = (index < 0 ? nullptr : ui->mainTab->widget(index));
+    QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
 
     loadCommandLineOptions(oldTab, node);
@@ -1217,9 +1232,9 @@ void MainWindow::fileChanged(const FileId fileId)
     FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
     for (QWidget *edit: fm->editors()) {
-        int index = ui->mainTab->indexOf(edit);
+        int index = ui->mainTabs->indexOf(edit);
         if (index >= 0) {
-            if (fm) ui->mainTab->setTabText(index, fm->name(NameModifier::editState));
+            if (fm) ui->mainTabs->setTabText(index, fm->name(NameModifier::editState));
         }
     }
 }
@@ -1426,8 +1441,6 @@ void MainWindow::showErrorMessage(QString text)
     mSyslog->append(text, LogMsgType::Error);
 }
 
-static int xDebTime;
-
 void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
     if (origin == -1) {
@@ -1495,7 +1508,6 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         if (!alreadyJumped && mSettings->openLst())
             openFileNode(lstNode);
     }
-//    DEB() << "-------------- ELAPSED: " << (QTime::currentTime().msecsSinceStartOfDay() - xDebTime);
 }
 
 void MainWindow::postGamsLibRun()
@@ -1540,7 +1552,7 @@ void MainWindow::on_actionHelp_triggered()
         else
             mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, optionName);
     } else {
-         QWidget* editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+         QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
          if (editWidget) {
              FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
              if (!fm) {
@@ -1650,13 +1662,13 @@ void MainWindow::on_actionUpdate_triggered()
     updateDialog.exec();
 }
 
-void MainWindow::on_mainTab_tabCloseRequested(int index)
+void MainWindow::on_mainTabs_tabCloseRequested(int index)
 {
-    QWidget* widget = ui->mainTab->widget(index);
+    QWidget* widget = ui->mainTabs->widget(index);
     FileMeta* fc = mFileMetaRepo.fileMeta(widget);
     if (!fc) {
         // assuming we are closing a welcome page here
-        ui->mainTab->removeTab(index);
+        ui->mainTabs->removeTab(index);
         mClosedTabs << "WELCOME_PAGE";
         mClosedTabsIndexes << index;
         return;
@@ -1665,7 +1677,7 @@ void MainWindow::on_mainTab_tabCloseRequested(int index)
     int ret = QMessageBox::Discard;
     if (fc->editors().size() == 1 && fc->isModified()) {
         // only ask, if this is the last editor of this file
-        ret = showSaveChangesMsgBox(ui->mainTab->tabText(index)+" has been modified.");
+        ret = showSaveChangesMsgBox(ui->mainTabs->tabText(index)+" has been modified.");
     }
 
     if (ret == QMessageBox::Save) {
@@ -1721,13 +1733,13 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
 
 void MainWindow::showWelcomePage()
 {
-    ui->mainTab->insertTab(0, mWp, QString("Welcome")); // always first position
-    ui->mainTab->setCurrentIndex(0); // go to welcome page
+    ui->mainTabs->insertTab(0, mWp, QString("Welcome")); // always first position
+    ui->mainTabs->setCurrentIndex(0); // go to welcome page
 }
 
 bool MainWindow::isActiveTabRunnable()
 {
-    QWidget* editWidget = (ui->mainTab->currentIndex() < 0 ? nullptr : ui->mainTab->widget((ui->mainTab->currentIndex())) );
+    QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
     if (editWidget) {
        FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
        if (!fm) { // assuming a welcome page here
@@ -1755,7 +1767,7 @@ void MainWindow::on_actionShow_System_Log_triggered()
     else
         ui->logTabs->setCurrentIndex(index);
     mSyslog->raise();
-    dockWidgetShow(ui->dockLogView, true);
+    dockWidgetShow(ui->dockProcessLog, true);
 }
 
 void MainWindow::on_actionShow_Welcome_Page_triggered()
@@ -1932,7 +1944,11 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             ui->logTabs->currentWidget()->setFocus();
             e->accept(); return;
         } else if (focusWidget() == ui->projectView) {
-            setProjectViewVisibility(false);
+                  setProjectViewVisibility(false);
+        } else if (mGamsOptionWidget->isAnOptionWidgetFocused(focusWidget())) {
+                   mGamsOptionWidget->deSelectOptions();
+        } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+                  ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
         }
 
         // search widget
@@ -2106,7 +2122,6 @@ option::OptionWidget *MainWindow::gamsOptionWidget() const
 
 void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 {
-    xDebTime = QTime::currentTime().msecsSinceStartOfDay();
     mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
@@ -2191,23 +2206,19 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         }
     }
 
-    if (!mSettings->clearLog()) {
-        logNode->prepareRun();
-    } else {
-        logNode->clearLog();
-        logNode->prepareRun();
-    }
+    if (mSettings->clearLog()) logNode->clearLog();
+
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
     }
     ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
-    ui->dockLogView->setVisible(true);
+    ui->dockProcessLog->setVisible(true);
 
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
     if (gmsFilePath == "") {
         mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
-        ui->actionShow_System_Log->trigger(); // TODO (rogo) move this out of here, do on every append
+        ui->actionShow_System_Log->trigger();
         return;
     }
     if (gmsFileNode)
@@ -2218,12 +2229,13 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
         logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
     }
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
-    logNode->setJumpToLogEnd(true);
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
     GamsProcess* process = runGroup->gamsProcess();
     process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+    logNode->prepareRun();
+    logNode->setJumpToLogEnd(true);
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
         for (QWidget *wid: lstNode->file()->editors()) {
             if (TextView *tv = ViewHelper::toTextView(wid)) tv->prepareRun();
@@ -2238,7 +2250,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logNode->linkToProcess(process);
 //    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
     connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
-    ui->dockLogView->raise();
+    ui->dockProcessLog->raise();
 }
 
 void MainWindow::updateRunState()
@@ -2280,7 +2292,7 @@ void MainWindow::openInitialFiles()
         openFiles(mInitialFiles);
         mInitialFiles.clear();
         watchProjectTree();
-        ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTab->currentWidget());
+        ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
         if (node) openFileNode(node, true);
     }
 }
@@ -2419,7 +2431,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
 {
     if (!fileMeta) return;
     QWidget* edit = nullptr;
-    QTabWidget* tabWidget = fileMeta->kind() == FileKind::Log ? ui->logTabs : ui->mainTab;
+    QTabWidget* tabWidget = fileMeta->kind() == FileKind::Log ? ui->logTabs : ui->mainTabs;
     if (!fileMeta->editors().empty()) {
         edit = fileMeta->editors().first();
     }
@@ -2434,8 +2446,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         if (focus) {
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
-            if (tabWidget == ui->mainTab) {
-                on_mainTab_currentChanged(tabWidget->indexOf(edit));
+            if (tabWidget == ui->mainTabs) {
+                on_mainTabs_currentChanged(tabWidget->indexOf(edit));
             }
         }
     } else {
@@ -2486,7 +2498,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             updateMenuToCodec(fileMeta->codecMib());
-            if (tabWidget == ui->mainTab) {
+            if (tabWidget == ui->mainTabs) {
                 mRecent.setEditor(tabWidget->currentWidget(), this);
                 mRecent.editFileId = fileMeta->id();
             }
@@ -2615,7 +2627,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
         if (mRecent.editor() == edit) mRecent.setEditor(nullptr, this);
-        ui->mainTab->removeTab(ui->mainTab->indexOf(edit));
+        ui->mainTabs->removeTab(ui->mainTabs->indexOf(edit));
         fm->removeEditor(edit);
         edit->deleteLater();
     }
@@ -2674,9 +2686,9 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
     }
 }
 
-void MainWindow::on_mainTab_currentChanged(int index)
+void MainWindow::on_mainTabs_currentChanged(int index)
 {
-    QWidget* edit = ui->mainTab->widget(index);
+    QWidget* edit = ui->mainTabs->widget(index);
     if (!edit) return;
 
     if (mStartedUp) {
@@ -2794,9 +2806,9 @@ void MainWindow::showResults(SearchResultList* results)
 
     QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
 
-    ui->dockLogView->show();
-    ui->dockLogView->activateWindow();
-    ui->dockLogView->raise();
+    ui->dockProcessLog->show();
+    ui->dockProcessLog->activateWindow();
+    ui->dockProcessLog->raise();
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
@@ -2870,7 +2882,7 @@ bool MainWindow::readTabs(const QJsonObject &json)
                     mOpenTabsList << location;
                 }
                 if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
-                if (ui->mainTab->count() <= i)
+                if (ui->mainTabs->count() <= i)
                     return false;
             }
         }
@@ -2882,8 +2894,8 @@ bool MainWindow::readTabs(const QJsonObject &json)
 void MainWindow::writeTabs(QJsonObject &json) const
 {
     QJsonArray tabArray;
-    for (int i = 0; i < ui->mainTab->count(); ++i) {
-        QWidget *wid = ui->mainTab->widget(i);
+    for (int i = 0; i < ui->mainTabs->count(); ++i) {
+        QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
         FileMeta *fm = mFileMetaRepo.fileMeta(wid);
         if (!fm) continue;
@@ -2896,13 +2908,13 @@ void MainWindow::writeTabs(QJsonObject &json) const
     FileMeta *fm = mRecent.editor() ? mFileMetaRepo.fileMeta(mRecent.editor()) : nullptr;
     if (fm)
         json["mainTabRecent"] = fm->location();
-    else if (ui->mainTab->currentWidget() == mWp)
+    else if (ui->mainTabs->currentWidget() == mWp)
         json["mainTabRecent"] = "WELCOME_PAGE";
 }
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if ((ui->mainTab->currentWidget() == mWp)) return;
+    if ((ui->mainTabs->currentWidget() == mWp)) return;
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
     if (!codeEdit && !tv) return;
@@ -3198,7 +3210,7 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     mClosedTabs.removeLast();
     if (file.exists()) {
         openFilePath(file.fileName());
-        ui->mainTab->tabBar()->moveTab(ui->mainTab->currentIndex(), mClosedTabsIndexes.takeLast());
+        ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), mClosedTabsIndexes.takeLast());
     } else
         on_actionRestore_Recently_Closed_Tab_triggered();
 }
@@ -3213,17 +3225,17 @@ void MainWindow::on_actionSelect_encodings_triggered()
 
 void MainWindow::setExtendedEditorVisibility(bool visible)
 {
-    ui->actionToggle_Extended_Option_Editor->setChecked(visible);
+    ui->actionToggle_Extended_Parameter_Editor->setChecked(visible);
 }
 
-void MainWindow::on_actionToggle_Extended_Option_Editor_toggled(bool checked)
+void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
 {
     if (checked) {
-        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/hide"));
-        ui->actionToggle_Extended_Option_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/hide"));
+        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     } else {
-        ui->actionToggle_Extended_Option_Editor->setIcon(QIcon(":/img/show") );
-        ui->actionToggle_Extended_Option_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/show") );
+        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     }
 
     mGamsOptionWidget->setEditorExtended(checked);
@@ -3291,7 +3303,7 @@ void MainWindow::resetViews()
         if (dock == ui->dockProjectView) {
             addDockWidget(Qt::LeftDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/6}, Qt::Horizontal);
-        } else if (dock == ui->dockLogView) {
+        } else if (dock == ui->dockProcessLog) {
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         } else if (dock == ui->dockHelpView) {
@@ -3343,8 +3355,8 @@ void MainWindow::on_actionNextTab_triggered()
     QWidget *wid = focusWidget();
     QTabWidget *tabs = nullptr;
     while (wid) {
-        if (wid == ui->mainTab) {
-           tabs = ui->mainTab;
+        if (wid == ui->mainTabs) {
+           tabs = ui->mainTabs;
            break;
         }
         if (wid == ui->logTabs) {
@@ -3353,7 +3365,8 @@ void MainWindow::on_actionNextTab_triggered()
         }
         wid = wid->parentWidget();
     }
-    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() + 1) % tabs->count());
+    if (tabs && tabs->count() > 0)
+        tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() + 1) % tabs->count());
 }
 
 void MainWindow::on_actionPreviousTab_triggered()
@@ -3361,8 +3374,8 @@ void MainWindow::on_actionPreviousTab_triggered()
     QWidget *wid = focusWidget();
     QTabWidget *tabs = nullptr;
     while (wid) {
-        if (wid == ui->mainTab) {
-           tabs = ui->mainTab;
+        if (wid == ui->mainTabs) {
+           tabs = ui->mainTabs;
            break;
         }
         if (wid == ui->logTabs) {
@@ -3371,7 +3384,8 @@ void MainWindow::on_actionPreviousTab_triggered()
         }
         wid = wid->parentWidget();
     }
-    if (tabs) tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
+    if (tabs && tabs->count() > 0)
+        tabs->setCurrentIndex((tabs->count() + tabs->currentIndex() - 1) % tabs->count());
 }
 
 void MainWindow::on_actionToggleBookmark_triggered()

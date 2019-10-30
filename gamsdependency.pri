@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
 !exists($$PWD/gamsinclude.pri) {
     equals(GAMS_CORE_TMP, "") {
         macx {
-            GAMSINC = GAMS_DISTRIB=/Applications/GAMS'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR'/sysdir \
+            GAMSINC = GAMS_DISTRIB=/Applications/GAMS'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR'/Resources/sysdir \
                       GAMS_DISTRIB_C_API=\$$GAMS_DISTRIB/apifiles/C/api   \
                       GAMS_DISTRIB_CPP_API=\$$GAMS_DISTRIB/apifiles/C++/api
         }
@@ -61,49 +61,13 @@ exists($$PWD/gamsinclude.pri) {
     }
 }
 
-# GAMS_BUILD is GAMS distrib build switch
-GAMS_BUILD_ENV = $$(GAMS_BUILD)
-equals(GAMS_BUILD_ENV, "") {
-    INCLUDEPATH += $$GAMS_DISTRIB_C_API     \
-                   $$GAMS_DISTRIB_CPP_API
+INCLUDEPATH += $$GAMS_DISTRIB_C_API     \
+               $$GAMS_DISTRIB_CPP_API
 
-    SOURCES += \
-        $$GAMS_DISTRIB_C_API/c4umcc.c \
-        $$GAMS_DISTRIB_C_API/gclgms.c \
-        $$GAMS_DISTRIB_C_API/palmcc.c \
-        $$GAMS_DISTRIB_C_API/gdxcc.c  \
-        $$GAMS_DISTRIB_C_API/optcc.c  \
-        $$GAMS_DISTRIB_C_API/cfgmcc.c
-} else {
-    GSYS_ENV = $$(GSYS)
-    equals(GSYS_ENV, "wei") {
-        DEFINES += WEI
-        DEFINES += CIA_WEX
-    }
-    equals(GSYS_ENV, "vs8") {
-        DEFINES += VS8
-        DEFINES += CIA_WIN
-    }
-    equals(GSYS_ENV, "leg") {
-        DEFINES += LEG
-        DEFINES += CIA_LEX
-    }
-    equals(GSYS_ENV, "deg") {
-        DEFINES += DEG
-        DEFINES += CIA_DEX
-    }
-    INCLUDEPATH += $$(GPRODUCTS)/gclib                      \
-                   $$(GPRODUCTS)/apiwrap/gdxio              \
-                   $$(GPRODUCTS)/apiwrap/joat               \
-                   $$(GPRODUCTS)/apiwrap/optobj             \
-                   $$(GPRODUCTS)/src/apiexamples/C++/api
-
-    SOURCES = \
-        $$(GPRODUCTS)/apiwrap/joat/c4umcc.c     \
-        $$(GPRODUCTS)/apiwrap/joat/cfgmcc.c     \
-        $$(GPRODUCTS)/apiwrap/joat/palmcc.c     \
-        $$(GPRODUCTS)/gclib/gclgms.c            \
-        $$(GPRODUCTS)/apiwrap/gdxio/gdxcc.c     \
-        $$(GPRODUCTS)/apiwrap/optobj/optcc.c
-}
-
+SOURCES += \
+    $$GAMS_DISTRIB_C_API/c4umcc.c \
+    $$GAMS_DISTRIB_C_API/gclgms.c \
+    $$GAMS_DISTRIB_C_API/palmcc.c \
+    $$GAMS_DISTRIB_C_API/gdxcc.c  \
+    $$GAMS_DISTRIB_C_API/optcc.c  \
+    $$GAMS_DISTRIB_C_API/cfgmcc.c

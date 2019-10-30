@@ -31,14 +31,18 @@ class testmainwindow : public QObject
 
 private Q_SLOTS:
     void initTestCase();
+    void init();
+//    void cleanup();
     void cleanupTestCase();
 
+    void test_gdxValue();
     void test_search();
 
 private:
     MainWindow* mMainWindow = nullptr;
     StudioSettings* mSettings = nullptr;
     QFileInfo mGms;
+    void clickRowByName(QTableView* source, const QString& name);
 };
 
 #endif // TEST_MAIN_WINDOW_H

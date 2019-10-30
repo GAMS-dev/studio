@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -205,7 +205,8 @@ void TestGamsLicenseInfo::testSolverLicense()
     auto solverKeys = gamsLicenseInfo.solverNames().keys();
     QVERIFY(gamsLicenseInfo.solvers() >= solverKeys.size());
     for (auto solverId : solverKeys) {
-        auto result = gamsLicenseInfo.solverLicense(solverId);
+        auto solverName = gamsLicenseInfo.solverName(solverId);
+        auto result = gamsLicenseInfo.solverLicense(solverName, solverId);
         test = result.contains("Demo") || result.contains("Full") ||
                 result.contains("Evaluation") || result.contains("Expired");
         if (!test) break;

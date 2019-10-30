@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,8 +49,6 @@ signals:
     void jumpTo(ReferenceItem item);
 
 public slots:
-    // TODO (JP): on_referenceFileChagned to be removed when
-    //            a ReferenceViewer does not create own Reference Object
     void on_referenceFileChanged(QTextCodec* codec);
     void on_tabBarClicked(int index);
     void updateView(bool status);

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ public:
     void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib, bool init = true);
-    void save();
+    void save(const QString& newLocation = "");
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
 
@@ -129,7 +129,6 @@ private:
     FileMeta(FileMetaRepo* fileRepo, FileId id, QString location, FileType *knownType = nullptr);
     QVector<QPoint> getEditPositions();
     void setEditPositions(QVector<QPoint> edPositions);
-    void internalSave(const QString &location);
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();

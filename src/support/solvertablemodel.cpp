@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,8 +71,11 @@ QVariant SolverTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (index.column() == 0)
-        return mLicenseInfo.solverLicense(mVerticalHeaderIndices.value(index.row()+RowShift));
+    if (index.column() == 0) {
+        auto solverName = headerData(index.row(), Qt::Vertical).toString();
+        auto solverId = mLicenseInfo.solverId(solverName);
+        return mLicenseInfo.solverLicense(solverName, solverId);
+    }
 
     if (mLicenseInfo.solverCapability(mVerticalHeaderIndices.value(index.row()+RowShift), index.column()))
         return "X";

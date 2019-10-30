@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "file.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
+#include "support/solverconfiginfo.h"
 
 namespace gams {
 namespace studio {
@@ -82,16 +83,37 @@ ProjectContextMenu::ProjectContextMenu()
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
-    for (QString &filename : optFiles) {
-        QString solvername = filename.mid(QString("opt").length());
-        solvername.replace(QRegExp(".def"), "");
-        if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
-            continue;
-        QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
-        connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername); });
 
-        mAvailableSolvers << solvername;
-        mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
+    try {
+        support::SolverConfigInfo solverInfo;
+        QMap<QString, QString> solverDefFileNames = solverInfo.solverOptDefFileNames();
+
+        if (solverDefFileNames.size()>0) { // when solver definition file information is available
+            for (QString solvername : solverDefFileNames.keys()) {
+                if (optFiles.contains(solverDefFileNames.value(solvername))) { //there exists such a file
+                    QAction* createSolverOption = newSolverOptionMenu->addAction(solvername.toLower());
+                    connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername.toLower()); });
+
+                    mAvailableSolvers << solvername;
+                    mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
+                }
+            }
+        } else { // when no information on solver option definition file names
+           for (QString &filename : optFiles) {
+               QString solvername = filename.mid(QString("opt").length());
+               solvername.replace(QRegExp(".def"), "");
+               if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
+                   continue;
+               QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
+               connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername); });
+
+               mAvailableSolvers << solvername;
+               mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
+           }
+        }
+    } catch (...) {
+        // TODO (AF): check for better solution
+        // The distributionValidator already prints an error to the System Log
     }
 
     mActions.insert(actSep5, addSeparator());

@@ -1,8 +1,8 @@
 ﻿/*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,6 +98,8 @@ public slots:
     void selectSearchField();
     void optionItemCommitted(QWidget *editor);
 
+    void deSelectOptions();
+
 private slots:
     void findAndSelectionOptionFromDefinition();
 
@@ -111,6 +113,7 @@ private slots:
 
     void on_newTableRowDropped(const QModelIndex &index);
     void on_optionTableNameChanged(const QString &from, const QString &to);
+    void on_optionValueChanged(const QModelIndex &index);
     void on_optionTableModelChanged(const QString &commandLineStr);
 
     void resizeColumnsToContents();

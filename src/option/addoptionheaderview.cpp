@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@ void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)
 {
     if (Qt::LeftButton == event->button() && isAddOptionCoordinate(event->pos())) {
         QTableView* tableView = static_cast<QTableView*>(this->parent());
+        tableView->selectionModel()->clearSelection();
         tableView->model()->insertRows(tableView->model()->rowCount(), 1, QModelIndex());
 
         QModelIndex keyIndex = tableView->model()->index(tableView->model()->rowCount()-1, 0);

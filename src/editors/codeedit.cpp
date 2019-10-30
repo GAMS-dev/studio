@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1461,6 +1461,7 @@ void CodeEdit::BlockEdit::selectToEnd()
     for (QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine))
          ; block.blockNumber() <= qMax(mStartLine, mCurrentLine); block=block.next()) {
         if (end < block.length()-1) end = block.length()-1;
+        if (!block.isValid()) break;
     }
     setSize(end - mColumn);
 }
@@ -1779,7 +1780,7 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
             int pos = block.position()+fromCol;
             int rmSize = block.position()+qMin(block.length()-1, toCol) - pos;
             cursor.setPosition(pos);
-            if (rmSize) {
+            if (rmSize > 0) {
                 cursor.setPosition(cursor.position()+rmSize, QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();
             }

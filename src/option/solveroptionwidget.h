@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include <QMenu>
 #include <QWidget>
+#include <QStyledItemDelegate>
 
 #include "common.h"
 #include "solveroptiontablemodel.h"
@@ -44,7 +45,8 @@ class SolverOptionWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SolverOptionWidget(QString solverName, QString optionFilePath, FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
+    explicit SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
+                                FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
     ~SolverOptionWidget();
 
     bool isInFocused(QWidget* focusWidget);
@@ -77,7 +79,7 @@ public slots:
     void showDefinitionContextMenu(const QPoint &pos);
     void addOptionFromDefinition(const QModelIndex &index);
 
-    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_newTableRowDropped(const QModelIndex &index);
 
     bool saveOptionFile(const QString &location);
@@ -94,9 +96,12 @@ public slots:
     void copyAction();
 
     void selectAllOptions();
+    void deSelectOptions();
+
+    void completeEditingOption(QWidget *editor, QAbstractItemDelegate::EndEditHint hint = QStyledItemDelegate::NoHint);
 
 private slots:
-    void showOptionDefinition();
+    void showOptionDefinition(bool selectRow = true);
     void copyDefinitionToClipboard(int column);
     void findAndSelectionOptionFromDefinition();
     void toggleCommentOption();
@@ -135,7 +140,7 @@ private:
     bool isThereARowSelection() const;
     bool isEverySelectionARow() const;
 
-    bool init();
+    bool init(const QString &optDefFileName);
 
     MainWindow* getMainWindow();
 

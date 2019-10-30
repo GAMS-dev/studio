@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ SOURCES +=                                      \
     testgamslicenseinfo.cpp                     \
     $$SRCPATH/locators/defaultsystemlogger.cpp  \
     $$SRCPATH/locators/sysloglocator.cpp        \
+    $$SRCPATH/support/solverconfiginfo.cpp       \
     $$SRCPATH/support/gamslicenseinfo.cpp       \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/exception.cpp

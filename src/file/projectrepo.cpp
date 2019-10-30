@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -508,12 +508,9 @@ void ProjectRepo::saveNodeAs(ProjectFileNode *node, const QString &target)
 {
     FileMeta* sourceFM = node->file();
     QString oldFile = node->location();
-    if (!sourceFM->document() && sourceFM->kind() != FileKind::Opt) return;
 
     // set location to new file
-    sourceFM->setLocation(target);
-    sourceFM->setModified(true);
-    sourceFM->save();
+    sourceFM->save(target);
 
     // re-add old file
     findOrCreateFileNode(oldFile, node->assignedRunGroup());

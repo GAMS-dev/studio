@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -306,6 +306,7 @@ void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len,
     }
     if (invalidParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
+        if (i >= text.length()) break;
         int iPara = validParentheses.indexOf(text.at(i));
         if (iPara == 6) {
             if (kind == SyntaxKind::IdentifierAssignmentEnd) {

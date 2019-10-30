@@ -23,9 +23,14 @@
 #include "modeldialog/modeldialog.h"
 #include "search/searchdialog.h"
 #include "commonpaths.h"
+#include "gdxviewer/gdxsymbolview.h"
 
 #include <QDialog>
+#include <QSplitter>
 #include <QToolBar>
+
+using namespace gdxviewer;
+using namespace option;
 
 void testmainwindow::initTestCase()
 {
@@ -36,10 +41,14 @@ void testmainwindow::initTestCase()
 
     mMainWindow = new MainWindow();
     QVERIFY(mMainWindow);
+    mMainWindow->show();
+}
 
+void testmainwindow::init()
+{
     // make sure a file to work with is there
     mMainWindow->receiveModLibLoad("trnsport", true);
-    QTest::qWait(200); // needed for filesystem to finish writing
+    QTest::qWait(100); // needed for filesystem to finish writing
 
     mGms = QFileInfo(mSettings->defaultWorkspace()+"/trnsport.gms");
     Q_ASSERT(mGms.exists());
@@ -47,8 +56,73 @@ void testmainwindow::initTestCase()
 
 void testmainwindow::cleanupTestCase()
 {
-    delete mMainWindow;
+//    delete mMainWindow; // crashes at end of test
     delete mSettings;
+}
+
+void testmainwindow::clickRowByName(QTableView* source, const QString& name)
+{
+    QAbstractItemModel *model = source->model();
+    QModelIndexList matches = model->match(model->index(0,1), Qt::DisplayRole, name, 1, Qt::MatchFixedString);
+
+    // click on x
+    QModelIndex symX = matches.first();
+    int xPos = source->columnViewportPosition(symX.column()) + 5;
+    int yPos = source->rowViewportPosition(symX.row()) + 5;
+    QWidget* pViewport = source->viewport();
+    QTest::mouseClick(pViewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
+    QTest::qWait(100);
+}
+
+void testmainwindow::test_gdxValue()
+{
+//    - Press F6
+//    - Select trnsport
+//    - Add rf=xxx to the command line
+//    - Press F10
+//    - Open trnsport.gdx and check that the result for x is right
+//    - Check that table view of x works
+//    - Open xxx.rf
+//    - Look at the entries of d
+
+    // go to trnsport.gms
+    mMainWindow->openFilePath(mGms.filePath(), true);
+    Q_ASSERT(mMainWindow->recent()->editor());
+    QVERIFY2(mMainWindow->recent()->editor()->property("location").toString() == mGms.filePath(), "Wrong file focussed. Expected: trnsport.gms");
+
+    // set gams options
+    CommandLineOption* combobox = mMainWindow->gamsOptionWidget()->findChild<option::CommandLineOption*>("gamsOptionCommandLine");
+    Q_ASSERT(combobox);
+    QString refFileName = "xxx.rf";
+    combobox->setCurrentText("rf=" + refFileName);
+
+    // run gams
+    QTest::keyEvent(QTest::Click, mMainWindow, Qt::Key_F10, Qt::NoModifier);
+    QTest::qWait(500); // wait for gams to run
+    QApplication::processEvents();
+
+    // open gdx
+    QFileInfo gdx(mGms.path() + "/" + mGms.baseName() + ".gdx");
+    mMainWindow->openFilePath(gdx.filePath());
+    QVERIFY2(mMainWindow->recent()->editor()->property("location").toString() == gdx.filePath(), "Wrong file focussed. Expected: trnsport.gdx");
+    GdxViewer* gdxViewer = static_cast<GdxViewer*>(mMainWindow->recent()->editor());
+    Q_ASSERT(gdxViewer);
+
+    // find x
+    QTableView* tvSymbols = gdxViewer->findChild<QTableView*>("tvSymbols");
+    Q_ASSERT(tvSymbols);
+    clickRowByName(tvSymbols, "x");
+
+    // checking value of x
+    QSplitter* splitter = gdxViewer->findChild<QSplitter*>("splitter");
+    GdxSymbolView* symbolView = static_cast<GdxSymbolView*>(splitter->widget(1)); // this is shakey
+    // TODO(rg): get qtableview from gdxsymbolview, or find some other way
+
+    // open ref file
+    QFileInfo ref(mGms.path() + "/" + refFileName);
+    mMainWindow->openFilePath(ref.filePath());
+    QTest::qWait(500);
+    QApplication::processEvents();
 }
 
 void testmainwindow::test_search()

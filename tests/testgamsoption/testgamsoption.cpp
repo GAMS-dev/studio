@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -178,12 +178,12 @@ void TestGamsOption::testOptionEnumIntValue_data()
     QTest::newRow("DumpOpt_20")  << "DumpOpt" << true  << 9  << true  << 20  << "(Same as 21 and therefore hidden)";
     QTest::newRow("DumpOpt_21")  << "DumpOpt" << true  << 10 << false << 21  << "Write processed input file with all comments";
 
-    QTest::newRow("TraceOpt_0")  << "TraceOpt"  << true  << 0 << false << 0  << "Solver and GAMS step trace without headers";
-    QTest::newRow("TraceOpt_1")  << "TraceOpt"  << true  << 1 << false << 1  << "Solver and GAMS step trace";
-    QTest::newRow("TraceOpt_2")  << "TraceOpt"  << true  << 2 << false << 2  << "Solver step trace only";
-    QTest::newRow("TraceOpt_3")  << "TraceOpt"  << true  << 3 << false << 3  << "Trace file format used for GAMS performance world";
+    QTest::newRow("TraceOpt_0")  << "TraceOpt"  << true  << 0 << false << 0  << "Solver and GAMS step trace";
+    QTest::newRow("TraceOpt_1")  << "TraceOpt"  << true  << 1 << false << 1  << "Solver and GAMS exit trace";
+    QTest::newRow("TraceOpt_2")  << "TraceOpt"  << true  << 2 << false << 2  << "Solver trace only";
+    QTest::newRow("TraceOpt_3")  << "TraceOpt"  << true  << 3 << false << 3  << "Solver trace only in format used for GAMS performance world";
     QTest::newRow("TraceOpt_4")  << "TraceOpt"  << true  << 4 << true  << 4  << "Trace file format supporting NLPEC";
-    QTest::newRow("TraceOpt_5")  << "TraceOpt"  << true  << 5 << false << 5  << "Trace file with all available trace fields";
+    QTest::newRow("TraceOpt_5")  << "TraceOpt"  << true  << 5 << false << 5  << "Gams exit trace with all available trace fields";
 }
 
 void TestGamsOption::testOptionEnumIntValue()
@@ -469,7 +469,6 @@ void TestGamsOption::testDeprecatedOption()
     QFETCH(QString, optionDescription);
 
     QVERIFY( gamsOption->isValid(deprecatedOption) );
-// TODO (JP)  QVERIFY( gamsOption->isDeprecated(deprecatedOption) );
     QCOMPARE( gamsOption->getGroupNumber(deprecatedOption), 4 );
     QCOMPARE( gamsOption->getOptionTypeName(gamsOption->getOptionType(deprecatedOption)), optionType );
     QCOMPARE( gamsOption->getDescription(deprecatedOption).trimmed().toUpper(), optionDescription.trimmed().toUpper());

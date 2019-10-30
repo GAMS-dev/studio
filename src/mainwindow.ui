@@ -58,7 +58,7 @@
        <number>6</number>
       </property>
       <item row="0" column="1">
-       <widget class="QTabWidget" name="mainTab">
+       <widget class="QTabWidget" name="mainTabs">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
           <horstretch>3</horstretch>
@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>23</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -193,7 +193,7 @@
      <addaction name="actionRemoveBookmarks"/>
     </widget>
     <addaction name="actionProject_View"/>
-    <addaction name="actionOutput_View"/>
+    <addaction name="actionProcess_Log"/>
     <addaction name="actionHelp_View"/>
     <addaction name="separator"/>
     <addaction name="actionShow_System_Log"/>
@@ -332,7 +332,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockLogView">
+  <widget class="QDockWidget" name="dockProcessLog">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -355,7 +355,7 @@
     <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Output</string>
+    <string>Process Log</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -453,9 +453,9 @@
    <addaction name="actionSave"/>
    <addaction name="actionSettings"/>
    <addaction name="actionGAMS_Library"/>
-   <addaction name="actionToggle_Extended_Option_Editor"/>
+   <addaction name="actionToggle_Extended_Parameter_Editor"/>
    <addaction name="actionProject_View"/>
-   <addaction name="actionOutput_View"/>
+   <addaction name="actionProcess_Log"/>
    <addaction name="actionHelp_View"/>
   </widget>
   <action name="actionFile">
@@ -495,7 +495,7 @@
     <enum>QAction::AboutQtRole</enum>
    </property>
   </action>
-  <action name="actionOutput_View">
+  <action name="actionProcess_Log">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -510,10 +510,10 @@
      <normaloff>:/img/output</normaloff>:/img/output</iconset>
    </property>
    <property name="text">
-    <string>&amp;Output</string>
+    <string>&amp;Process Log</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Output View (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+Shift+G&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Process Log (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+Shift+G&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionProject_View">
@@ -1092,7 +1092,7 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionToggle_Extended_Option_Editor">
+  <action name="actionToggle_Extended_Parameter_Editor">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1101,10 +1101,10 @@
      <normaloff>:/img/show</normaloff>:/img/show</iconset>
    </property>
    <property name="text">
-    <string>Toggle Extended Option Editor</string>
+    <string>Toggle Extended Parameter Editor</string>
    </property>
    <property name="toolTip">
-    <string>Show Extended Option Editor</string>
+    <string>Show Extended Parameter Editor</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+L</string>

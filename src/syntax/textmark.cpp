@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -148,66 +148,10 @@ Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion
     return *shape;
 }
 
-//QTextBlock TextMark::textBlock()
-//{
-//    if (!document())
-//        return QTextBlock();
-//    return document()->findBlock(qMin(mPosition, document()->characterCount()-1));
-//}
-
-//QTextCursor TextMark::textCursor()
-//{
-//    if (!document())
-//        return QTextCursor();
-//    QTextCursor cursor(document());
-//    int pos = qMin(mPosition+mSize, document()->characterCount()-1);
-//    cursor.setPosition(pos);
-//    return cursor;
-//}
-
 void TextMark::rehighlight()
 {
     mMarkRepo->rehighlight(mFileId, mLine);
 }
-
-//void TextMark::move(int delta)
-//{
-//    if (mPosition < 0)
-//        EXCEPT() << "Can't move an uninitialized position";
-
-//    mPosition += delta;
-//    updateLineCol();
-//    mMarks->rehighlight(mFileId, qMin(mPosition-delta+1, document()->characterCount()-1));
-//    rehighlight();
-//}
-
-//void TextMark::updatePos()
-//{
-//    if (document()) {
-//        QTextBlock block = document()->findBlockByNumber(mLine);
-//        if (block.blockNumber() != mLine) block = document()->lastBlock();
-//        int col = (mColumn>=0 ? mColumn : 0);
-//        mPosition = block.position() + col;
-//        if (mSize <= 0) {
-//            mSize = block.next().text().indexOf('$')+1;
-//            if (mSize <= 0) mSize = block.length()-col-1;
-//        } else {
-//            QString str = block.text();
-//            for (int i = col; i < qMin(col+mSize, str.length()); ++i)
-//                if (str.at(i)=='\t') mSize -= (7 - i%8);
-//        }
-//    }
-//}
-
-//void TextMark::updateLineCol()
-//{
-//    if (document()) {
-//        QTextCursor cursor(document());
-//        cursor.setPosition(qMin(mPosition, document()->characterCount()-1));
-//        mLine = cursor.blockNumber();
-//        if (mColumn >= 0) mColumn = cursor.positionInBlock();
-//    }
-//}
 
 void TextMark::flatten()
 {

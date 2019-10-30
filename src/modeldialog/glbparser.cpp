@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,6 @@ bool GlbParser::parseFile(QString glbFile)
         if (columns.last().toLower() == "name")
             nameIdx = splitList.at(0).trimmed().toInt()-1;
     }
-    //int initSortCol = readLine(in).split("=").at(1).trimmed().toInt()-1; //TODO(CW): currently no default sorting index. sorting index is first column
     splitList = readLine(in).split("=");
     if (!checkListSize(splitList, 2) || !checkKey(splitList[0], "InitialSort"))
         return false;

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@
 #include <QMap>
 #include <QString>
 
-struct cfgRec;
-typedef struct cfgRec *cfgHandle_t;
+#include "solverconfiginfo.h"
 
 struct palRec;
 typedef struct palRec *palHandle_t;
@@ -41,7 +40,7 @@ public:
 
     int solvers() const;
 
-    int solverId(const QString &name);
+    int solverId(const QString &name) const;
 
     QString solverName(int id) const;
     QMap<int, QString> solverNames();
@@ -52,17 +51,17 @@ public:
 
     bool solverCapability(int solver, int modelType) const;
 
-    QString solverLicense(int solverId) const;
+    QString solverLicense(const QString &name, int id) const;
 
     bool isLicenseValid(const QStringList &license);
 
 private:
-    char* solverCodes(int solverId) const;
+    QString solverCodes(int solverId) const;
 
     static int errorCallback(int count, const char *message);
 
 private:
-    cfgHandle_t mCFG;
+    SolverConfigInfo mSolverInfo;
     palHandle_t mPAL;
 };
 

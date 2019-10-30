@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,6 +114,14 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
               return Qt::CheckState(item->modified() ? Qt::Checked : Qt::Unchecked );
         }
         return QVariant();
+    }
+    case Qt::TextColorRole: {
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+        OptionDefinitionItem *parentItem = item->parentItem();
+        if (parentItem == rootItem &&  item->modified())
+            return  QVariant::fromValue(QColor(Qt::darkGreen));
+        else
+            return  QVariant::fromValue(QColor(Qt::black));
     }
     default:
          break;

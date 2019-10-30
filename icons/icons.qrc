@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/img">
-        <file alias="backward">angle-up.svg</file>
+        <file alias="backward">arrow-left.svg</file>
         <file alias="book">book.svg</file>
         <file alias="books">books.svg</file>
         <file alias="bookmark">bookmark.svg</file>
@@ -35,7 +35,7 @@
         <file alias="folder-run3">folder-run3.svg</file>
         <file alias="folder-run4">folder-run3.svg</file>
         <file alias="fork">code-fork.svg</file>
-        <file alias="forward">angle-down.svg</file>
+        <file alias="forward">arrow-right.svg</file>
         <file alias="gams">gamslogo.svg</file>
         <file alias="gams-w">gams-w.svg</file>
         <file alias="gams-w-run">gams-w-run.svg</file>
@@ -57,6 +57,7 @@
         <file alias="question">question-square.svg</file>
         <file alias="redo">redo.svg</file>
         <file alias="ref-file">ref-file.svg</file>
+        <file alias="reload">redo-alt.svg</file>
         <file alias="run-gdx">play-gdx.svg</file>
         <file alias="save">save.svg</file>
         <file alias="stackoverflow">so-icon.svg</file>

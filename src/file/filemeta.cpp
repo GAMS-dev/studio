@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "editors/viewhelper.h"
 #include "locators/sysloglocator.h"
 #include "locators/abstractsystemlogger.h"
+#include "support/solverconfiginfo.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -121,33 +122,6 @@ void FileMeta::setEditPositions(QVector<QPoint> edPositions)
             edit->setTextCursor(cursor);
         }
         i++;
-    }
-}
-
-void FileMeta::internalSave(const QString &location)
-{
-    if (document()) {
-        QFile file(location);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-            EXCEPT() << "Can't save " << location;
-        QTextStream out(&file);
-        if (mCodec) out.setCodec(mCodec);
-        mActivelySaved = true;
-        out << document()->toPlainText();
-        out.flush();
-        file.close();
-        mData = Data(location, mData.type);
-        setModified(false);
-        mFileRepo->watch(this);
-    } else if (kind() == FileKind::Opt) {
-        option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
-        if (solverOptionWidget) {
-            mActivelySaved = true;
-            solverOptionWidget->saveOptionFile(location);
-            mData = Data(location, mData.type);
-            setModified(false);
-            mFileRepo->watch(this);
-        }
     }
 }
 
@@ -508,12 +482,43 @@ void FileMeta::load(int codecMib, bool init)
     return;
 }
 
-void FileMeta::save()
+void FileMeta::save(const QString &newLocation)
 {
-    if (!isModified()) return;
-    if (location().isEmpty() || location().startsWith('['))
-        EXCEPT() << "Can't save file '" << location() << "'";
-    internalSave(location());
+    QString location = newLocation.isEmpty() ? mLocation : newLocation;
+    QFile file(location);
+    if (location == mLocation && !isModified()) return;
+
+    if (location.isEmpty() || location.startsWith('['))
+        EXCEPT() << "Can't save file '" << location << "'";
+
+    if (document()) {
+        mActivelySaved = true;
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            EXCEPT() << "Can't save " << location;
+        QTextStream out(&file);
+        if (mCodec) out.setCodec(mCodec);
+        out << document()->toPlainText();
+        out.flush();
+        file.close();
+
+    } else if (kind() == FileKind::Opt) {
+        mActivelySaved = true;
+        option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
+        if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
+
+    } else { // no document, e.g. lst
+        mActivelySaved = true;
+        QFile old(mLocation);
+        if (file.exists()) QFile::remove(file.fileName());
+
+        if (!old.copy(location)) EXCEPT() << "Can't save " << location;
+    }
+    setLocation(location);
+    QFileInfo f(file);
+    FileType* newFT = &FileType::from(f.suffix());
+    mData = Data(location, newFT); // react to changes in location and extension
+    setModified(false);
+    mFileRepo->watch(this);
 }
 
 void FileMeta::renameToBackup()
@@ -661,10 +666,10 @@ void FileMeta::setModified(bool modified)
     if (document()) {
         document()->setModified(modified);
     } else if (kind() == FileKind::Opt) {
-              for (QWidget *e : mEditors) {
-                   option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
-                   if (so) so->setModified(modified);
-              }
+          for (QWidget *e : mEditors) {
+               option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
+               if (so) so->setModified(modified);
+          }
     }
 }
 
@@ -751,8 +756,25 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
-        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), id(), mCodec, tabWidget));
+            QFileInfo fileInfo(name());
+            support::SolverConfigInfo solverConfigInfo;
+            QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
+            if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
+                 res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+                                                                                  id(), mCodec, tabWidget));
+            } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
+                        QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
+                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
+                                                                                         id(), mCodec, tabWidget));
+            } else {
+                    SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
+                    forcedAsTextEdit = true;
+            }
     } else {
+        forcedAsTextEdit = true;
+    }
+
+    if (forcedAsTextEdit) {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
         codeEdit  = new CodeEdit(tabWidget);

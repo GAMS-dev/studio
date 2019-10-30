@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -125,6 +125,7 @@ SOURCES += \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
     option/commandlineoption.cpp \
+    option/definitionitemdelegate.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsoptiontablemodel.cpp \
     option/lineeditcompleteevent.cpp \
@@ -183,6 +184,7 @@ SOURCES += \
     locators/defaultsystemlogger.cpp \
     support/aboutgamsdialog.cpp         \
     support/gamslicenseinfo.cpp         \
+    support/solverconfiginfo.cpp        \
     support/solvertablemodel.cpp        \
     maintabcontextmenu.cpp \
     logtabcontextmenu.cpp \
@@ -243,6 +245,7 @@ HEADERS += \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
     option/commandlineoption.h \
+    option/definitionitemdelegate.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsoptiontablemodel.h \
     option/lineeditcompleteevent.h \
@@ -305,6 +308,7 @@ HEADERS += \
     locators/defaultsystemlogger.h \
     support/aboutgamsdialog.h       \
     support/gamslicenseinfo.h       \
+    support/solverconfiginfo.h      \
     support/solvertablemodel.h      \
     maintabcontextmenu.h \
     logtabcontextmenu.h \
