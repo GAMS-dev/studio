@@ -639,6 +639,7 @@ void TextView::findClosestLstRef(const QTextCursor &cursor)
     int line = cursor.blockNumber();
     QString href = static_cast<MemoryMapper*>(mMapper)->findClosestLst(line);
     if (!href.isEmpty()) jumpToHRef(href);
+    else jumpToHRef("LST:0");
 }
 
 void TextView::updateExtraSelections()

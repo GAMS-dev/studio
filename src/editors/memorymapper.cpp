@@ -805,6 +805,7 @@ QString MemoryMapper::findClosestLst(const int &localLine)
         if (!href.isEmpty()) return href;
         if (++count > 1000) break;
         if (backRef.chunk) backRef = prevRef(backRef);
+        if (backRef.chunk && backRef.chunk->nr < mUnits.last().firstChunk->nr) backRef.chunk = nullptr;
         if (foreRef.chunk) foreRef = nextRef(foreRef);
     }
     return QString();
