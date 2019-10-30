@@ -7,6 +7,7 @@ Version 0.13.1
 - fixed wrong deletion when using block edit mode that includes short lines
 - fixed crash when using "Next/Previous Tab" action but no tabs where open
 - fixed bug where gdx command line parameter was ignored under certain circumstances
+- renamed "Output View" to "Process Log"
 
 # Solver Option Editor
 - fixed solver option editor not opening option files for certain solvers
