@@ -406,7 +406,11 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
 {
     if (ui->combo_search->currentText() == "") return;
 
-    if (!mCachedResults || mHasChanged) {
+    // create new cache when cached search does not contain results for current file. user probably changed tab and a new search needs to start
+    bool requestNewCache = mCachedResults &&
+            mCachedResults->filteredResultList(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location()).size() == 0;
+
+    if (!mCachedResults || mHasChanged || requestNewCache) {
         invalidateCache();
         updateSearchCache(ignoreReadOnly);
         QApplication::processEvents(QEventLoop::AllEvents, 50);
@@ -438,7 +442,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         colNr = t->position().x();
     }
 
-    QList<Result> resultList = mCachedResults->resultsAsList();;
+    QList<Result> resultList = mCachedResults->resultsAsList();
     if (resultList.size() == 0) {
         setSearchStatus(SearchStatus::NoResults);
         return;
@@ -513,7 +517,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
 
 void SearchDialog::showEvent(QShowEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
 
     autofillSearchField();
     updateReplaceActionAvailability();
