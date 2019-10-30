@@ -635,31 +635,34 @@ QString findLstHRef(const QTextBlock &block)
 
 void TextView::findClosestLst(const QTextCursor &cursor, bool jump)
 {
-    QTextBlock blockUp = cursor.block();
-    QTextBlock blockDn = cursor.block();
-    // while in error description, upwards
-    while (blockUp.isValid()) {
-        if (!blockUp.text().startsWith(" "))
-            break;
-        blockUp = blockUp.previous();
-    }
-    // while in error description, downwards
-    while (blockDn.isValid()) {
-        if (!blockDn.text().startsWith(" "))
-            break;
-        blockDn = blockDn.next();
-    }
-    QString href;
-    while (href.isEmpty() && (blockUp.isValid() || blockDn.isValid())) {
-        href = findLstHRef(blockUp);
-        if (href.isEmpty()) {
-            href = findLstHRef(blockDn);
-            if (href.isEmpty()) {
-                if (blockUp.isValid()) blockUp = blockUp.previous();
-                if (blockDn.isValid()) blockDn = blockDn.next();
-            }
-        }
-    }
+//    QTextBlock blockUp = cursor.block();
+//    QTextBlock blockDn = cursor.block();
+//    // while in error description, upwards
+//    while (blockUp.isValid()) {
+//        if (!blockUp.text().startsWith(" "))
+//            break;
+//        blockUp = blockUp.previous();
+//    }
+//    // while in error description, downwards
+//    while (blockDn.isValid()) {
+//        if (!blockDn.text().startsWith(" "))
+//            break;
+//        blockDn = blockDn.next();
+//    }
+//    QString href;
+//    while (href.isEmpty() && (blockUp.isValid() || blockDn.isValid())) {
+//        href = findLstHRef(blockUp);
+//        if (href.isEmpty()) {
+//            href = findLstHRef(blockDn);
+//            if (href.isEmpty()) {
+//                if (blockUp.isValid()) blockUp = blockUp.previous();
+//                if (blockDn.isValid()) blockDn = blockDn.next();
+//            }
+//        }
+//    }
+    if (mMapper->kind() != AbstractTextMapper::memoryMapper) return;
+    int line = cursor.blockNumber();
+    QString href = static_cast<MemoryMapper*>(mMapper)->findClosestLst(line);
     if (!href.isEmpty() && jump) jumpToHRef(href);
 }
 

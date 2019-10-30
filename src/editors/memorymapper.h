@@ -98,7 +98,7 @@ public:
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
     int lineCount() const override;
     int knownLineNrs() const override;
-    void findClosestLst(const int &localLine);
+    QString findClosestLst(const int &localLine);
     void dump();
 
 signals:
@@ -131,6 +131,7 @@ private: // methods
     void fetchLog();
     void createErrorMarks(LineRef ref, bool readErrorText);
     LineRef nextRef(const LineRef &ref);
+    LineRef prevRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
     Chunk *addChunk(bool startUnit = false);
     void shrinkLog(qint64 minBytes);
@@ -138,10 +139,12 @@ private: // methods
     void recalcLineCount();
     LineRef logLineToRef(const int &lineNr);
     Chunk *nextChunk(Chunk *chunk);
+    Chunk *prevChunk(Chunk *chunk);
     int currentRunLines();
     void updateChunkMetrics(Chunk *chunk, bool cutRemain = false);
     void invalidateSize();
     void newPending(Pending pending);
+    QString extractLstRef(LineRef lineRef);
 
 private: // members
     QVector<Chunk*> mChunks;
