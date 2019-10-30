@@ -306,6 +306,7 @@ void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len,
     }
     if (invalidParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
+        if (i >= text.length()) break;
         int iPara = validParentheses.indexOf(text.at(i));
         if (iPara == 6) {
             if (kind == SyntaxKind::IdentifierAssignmentEnd) {
