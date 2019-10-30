@@ -29,10 +29,10 @@ SUBDIRS += testcommonpaths              \
            testmemorymapper             \
 #           testfilemapper               \
            testblockcode                \
-           #testgamsoption               \
+           testgamsoption               \
            testcplexoption              \
-           #testconopt4option            \
+           testconopt4option            \
            testminosoption              \
            testgurobioption             \
-           testoptionapi                
-           #testdoclocation
+           testoptionapi                \
+           testdoclocation
