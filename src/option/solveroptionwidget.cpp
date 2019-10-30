@@ -160,7 +160,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_OPTION_NAME);
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_SYNONYM);
     ui->solverOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_DEF_VALUE);
-    ui->solverOptionTreeView->setExpandsOnDoubleClick(true);
+    ui->solverOptionTreeView->setExpandsOnDoubleClick(false);
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
     ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
@@ -199,6 +199,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
                 proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp), Qt::UniqueConnection);
 
         connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
+        connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
         connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu, Qt::UniqueConnection);
 
         connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {

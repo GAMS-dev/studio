@@ -124,12 +124,13 @@ OptionWidget::OptionWidget(QAction *aRun, QAction *aRunGDX, QAction *aCompile, Q
     ui->gamsOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_OPTION_NAME);
     ui->gamsOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_SYNONYM);
     ui->gamsOptionTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_DEF_VALUE);
-    ui->gamsOptionTreeView->setExpandsOnDoubleClick(true);
+    ui->gamsOptionTreeView->setExpandsOnDoubleClick(false);
     ui->gamsOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
     ui->gamsOptionTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
     connect(ui->gamsOptionTreeView, &QTreeView::customContextMenuRequested, this, &OptionWidget::showDefinitionContextMenu, Qt::UniqueConnection);
+    connect(ui->gamsOptionTreeView, &QAbstractItemView::doubleClicked, this, &OptionWidget::addOptionFromDefinition, Qt::UniqueConnection);
 
     connect(mOptionTableModel, &GamsOptionTableModel::optionModelChanged, optdefmodel, &GamsOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
 
