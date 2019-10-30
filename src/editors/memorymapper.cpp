@@ -761,15 +761,16 @@ int MemoryMapper::knownLineNrs() const
 
 QString MemoryMapper::extractLstRef(LineRef lineRef)
 {
-    QString line;
-    int linkStart;
-    int lstLine = -1;
-    mLogParser->quickParse(lineRef.chunk->bArray,
-                           lineRef.chunk->lineBytes.at(lineRef.relLine),
-                           lineRef.chunk->lineBytes.at(lineRef.relLine+1),
-                           line, linkStart, lstLine);
-    if (lstLine < 0) return QString();
-    return "LST:" + QString::number(lstLine);
+    if (!lineRef.chunk) return QString();
+    int lastCh = lineRef.chunk->lineBytes.at(lineRef.relLine+1)-2;
+    if (lastCh - lineRef.chunk->lineBytes.at(lineRef.relLine) < 7) return QString();
+    if (lineRef.chunk->bArray.at(lastCh) != ']') return QString();
+    int firstCh = lastCh-1;
+    while (firstCh >= lineRef.chunk->lineBytes.at(lineRef.relLine) && lineRef.chunk->bArray.at(firstCh) != '[')
+        --firstCh;
+    QString res = lineRef.chunk->bArray.mid(firstCh+1, lastCh-firstCh-1);
+    if (!res.startsWith("LST:")) return QString();
+    return res;
 }
 
 QString MemoryMapper::findClosestLst(const int &localLine)
@@ -782,6 +783,8 @@ QString MemoryMapper::findClosestLst(const int &localLine)
         backRef.relLine -= backRef.chunk->lineCount();
         backRef.chunk = nextChunk(backRef.chunk);
     }
+    if (backRef.chunk && backRef.chunk->nr < mUnits.last().firstChunk->nr)
+        return QString();
     LineRef foreRef = backRef;
     // take previous line while in error description (line starts with space)
     while(backRef.chunk &&
@@ -795,18 +798,16 @@ QString MemoryMapper::findClosestLst(const int &localLine)
     // look for next lst-link in both directions
     QString href;
     int count = 0;
-    while (href.isEmpty() && (backRef.chunk || foreRef.chunk)) {
+    while (backRef.chunk || foreRef.chunk) {
         href = extractLstRef(backRef);
-        if (href.isEmpty()) {
-            href = extractLstRef(foreRef);
-            if (href.isEmpty()) {
-                if (backRef.chunk) backRef = prevRef(backRef);
-                if (foreRef.chunk) foreRef = nextRef(foreRef);
-            }
-        }
+        if (!href.isEmpty()) return href;
+        href = extractLstRef(foreRef);
+        if (!href.isEmpty()) return href;
         if (++count > 1000) break;
+        if (backRef.chunk) backRef = prevRef(backRef);
+        if (foreRef.chunk) foreRef = nextRef(foreRef);
     }
-    return href;
+    return QString();
 }
 
 int MemoryMapper::chunkCount() const

@@ -282,7 +282,7 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
         setTextCursor(cur);
         CodeEdit::mouseDoubleClickEvent(event);
     } else {
-        emit findNearLst(cursor, true);
+        emit findClosestLstRef(cursor);
     }
 }
 
