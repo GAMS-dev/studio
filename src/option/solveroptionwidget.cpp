@@ -1316,7 +1316,7 @@ void SolverOptionWidget::addActions()
         }
     });
     addThisOptionAction->setObjectName("actionAddThisOption");
-    addThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Insert") );
+    addThisOptionAction->setShortcut( QKeySequence(Qt::Key_Return) );
     addThisOptionAction->setShortcutVisibleInContextMenu(true);
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(addThisOptionAction);
@@ -1326,7 +1326,7 @@ void SolverOptionWidget::addActions()
         deleteOption();
     });
     deleteThisOptionAction->setObjectName("actionDeleteThisOption");
-    deleteThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Delete") );
+    deleteThisOptionAction->setShortcut( QKeySequence(Qt::Key_Delete) );
     deleteThisOptionAction->setShortcutVisibleInContextMenu(true);
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(deleteThisOptionAction);

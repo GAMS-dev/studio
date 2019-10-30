@@ -978,7 +978,7 @@ void OptionWidget::addActions()
             addOptionFromDefinition(selection.at(0));
     });
     addThisOptionAction->setObjectName("actionAddThisOption");
-    addThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Insert") );
+    addThisOptionAction->setShortcut( QKeySequence(Qt::Key_Return) );
     addThisOptionAction->setShortcutVisibleInContextMenu(true);
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTreeView->addAction(addThisOptionAction);
@@ -988,7 +988,7 @@ void OptionWidget::addActions()
         deleteOption();
     });
     deleteThisOptionAction->setObjectName("actionDeleteThisOption");
-    deleteThisOptionAction->setShortcut( QKeySequence("Ctrl+Shift+Delete") );
+    deleteThisOptionAction->setShortcut( QKeySequence(Qt::Key_Delete) );
     deleteThisOptionAction->setShortcutVisibleInContextMenu(true);
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTreeView->addAction(deleteThisOptionAction);
