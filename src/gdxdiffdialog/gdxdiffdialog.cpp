@@ -107,6 +107,8 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         else
             expectedDiffPath = mRecentPath + "/" + diff;
     }
+    if (QFileInfo(expectedDiffPath).suffix().isEmpty())
+        expectedDiffPath = expectedDiffPath + ".gdx";
 
     MainWindow* mainWindow = static_cast<MainWindow*>(parent());
     FileMeta* fm = mainWindow->fileRepo()->fileMeta(expectedDiffPath);
