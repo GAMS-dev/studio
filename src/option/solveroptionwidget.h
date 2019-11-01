@@ -118,6 +118,7 @@ private slots:
 
 private:
     QList<int> getRecurrentOption(const QModelIndex &index);
+    QString getOptionTableEntry(int row);
 
     Ui::SolverOptionWidget *ui;
     FileId mFileId;

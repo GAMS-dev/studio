@@ -396,13 +396,26 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                             Qt::DisplayRole,
                                                                             optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
+        ui->solverOptionTableView->clearSelection();
+        QItemSelection selection;
+        for(QModelIndex &idx: indices) {
+            QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(idx.row(), GamsOptionTableModel::COLUMN_OPTION_KEY);
+            QModelIndex rightIndex = ui->solverOptionTableView->model()->index(idx.row(), GamsOptionTableModel::COLUMN_ENTRY_NUMBER);
+            QItemSelection rowSelection(leftIndex, rightIndex);
+            selection.merge(rowSelection, QItemSelectionModel::Select);
+        }
+        ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
+
         bool singleEntryExisted = (indices.size()==1);
         bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Option Entry exists");
-            msgBox.setText("Option '" + optionNameData + "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to add new entry or replace the entry?");
+            msgBox.setText("Option '" + optionNameData+ "' already exists.");
+            msgBox.setInformativeText("How do you want to proceed?");
+            msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(indices.at(0).row()))
+                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
+                    .arg("The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -428,8 +441,17 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         } else if (multipleEntryExisted) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Multiple Option Entries exist");
-            msgBox.setText("Multiple entries of Option '" + optionNameData + "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to replace first entry (and delete other entries) or add new entry?");
+            msgBox.setText(QString("%1 entries of Option '%2' already exist.").arg(indices.size()).arg(optionNameData));
+            msgBox.setInformativeText("How do you want to proceed?");
+            QString entryDetailedText = QString("Entries:\n");
+            int i = 0;
+            for (QModelIndex &idx : indices)
+                entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(idx.row())));
+            msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
+                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
+                    .arg("The value of all other entries except the last entry will be ignored."));
+            msgBox.setText("Multiple entries of Option '" + optionNameData + "' already exist.");
+            msgBox.setInformativeText("How do you want to proceed?");
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -1093,7 +1115,6 @@ void SolverOptionWidget::deleteOption()
     for(QModelIndex index : indexSelection) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
-
     if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
         return;
 
@@ -1227,6 +1248,15 @@ QList<int> SolverOptionWidget::getRecurrentOption(const QModelIndex &index)
             optionList << idx.row();
     }
     return optionList;
+}
+
+QString SolverOptionWidget::getOptionTableEntry(int row)
+{
+    QModelIndex keyIndex = ui->solverOptionTableView->model()->index(row, GamsOptionTableModel::COLUMN_OPTION_KEY);
+    QVariant optionKey = ui->solverOptionTableView->model()->data(keyIndex, Qt::DisplayRole);
+    QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, GamsOptionTableModel::COLUMN_OPTION_VALUE);
+    QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
+    return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
 }
 
 void SolverOptionWidget::refreshOptionTableModel(bool hideAllComments)

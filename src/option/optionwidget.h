@@ -128,6 +128,7 @@ private:
     void addActions();
 
     QList<int> getRecurrentOption(const QModelIndex &index);
+    QString getOptionTableEntry(int row);
 
     Ui::OptionWidget *ui;
     QDockWidget *mExtendedEditor = nullptr;
