@@ -113,6 +113,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     if (fm && !fm->editors().isEmpty()) {
         gdxviewer::GdxViewer* gdxViewer = ViewHelper::toGdxViewer(fm->editors().first());
         gdxViewer->releaseFile();
+        proc->execute();
         gdxViewer->setHasChanged(true);
         fm->reload();
     } else
