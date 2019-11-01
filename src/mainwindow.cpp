@@ -50,7 +50,6 @@
 #include "support/checkforupdatewrapper.h"
 #include "autosavehandler.h"
 #include "support/distributionvalidator.h"
-#include "gdxdiffdialog/gdxdiffdialog.h"
 #include "tabdialog.h"
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
@@ -232,6 +231,9 @@ void MainWindow::watchProjectTree()
 
 MainWindow::~MainWindow()
 {
+    if (mGdxDiffDialog != nullptr)
+        delete mGdxDiffDialog;
+
     killTimer(mTimerID);
     delete mWp;
     delete ui;
@@ -1851,9 +1853,13 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_actionGDX_Diff_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    gdxdiffdialog::GdxDiffDialog dialog(path, this);
-    if (dialog.exec()) {
-        QString diffFile = dialog.diffFile();
+    if (mGdxDiffDialog == nullptr)
+        mGdxDiffDialog = new gdxdiffdialog::GdxDiffDialog(path, this);
+    else
+        mGdxDiffDialog->setRecentPath(path);
+
+    if (mGdxDiffDialog->exec()) {
+        QString diffFile = mGdxDiffDialog->diffFile();
         if (!diffFile.isEmpty())
             openFile(mFileMetaRepo.findOrCreateFileMeta(diffFile), true);
     }

@@ -33,6 +33,7 @@
 #include "statuswidgets.h"
 #include "maintabcontextmenu.h"
 #include "logtabcontextmenu.h"
+#include "gdxdiffdialog/gdxdiffdialog.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -56,6 +57,9 @@ class AutosaveHandler;
 class SystemLogEdit;
 namespace option {
 class OptionWidget;
+}
+namespace gdxdiffdialog {
+class GdxDiffDialog;
 }
 
 
@@ -372,6 +376,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
+    gdxdiffdialog::GdxDiffDialog* mGdxDiffDialog = nullptr;
 };
 
 }

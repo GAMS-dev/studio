@@ -164,3 +164,22 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldToCompare_currentInde
     if (index==0)
         ui->cbFieldOnly->setChecked(false);
 }
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &recentPath)
+{
+    mRecentPath = recentPath;
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
+{
+    ui->leInput1->clear();
+    ui->leInput2->clear();
+    ui->leDiff->clear();
+    ui->lineEdit_4->setText("0.0");
+    ui->lineEdit_5->setText("0.0");
+    ui->cbDiffOnly->setChecked(false);
+    ui->cbFieldOnly->setChecked(false);
+    ui->cbIgnoreSetText->setChecked(false);
+    ui->cbFieldToCompare->setCurrentIndex(0);
+
+}

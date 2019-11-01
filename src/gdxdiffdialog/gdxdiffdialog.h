@@ -22,6 +22,8 @@ public:
     ~GdxDiffDialog();
     QString diffFile();
 
+    void setRecentPath(const QString &recentPath);
+
 private slots:
 
     void on_pushButton_clicked();
@@ -39,6 +41,8 @@ private slots:
     void on_cbDiffOnly_toggled(bool checked);
 
     void on_cbFieldToCompare_currentIndexChanged(int index);
+
+    void on_pbClear_clicked();
 
 private:
     Ui::GdxDiffDialog *ui;
