@@ -3,6 +3,8 @@
 #include <QFileDialog>
 #include <QDebug>
 #include <QMessageBox>
+#include <editors/viewhelper.h>
+#include <gdxviewer/gdxviewer.h>
 
 namespace gams {
 namespace studio {
@@ -71,10 +73,9 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 {
     GdxDiffProcess* proc = new GdxDiffProcess(this);
 
-    //TODO(CW): do we want to check the input before calling gdxdiff?
-
     QString input1 = ui->leInput1->text().trimmed();
     QString input2 = ui->leInput2->text().trimmed();
+    QString diff = ui->leDiff->text().trimmed();
     if (input1.isEmpty() || input2.isEmpty()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("GDX Diff");
@@ -87,19 +88,35 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 
     proc->setInput1(input1);
     proc->setInput2(input2);
-    proc->setDiff(ui->leDiff->text().trimmed());
+    proc->setDiff(diff);
     proc->setEps(ui->lineEdit_4->text().trimmed());
     proc->setRelEps(ui->lineEdit_5->text().trimmed());
     proc->setIgnoreSetText(ui->cbIgnoreSetText->isChecked());
     proc->setDiffOnly(ui->cbDiffOnly->isChecked());
     proc->setFieldOnly(ui->cbFieldOnly->isChecked());
     proc->setFieldToCompare(ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex()));
-
-    //TODO(CW): close diff GDX file if already open since it will prevent gdxdiff from writing the file
-    //MainWindow* mainWindow = static_cast<MainWindow*>(parent());
-
     proc->setWorkingDir(mRecentPath);
-    proc->execute();
+
+    // determine the expected path of the resulting diff GDX file
+    QString expectedDiffPath;
+    if (diff.isEmpty())
+        expectedDiffPath = mRecentPath + "/diffile.gdx";
+    else {
+        if (QFileInfo(diff).isAbsolute())
+            expectedDiffPath = diff;
+        else
+            expectedDiffPath = mRecentPath + "/" + diff;
+    }
+
+    MainWindow* mainWindow = static_cast<MainWindow*>(parent());
+    FileMeta* fm = mainWindow->fileRepo()->fileMeta(expectedDiffPath);
+    if (fm && !fm->editors().isEmpty()) {
+        gdxviewer::GdxViewer* gdxViewer = ViewHelper::toGdxViewer(fm->editors().first());
+        gdxViewer->releaseFile();
+        gdxViewer->setHasChanged(true);
+        fm->reload();
+    } else
+        proc->execute();
 
     mDiffFile = proc->diffFile();
     if (mDiffFile.isEmpty()) { // give an error pop up that no diff file was created

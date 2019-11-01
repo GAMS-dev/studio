@@ -57,6 +57,7 @@ public:
     void copyAction();
     void selectAllAction();
     void selectSearchField();
+    void releaseFile();
 
 private slots:
     void hideUniverseSymbol();
@@ -67,6 +68,7 @@ private:
     void copySelectionToClipboard();
     bool init();
     void free();
+    bool mIsInitialized = false;
 
     static int errorCallback(int count, const char *message);
 
