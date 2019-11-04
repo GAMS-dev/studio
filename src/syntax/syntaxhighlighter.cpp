@@ -238,6 +238,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             textBlock.setUserData(blockData);
     }
     setCurrentBlockState(code.code());
+//    DEB() << text << "\n";
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind)

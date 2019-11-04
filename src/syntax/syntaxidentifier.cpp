@@ -66,7 +66,7 @@ int SyntaxIdentifier::identChar(const QChar &c) const
 
 SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const QString& line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -192,7 +192,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
 
 SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -342,7 +342,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
     }
 
     // get delimiters
-    QString delim("\"\'");
+    QString delim("\"\'(");
     QString special("/, .:");
     int end = start;
     int pos = start;
@@ -351,7 +351,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
         // we are at the first non-white-char
         if (int quoteKind = delim.indexOf(line.at(pos))+1) {
             // find matching quote
-            end = line.indexOf(delim.at(quoteKind-1), pos+1);
+            end = line.indexOf(quoteKind<3 ? delim.at(quoteKind-1) : ')', pos+1);
             if (end < 0)
                 return SyntaxBlock(this, start, pos+1, SyntaxShift::in, true);
             pos = end+1;
@@ -409,12 +409,11 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const QString &lin
         end = line.indexOf(ch, pos+1);
         if (end < 0)
             return SyntaxBlock(this, start, pos+1, SyntaxShift::out, true);
-        pos = end+1;
+        ++end;
     } else {
-        while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
+        while (++pos < line.length() && !special.contains(line.at(pos))) ;
+        end = pos-1;
     }
-    end = pos;
-//    while (isWhitechar(line, pos)) ++pos;
 
     if (end > start) {
         return SyntaxBlock(this, start, end, SyntaxShift::skip);

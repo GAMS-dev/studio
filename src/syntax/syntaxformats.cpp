@@ -84,7 +84,7 @@ SyntaxBlock SyntaxStandard::find(const SyntaxKind entryKind, const QString& line
 {
     static QVector<SyntaxKind> invalidEntries {SyntaxKind::Declaration, SyntaxKind::DeclarationSetType,
                 SyntaxKind::DeclarationTable, SyntaxKind::DeclarationVariableType};
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     bool error = invalidEntries.contains(entryKind);
     int end = index;
     while (isKeywordChar(line, end)) end++;
@@ -94,9 +94,9 @@ SyntaxBlock SyntaxStandard::find(const SyntaxKind entryKind, const QString& line
 
 SyntaxBlock SyntaxStandard::validTail(const QString &line, int index, bool &hasContent)
 {
-    Q_UNUSED(line);
-    Q_UNUSED(index);
-    Q_UNUSED(hasContent);
+    Q_UNUSED(line)
+    Q_UNUSED(index)
+    Q_UNUSED(hasContent)
     return SyntaxBlock();
 }
 
@@ -193,7 +193,7 @@ SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
 
 SyntaxBlock SyntaxDirectiveBody::find(const SyntaxKind entryKind, const QString& line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     return SyntaxBlock(this, index, line.length(), SyntaxShift::skip);
 }
 
@@ -307,7 +307,7 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
 
 SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -357,7 +357,7 @@ SyntaxString::SyntaxString()
 
 SyntaxBlock SyntaxString::find(const SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;
