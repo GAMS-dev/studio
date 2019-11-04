@@ -697,8 +697,6 @@ void AbstractTextMapper::removeChunk(int chunkNr)
     }
     mChunkMetrics.removeAt(chunkNr);
 
-    // TODO(JM) instead of changing anchor and position provide alternatives during chunk-hidden-phase
-
     // shift position, anchor and topline if necessary
     QVector<CursorPosition*> cps;
     if (mPosition.isValid()) cps << &mPosition;
