@@ -263,6 +263,7 @@ SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, const QString 
     while (++end < line.length()) {
         if (line.at(end) == delim) return SyntaxBlock(this, start, end+(delim=='/'?0:1), SyntaxShift::shift);
         if (delim == '/' && line.at(end) == ';') break;
+        if (delim == '/' && line.at(end) == ',') break;
         if (!isWhitechar(line, end)) lastNonWhite = end;
     }
     return SyntaxBlock(this, start, lastNonWhite+1, SyntaxShift::shift, (delim != '/'));
