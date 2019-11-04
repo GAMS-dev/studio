@@ -295,6 +295,8 @@ private slots:
 
     void on_actionChangelog_triggered();
 
+    void openGdxDiffFile();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);

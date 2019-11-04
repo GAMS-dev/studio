@@ -22,8 +22,6 @@ GdxDiffDialog::GdxDiffDialog(QString recentPath, QWidget *parent) :
     ui->lineEdit_5->setValidator(new QDoubleValidator());
 
     QDir::setCurrent(mRecentPath);
-
-
 }
 
 GdxDiffDialog::~GdxDiffDialog()

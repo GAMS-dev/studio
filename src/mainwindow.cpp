@@ -1853,16 +1853,14 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_actionGDX_Diff_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    if (mGdxDiffDialog == nullptr)
+    if (mGdxDiffDialog == nullptr) {
         mGdxDiffDialog = new gdxdiffdialog::GdxDiffDialog(path, this);
+        connect(mGdxDiffDialog, &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+    }
     else
         mGdxDiffDialog->setRecentPath(path);
 
-    if (mGdxDiffDialog->exec()) {
-        QString diffFile = mGdxDiffDialog->diffFile();
-        if (!diffFile.isEmpty())
-            openFile(mFileMetaRepo.findOrCreateFileMeta(diffFile), true);
-    }
+    mGdxDiffDialog->show();
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -3486,6 +3484,13 @@ void MainWindow::deleteScratchDirs(const QString &path)
             }
         }
     }
+}
+
+void MainWindow::openGdxDiffFile()
+{
+    QString diffFile = mGdxDiffDialog->diffFile();
+    if (!diffFile.isEmpty())
+        openFile(mFileMetaRepo.findOrCreateFileMeta(diffFile), true);
 }
 
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
