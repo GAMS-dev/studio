@@ -16,6 +16,7 @@ GdxDiffDialog::GdxDiffDialog(QString recentPath, QWidget *parent) :
     mRecentPath(recentPath)
 {
     ui->setupUi(this);
+    setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->lineEdit_4->setValidator(new QDoubleValidator());
     ui->lineEdit_5->setValidator(new QDoubleValidator());
