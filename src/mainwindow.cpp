@@ -129,10 +129,6 @@ MainWindow::MainWindow(QWidget *parent)
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
-    // TODO(JM) it is possible to put the QTabBar into the docks title:
-    //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
-//    ui->dockProcessLog->setTitleBarWidget(ui->tabLog->tabBar());
-
 #ifdef QWEBENGINE
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
@@ -2376,7 +2372,6 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
 
 void MainWindow::storeTree()
 {
-    // TODO(JM) add settings methods to store each part separately
     mSettings->saveSettings(this);
 }
 

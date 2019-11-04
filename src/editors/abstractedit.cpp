@@ -298,8 +298,6 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
     }
     updateCursorShape(shape);
-	// TODO(JM) REVIEW! This is already done above - check with Rogo
-    // QWidget::keyPressEvent(e);
 }
 
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)

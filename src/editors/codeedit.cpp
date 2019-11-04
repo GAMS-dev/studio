@@ -1695,7 +1695,6 @@ void CodeEdit::BlockEdit::updateExtraSelections()
     for (int lineNr = qMin(mStartLine, mCurrentLine); lineNr <= qMax(mStartLine, mCurrentLine); ++lineNr) {
         QTextBlock block = mEdit->document()->findBlockByNumber(lineNr);
         QTextEdit::ExtraSelection select;
-        // TODO(JM) Later, this color has to be retrieved from StyleSheet-definitions
         QColor beColor = QColor(Qt::cyan).lighter(150);
         select.format.setBackground(beColor);
 
