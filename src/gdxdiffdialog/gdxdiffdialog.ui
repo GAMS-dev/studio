@@ -16,8 +16,14 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="acceptDrops">
+   <bool>false</bool>
+  </property>
   <property name="windowTitle">
    <string>GDX Diff</string>
+  </property>
+  <property name="toolTip">
+   <string/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
@@ -32,7 +38,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLineEdit" name="leInput1">
+        <widget class="FilePathLineEdit" name="leInput1">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;First GDX file to use for comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -64,7 +70,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLineEdit" name="leInput2">
+        <widget class="FilePathLineEdit" name="leInput2">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Second GDX file to use for comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -96,7 +102,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QLineEdit" name="leDiff">
+        <widget class="FilePathLineEdit" name="leDiff">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GDX file that is created as a result of the comparison of the two input GDX files. This field is optional (default: diffile.gdx).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -294,6 +300,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FilePathLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>filepathlineedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -78,6 +78,7 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
+    gdxdiffdialog/filepathlineedit.cpp \
     support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -199,6 +200,7 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
+    gdxdiffdialog/filepathlineedit.h \
     support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
