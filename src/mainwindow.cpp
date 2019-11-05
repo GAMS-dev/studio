@@ -447,6 +447,8 @@ void MainWindow::receiveAction(const QString &action)
         on_actionNew_triggered();
     else if(action == "browseModLib")
         on_actionGAMS_Library_triggered();
+    else if(action == "openWhatsNew")
+        on_actionChangelog_triggered();
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
