@@ -13,7 +13,7 @@ FilePathLineEdit::FilePathLineEdit(QWidget *parent) :
 
 void FilePathLineEdit::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasUrls() && event->mimeData()->urls().size() == 1 && event->mimeData()->urls().at(0).toLocalFile().endsWith(".gdx")) {
+    if (event->mimeData()->hasUrls() && event->mimeData()->urls().size() == 1 && event->mimeData()->urls().at(0).toLocalFile().toLower().endsWith(".gdx")) {
         event->acceptProposedAction();
     } else
         event->ignore();
