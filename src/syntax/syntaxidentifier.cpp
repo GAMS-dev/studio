@@ -66,7 +66,7 @@ int SyntaxIdentifier::identChar(const QChar &c) const
 
 SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const QString& line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -192,7 +192,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
 
 SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
