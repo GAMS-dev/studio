@@ -277,8 +277,6 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
     SyntaxKind::Title,
     SyntaxKind::String,
     SyntaxKind::Assignment,
-    SyntaxKind::AssignmentLabel,
-    SyntaxKind::AssignmentValue,
     SyntaxKind::CommentLine,
     SyntaxKind::CommentBlock,
     SyntaxKind::CommentEndline,
