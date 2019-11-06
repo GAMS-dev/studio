@@ -282,6 +282,8 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
         setTextCursor(cur);
         CodeEdit::mouseDoubleClickEvent(event);
     } else {
+        QTextCursor cursor = cursorForPosition(event->pos());
+        if (existHRef(cursor.charFormat().anchorHref())) return;
         emit findClosestLstRef(cursor);
     }
 }
