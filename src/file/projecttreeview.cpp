@@ -24,7 +24,7 @@
 namespace gams {
 namespace studio {
 
-const QString cItemModelData("application/x-qabstractitemmodeldatalist");
+const QString ProjectTreeView::ItemModelDataType = "application/x-qabstractitemmodeldatalist";
 
 ProjectTreeView::ProjectTreeView(QWidget *parent) : QTreeView(parent)
 {
@@ -76,9 +76,9 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
 {
     QStringList pathList;
     QList<NodeId> idList;
-    if (event->mimeData()->formats().contains(cItemModelData)) {
+    if (event->mimeData()->formats().contains(ItemModelDataType)) {
         event->accept();
-        QByteArray data = event->mimeData()->data(cItemModelData);
+        QByteArray data = event->mimeData()->data(ItemModelDataType);
         QDataStream stream(&data, QIODevice::ReadOnly);
         while (!stream.atEnd()) {
             int row, col;
@@ -117,7 +117,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
 
 void ProjectTreeView::updateDrag(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasUrls() || event->mimeData()->formats().contains(cItemModelData)) {
+    if (event->mimeData()->hasUrls() || event->mimeData()->formats().contains(ItemModelDataType)) {
         if (event->pos().y() > size().height()-50 || event->pos().y() < 50) {
             startAutoScroll();
         } else {
@@ -126,7 +126,7 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
         ProjectTreeModel* treeModel = static_cast<ProjectTreeModel*>(model());
         QModelIndex ind = indexAt(event->pos());
         if (!event->keyboardModifiers().testFlag(Qt::ControlModifier)
-                && event->mimeData()->formats().contains(cItemModelData)) {
+                && event->mimeData()->formats().contains(ItemModelDataType)) {
             event->setDropAction(Qt::MoveAction);
         } else {
             event->setDropAction(Qt::CopyAction);
