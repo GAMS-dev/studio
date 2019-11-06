@@ -29,6 +29,8 @@
 namespace gams {
 namespace studio {
 
+static const int CAnyModifier = Qt::ShiftModifier|Qt::AltModifier|Qt::ControlModifier|Qt::MetaModifier;
+
 TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings())
 {
@@ -219,24 +221,24 @@ void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
 
 void TextViewEdit::mousePressEvent(QMouseEvent *e)
 {
-    CodeEdit::mousePressEvent(e);
     setCursorWidth(2);
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(e->pos());
-        if (existHRef(cursor.charFormat().anchorHref())) {
-            mHRefClickPos = e->pos();
-        } else if (e->buttons() == Qt::LeftButton) {
-            QTextCursor::MoveMode mode = e->modifiers() & Qt::ShiftModifier ? QTextCursor::KeepAnchor
-                                                                            : QTextCursor::MoveAnchor;
-            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), mode);
+        mClickPos = e->pos();
+        mClickStart = !(e->modifiers() & Qt::ShiftModifier);
+        if (existHRef(cursor.charFormat().anchorHref()) && !(e->modifiers() & CAnyModifier)) return;
+        if (e->buttons() == Qt::LeftButton) {
+            if (!mClickStart) {
+                mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
+            }
         }
     }
+    CodeEdit::mousePressEvent(e);
 }
 
 void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
 {
-    if (e->buttons() == Qt::LeftButton
-            && !(e->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier))) {
+    if (e->buttons() == Qt::LeftButton && !(e->modifiers() & CAnyModifier)) {
         mScrollDelta = e->y() < 0 ? e->y() : (e->y() < viewport()->height() ? 0 : e->y() - viewport()->height());
         if (mScrollDelta) {
             if (!mScrollTimer.isActive()) {
@@ -247,8 +249,12 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
             }
         } else {
             mScrollTimer.stop();
+            if (mClickStart && (mClickPos - e->pos()).manhattanLength() < 4) return;
+            QTextCursor::MoveMode mode = mClickStart ? QTextCursor::MoveAnchor
+                                                     : QTextCursor::KeepAnchor;
+            mClickStart = false;
             QTextCursor cursor = cursorForPosition(e->pos());
-            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
+            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), mode);
             updatePosAndAnchor();
         }
     } else {
@@ -263,8 +269,7 @@ void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
     mScrollTimer.stop();
     if (!marks() || marks()->isEmpty()) {
         // no regular marks, check for temporary hrefs
-        if ((mHRefClickPos-e->pos()).manhattanLength() >= 4)
-            return;
+        if ((mClickPos-e->pos()).manhattanLength() >= 4 || e->modifiers() & CAnyModifier) return;
         QTextCursor cursor = cursorForPosition(e->pos());
         if (!existHRef(cursor.charFormat().anchorHref())) return;
         emit jumpToHRef(cursor.charFormat().anchorHref());

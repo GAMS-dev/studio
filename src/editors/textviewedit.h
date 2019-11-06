@@ -79,7 +79,8 @@ private:
     AbstractTextMapper &mMapper;
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
-    QPoint mHRefClickPos;
+    QPoint mClickPos;
+    bool mClickStart = false;
     QTimer mScrollTimer;
     int mScrollDelta = 0;
     int mSubOffset = 0;
