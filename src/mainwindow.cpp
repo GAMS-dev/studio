@@ -1430,7 +1430,7 @@ void MainWindow::processFileEvents()
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    mSyslog->append(text, LogMsgType::Info);
+    mSyslog->append(text.trimmed(), LogMsgType::Info);
 }
 
 void MainWindow::showErrorMessage(QString text)
