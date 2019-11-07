@@ -304,7 +304,7 @@
   <customwidget>
    <class>FilePathLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>filepathlineedit.h</header>
+   <header>gdxdiffdialog/filepathlineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
