@@ -41,6 +41,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+    // TODO(JM) Disabled until feature #1145 is implemented
+    ui->cb_linewrap_process->setVisible(false);
+
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     connect(ui->cb_skipwelcome, &QCheckBox::clicked, this, &SettingsDialog::setModified);
