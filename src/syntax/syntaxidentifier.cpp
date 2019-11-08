@@ -363,6 +363,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
         while (isWhitechar(line,pos)) ++pos;
         if (pos < line.length() && special.indexOf(line.at(pos)) < 3) break;
         if (pos < line.length() && line.at(pos) != ')') ++pos;
+        while (isWhitechar(line,pos)) ++pos;
         end = pos;
     }
 
