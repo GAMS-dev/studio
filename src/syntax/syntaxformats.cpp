@@ -149,14 +149,14 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (mSyntaxCommentEndline) {
-        if ( match.captured(2).startsWith("oneolcom")) {
+        if (match.captured(2).startsWith("oneolcom", Qt::CaseInsensitive)) {
             mSyntaxCommentEndline->setCommentChars("!!");
             for (SyntaxFormula * sf: mSubSyntaxBody) {
                 sf->setSpecialDynamicChars(QVector<QChar>() << '!');
             }
             if (mSubDirectiveBody)
                 mSubDirectiveBody->setCommentChars(QVector<QChar>() << '!');
-         } else if (match.captured(2).startsWith("eolcom")) {
+         } else if (match.captured(2).startsWith("eolcom", Qt::CaseInsensitive)) {
             int i = match.capturedEnd(2);
             while (isWhitechar(line,i)) ++i;
             if (i+2 <= line.length()) {
