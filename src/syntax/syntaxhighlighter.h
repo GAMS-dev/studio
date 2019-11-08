@@ -70,11 +70,13 @@ private:
 
     int addCode(KindIndex si, CodeIndex ci);
     BlockCode getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest = 0);
-//    QString codeDeb(int code);
+    int purgeCode(int code);
+    QString codeDeb(int code);
 
 private:
     int mPositionForSyntaxKind = -1;
     int mLastSyntaxKind = 0;
+    QVector<SyntaxKind> mSingleLineKinds;
     Kinds mKinds;
     Codes mCodes;
 };
