@@ -2963,6 +2963,17 @@ void MainWindow::on_actionCopy_triggered()
 {
     if (!focusWidget()) return;
 
+#ifdef QWEBENGINE
+    // Check if focusWidget is inside mHelpWidget (can be nested)
+    QWidget *wid = focusWidget();
+    while (wid && wid != mHelpWidget)
+        wid = wid->parentWidget();
+    if (wid == mHelpWidget) {
+        mHelpWidget->copySelection();
+        return;
+    }
+#endif
+
     // KEEP-ORDER: FIRST check focus THEN check recent-edit (in descending inheritance)
 
     if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
