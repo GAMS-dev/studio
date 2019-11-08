@@ -342,41 +342,27 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
     }
 
     // get delimiters
-    QString quotes("\"\'");
-    QString special("/, .:)");
-    QString labelExtenders(".:*");
-    QString closers("/,");
+    QString delim("\"\'");
+    QString special("/, .:*)");
     int end = start;
     int pos = start;
-
-    // TODO(JM) review this:
-
-
     while (pos < line.length()) {
-        // pos is at the first non-whitechar
         end = pos;
-        if (int quoteKind = quotes.indexOf(line.at(pos)) + 1) {
-            // found quote: find matching quote
-            end = line.indexOf(quotes.at(quoteKind-1), pos+1);
+        // we are at the first non-white-char
+        if (int quoteKind = delim.indexOf(line.at(pos))+1) {
+            // find matching quote
+            end = line.indexOf(quoteKind<3 ? delim.at(quoteKind-1) : ')', pos+1);
             if (end < 0)
-                return SyntaxBlock(this, start, pos+1, SyntaxShift::in, true); // no matching quote
+                return SyntaxBlock(this, start, pos+1, SyntaxShift::in, true);
             pos = end+1;
-        } else if (closers.indexOf(line.at(pos)) >= 0) {
-            // found closer: these characters finish the assignment-label
-            return SyntaxBlock(this, start, end, SyntaxShift::shift);
-        } else if (labelExtenders.indexOf(line.at(pos)) >= 0) {
-            // found label-extender: keep state "in-label"
-            ++pos;
-            while (isWhitechar(line,pos)) ++pos;
         } else {
-            // any other character
-            ++pos;
+            while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
         }
+        ++end;
         // if no dot or colon follows, finish
         while (isWhitechar(line,pos)) ++pos;
         if (pos < line.length() && special.indexOf(line.at(pos)) < 3) break;
         ++pos;
-        while (pos < line.length() && (isWhitechar(line,pos))) ++pos;
         end = pos;
     }
 
@@ -422,11 +408,12 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const QString &lin
         end = line.indexOf(ch, pos+1);
         if (end < 0)
             return SyntaxBlock(this, start, pos+1, SyntaxShift::out, true);
-        ++end;
+        pos = end+1;
     } else {
-        while (++pos < line.length() && !special.contains(line.at(pos))) ;
-        end = pos-1;
+        while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
     }
+    end = pos;
+//    while (isWhitechar(line, pos)) ++pos;
 
     if (end > start) {
         return SyntaxBlock(this, start, end, SyntaxShift::skip);
