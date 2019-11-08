@@ -19,6 +19,7 @@
  */
 #include "welcomepage.h"
 #include "commonpaths.h"
+#include "locators/settingslocator.h"
 #include "studiosettings.h"
 #include "ui_welcomepage.h"
 #include "mainwindow.h"
@@ -27,11 +28,11 @@
 namespace gams {
 namespace studio {
 
-WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent)
+WelcomePage::WelcomePage(MainWindow *parent)
     : QWidget(parent), ui(new Ui::WelcomePage), mMain(parent)
 {
     ui->setupUi(this);
-    historyChanged(history);
+    historyChanged();
     mOutputVisible = mMain->outputViewVisibility();
 
     QString path = CommonPaths::documentationDir() + "/";
@@ -47,7 +48,7 @@ WelcomePage::WelcomePage(HistoryData *history, MainWindow *parent)
     connect(this, &WelcomePage::relayDocOpen, parent, &MainWindow::receiveOpenDoc);
 }
 
-void WelcomePage::historyChanged(HistoryData *history)
+void WelcomePage::historyChanged()
 {
     QLayoutItem* item;
     while ((item = ui->layout_lastFiles->takeAt(0)) != nullptr) {
@@ -56,10 +57,13 @@ void WelcomePage::historyChanged(HistoryData *history)
     }
 
     WpLabel *tmpLabel;
+    HistoryData *history = mMain->history();
     int j = 0;
-    for (int i = 0; i < history->lastOpenedFiles.size(); i++) {
-        QFileInfo file(history->lastOpenedFiles.at(i));
-        if (history->lastOpenedFiles.at(i) == "") continue;
+    for (int i = 0; i < SettingsLocator::settings()->historySize(); i++) {
+        if (i >= history->mLastOpenedFiles.size()) break;
+
+        QFileInfo file(history->mLastOpenedFiles.at(i));
+        if (history->mLastOpenedFiles.at(i) == "") continue;
 
         if (file.exists()) {
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
@@ -107,6 +111,7 @@ void WelcomePage::showEvent(QShowEvent *event)
     Q_UNUSED(event)
     mOutputVisible = mMain->outputViewVisibility();
     mMain->setOutputViewVisibility(false);
+    historyChanged();
 }
 
 void WelcomePage::hideEvent(QHideEvent *event)

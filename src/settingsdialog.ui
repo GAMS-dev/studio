@@ -26,7 +26,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -261,7 +261,7 @@
             </property>
             <property name="currentFont">
              <font>
-              <family>Source Code Pro [ADBE]</family>
+              <family>Source Code Pro</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -407,28 +407,6 @@
           <string>Log Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="cb_linewrap_process">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Enable line wrapping in process log</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1">
            <widget class="QCheckBox" name="cb_clearlog">
             <property name="enabled">
@@ -472,6 +450,28 @@
            <widget class="QSpinBox" name="sb_nrLogBackups">
             <property name="value">
              <number>3</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QCheckBox" name="cb_linewrap_process">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Enable line wrapping in process log</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>

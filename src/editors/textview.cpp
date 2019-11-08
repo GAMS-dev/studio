@@ -58,7 +58,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     if (kind == MemoryText)
-        connect(mEdit, &TextViewEdit::findNearLst, this, &TextView::findNearLst);
+        connect(mEdit, &TextViewEdit::findClosestLstRef, this, &TextView::findClosestLstRef);
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
@@ -633,37 +633,13 @@ QString findLstHRef(const QTextBlock &block)
     return QString();
 }
 
-void TextView::findNearLst(const QTextCursor &cursor, bool &done, bool jump)
+void TextView::findClosestLstRef(const QTextCursor &cursor)
 {
-    QTextBlock blockUp = cursor.block();
-    QTextBlock blockDn = cursor.block();
-    // while in error description, upwards
-    while (blockUp.isValid()) {
-        if (!blockUp.text().startsWith(" "))
-            break;
-        blockUp = blockUp.previous();
-    }
-    // while in error description, upwards
-    while (blockDn.isValid()) {
-        if (!blockDn.text().startsWith(" "))
-            break;
-        blockDn = blockDn.next();
-    }
-    QString href;
-    while (href.isEmpty() && (blockUp.isValid() || blockDn.isValid())) {
-        href = findLstHRef(blockUp);
-        if (href.isEmpty()) {
-            href = findLstHRef(blockDn);
-            if (href.isEmpty()) {
-                if (blockUp.isValid()) blockUp = blockUp.previous();
-                if (blockDn.isValid()) blockDn = blockDn.next();
-            }
-        }
-    }
-    if (!href.isEmpty()) {
-        done = true;
-        if (jump) jumpToHRef(href);
-    }
+    if (mMapper->kind() != AbstractTextMapper::memoryMapper) return;
+    int line = cursor.blockNumber();
+    QString href = static_cast<MemoryMapper*>(mMapper)->findClosestLst(line);
+    if (!href.isEmpty()) jumpToHRef(href);
+    else jumpToHRef("LST:0");
 }
 
 void TextView::updateExtraSelections()

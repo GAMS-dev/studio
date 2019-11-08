@@ -45,7 +45,7 @@ signals:
     void jumpToHRef(const QString &href);
     void recalcVisibleLines();
     void topLineMoved();
-    void findNearLst(const QTextCursor &cursor, bool &done, bool jump);
+    void findClosestLstRef(const QTextCursor &cursor);
 
 public slots:
     void copySelection() override;
@@ -79,7 +79,8 @@ private:
     AbstractTextMapper &mMapper;
     StudioSettings *mSettings;
     qint64 mTopByte = 0;
-    QPoint mHRefClickPos;
+    QPoint mClickPos;
+    bool mClickStart = false;
     QTimer mScrollTimer;
     int mScrollDelta = 0;
     int mSubOffset = 0;
