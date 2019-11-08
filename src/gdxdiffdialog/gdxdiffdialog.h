@@ -18,7 +18,7 @@ class GdxDiffDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit GdxDiffDialog(QString recentPath, QWidget *parent = nullptr);
+    explicit GdxDiffDialog(QWidget *parent = nullptr);
     ~GdxDiffDialog();
     QString diffFile();
 

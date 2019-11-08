@@ -70,7 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
       mTextMarkRepo(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
-      mLogTabContextMenu(this)
+      mLogTabContextMenu(this),
+      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
@@ -185,6 +186,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
+    connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
@@ -231,9 +234,6 @@ void MainWindow::watchProjectTree()
 
 MainWindow::~MainWindow()
 {
-    if (mGdxDiffDialog != nullptr)
-        delete mGdxDiffDialog;
-
     killTimer(mTimerID);
     delete mWp;
     delete ui;
@@ -1853,13 +1853,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_actionGDX_Diff_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    if (mGdxDiffDialog == nullptr) {
-        mGdxDiffDialog = new gdxdiffdialog::GdxDiffDialog(path, this);
-        connect(mGdxDiffDialog, &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
-    }
-    else
-        mGdxDiffDialog->setRecentPath(path);
-
+    mGdxDiffDialog->setRecentPath(path);
     mGdxDiffDialog->show();
 }
 

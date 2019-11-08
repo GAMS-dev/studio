@@ -378,7 +378,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
-    gdxdiffdialog::GdxDiffDialog* mGdxDiffDialog = nullptr;
+    std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 };
 
 }

@@ -10,18 +10,15 @@ namespace gams {
 namespace studio {
 namespace gdxdiffdialog {
 
-GdxDiffDialog::GdxDiffDialog(QString recentPath, QWidget *parent) :
+GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::GdxDiffDialog),
-    mRecentPath(recentPath)
+    ui(new Ui::GdxDiffDialog)
 {
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->lineEdit_4->setValidator(new QDoubleValidator());
     ui->lineEdit_5->setValidator(new QDoubleValidator());
-
-    QDir::setCurrent(mRecentPath);
 }
 
 GdxDiffDialog::~GdxDiffDialog()
@@ -167,6 +164,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldToCompare_currentInde
 void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &recentPath)
 {
     mRecentPath = recentPath;
+    QDir::setCurrent(mRecentPath);
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
