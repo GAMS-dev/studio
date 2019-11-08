@@ -55,6 +55,7 @@ enum ContextAction {
     actSelectAll,
     actExpandAll,
     actCollapseAll,
+    actGdxDiff,
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -67,9 +68,9 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actSep1, addSeparator());
 
     mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
+    mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
-
     mActions.insert(actSep1, addSeparator());
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
@@ -157,6 +158,17 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     bool isReOpenableWithSolverOptionEditor = isOpen && isOptFile && !isOpenWithSolverOptionEditor;
     bool isReOpenableAsText = isOpen && isOptFile && isOpenWithSolverOptionEditor;
 
+    // opening GDX diff is only possible for one or two selected GDX files
+    bool isOpenableWithGdxDiff = false;
+    if (mNodes.count() == 1 || mNodes.count() == 2) {
+        ProjectFileNode *fn = mNodes.first()->toFile();
+        isOpenableWithGdxDiff = fn && fn->file()->kind() == FileKind::Gdx;
+        if (mNodes.count() == 2) {
+            fn = mNodes.last()->toFile();
+            isOpenableWithGdxDiff = isOpenableWithGdxDiff && fn && fn->file()->kind() == FileKind::Gdx;
+        }
+    }
+
     QString file;
     if (fileNode && fileNode->assignedRunGroup()) {
         file = fileNode->assignedRunGroup()->parameter("gms");
@@ -164,6 +176,9 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     }
 
     mActions[actExplorer]->setEnabled(single);
+
+    mActions[actGdxDiff]->setEnabled(isOpenableWithGdxDiff);
+    mActions[actGdxDiff]->setVisible(isOpenableWithGdxDiff);
 
     mActions[actOpen]->setEnabled(isOpenable);
     mActions[actOpen]->setVisible(isOpenable);
@@ -296,6 +311,17 @@ void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
     }
 
     emit newFileDialog(groups, solverName);
+}
+
+void ProjectContextMenu::onGdxDiff()
+{
+    ProjectFileNode *file = mNodes.first()->toFile();
+    QString workingDir = QFileInfo(file->location()).path();
+
+    if (mNodes.size() == 1)
+        emit openGdxDiffDialog(workingDir, mNodes.first()->toFile()->location());
+    else if (mNodes.size() == 2)
+        emit openGdxDiffDialog(workingDir, mNodes.first()->toFile()->location(), mNodes.last()->toFile()->location());
 }
 
 void ProjectContextMenu::onOpenFileLoc()

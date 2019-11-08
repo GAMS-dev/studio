@@ -165,6 +165,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openGdxDiffDialog, this, &MainWindow::actionGDX_Diff_triggered);
+
 
     ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mainTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
@@ -1853,7 +1855,17 @@ void MainWindow::on_actionGAMS_Library_triggered()
 void MainWindow::on_actionGDX_Diff_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
-    mGdxDiffDialog->setRecentPath(path);
+    actionGDX_Diff_triggered(path);
+}
+
+void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString input1, QString input2)
+{
+    if (!input1.isEmpty()) { // function call was triggered from the context menu
+        mGdxDiffDialog->clear();
+        mGdxDiffDialog->setInput1(input1);
+        mGdxDiffDialog->setInput2(input2);
+    }
+    mGdxDiffDialog->setRecentPath(workingDirectory);
     mGdxDiffDialog->show();
 }
 

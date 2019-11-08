@@ -167,7 +167,17 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &re
     QDir::setCurrent(mRecentPath);
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
+void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput1(QString filePath)
+{
+    ui->leInput1->setText(filePath);
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput2(QString filePath)
+{
+    ui->leInput2->setText(filePath);
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::clear()
 {
     ui->leInput1->clear();
     ui->leInput2->clear();
@@ -178,5 +188,9 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
     ui->cbFieldOnly->setChecked(false);
     ui->cbIgnoreSetText->setChecked(false);
     ui->cbFieldToCompare->setCurrentIndex(0);
+}
 
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
+{
+    clear();
 }

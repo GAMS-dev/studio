@@ -23,6 +23,9 @@ public:
     QString diffFile();
 
     void setRecentPath(const QString &recentPath);
+    void setInput1(QString filePath);
+    void setInput2(QString filePath);
+    void clear();
 
 private slots:
 

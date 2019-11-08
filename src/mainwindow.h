@@ -231,6 +231,7 @@ private slots:
     void on_actionStop_triggered();
     void on_actionGAMS_Library_triggered();
     void on_actionGDX_Diff_triggered();
+    void actionGDX_Diff_triggered(QString workingDirectory, QString input1="", QString input2="");
     // About
     void on_actionHelp_triggered();
     void on_actionAbout_Studio_triggered();
