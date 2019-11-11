@@ -69,11 +69,17 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
         {SyntaxTabHd, QColor(Qt::darkGreen).darker(140)},
         {SyntaxEmbed, QColor(200, 70, 0)},
     };
+    // TODO(JM) Check what additional kinds belong here too (kinds that won't be passed to the next line)
+    mSingleLineKinds << SyntaxKind::Directive << SyntaxKind::DirectiveBody << SyntaxKind::CommentEndline
+                     << SyntaxKind::CommentLine << SyntaxKind::Title;
+
     // To visualize one format: add color index at start e.g. initKind(1, new SyntaxReservedBody());
     initKind(new SyntaxStandard(), Qt::red);
     SyntaxDirective *syntaxDirective = new SyntaxDirective();
     initKind(syntaxDirective, cl.value(SyntaxDirex));
-    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody), cl.value(SyntaxDiBdy));
+    SyntaxDirectiveBody *syntaxDirectiveBody = new SyntaxDirectiveBody(SyntaxKind::DirectiveBody);
+    initKind(syntaxDirectiveBody, cl.value(SyntaxDiBdy));
+    syntaxDirective->setDirectiveBody(syntaxDirectiveBody);
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), cl.value(SyntaxComnt), fItalic);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title), cl.value(SyntaxTitle), fBoldItalic);
 
@@ -130,7 +136,6 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
 
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), fBold);
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), cl.value(SyntaxIdAsn));
-
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
@@ -237,7 +242,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         else
             textBlock.setUserData(blockData);
     }
-    setCurrentBlockState(code.code());
+    setCurrentBlockState(purgeCode(code.code()));
+//    DEB() << text << "      _" << codeDeb(code.code());
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind)
@@ -276,8 +282,6 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
     SyntaxKind::Title,
     SyntaxKind::String,
     SyntaxKind::Assignment,
-    SyntaxKind::AssignmentLabel,
-    SyntaxKind::AssignmentValue,
     SyntaxKind::CommentLine,
     SyntaxKind::CommentBlock,
     SyntaxKind::CommentEndline,
@@ -349,6 +353,9 @@ void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, QColor color
     if (color.isValid()) syntax->charFormat().setForeground(color);
     if (fMod & fItalic) syntax->charFormat().setFontItalic(true);
     if (fMod & fBold) syntax->charFormat().setFontWeight(QFont::Bold);
+
+    // TODO(JM) check if mSingleLineKinds can be left out of mKinds because the code won't be passed to the next line
+//    if (!mSingleLineKinds.contains(syntax->kind())) {}
     mKinds << syntax;
     addCode(mKinds.length()-1, 0);
 }
@@ -396,15 +403,25 @@ BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, KindInde
     return code;
 }
 
-//QString SyntaxHighlighter::codeDeb(int code)
-//{
-//    QString res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind());
-//    while (code) {
-//        code = mCodes.at(code).second;
-//        res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind()) + ", " + res;
-//    }
-//    return res;
-//}
+int SyntaxHighlighter::purgeCode(int code)
+{
+    SyntaxKind kind = mKinds.at(mCodes.at(code).first)->kind();
+    while (mSingleLineKinds.contains(kind)) {
+        code = mCodes.at(code).second;
+        kind = mKinds.at(mCodes.at(code).first)->kind();
+    }
+    return code;
+}
+
+QString SyntaxHighlighter::codeDeb(int code)
+{
+    QString res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind());
+    while (code) {
+        code = mCodes.at(code).second;
+        res = syntaxKindName(mKinds.at(mCodes.at(code).first)->kind()) + ", " + res;
+    }
+    return res;
+}
 
 
 } // namespace syntax

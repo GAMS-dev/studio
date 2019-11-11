@@ -41,8 +41,7 @@ class WelcomePage : public QWidget
     Q_OBJECT
 
 public:
-    explicit WelcomePage(HistoryData *history, MainWindow *parent = nullptr);
-    void historyChanged(HistoryData *history);
+    explicit WelcomePage(MainWindow *parent = nullptr);
     ~WelcomePage();
 
 signals:
@@ -52,6 +51,7 @@ signals:
     void relayDocOpen(QString doc, QString anchor);
 
 public slots:
+    void historyChanged();
     void on_relayAction(QString action);
     void on_relayModLibLoad(QString lib);
     void on_relayOpenDoc(QString doc, QString anchor);

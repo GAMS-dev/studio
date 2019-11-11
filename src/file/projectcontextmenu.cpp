@@ -26,6 +26,8 @@
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
 #include "support/solverconfiginfo.h"
+#include "locators/abstractsystemlogger.h"
+#include "locators/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -112,8 +114,8 @@ ProjectContextMenu::ProjectContextMenu()
            }
         }
     } catch (...) {
-        // TODO (AF): check for better solution
-        // The distributionValidator already prints an error to the System Log
+        // The DistributionValidator as well as the Help View already print an error message,
+        // so we just make sure that there is no issue if GAMS is not found.
     }
 
     mActions.insert(actSep5, addSeparator());

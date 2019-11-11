@@ -180,11 +180,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->remove("lastOpenedFiles");
     mAppSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < main->history()->lastOpenedFiles.length(); i++) {
+    for (int i = 0; i < main->history()->mLastOpenedFiles.length(); i++) {
 
-        if (main->history()->lastOpenedFiles.at(i) == "") break;
+        if (main->history()->mLastOpenedFiles.at(i) == "") break;
         mAppSettings->setArrayIndex(i);
-        mAppSettings->setValue("file", main->history()->lastOpenedFiles.at(i));
+        mAppSettings->setValue("file", main->history()->mLastOpenedFiles.at(i));
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();
@@ -432,10 +432,10 @@ void StudioSettings::restoreLastFilesUsed(MainWindow *main)
 {
     mAppSettings->beginGroup("fileHistory");
     mAppSettings->beginReadArray("lastOpenedFiles");
-    main->history()->lastOpenedFiles.clear();
+    main->history()->mLastOpenedFiles.clear();
     for (int i = 0; i < historySize(); i++) {
         mAppSettings->setArrayIndex(i);
-        main->history()->lastOpenedFiles.append(mAppSettings->value("file").toString());
+        main->history()->mLastOpenedFiles.append(mAppSettings->value("file").toString());
     }
     mAppSettings->endArray();
     mAppSettings->endGroup();

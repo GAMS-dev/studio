@@ -636,6 +636,22 @@
          <item>
           <layout class="QVBoxLayout" name="vl_linklist">
            <item>
+            <widget class="gams::studio::WpLabel" name="label_whatsnew">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;img src=&quot;:/img/pen&quot; width=&quot;14&quot; height=&quot;14&quot; style=&quot;vertical-align: middle;&quot;/&gt;&lt;/p&gt;&lt;/td&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;  What's new in Studio?&lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="margin">
+              <number>4</number>
+             </property>
+             <property name="action" stdset="0">
+              <string>openWhatsNew</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="gams::studio::WpLabel" name="label_doc_release">
              <property name="font">
               <font>
@@ -866,6 +882,22 @@
     <hint type="destinationlabel">
      <x>485</x>
      <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>label_whatsnew</sender>
+   <signal>relayActionLab(QString)</signal>
+   <receiver>WelcomePage</receiver>
+   <slot>on_relayAction(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1038</x>
+     <y>381</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>589</x>
+     <y>556</y>
     </hint>
    </hints>
   </connection>

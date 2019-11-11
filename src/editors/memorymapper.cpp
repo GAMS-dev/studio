@@ -241,6 +241,14 @@ AbstractTextMapper::Chunk *MemoryMapper::nextChunk(AbstractTextMapper::Chunk *ch
     return nullptr;
 }
 
+AbstractTextMapper::Chunk *MemoryMapper::prevChunk(AbstractTextMapper::Chunk *chunk)
+{
+    if (!chunk) return nullptr;
+    int i = mChunks.indexOf(chunk);
+    if (i > 0) return mChunks.at(i-1);
+    return nullptr;
+}
+
 int MemoryMapper::currentRunLines()
 {
     int res = -1;
@@ -751,6 +759,58 @@ int MemoryMapper::knownLineNrs() const
     return lineCount();
 }
 
+QString MemoryMapper::extractLstRef(LineRef lineRef)
+{
+    if (!lineRef.chunk) return QString();
+    int lastCh = lineRef.chunk->lineBytes.at(lineRef.relLine+1)-2;
+    if (lastCh - lineRef.chunk->lineBytes.at(lineRef.relLine) < 7) return QString();
+    if (lineRef.chunk->bArray.at(lastCh) != ']') return QString();
+    int firstCh = lastCh-1;
+    while (firstCh >= lineRef.chunk->lineBytes.at(lineRef.relLine) && lineRef.chunk->bArray.at(firstCh) != '[')
+        --firstCh;
+    QString res = lineRef.chunk->bArray.mid(firstCh+1, lastCh-firstCh-1);
+    if (!res.startsWith("LST:")) return QString();
+    return res;
+}
+
+QString MemoryMapper::findClosestLst(const int &localLine)
+{
+    LineRef backRef;
+    // convert localLine to LineRef
+    backRef.chunk = mChunks.at(topLine().chunkNr);
+    backRef.relLine = topLine().localLine + localLine;
+    while (backRef.chunk && backRef.relLine >= backRef.chunk->lineCount()) {
+        backRef.relLine -= backRef.chunk->lineCount();
+        backRef.chunk = nextChunk(backRef.chunk);
+    }
+    if (backRef.chunk && backRef.chunk->nr < mUnits.last().firstChunk->nr)
+        return QString();
+    LineRef foreRef = backRef;
+    // take previous line while in error description (line starts with space)
+    while(backRef.chunk &&
+          backRef.chunk->bArray.at(backRef.chunk->lineBytes.at(backRef.relLine)) == ' ')
+        backRef = prevRef(backRef);
+    // take next line while in error description (line starts with space)
+    while(foreRef.chunk &&
+          foreRef.chunk->bArray.at(foreRef.chunk->lineBytes.at(foreRef.relLine)) == ' ')
+        foreRef = nextRef(foreRef);
+
+    // look for next lst-link in both directions
+    QString href;
+    int count = 0;
+    while (backRef.chunk || foreRef.chunk) {
+        href = extractLstRef(backRef);
+        if (!href.isEmpty()) return href;
+        href = extractLstRef(foreRef);
+        if (!href.isEmpty()) return href;
+        if (++count > 1000) break;
+        if (backRef.chunk) backRef = prevRef(backRef);
+        if (backRef.chunk && backRef.chunk->nr < mUnits.last().firstChunk->nr) backRef.chunk = nullptr;
+        if (foreRef.chunk) foreRef = nextRef(foreRef);
+    }
+    return QString();
+}
+
 int MemoryMapper::chunkCount() const
 {
     return mChunks.size();
@@ -817,6 +877,19 @@ MemoryMapper::LineRef MemoryMapper::nextRef(const MemoryMapper::LineRef &ref)
     } else {
         res.chunk = nextChunk(res.chunk);
         res.relLine = 0;
+    }
+    return res;
+}
+
+MemoryMapper::LineRef MemoryMapper::prevRef(const MemoryMapper::LineRef &ref)
+{
+    if (!ref.chunk) return LineRef();
+    LineRef res = ref;
+    if (res.relLine > 0) {
+        --res.relLine;
+    } else {
+        res.chunk = prevChunk(res.chunk);
+        res.relLine = res.chunk ? res.chunk->lineCount()-1 : 0;
     }
     return res;
 }

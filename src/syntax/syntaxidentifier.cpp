@@ -66,7 +66,7 @@ int SyntaxIdentifier::identChar(const QChar &c) const
 
 SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const QString& line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -192,7 +192,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
 
 SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -344,7 +344,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
 
     // get delimiters
     QString delim("\"\'");
-    QString special("/, .:");
+    QString special("/, .:*)");
     int end = start;
     int pos = start;
     while (pos < line.length()) {
@@ -352,7 +352,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
         // we are at the first non-white-char
         if (int quoteKind = delim.indexOf(line.at(pos))+1) {
             // find matching quote
-            end = line.indexOf(delim.at(quoteKind-1), pos+1);
+            end = line.indexOf(quoteKind<3 ? delim.at(quoteKind-1) : ')', pos+1);
             if (end < 0)
                 return SyntaxBlock(this, start, pos+1, SyntaxShift::in, true);
             pos = end+1;
@@ -363,7 +363,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
         // if no dot or colon follows, finish
         while (isWhitechar(line,pos)) ++pos;
         if (pos < line.length() && special.indexOf(line.at(pos)) < 3) break;
-        ++pos;
+        if (pos < line.length() && line.at(pos) != ')') ++pos;
         while (isWhitechar(line,pos)) ++pos;
         end = pos;
     }
