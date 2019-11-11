@@ -3521,7 +3521,7 @@ void MainWindow::openGdxDiffFile()
         ProjectGroupNode* group = nullptr;
         if (fm) {
             QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
-            if(!v.isEmpty())
+            if(v.size() == 1)
                 group = v.first()->parentNode();
         }
     }
