@@ -20,12 +20,18 @@ class GdxDiffDialog : public QDialog
 public:
     explicit GdxDiffDialog(QWidget *parent = nullptr);
     ~GdxDiffDialog();
-    QString diffFile();
 
     void setRecentPath(const QString &recentPath);
     void setInput1(QString filePath);
     void setInput2(QString filePath);
+
     void clear();
+
+    QString lastDiffFile() const;
+
+    QString lastInput1() const;
+
+    QString lastInput2() const;
 
 private slots:
 
@@ -50,7 +56,10 @@ private slots:
 private:
     Ui::GdxDiffDialog *ui;
     QString mRecentPath;
-    QString mDiffFile;
+    QString mLastDiffFile;
+    QString mLastInput1;
+    QString mLastInput2;
+
 };
 
 } // namespace gdxdiffdialog

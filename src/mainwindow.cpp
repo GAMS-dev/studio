@@ -3494,9 +3494,23 @@ void MainWindow::deleteScratchDirs(const QString &path)
 
 void MainWindow::openGdxDiffFile()
 {
-    QString diffFile = mGdxDiffDialog->diffFile();
-    if (!diffFile.isEmpty())
-        openFile(mFileMetaRepo.findOrCreateFileMeta(diffFile), true);
+    QString diffFile = mGdxDiffDialog->lastDiffFile();
+
+    if (!diffFile.isEmpty()) {
+        FileMeta *fm = mFileMetaRepo.fileMeta(diffFile);
+        ProjectGroupNode* group = nullptr;
+        if (fm) {
+            QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
+            if(v.size() == 1)
+                group = v.first()->parentNode();
+        }
+
+        ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, group);
+        openFile(node->file());
+    }
+
+    //if (!diffFile.isEmpty())
+    //    openFile(mFileMetaRepo.findOrCreateFileMeta(diffFile), true);
 }
 
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)

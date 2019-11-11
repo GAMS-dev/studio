@@ -67,12 +67,9 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbCancel_clicked()
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 {
-    GdxDiffProcess* proc = new GdxDiffProcess(this);
-
-    QString input1 = ui->leInput1->text().trimmed();
-    QString input2 = ui->leInput2->text().trimmed();
-    QString diff = ui->leDiff->text().trimmed();
-    if (input1.isEmpty() || input2.isEmpty()) {
+    mLastInput1 = ui->leInput1->text().trimmed();
+    mLastInput2 = ui->leInput2->text().trimmed();
+    if (mLastInput1.isEmpty() || mLastInput2.isEmpty()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("GDX Diff");
         msgBox.setText("Please specify two GDX files to be compared.");
@@ -82,32 +79,34 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         return;
     }
 
-    proc->setInput1(input1);
-    proc->setInput2(input2);
-    proc->setDiff(diff);
+    if (QFileInfo(mLastInput1).isRelative())
+        mLastInput1 = QDir::cleanPath(mRecentPath + QDir::separator() + mLastInput1);
+
+    if (QFileInfo(mLastInput2).isRelative())
+        mLastInput2 = QDir::cleanPath(mRecentPath + QDir::separator() + mLastInput2);
+
+    mLastDiffFile = ui->leDiff->text().trimmed();
+    if (mLastDiffFile.isEmpty())
+        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + "diffile.gdx");
+    else if (QFileInfo(mLastDiffFile).isRelative())
+        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + mLastDiffFile);
+    if (QFileInfo(mLastDiffFile).suffix().isEmpty())
+        mLastDiffFile = mLastDiffFile + ".gdx";
+
+    GdxDiffProcess* proc = new GdxDiffProcess(this);
+    proc->setWorkingDir(mRecentPath);
+    proc->setInput1(mLastInput1);
+    proc->setInput2(mLastInput2);
+    proc->setDiff(mLastDiffFile);
     proc->setEps(ui->lineEdit_4->text().trimmed());
     proc->setRelEps(ui->lineEdit_5->text().trimmed());
     proc->setIgnoreSetText(ui->cbIgnoreSetText->isChecked());
     proc->setDiffOnly(ui->cbDiffOnly->isChecked());
     proc->setFieldOnly(ui->cbFieldOnly->isChecked());
     proc->setFieldToCompare(ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex()));
-    proc->setWorkingDir(mRecentPath);
-
-    // determine the expected path of the resulting diff GDX file
-    QString expectedDiffPath;
-    if (diff.isEmpty())
-        expectedDiffPath = mRecentPath + "/diffile.gdx";
-    else {
-        if (QFileInfo(diff).isAbsolute())
-            expectedDiffPath = diff;
-        else
-            expectedDiffPath = mRecentPath + "/" + diff;
-    }
-    if (QFileInfo(expectedDiffPath).suffix().isEmpty())
-        expectedDiffPath = expectedDiffPath + ".gdx";
 
     MainWindow* mainWindow = static_cast<MainWindow*>(parent());
-    FileMeta* fm = mainWindow->fileRepo()->fileMeta(expectedDiffPath);
+    FileMeta* fm = mainWindow->fileRepo()->fileMeta(mLastDiffFile);
     if (fm && !fm->editors().isEmpty()) {
         gdxviewer::GdxViewer* gdxViewer = ViewHelper::toGdxViewer(fm->editors().first());
         gdxViewer->releaseFile();
@@ -117,8 +116,8 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     } else
         proc->execute();
 
-    mDiffFile = proc->diffFile();
-    if (mDiffFile.isEmpty()) { // give an error pop up that no diff file was created
+    mLastDiffFile = proc->diffFile();
+    if (mLastDiffFile.isEmpty()) { // give an error pop up that no diff file was created
         //TODO(CW): in case of error add extra error text to system output
         QMessageBox msgBox;
         msgBox.setWindowTitle("GDX Diff");
@@ -129,11 +128,6 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     }
     delete proc;
     accept();
-}
-
-QString gams::studio::gdxdiffdialog::GdxDiffDialog::diffFile()
-{
-    return mDiffFile;
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldOnly_toggled(bool checked)
@@ -193,4 +187,19 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::clear()
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
 {
     clear();
+}
+
+QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput2() const
+{
+    return mLastInput2;
+}
+
+QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const
+{
+    return mLastInput1;
+}
+
+QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastDiffFile() const
+{
+    return mLastDiffFile;
 }
