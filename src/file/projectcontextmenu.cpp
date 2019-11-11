@@ -113,7 +113,7 @@ ProjectContextMenu::ProjectContextMenu()
                mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
            }
         }
-    } catch (std::exception& e) {
+    } catch (...) {
         // The DistributionValidator as well as the Help View already print an error message,
         // so we just make sure that there is no issue if GAMS is not found.
     }
