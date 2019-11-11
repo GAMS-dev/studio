@@ -3496,21 +3496,37 @@ void MainWindow::openGdxDiffFile()
 {
     QString diffFile = mGdxDiffDialog->lastDiffFile();
 
-    if (!diffFile.isEmpty()) {
+    QString input1 = mGdxDiffDialog->lastInput1();
+    QString input2 = mGdxDiffDialog->lastInput2();
+    if (diffFile.isEmpty())
+        return;
+
+    FileMeta *fmInput1 = mFileMetaRepo.fileMeta(input1);
+    FileMeta *fmInput2 = mFileMetaRepo.fileMeta(input2);
+    ProjectGroupNode* pgDiff   = nullptr;
+
+    // if possible get the group to which both input files belong
+    if (fmInput1 && fmInput2) {
+        QVector<ProjectFileNode*> nodesInput1 = mProjectRepo.fileNodes(fmInput1->id());
+        QVector<ProjectFileNode*> nodesInput2 = mProjectRepo.fileNodes(fmInput2->id());
+
+        if (nodesInput1.size() == 1 && nodesInput2.size() == 1) {
+            if (nodesInput1.first()->parentNode() == nodesInput2.first()->parentNode())
+                pgDiff = nodesInput1.first()->parentNode();
+        }
+    }
+    // if no group was found, we try to open the file in the first node that contains the it
+    if (pgDiff == nullptr) {
         FileMeta *fm = mFileMetaRepo.fileMeta(diffFile);
         ProjectGroupNode* group = nullptr;
         if (fm) {
             QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
-            if(v.size() == 1)
+            if(!v.isEmpty())
                 group = v.first()->parentNode();
         }
-
-        ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, group);
-        openFile(node->file());
     }
-
-    //if (!diffFile.isEmpty())
-    //    openFile(mFileMetaRepo.findOrCreateFileMeta(diffFile), true);
+    ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
+    openFile(node->file());
 }
 
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
