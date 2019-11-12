@@ -120,6 +120,18 @@ void Keys::reset()
     *seq << QKeySequence("Ctrl+PgDown");
     setHotkey(Hotkey::MoveViewPageDown, seq);
 
+    seq = new KeySeqList("MoveToEndOfLine","Move to the end of line");
+#ifdef Q_OS_OSX
+    *seq << QKeySequence("Ctrl+Right") << QKeySequence("Shift+Ctrl+Right");
+#endif
+    setHotkey(Hotkey::MoveToEndOfLine, seq);
+
+    seq = new KeySeqList("MoveToStartOfLine","Move to the start of line");
+#ifdef Q_OS_OSX
+    *seq << QKeySequence("Ctrl+Left") << QKeySequence("Shift+Ctrl+Left");
+#endif
+    setHotkey(Hotkey::MoveToStartOfLine, seq);
+
     seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
     *seq << QKeySequence("Ctrl+Right");
     setHotkey(Hotkey::MoveCharGroupRight, seq);
@@ -175,16 +187,6 @@ void Keys::reset()
 
     seq = new KeySeqList("Shift+F8","select to matching parentheses");
     setHotkey(Hotkey::SelectParentheses, seq);
-
-#ifdef Q_OS_OSX
-    seq = new KeySeqList("MoveToEndOfLine","Move to the end of line");
-    *seq << QKeySequence("Ctrl+Right") << QKeySequence("Shift+Ctrl+Right");
-    setHotkey(Hotkey::MoveToEndOfLine, seq);
-
-    seq = new KeySeqList("MoveToStartOfLine","Move to the start of line");
-    *seq << QKeySequence("Ctrl+Left") << QKeySequence("Shift+Ctrl+Left");
-    setHotkey(Hotkey::MoveToStartOfLine, seq);
-#endif
 }
 
 void Keys::read(const QJsonObject& json)
