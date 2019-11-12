@@ -317,6 +317,14 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
                 cur.setPosition(pm.match+1, mm);
                 setTextCursor(cur);
             }
+        } else if (e == Hotkey::MoveToEndOfLine) {
+            QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            QTextCursor cur = textCursor();
+            cur.movePosition(QTextCursor::EndOfLine, mm);
+        } else if (e == Hotkey::MoveToStartOfLine) {
+            QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            QTextCursor cur = textCursor();
+            cur.movePosition(QTextCursor::StartOfLine, mm);
         } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
             QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
             QTextCursor cur = textCursor();
@@ -1807,6 +1815,9 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     mLastCharType = charType;
     cursor.endEditBlock();
 }
+
+BlockData::~BlockData()
+{ }
 
 QChar BlockData::charForPos(int relPos)
 {
