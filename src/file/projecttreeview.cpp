@@ -139,6 +139,16 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
     }
 }
 
+void ProjectTreeView::keyPressEvent(QKeyEvent *event)
+{
+    if (currentIndex().isValid() && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
+        event->accept();
+        emit activated(currentIndex());
+        return;
+    }
+    QTreeView::keyPressEvent(event);
+}
+
 void ProjectTreeView::selectAll()
 {
     expandAll();
