@@ -986,7 +986,7 @@ void OptionWidget::addActions()
 {
     QAction* insertOptionAction = mContextMenu.addAction(QIcon(":/img/insert"), "Insert new parameter", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
-    insertOptionAction->setShortcut( QKeySequence("Ctrl+Insert") );
+    insertOptionAction->setShortcut( QKeySequence("Ctrl+Return") );
     insertOptionAction->setShortcutVisibleInContextMenu(true);
     insertOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsOptionTableView->addAction(insertOptionAction);
