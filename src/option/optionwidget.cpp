@@ -511,6 +511,7 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
                                                                        Qt::DisplayRole,
                                                                        data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->gamsOptionTableView->clearSelection();
+    ui->gamsOptionTableView->clearFocus();
     QItemSelection selection;
     for(QModelIndex i :indices) {
         QModelIndex valueIndex = ui->gamsOptionTableView->model()->index(i.row(), GamsOptionTableModel::COLUMN_OPTION_VALUE);
@@ -534,6 +535,7 @@ void OptionWidget::findAndSelectionOptionFromDefinition()
     }
 
     ui->gamsOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
+    ui->gamsOptionTreeView->setFocus();
 }
 
 void OptionWidget::showOptionDefinition()

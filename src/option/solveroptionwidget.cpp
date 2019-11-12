@@ -877,6 +877,7 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
                                                                        Qt::DisplayRole,
                                                                        data.toString(), -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->solverOptionTableView->clearSelection();
+    ui->solverOptionTableView->clearFocus();
     QItemSelection selection;
     for(QModelIndex i :indices) {
         QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE);
@@ -900,6 +901,7 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
     }
 
     ui->solverOptionTableView->selectionModel()->select(selection, QItemSelectionModel::Select);
+    ui->solverOptionTreeView->setFocus();
 }
 
 void SolverOptionWidget::toggleCommentOption()
