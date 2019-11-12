@@ -1685,8 +1685,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        if (fc->document())
-            fc->document()->setModified(false);
+        fc->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;
