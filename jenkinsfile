@@ -166,15 +166,6 @@ pipeline {
 
                             linuxdeployqt-6-x86_64.AppImage appdir/usr/share/studio.desktop -appimage
                         '''
-                        script {
-                            def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master') {
-                                sh "mv GAMS_Studio-*.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
-                                archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
-                            } else {
-                                archiveArtifacts artifacts: '*.AppImage', fingerprint: true
-                            }
-                        }
                     }
                 }
                 stage ('windowsX64') {
@@ -196,14 +187,6 @@ pipeline {
                                 cd %WORKSPACE%\\tmp\\studio
                                 signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com studio.exe
                             '''
-                        }
-                        script {
-                            def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master') {
-                                zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
-                            } else {
-                                zip zipFile: "GAMS_Studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
-                            }
                         }
                     }
                 }
@@ -243,6 +226,9 @@ pipeline {
         }
         stage('Notarize') {
             agent { label 'macos' }
+            when {
+                expression { return env.BRANCH_NAME == "master" || env.BRANCH_NAME ==~ /.*-rc/}
+            }
             steps {
                 withCredentials([usernamePassword(credentialsId: '4568bda5-894f-4fa1-b9c5-a8d42f6e61ac', passwordVariable: 'APPLE_ID_PASS', usernameVariable: 'APPLE_ID_USER')]) {
                     sh '''
@@ -291,7 +277,44 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'upload.log, report.xml, *.dmg', fingerprint: true
+                    archiveArtifacts artifacts: 'upload.log, report.xml', fingerprint: true
+                }
+            }
+        }
+        stage('Archive') {
+            parallel {
+                stage('linux') {
+                    agent { label 'master'}
+                    steps {
+                        script {
+                            def versionData = artifactVersion()
+                            if (env.BRANCH_NAME != 'master') {
+                                sh "mv GAMS_Studio-*.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
+                                archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
+                            } else {
+                                archiveArtifacts artifacts: '*.AppImage', fingerprint: true
+                            }
+                        }
+                    }
+                }
+                stage('windowsX64') {
+                    agent { label 'windowsX64' }
+                    steps {
+                        script {
+                            def versionData = artifactVersion()
+                            if (env.BRANCH_NAME != 'master') {
+                                zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
+                            } else {
+                                zip zipFile: "GAMS_Studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
+                            }
+                        }
+                    }
+                }
+                stage('macos') {
+                    agent { label 'macos' }
+                    steps {
+                        archiveArtifacts artifacts: '*.dmg', fingerprint: true
+                    }
                 }
             }
         }
