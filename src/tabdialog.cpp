@@ -52,6 +52,7 @@ TabDialog::TabDialog(QTabWidget *tabs, QWidget *parent) :
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &TabDialog::setFilter);
     connect(ui->lineEdit, &QLineEdit::returnPressed, this, &TabDialog::returnPressed);
+    ui->lineEdit->installEventFilter(this);
 }
 
 TabDialog::~TabDialog()
@@ -114,6 +115,18 @@ void TabDialog::keyPressEvent(QKeyEvent *e)
     }
 }
 
+bool TabDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched != ui->lineEdit) return false;
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Up || keyEvent->key() == Qt::Key_Down) {
+            keyPressEvent(keyEvent);
+        }
+    }
+    return false;
+}
+
 void TabDialog::setFilter(const QString &filter)
 {
     mFilterModel->setFilterWildcard(filter);
@@ -146,7 +159,7 @@ TabListModel::~TabListModel()
 
 int TabListModel::rowCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     return mTabs->count();
 }
 
