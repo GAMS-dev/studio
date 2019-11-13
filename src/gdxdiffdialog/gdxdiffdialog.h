@@ -53,12 +53,24 @@ private slots:
 
     void on_pbClear_clicked();
 
+    void diffDone();
+
 private:
+    void setControlsEnabled(bool enabled);
+
     Ui::GdxDiffDialog *ui;
     QString mRecentPath;
     QString mLastDiffFile;
     QString mLastInput1;
     QString mLastInput2;
+
+    std::unique_ptr<GdxDiffProcess> mProc;
+    gdxviewer::GdxViewer* mDiffGdxViewer = nullptr;
+    FileMeta* mDiffFm = nullptr;
+    bool mWasCanceled = false;
+
+protected:
+    void closeEvent(QCloseEvent *e) override;
 
 };
 

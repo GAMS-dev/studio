@@ -1,7 +1,6 @@
 #include "gdxdiffdialog.h"
 #include "ui_gdxdiffdialog.h"
 #include <QFileDialog>
-#include <QDebug>
 #include <QMessageBox>
 #include <editors/viewhelper.h>
 #include <gdxviewer/gdxviewer.h>
@@ -12,17 +11,21 @@ namespace gdxdiffdialog {
 
 GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::GdxDiffDialog)
+    ui(new Ui::GdxDiffDialog),
+    mProc(new GdxDiffProcess(this))
 {
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->lineEdit_4->setValidator(new QDoubleValidator());
     ui->lineEdit_5->setValidator(new QDoubleValidator());
+
+    connect(mProc.get(), &GdxDiffProcess::finished, this, &GdxDiffDialog::diffDone);
 }
 
 GdxDiffDialog::~GdxDiffDialog()
 {
+    on_pbCancel_clicked();
     delete ui;
 }
 
@@ -62,11 +65,15 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_3_clicked()
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbCancel_clicked()
 {
+    mWasCanceled = true;
+    mProc->kill();
     reject();
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 {
+    mWasCanceled = false;
+    setControlsEnabled(false);
     mLastInput1 = ui->leInput1->text().trimmed();
     mLastInput2 = ui->leInput2->text().trimmed();
     if (mLastInput1.isEmpty() || mLastInput2.isEmpty()) {
@@ -93,41 +100,25 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     if (QFileInfo(mLastDiffFile).suffix().isEmpty())
         mLastDiffFile = mLastDiffFile + ".gdx";
 
-    GdxDiffProcess* proc = new GdxDiffProcess(this);
-    proc->setWorkingDir(mRecentPath);
-    proc->setInput1(mLastInput1);
-    proc->setInput2(mLastInput2);
-    proc->setDiff(mLastDiffFile);
-    proc->setEps(ui->lineEdit_4->text().trimmed());
-    proc->setRelEps(ui->lineEdit_5->text().trimmed());
-    proc->setIgnoreSetText(ui->cbIgnoreSetText->isChecked());
-    proc->setDiffOnly(ui->cbDiffOnly->isChecked());
-    proc->setFieldOnly(ui->cbFieldOnly->isChecked());
-    proc->setFieldToCompare(ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex()));
+    mProc->setWorkingDir(mRecentPath);
+    mProc->setInput1(mLastInput1);
+    mProc->setInput2(mLastInput2);
+    mProc->setDiff(mLastDiffFile);
+    mProc->setEps(ui->lineEdit_4->text().trimmed());
+    mProc->setRelEps(ui->lineEdit_5->text().trimmed());
+    mProc->setIgnoreSetText(ui->cbIgnoreSetText->isChecked());
+    mProc->setDiffOnly(ui->cbDiffOnly->isChecked());
+    mProc->setFieldOnly(ui->cbFieldOnly->isChecked());
+    mProc->setFieldToCompare(ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex()));
 
     MainWindow* mainWindow = static_cast<MainWindow*>(parent());
-    FileMeta* fm = mainWindow->fileRepo()->fileMeta(mLastDiffFile);
-    if (fm && !fm->editors().isEmpty()) {
-        gdxviewer::GdxViewer* gdxViewer = ViewHelper::toGdxViewer(fm->editors().first());
-        gdxViewer->releaseFile();
-        proc->execute();
-        gdxViewer->setHasChanged(true);
-        fm->reload();
-    } else
-        proc->execute();
-
-    mLastDiffFile = proc->diffFile();
-    if (mLastDiffFile.isEmpty()) { // give an error pop up that no diff file was created
-        //TODO(CW): in case of error add extra error text to system output
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("GDX Diff");
-        msgBox.setText("Unable to create diff file. gdxdiff return code: " + QString::number(proc->exitCode()) + ". See the system output for details.");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
+    mDiffFm = mainWindow->fileRepo()->fileMeta(mLastDiffFile);
+    if (mDiffFm && !mDiffFm->editors().isEmpty()) {
+        mDiffGdxViewer = ViewHelper::toGdxViewer(mDiffFm->editors().first());
+        if (mDiffGdxViewer)
+            mDiffGdxViewer->releaseFile();
     }
-    delete proc;
-    accept();
+    mProc->execute();
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldOnly_toggled(bool checked)
@@ -187,6 +178,52 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::clear()
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
 {
     clear();
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::diffDone()
+{
+    if (mDiffGdxViewer)
+        mDiffGdxViewer->setHasChanged(true);
+    if (mDiffFm)
+        mDiffFm->reload();
+    setControlsEnabled(true);
+    if (!mWasCanceled) {
+        mWasCanceled = false;
+        mLastDiffFile = mProc->diffFile();
+        if (mLastDiffFile.isEmpty()) { // give an error pop up that no diff file was created
+            //TODO(CW): in case of error add extra error text to system output
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("GDX Diff");
+            msgBox.setText("Unable to create diff file. gdxdiff return code: " + QString::number(mProc->exitCode()) + ". See the system output for details.");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.exec();
+        }
+        accept();
+    }
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::setControlsEnabled(bool enabled)
+{
+    ui->pbOK->setEnabled(enabled);
+    ui->pbClear->setEnabled(enabled);
+    ui->pushButton->setEnabled(enabled);
+    ui->pushButton_2->setEnabled(enabled);
+    ui->pushButton_3->setEnabled(enabled);
+    ui->leDiff->setEnabled(enabled);
+    ui->leInput1->setEnabled(enabled);
+    ui->leInput2->setEnabled(enabled);
+    ui->lineEdit_4->setEnabled(enabled);
+    ui->lineEdit_5->setEnabled(enabled);
+    ui->cbDiffOnly->setEnabled(enabled);
+    ui->cbFieldOnly->setEnabled(enabled);
+    ui->cbIgnoreSetText->setEnabled(enabled);
+    ui->cbFieldToCompare->setEnabled(enabled);
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::closeEvent(QCloseEvent *e)
+{
+    on_pbCancel_clicked();
 }
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput2() const

@@ -1,5 +1,4 @@
 #include "gdxdiffprocess.h"
-#include <QDebug>
 #include <QDir>
 #include <locators/abstractsystemlogger.h>
 #include "locators/sysloglocator.h"
@@ -11,7 +10,7 @@ namespace gdxdiffdialog {
 GdxDiffProcess::GdxDiffProcess(QObject *parent)
     : AbstractProcess("gdxdiff", parent)
 {
-
+    connect(this, &AbstractProcess::newStdChannelData, this, &GdxDiffProcess::appendSystemLog);
 }
 
 void GdxDiffProcess::execute()
@@ -32,10 +31,8 @@ void GdxDiffProcess::execute()
         args << "DiffOnly";
     if (mIgnoreSetText)
         args << "SetDesc=0";
-    connect(this, &AbstractProcess::newStdChannelData, this, &GdxDiffProcess::appendSystemLog);
     mProcess.setWorkingDirectory(mWorkingDir);
     mProcess.start(nativeAppPath(), args);
-    mProcess.waitForFinished();
 }
 
 void GdxDiffProcess::setInput1(const QString &input1)
@@ -91,6 +88,11 @@ void GdxDiffProcess::setWorkingDir(const QString &workingDir)
 QString GdxDiffProcess::diffFile() const
 {
     return mDiffFile;
+}
+
+void GdxDiffProcess::kill()
+{
+    mProcess.kill();
 }
 
 void GdxDiffProcess::appendSystemLog(const QString &text)

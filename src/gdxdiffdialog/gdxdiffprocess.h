@@ -39,6 +39,8 @@ public:
 
     QString diffFile() const;
 
+    void kill();
+
 private:
     QString mInput1;
     QString mInput2;
