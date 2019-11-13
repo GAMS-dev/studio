@@ -951,7 +951,7 @@ void MainWindow::on_actionSave_As_triggered()
             filters << tr("All files (*.*)");
 
             QString selFilter = filters.first();
-            foreach (QString f, filters) {
+            for (QString f: filters) {
                 if (f.contains("*."+fi.suffix())) {
                     selFilter = f;
                     break;
