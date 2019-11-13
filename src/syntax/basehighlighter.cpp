@@ -341,7 +341,7 @@ void BaseHighlighter::setClean(QTextBlock block)
 BaseHighlighter::Interval::Interval(QTextBlock firstBlock, QTextBlock secondBlock)
     : QPair<int,int>(0,0)
 {
-    Q_ASSERT(firstBlock.isValid());
+    if(!firstBlock.isValid()) return;
     if (!secondBlock.isValid())
         secondBlock = firstBlock;
     else if (secondBlock < firstBlock)
