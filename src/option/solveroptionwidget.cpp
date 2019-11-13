@@ -291,7 +291,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
             action->setEnabled( thereIsAnOptionSelection );
             menu.addAction(action);
         } else if (action->objectName().compare("actionShowRecurrence_option")==0) {
-            action->setEnabled( indexSelection.size()==1 && getRecurrentOption(indexSelection.at(0)).size()>0 );
+            action->setEnabled( indexSelection.size()>=1 && getRecurrentOption(indexSelection.at(0)).size()>0 );
             menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionResize_columns")==0) {
