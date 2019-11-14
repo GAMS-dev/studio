@@ -469,6 +469,7 @@ void OptionWidget::loadCommandLineOption(const QStringList &history)
         ui->gamsOptionTreeView->collapseAll();
     }
     ui->gamsOptionCommandLine->setCurrentIndex(0);
+    emit ui->gamsOptionCommandLine->commandLineOptionChanged(ui->gamsOptionCommandLine->lineEdit(), ui->gamsOptionCommandLine->currentText());
 }
 
 void OptionWidget::selectSearchField()
