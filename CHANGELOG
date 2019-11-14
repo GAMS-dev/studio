@@ -128,6 +128,7 @@ Version 0.12.8
 
 Version 0.12.7
 ==============
+
 ## General
 -   added dialog to create license file (pops up when a license is in the user's clipboard and the "About GAMS" is opened)
 -   disabled top dockwidget area for all widgets as it should be used solely by the extended parameter editor
