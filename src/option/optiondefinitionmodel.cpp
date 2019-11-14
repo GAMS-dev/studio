@@ -123,6 +123,18 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         else
             return  QVariant::fromValue(QColor(Qt::black));
     }
+    case Qt::BackgroundColorRole: {
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+        OptionDefinitionItem *parentItem = item->parentItem();
+        if (parentItem == rootItem) {
+            if (index.row() % 2 == 0)
+               return QVariant::fromValue(QColor(Qt::white));
+            else
+                return QVariant::fromValue(QColor(245, 245, 245));
+        } else {
+            return QVariant::fromValue(QColor(Qt::white));
+        }
+    }
     default:
          break;
     }
