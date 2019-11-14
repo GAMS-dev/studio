@@ -1272,7 +1272,7 @@ void SolverOptionWidget::addActions()
 
     QAction* insertCommentAction = mContextMenu.addAction(QIcon(":/img/insert"), "Insert new comment", [this]() { insertComment(); });
     insertCommentAction->setObjectName("actionInsert_comment");
-    insertCommentAction->setShortcut( QKeySequence("Ctrl+Alt+Insert") );
+    insertCommentAction->setShortcut( QKeySequence("Ctrl+Shift+Return") );
     insertCommentAction->setShortcutVisibleInContextMenu(true);
     insertCommentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(insertCommentAction);
@@ -1365,7 +1365,7 @@ void SolverOptionWidget::addActions()
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(showDefinitionAction);
 
-    QAction* showDuplicationAction = mContextMenu.addAction("Show all parameters of the same definition", [this]() { showOptionRecurrence(); });
+    QAction* showDuplicationAction = mContextMenu.addAction("Show all options of the same definition", [this]() { showOptionRecurrence(); });
     showDuplicationAction->setObjectName("actionShowRecurrence_option");
     showDuplicationAction->setShortcut( QKeySequence("Shift+F1") );
     showDuplicationAction->setShortcutVisibleInContextMenu(true);
