@@ -25,7 +25,7 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
 
 GdxDiffDialog::~GdxDiffDialog()
 {
-    on_pbCancel_clicked();
+    cancelProcess(50);
     delete ui;
 }
 
@@ -65,8 +65,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_3_clicked()
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbCancel_clicked()
 {
-    mWasCanceled = true;
-    mProc->kill();
+    cancelProcess();
     reject();
 }
 
@@ -219,6 +218,14 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setControlsEnabled(bool enabled
     ui->cbFieldOnly->setEnabled(enabled);
     ui->cbIgnoreSetText->setEnabled(enabled);
     ui->cbFieldToCompare->setEnabled(enabled);
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::cancelProcess(int waitMSec)
+{
+    if (mProc->state() != QProcess::NotRunning) {
+        mWasCanceled = true;
+        mProc->stop(waitMSec);
+    }
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::closeEvent(QCloseEvent *e)

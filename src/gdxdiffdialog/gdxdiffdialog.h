@@ -69,6 +69,8 @@ private:
     FileMeta* mDiffFm = nullptr;
     bool mWasCanceled = false;
 
+    void cancelProcess(int waitMSec=0);
+
 protected:
     void closeEvent(QCloseEvent *e) override;
 

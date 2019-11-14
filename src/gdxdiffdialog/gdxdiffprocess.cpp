@@ -90,9 +90,11 @@ QString GdxDiffProcess::diffFile() const
     return mDiffFile;
 }
 
-void GdxDiffProcess::kill()
+void GdxDiffProcess::stop(int waitMSec)
 {
     mProcess.kill();
+    if (waitMSec>0)
+        mProcess.waitForFinished(waitMSec);
 }
 
 void GdxDiffProcess::appendSystemLog(const QString &text)

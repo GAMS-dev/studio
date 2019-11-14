@@ -39,7 +39,7 @@ public:
 
     QString diffFile() const;
 
-    void kill();
+    void stop(int waitMSec=0);
 
 private:
     QString mInput1;
