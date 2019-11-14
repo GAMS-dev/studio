@@ -28,7 +28,7 @@
 namespace gams {
 namespace studio {
 
-class GamsProcess;
+class AbstractProcess;
 
 class ProjectLogNode final: public ProjectFileNode
 {
@@ -43,7 +43,7 @@ public:
     const ProjectRootNode *root() const override;
     NodeId runGroupId() const override;
     ProjectRunGroupNode *assignedRunGroup() override;
-    void linkToProcess(GamsProcess *process);
+    void linkToProcess(AbstractProcess *process);
 
 public slots:
 //    void addProcessDataX(const QByteArray &data);

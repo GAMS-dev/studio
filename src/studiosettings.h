@@ -124,6 +124,9 @@ public:
     void loadUserSettings();
     void updateSettingsFiles();
 
+    QString miroInstallationLocation() const;
+    void setMiroInstallationLocation(const QString &location);
+
     int historySize() const;
     void setHistorySize(int historySize);
 
@@ -190,6 +193,9 @@ private:
     int mNrLogBackups;
     bool mAutoCloseBraces;
     int mEditableMaxSizeMB;
+
+    // MIRO settings page
+    QString mMiroInstallationLocation;
 
     // misc settings page
     int mHistorySize;

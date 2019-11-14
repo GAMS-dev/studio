@@ -142,7 +142,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     }
     setControlsEnabled(false);
 
-    mProc->setWorkingDir(mWorkingDir);
+    mProc->setWorkingDirectory(mWorkingDir);
     mProc->setInput1(mLastInput1);
     mProc->setInput2(mLastInput2);
     mProc->setDiff(mLastDiffFile);

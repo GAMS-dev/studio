@@ -25,6 +25,7 @@
 #include "studiosettings.h"
 #include "settingslocator.h"
 #include "ui_settingsdialog.h"
+#include "miropaths.h"
 
 namespace gams {
 namespace studio {
@@ -70,6 +71,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
 }
 
@@ -98,6 +100,15 @@ void SettingsDialog::loadSettings()
     ui->cb_writeLog->setChecked(mSettings->writeLog());
     ui->sb_nrLogBackups->setValue(mSettings->nrLogBackups());
     ui->cb_autoclose->setChecked(mSettings->autoCloseBraces());
+
+    // MIRO page
+    ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->miroInstallationLocation()));
+    if (ui->miroEdit->text().isEmpty()) {
+        MiroPaths paths("");
+        auto path = QDir::toNativeSeparators(paths.path());
+        ui->miroEdit->setText(path);
+        mSettings->setMiroInstallationLocation(path);
+    }
 
     // misc tab page
     ui->sb_historySize->setValue(mSettings->historySize());
@@ -145,6 +156,9 @@ void SettingsDialog::saveSettings()
     mSettings->setWriteLog(ui->cb_writeLog->isChecked());
     mSettings->setNrLogBackups(ui->sb_nrLogBackups->value());
     mSettings->setAutoCloseBraces(ui->cb_autoclose->isChecked());
+
+    // MIRO page
+    mSettings->setMiroInstallationLocation(ui->miroEdit->text());
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());
@@ -271,6 +285,20 @@ void SettingsDialog::on_cb_writeLog_toggled(bool checked)
 void SettingsDialog::on_sb_nrLogBackups_valueChanged(int arg1)
 {
     mSettings->setNrLogBackups(arg1);
+}
+
+void SettingsDialog::on_miroBrowseButton_clicked()
+{
+    QString dir;
+    if (mSettings->miroInstallationLocation().isEmpty())
+        dir = mSettings->defaultWorkspace();
+    else
+        dir = mSettings->miroInstallationLocation();
+    auto miro = QFileDialog::getOpenFileName(this, tr("MIRO location"), dir);
+
+    if (miro.isEmpty()) return;
+
+    ui->miroEdit->setText(QDir::toNativeSeparators(miro));
 }
 
 }

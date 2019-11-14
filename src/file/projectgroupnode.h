@@ -23,10 +23,10 @@
 #include <QProcess>
 #include <QFileInfoList>
 #include <memory>
+#include "abstractprocess.h"
+#include "editors/logparser.h"
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
-#include "editors/logparser.h"
-#include "gamsprocess.h"
 
 namespace gams {
 namespace studio {
@@ -36,7 +36,6 @@ class ProjectFileNode;
 class TextMarkRepo;
 class FileMeta;
 class FileMetaRepo;
-class AbstractProcess;
 namespace option {
 struct OptionItem;
 }
@@ -107,7 +106,8 @@ public:
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
-    GamsProcess *gamsProcess() const;
+    void setProcess(std::unique_ptr<AbstractProcess> process);
+    AbstractProcess *process() const;
     bool jumpToFirstError(bool focus, ProjectFileNode *lstNode);
 
 signals:
@@ -135,7 +135,7 @@ protected:
     void resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create = false);
 
 private:
-    std::unique_ptr<GamsProcess> mGamsProcess;
+    std::unique_ptr<AbstractProcess> mGamsProcess;
     ProjectLogNode* mLogNode = nullptr;
     QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;

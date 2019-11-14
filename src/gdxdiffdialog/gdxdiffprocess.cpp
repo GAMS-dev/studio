@@ -1,14 +1,15 @@
 #include "gdxdiffprocess.h"
-#include <QDir>
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
+
+#include <QDir>
 
 namespace gams {
 namespace studio {
 namespace gdxdiffdialog {
 
 GdxDiffProcess::GdxDiffProcess(QObject *parent)
-    : AbstractProcess("gdxdiff", parent)
+    : AbstractGamsProcess("gdxdiff", parent)
 {
     connect(this, &AbstractProcess::newStdChannelData, this, &GdxDiffProcess::appendSystemLog);
 }
@@ -31,7 +32,7 @@ void GdxDiffProcess::execute()
         args << "DiffOnly";
     if (mIgnoreSetText)
         args << "SetDesc=0";
-    mProcess.setWorkingDirectory(mWorkingDir);
+    mProcess.setWorkingDirectory(workingDirectory());
     mProcess.start(nativeAppPath(), args);
 }
 
@@ -80,11 +81,6 @@ void GdxDiffProcess::setRelEps(const QString &relEps)
     mRelEps = relEps;
 }
 
-void GdxDiffProcess::setWorkingDir(const QString &workingDir)
-{
-    mWorkingDir = workingDir;
-}
-
 QString GdxDiffProcess::diffFile() const
 {
     return mDiffFile;
@@ -103,7 +99,7 @@ void GdxDiffProcess::appendSystemLog(const QString &text)
     if (text.contains("Output:")) {
         mDiffFile = text.split("Output:").last().trimmed();
         if (QFileInfo(mDiffFile).isRelative())
-            mDiffFile = QDir::cleanPath(mWorkingDir + QDir::separator() + mDiffFile);
+            mDiffFile = QDir::cleanPath(workingDirectory() + QDir::separator() + mDiffFile);
     }
 }
 

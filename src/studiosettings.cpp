@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QDebug>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -244,6 +243,11 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("solverOptionDeleteCommentAbove", deleteAllCommentsAboveOption());
 
     mUserSettings->endGroup();
+    mUserSettings->beginGroup("MIRO");
+
+    mUserSettings->setValue("miroInstallationLocation", miroInstallationLocation());
+
+    mUserSettings->endGroup();
 
     mUserSettings->sync();
 }
@@ -376,6 +380,21 @@ void StudioSettings::loadUserSettings()
     setDeleteAllCommentsAboveOption( mUserSettings->value("solverOptionDeleteCommentAbove", deleteAllCommentsAboveOption()).toBool() );
 
     mUserSettings->endGroup();
+    mUserSettings->beginGroup("MIRO");
+
+    setMiroInstallationLocation(mUserSettings->value("miroInstallationLocation", miroInstallationLocation()).toString());
+
+    mUserSettings->endGroup();
+}
+
+QString StudioSettings::miroInstallationLocation() const
+{
+    return mMiroInstallationLocation;
+}
+
+void StudioSettings::setMiroInstallationLocation(const QString &location)
+{
+    mMiroInstallationLocation = location;
 }
 
 int StudioSettings::historySize() const

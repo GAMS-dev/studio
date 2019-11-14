@@ -47,8 +47,8 @@ namespace gams {
 namespace studio {
 
 class AbstractProcess;
-class GAMSProcess;
-class GAMSLibProcess;
+class GamsProcess;
+class GamsLibProcess;
 class WelcomePage;
 class StudioSettings;
 class SearchResultList;
@@ -90,10 +90,6 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    ///
-    /// \brief Constructs the GAMS Stuido main windows based on the given settings.
-    /// \param parent The parent widget.
-    ///
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void setInitialFiles(QStringList files);
@@ -139,12 +135,14 @@ public:
     void resetLoadAmount();
     void openSearchDialog();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
+    void execute(QString commandLineStr,
+                 std::unique_ptr<AbstractProcess> process = nullptr,
+                 ProjectFileNode *gmsFileNode = nullptr);
 
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
 #endif
     option::OptionWidget *gamsOptionWidget() const;
-
 
 signals:
     void saved();
@@ -160,7 +158,6 @@ public slots:
     void updateEditorBlockCount();
     void updateEditorItemCount();
     void updateLoadAmount();
-    void runGmsFile(ProjectFileNode *node);
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
@@ -210,7 +207,6 @@ private slots:
     void showLogTabsMenu();
     void showTabsMenu();
 
-private slots:
     // File
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
@@ -232,17 +228,28 @@ private slots:
     void on_actionInterrupt_triggered();
     void on_actionStop_triggered();
     void on_actionGAMS_Library_triggered();
+
+    // MIRO
+    void on_actionBase_mode_triggered();
+    void on_actionHypercube_mode_triggered();
+    void on_actionConfiguration_mode_triggered();
+    void on_actionStop_MIRO_triggered();
+    void on_actionCreate_model_assembly_triggered();
+    void on_actionDeploy_triggered();
+
+    // Tools
     void on_actionGDX_Diff_triggered();
     void actionGDX_Diff_triggered(QString workingDirectory, QString input1="", QString input2="");
+    void on_actionTerminal_triggered();
+    void actionTerminalTriggered(const QString &workingDir);
+
     // About
     void on_actionHelp_triggered();
     void on_actionAbout_Studio_triggered();
     void on_actionAbout_GAMS_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
-    // Tools
-    void on_actionTerminal_triggered();
-    void actionTerminalTriggered(const QString &workingDir);
+
     // View
     void on_actionProcess_Log_triggered(bool checked);
     void on_actionProject_View_triggered(bool checked);
@@ -251,6 +258,7 @@ private slots:
     void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();
     void on_actionFull_Screen_triggered();
+
     // Other
     void on_mainTabs_tabCloseRequested(int index);
     void on_logTabs_tabCloseRequested(int index);
@@ -326,7 +334,6 @@ private:
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
-    void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
     bool isActiveTabRunnable();
@@ -362,7 +369,7 @@ private:
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
 
-    GAMSLibProcess *mLibProcess = nullptr;
+    GamsLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;

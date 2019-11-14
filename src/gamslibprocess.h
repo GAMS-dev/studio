@@ -25,16 +25,12 @@
 namespace gams {
 namespace studio {
 
-class GAMSLibProcess
-        : public AbstractProcess
+class GamsLibProcess : public AbstractGamsProcess
 {
     Q_OBJECT
 
 public:
-    GAMSLibProcess(QObject *parent = Q_NULLPTR);
-
-    void setTargetDir(const QString &targetDir);
-    QString targetDir() const;
+    GamsLibProcess(QObject *parent = nullptr);
 
     void setModelNumber(int modelNumber);
     int modelNumber() const;
@@ -47,7 +43,6 @@ public:
     void setGlbFile(const QString &glbFile);
 
 private:
-    QString mTargetDir;
     int mModelNumber = -1;
     QString mModelName;
     QString mGlbFile;
