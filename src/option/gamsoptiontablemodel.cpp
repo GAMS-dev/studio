@@ -18,7 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QIcon>
-#include <QDebug>
+#include <QMessageBox>
+
 #include "option.h"
 #include "gamsoptiontablemodel.h"
 
@@ -60,14 +61,46 @@ QVariant GamsOptionTableModel::headerData(int index, Qt::Orientation orientation
             return mCheckState[index];
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            return QVariant::fromValue(QIcon(":/img/square-red"));
+            if (mOptionItem.at(index).recurrent)
+               return QVariant::fromValue(QIcon(":/img/square-red-yellow"));
+            else
+               return QVariant::fromValue(QIcon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-            return QVariant::fromValue(QIcon(":/img/square-gray"));
+                  if (mOptionItem.at(index).recurrent)
+                     return QVariant::fromValue(QIcon(":/img/square-gray-yellow"));
+                  else
+                     return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
-            return QVariant::fromValue(QIcon(":/img/square-green"));
+            if (mOptionItem.at(index).recurrent)
+                return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
+            else
+                return QVariant::fromValue(QIcon(":/img/square-green"));
         }
+    case Qt::ToolTipRole:
+        QString tooltipText = "";
+        switch(mOptionItem.at(index).error) {
+        case Invalid_Key:
+            tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(index).key) );
+            break;
+        case Incorrect_Value_Type:
+            tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(index).key) );
+            break;
+        case Value_Out_Of_Range:
+            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(index).value).arg(mOptionItem.at(index).key) );
+            break;
+        case Deprecated_Option:
+            tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index).key) );
+            break;
+        default:
+            break;
+        }
+        if (mOptionItem.at(index).recurrent) {
+            if (!tooltipText.isEmpty())
+                tooltipText.append("\n");
+            tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(mOptionItem.at(index).key));
+        }
+        return tooltipText;
     }
-
     return QVariant();
 }
 
@@ -96,18 +129,12 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole: {
-        if (col==0) {
+        if (col==GamsOptionTableModel::COLUMN_OPTION_KEY) {
             return mOptionItem.at(row).key;
-        } else if (col== 1) {
+        } else if (col== GamsOptionTableModel::COLUMN_OPTION_VALUE) {
                  return mOptionItem.at(row).value;
-        } else if (col==2) {
-            QString key = mOptionItem.at(row).key;
-            if (mOption->isASynonym(mOptionItem.at(row).key))
-                key = mOption->getNameFromSynonym(mOptionItem.at(row).key);
-            if (mOption->isValid(key) || mOption->isASynonym(key))
-                return QVariant(mOption->getOptionDefinition(key).number);
-            else
-                return QVariant(-1);
+        } else if (col==GamsOptionTableModel::COLUMN_ENTRY_NUMBER) {
+                  return mOptionItem.at(row).optionId;
         } else {
             break;
         }
@@ -117,37 +144,39 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
     }
 //    case Qt::DecorationRole
     case Qt::ToolTipRole: {
-//        if (Qt::CheckState(mCheckState[index.row()].toUInt()))
-//            return QString("'%1' has been disabled").arg(mOptionItem.at(row).key);
-        if (col==0) {
-            if ( mOption->isDoubleDashedOption(mOptionItem.at(row).key) ) {
-                if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key))) {
-                    return QString("'%1' is an invalid double dashed option (Either start with other character than [a-z or A-Z], or a subsequent character is not one of (a-z, A-Z, 0-9, or _))").arg(mOption->getOptionKey(mOptionItem.at(row).key));
-                } else {
-                    break;
-                }
-            } else if ( !mOption->isValid(mOptionItem.at(row).key) &&
-                        !mOption->isASynonym(mOptionItem.at(row).key)
-                      )  {
-                         return QString("'%1' is an unknown option Key").arg(mOptionItem.at(row).key);
-            } else if (mOption->isDeprecated(mOptionItem.at(row).key)) {
-                      return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key);
-            }
-        } else if (col==1) {
-            switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
-              case Incorrect_Value_Type:
-                   return QString("Option key '%1' has an incorrect value type").arg(mOptionItem.at(row).key);
-              case Value_Out_Of_Range:
-                   return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key);
-              default:
-                   break;
-            }
+        QString tooltipText = "";
+        switch(mOptionItem.at(row).error) {
+        case Invalid_Key:
+            tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(row).key));
+            break;
+        case Incorrect_Value_Type:
+            tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(row).key) );
+            break;
+        case Value_Out_Of_Range:
+            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key) );
+            break;
+        case Deprecated_Option:
+            tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key) );
+            break;
+        case UserDefined_Error:
+            tooltipText.append( QString("Invalid parameter key or value or comment defined") );
+            break;
+        default:
+            break;
         }
-        break;
+        if (mOptionItem.at(row).recurrent) {
+            if (!tooltipText.isEmpty())
+                tooltipText.append("\n");
+            tooltipText.append( QString("Recurrent parameter '%1', only last entry of same parameters will not be ignored").arg(mOptionItem.at(row).key));
+        }
+        return tooltipText;
     }
     case Qt::TextColorRole: {
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
+
+        if (mOptionItem[index.row()].recurrent && index.column()==COLUMN_OPTION_KEY)
+            return QVariant::fromValue(QColor(Qt::darkYellow));
 
         if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
@@ -156,7 +185,7 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
                  return QVariant::fromValue(QColor(Qt::black));
         }
         if (mOption->isValid(mOptionItem.at(row).key) || mOption->isASynonym(mOptionItem.at(row).key)) { // valid option
-            if (col==0) { // key
+            if (col==GamsOptionTableModel::COLUMN_OPTION_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
                 } else {
@@ -175,7 +204,7 @@ QVariant GamsOptionTableModel::data(const QModelIndex &index, int role) const
                   }
             }
         } else { // invalid option
-            if (col == 0)
+            if (col == GamsOptionTableModel::COLUMN_OPTION_KEY)
                return QVariant::fromValue(QColor(Qt::red));
             else
                 return QVariant::fromValue(QColor(Qt::black));
@@ -227,7 +256,7 @@ bool GamsOptionTableModel::setData(const QModelIndex &index, const QVariant &val
                   mOptionItem[index.row()].value = dataValue;
                   emit optionValueChanged(index);
         }
-        emit optionModelChanged(  mOptionItem );
+       emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
         if (index.row() > mOptionItem.size())
             return false;
@@ -354,7 +383,7 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
        ++rows;
     }
 
-    int beginRow;
+    int beginRow = -1;
 
     if (row != -1) {
         beginRow = row;
@@ -364,50 +393,127 @@ bool GamsOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropActio
         beginRow = rowCount(QModelIndex());
     }
 
+//    StudioSettings* settings = SettingsLocator::settings();
     if (action ==  Qt::CopyAction) {
 
-        QList<int> insertRowList;
-        insertRows(beginRow, rows, QModelIndex());
-
-        for (const QString &text : newItems) {          
-            insertRowList.append( beginRow );
-
-            QStringList textList = text.split("=");
-            QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY, QModelIndex());
-            setData(idx, textList.at(0), Qt::EditRole);
-            idx = index(beginRow, COLUMN_OPTION_VALUE, QModelIndex());
-            setData(idx, textList.at(1), Qt::EditRole);
-            idx = index(beginRow, COLUMN_ENTRY_NUMBER, QModelIndex());
-            setData(idx, textList.at(2), Qt::EditRole);
-            emit newTableRowDropped(index(beginRow, 0, QModelIndex()));
-            beginRow++;
-        }
-
+        QList<OptionItem> itemList;
+        QList<int> overrideIdRowList;
         for (const QString &text : newItems) {
             QStringList textList = text.split("=");
-            QModelIndex idx;
-            for(int i=0; i<rowCount(); ++i) {
-                if (insertRowList.contains(i))
-                    continue;
+            int optionid = mOption->getOptionDefinition(textList.at(0)).number;
+            itemList.append(OptionItem(optionid, textList.at( COLUMN_OPTION_KEY ), textList.at( COLUMN_OPTION_VALUE )));
+            QModelIndexList indices = match(index(GamsOptionTableModel::COLUMN_OPTION_KEY, GamsOptionTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
+                                            QVariant(optionid), Qt::MatchRecursive);
+//          if (settings && settings->overridExistingOption()) {
+              for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
+//          }
+         }
+         std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
-                idx = index(i, COLUMN_OPTION_KEY, QModelIndex());
-                QString key = data(idx, Qt::DisplayRole).toString();
-                if (QString::compare(key, textList.at(0), Qt::CaseInsensitive)==0)
-                    break;
-            }
-            if (idx.row() == rowCount())
-               removeRows(idx.row(), COLUMN_OPTION_VALUE, QModelIndex());
-        }
-        return true;
+         bool replaceExistingEntry = false;
+         bool singleEntryExisted = (overrideIdRowList.size()==1);
+         bool multipleEntryExisted = (overrideIdRowList.size()>1);
+         if (singleEntryExisted) {
+             QMessageBox msgBox;
+             msgBox.setWindowTitle("Parameter Entry exists");
+             msgBox.setText("Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()+ "' already exists.");
+             msgBox.setInformativeText("How do you want to proceed?");
+             msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(overrideIdRowList.at(0)))
+                     .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.")
+                     .arg("The value of all other entries except the last entry will be ignored."));
+             msgBox.setStandardButtons(QMessageBox::Abort);
+             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
+             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
+             switch(msgBox.exec()) {
+             case 0: // replace
+                replaceExistingEntry = true;
+                beginRow = overrideIdRowList.at(0);
+                break;
+             case 1: // add
+                break;
+             case QMessageBox::Abort:
+                itemList.clear();
+                return false;
+             }
+         } else if (multipleEntryExisted) {
+             QMessageBox msgBox;
+             msgBox.setWindowTitle("Multiple Parameter Entries exist");
+             msgBox.setText(QString("%1 entries of Parmaeter '%2' already exist.").arg(overrideIdRowList.size())
+                      .arg(data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()));
+             msgBox.setInformativeText("How do you want to proceed?");
+             QString entryDetailedText = QString("Entries:\n");
+             int i = 0;
+             for (int id : overrideIdRowList)
+                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
+             msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
+                      .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.")
+                      .arg("The value of all other entries except the last entry will be ignored."));
+             msgBox.setText("Multiple entries of Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString() + "' already exist.");
+             msgBox.setInformativeText("How do you want to proceed?");
+             msgBox.setStandardButtons(QMessageBox::Abort);
+             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
+             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
+
+             switch(msgBox.exec()) {
+             case 0: { // delete and replace
+                 int prev = -1;
+                 for(int i=overrideIdRowList.count()-1; i>=0; i--) {
+                     int current = overrideIdRowList[i];
+                     if (i==0)
+                         continue;
+                     if (current != prev) {
+                         removeRows( current, 1 );
+                         prev = current;
+                     }
+                 }
+
+                 replaceExistingEntry = true;
+                 beginRow = overrideIdRowList.at(0);
+                 break;
+             }
+             case 1: { // add
+                 break;
+             }
+             case QMessageBox::Abort: {
+                 itemList.clear();
+                 return false;
+             }
+             }
+         } // else entry not exist
+
+         for (const OptionItem &item : itemList) {
+             if (!replaceExistingEntry)
+                 insertRows(beginRow, 1, QModelIndex());
+
+             QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
+             setData(idx, item.key, Qt::EditRole);
+             setData( index(beginRow, COLUMN_OPTION_VALUE), item.value, Qt::EditRole);
+             setData( index(beginRow, COLUMN_ENTRY_NUMBER), item.optionId, Qt::EditRole);
+             setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
+             emit newTableRowDropped( idx );
+             beginRow++;
+         }
+
+         itemList.clear();
+         return true;
+    } else {
+         return false;
     }
-
-    return false;
 }
 
 QList<OptionItem> GamsOptionTableModel::getCurrentListOfOptionItems()
 {
     return mOptionItem;
+}
+
+QString GamsOptionTableModel::getOptionTableEntry(int row)
+{
+    QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
+    QVariant optionKey = data(keyIndex, Qt::DisplayRole);
+    QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
+    QVariant optionValue = data(valueIndex, Qt::DisplayRole);
+    return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
 }
 
 void GamsOptionTableModel::toggleActiveOptionItem(int index)
@@ -432,19 +538,20 @@ void GamsOptionTableModel::on_optionTableModelChanged(const QString &text)
     setRowCount(mOptionItem.size());
 
     for (int i=0; i<mOptionItem.size(); ++i) {
-        setData(QAbstractTableModel::createIndex(i, 0), QVariant(mOptionItem.at(i).key), Qt::EditRole);
-        setData(QAbstractTableModel::createIndex(i, 1), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, GamsOptionTableModel::COLUMN_OPTION_KEY), QVariant(mOptionItem.at(i).key), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, GamsOptionTableModel::COLUMN_OPTION_VALUE), QVariant(mOptionItem.at(i).value), Qt::EditRole);
+        setData(QAbstractTableModel::createIndex(i, GamsOptionTableModel::COLUMN_ENTRY_NUMBER), QVariant(mOptionItem.at(i).optionId), Qt::EditRole);
         if (mOptionItem.at(i).error == No_Error)
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
         else if (mOptionItem.at(i).error == Deprecated_Option)
-            setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::PartiallyChecked),
-                              Qt::CheckStateRole );
+                setHeaderData( i, Qt::Vertical,
+                                  Qt::CheckState(Qt::PartiallyChecked),
+                                  Qt::CheckStateRole );
         else setHeaderData( i, Qt::Vertical,
-                          Qt::CheckState(Qt::Checked),
-                          Qt::CheckStateRole );
+                               Qt::CheckState(Qt::Checked),
+                               Qt::CheckStateRole );
     }
     endResetModel();
     emit optionModelChanged(mOptionItem);

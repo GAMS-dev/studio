@@ -21,6 +21,7 @@
 #include <QPainter>
 #include <QStylePainter>
 #include <QApplication>
+#include <QTreeView>
 
 namespace gams {
 namespace studio {
@@ -45,9 +46,30 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     } else  {
         QPainterPath path;
         path.addRect(checkRect);
-        QPen pen(QBrush(Qt::white, Qt::SolidPattern), 1);
+        QPen pen(QBrush(index.data(Qt::BackgroundColorRole).value<QColor>(), Qt::SolidPattern), 1);
         painter->setPen(pen);
-        painter->fillPath(path, QBrush(Qt::white, Qt::SolidPattern));
+        painter->fillPath(path, QBrush(index.data(Qt::BackgroundColorRole).value<QColor>(), Qt::SolidPattern));
+    }
+
+    int level = 0;
+    for(QModelIndex i = index; (i = i.parent()).isValid(); level++);
+
+    if (index.column()==0 && level > 0) {
+        QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt);
+        painter->fillRect(textRect, index.data(Qt::BackgroundColorRole).value<QColor>());
+
+        auto view = qobject_cast<const QTreeView*>(opt.widget);
+        int indent = level * (view ? view->indentation() : 10);
+
+       opt.rect.adjust(indent, 0, 0, 0);
+       style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+
+       opt.rect = option.rect;
+       opt.rect.setWidth(indent);
+
+       opt.text.clear();
+       opt.viewItemPosition = QStyleOptionViewItem::Middle;
+       style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
     }
 }
 

@@ -41,6 +41,8 @@ enum struct Hotkey {
     MoveViewLineDown = 16,
     MoveViewPageUp = 17,
     MoveViewPageDown = 18,
+    MoveToEndOfLine = 19,
+    MoveToStartOfLine = 20,
     MoveCharGroupRight = 21,
     MoveCharGroupLeft = 22,
     SelectCharGroupRight = 23,

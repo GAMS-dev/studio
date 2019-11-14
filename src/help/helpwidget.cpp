@@ -493,6 +493,13 @@ void HelpWidget::searchText(const QString &text)
     findText(text, Forward, ui->caseSenstivity->isChecked());
 }
 
+void HelpWidget::copySelection()
+{
+    if (!ui->webEngineView->selectedText().isEmpty()) {
+        ui->webEngineView->pageAction(QWebEnginePage::Copy)->trigger();
+    }
+}
+
 void HelpWidget::zoomIn()
 {
     ui->webEngineView->page()->setZoomFactor( ui->webEngineView->page()->zoomFactor() + 0.1);

@@ -102,6 +102,7 @@ public slots:
 
 private slots:
     void showOptionDefinition(bool selectRow = true);
+    void showOptionRecurrence();
     void copyDefinitionToClipboard(int column);
     void findAndSelectionOptionFromDefinition();
     void toggleCommentOption();
@@ -116,6 +117,9 @@ private slots:
     void resizeColumnsToContents();
 
 private:
+    QList<int> getRecurrentOption(const QModelIndex &index);
+    QString getOptionTableEntry(int row);
+
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
     QString mLocation;

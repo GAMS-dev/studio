@@ -152,8 +152,10 @@ bool Application::event(QEvent *event)
         for (auto window : allWindows()) {
             if (!window->isVisible())
                 continue;
-            window->show();
-            window->raise();
+            if (window->windowState() & Qt::WindowMinimized || QOperatingSystemVersion::currentType() != QOperatingSystemVersion::MacOS) {
+                window->show();
+                window->raise();
+            }
         }
     }
     return QApplication::event(event);

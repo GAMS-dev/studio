@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
@@ -67,33 +67,48 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
             else
                 return QString("%1 %2 %3").arg(lineComment).arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString()); //->text);
         } else {
-          switch(mOptionItem.at(index)->error) {
-          case Invalid_Key:
-              return QString("Unknown option '%1'").arg(mOptionItem.at(index)->key);
-          case Incorrect_Value_Type:
-              return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key);
-          case Value_Out_Of_Range:
-              return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key);
-          case Deprecated_Option:
-              return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key);
-          default:
-             break;
-          }
+            QString tooltipText = "";
+            switch(mOptionItem.at(index)->error) {
+            case Invalid_Key:
+                tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(index)->key) );
+                break;
+            case Incorrect_Value_Type:
+                tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key));
+                break;
+            case Value_Out_Of_Range:
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key));
+                break;
+            case Deprecated_Option:
+                tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key));
+                break;
+            default:
+               break;
+            }
+            if (mOptionItem.at(index)->recurrent) {
+              if (!tooltipText.isEmpty())
+                  tooltipText.append("\n");
+              tooltipText.append( QString("Recurrent option '%1', only last entry of same options will not be ignored").arg(mOptionItem.at(index)->key));
+            }
+            return tooltipText;
         }
         break;
     }
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            if (mOptionItem.at(index)->error == Deprecated_Option)
-                return QVariant::fromValue(QIcon(":/img/square-darkyellow"));
+            if (mOptionItem.at(index)->recurrent)
+               return QVariant::fromValue(QIcon(":/img/square-red-yellow"));
             else
-                return QVariant::fromValue(QIcon(":/img/square-red"));
+               return QVariant::fromValue(QIcon(":/img/square-red"));
+
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-            return QVariant::fromValue(QIcon(":/img/square-gray"));
+                  if (mOptionItem.at(index)->recurrent)
+                      return QVariant::fromValue(QIcon(":/img/square-gray-yellow"));
+                  else
+                     return QVariant::fromValue(QIcon(":/img/square-gray"));
         } else {
-            if (mOptionItem.at(index)->error == Deprecated_Option)
-                return QVariant::fromValue(QIcon(":/img/square-square-darkyellow"));
-            else
+            if (mOptionItem.at(index)->recurrent)
+               return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
+           else
                return QVariant::fromValue(QIcon(":/img/square-green"));
         }
     }
@@ -156,22 +171,33 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         if (mOptionItem.at(row)->disabled) {
             return mOptionItem.at(row)->key;
         } else {
-          switch(mOptionItem.at(row)->error) {
-          case Invalid_Key:
-              return QString("Unknown option '%1'").arg(mOptionItem.at(row)->key);
-          case Incorrect_Value_Type:
-             return QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key);
-          case Value_Out_Of_Range:
-             return QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key);
-          case Deprecated_Option:
-              return QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key);
-          case UserDefined_Error:
-              return QString("Invalid option key or value or comment defined");
-          default:
-             break;
-          }
+            QString tooltipText = "";
+            switch(mOptionItem.at(row)->error) {
+            case Invalid_Key:
+                tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(row)->key));
+                break;
+            case Incorrect_Value_Type:
+                tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key) );
+                break;
+            case Value_Out_Of_Range:
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key) );
+                break;
+            case Deprecated_Option:
+                tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key) );
+                break;
+            case UserDefined_Error:
+                tooltipText.append( QString("Invalid option key or value or comment defined") );
+                break;
+            default:
+                break;
+            }
+            if (mOptionItem.at(row)->recurrent) {
+                if (!tooltipText.isEmpty())
+                    tooltipText.append("\n");
+                tooltipText.append( QString("Recurrent option '%1', only last entry of same options will not be ignored").arg(mOptionItem.at(row)->key));
+            }
+            return tooltipText;
         }
-        break;
     }
     case Qt::TextColorRole: {
         if (mOptionItem.at(row)->disabled) {
@@ -184,14 +210,21 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             case Value_Out_Of_Range:
                  return QVariant::fromValue(QColor(Qt::red));
             case Deprecated_Option:
-                 return QVariant::fromValue(QColor(Qt::darkYellow));
+                if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
+                    return QVariant::fromValue(QColor(Qt::darkYellow));
+                else return QVariant::fromValue(QColor(Qt::gray));
             case No_Error:
-                if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
+                if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
+                    return QVariant::fromValue(QColor(Qt::darkYellow));
+                else if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
                     return QVariant::fromValue(QColor(Qt::gray));
                 else
                     return QVariant::fromValue(QColor(Qt::black));
             default:
-                return QVariant::fromValue(QColor(Qt::black));
+                if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
+                    return QVariant::fromValue(QColor(Qt::darkYellow));
+                else
+                    return QVariant::fromValue(QColor(Qt::black));
             }
         }
      }
@@ -427,16 +460,17 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         }
         std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
 
-        emit optionDefinitionSelected();
-
         bool replaceExistingEntry = false;
         bool singleEntryExisted = (overrideIdRowList.size()==1);
         bool multipleEntryExisted = (overrideIdRowList.size()>1);
         if (singleEntryExisted) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Option Entry exists");
-            msgBox.setText("Option '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()+ "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to add new entry or replace the entry?");
+            msgBox.setText(QString("Option '%1' already exists in your option file.").arg(data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()));
+            msgBox.setInformativeText("How do you want to proceed?");
+            msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(overrideIdRowList.at(0)))
+                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
+                    .arg("The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -456,8 +490,16 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         } else if (multipleEntryExisted) {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Multiple Option Entries exist");
-            msgBox.setText("Multiple entries of Option '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString() + "' already exists in your option file.");
-            msgBox.setInformativeText("Do you want to replace first entry (and delete other entries) or add new entry?");
+            msgBox.setText(QString("%1 entries of Option '%2' already exist in your option file.").arg(overrideIdRowList.size())
+                     .arg(data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()));
+            msgBox.setInformativeText("How do you want to proceed?");
+            QString entryDetailedText = QString("Entries:\n");
+            int i = 0;
+            for (int id : overrideIdRowList)
+                entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
+            msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
+                     .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
+                     .arg("The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -519,6 +561,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         itemList.clear();
 
         connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
+        updateRecurrentStatus();
         return true;
     }
 
@@ -583,6 +626,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
+            setData( index(i, getColumnEntryNumber()), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
         } else {
            setData( index(i, COLUMN_OPTION_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
            setData( index(i, COLUMN_OPTION_VALUE), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
@@ -600,6 +644,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
         }
     }
     emit solverOptionModelChanged(mOptionItem);
+    updateRecurrentStatus();
     endResetModel();
     connect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
 }
@@ -640,7 +685,7 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
                   emit solverOptionModelChanged(mOptionItem);
        }
     }
-
+    updateRecurrentStatus();
 }
 
 void SolverOptionTableModel::on_removeSolverOptionItem()
@@ -667,6 +712,7 @@ void SolverOptionTableModel::on_removeSolverOptionItem()
         }
     }
     emit solverOptionModelChanged(mOptionItem);
+    updateRecurrentStatus();
     endResetModel();
 }
 
@@ -718,6 +764,18 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     }
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
+}
+
+void SolverOptionTableModel::updateRecurrentStatus()
+{
+    QList<int> idList;
+    for(SolverOptionItem* item : mOptionItem) {
+        idList << item->optionId;
+    }
+    for(SolverOptionItem* item : mOptionItem) {
+        item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
+    }
+    headerDataChanged(Qt::Vertical, 0, mOptionItem.size());
 }
 
 void SolverOptionTableModel::setRowCount(int rows)

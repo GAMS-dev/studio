@@ -626,11 +626,11 @@ bool FileMeta::isModified() const
     if (mDocument) {
         return  mDocument->isModified();
     } else if (kind() == FileKind::Opt) {
-            for (QWidget *wid: mEditors) {
-                option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
-                if (solverOptionWidget)
-                    return solverOptionWidget->isModified();
-            }
+        for (QWidget *wid: mEditors) {
+            option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
+            if (solverOptionWidget)
+                return solverOptionWidget->isModified();
+        }
     }
     return false;
 }

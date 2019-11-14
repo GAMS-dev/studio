@@ -210,6 +210,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
+    ui->mainTabs->setUsesScrollButtons(true);
 
     // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
@@ -951,7 +952,7 @@ void MainWindow::on_actionSave_As_triggered()
             filters << tr("All files (*.*)");
 
             QString selFilter = filters.first();
-            foreach (QString f, filters) {
+            for (QString f: filters) {
                 if (f.contains("*."+fi.suffix())) {
                     selFilter = f;
                     break;
@@ -1020,6 +1021,11 @@ void MainWindow::on_actionSave_As_triggered()
 
             if (choice == 1) {
                 FileKind oldKind = node->file()->kind();
+
+                // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
+                if (ProjectFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedRunGroup()))
+                    mProjectRepo.closeNode(pfn);
+
                 mProjectRepo.saveNodeAs(node, filePath);
 
                 if (oldKind == node->file()->kind()) { // if old == new
@@ -1684,8 +1690,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        if (fc->document())
-            fc->document()->setModified(false);
+        fc->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;
@@ -2957,6 +2962,17 @@ void MainWindow::on_actionPaste_triggered()
 void MainWindow::on_actionCopy_triggered()
 {
     if (!focusWidget()) return;
+
+#ifdef QWEBENGINE
+    // Check if focusWidget is inside mHelpWidget (can be nested)
+    QWidget *wid = focusWidget();
+    while (wid && wid != mHelpWidget)
+        wid = wid->parentWidget();
+    if (wid == mHelpWidget) {
+        mHelpWidget->copySelection();
+        return;
+    }
+#endif
 
     // KEEP-ORDER: FIRST check focus THEN check recent-edit (in descending inheritance)
 
