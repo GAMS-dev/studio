@@ -61,6 +61,7 @@ protected:
     void showEvent(QShowEvent *e) override;
     void resizeToContent();
     void keyPressEvent(QKeyEvent *e) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
     void setFilter(const QString &filter);

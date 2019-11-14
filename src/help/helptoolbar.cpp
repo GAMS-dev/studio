@@ -36,6 +36,7 @@ HelpToolBar::HelpToolBar(QWidget *parent)
 
     mActionStop->setEnabled(false);
     createWebActionTrigger( mActionStop, QWebEnginePage::Stop );
+    this->setIconSize(QSize(16,16));
 }
 
 HelpToolBar::~HelpToolBar()

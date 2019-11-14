@@ -129,10 +129,6 @@ MainWindow::MainWindow(QWidget *parent)
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
-    // TODO(JM) it is possible to put the QTabBar into the docks title:
-    //          if we override the QTabWidget it should be possible to extend it over the old tab-bar-space
-//    ui->dockProcessLog->setTitleBarWidget(ui->tabLog->tabBar());
-
 #ifdef QWEBENGINE
     mHelpWidget = new HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
@@ -214,6 +210,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
+    ui->mainTabs->setUsesScrollButtons(true);
 
     // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
@@ -251,7 +248,7 @@ void MainWindow::initTabs()
     pal.setColor(QPalette::Highlight, Qt::transparent);
     ui->projectView->setPalette(pal);
 
-    mWp = new WelcomePage(history(), this);
+    mWp = new WelcomePage(this);
     connect(mWp, &WelcomePage::openFilePath, this, &MainWindow::openFilePath);
     if (mSettings->skipWelcomePage())
         mWp->hide();
@@ -451,6 +448,8 @@ void MainWindow::receiveAction(const QString &action)
         on_actionNew_triggered();
     else if(action == "browseModLib")
         on_actionGAMS_Library_triggered();
+    else if(action == "openWhatsNew")
+        on_actionChangelog_triggered();
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
@@ -953,7 +952,7 @@ void MainWindow::on_actionSave_As_triggered()
             filters << tr("All files (*.*)");
 
             QString selFilter = filters.first();
-            foreach (QString f, filters) {
+            for (QString f: filters) {
                 if (f.contains("*."+fi.suffix())) {
                     selFilter = f;
                     break;
@@ -1022,6 +1021,11 @@ void MainWindow::on_actionSave_As_triggered()
 
             if (choice == 1) {
                 FileKind oldKind = node->file()->kind();
+
+                // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
+                if (ProjectFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedRunGroup()))
+                    mProjectRepo.closeNode(pfn);
+
                 mProjectRepo.saveNodeAs(node, filePath);
 
                 if (oldKind == node->file()->kind()) { // if old == new
@@ -1326,8 +1330,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
             if (group->childCount() == 0)
                 closeGroup(group);
         }
-        history()->lastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged(history());
+        history()->mLastOpenedFiles.removeAll(file->location());
+        mWp->historyChanged();
         return 0;
     }
 
@@ -1339,8 +1343,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     if (choice == 0) {
         if (file->exists(true)) return 0;
         closeFileEditors(fileId);
-        history()->lastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged(history());
+        history()->mLastOpenedFiles.removeAll(file->location());
+        mWp->historyChanged();
     } else if (!file->isReadOnly()) {
         if (file->exists(true)) return 0;
         file->setModified();
@@ -1432,7 +1436,7 @@ void MainWindow::processFileEvents()
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    mSyslog->append(text, LogMsgType::Info);
+    mSyslog->append(text.trimmed(), LogMsgType::Info);
 }
 
 void MainWindow::showErrorMessage(QString text)
@@ -1686,8 +1690,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        if (fc->document())
-            fc->document()->setModified(false);
+        fc->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;
@@ -1791,18 +1794,18 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
     if (filePath.startsWith("[")) return; // invalid
 
-    while (history()->lastOpenedFiles.size() > mSettings->historySize()
-           && !history()->lastOpenedFiles.isEmpty())
-        history()->lastOpenedFiles.removeLast();
+    while (history()->mLastOpenedFiles.size() > mSettings->historySize()
+           && !history()->mLastOpenedFiles.isEmpty())
+        history()->mLastOpenedFiles.removeLast();
 
     if (mSettings->historySize() == 0) return;
 
-    if (!history()->lastOpenedFiles.contains(filePath))
-        history()->lastOpenedFiles.insert(0, filePath);
+    if (!history()->mLastOpenedFiles.contains(filePath))
+        history()->mLastOpenedFiles.insert(0, filePath);
     else
-        history()->lastOpenedFiles.move(history()->lastOpenedFiles.indexOf(filePath), 0);
+        history()->mLastOpenedFiles.move(history()->mLastOpenedFiles.indexOf(filePath), 0);
 
-    if (mWp) mWp->historyChanged(history());
+    if (mWp) mWp->historyChanged();
 }
 
 bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
@@ -2376,7 +2379,6 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
 
 void MainWindow::storeTree()
 {
-    // TODO(JM) add settings methods to store each part separately
     mSettings->saveSettings(this);
 }
 
@@ -2832,8 +2834,12 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
         else if (ViewHelper::toTextView(edit))
             ViewHelper::toTextView(edit)->edit()->setFont(font);
     }
-    for (QWidget* log: openLogs())
-        log->setFont(font);
+    for (QWidget* log: openLogs()) {
+        if (ViewHelper::toTextView(log))
+            ViewHelper::toTextView(log)->edit()->setFont(font);
+        else
+            log->setFont(font);
+    }
 
     mSyslog->setFont(font);
 }
@@ -2956,6 +2962,17 @@ void MainWindow::on_actionPaste_triggered()
 void MainWindow::on_actionCopy_triggered()
 {
     if (!focusWidget()) return;
+
+#ifdef QWEBENGINE
+    // Check if focusWidget is inside mHelpWidget (can be nested)
+    QWidget *wid = focusWidget();
+    while (wid && wid != mHelpWidget)
+        wid = wid->parentWidget();
+    if (wid == mHelpWidget) {
+        mHelpWidget->copySelection();
+        return;
+    }
+#endif
 
     // KEEP-ORDER: FIRST check focus THEN check recent-edit (in descending inheritance)
 

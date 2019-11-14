@@ -78,6 +78,7 @@ public slots:
     void on_closeButtonTriggered();
     void on_caseSensitivityToggled(bool checked);
     void searchText(const QString& text);
+    void copySelection();
 
     void zoomIn();
     void zoomOut();

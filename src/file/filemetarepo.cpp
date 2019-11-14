@@ -50,7 +50,7 @@ FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
     return mFileNames.value(location);
 
-    // TODO(JM) we may need comparing QFileInfo
+    // If we need comparing QFileInfo (to distinct different paths to the same file)
 
 //    QFileInfo fi(location);
 //    for (FileMeta* fm: mFiles.values()) {

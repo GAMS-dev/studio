@@ -118,7 +118,7 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
        QKeyEvent* keyEvent = static_cast<QKeyEvent *>(event);
        if (keyEvent->key() == Qt::Key_Escape) {
              emit closeEditor(lineEdit);
-       } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter)) {
+       } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
                   emit lineEdit->editingFinished();
        }
        return false;

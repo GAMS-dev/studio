@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2018 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2018 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,6 +98,7 @@ public:
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;
     int lineCount() const override;
     int knownLineNrs() const override;
+    QString findClosestLst(const int &localLine);
     void dump();
 
 signals:
@@ -130,6 +131,7 @@ private: // methods
     void fetchLog();
     void createErrorMarks(LineRef ref, bool readErrorText);
     LineRef nextRef(const LineRef &ref);
+    LineRef prevRef(const LineRef &ref);
     QByteArray lineData(const LineRef &ref);
     Chunk *addChunk(bool startUnit = false);
     void shrinkLog(qint64 minBytes);
@@ -137,10 +139,12 @@ private: // methods
     void recalcLineCount();
     LineRef logLineToRef(const int &lineNr);
     Chunk *nextChunk(Chunk *chunk);
+    Chunk *prevChunk(Chunk *chunk);
     int currentRunLines();
     void updateChunkMetrics(Chunk *chunk, bool cutRemain = false);
     void invalidateSize();
     void newPending(Pending pending);
+    QString extractLstRef(LineRef lineRef);
 
 private: // members
     QVector<Chunk*> mChunks;

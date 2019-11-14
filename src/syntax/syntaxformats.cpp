@@ -84,7 +84,7 @@ SyntaxBlock SyntaxStandard::find(const SyntaxKind entryKind, const QString& line
 {
     static QVector<SyntaxKind> invalidEntries {SyntaxKind::Declaration, SyntaxKind::DeclarationSetType,
                 SyntaxKind::DeclarationTable, SyntaxKind::DeclarationVariableType};
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     bool error = invalidEntries.contains(entryKind);
     int end = index;
     while (isKeywordChar(line, end)) end++;
@@ -94,9 +94,9 @@ SyntaxBlock SyntaxStandard::find(const SyntaxKind entryKind, const QString& line
 
 SyntaxBlock SyntaxStandard::validTail(const QString &line, int index, bool &hasContent)
 {
-    Q_UNUSED(line);
-    Q_UNUSED(index);
-    Q_UNUSED(hasContent);
+    Q_UNUSED(line)
+    Q_UNUSED(index)
+    Q_UNUSED(hasContent)
     return SyntaxBlock();
 }
 
@@ -149,12 +149,14 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (mSyntaxCommentEndline) {
-        if ( match.captured(2).startsWith("oneolcom")) {
+        if (match.captured(2).startsWith("oneolcom", Qt::CaseInsensitive)) {
             mSyntaxCommentEndline->setCommentChars("!!");
             for (SyntaxFormula * sf: mSubSyntaxBody) {
                 sf->setSpecialDynamicChars(QVector<QChar>() << '!');
             }
-         } else if (match.captured(2).startsWith("eolcom")) {
+            if (mSubDirectiveBody)
+                mSubDirectiveBody->setCommentChars(QVector<QChar>() << '!');
+         } else if (match.captured(2).startsWith("eolcom", Qt::CaseInsensitive)) {
             int i = match.capturedEnd(2);
             while (isWhitechar(line,i)) ++i;
             if (i+2 <= line.length()) {
@@ -162,6 +164,8 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
                 for (SyntaxFormula * sf: mSubSyntaxBody) {
                     sf->setSpecialDynamicChars(QVector<QChar>() << line.at(i));
                 }
+                if (mSubDirectiveBody)
+                    mSubDirectiveBody->setCommentChars(QVector<QChar>() << line.at(i));
             }
         }
     }
@@ -187,22 +191,36 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, bool &has
 
 SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
 {
+    mSubKinds << SyntaxKind::CommentEndline << SyntaxKind::CommentInline << SyntaxKind::DirectiveBody;
+
     Q_ASSERT_X((kind == SyntaxKind::DirectiveBody || kind == SyntaxKind::DirectiveComment || kind == SyntaxKind::Title),
                "SyntaxDirectiveBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
 }
 
+void SyntaxDirectiveBody::setCommentChars(QVector<QChar> chars)
+{
+    mCommentChars = chars;
+}
+
 SyntaxBlock SyntaxDirectiveBody::find(const SyntaxKind entryKind, const QString& line, int index)
 {
-    Q_UNUSED(entryKind);
-    return SyntaxBlock(this, index, line.length(), SyntaxShift::skip);
+    int end = index;
+    if (entryKind == SyntaxKind::DirectiveBody && end < line.length()
+            && mCommentChars.contains(line.at(end))) ++end;
+    while (end < line.length() && !mCommentChars.contains(line.at(end)))
+        ++end;
+    return SyntaxBlock(this, index, end, SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxDirectiveBody::validTail(const QString &line, int index, bool &hasContent)
 {
-    int end = index;
-    while (isWhitechar(line, end)) end++;
-    hasContent = end < line.length();
-    return SyntaxBlock(this, index, line.length(), SyntaxShift::out);
+    int start = index;
+    while (isWhitechar(line, start)) start++;
+    int end = start;
+    while (end < line.length() && !mCommentChars.contains(line.at(end)))
+        ++end;
+    hasContent = end > start;
+    return SyntaxBlock(this, start, end, SyntaxShift::shift);
 }
 
 
@@ -307,7 +325,7 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
 
 SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -357,7 +375,7 @@ SyntaxString::SyntaxString()
 
 SyntaxBlock SyntaxString::find(const SyntaxKind entryKind, const QString &line, int index)
 {
-    Q_UNUSED(entryKind);
+    Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;

@@ -209,6 +209,7 @@ public:
 
 class SyntaxCommentEndline;
 class SyntaxFormula;
+class SyntaxDirectiveBody;
 /// \brief Defines the syntax for a directive.
 class SyntaxDirective : public SyntaxAbstract
 {
@@ -218,6 +219,7 @@ public:
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
     void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
     void addSubBody(SyntaxFormula *syntax) {mSubSyntaxBody << syntax;}
+    void setDirectiveBody(SyntaxDirectiveBody *syntax) {mSubDirectiveBody = syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
@@ -225,6 +227,7 @@ private:
     QHash<QString, SyntaxKind> mSpecialKinds;
     SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
     QVector<SyntaxFormula*> mSubSyntaxBody;
+    SyntaxDirectiveBody *mSubDirectiveBody = nullptr;
 
 };
 
@@ -232,8 +235,10 @@ private:
 /// \brief Defines the syntax for a single comment line.
 class SyntaxDirectiveBody: public SyntaxAbstract
 {
+    QVector<QChar> mCommentChars;
 public:
     SyntaxDirectiveBody(SyntaxKind kind);
+    void setCommentChars(QVector<QChar> chars);
     SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };

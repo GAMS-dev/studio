@@ -60,7 +60,7 @@ class BlockData : public QTextBlockUserData
 {
 public:
     BlockData() {}
-    ~BlockData() {}
+    ~BlockData();
     QChar charForPos(int relPos);
     bool isEmpty() {return mparentheses.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;

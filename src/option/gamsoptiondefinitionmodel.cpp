@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamsoptiondefinitionmodel.h"
-
 namespace gams {
 namespace studio {
 namespace option {
@@ -77,12 +76,35 @@ QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) c
     return mimeData;
 }
 
+void GamsOptionDefinitionModel::modifyOptionDefinitionItem(const OptionItem &optionItem)
+{
+    QModelIndexList indices = match(index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
+                                             Qt::DisplayRole,
+                                             QString::number(optionItem.optionId) , 1);
+    beginResetModel();
+    for(QModelIndex idx : indices) {
+        QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
+
+        OptionDefinitionItem* nodeItem = static_cast<OptionDefinitionItem*>(node.internalPointer());
+        OptionDefinitionItem *parentItem = nodeItem->parentItem();
+        if (parentItem == rootItem) {
+            OptionDefinition optdef = mOption->getOptionDefinition(nodeItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
+            optdef.modified = !optionItem.disabled;
+            setData(node, optdef.modified ? Qt::CheckState(Qt::Checked) : Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
+        }
+    }
+    endResetModel();
+}
+
 void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem> &optionItems)
 {
-    QStringList optionNameList;
-    for(OptionItem item : optionItems) {
-        optionNameList << item.key;
+    QMap<int, int> modifiedOption;
+    for(int i = 0; i<optionItems.size(); ++i) {
+        if (optionItems.at(i).optionId != -1)
+            modifiedOption[optionItems.at(i).optionId] = i;
     }
+    QList<int> ids = modifiedOption.keys();
+    beginResetModel();
     for(int i=0; i<rowCount(); ++i)  {
         QModelIndex node = index(i, OptionDefinitionModel::COLUMN_OPTION_NAME);
 
@@ -90,14 +112,14 @@ void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem> &
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem) {
             OptionDefinition optdef = mOption->getOptionDefinition(item->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
-            if (optionNameList.contains(optdef.name, Qt::CaseInsensitive) || optionNameList.contains(optdef.synonym, Qt::CaseInsensitive))
+            if (ids.contains(optdef.number))
                 optdef.modified = true;
             else
                 optdef.modified = false;
             setData(node, optdef.modified ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole );
         }
-
     }
+    endResetModel();
 }
 
 

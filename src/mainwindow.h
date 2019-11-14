@@ -73,7 +73,7 @@ private:
 };
 
 struct HistoryData {
-    QStringList lastOpenedFiles;
+    QStringList mLastOpenedFiles;
 };
 
 class MainWindow : public QMainWindow
