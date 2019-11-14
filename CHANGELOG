@@ -15,7 +15,8 @@ Version 0.13.2
 - fixed file modification marker after closing a file without saving (macOS)
 - fixed size of help toolbar (macOS)
 - fixed behavior of home key (FN+Left) (macOS)
-
+- added missing Ctrl+C shortcut in help view
+- fixed scrolling issue in log where last lines out of view
 
 ## Code Edit & Syntax Highlighter
 - fixed search jumping to results outside of selected scope under certain circumstances
