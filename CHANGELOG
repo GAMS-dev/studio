@@ -1,7 +1,39 @@
+Version 0.13.2
+==================
+
+## General
+- added "What's new in Studio" button to welcome page to open changelog
+- improved behavior of welcome page last opened files list
+- removed extra new lines from log output
+- added missing shortcut (Ctrl+0) to reset zoom in help view
+- fixed behavior of double click in log
+- fixed missing check that allowed users to get two identical file entries in project explorer
+- added Return/Enter key to open file from Project Explorer (macOS)
+- improved up/down key behavior in tab browser (macOS)
+- added missing tab navigation arrows if more tabs are open than can be displayed (macOS)
+- fixed inappropriate resize behavior when opening a file from Finder (macOS)
+- fixed file modification marker after closing a file without saving (macOS)
+- fixed size of help toolbar (macOS)
+- fixed behavior of home key (FN+Left) (macOS)
+
+
+## Code Edit & Syntax Highlighter
+- fixed search jumping to results outside of selected scope under certain circumstances
+- fixed syntax highlighting for secriptions that include a comma character
+- fixed and enhanced syntax highlighting for eolCom keyword
+- fixed problem caused by opening brace inside of IdentifierAssignment
+- fixed highlighting of matching braces around newline characters
+- fixed syntax highlighting in data statements
+- fixed behavior of Ctrl+Left/Right Arrow (macOS)
+
+## Solver Option Editor
+- added icon and colors to report recurrence of parameters and options
+- added and improved shortcuts to parameter and option editor
+
 Version 0.13.1
 ===============
 
-# General
+## General
 - fixed studio ignoring changes in command line parameter "filestem"
 - fixed handling of files where user changed the extension of a file via "Save As"
 - fixed wrong deletion when using block edit mode that includes short lines
@@ -9,7 +41,7 @@ Version 0.13.1
 - fixed bug where gdx command line parameter was ignored under certain circumstances
 - renamed "Output View" to "Process Log"
 
-# Solver Option Editor
+## Solver Option Editor
 - fixed solver option editor not opening option files for certain solvers
 - improved visualization of selected options in solver option editor
 
