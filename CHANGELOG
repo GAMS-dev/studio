@@ -19,7 +19,7 @@ Version 0.13.2
 
 ## Code Edit & Syntax Highlighter
 - fixed search jumping to results outside of selected scope under certain circumstances
-- fixed syntax highlighting for secriptions that include a comma character
+- fixed syntax highlighting for descriptions that include a comma character
 - fixed and enhanced syntax highlighting for eolCom keyword
 - fixed problem caused by opening brace inside of IdentifierAssignment
 - fixed highlighting of matching braces around newline characters
