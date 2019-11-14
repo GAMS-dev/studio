@@ -123,12 +123,16 @@ void Keys::reset()
     seq = new KeySeqList("MoveToEndOfLine","Move to the end of line");
 #ifdef Q_OS_OSX
     *seq << QKeySequence("Ctrl+Right") << QKeySequence("Shift+Ctrl+Right");
+#else
+    *seq << QKeySequence("End") << QKeySequence("Shift+End");
 #endif
     setHotkey(Hotkey::MoveToEndOfLine, seq);
 
     seq = new KeySeqList("MoveToStartOfLine","Move to the start of line");
 #ifdef Q_OS_OSX
     *seq << QKeySequence("Ctrl+Left") << QKeySequence("Shift+Ctrl+Left");
+#else
+    *seq << QKeySequence("Home") << QKeySequence("Shift+Home");
 #endif
     setHotkey(Hotkey::MoveToStartOfLine, seq);
 
