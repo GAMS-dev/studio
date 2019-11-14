@@ -231,27 +231,27 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
     QMenu menu(this);
     for(QAction* action : ui->gamsOptionTableView->actions()) {
         if (action->objectName().compare("actionInsert_option")==0) {
-            action->setEnabled( !thereIsARow || thereIsARowSelection );
-            menu.addAction(action);
+            if (!thereIsARow || thereIsARowSelection)
+                menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDelete_option")==0) {
-            action->setEnabled( thereIsARowSelection );
-            menu.addAction(action);
+                  if ( thereIsARowSelection )
+                     menu.addAction(action);
         } else if (action->objectName().compare("actionDeleteAll_option")==0) {
-            action->setEnabled( ui->gamsOptionTableView->model()->rowCount() > 0 );
-            menu.addAction(action);
-            menu.addSeparator();
+                 if (thereIsARow)
+                    menu.addAction(action);
+                 menu.addSeparator();
         } else if (action->objectName().compare("actionMoveUp_option")==0) {
-            action->setEnabled( thereIsARowSelection && (selection.first().row() > 0) );
-            menu.addAction(action);
+                 if (thereIsARowSelection && (selection.first().row() > 0))
+                    menu.addAction(action);
         } else if (action->objectName().compare("actionMoveDown_option")==0) {
-            action->setEnabled( thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) );
-            menu.addAction(action);
-            menu.addSeparator();
+                  if (thereIsARowSelection && (selection.last().row() < mOptionTableModel->rowCount()-1) )
+                     menu.addAction(action);
+                  menu.addSeparator();
         } else if (action->objectName().compare("actionSelect_all")==0) {
-            action->setEnabled( thereIsARow );
-            menu.addAction(action);
-            menu.addSeparator();
+                  if (thereIsARow)
+                     menu.addAction(action);
+                  menu.addSeparator();
         } else if (action->objectName().compare("actionShowDefinition_option")==0) {
 
             bool thereIsAnOptionSelection = false;
@@ -262,15 +262,15 @@ void OptionWidget::showOptionContextMenu(const QPoint &pos)
                     break;
                 }
             }
-            action->setEnabled( thereIsAnOptionSelection );
-            menu.addAction(action);
+            if (thereIsAnOptionSelection)
+                menu.addAction(action);
         } else if (action->objectName().compare("actionShowRecurrence_option")==0) {
-                  action->setEnabled( indexSelection.size()>=1 && getRecurrentOption(indexSelection.at(0)).size()>0 );
-                  menu.addAction(action);
+                  if ( indexSelection.size()>=1 && getRecurrentOption(indexSelection.at(0)).size()>0 )
+                      menu.addAction(action);
                   menu.addSeparator();
         } else if (action->objectName().compare("actionResize_columns")==0) {
-                  action->setEnabled( thereIsARow );
-                  menu.addAction(action);
+                  if (thereIsARow)
+                     menu.addAction(action);
         }
     }
     menu.exec(ui->gamsOptionTableView->viewport()->mapToGlobal(pos));
@@ -294,17 +294,17 @@ void OptionWidget::showDefinitionContextMenu(const QPoint &pos)
     QMenu menu(this);
     for(QAction* action : ui->gamsOptionTreeView->actions()) {
         if (action->objectName().compare("actionAddThisOption")==0) {
-            action->setEnabled( !hasSelectionBeenAdded && ui->gamsOptionTableView->selectionModel()->selectedRows().size() <= 0);
-            menu.addAction(action);
+            if ( !hasSelectionBeenAdded && ui->gamsOptionTableView->selectionModel()->selectedRows().size() <= 0)
+                menu.addAction(action);
             menu.addSeparator();
         } else if (action->objectName().compare("actionDeleteThisOption")==0) {
-            action->setEnabled( hasSelectionBeenAdded && ui->gamsOptionTableView->selectionModel()->selectedRows().size() > 0 );
-            menu.addAction(action);
-            menu.addSeparator();
+                  if ( hasSelectionBeenAdded && ui->gamsOptionTableView->selectionModel()->selectedRows().size() > 0 )
+                     menu.addAction(action);
+                  menu.addSeparator();
         } else if (action->objectName().compare("actionResize_columns")==0) {
-            action->setEnabled( ui->gamsOptionTreeView->model()->rowCount()>0 );
-            menu.addAction(action);
-            menu.addSeparator();
+                  if ( ui->gamsOptionTreeView->model()->rowCount()>0 )
+                     menu.addAction(action);
+                  menu.addSeparator();
         }
     }
 
@@ -698,7 +698,7 @@ void OptionWidget::deleteOption()
 
 void OptionWidget::deleteAllOptions()
 {
-    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus())
+    if (!mExtendedEditor->isVisible() || !ui->gamsOptionTableView->hasFocus() || ui->gamsOptionTableView->model()->rowCount() <= 0)
         return;
 
     mOptionTokenizer->getOption()->resetModficationFlag();
@@ -758,13 +758,30 @@ void OptionWidget::moveOptionUp()
     }
 
     QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
-    if (selection.count() <= 0 || (selection.first().row() <= 0))
+    if (selection.count() <= 0)
        return;
 
-    QModelIndex index = selection.at(0);
-    ui->gamsOptionTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()-1);
-    ui->gamsOptionTableView->selectionModel()->select( mOptionTableModel->index(index.row()-1, 0),
-                                                       QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    QModelIndexList idxSelection = QModelIndexList(selection);
+    std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
+    if (idxSelection.first().row() <= 0)
+       return;
+
+    for(int i=0; i<idxSelection.size(); i++) {
+        QModelIndex idx = idxSelection.at(i);
+        ui->gamsOptionTableView->model()->moveRows(QModelIndex(), idx.row(), 1,
+                                                    QModelIndex(), idx.row()-1);
+    }
+
+    disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
+    QItemSelection select;
+    for(QModelIndex indx : idxSelection) {
+        QModelIndex leftIndex  = ui->gamsOptionTableView->model()->index(indx.row()-1, GamsOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex rightIndex = ui->gamsOptionTableView->model()->index(indx.row()-1, GamsOptionTableModel::COLUMN_ENTRY_NUMBER);
+        QItemSelection rowSelection(leftIndex, rightIndex);
+        select.merge(rowSelection, QItemSelectionModel::Select);
+    }
+    ui->gamsOptionTableView->selectionModel()->select(select, QItemSelectionModel::ClearAndSelect);
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::moveOptionDown()
@@ -775,14 +792,30 @@ void OptionWidget::moveOptionDown()
     }
 
     QModelIndexList selection = ui->gamsOptionTableView->selectionModel()->selectedRows();
-
-    if (selection.count() <= 0 || (selection.last().row() >= mOptionTableModel->rowCount()-1) )
+    if (selection.count() <= 0)
         return;
 
-    QModelIndex index = selection.at(0);
-    ui->gamsOptionTableView->model()->moveRows(QModelIndex(), index.row(), 1, QModelIndex(), index.row()+2);
-    ui->gamsOptionTableView->selectionModel()->select( mOptionTableModel->index(index.row()+1, 0),
-                                                       QItemSelectionModel::Select|QItemSelectionModel::Rows );
+    QModelIndexList idxSelection = QModelIndexList(selection);
+    std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() > b.row(); });
+    if (idxSelection.first().row() >= mOptionTableModel->rowCount()-1)
+       return;
+
+    for(int i=0; i<idxSelection.size(); i++) {
+        QModelIndex idx = idxSelection.at(i);
+        mOptionTableModel->moveRows(QModelIndex(), idx.row(), 1,
+                                    QModelIndex(), idx.row()+2);
+    }
+
+    disconnect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition);
+    QItemSelection select;
+    for(QModelIndex indx : idxSelection) {
+        QModelIndex leftIndex  = ui->gamsOptionTableView->model()->index(indx.row()+1, GamsOptionTableModel::COLUMN_OPTION_KEY);
+        QModelIndex rightIndex = ui->gamsOptionTableView->model()->index(indx.row()+1, GamsOptionTableModel::COLUMN_ENTRY_NUMBER);
+        QItemSelection rowSelection(leftIndex, rightIndex);
+        select.merge(rowSelection, QItemSelectionModel::Select);
+    }
+    ui->gamsOptionTableView->selectionModel()->select(select, QItemSelectionModel::ClearAndSelect);
+    connect(ui->gamsOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &OptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
 }
 
 void OptionWidget::setEditorExtended(bool extended)
