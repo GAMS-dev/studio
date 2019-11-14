@@ -210,6 +210,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
+    ui->mainTabs->setUsesScrollButtons(true);
 
     // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
@@ -1689,8 +1690,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        if (fc->document())
-            fc->document()->setModified(false);
+        fc->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
         return;

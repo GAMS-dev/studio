@@ -42,6 +42,7 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void updateDrag(QDragMoveEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
     void selectAll() override;

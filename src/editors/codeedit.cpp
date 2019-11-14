@@ -296,7 +296,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         anc.setPosition(c.anchor());
         startBlockEdit(anc.blockNumber(), anc.columnNumber());
     }
-
+    e->ignore();
     if (mBlockEdit) {
         if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
@@ -306,20 +306,37 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
         }
     } else {
+        QTextCursor cur = textCursor();
         if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
             ParenthesesMatch pm = matchParentheses();
             bool sel = (e == Hotkey::SelectParentheses);
             QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
             if (pm.match >= 0) {
-                QTextCursor cur = textCursor();
                 if (sel) cur.clearSelection();
                 if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
                 cur.setPosition(pm.match+1, mm);
-                setTextCursor(cur);
+                e->accept();
             }
+        } else if (e == Hotkey::MoveToEndOfLine) {
+            QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+            cur.movePosition(QTextCursor::EndOfLine, mm);
+            e->accept();
+        } else if (e == Hotkey::MoveToStartOfLine) {
+            QTextBlock block = cur.block();
+            QTextCursor::MoveMode mm = QTextCursor::MoveAnchor;
+
+            if (e->modifiers() & Qt::ShiftModifier)
+                mm = QTextCursor::KeepAnchor;
+
+            QRegularExpression leadingSpaces("^(\\s*)");
+            QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
+
+            if (cur.positionInBlock()==0 || lsMatch.capturedLength(1) < cur.positionInBlock())
+                cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
+            else cur.setPosition(block.position(), mm);
+            e->accept();
         } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
             QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            QTextCursor cur = textCursor();
             int p = cur.positionInBlock();
             EditorHelper::nextWord(0, p, cur.block().text());
             if (p >= cur.block().length()) {
@@ -329,12 +346,9 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             } else {
                 cur.setPosition(cur.block().position() + p, mm);
             }
-            setTextCursor(cur);
             e->accept();
-            return;
         } else if (e == Hotkey::MoveCharGroupLeft || e == Hotkey::SelectCharGroupLeft) {
             QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupLeft) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            QTextCursor cur = textCursor();
             int p = cur.positionInBlock();
             if (p == 0) {
                 QTextBlock block = cur.block().previous();
@@ -343,30 +357,10 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
                 EditorHelper::prevWord(0, p, cur.block().text());
                 cur.setPosition(cur.block().position() + p, mm);
             }
+            e->accept();
+        }
+        if (e->isAccepted()) {
             setTextCursor(cur);
-            e->accept();
-            return;
-        } else if (e->key() == Qt::Key_Home && (!e->modifiers() || e->modifiers() & Qt::ShiftModifier || e->modifiers() & Qt::ControlModifier)) {
-            QTextCursor tc = textCursor();
-            QTextBlock block = tc.block();
-            QTextCursor::MoveMode moveMode = QTextCursor::MoveAnchor;
-
-            if (e->modifiers() & Qt::ShiftModifier)
-                moveMode = QTextCursor::KeepAnchor;
-
-            QRegularExpression leadingSpaces("^(\\s*)");
-            QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
-
-            if (e->modifiers() & Qt::ControlModifier) {
-                tc.setPosition(0, moveMode);
-            } else {
-                if (lsMatch.capturedLength(1) < tc.positionInBlock())
-                    tc.setPosition(block.position() + lsMatch.capturedLength(1), moveMode);
-                else tc.setPosition(block.position(), moveMode);
-            }
-
-            setTextCursor(tc);
-            e->accept();
             return;
         }
     }
@@ -1807,6 +1801,9 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
     mLastCharType = charType;
     cursor.endEditBlock();
 }
+
+BlockData::~BlockData()
+{ }
 
 QChar BlockData::charForPos(int relPos)
 {
