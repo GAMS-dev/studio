@@ -232,6 +232,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::cancelProcess(int waitMSec)
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::closeEvent(QCloseEvent *e)
 {
+    Q_UNUSED(e)
     on_pbCancel_clicked();
 }
 
