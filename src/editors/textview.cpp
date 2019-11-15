@@ -272,7 +272,6 @@ void TextView::resizeEvent(QResizeEvent *event)
 void TextView::recalcVisibleLines()
 {
     int visibleLines = mEdit->viewport()->height() / mEdit->fontMetrics().lineSpacing();
-    DEB() << "lines: " << visibleLines << "  h: " << mEdit->viewport()->height();
     if (visibleLines > 0) {
         mMapper->setVisibleLineCount(visibleLines);
         updateVScrollZone();
