@@ -3518,11 +3518,10 @@ void MainWindow::openGdxDiffFile()
     // if no group was found, we try to open the file in the first node that contains the it
     if (pgDiff == nullptr) {
         FileMeta *fm = mFileMetaRepo.fileMeta(diffFile);
-        ProjectGroupNode* group = nullptr;
         if (fm) {
             QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
             if(v.size() == 1)
-                group = v.first()->parentNode();
+                pgDiff = v.first()->parentNode();
         }
     }
     ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
