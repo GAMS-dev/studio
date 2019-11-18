@@ -95,7 +95,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 
     mLastDiffFile = ui->leDiff->text().trimmed();
     if (mLastDiffFile.isEmpty())
-        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + "diffile.gdx");
+        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + "diff-result.gdx");
     else if (QFileInfo(mLastDiffFile).isRelative())
         mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + mLastDiffFile);
     if (QFileInfo(mLastDiffFile).suffix().isEmpty())
