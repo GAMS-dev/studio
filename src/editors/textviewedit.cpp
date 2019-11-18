@@ -58,7 +58,6 @@ bool TextViewEdit::hasSelection() const
 void TextViewEdit::disconnectTimers()
 {
     CodeEdit::disconnectTimers();
-//    disconnect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
 }
 
 void TextViewEdit::copySelection()

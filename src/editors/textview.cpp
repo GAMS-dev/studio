@@ -266,7 +266,7 @@ void TextView::horizontalScrollAction(int action)
 void TextView::resizeEvent(QResizeEvent *event)
 {
     QAbstractScrollArea::resizeEvent(event);
-    recalcVisibleLines();
+    QTimer::singleShot(0, this, &TextView::recalcVisibleLines);
 }
 
 void TextView::recalcVisibleLines()
