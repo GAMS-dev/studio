@@ -74,7 +74,6 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbCancel_clicked()
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 {
     mWasCanceled = false;
-    setControlsEnabled(false);
     mLastInput1 = ui->leInput1->text().trimmed();
     mLastInput2 = ui->leInput2->text().trimmed();
     if (mLastInput1.isEmpty() || mLastInput2.isEmpty()) {
@@ -86,6 +85,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         msgBox.exec();
         return;
     }
+    setControlsEnabled(false);
 
     if (QFileInfo(mLastInput1).isRelative())
         mLastInput1 = QDir::cleanPath(mRecentPath + QDir::separator() + mLastInput1);
