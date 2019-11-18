@@ -259,7 +259,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all input fields.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Clear</string>
+        <string>Reset</string>
        </property>
       </widget>
      </item>
