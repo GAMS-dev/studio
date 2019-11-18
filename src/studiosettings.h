@@ -25,6 +25,7 @@
 #include <QHash>
 
 class QSettings;
+class QFile;
 
 namespace gams {
 namespace studio {
@@ -164,6 +165,7 @@ public:
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
+    QFile *mColorSettings = nullptr;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
 

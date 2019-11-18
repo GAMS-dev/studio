@@ -22,6 +22,7 @@
 #include <QJsonDocument>
 #include <QDir>
 #include <QSettings>
+#include <QFile>
 #include "studiosettings.h"
 #include "mainwindow.h"
 #include "commonpaths.h"
@@ -39,6 +40,7 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
     if (ignoreSettings && !mResetSettings) {
         mAppSettings = new QSettings();
         mUserSettings = new QSettings();
+        mColorSettings = new QFile();
         initDefaultColors();
     }
     else if (mAppSettings == nullptr) {
@@ -66,6 +68,15 @@ StudioSettings::~StudioSettings()
         delete mUserSettings;
         mUserSettings = nullptr;
     }
+
+    if (mColorSettings) {
+        if (mColorSettings->isOpen()) {
+            mColorSettings->flush();
+            mColorSettings->close();
+        }
+        delete mColorSettings;
+        mColorSettings = nullptr;
+    }
 }
 
 void StudioSettings::initSettingsFiles()
@@ -74,6 +85,18 @@ void StudioSettings::initSettingsFiles()
                                  GAMS_ORGANIZATION_STR, "uistates");
     mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
                                   GAMS_ORGANIZATION_STR, "usersettings");
+    QString path = QFileInfo(mUserSettings->fileName()).path();
+    DEB() << "Settings-path: " << path;
+    if (path.length() > 3) {
+        mColorSettings = new QFile(path+"/colorsettings.json");
+        if (mColorSettings->open(QIODevice::ReadWrite)) {
+            mColorSettings->write("x",1);
+            mColorSettings->flush();
+            mColorSettings->close();
+        }
+        delete mColorSettings;
+        mColorSettings = nullptr;
+    }
 }
 
 void StudioSettings::initDefaultColors()
@@ -93,6 +116,7 @@ void StudioSettings::resetSettings()
     initDefaultColors();
     mAppSettings->sync();
     mUserSettings->sync();
+//    mColorSettings->sync();
 }
 
 void StudioSettings::resetViewSettings()
@@ -250,6 +274,10 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->endGroup();
 
     mUserSettings->sync();
+
+//    QString jsonColors = exportJsonColorSchemes();
+//    mColorSettings->setValue("colors", jsonColors);
+//    mColorSettings->sync();
 }
 
 void StudioSettings::loadViewStates(MainWindow *main)
@@ -737,7 +765,7 @@ QByteArray StudioSettings::exportJsonColorSchemes()
     }
 
     QJsonDocument saveDoc = QJsonDocument(schemes);
-    return saveDoc.toJson(QJsonDocument::Compact);
+    return saveDoc.toJson(QJsonDocument::Indented);
 }
 
 void StudioSettings::importJsonColorSchemes(const QByteArray &jsonData)
