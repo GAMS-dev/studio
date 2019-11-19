@@ -241,6 +241,16 @@ QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput2() const
     return mLastInput2;
 }
 
+QString gams::studio::gdxdiffdialog::GdxDiffDialog::input1() const
+{
+    return ui->leInput1->text();
+}
+
+QString gams::studio::gdxdiffdialog::GdxDiffDialog::input2() const
+{
+    return ui->leInput2->text();
+}
+
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const
 {
     return mLastInput1;

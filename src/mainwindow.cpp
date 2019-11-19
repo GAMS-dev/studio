@@ -1861,9 +1861,20 @@ void MainWindow::on_actionGDX_Diff_triggered()
 void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString input1, QString input2)
 {
     if (!input1.isEmpty()) { // function call was triggered from the context menu
-        mGdxDiffDialog->clear();
-        mGdxDiffDialog->setInput1(input1);
-        mGdxDiffDialog->setInput2(input2);
+        // when both input1 and input2 are specified, the corresponding files in the dialog need to be set
+        if (!input2.isEmpty()) {
+            mGdxDiffDialog->setInput1(input1);
+            mGdxDiffDialog->setInput2(input2);
+        } else {
+            if (mGdxDiffDialog->input1().trimmed().isEmpty()) // set input1 line edit if empty
+                mGdxDiffDialog->setInput1(input1);
+            else if (mGdxDiffDialog->input2().trimmed().isEmpty()) // set input2 if input1 is not empty but input1 is empty
+                mGdxDiffDialog->setInput2(input1);
+            else // set input1 otherwise
+                mGdxDiffDialog->setInput1(input1);
+        }
+
+
     }
     mGdxDiffDialog->setRecentPath(workingDirectory);
     mGdxDiffDialog->show();

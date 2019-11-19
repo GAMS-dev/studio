@@ -33,6 +33,9 @@ public:
 
     QString lastInput2() const;
 
+    QString input1() const;
+    QString input2() const;
+
 private slots:
 
     void on_pushButton_clicked();
