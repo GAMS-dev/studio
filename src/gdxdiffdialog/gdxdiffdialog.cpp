@@ -58,7 +58,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_2_clicked()
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_3_clicked()
 {
     QString filePath = QFileDialog::getSaveFileName(this, "Choose GDX File...",
-                                                            nullptr,
+                                                            "diff-result.gdx",
                                                             tr("GDX file (*.gdx);;"
                                                                "All files (*.*)"));
     if (!filePath.isEmpty())
