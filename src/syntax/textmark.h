@@ -89,6 +89,7 @@ protected:
     virtual ~TextMark();
     void setPosition(int line, int column, int size = 0);
     void setLine(int lineNr);
+    QColor schemeColor(QString value) const;
 
 private:
     static TextMarkId mNextId;

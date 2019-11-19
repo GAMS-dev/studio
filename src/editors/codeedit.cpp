@@ -1279,7 +1279,7 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
                 selection.cursor = textCursor();
                 selection.cursor.setPosition(block.position()+match.capturedStart(2));
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
-                selection.format.setBackground(mSettings->colorScheme().value("Edit.currentWordBg", QColor(Qt::lightGray)));
+                selection.format.setBackground(schemeColor("currentWordBg"));
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
             }
@@ -1297,9 +1297,9 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
     if (!mParenthesesMatch.isValid()) return false;
 
     if (mParenthesesMatch.pos == mParenthesesMatch.match) mParenthesesMatch.valid = false;
-    QColor fgColor = mParenthesesMatch.valid ? QColor(Qt::red) : QColor(Qt::black);
-    QColor bgColor = mParenthesesMatch.valid ? QColor(Qt::green).lighter(170) : QColor(Qt::red).lighter(150);
-    QColor bgBlinkColor = mParenthesesMatch.valid ? QColor(Qt::green).lighter(130) : QColor(Qt::red).lighter(115);
+    QColor fgColor = schemeColor(mParenthesesMatch.valid ? "parenthesesValidFg" : "parenthesesValidFg");
+    QColor bgColor = schemeColor(mParenthesesMatch.valid ? "parenthesesValidBg" : "parenthesesValidBg");
+    QColor bgBlinkColor = schemeColor(mParenthesesMatch.valid ? "parenthesesValidBgBlink" : "parenthesesValidBgBlink");
     QTextEdit::ExtraSelection selection;
     selection.cursor = textCursor();
     selection.cursor.setPosition(mParenthesesMatch.pos);
@@ -1343,7 +1343,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
             selection.cursor = tc;
-            selection.format.setBackground(mSettings->colorScheme().value("Edit.matchesBg", QColor(Qt::green).lighter(160)));
+            selection.format.setBackground(schemeColor("matchesBg"));
             selections << selection;
         }
 
@@ -1391,7 +1391,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
     if (markFrom > markTo) qSwap(markFrom, markTo);
 
     QRect paintRect(event->rect());
-    painter.fillRect(paintRect, QColor(245,245,245));
+    painter.fillRect(paintRect, schemeColor("linenrAreaBg"));
 
     QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(blockBoundingRect(block).height())+1);
     while (block.isValid() && top <= paintRect.bottom()) {
@@ -1401,7 +1401,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
             if (mark) {
                 markRect.moveTop(top);
                 markRect.setHeight(bottom-top);
-                painter.fillRect(markRect, QColor(225,255,235));
+                painter.fillRect(markRect, schemeColor("linenrAreaMarkBg"));
             }
 
             if(showLineNr()) {
@@ -1409,7 +1409,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 QFont f = font();
                 f.setBold(mark);
                 painter.setFont(f);
-                painter.setPen(mark ? Qt::black : Qt::gray);
+                painter.setPen(schemeColor(mark ? "linenrAreaFg" : "linenrAreaMarkFg"));
                 int realtop = top; // (top+bottom-fontMetrics().height())/2;
                 painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
@@ -1641,8 +1641,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
             if (block.length() <= beyondStart)
                 selRect.translate(((beyondStart-block.length()+1) * spaceWidth), 0);
             selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
-            QColor beColor = QColor(Qt::cyan).lighter(150);
-            painter.fillRect(selRect, QBrush(beColor));
+            painter.fillRect(selRect, mEdit->schemeColor("blockSelectBg"));
         }
 
         if (mBlinkStateHidden) {
@@ -1691,8 +1690,7 @@ void CodeEdit::BlockEdit::updateExtraSelections()
     for (int lineNr = qMin(mStartLine, mCurrentLine); lineNr <= qMax(mStartLine, mCurrentLine); ++lineNr) {
         QTextBlock block = mEdit->document()->findBlockByNumber(lineNr);
         QTextEdit::ExtraSelection select;
-        QColor beColor = QColor(Qt::cyan).lighter(150);
-        select.format.setBackground(beColor);
+        select.format.setBackground(mEdit->schemeColor("blockSelectBg"));
 
         int start = qMin(block.length()-1, qMin(mColumn, mColumn+mSize));
         int end = qMin(block.length()-1, qMax(mColumn, mColumn+mSize));

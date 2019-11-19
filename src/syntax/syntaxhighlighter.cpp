@@ -26,6 +26,8 @@
 #include "exception.h"
 #include "file.h"
 #include "common.h"
+#include "studiosettings.h"
+#include "locators/settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -116,22 +118,22 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDeclaration(), cl.value(SyntaxDeclr), fBold);
     initKind(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), fBold);
 
-    initKind(new SyntaxIdentifier(SyntaxKind::Identifier));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2));
+    initKind(new SyntaxIdentifier(SyntaxKind::Identifier), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2), cl.value(SyntaxIdent));
     initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription), cl.value(SyntaxDescr));
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), cl.value(SyntaxIdAsn));
     initKind(new AssignmentLabel(), cl.value(SyntaxAsLab));
     initKind(new AssignmentValue(), cl.value(SyntaxAsVal));
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), cl.value(SyntaxIdAsn));
 
-    initKind(new SyntaxIdentifier(SyntaxKind::IdentifierTable));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim1));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim2));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd1));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd2));
+    initKind(new SyntaxIdentifier(SyntaxKind::IdentifierTable), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim1), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim2), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd1), cl.value(SyntaxIdent));
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd2), cl.value(SyntaxIdent));
     initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierTableDescription), cl.value(SyntaxDescr));
 
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), fBold);
@@ -411,6 +413,14 @@ int SyntaxHighlighter::purgeCode(int code)
         kind = mKinds.at(mCodes.at(code).first)->kind();
     }
     return code;
+}
+
+QColor SyntaxHighlighter::schemeColor(QString value)
+{
+    QString fullValue = "Syntax."+value;
+    if (!SettingsLocator::settings()->colorScheme().contains(fullValue))
+        DEB() << "no color found for '" << fullValue << "'";
+    return SettingsLocator::settings()->colorScheme().value(fullValue, QColor(Qt::magenta));
 }
 
 QString SyntaxHighlighter::codeDeb(int code)

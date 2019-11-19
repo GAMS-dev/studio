@@ -71,6 +71,7 @@ private:
     int addCode(KindIndex si, CodeIndex ci);
     BlockCode getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest = 0);
     int purgeCode(int code);
+    QColor schemeColor(QString value);
     QString codeDeb(int code);
 
 private:

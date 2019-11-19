@@ -22,6 +22,8 @@
 #include "file.h"
 #include "logger.h"
 #include "exception.h"
+#include "studiosettings.h"
+#include "locators/settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -37,6 +39,14 @@ TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId group
 void TextMark::setLine(int lineNr)
 {
     mLine = lineNr;
+}
+
+QColor TextMark::schemeColor(QString value) const
+{
+    QString fullValue = "TextMark."+value;
+    if (!SettingsLocator::settings()->colorScheme().contains(fullValue))
+        DEB() << "no color found for '" << fullValue << "'";
+    return SettingsLocator::settings()->colorScheme().value(fullValue, QColor(Qt::magenta));
 }
 
 TextMark *TextMark::refMark() const
@@ -104,12 +114,12 @@ void TextMark::clearBackRefs()
 QColor TextMark::color() const
 {
     if (mReference) {
-        if (mReference->type() == TextMark::error) return Qt::darkRed;
-        if (mReference->fileKind() == FileKind::Lst) return Qt::blue;
+        if (mReference->type() == TextMark::error) return schemeColor("errorFg");
+        if (mReference->fileKind() == FileKind::Lst) return schemeColor("listingFg");
     } else {
-        return Qt::darkRed;
+        return schemeColor("errorFg");
     }
-    return Qt::darkGreen;
+    return schemeColor("fileFg");
 }
 
 FileKind TextMark::fileKind()

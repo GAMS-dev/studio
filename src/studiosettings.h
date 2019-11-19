@@ -41,6 +41,8 @@ public:
 
     void loadSettings(MainWindow *main);
     void saveSettings(MainWindow *main);
+    bool writeColors();
+    void readColors();
 
     QString defaultWorkspace() const;
     void setDefaultWorkspace(const QString &value);

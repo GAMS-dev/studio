@@ -86,17 +86,7 @@ void StudioSettings::initSettingsFiles()
     mUserSettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
                                   GAMS_ORGANIZATION_STR, "usersettings");
     QString path = QFileInfo(mUserSettings->fileName()).path();
-    DEB() << "Settings-path: " << path;
-    if (path.length() > 3) {
-        mColorSettings = new QFile(path+"/colorsettings.json");
-        if (mColorSettings->open(QIODevice::ReadWrite)) {
-            mColorSettings->write("x",1);
-            mColorSettings->flush();
-            mColorSettings->close();
-        }
-        delete mColorSettings;
-        mColorSettings = nullptr;
-    }
+    mColorSettings = new QFile(path+"/colorsettings.json");
 }
 
 void StudioSettings::initDefaultColors()
@@ -106,8 +96,26 @@ void StudioSettings::initDefaultColors()
     }
     mColorSchemes[0].clear();
     mColorSchemes[0].insert("Edit.currentLineBg", QColor(255, 250, 170));
-    mColorSchemes[0].insert("Edit.currentWordBg", QColor(Qt::lightGray));
+    mColorSchemes[0].insert("Edit.errorBg", QColor(Qt::lightGray));
+    mColorSchemes[0].insert("Edit.currentWordBg", QColor(210,200,200));
     mColorSchemes[0].insert("Edit.matchesBg", QColor(Qt::green).lighter(160));
+    mColorSchemes[0].insert("Edit.parenthesesValidFg", QColor(Qt::red));
+    mColorSchemes[0].insert("Edit.parenthesesInvalidFg", QColor(Qt::black));
+    mColorSchemes[0].insert("Edit.parenthesesValidBg", QColor(Qt::green).lighter(170));
+    mColorSchemes[0].insert("Edit.parenthesesInvalidBg", QColor(Qt::red).lighter(150));
+    mColorSchemes[0].insert("Edit.parenthesesValidBgBlink", QColor(Qt::green).lighter(130));
+    mColorSchemes[0].insert("Edit.parenthesesInvalidBgBlink", QColor(Qt::red).lighter(115));
+    mColorSchemes[0].insert("Edit.linenrAreaBg", QColor(245,245,245));
+    mColorSchemes[0].insert("Edit.linenrAreaMarkBg", QColor(225,255,235));
+    mColorSchemes[0].insert("Edit.linenrAreaFg", QColor(Qt::black));
+    mColorSchemes[0].insert("Edit.linenrAreaMarkFg", QColor(Qt::gray));
+    mColorSchemes[0].insert("Edit.blockSelectBg", QColor(Qt::cyan).lighter(150));
+
+    mColorSchemes[0].insert("Mark.errorFg", QColor(Qt::darkRed));
+    mColorSchemes[0].insert("Mark.listingFg", QColor(Qt::blue));
+    mColorSchemes[0].insert("Mark.fileFg", QColor(Qt::darkGreen));
+
+    mColorSchemes[0].insert("Syntax.undefined", QColor(Qt::red));
 }
 
 void StudioSettings::resetSettings()
@@ -116,7 +124,7 @@ void StudioSettings::resetSettings()
     initDefaultColors();
     mAppSettings->sync();
     mUserSettings->sync();
-//    mColorSettings->sync();
+    writeColors();
 }
 
 void StudioSettings::resetViewSettings()
@@ -275,9 +283,28 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->sync();
 
-//    QString jsonColors = exportJsonColorSchemes();
-//    mColorSettings->setValue("colors", jsonColors);
-//    mColorSettings->sync();
+    writeColors();
+}
+
+bool StudioSettings::writeColors()
+{
+    if (mColorSettings && mColorSettings->open(QIODevice::WriteOnly)) {
+        QString jsonColors = exportJsonColorSchemes();
+        mColorSettings->write(jsonColors.toLatin1().data(), jsonColors.toLatin1().length());
+        mColorSettings->flush();
+        mColorSettings->close();
+        return true;
+    }
+    return false;
+}
+
+void StudioSettings::readColors()
+{
+    if (mColorSettings && mColorSettings->open(QIODevice::ReadOnly)) {
+        QByteArray jsonColors = mColorSettings->readAll();
+        importJsonColorSchemes(jsonColors);
+        mColorSettings->close();
+    }
 }
 
 void StudioSettings::loadViewStates(MainWindow *main)
@@ -413,6 +440,8 @@ void StudioSettings::loadUserSettings()
     setMiroInstallationLocation(mUserSettings->value("miroInstallationLocation", miroInstallationLocation()).toString());
 
     mUserSettings->endGroup();
+
+    readColors();
 }
 
 QString StudioSettings::miroInstallationLocation() const
@@ -741,7 +770,7 @@ int StudioSettings::colorSchemeIndex()
 void StudioSettings::setColorSchemeIndex(int value)
 {
     if (value >= mColorSchemes.size())
-        value = mColorSchemes.size() -1;
+        value = 0;
     mColorSchemeIndex = value;
 }
 

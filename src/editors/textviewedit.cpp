@@ -220,7 +220,7 @@ void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
     if (line <= AbstractTextMapper::cursorInvalid) return;
 
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(mSettings->colorScheme().value("Edit.currentLineBg", QColor(255, 250, 170)));
+    selection.format.setBackground(schemeColor("currentLineBg"));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = QTextCursor(document()->findBlockByNumber(line));
     selections.append(selection);

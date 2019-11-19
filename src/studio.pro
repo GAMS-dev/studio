@@ -78,6 +78,8 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
+    color.cpp \
+    support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
     editors/abstractedit.cpp \
@@ -206,6 +208,8 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
+    color.h \
+    support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \
