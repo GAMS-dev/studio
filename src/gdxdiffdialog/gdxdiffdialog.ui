@@ -45,7 +45,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="pbInput1">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Browse for first GDX file used for comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -77,7 +77,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="pbInput2">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Browse for second GDX file used for comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -109,7 +109,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="pbDiff">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Browse for difference GDX file (optional).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>

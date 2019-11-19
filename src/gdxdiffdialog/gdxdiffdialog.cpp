@@ -33,7 +33,7 @@ GdxDiffDialog::~GdxDiffDialog()
 } // namespace studio
 } // namespace gams
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_clicked()
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput1_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Choose GDX File...",
                                                             nullptr,
@@ -43,7 +43,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_clicked()
         ui->leInput1->setText(filePath);
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_2_clicked()
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput2_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Choose GDX File...",
                                                             nullptr,
@@ -53,7 +53,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_2_clicked()
         ui->leInput2->setText(filePath);
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_3_clicked()
+void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbDiff_clicked()
 {
     QString filePath = QFileDialog::getSaveFileName(this, "Choose GDX File...",
                                                             "diff-result.gdx",
@@ -217,9 +217,9 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setControlsEnabled(bool enabled
 {
     ui->pbOK->setEnabled(enabled);
     ui->pbClear->setEnabled(enabled);
-    ui->pushButton->setEnabled(enabled);
-    ui->pushButton_2->setEnabled(enabled);
-    ui->pushButton_3->setEnabled(enabled);
+    ui->pbInput1->setEnabled(enabled);
+    ui->pbInput2->setEnabled(enabled);
+    ui->pbDiff->setEnabled(enabled);
     ui->leDiff->setEnabled(enabled);
     ui->leInput1->setEnabled(enabled);
     ui->leInput2->setEnabled(enabled);

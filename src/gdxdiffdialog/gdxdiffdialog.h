@@ -38,11 +38,11 @@ public:
 
 private slots:
 
-    void on_pushButton_clicked();
+    void on_pbInput1_clicked();
 
-    void on_pushButton_2_clicked();
+    void on_pbInput2_clicked();
 
-    void on_pushButton_3_clicked();
+    void on_pbDiff_clicked();
 
     void on_pbCancel_clicked();
 
