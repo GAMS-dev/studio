@@ -17,8 +17,6 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    setFixedSize(size());
-
     ui->lineEdit_4->setValidator(new QDoubleValidator());
     ui->lineEdit_5->setValidator(new QDoubleValidator());
 
