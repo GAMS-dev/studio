@@ -60,7 +60,8 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pushButton_3_clicked()
     QString filePath = QFileDialog::getSaveFileName(this, "Choose GDX File...",
                                                             "diff-result.gdx",
                                                             tr("GDX file (*.gdx);;"
-                                                               "All files (*.*)"));
+                                                               "All files (*.*)"), nullptr,
+                                                    QFileDialog::DontConfirmOverwrite);
     if (!filePath.isEmpty())
         ui->leDiff->setText(filePath);
 }
@@ -85,7 +86,6 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         msgBox.exec();
         return;
     }
-    setControlsEnabled(false);
 
     if (QFileInfo(mLastInput1).isRelative())
         mLastInput1 = QDir::cleanPath(mRecentPath + QDir::separator() + mLastInput1);
@@ -100,6 +100,17 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + mLastDiffFile);
     if (QFileInfo(mLastDiffFile).suffix().isEmpty())
         mLastDiffFile = mLastDiffFile + ".gdx";
+
+    if (QFileInfo(mLastDiffFile).exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Overwrite Existing File");
+        msgBox.setText(QFileInfo(mLastDiffFile). + " already exists.\nDo you want to overwrite it?");
+        msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+        msgBox.setIcon(QMessageBox::Warning);
+        if (msgBox.exec() == QMessageBox::No)
+            return;
+    }
+    setControlsEnabled(false);
 
     mProc->setWorkingDir(mRecentPath);
     mProc->setInput1(mLastInput1);
