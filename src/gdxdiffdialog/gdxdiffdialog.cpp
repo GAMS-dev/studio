@@ -21,6 +21,8 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
     ui->lineEdit_5->setValidator(new QDoubleValidator());
 
     connect(mProc.get(), &GdxDiffProcess::finished, this, &GdxDiffDialog::diffDone);
+
+    connect(ui->leDiff, &QLineEdit::textEdited, [this]() {mPrepopulateDiff = false;});
     reset();
 }
 
@@ -166,6 +168,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldToCompare_currentInde
 void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &recentPath)
 {
     mRecentPath = recentPath;
+    prepopulateDiff();
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput1(QString filePath)
@@ -182,13 +185,14 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::reset()
 {
     ui->leInput1->clear();
     ui->leInput2->clear();
-    ui->leDiff->setText("diff-result.gdx");
     ui->lineEdit_4->setText("0.0");
     ui->lineEdit_5->setText("0.0");
     ui->cbDiffOnly->setChecked(false);
     ui->cbFieldOnly->setChecked(false);
     ui->cbIgnoreSetText->setChecked(false);
     ui->cbFieldToCompare->setCurrentIndex(0);
+    mPrepopulateDiff = true;
+    prepopulateDiff();
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
@@ -264,6 +268,12 @@ QString gams::studio::gdxdiffdialog::GdxDiffDialog::input1() const
 QString gams::studio::gdxdiffdialog::GdxDiffDialog::input2() const
 {
     return ui->leInput2->text();
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::prepopulateDiff()
+{
+    if (mPrepopulateDiff)
+        ui->leDiff->setText(QDir::cleanPath(mRecentPath + QDir::separator() + "diff-result.gdx"));
 }
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const

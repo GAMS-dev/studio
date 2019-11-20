@@ -36,6 +36,8 @@ public:
     QString input1() const;
     QString input2() const;
 
+    void prepopulateDiff();
+
 private slots:
 
     void on_pbInput1_clicked();
@@ -71,6 +73,7 @@ private:
     gdxviewer::GdxViewer* mDiffGdxViewer = nullptr;
     FileMeta* mDiffFm = nullptr;
     bool mWasCanceled = false;
+    bool mPrepopulateDiff = true;
 
     void cancelProcess(int waitMSec=0);
 
