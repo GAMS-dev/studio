@@ -555,6 +555,7 @@ void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::We
 void HelpWidget::wheelEvent(QWheelEvent* e)
 {
     if (e->modifiers() & Qt::ControlModifier) {
+        e->accept();
         const int delta = e->delta();
         if (delta < 0) zoomOut();
         else if (delta > 0) zoomIn();
@@ -573,10 +574,14 @@ void HelpWidget::keyPressEvent(QKeyEvent *event)
 {
     if (ui->searchbarWidget->isVisible()) {
         if (event->key() == Qt::Key_Escape) {
-           clearStatusBar();
-           ui->webEngineView->setFocus();
+            event->accept();
+            clearStatusBar();
+            ui->webEngineView->setFocus();
+            return;
         } else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+            event->accept();
             on_forwardButtonTriggered();
+            return;
         }
     }
 

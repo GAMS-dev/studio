@@ -96,7 +96,7 @@ signals:
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
-
+    void wheelEvent(QWheelEvent* event);
 
 private:
     void setupToolbar(QToolButton* bookmarkToolButton, QToolButton* helpToolButton);
@@ -122,8 +122,6 @@ private:
     };
     void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction, QIcon icon);
-
-    void wheelEvent(QWheelEvent* e);
 };
 
 } // namespace studio
