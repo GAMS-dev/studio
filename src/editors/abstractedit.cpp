@@ -26,6 +26,7 @@
 #include "settingslocator.h"
 #include "logger.h"
 #include "keys.h"
+#include "color.h"
 
 namespace gams {
 namespace studio {
@@ -140,7 +141,7 @@ void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
     if (!SettingsLocator::settings()->highlightCurrentLine()) return;
 
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(schemeColor("currentLineBg"));
+    selection.format.setBackground(toColor(Color::Edit_currentLineBg));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.movePosition(QTextCursor::StartOfBlock);
@@ -169,7 +170,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                     selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(Qt::red);
                 if (m->size() == 1)
-                    selection.format.setBackground(schemeColor("errorBg"));
+                    selection.format.setBackground(toColor(Color::Edit_errorBg));
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorName(QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
@@ -220,14 +221,6 @@ QVector<int> AbstractEdit::toolTipLstNumbers(const QPoint &pos)
         if (lstLine >= 0) lstLines << lstLine;
     }
     return lstLines;
-}
-
-QColor AbstractEdit::schemeColor(QString value)
-{
-    QString fullValue = "Edit."+value;
-    if (!SettingsLocator::settings()->colorScheme().contains(fullValue))
-        DEB() << "no color found for '" << fullValue << "'";
-    return SettingsLocator::settings()->colorScheme().value(fullValue, QColor(Qt::magenta));
 }
 
 void AbstractEdit::internalExtraSelUpdate()

@@ -26,6 +26,7 @@
 #include "exception.h"
 #include "file.h"
 #include "common.h"
+#include "color.h"
 #include "studiosettings.h"
 #include "locators/settingslocator.h"
 
@@ -413,14 +414,6 @@ int SyntaxHighlighter::purgeCode(int code)
         kind = mKinds.at(mCodes.at(code).first)->kind();
     }
     return code;
-}
-
-QColor SyntaxHighlighter::schemeColor(QString value)
-{
-    QString fullValue = "Syntax."+value;
-    if (!SettingsLocator::settings()->colorScheme().contains(fullValue))
-        DEB() << "no color found for '" << fullValue << "'";
-    return SettingsLocator::settings()->colorScheme().value(fullValue, QColor(Qt::magenta));
 }
 
 QString SyntaxHighlighter::codeDeb(int code)

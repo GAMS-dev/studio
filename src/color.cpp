@@ -26,10 +26,11 @@ void Color::initDefault()
 {
     mColorSchemes.clear();
     mSchemeNames.clear();
-    mColorSchemes << ColorSet();
-    mSchemeNames << "Light";
 
+    mColorSchemes << ColorScheme();
+    mSchemeNames << "Light";
     mColorSchemes[0].clear();
+    mColorSchemes[0].insert(invalid, CUndefined);
     mColorSchemes[0].insert(Edit_currentLineBg, QColor(255, 250, 170));
     mColorSchemes[0].insert(Edit_errorBg, QColor(Qt::lightGray));
     mColorSchemes[0].insert(Edit_currentWordBg, QColor(210,200,200));
@@ -53,8 +54,9 @@ void Color::initDefault()
     mColorSchemes[0].insert(Syntax_undefined, CUndefined);
     mColorSchemes[0].insert(Syntax_directive, QColor(Qt::darkMagenta).darker(120));
 
-//    mColorSchemes << ColorSet();
+//    mColorSchemes << ColorScheme();
 //    mSchemeNames << "Dark";
+
 }
 
 QStringList Color::schemes()

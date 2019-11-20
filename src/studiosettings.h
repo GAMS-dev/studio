@@ -92,13 +92,6 @@ public:
     bool clearLog() const;
     void setClearLog(bool value);
 
-    int colorSchemeIndex();
-    void setColorSchemeIndex(int value);
-
-    QHash<QString, QColor> &colorScheme();
-    QByteArray exportJsonColorSchemes();
-    void importJsonColorSchemes(const QByteArray &jsonData);
-
     bool searchUseRegex() const;
     void setSearchUseRegex(bool searchUseRegex);
 
@@ -220,7 +213,6 @@ private:
     QString mUserModelLibraryDir;
     void checkAndUpdateSettings();
     void initSettingsFiles();
-    void initDefaultColors();
     void loadViewStates(MainWindow *main);
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

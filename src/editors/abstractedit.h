@@ -98,7 +98,6 @@ protected:
     virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
-    QColor schemeColor(QString value);
 
 private:
     const LineMarks* mMarks = nullptr;

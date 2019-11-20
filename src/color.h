@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QColor>
+#include <QBrush>
 
 namespace gams {
 namespace studio {
@@ -75,16 +76,15 @@ private:
 
 private:
     static Color *mInstance;
-    typedef QHash<ColorSlot, QColor> ColorSet;
-    QList<ColorSet> mColorSchemes;
+    typedef QHash<ColorSlot, QColor> ColorScheme;
+    QList<ColorScheme> mColorSchemes;
     QStringList mSchemeNames;
     int mActiveScheme = 0;
 
 };
 
-inline QColor color(Color::ColorSlot code) { return Color::instance()->get(code); }
+inline QColor toColor(Color::ColorSlot code) { return Color::instance()->get(code); }
 inline QString name(Color::ColorSlot col) { return Color::instance()->name(col); }
-
 
 } // namespace studio
 } // namespace gams
