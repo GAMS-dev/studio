@@ -63,7 +63,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput2_clicked()
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbDiff_clicked()
 {
     QString filePath = QFileDialog::getSaveFileName(this, "Choose GDX File...",
-                                                            QDir::cleanPath(mRecentPath + QDir::separator() + "diff-result.gdx") ,
+                                                            QDir::cleanPath(mRecentPath + QDir::separator() + defaultDiffFile) ,
                                                             tr("GDX file (*.gdx);;"
                                                                "All files (*.*)"), nullptr,
                                                     QFileDialog::DontConfirmOverwrite);
@@ -102,7 +102,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
 
     mLastDiffFile = ui->leDiff->text().trimmed();
     if (mLastDiffFile.isEmpty())
-        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + "diff-result.gdx");
+        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + defaultDiffFile);
     else if (QFileInfo(mLastDiffFile).isRelative())
         mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + mLastDiffFile);
     if (QFileInfo(mLastDiffFile).suffix().isEmpty())
@@ -273,7 +273,7 @@ QString gams::studio::gdxdiffdialog::GdxDiffDialog::input2() const
 void gams::studio::gdxdiffdialog::GdxDiffDialog::prepopulateDiff()
 {
     if (mPrepopulateDiff)
-        ui->leDiff->setText(QDir::cleanPath(mRecentPath + QDir::separator() + "diff-result.gdx"));
+        ui->leDiff->setText(QDir::cleanPath(mRecentPath + QDir::separator() + defaultDiffFile));
 }
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const

@@ -19,7 +19,7 @@ class GdxDiffDialog : public QDialog
 
 public:
     explicit GdxDiffDialog(QWidget *parent = nullptr);
-    ~GdxDiffDialog();
+    ~GdxDiffDialog() override;
 
     void setRecentPath(const QString &recentPath);
     void setInput1(QString filePath);
@@ -61,6 +61,7 @@ private slots:
     void diffDone();
 
 private:
+    const QString defaultDiffFile = "diff.gdx";
     void setControlsEnabled(bool enabled);
 
     Ui::GdxDiffDialog *ui;
