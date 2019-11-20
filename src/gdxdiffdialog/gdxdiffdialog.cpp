@@ -21,6 +21,7 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
     ui->lineEdit_5->setValidator(new QDoubleValidator());
 
     connect(mProc.get(), &GdxDiffProcess::finished, this, &GdxDiffDialog::diffDone);
+    reset();
 }
 
 GdxDiffDialog::~GdxDiffDialog()
@@ -177,11 +178,11 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput2(QString filePath)
     ui->leInput2->setText(filePath);
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::clear()
+void gams::studio::gdxdiffdialog::GdxDiffDialog::reset()
 {
     ui->leInput1->clear();
     ui->leInput2->clear();
-    ui->leDiff->clear();
+    ui->leDiff->setText("diff-result.gdx");
     ui->lineEdit_4->setText("0.0");
     ui->lineEdit_5->setText("0.0");
     ui->cbDiffOnly->setChecked(false);
@@ -192,7 +193,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::clear()
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbClear_clicked()
 {
-    clear();
+    reset();
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::diffDone()

@@ -25,7 +25,7 @@ public:
     void setInput1(QString filePath);
     void setInput2(QString filePath);
 
-    void clear();
+    void reset();
 
     QString lastDiffFile() const;
 
