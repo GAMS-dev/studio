@@ -76,6 +76,7 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/modeldialog/modeldialog.h \
            $$SRCPATH/option/addoptionheaderview.h \
            $$SRCPATH/option/commandlineoption.h \
+           $$SRCPATH/option/definitionitemdelegate.h \
            $$SRCPATH/option/gamsoptiondefinitionmodel.h \
            $$SRCPATH/option/gamsoptiontablemodel.h \
            $$SRCPATH/option/lineeditcompleteevent.h \
@@ -106,6 +107,7 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/settingsdialog.h \
            $$SRCPATH/statuswidgets.h \
            $$SRCPATH/studiosettings.h \
+           $$SRCPATH/support/solverconfiginfo.h \
            $$SRCPATH/syntax.h \
            $$SRCPATH/syntax/basehighlighter.h \
            $$SRCPATH/syntax/blockcode.h \
@@ -196,6 +198,7 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/modeldialog/modeldialog.cpp \
            $$SRCPATH/option/addoptionheaderview.cpp \
            $$SRCPATH/option/commandlineoption.cpp \
+           $$SRCPATH/option/definitionitemdelegate.cpp \
            $$SRCPATH/option/gamsoptiondefinitionmodel.cpp \
            $$SRCPATH/option/gamsoptiontablemodel.cpp \
            $$SRCPATH/option/lineeditcompleteevent.cpp \
@@ -226,6 +229,7 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/settingsdialog.cpp \
            $$SRCPATH/statuswidgets.cpp \
            $$SRCPATH/studiosettings.cpp \
+           $$SRCPATH/support/solverconfiginfo.cpp \
            $$SRCPATH/syntax/basehighlighter.cpp \
            $$SRCPATH/syntax/syntaxdeclaration.cpp \
            $$SRCPATH/syntax/syntaxformats.cpp \
