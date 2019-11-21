@@ -101,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>30</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -244,7 +244,7 @@
    </widget>
    <widget class="QMenu" name="menuUtilities">
     <property name="title">
-     <string>Utilities</string>
+     <string>Tools</string>
     </property>
     <addaction name="actionGDX_Diff"/>
    </widget>
