@@ -51,6 +51,9 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/file/treeitemdelegate.h \
            $$SRCPATH/gamslibprocess.h \
            $$SRCPATH/gamsprocess.h \
+           $$SRCPATH/gdxdiffdialog/filepathlineedit.h \
+           $$SRCPATH/gdxdiffdialog/gdxdiffdialog.h \
+           $$SRCPATH/gdxdiffdialog/gdxdiffprocess.h \
            $$SRCPATH/gdxviewer/columnfilter.h \
            $$SRCPATH/gdxviewer/columnfilterframe.h \
            $$SRCPATH/gdxviewer/filteruelmodel.h \
@@ -173,6 +176,9 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/file/treeitemdelegate.cpp \
            $$SRCPATH/gamslibprocess.cpp  \
            $$SRCPATH/gamsprocess.cpp     \
+           $$SRCPATH/gdxdiffdialog/filepathlineedit.cpp \
+           $$SRCPATH/gdxdiffdialog/gdxdiffdialog.cpp \
+           $$SRCPATH/gdxdiffdialog/gdxdiffprocess.cpp \
            $$SRCPATH/gdxviewer/columnfilter.cpp \
            $$SRCPATH/gdxviewer/columnfilterframe.cpp \
            $$SRCPATH/gdxviewer/filteruelmodel.cpp \
@@ -266,7 +272,8 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/logtabcontextmenu.cpp \
            $$SRCPATH/search/searchworker.cpp
 
-FORMS += $$SRCPATH/gdxviewer/columnfilterframe.ui \
+FORMS += $$SRCPATH/gdxdiffdialog/gdxdiffdialog.ui \
+         $$SRCPATH/gdxviewer/columnfilterframe.ui \
          $$SRCPATH/gdxviewer/gdxsymbolview.ui \
          $$SRCPATH/gdxviewer/gdxviewer.ui \
          $$SRCPATH/lxiviewer/lxiviewer.ui \
