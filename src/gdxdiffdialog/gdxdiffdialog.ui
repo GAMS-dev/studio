@@ -104,7 +104,7 @@
        <item>
         <widget class="FilePathLineEdit" name="leDiff">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GDX file that is created as a result of the comparison of the two input GDX files. This field is optional (default: diffile.gdx).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GDX file that is created as a result of the comparison of the two input GDX files. This field is prepopulated automatically as long as the content was not changed manually.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
