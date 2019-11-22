@@ -105,8 +105,10 @@ QString AboutGAMSDialog::gamsLicense()
 
 void AboutGAMSDialog::createLicenseFile(QWidget *parent)
 {
-    auto clipboard = QGuiApplication::clipboard();
-    auto licenseLines = clipboard->text().split('\n', QString::SkipEmptyParts);
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    QStringList licenseLines = clipboard->text().split('\n', QString::SkipEmptyParts);
+    if (licenseLines.isEmpty()) return;
+
     for (int i=0; i<licenseLines.size(); ++i)
         licenseLines[i] = licenseLines[i].trimmed();
 
