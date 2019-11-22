@@ -21,4 +21,5 @@
 TEMPLATE = subdirs
 
 SUBDIRS += testmodeldialog  \
-           testmainwindow
+           testmainwindow \
+           testtextfile
