@@ -406,6 +406,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
                 mMapper->setPosRelative(mMapper->visibleLineCount(), -1, mode);
                 updatePosAndAnchor();
             }
+            emit selectionChanged();
             return;
         } else if (p.y() > AbstractTextMapper::cursorInvalid) {
             mMapper->setPosRelative(p.y()+1, -1, mode);
@@ -465,6 +466,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         break;
     }
     if (mStayAtTail) *mStayAtTail = mMapper->atTail();
+    emit selectionChanged();
     updateView();
 }
 
