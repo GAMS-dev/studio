@@ -28,6 +28,9 @@ namespace gams {
 namespace studio {
 
 class FileMeta;
+
+namespace search {
+
 class SearchResultList;
 class SearchWorker : public QObject
 {
@@ -48,6 +51,7 @@ private:
     SearchResultList* mMatches;
 };
 
+}
 }
 }
 

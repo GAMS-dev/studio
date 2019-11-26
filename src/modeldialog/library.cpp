@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 Library::Library(QString name, int version, int nrColumns, QStringList columns,int initSortCol,
                  QStringList toolTips, QList<int> colOrder, QString glbFile)
@@ -91,5 +92,6 @@ int Library::initSortCol() const
     return mInitSortCol;
 }
 
+} // namespace modeldialog
 } // namespace studio
 } // namespace gams

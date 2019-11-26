@@ -19,14 +19,14 @@
  */
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "../studiosettings.h"
-#include "../syntax.h"
-#include "../file.h"
-#include "../exception.h"
+#include "studiosettings.h"
+#include "syntax.h"
+#include "file.h"
+#include "exception.h"
 #include "searchresultlist.h"
 #include "searchworker.h"
 #include "option/solveroptionwidget.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "editors/viewhelper.h"
 
 #include <QMessageBox>
@@ -36,6 +36,7 @@
 
 namespace gams {
 namespace studio {
+namespace search {
 
 SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
@@ -928,5 +929,6 @@ QFlags<QTextDocument::FindFlag> SearchDialog::setFlags(SearchDirection direction
     return flags;
 }
 
+}
 }
 }

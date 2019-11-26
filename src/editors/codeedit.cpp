@@ -27,8 +27,8 @@
 #include "keys.h"
 #include "editorhelper.h"
 #include "viewhelper.h"
-#include "locators/searchlocator.h"
-#include "locators/settingslocator.h"
+#include "search/searchlocator.h"
+#include "settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -1221,8 +1221,8 @@ void CodeEdit::updateExtraSelections()
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
-        QRegularExpression regexp = SearchLocator::searchDialog()->results()
-                                    ? SearchLocator::searchDialog()->results()->searchRegex()
+        QRegularExpression regexp = search::SearchLocator::searchDialog()->results()
+                                    ? search::SearchLocator::searchDialog()->results()->searchRegex()
                                     : QRegularExpression();
 
         // word boundary (\b) only matches start-of-string when first character is \w
@@ -1318,10 +1318,10 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    SearchDialog *searchDialog = SearchLocator::searchDialog();
+    search::SearchDialog *searchDialog = search::SearchLocator::searchDialog();
     if (!searchDialog || searchDialog->searchTerm().isEmpty()) return;
 
-    SearchResultList* list = searchDialog->results();
+    search::SearchResultList* list = searchDialog->results();
     if (!list) return;
 
     if (list->filteredResultList(ViewHelper::location(this)).isEmpty()) return;

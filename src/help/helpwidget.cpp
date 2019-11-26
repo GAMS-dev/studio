@@ -40,6 +40,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 HelpWidget::HelpWidget(QWidget *parent) :
     QWidget(parent),
@@ -666,5 +667,6 @@ void HelpWidget::findText(const QString &text, HelpWidget::SearchDirection direc
         ui->statusText->clear();
 }
 
+} // namespace help
 } // namespace studio
 } // namespace gams

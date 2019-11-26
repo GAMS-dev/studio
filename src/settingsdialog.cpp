@@ -23,7 +23,7 @@
 #include "mainwindow.h"
 #include "settingsdialog.h"
 #include "studiosettings.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "ui_settingsdialog.h"
 
 namespace gams {

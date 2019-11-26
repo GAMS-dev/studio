@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "solverconfiginfo.h"
-#include "locators/abstractsystemlogger.h"
-#include "locators/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 #include "commonpaths.h"
 #include "exception.h"
 #include "common.h"

@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 GlbParser::GlbParser()
 {
@@ -198,5 +199,6 @@ QString GlbParser::readLine(QTextStream &in)
     return in.readLine();
 }
 
+} // namespace modeldialog
 } // namespace studio
 } // namespace gams

@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 class LibraryItem
 {
@@ -48,6 +49,7 @@ private:
 
 };
 
+} // namespace modeldialog
 } // namespace sutdio
 } // namespace gams
 

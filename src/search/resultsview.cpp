@@ -17,15 +17,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "resultsview.h"
-#include "search/searchdialog.h"
+#include "searchdialog.h"
 #include "ui_resultsview.h"
 #include "exception.h"
-#include "search/searchresultlist.h"
-#include "search/result.h"
+#include "searchresultlist.h"
+#include "result.h"
 #include "common.h"
 
 namespace gams {
 namespace studio {
+namespace search {
 
 ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
     QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList->searchRegex())
@@ -132,6 +133,7 @@ bool ResultsView::isOutdated()
     return mOutdated;
 }
 
+}
 }
 }
 

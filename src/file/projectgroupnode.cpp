@@ -30,8 +30,8 @@
 #include "logger.h"
 #include "syntax.h"
 #include "option/option.h"
-#include "locators/sysloglocator.h"
-#include "locators/settingslocator.h"
+#include "editors/sysloglocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 #include <QFileInfo>
 #include <QDir>

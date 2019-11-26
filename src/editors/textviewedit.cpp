@@ -19,7 +19,7 @@
  */
 #include "textviewedit.h"
 #include "search/searchdialog.h"
-#include "locators/searchlocator.h"
+#include "search/searchlocator.h"
 #include "keys.h"
 #include "logger.h"
 #include <QMenu>

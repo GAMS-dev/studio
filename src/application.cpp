@@ -21,9 +21,9 @@
 #include "exception.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
-#include "locators/settingslocator.h"
-#include "locators/sysloglocator.h"
-#include "locators/abstractsystemlogger.h"
+#include "settingslocator.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 
 #include <iostream>
 #include <QMessageBox>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ResultsView</class>
- <widget class="QWidget" name="ResultsView">
+ <class>gams::studio::search::ResultsView</class>
+ <widget class="QWidget" name="gams::studio::search::ResultsView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -76,10 +76,10 @@
      <attribute name="verticalHeaderCascadingSectionResizes">
       <bool>true</bool>
      </attribute>
-     <attribute name="verticalHeaderDefaultSectionSize">
-      <number>1</number>
-     </attribute>
      <attribute name="verticalHeaderMinimumSectionSize">
+      <number>20</number>
+     </attribute>
+     <attribute name="verticalHeaderDefaultSectionSize">
       <number>20</number>
      </attribute>
      <attribute name="verticalHeaderStretchLastSection">

@@ -22,10 +22,11 @@
 
 #include <QFile>
 
-#include <file/filemeta.h>
+#include "file/filemeta.h"
 
 namespace gams {
 namespace studio {
+namespace search {
 
 SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list)
     : mMutex(mutex), mRegex(regex), mFiles(fml), mMatches(list)
@@ -77,5 +78,6 @@ void SearchWorker::findInFiles()
     thread()->quit();
 }
 
+}
 }
 }

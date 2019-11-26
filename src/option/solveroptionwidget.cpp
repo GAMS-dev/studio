@@ -33,7 +33,7 @@
 #include "solveroptiondefinitionmodel.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 #include "exception.h"
 

@@ -30,11 +30,12 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QSortFilterProxyModel>
-#include "locators/sysloglocator.h"
-#include "locators/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 ModelDialog::ModelDialog(QWidget *parent)
     : ModelDialog("", parent)
@@ -246,5 +247,6 @@ void ModelDialog::applyFilter(QString filterString, int proxyModelIndex)
     this->changeHeader(proxyModelIndex);
 }
 
-}
-}
+} // namespace modeldialog
+} // namespace studio
+} // namespace gams

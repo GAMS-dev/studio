@@ -24,7 +24,7 @@
 #include "studiosettings.h"
 #include "exception.h"
 #include "logger.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "editors/viewhelper.h"
 #include <QFileInfo>
 

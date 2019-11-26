@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>bookmarkDialog</class>
- <widget class="QDialog" name="bookmarkDialog">
+ <class>gams::studio::help::bookmarkDialog</class>
+ <widget class="QDialog" name="gams::studio::help::bookmarkDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -123,7 +123,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>bookmarkDialog</receiver>
+   <receiver>gams::studio::help::bookmarkDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -139,7 +139,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>bookmarkDialog</receiver>
+   <receiver>gams::studio::help::bookmarkDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

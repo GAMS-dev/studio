@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace search {
 
 class SearchResultList : public QAbstractTableModel
 {
@@ -54,6 +55,7 @@ private:
 
 };
 
+}
 }
 }
 #endif // SEARCHRESULTLIST_H

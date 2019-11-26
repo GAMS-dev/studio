@@ -39,14 +39,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QDialog>
-#include "../mainwindow.h"
+#include "mainwindow.h"
+
+
+namespace gams {
+namespace studio {
+namespace search {
 
 namespace Ui {
 class SearchDialog;
 }
-
-namespace gams {
-namespace studio {
 
 class SearchDialog : public QDialog
 {
@@ -164,6 +166,7 @@ private:
     QMutex mMutex;
 };
 
+}
 }
 }
 #endif // SEARCHDIALOG_H

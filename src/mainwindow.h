@@ -28,7 +28,7 @@
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
 #include "option/optionwidget.h"
-#include "resultsview.h"
+#include "search/resultsview.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
 #include "maintabcontextmenu.h"
@@ -50,10 +50,12 @@ class GAMSProcess;
 class GAMSLibProcess;
 class WelcomePage;
 class StudioSettings;
-class SearchDialog;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
+namespace search {
+class SearchDialog;
+}
 namespace option {
 class OptionWidget;
 }
@@ -115,11 +117,11 @@ public:
 
     QWidgetList openEditors();
     QList<QWidget *> openLogs();
-    SearchDialog* searchDialog() const;
-    void showResults(SearchResultList* results);
+    search::SearchDialog* searchDialog() const;
+    void showResults(search::SearchResultList* results);
     void closeResultsPage();
     RecentData *recent();
-    void openModelFromLib(const QString &glbFile, LibraryItem *model);
+    void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
     bool readTabs(const QJsonObject &json);
     void writeTabs(QJsonObject &json) const;
     void resetViews();
@@ -135,7 +137,7 @@ public:
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
 
 #ifdef QWEBENGINE
-    HelpWidget *helpWidget() const;
+    help::HelpWidget *helpWidget() const;
 #endif
     option::OptionWidget *gamsOptionWidget() const;
 
@@ -312,7 +314,7 @@ private:
     void addToOpenedFiles(QString filePath);
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
 
-    void triggerGamsLibFileCreation(gams::studio::LibraryItem *item);
+    void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void execute(QString commandLineStr, ProjectFileNode *gmsFileNode = nullptr);
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
@@ -339,10 +341,10 @@ private:
     QStringList mInitialFiles;
 
     WelcomePage *mWp;
-    SearchDialog *mSearchDialog = nullptr;
+    search::SearchDialog *mSearchDialog = nullptr;
     QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
-    HelpWidget *mHelpWidget = nullptr;
+    help::HelpWidget *mHelpWidget = nullptr;
 #endif
     option::OptionWidget *mGamsOptionWidget = nullptr;
     SystemLogEdit *mSyslog = nullptr;

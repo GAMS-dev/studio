@@ -24,12 +24,12 @@
 #include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
-#include "locators/sysloglocator.h"
-#include "locators/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "support/solverconfiginfo.h"
 
 #include <QTabWidget>

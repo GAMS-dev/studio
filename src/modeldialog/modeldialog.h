@@ -26,12 +26,13 @@
 class QTableView;
 class QSortFilterProxyModel;
 
+namespace gams {
+namespace studio {
+namespace modeldialog {
+
 namespace Ui {
 class ModelDialog;
 }
-
-namespace gams {
-namespace studio {
 
 class ModelDialog : public QDialog
 {
@@ -71,6 +72,7 @@ private:
     bool mHasGlbErrors = false;
 };
 
+} // namespace modeldialog
 }
 }
 

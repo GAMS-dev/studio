@@ -29,6 +29,8 @@ namespace studio {
 
 class MainWindow;
 
+namespace help {
+
 HelpView::HelpView(QWidget *parent) :
     QWebEngineView(parent), mCurrentHovered("")
 {
@@ -117,5 +119,6 @@ void HelpView::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
+} // namespace help
 } // namespace studio
 } // namespace gams

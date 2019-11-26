@@ -24,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace search {
 
 class Result
 {
@@ -45,6 +46,7 @@ private:
     explicit Result(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
 };
 
+}
 }
 }
 
