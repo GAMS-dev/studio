@@ -164,6 +164,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openTerminal, this, &MainWindow::actionTerminalTriggered);
 
     ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mainTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
@@ -1664,6 +1665,56 @@ void MainWindow::on_actionUpdate_triggered()
     support::UpdateDialog updateDialog(this);
     updateDialog.checkForUpdate();
     updateDialog.exec();
+}
+
+void MainWindow::on_actionTerminal_triggered()
+{
+    auto workingDir = mRecent.group ? mRecent.group->location() :
+                                      CommonPaths::defaultWorkingDir();
+    actionTerminalTriggered(workingDir);
+}
+
+void MainWindow::actionTerminalTriggered(const QString &workingDir)
+{
+    auto environment = QProcessEnvironment::systemEnvironment();
+
+    QProcess process;
+#if defined(__APPLE__)
+    Q_UNUSED(workingDir)
+    process.setProgram("open");
+    process.setArguments({"-n", CommonPaths::systemDir() + "/../../../GAMS Terminal.app"});
+#elif defined(__unix__)
+    QStringList terms = {"gnome-terminal", "konsole", "xfce-terminal", "xterm"};
+    for (auto term: terms) {
+        auto appPath = QStandardPaths::findExecutable(term);
+        if (appPath.isEmpty()) {
+            continue;
+        } else {
+            process.setProgram(appPath);
+            break;
+        }
+    }
+    process.setWorkingDirectory(workingDir);
+    environment.insert("PATH", QDir::toNativeSeparators(CommonPaths::systemDir()) + ":" + environment.value("PATH"));
+    if (process.program().endsWith("konsole"))
+        environment.insert("LD_LIBRARY_PATH", "/usr/lib64/");
+    process.setProcessEnvironment(environment);
+    SysLogLocator::systemLog()->append("On some Linux distributions GAMS Studio may not be able to start a terminal.", LogMsgType::Warning);
+#else
+    process.setProgram("cmd.exe");
+    process.setArguments({"/k", "title", "GAMS Terminal"});
+    process.setWorkingDirectory(workingDir);
+    auto gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
+    environment.insert("PATH", gamsDir + ";" + gamsDir + "/gbin;" + environment.value("PATH"));
+    process.setProcessEnvironment(environment);
+    process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
+    {
+        args->flags |= CREATE_NEW_CONSOLE;
+        args->startupInfo->dwFlags &= ~STARTF_USESTDHANDLES;
+    });
+#endif
+    if (!process.startDetached())
+        mSyslog->append("Error opening terminal: " + process.errorString(), LogMsgType::Error);
 }
 
 void MainWindow::on_mainTabs_tabCloseRequested(int index)

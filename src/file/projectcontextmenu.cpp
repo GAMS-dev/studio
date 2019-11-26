@@ -55,6 +55,7 @@ enum ContextAction {
     actSelectAll,
     actExpandAll,
     actCollapseAll,
+    actOpenTerminal
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -67,6 +68,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actSep1, addSeparator());
 
     mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
+    mActions.insert(actOpenTerminal, addAction("&Open terminal", this, &ProjectContextMenu::onOpenTerminal));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
 
@@ -296,6 +298,19 @@ void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
     }
 
     emit newFileDialog(groups, solverName);
+}
+
+void ProjectContextMenu::onOpenTerminal()
+{
+    QString workingDir;
+    ProjectFileNode *file = mNodes.first()->toFile();
+    if (file) {
+        workingDir = QFileInfo(file->location()).path();
+    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::runGroup)){
+        ProjectGroupNode *group = mNodes.first()->toGroup();
+        if (group) workingDir = group->location();
+    }
+    emit openTerminal(workingDir);
 }
 
 void ProjectContextMenu::onOpenFileLoc()
