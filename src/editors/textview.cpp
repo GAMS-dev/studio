@@ -271,7 +271,7 @@ void TextView::resizeEvent(QResizeEvent *event)
 
 void TextView::recalcVisibleLines()
 {
-    int visibleLines = mEdit->viewport()->height() / mEdit->fontMetrics().lineSpacing();
+    int visibleLines = mEdit->lineCount();
     if (visibleLines > 0) {
         mMapper->setVisibleLineCount(visibleLines);
         updateVScrollZone();
@@ -337,6 +337,9 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
             }
         }
         return true;
+    }
+    if (event->type() == QEvent::FontChange) {
+        QTimer::singleShot(0, this, &TextView::recalcVisibleLines);
     }
     if (event->type() == QEvent::FocusOut) {
         mEdit->setCursorWidth(0);

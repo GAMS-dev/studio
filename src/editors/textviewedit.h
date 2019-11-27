@@ -37,6 +37,7 @@ public:
     void protectWordUnderCursor(bool protect);
     bool hasSelection() const override;
     void disconnectTimers() override;
+    int lineCount();
 
 signals:
     void keyPressed(QKeyEvent *event);
