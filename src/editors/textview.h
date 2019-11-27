@@ -99,6 +99,7 @@ private slots:
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>());
     void recalcVisibleLines();
+    void topLineMoved();
 
 protected:
     friend class FileMeta;
@@ -121,7 +122,6 @@ protected:
 
 private:
     void init();
-    void topLineMoved();
 
 private:
     TextKind mTextKind;
