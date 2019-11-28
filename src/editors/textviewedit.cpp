@@ -71,7 +71,7 @@ int TextViewEdit::lineCount()
         if (fmt.isCharFormat() && fmt.toCharFormat().fontWeight() == QFont::Bold) bold = true;
     }
     QFont f = font();
-    int lineHeight = qMax(lineHeight, QFontMetrics(f).lineSpacing());
+    int lineHeight = qMax(0, QFontMetrics(f).lineSpacing());
     if (underline) {
         f.setUnderline(true);
         lineHeight = qMax(lineHeight, QFontMetrics(f).lineSpacing());
