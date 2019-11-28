@@ -86,6 +86,8 @@ int TextViewEdit::lineCount()
         f.setBold(true);
         lineHeight = qMax(lineHeight, QFontMetrics(f).lineSpacing());
     }
+    DEB() << "LineCount: (" << viewport()->height() << "/" << lineHeight << ") = "
+          << qFloor(qreal(viewport()->height()) / lineHeight);
     return qFloor(qreal(viewport()->height()) / lineHeight);
 }
 
