@@ -169,7 +169,9 @@ bool TextView::jumpTo(int lineNr, int charNr, int length, bool focus)
         mMapper->setVisibleTopLine(qMax(0, lineNr-(vAll/3)));
         updateView();
     }
-    mMapper->setPosRelative(lineNr - mMapper->visibleTopLine(), charNr + length, QTextCursor::MoveAnchor);
+    int relLine = lineNr - mMapper->visibleTopLine();
+    if (length > 0) mMapper->setPosRelative(relLine, charNr, QTextCursor::MoveAnchor);
+    mMapper->setPosRelative(relLine, charNr + length, (length > 0 ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor));
     updatePosAndAnchor();
     emit selectionChanged();
     if (focus) mEdit->setFocus();
@@ -390,10 +392,8 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
     case Qt::Key_Home:
         if (event->modifiers() & Qt::ControlModifier) {
             mMapper->setVisibleTopLine(0);
-            if (p.y() >= 0) {
-                mMapper->setPosRelative(p.y(), 0, mode);
-                updatePosAndAnchor();
-            }
+            mMapper->setPosRelative(0, 0, mode);
+            updatePosAndAnchor();
         } else if (p.y() > AbstractTextMapper::cursorInvalid) {
             mMapper->setPosRelative(p.y(), 0, mode);
             updatePosAndAnchor();
