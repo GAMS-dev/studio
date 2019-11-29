@@ -1,3 +1,12 @@
+Version 0.13.3
+==================
+
+## General
+- **added opening of OS specific terminal in current working dir (Tools > Terminal or shortcut `Alt+T`)**
+- fixed Ctrl+MouseWheel not working in Help View
+- fixed search terms not being added to search history for certain actions
+- improved behavior of GAMS license detection from clipboard
+
 Version 0.13.2
 ==================
 
