@@ -52,6 +52,9 @@ enum struct Hotkey {
 //    BookmarkPrev = 27,
     BlockEditStart = 51,
     BlockEditEnd = 52,
+    SearchOpen = 60,
+    SearchFindNext = 61,
+    SearchFindPrev = 62,
 
     // configurable key-sequences > 100
     MinConfigurable = 100,

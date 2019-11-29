@@ -173,6 +173,15 @@ void Keys::reset()
          << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
     setHotkey(Hotkey::BlockEditEnd, seq);
 
+    seq = new KeySeqList("Ctrl+F", "Open Search Dialog");
+    setHotkey(Hotkey::SearchOpen, seq);
+
+    seq = new KeySeqList("F3", "Find Next");
+    setHotkey(Hotkey::SearchFindNext, seq);
+
+    seq = new KeySeqList("Shift+F3", "Find Previous");
+    setHotkey(Hotkey::SearchFindPrev, seq);
+
     seq = new KeySeqList("Shift+Ctrl+L","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
 

@@ -28,6 +28,7 @@
 #include "option/solveroptionwidget.h"
 #include "locators/settingslocator.h"
 #include "editors/viewhelper.h"
+#include "../keys.h"
 
 #include <QMessageBox>
 #include <QTextDocumentFragment>
@@ -536,23 +537,23 @@ void SearchDialog::on_searchPrev()
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
-    Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
+    Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
     searchParameterChanged();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
-    if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
+    if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
         mMain->setSearchWidgetPos(pos());
         hide();
         if (mMain->projectRepo()->findFileNode(mMain->recent()->editor()))
             mMain->recent()->editor()->setFocus();
 
-    } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
+    } else if (e == Hotkey::SearchFindPrev) {
         e->accept();
         on_searchPrev();
-    } else if (e->key() == Qt::Key_F3) {
+    } else if (e == Hotkey::SearchFindNext) {
         e->accept();
         on_searchNext();
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {

@@ -408,9 +408,9 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     }
 
-    if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3))
+    if (e == Hotkey::SearchFindPrev)
         emit searchFindPrevPressed();
-    else if (e->key() == Qt::Key_F3)
+    else if (e == Hotkey::SearchFindNext)
         emit searchFindNextPressed();
 
     // smart typing:
