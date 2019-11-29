@@ -583,7 +583,7 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int leng
         return;
     }
     if (TextView *tv = ViewHelper::toTextView(mEditors.first())) {
-        tv->jumpTo(line, column, length);
+        tv->jumpTo(line, column, length, focus);
     }
 }
 
