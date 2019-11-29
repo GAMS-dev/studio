@@ -180,6 +180,7 @@ void FileMapper::closeFile()
     mTimer.stop();
     if (mFile.isOpen()) {
         mFile.close();
+        mSize = 0;
     }
 }
 
