@@ -3,9 +3,11 @@ Version 0.13.3
 
 ## General
 - **added opening of OS specific terminal in current working dir (Tools > Terminal or shortcut `Alt+T`)**
+    - **Note:** This feature does not work on all Linux distributions yet (e.g. Ubuntu)
 - fixed Ctrl+MouseWheel not working in Help View
 - fixed search terms not being added to search history for certain actions
 - improved behavior of GAMS license detection from clipboard
+- fixed missing update of cursor position in status bar
 
 Version 0.13.2
 ==================
@@ -168,4 +170,3 @@ Version 0.12.5
 - make model library explorer aware of initial sort column
 - Better tooltip for GDX Viewer precision spin box
 - Model Library Explorer feels slow on macOS fixed
-
