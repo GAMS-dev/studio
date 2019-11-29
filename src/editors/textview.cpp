@@ -390,10 +390,8 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
     case Qt::Key_Home:
         if (event->modifiers() & Qt::ControlModifier) {
             mMapper->setVisibleTopLine(0);
-            if (p.y() >= 0) {
-                mMapper->setPosRelative(p.y(), 0, mode);
-                updatePosAndAnchor();
-            }
+            mMapper->setPosRelative(0, 0, mode);
+            updatePosAndAnchor();
         } else if (p.y() > AbstractTextMapper::cursorInvalid) {
             mMapper->setPosRelative(p.y(), 0, mode);
             updatePosAndAnchor();
