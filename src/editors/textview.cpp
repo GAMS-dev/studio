@@ -169,7 +169,9 @@ bool TextView::jumpTo(int lineNr, int charNr, int length, bool focus)
         mMapper->setVisibleTopLine(qMax(0, lineNr-(vAll/3)));
         updateView();
     }
-    mMapper->setPosRelative(lineNr - mMapper->visibleTopLine(), charNr + length, QTextCursor::MoveAnchor);
+    int relLine = lineNr - mMapper->visibleTopLine();
+    if (length > 0) mMapper->setPosRelative(relLine, charNr, QTextCursor::MoveAnchor);
+    mMapper->setPosRelative(relLine, charNr + length, (length > 0 ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor));
     updatePosAndAnchor();
     emit selectionChanged();
     if (focus) mEdit->setFocus();
