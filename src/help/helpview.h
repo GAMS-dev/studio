@@ -35,6 +35,8 @@ public:
     void setCurrentHoveredLink(const QString &url);
 
 protected:
+    bool event(QEvent *e) override;
+    bool eventFilter(QObject * obj, QEvent * e) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
 

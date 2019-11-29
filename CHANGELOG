@@ -1,3 +1,14 @@
+Version 0.13.3
+==================
+
+## General
+- **added opening of OS specific terminal in current working dir (Tools > Terminal or shortcut `Alt+T`)**
+    - **Note:** This feature does not work on all Linux distributions yet (e.g. Ubuntu)
+- fixed Ctrl+MouseWheel not working in Help View
+- fixed search terms not being added to search history for certain actions
+- improved behavior of GAMS license detection from clipboard
+- fixed missing update of cursor position in status bar
+
 Version 0.13.2
 ==================
 
@@ -86,77 +97,3 @@ Version 0.13.0
 ## Reference Viewer
 - **added auto resize when opening**
 - added context menu to let users auto resize after doing manual changes
-
-Version 0.12.9
-==============
-
-## General
-- improved icon clarity when OS scaling is in use
-- made icons used in help widget consistent with other icons used
-- fixed crash when using block edit mode in last line of document
-- fixed crash when using next/prev tab action but no tabs are present
-- fixed "Run with GDX creation" ignored when any parameter ended in "gdx"
-- improved file filter detection in "Save As" dialog
-- fixed bug in search where a user needed to press "Find Next" twice under certain circumstances
-
-## GAMS Parameter Editor
-- **added Esc key to cancel selection**
-- double click can now also delete an option if it was already activated
-- enabled multi selection
-
-## GDX Viewer
-- fixed problem with unwanted switches to scientific notation
-
-## Solver Option Editor
-- added highlighting of row for activated option items
-- **added Esc key to cancel selection**
-- double click can now also delete an option if it was already activated
-- enabled tab key navigation
-
-Version 0.12.8
-==============
-
-## General
-- fixed Studio not popping up for warning when drag'n'droping many files
-- disabled GoTo dialog for all nom-applicable widgets
-- fixed crash when opening files with certain parenthesis constructs
-- added fullscreen mode (Windows/Linux: ALT+Return, macOS: META+CMD+F)
-- fixed accidental closing of log tab when closing results page
-
-## Reference Viewer
-- added auto resize when opening
-- added context menu to let users auto resize after doing manual changes
-
-Version 0.12.7
-==============
-
-## General
-- added dialog to create license file (pops up when a license is in the user's clipboard and the "About GAMS" is opened)
-- disabled top dockwidget area for all widgets as it should be used solely by the extended parameter editor
-- fixed behavior of jumping to matching parenthesis ([Shift+]F8)
-- fixed missing parenthesis highlighting for variables
-- reduced flickering when minimizing/maximizing Studio
-- removed online version check on Studio startup
-
-Version 0.12.6
-==============
-
-## General
-- fixed bookmarks sometimes not being able to be set
-- improved add new/existing file dialog: now opens dialog in group folder if available
-- fixed crash when GLB file does not contain any models, added proper warning/error instead
-
-Version 0.12.5
-=============
-
-## General
-- fixed search status update when having no results
-- added raise to result view to pop up over help
-- fixed crash when jumping to a result after invalidating cache
-- Read and use InitialSort key in GLB files
-- Enhanced icon size in Help on Mac OS
-- Allow to adjust the numerical precision in the GDX Viewer
-- make model library explorer aware of initial sort column
-- Better tooltip for GDX Viewer precision spin box
-- Model Library Explorer feels slow on macOS fixed
-

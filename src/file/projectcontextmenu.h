@@ -55,6 +55,7 @@ signals:
     void expandAll();
     void collapseAll();
     void newFileDialog(QVector<ProjectGroupNode *> groups, const QString& solverName="");
+    void openTerminal(const QString& workingDir);
 
 private slots:
     void onCloseGroup();
@@ -67,6 +68,7 @@ private slots:
     void onExpandAll();
     void onCollapseAll();
     void onAddNewSolverOptionFile(const QString &solverName);
+    void onOpenTerminal();
 
 private:
     void onOpenFileLoc();

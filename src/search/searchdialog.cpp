@@ -64,6 +64,7 @@ void SearchDialog::on_btn_Replace_clicked()
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
+    insertHistory();
     mIsReplacing = true;
     QRegularExpression regex = createRegex();
     QRegularExpressionMatch match = regex.match(edit->textCursor().selectedText());
@@ -79,6 +80,7 @@ void SearchDialog::on_btn_Replace_clicked()
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
 {
+    insertHistory();
     replaceAll();
 }
 
@@ -157,7 +159,6 @@ void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fm
         if (fm->isModified()) modified << fm;
         else unmodified << fm;
     }
-
 
     // non-parallel first
     for (FileMeta* fm : modified)
@@ -771,6 +772,8 @@ void SearchDialog::setSearchStatus(SearchStatus status)
 void SearchDialog::insertHistory()
 {
     QString searchText(ui->combo_search->currentText());
+    if (searchText.isEmpty()) return;
+
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {

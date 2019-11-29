@@ -232,6 +232,9 @@ private slots:
     void on_actionAbout_GAMS_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
+    // Tools
+    void on_actionTerminal_triggered();
+    void actionTerminalTriggered(const QString &workingDir);
     // View
     void on_actionProcess_Log_triggered(bool checked);
     void on_actionProject_View_triggered(bool checked);
