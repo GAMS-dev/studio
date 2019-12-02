@@ -78,7 +78,6 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    color.cpp \
     support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -177,6 +176,7 @@ SOURCES += \
     reference/symboltablemodel.cpp \
     search/result.cpp \
     search/resultsview.cpp \
+    scheme.cpp \
     search/searchdialog.cpp \
     search/searchlocator.cpp \
     search/searchresultlist.cpp \
@@ -208,7 +208,6 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    color.h \
     support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
@@ -309,6 +308,7 @@ HEADERS += \
     reference/symboltablemodel.h \
     search/result.h \
     search/resultsview.h \
+    scheme.h \
     search/searchdialog.h \
     search/searchlocator.h \
     search/searchresultlist.h \

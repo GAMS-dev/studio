@@ -29,7 +29,7 @@
 #include "search/searchdialog.h"
 #include "version.h"
 #include "commandlineparser.h"
-#include "color.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -42,11 +42,11 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
         mAppSettings = new QSettings();
         mUserSettings = new QSettings();
         mColorSettings = new QFile();
-        Color::instance()->initDefault();
+        Scheme::instance()->initDefault();
     }
     else if (mAppSettings == nullptr) {
         initSettingsFiles();
-        Color::instance()->initDefault();
+        Scheme::instance()->initDefault();
     }
     if (resetViews) resetViewSettings();
 
@@ -93,10 +93,10 @@ void StudioSettings::initSettingsFiles()
 void StudioSettings::resetSettings()
 {
     initSettingsFiles();
-    Color::instance()->initDefault();
+    Scheme::instance()->initDefault();
     mAppSettings->sync();
     mUserSettings->sync();
-    writeColors();
+    writeScheme();
 }
 
 void StudioSettings::resetViewSettings()
@@ -253,13 +253,13 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->sync();
 
-//    writeColors();
+    writeScheme();
 }
 
-bool StudioSettings::writeColors()
+bool StudioSettings::writeScheme()
 {
     if (mColorSettings && mColorSettings->open(QIODevice::WriteOnly)) {
-        QString jsonColors = Color::instance()->exportJsonColorSchemes();
+        QString jsonColors = Scheme::instance()->exportJsonColorSchemes();
         mColorSettings->write(jsonColors.toLatin1().data(), jsonColors.toLatin1().length());
         mColorSettings->flush();
         mColorSettings->close();
@@ -400,14 +400,14 @@ void StudioSettings::loadUserSettings()
 
     mUserSettings->endGroup();
 
-//    readColors();
+    readScheme();
 }
 
-void StudioSettings::readColors()
+void StudioSettings::readScheme()
 {
     if (mColorSettings && mColorSettings->open(QIODevice::ReadOnly)) {
         QByteArray jsonColors = mColorSettings->readAll();
-        Color::instance()->importJsonColorSchemes(jsonColors);
+        Scheme::instance()->importJsonColorSchemes(jsonColors);
         mColorSettings->close();
     }
 }

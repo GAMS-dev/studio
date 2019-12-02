@@ -22,7 +22,7 @@
 #include "file.h"
 #include "logger.h"
 #include "exception.h"
-#include "color.h"
+#include "scheme.h"
 #include "studiosettings.h"
 #include "locators/settingslocator.h"
 
@@ -107,12 +107,12 @@ void TextMark::clearBackRefs()
 QColor TextMark::color() const
 {
     if (mReference) {
-        if (mReference->type() == TextMark::error) return toColor(Color::Mark_errorFg);
-        if (mReference->fileKind() == FileKind::Lst) return toColor(Color::Mark_listingFg);
+        if (mReference->type() == TextMark::error) return toColor(Scheme::Mark_errorFg);
+        if (mReference->fileKind() == FileKind::Lst) return toColor(Scheme::Mark_listingFg);
     } else {
-        return toColor(Color::Mark_errorFg);
+        return toColor(Scheme::Mark_errorFg);
     }
-    return toColor(Color::Mark_fileFg);
+    return toColor(Scheme::Mark_fileFg);
 }
 
 FileKind TextMark::fileKind()

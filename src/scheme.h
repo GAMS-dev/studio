@@ -1,5 +1,5 @@
-#ifndef GAMS_STUDIO_COLOR_H
-#define GAMS_STUDIO_COLOR_H
+#ifndef GAMS_STUDIO_SCHEME_H
+#define GAMS_STUDIO_SCHEME_H
 
 #include <QObject>
 #include <QColor>
@@ -8,7 +8,7 @@
 namespace gams {
 namespace studio {
 
-class Color : public QObject
+class Scheme : public QObject
 {
     Q_OBJECT
 public:
@@ -35,6 +35,9 @@ public:
         Mark_listingFg,
         Mark_fileFg,
 
+        Icon_Main,
+        Icon_Invers,
+
         Syntax_undefined,
         Syntax_neutral,
         Syntax_directive,
@@ -54,39 +57,48 @@ public:
     };
     Q_ENUM(ColorSlot)
 
+    enum FontFlag {fNormal, fBold, fItalic, fBoldItalic};
+
+private:
+    struct Color {
+        Color(QColor _color = QColor(), FontFlag _fontFlag = fNormal) : color(_color), fontFlag(_fontFlag) {}
+        QColor color;
+        FontFlag fontFlag;
+    };
+
 public:
-    static Color *instance();
+    static Scheme *instance();
     void initDefault();
     QStringList schemes();
     int setActiveScheme(QString schemeName);
     QString setActiveScheme(int scheme);
-
-    QColor get(ColorSlot slot);
-    QString name(ColorSlot slot);
     ColorSlot slot(QString name);
 
     QByteArray exportJsonColorSchemes();
     void importJsonColorSchemes(const QByteArray &jsonData);
 
+    static QString name(ColorSlot slot);
+    static QColor color(ColorSlot slot);
+    static bool hasFlag(ColorSlot slot, FontFlag flag);
+
 signals:
     void colorsChanged();
 
 private:
-    explicit Color(QObject *parent = nullptr);
+    explicit Scheme(QObject *parent = nullptr);
 
 private:
-    static Color *mInstance;
-    typedef QHash<ColorSlot, QColor> ColorScheme;
+    static Scheme *mInstance;
+    typedef QHash<ColorSlot, Color> ColorScheme;
     QList<ColorScheme> mColorSchemes;
     QStringList mSchemeNames;
     int mActiveScheme = 0;
-
 };
 
-inline QColor toColor(Color::ColorSlot code) { return Color::instance()->get(code); }
-inline QString name(Color::ColorSlot col) { return Color::instance()->name(col); }
+inline QColor toColor(Scheme::ColorSlot code) { return Scheme::color(code); }
+inline QString name(Scheme::ColorSlot col) { return Scheme::instance()->name(col); }
 
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_COLOR_H
+#endif // GAMS_STUDIO_SCHEME_H

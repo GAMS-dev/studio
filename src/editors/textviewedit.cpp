@@ -21,7 +21,7 @@
 #include "search/searchdialog.h"
 #include "search/searchlocator.h"
 #include "keys.h"
-#include "color.h"
+#include "scheme.h"
 #include "logger.h"
 #include <QMenu>
 #include <QMessageBox>
@@ -221,7 +221,7 @@ void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
     if (line <= AbstractTextMapper::cursorInvalid) return;
 
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(toColor(Color::Edit_currentLineBg));
+    selection.format.setBackground(toColor(Scheme::Edit_currentLineBg));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = QTextCursor(document()->findBlockByNumber(line));
     selections.append(selection);
