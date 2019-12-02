@@ -211,7 +211,6 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::diffDone()
         mWasCanceled = false;
         mLastDiffFile = mProc->diffFile();
         if (mLastDiffFile.isEmpty()) { // give an error pop up that no diff file was created
-            //TODO(CW): in case of error add extra error text to system output
             QMessageBox msgBox;
             msgBox.setWindowTitle("GDX Diff");
             msgBox.setText("Unable to create diff file. gdxdiff return code: " + QString::number(mProc->exitCode()) + ". See the system output for details.");
