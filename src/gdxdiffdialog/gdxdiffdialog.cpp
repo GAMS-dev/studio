@@ -44,7 +44,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput1_clicked()
                                                                "All files (*.*)"));
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
-        ui->leInput1->setText(filePath);
+        setInput1(filePath);
     }
 }
 
@@ -56,7 +56,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput2_clicked()
                                                                "All files (*.*)"));
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
-        ui->leInput2->setText(filePath);
+        setInput2(filePath);
     }
 }
 
@@ -69,7 +69,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbDiff_clicked()
                                                     QFileDialog::DontConfirmOverwrite);
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
-        ui->leDiff->setText(filePath);
+        ui->leDiff->setText(QDir::toNativeSeparators(filePath));
     }
 }
 
@@ -95,16 +95,16 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     }
 
     if (QFileInfo(mLastInput1).isRelative())
-        mLastInput1 = QDir::cleanPath(mRecentPath + QDir::separator() + mLastInput1);
+        mLastInput1 = QDir::toNativeSeparators(mRecentPath + QDir::separator() + mLastInput1);
 
     if (QFileInfo(mLastInput2).isRelative())
-        mLastInput2 = QDir::cleanPath(mRecentPath + QDir::separator() + mLastInput2);
+        mLastInput2 = QDir::toNativeSeparators(mRecentPath + QDir::separator() + mLastInput2);
 
     mLastDiffFile = ui->leDiff->text().trimmed();
     if (mLastDiffFile.isEmpty())
-        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + defaultDiffFile);
+        mLastDiffFile = QDir::toNativeSeparators(mRecentPath + QDir::separator() + defaultDiffFile);
     else if (QFileInfo(mLastDiffFile).isRelative())
-        mLastDiffFile = QDir::cleanPath(mRecentPath + QDir::separator() + mLastDiffFile);
+        mLastDiffFile = QDir::toNativeSeparators(mRecentPath + QDir::separator() + mLastDiffFile);
     if (QFileInfo(mLastDiffFile).suffix().isEmpty())
         mLastDiffFile = mLastDiffFile + ".gdx";
 
@@ -173,12 +173,12 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &re
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput1(QString filePath)
 {
-    ui->leInput1->setText(filePath);
+    ui->leInput1->setText(QDir::toNativeSeparators(filePath));
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput2(QString filePath)
 {
-    ui->leInput2->setText(filePath);
+    ui->leInput2->setText(QDir::toNativeSeparators(filePath));
 }
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::reset()
@@ -272,7 +272,7 @@ QString gams::studio::gdxdiffdialog::GdxDiffDialog::input2() const
 void gams::studio::gdxdiffdialog::GdxDiffDialog::prepopulateDiff()
 {
     if (mPrepopulateDiff)
-        ui->leDiff->setText(QDir::cleanPath(mRecentPath + QDir::separator() + defaultDiffFile));
+        ui->leDiff->setText(QDir::toNativeSeparators(mRecentPath + QDir::separator() + defaultDiffFile));
 }
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const

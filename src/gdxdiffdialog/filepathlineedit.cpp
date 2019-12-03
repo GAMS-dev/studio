@@ -1,5 +1,6 @@
 #include "filepathlineedit.h"
 #include <QMimeData>
+#include <QDir>
 #include <file/projecttreeview.h>
 
 namespace gams {
@@ -59,6 +60,7 @@ void FilePathLineEdit::dropEvent(QDropEvent *event)
         setText(localFile);
         event->accept();
     }
+    setText(QDir::toNativeSeparators(text()));
 }
 
 } // namespace gdxdiffdialog
