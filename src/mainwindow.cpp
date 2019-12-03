@@ -1878,8 +1878,7 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
 
     }
     mGdxDiffDialog->setRecentPath(workingDirectory);
-    mGdxDiffDialog->show();
-    mGdxDiffDialog->setFocus();
+    mGdxDiffDialog->activateWindow();
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
