@@ -1877,10 +1877,14 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
 
 
     }
+    // for Mac OS
+    if (mGdxDiffDialog->isVisible()) {
+        mGdxDiffDialog->raise();
+        mGdxDiffDialog->activateWindow();
+    } else {
+        mGdxDiffDialog->show();
+    }
     mGdxDiffDialog->setRecentPath(workingDirectory);
-    mGdxDiffDialog->show();
-    mGdxDiffDialog->activateWindow();
-    mGdxDiffDialog->raise();
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
