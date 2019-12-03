@@ -1878,6 +1878,7 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
 
     }
     mGdxDiffDialog->setRecentPath(workingDirectory);
+    mGdxDiffDialog->show();
     mGdxDiffDialog->activateWindow();
 }
 
