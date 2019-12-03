@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>607</width>
+    <width>1161</width>
     <height>646</height>
    </rect>
   </property>
@@ -58,13 +58,13 @@
         <enum>QToolButton::InstantPopup</enum>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonIconOnly</enum>
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
        <property name="autoRaise">
         <bool>false</bool>
        </property>
        <property name="arrowType">
-        <enum>Qt::NoArrow</enum>
+        <enum>Qt::DownArrow</enum>
        </property>
       </widget>
      </item>
@@ -101,72 +101,20 @@
       </spacer>
      </item>
      <item>
-      <widget class="QCheckBox" name="cbSqueezeDefaults">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="toolTip">
-        <string>Hide default values</string>
-       </property>
+      <widget class="QToolButton" name="tbPreferences">
        <property name="text">
-        <string>Squeeze Defaults</string>
+        <string>Preferences</string>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::InstantPopup</enum>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
+       <property name="arrowType">
+        <enum>Qt::DownArrow</enum>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="cbSqueezeZeroes">
-       <property name="toolTip">
-        <string>Remove trailing zeroes</string>
-       </property>
-       <property name="text">
-        <string>Squeeze Trailing Zeroes</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Decimals:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="sbPrecision">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adjust the maximum number of decimals.&lt;/p&gt;&lt;p&gt;The value has to be in the range of &lt;span style=&quot; font-weight:600;&quot;&gt;0 to 6&lt;/span&gt;. In addition it is possible to specify &lt;span style=&quot; font-weight:600;&quot;&gt;-1(Max)&lt;/span&gt; which will use the maximum precision.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="wrapping">
-        <bool>true</bool>
-       </property>
-       <property name="specialValueText">
-        <string>Max</string>
-       </property>
-       <property name="minimum">
-        <number>-1</number>
-       </property>
-       <property name="maximum">
-        <number>6</number>
-       </property>
-       <property name="value">
-        <number>6</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item>
       <widget class="QPushButton" name="pbResetSortFilter">
