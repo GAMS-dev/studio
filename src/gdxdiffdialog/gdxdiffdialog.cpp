@@ -23,6 +23,7 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
     connect(mProc.get(), &GdxDiffProcess::finished, this, &GdxDiffDialog::diffDone);
 
     connect(ui->leDiff, &QLineEdit::textEdited, [this]() {mPrepopulateDiff = false;});
+    adjustSize();
     reset();
 }
 
