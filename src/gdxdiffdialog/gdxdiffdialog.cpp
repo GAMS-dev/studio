@@ -171,7 +171,10 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldToCompare_currentInde
 void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &recentPath)
 {
     mRecentPath = recentPath;
-    mWorkingDir = mRecentPath;
+    if (QFileInfo(ui->leInput1->text()).isFile())
+        mWorkingDir = QFileInfo(ui->leInput1->text()).path();
+    else
+        mWorkingDir = mRecentPath;
     prepopulateDiff();
 }
 
