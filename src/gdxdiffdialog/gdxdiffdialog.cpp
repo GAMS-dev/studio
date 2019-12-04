@@ -100,8 +100,28 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     if (QFileInfo(mLastInput1).isRelative())
         mLastInput1 = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + mLastInput1);
 
+    if (!QFile(mLastInput1).exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("GDX Diff");
+        msgBox.setText("Input file (1) does not exist:\n" + mLastInput1);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
+
     if (QFileInfo(mLastInput2).isRelative())
         mLastInput2 = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + mLastInput2);
+
+    if (!QFile(mLastInput2).exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("GDX Diff");
+        msgBox.setText("Input file (2) does not exist:\n" + mLastInput2);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
 
     mLastDiffFile = ui->leDiff->text().trimmed();
     if (mLastDiffFile.isEmpty())
