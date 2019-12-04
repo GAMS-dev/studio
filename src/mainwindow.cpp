@@ -1861,6 +1861,7 @@ void MainWindow::on_actionGDX_Diff_triggered()
 
 void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString input1, QString input2)
 {
+    mGdxDiffDialog->setRecentPath(workingDirectory);
     if (!input1.isEmpty()) { // function call was triggered from the context menu
         // when both input1 and input2 are specified, the corresponding files in the dialog need to be set
         if (!input2.isEmpty()) {
@@ -1874,8 +1875,6 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
             else // set input1 otherwise
                 mGdxDiffDialog->setInput1(input1);
         }
-
-
     }
     // for Mac OS
     if (mGdxDiffDialog->isVisible()) {
@@ -1884,7 +1883,6 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
     } else {
         mGdxDiffDialog->show();
     }
-    mGdxDiffDialog->setRecentPath(workingDirectory);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)

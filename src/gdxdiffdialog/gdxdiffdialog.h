@@ -66,6 +66,7 @@ private:
 
     Ui::GdxDiffDialog *ui;
     QString mRecentPath;
+    QString mWorkingDir;
     QString mLastDiffFile;
     QString mLastInput1;
     QString mLastInput2;

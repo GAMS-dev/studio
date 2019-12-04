@@ -23,6 +23,8 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
     connect(mProc.get(), &GdxDiffProcess::finished, this, &GdxDiffDialog::diffDone);
 
     connect(ui->leDiff, &QLineEdit::textEdited, [this]() {mPrepopulateDiff = false;});
+    connect(ui->leInput1, &QLineEdit::textChanged, [this]() {prepopulateDiff();});
+
     adjustSize();
     reset();
 }
@@ -96,16 +98,16 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     }
 
     if (QFileInfo(mLastInput1).isRelative())
-        mLastInput1 = QDir::toNativeSeparators(mRecentPath + QDir::separator() + mLastInput1);
+        mLastInput1 = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + mLastInput1);
 
     if (QFileInfo(mLastInput2).isRelative())
-        mLastInput2 = QDir::toNativeSeparators(mRecentPath + QDir::separator() + mLastInput2);
+        mLastInput2 = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + mLastInput2);
 
     mLastDiffFile = ui->leDiff->text().trimmed();
     if (mLastDiffFile.isEmpty())
-        mLastDiffFile = QDir::toNativeSeparators(mRecentPath + QDir::separator() + defaultDiffFile);
+        mLastDiffFile = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + defaultDiffFile);
     else if (QFileInfo(mLastDiffFile).isRelative())
-        mLastDiffFile = QDir::toNativeSeparators(mRecentPath + QDir::separator() + mLastDiffFile);
+        mLastDiffFile = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + mLastDiffFile);
     if (QFileInfo(mLastDiffFile).suffix().isEmpty())
         mLastDiffFile = mLastDiffFile + ".gdx";
 
@@ -120,7 +122,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     }
     setControlsEnabled(false);
 
-    mProc->setWorkingDir(mRecentPath);
+    mProc->setWorkingDir(mWorkingDir);
     mProc->setInput1(mLastInput1);
     mProc->setInput2(mLastInput2);
     mProc->setDiff(mLastDiffFile);
@@ -132,7 +134,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     mProc->setFieldToCompare(ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex()));
 
     MainWindow* mainWindow = static_cast<MainWindow*>(parent());
-    mDiffFm = mainWindow->fileRepo()->fileMeta(mLastDiffFile);
+    mDiffFm = mainWindow->fileRepo()->fileMeta(QDir::cleanPath(mLastDiffFile));
     if (mDiffFm && !mDiffFm->editors().isEmpty()) {
         mDiffGdxViewer = ViewHelper::toGdxViewer(mDiffFm->editors().first());
         if (mDiffGdxViewer)
@@ -169,6 +171,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_cbFieldToCompare_currentInde
 void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &recentPath)
 {
     mRecentPath = recentPath;
+    mWorkingDir = mRecentPath;
     prepopulateDiff();
 }
 
@@ -272,8 +275,15 @@ QString gams::studio::gdxdiffdialog::GdxDiffDialog::input2() const
 
 void gams::studio::gdxdiffdialog::GdxDiffDialog::prepopulateDiff()
 {
-    if (mPrepopulateDiff)
-        ui->leDiff->setText(QDir::toNativeSeparators(mRecentPath + QDir::separator() + defaultDiffFile));
+    if (mPrepopulateDiff) {
+        if (QFileInfo(ui->leInput1->text()).isFile()) {
+            QString directory = QFileInfo(ui->leInput1->text()).path();
+            mWorkingDir = directory;
+            ui->leDiff->setText(QDir::toNativeSeparators(directory + QDir::separator() + defaultDiffFile));
+        }
+        else
+            ui->leDiff->setText(QDir::toNativeSeparators(mWorkingDir + QDir::separator() + defaultDiffFile));
+    }
 }
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const
