@@ -29,6 +29,7 @@
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QLabel>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -97,8 +98,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     widget->setLayout(vLayout);
     preferences->setDefaultWidget(widget);
     ui->tbPreferences->addAction(preferences);
-    ui->tbVisibleValCols->setStyleSheet("QToolButton::menu-indicator{image: none;}");
-    ui->tbPreferences->setStyleSheet("QToolButton::menu-indicator{image: none;}");
+
+    ui->tbPreferences->setFont(ui->pbToggleView->font());
 
     //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
@@ -131,8 +132,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-
-
 }
 
 GdxSymbolView::~GdxSymbolView()

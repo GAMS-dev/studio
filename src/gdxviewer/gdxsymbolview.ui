@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1161</width>
-    <height>646</height>
+    <width>600</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,7 +55,7 @@
         <bool>false</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -71,6 +71,9 @@
        </property>
        <property name="toolTip">
         <string>Hide/Show specific value columns</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QToolButton::menu-indicator{image: none;}</string>
        </property>
        <property name="text">
         <string>Show Columns</string>
@@ -95,7 +98,7 @@
         <bool>false</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -130,7 +133,7 @@
      <item>
       <widget class="QToolButton" name="tbPreferences">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -140,6 +143,9 @@
          <width>0</width>
          <height>20</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QToolButton::menu-indicator{image: none;}</string>
        </property>
        <property name="text">
         <string>Preferences</string>
@@ -161,7 +167,7 @@
         <bool>false</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
