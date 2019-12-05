@@ -78,6 +78,7 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
+    gdxdiffdialog/filepathlineedit.cpp \
     support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -191,12 +192,15 @@ SOURCES += \
     search/searchworker.cpp \
     editors/filemapper.cpp \
     editors/memorymapper.cpp \
-    editors/logparser.cpp
+    editors/logparser.cpp \
+    gdxdiffdialog/gdxdiffdialog.cpp \
+    gdxdiffdialog/gdxdiffprocess.cpp
 
 HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
+    gdxdiffdialog/filepathlineedit.h \
     support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
@@ -315,7 +319,9 @@ HEADERS += \
     search/searchworker.h \
     editors/filemapper.h \
     editors/memorymapper.h \
-    editors/logparser.h
+    editors/logparser.h \
+    gdxdiffdialog/gdxdiffdialog.h \
+    gdxdiffdialog/gdxdiffprocess.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -336,7 +342,8 @@ FORMS += \
     gotodialog.ui \
     encodingsdialog.ui \
     tabdialog.ui \
-    support/aboutgamsdialog.ui
+    support/aboutgamsdialog.ui \
+    gdxdiffdialog/gdxdiffdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

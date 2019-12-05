@@ -247,6 +247,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionTerminal"/>
+    <addaction name="actionGDX_Diff"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1153,6 +1154,15 @@
    </property>
    <property name="shortcut">
     <string>Alt+T</string>
+   </property>
+  </action>
+  <action name="actionGDX_Diff">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/gdxdiff.svg</normaloff>:/img/gdxdiff.svg</iconset>
+   </property>
+   <property name="text">
+    <string>GDX Diff</string>
    </property>
   </action>
  </widget>

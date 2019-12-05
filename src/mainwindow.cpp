@@ -70,7 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
       mTextMarkRepo(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
-      mLogTabContextMenu(this)
+      mLogTabContextMenu(this),
+      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
@@ -165,6 +166,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::openTerminal, this, &MainWindow::actionTerminalTriggered);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openGdxDiffDialog, this, &MainWindow::actionGDX_Diff_triggered);
 
     ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mainTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
@@ -185,6 +187,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
+
+    connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -1169,6 +1173,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setEncoding(node->file()->codecMib());
         mRecent.setEditor(editWidget, this);
         mRecent.group = mProjectRepo.asGroup(ViewHelper::groupId(editWidget));
+        mRecent.path = node->location();
 
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
             mStatusWidgets->setLineCount(edit->blockCount());
@@ -1895,6 +1900,38 @@ void MainWindow::on_actionGAMS_Library_triggered()
         LibraryItem *item = dialog.selectedLibraryItem();
 
         triggerGamsLibFileCreation(item);
+    }
+}
+
+void MainWindow::on_actionGDX_Diff_triggered()
+{
+    QString path = QFileInfo(mRecent.path).path();
+    actionGDX_Diff_triggered(path);
+}
+
+void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString input1, QString input2)
+{
+    mGdxDiffDialog->setRecentPath(workingDirectory);
+    if (!input1.isEmpty()) { // function call was triggered from the context menu
+        // when both input1 and input2 are specified, the corresponding files in the dialog need to be set
+        if (!input2.isEmpty()) {
+            mGdxDiffDialog->setInput1(input1);
+            mGdxDiffDialog->setInput2(input2);
+        } else {
+            if (mGdxDiffDialog->input1().trimmed().isEmpty()) // set input1 line edit if empty
+                mGdxDiffDialog->setInput1(input1);
+            else if (mGdxDiffDialog->input2().trimmed().isEmpty()) // set input2 if input1 is not empty but input1 is empty
+                mGdxDiffDialog->setInput2(input1);
+            else // set input1 otherwise
+                mGdxDiffDialog->setInput1(input1);
+        }
+    }
+    // for Mac OS
+    if (mGdxDiffDialog->isVisible()) {
+        mGdxDiffDialog->raise();
+        mGdxDiffDialog->activateWindow();
+    } else {
+        mGdxDiffDialog->show();
     }
 }
 
@@ -3519,6 +3556,42 @@ void MainWindow::deleteScratchDirs(const QString &path)
             }
         }
     }
+}
+
+void MainWindow::openGdxDiffFile()
+{
+    QString diffFile = mGdxDiffDialog->lastDiffFile();
+
+    QString input1 = mGdxDiffDialog->lastInput1();
+    QString input2 = mGdxDiffDialog->lastInput2();
+    if (diffFile.isEmpty())
+        return;
+
+    FileMeta *fmInput1 = mFileMetaRepo.fileMeta(input1);
+    FileMeta *fmInput2 = mFileMetaRepo.fileMeta(input2);
+    ProjectGroupNode* pgDiff   = nullptr;
+
+    // if possible get the group to which both input files belong
+    if (fmInput1 && fmInput2) {
+        QVector<ProjectFileNode*> nodesInput1 = mProjectRepo.fileNodes(fmInput1->id());
+        QVector<ProjectFileNode*> nodesInput2 = mProjectRepo.fileNodes(fmInput2->id());
+
+        if (nodesInput1.size() == 1 && nodesInput2.size() == 1) {
+            if (nodesInput1.first()->parentNode() == nodesInput2.first()->parentNode())
+                pgDiff = nodesInput1.first()->parentNode();
+        }
+    }
+    // if no group was found, we try to open the file in the first node that contains the it
+    if (pgDiff == nullptr) {
+        FileMeta *fm = mFileMetaRepo.fileMeta(diffFile);
+        if (fm) {
+            QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
+            if(v.size() == 1)
+                pgDiff = v.first()->parentNode();
+        }
+    }
+    ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
+    openFile(node->file());
 }
 
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)

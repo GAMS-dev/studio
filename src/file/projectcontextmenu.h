@@ -56,6 +56,7 @@ signals:
     void collapseAll();
     void newFileDialog(QVector<ProjectGroupNode *> groups, const QString& solverName="");
     void openTerminal(const QString& workingDir);
+    void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
 
 private slots:
     void onCloseGroup();
@@ -69,6 +70,7 @@ private slots:
     void onCollapseAll();
     void onAddNewSolverOptionFile(const QString &solverName);
     void onOpenTerminal();
+    void onGdxDiff();
 
 private:
     void onOpenFileLoc();

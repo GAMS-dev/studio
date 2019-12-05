@@ -33,6 +33,7 @@
 #include "statuswidgets.h"
 #include "maintabcontextmenu.h"
 #include "logtabcontextmenu.h"
+#include "gdxdiffdialog/gdxdiffdialog.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -56,6 +57,9 @@ class AutosaveHandler;
 class SystemLogEdit;
 namespace option {
 class OptionWidget;
+}
+namespace gdxdiffdialog {
+class GdxDiffDialog;
 }
 
 
@@ -226,6 +230,8 @@ private slots:
     void on_actionInterrupt_triggered();
     void on_actionStop_triggered();
     void on_actionGAMS_Library_triggered();
+    void on_actionGDX_Diff_triggered();
+    void actionGDX_Diff_triggered(QString workingDirectory, QString input1="", QString input2="");
     // About
     void on_actionHelp_triggered();
     void on_actionAbout_Studio_triggered();
@@ -292,6 +298,8 @@ private slots:
     void on_actionDeleteScratchDirs_triggered();
 
     void on_actionChangelog_triggered();
+
+    void openGdxDiffFile();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -374,6 +382,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
+    std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 };
 
 }
