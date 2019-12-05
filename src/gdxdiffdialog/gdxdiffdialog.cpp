@@ -283,7 +283,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::closeEvent(QCloseEvent *e)
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput2() const
 {
-    return mLastInput2;
+    return QDir::cleanPath(mLastInput2);
 }
 
 QString gams::studio::gdxdiffdialog::GdxDiffDialog::input1() const
@@ -311,10 +311,10 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::prepopulateDiff()
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput1() const
 {
-    return mLastInput1;
+    return QDir::cleanPath(mLastInput1);
 }
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastDiffFile() const
 {
-    return mLastDiffFile;
+    return QDir::cleanPath(mLastDiffFile);
 }
