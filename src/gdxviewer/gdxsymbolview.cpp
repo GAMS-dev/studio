@@ -78,6 +78,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     widget->setAutoFillBackground(true);
     mSqDefaults = new QCheckBox("Squeeze Defaults", this);
     vLayout->addWidget(mSqDefaults);
+    mSqDefaults->setEnabled(false);
     mSqZeroes = new QCheckBox("Squeeze Trailing Zeroes", this);
     mSqZeroes->setChecked(true);
     vLayout->addWidget(mSqZeroes);
