@@ -37,6 +37,9 @@
     <enum>Qt::NoContextMenu</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetMinimumSize</enum>
+    </property>
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -60,7 +63,7 @@
       <item row="0" column="1">
        <widget class="QTabWidget" name="mainTabs">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
           <horstretch>3</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
