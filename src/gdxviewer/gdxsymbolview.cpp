@@ -97,6 +97,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     widget->setLayout(vLayout);
     preferences->setDefaultWidget(widget);
     ui->tbPreferences->addAction(preferences);
+    ui->tbVisibleValCols->setStyleSheet("QToolButton::menu-indicator{image: none;}");
+    ui->tbPreferences->setStyleSheet("QToolButton::menu-indicator{image: none;}");
 
     //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);

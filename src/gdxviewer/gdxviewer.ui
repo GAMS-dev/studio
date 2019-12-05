@@ -58,6 +58,12 @@
          </property>
          <item>
           <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Filter:</string>
            </property>
@@ -66,7 +72,7 @@
          <item>
           <widget class="QLineEdit" name="lineEdit">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -74,7 +80,7 @@
            <property name="minimumSize">
             <size>
              <width>80</width>
-             <height>0</height>
+             <height>20</height>
             </size>
            </property>
            <property name="maximumSize">
@@ -90,6 +96,18 @@
          </item>
          <item>
           <widget class="QCheckBox" name="cbToggleSearch">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle between searching in the &lt;span style=&quot; font-weight:600;&quot;&gt;Name &lt;/span&gt;column only or in all columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
