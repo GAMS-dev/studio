@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
+    <width>603</width>
     <height>269</height>
    </rect>
   </property>
@@ -190,7 +190,7 @@
      <item row="2" column="2">
       <widget class="QCheckBox" name="cbFieldOnly">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt;. The variables and equations will be written as parameters for the selected subfield. This option cannot be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Diff Only&lt;/span&gt; and it requires a value for &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt; other than &lt;span style=&quot; font-weight:600;&quot;&gt;All&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt;. The variables and equations will be written as parameters for the selected subfield. This option can not be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Diff Only&lt;/span&gt; and it requires a value for &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt; other than &lt;span style=&quot; font-weight:600;&quot;&gt;All&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Field Only</string>
@@ -217,7 +217,7 @@
      <item row="2" column="1">
       <widget class="QCheckBox" name="cbDiffOnly">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Differences for variables and equations will be written as parameters. Each parameter will have an additional index which is used to store the field name. Only fields that are different will be written. This option cannot be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field Only&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Differences for variables and equations will be written as parameters. Each parameter will have an additional index which is used to store the field name. Only fields that are different will be written. This option can not be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field Only&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Diff Only</string>
@@ -271,7 +271,7 @@
      <item>
       <widget class="QPushButton" name="pbClear">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all input fields.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset the dialog.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Reset</string>
