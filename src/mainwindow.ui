@@ -711,7 +711,7 @@
   </action>
   <action name="actionSearch">
    <property name="text">
-    <string>&amp;Search</string>
+    <string>&amp;Search &amp;&amp; Replace</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
