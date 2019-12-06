@@ -489,7 +489,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     }
 
     QFileInfo fi(gmsLocation);
-    if (filestem.isEmpty()) filestem = fi.path() + '/' + fi.completeBaseName();
+    if (filestem.isEmpty()) filestem = fi.completeBaseName();
     if (path.isEmpty()) path = fi.path();
     else if (QDir(path).isRelative()) path = fi.path() + '/' + path;
 
