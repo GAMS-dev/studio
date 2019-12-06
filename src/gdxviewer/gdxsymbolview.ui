@@ -73,16 +73,16 @@
         <string>Hide/Show specific value columns</string>
        </property>
        <property name="styleSheet">
-        <string notr="true">QToolButton::menu-indicator{image: none;}</string>
+        <string notr="true"/>
        </property>
        <property name="text">
-        <string>Show Columns</string>
+        <string>  Show Columns  </string>
        </property>
        <property name="popupMode">
         <enum>QToolButton::InstantPopup</enum>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+        <enum>Qt::ToolButtonTextOnly</enum>
        </property>
        <property name="autoRaise">
         <bool>false</bool>
@@ -145,16 +145,16 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">QToolButton::menu-indicator{image: none;}</string>
+        <string notr="true"/>
        </property>
        <property name="text">
-        <string>Preferences</string>
+        <string>  Preferences  </string>
        </property>
        <property name="popupMode">
         <enum>QToolButton::InstantPopup</enum>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+        <enum>Qt::ToolButtonTextOnly</enum>
        </property>
        <property name="arrowType">
         <enum>Qt::DownArrow</enum>

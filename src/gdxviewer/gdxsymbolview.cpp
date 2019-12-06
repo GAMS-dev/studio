@@ -29,7 +29,6 @@
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QLabel>
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -98,8 +97,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     widget->setLayout(vLayout);
     preferences->setDefaultWidget(widget);
     ui->tbPreferences->addAction(preferences);
-
-    ui->tbPreferences->setFont(ui->pbToggleView->font());
 
     //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
