@@ -16,29 +16,17 @@ public:
     GdxDiffProcess(QObject *parent = Q_NULLPTR);
 
     void execute() override;
-
     void setInput1(const QString &input1);
-
     void setInput2(const QString &input2);
-
     void setDiff(const QString &diff);
-
     void setIgnoreSetText(bool ignoreSetText);
-
     void setDiffOnly(bool diffOnly);
-
     void setFieldOnly(bool fieldOnly);
-
     void setFieldToCompare(const QString &fieldToCompare);
-
     void setEps(const QString &eps);
-
     void setRelEps(const QString &relEps);
-
     void setWorkingDir(const QString &workingDir);
-
     QString diffFile() const;
-
     void stop(int waitMSec=0);
 
 private:
@@ -51,7 +39,6 @@ private:
     bool mDiffOnly;
     bool mFieldOnly;
     QString mFieldToCompare;
-
     QString mWorkingDir;
     QString mDiffFile;
 

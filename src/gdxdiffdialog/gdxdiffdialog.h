@@ -24,40 +24,24 @@ public:
     void setRecentPath(const QString &recentPath);
     void setInput1(QString filePath);
     void setInput2(QString filePath);
-
     void reset();
-
     QString lastDiffFile() const;
-
     QString lastInput1() const;
-
     QString lastInput2() const;
-
     QString input1() const;
     QString input2() const;
-
     void prepopulateDiff();
 
 private slots:
-
     void on_pbInput1_clicked();
-
     void on_pbInput2_clicked();
-
     void on_pbDiff_clicked();
-
     void on_pbCancel_clicked();
-
     void on_pbOK_clicked();
-
     void on_cbFieldOnly_toggled(bool checked);
-
     void on_cbDiffOnly_toggled(bool checked);
-
     void on_cbFieldToCompare_currentIndexChanged(int index);
-
     void on_pbClear_clicked();
-
     void diffDone();
 
 private:
