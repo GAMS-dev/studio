@@ -590,9 +590,10 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
         }
     } else {
         if (mBlockEdit) {
-            if (e->modifiers() || e->buttons() != Qt::RightButton)
+            if (e->modifiers() || e->buttons() != Qt::RightButton) {
                 endBlockEdit(false);
-            else if (e->button() == Qt::RightButton) {
+                AbstractEdit::mousePressEvent(e);
+            } else if (e->button() == Qt::RightButton) {
                 QTextCursor mouseTC = cursorForPosition(e->pos());
                 if (mouseTC.blockNumber() < qMin(mBlockEdit->startLine(), mBlockEdit->currentLine())
                         || mouseTC.blockNumber() > qMax(mBlockEdit->startLine(), mBlockEdit->currentLine())) {
