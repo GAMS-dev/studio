@@ -1152,9 +1152,6 @@
    <property name="text">
     <string>Terminal</string>
    </property>
-   <property name="shortcut">
-    <string>Alt+T</string>
-   </property>
   </action>
   <action name="actionGDX_Diff">
    <property name="icon">
