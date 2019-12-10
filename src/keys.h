@@ -47,6 +47,7 @@ enum struct Hotkey {
     MoveCharGroupLeft = 22,
     SelectCharGroupRight = 23,
     SelectCharGroupLeft = 24,
+    SelectAll = 25,
 //    BookmarkToggle = 25,
 //    BookmarkNext = 26,
 //    BookmarkPrev = 27,

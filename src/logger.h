@@ -84,8 +84,11 @@ public:
         if (a > 0) a += 14;
         int b = mFunctionName.indexOf('(', a);
         if (a > 0 && a < b) mFunctionName = mFunctionName.mid(a, b-a)+"(..)";
-        if (!mFunctionName.isEmpty())
+        if (!mFunctionName.isEmpty()) {
+                             // get QtCreator to generate a link to the source file
+            mFunctionName += QString(" [Object::in %1:%2]").arg(file).arg(line);
             QMessageLogger(mFile, mLine, "").debug().noquote().nospace() << indent() << "IN  "  << mFunctionName;
+        }
         incDepth();
     }
     ~Tracer() {

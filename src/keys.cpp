@@ -152,6 +152,10 @@ void Keys::reset()
     *seq << QKeySequence("Shift+Ctrl+Left");
     setHotkey(Hotkey::SelectCharGroupLeft, seq);
 
+    seq = new KeySeqList("SelectAll","Select all text");
+    *seq << QKeySequence("Ctrl+A");
+    setHotkey(Hotkey::SelectAll, seq);
+
 //    seq = new KeySeqList("BookmarkToggle","Set or erase bookmark of the current line");
 //    *seq << QKeySequence("Ctrl+M") << QKeySequence("Meta+M");
 //    setHotkey(Hotkey::BookmarkToggle, seq);

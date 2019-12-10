@@ -298,71 +298,72 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
     e->ignore();
     if (mBlockEdit) {
-        if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
+        if (e == Hotkey::SelectAll) {
+            endBlockEdit();
+        } else if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
             return;
         } else {
             mBlockEdit->keyPressEvent(e);
             return;
         }
-    } else {
-        QTextCursor cur = textCursor();
-        if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
-            ParenthesesMatch pm = matchParentheses();
-            bool sel = (e == Hotkey::SelectParentheses);
-            QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            if (pm.match >= 0) {
-                if (sel) cur.clearSelection();
-                if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
-                cur.setPosition(pm.match+1, mm);
-                e->accept();
-            }
-        } else if (e == Hotkey::MoveToEndOfLine) {
-            QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            cur.movePosition(QTextCursor::EndOfLine, mm);
-            e->accept();
-        } else if (e == Hotkey::MoveToStartOfLine) {
-            QTextBlock block = cur.block();
-            QTextCursor::MoveMode mm = QTextCursor::MoveAnchor;
-
-            if (e->modifiers() & Qt::ShiftModifier)
-                mm = QTextCursor::KeepAnchor;
-
-            QRegularExpression leadingSpaces("^(\\s*)");
-            QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
-
-            if (cur.positionInBlock()==0 || lsMatch.capturedLength(1) < cur.positionInBlock())
-                cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
-            else cur.setPosition(block.position(), mm);
-            e->accept();
-        } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
-            QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            int p = cur.positionInBlock();
-            EditorHelper::nextWord(0, p, cur.block().text());
-            if (p >= cur.block().length()) {
-                QTextBlock block = cur.block().next();
-                if (block.isValid()) cur.setPosition(block.position(), mm);
-                else cur.movePosition(QTextCursor::EndOfBlock, mm);
-            } else {
-                cur.setPosition(cur.block().position() + p, mm);
-            }
-            e->accept();
-        } else if (e == Hotkey::MoveCharGroupLeft || e == Hotkey::SelectCharGroupLeft) {
-            QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupLeft) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            int p = cur.positionInBlock();
-            if (p == 0) {
-                QTextBlock block = cur.block().previous();
-                if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
-            } else {
-                EditorHelper::prevWord(0, p, cur.block().text());
-                cur.setPosition(cur.block().position() + p, mm);
-            }
+    }
+    QTextCursor cur = textCursor();
+    if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
+        ParenthesesMatch pm = matchParentheses();
+        bool sel = (e == Hotkey::SelectParentheses);
+        QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        if (pm.match >= 0) {
+            if (sel) cur.clearSelection();
+            if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
+            cur.setPosition(pm.match+1, mm);
             e->accept();
         }
-        if (e->isAccepted()) {
-            setTextCursor(cur);
-            return;
+    } else if (e == Hotkey::MoveToEndOfLine) {
+        QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        cur.movePosition(QTextCursor::EndOfLine, mm);
+        e->accept();
+    } else if (e == Hotkey::MoveToStartOfLine) {
+        QTextBlock block = cur.block();
+        QTextCursor::MoveMode mm = QTextCursor::MoveAnchor;
+
+        if (e->modifiers() & Qt::ShiftModifier)
+            mm = QTextCursor::KeepAnchor;
+
+        QRegularExpression leadingSpaces("^(\\s*)");
+        QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
+
+        if (cur.positionInBlock()==0 || lsMatch.capturedLength(1) < cur.positionInBlock())
+            cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
+        else cur.setPosition(block.position(), mm);
+        e->accept();
+    } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
+        QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        int p = cur.positionInBlock();
+        EditorHelper::nextWord(0, p, cur.block().text());
+        if (p >= cur.block().length()) {
+            QTextBlock block = cur.block().next();
+            if (block.isValid()) cur.setPosition(block.position(), mm);
+            else cur.movePosition(QTextCursor::EndOfBlock, mm);
+        } else {
+            cur.setPosition(cur.block().position() + p, mm);
         }
+        e->accept();
+    } else if (e == Hotkey::MoveCharGroupLeft || e == Hotkey::SelectCharGroupLeft) {
+        QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupLeft) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        int p = cur.positionInBlock();
+        if (p == 0) {
+            QTextBlock block = cur.block().previous();
+            if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
+        } else {
+            EditorHelper::prevWord(0, p, cur.block().text());
+            cur.setPosition(cur.block().position() + p, mm);
+        }
+        e->accept();
+    }
+    if (e->isAccepted()) {
+        setTextCursor(cur);
+        return;
     }
 
     if (!isReadOnly()) {
