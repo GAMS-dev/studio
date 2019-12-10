@@ -26,8 +26,8 @@
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
 #include "support/solverconfiginfo.h"
-#include "locators/abstractsystemlogger.h"
-#include "locators/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {

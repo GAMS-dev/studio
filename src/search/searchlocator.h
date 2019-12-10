@@ -22,20 +22,22 @@
 
 namespace gams {
 namespace studio {
+namespace search {
 
-class SearchResultList;
 class SearchDialog;
+class SearchResultList;
 class SearchLocator
 {
 
 public:
-    static SearchDialog* searchDialog();
-    static void provide(SearchDialog* sd);
+    static search::SearchDialog* searchDialog();
+    static void provide(search::SearchDialog* sd);
 
 private:
-    static SearchDialog* mSd;
+    static search::SearchDialog* mSd;
 };
 
+}
 }
 }
 #endif // SEARCHLOCATOR_H

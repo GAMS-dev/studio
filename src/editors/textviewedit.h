@@ -22,7 +22,7 @@
 
 #include "codeedit.h"
 #include "abstracttextmapper.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include <QWidget>
 
 namespace gams {

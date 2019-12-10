@@ -33,6 +33,6 @@ SOURCES += \
     testgamsoption.cpp \
     $$SRCPATH/option/option.cpp \
     $$SRCPATH/commonpaths.cpp \
-    $$SRCPATH/locators/sysloglocator.cpp \
-    $$SRCPATH/locators/defaultsystemlogger.cpp \
+    $$SRCPATH/editors/sysloglocator.cpp \
+    $$SRCPATH/editors/defaultsystemlogger.cpp \
     $$SRCPATH/exception.cpp

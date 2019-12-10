@@ -30,6 +30,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 enum struct DocumentType {
     Main,
@@ -235,6 +236,7 @@ public:
     }
 };
 
+}
 }
 }
 #endif // HELPLOCATION_H

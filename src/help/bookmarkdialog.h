@@ -28,6 +28,7 @@ class QStandardItemModel;
 
 namespace gams {
 namespace studio {
+namespace help {
 
 class BookmarkDialog : public QDialog
 {
@@ -56,6 +57,7 @@ private:
     QMultiMap<QString, QString>& bookmarkMap;
 };
 
+} // namespace help
 } // namespace studio
 } // namespace gams
 

@@ -23,7 +23,7 @@ TEMPLATE = app
 include(../tests.pri)
 
 INCLUDEPATH += $$SRCPATH            \
-               $$SRCPATH/locators   \
+               $$SRCPATH/editors    \
                $$SRCPATH/support
 
 HEADERS +=                  \
@@ -31,9 +31,9 @@ HEADERS +=                  \
 
 SOURCES +=                                      \
     testgamslicenseinfo.cpp                     \
-    $$SRCPATH/locators/defaultsystemlogger.cpp  \
-    $$SRCPATH/locators/sysloglocator.cpp        \
-    $$SRCPATH/support/solverconfiginfo.cpp       \
+    $$SRCPATH/editors/defaultsystemlogger.cpp   \
+    $$SRCPATH/editors/sysloglocator.cpp         \
+    $$SRCPATH/support/solverconfiginfo.cpp      \
     $$SRCPATH/support/gamslicenseinfo.cpp       \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/exception.cpp

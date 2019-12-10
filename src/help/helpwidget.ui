@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>HelpWidget</class>
- <widget class="QWidget" name="HelpWidget">
+ <class>gams::studio::help::HelpWidget</class>
+ <widget class="QWidget" name="gams::studio::help::HelpWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -30,7 +30,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="gams::studio::HelpToolBar" name="toolbarWidget" native="true">
+    <widget class="HelpToolBar" name="toolbarWidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -40,7 +40,7 @@
     </widget>
    </item>
    <item>
-    <widget class="gams::studio::HelpView" name="webEngineView" native="true">
+    <widget class="HelpView" name="webEngineView" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>

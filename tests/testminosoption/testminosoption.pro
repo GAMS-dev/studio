@@ -33,7 +33,7 @@ SOURCES += \
     testminosoption.cpp \
     $$SRCPATH/option/option.cpp \
     $$SRCPATH/option/optiontokenizer.cpp \
-    $$SRCPATH/locators/sysloglocator.cpp \
-    $$SRCPATH/locators/defaultsystemlogger.cpp \
+    $$SRCPATH/editors/sysloglocator.cpp \
+    $$SRCPATH/editors/defaultsystemlogger.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp

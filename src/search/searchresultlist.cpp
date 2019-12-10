@@ -22,6 +22,7 @@
 
 namespace gams {
 namespace studio {
+namespace search {
 
 SearchResultList::SearchResultList(QRegularExpression regex) : mSearchRegex(regex)
 {
@@ -142,6 +143,7 @@ QMultiHash<QString, QList<Result>> SearchResultList::resultHash() const
     return mResultHash;
 }
 
+}
 }
 }
 

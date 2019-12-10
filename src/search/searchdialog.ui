@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SearchDialog</class>
- <widget class="QDialog" name="SearchDialog">
+ <class>gams::studio::search::SearchDialog</class>
+ <widget class="QDialog" name="gams::studio::search::SearchDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

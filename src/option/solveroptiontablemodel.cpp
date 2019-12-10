@@ -21,7 +21,7 @@
 #include <QMessageBox>
 
 #include "solveroptiontablemodel.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 
 namespace gams {

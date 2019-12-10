@@ -29,5 +29,5 @@ HEADERS += \
 
 SOURCES += \
     testsysloglocator.cpp \
-    $$SRCPATH/locators/sysloglocator.cpp \
-    $$SRCPATH/locators/defaultsystemlogger.cpp
+    $$SRCPATH/editors/sysloglocator.cpp \
+    $$SRCPATH/editors/defaultsystemlogger.cpp

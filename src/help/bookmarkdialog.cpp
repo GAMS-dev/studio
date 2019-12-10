@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 BookmarkDialog::BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget* parent):
     QDialog(parent), bookmarkMap(bmMap)
@@ -144,6 +145,6 @@ void BookmarkDialog::on_contextMenuShowed(const QPoint &pos)
 
 }
 
-
+} // namespace help
 } // namespace studio
 } // namespace gams

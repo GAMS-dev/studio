@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 class HelpPage : public QWebEnginePage
 {
@@ -38,6 +39,7 @@ protected:
 
 };
 
+} //namespace help
 } // namespace studio
 } // namespace gams
 

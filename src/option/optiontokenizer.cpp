@@ -27,8 +27,8 @@
 #include "gclgms.h"
 #include "option.h"
 #include "commonpaths.h"
-#include "locators/defaultsystemlogger.h"
-#include "locators/sysloglocator.h"
+#include "editors/defaultsystemlogger.h"
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {

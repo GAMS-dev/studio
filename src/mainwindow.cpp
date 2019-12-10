@@ -35,16 +35,16 @@
 #include "gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
-#include "locators/searchlocator.h"
-#include "locators/settingslocator.h"
-#include "locators/sysloglocator.h"
-#include "locators/abstractsystemlogger.h"
+#include "settingslocator.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
+#include "search/searchlocator.h"
 #include "search/searchresultlist.h"
-#include "resultsview.h"
+#include "search/resultsview.h"
 #include "gotodialog.h"
 #include "support/updatedialog.h"
 #include "support/checkforupdatewrapper.h"
@@ -131,7 +131,7 @@ MainWindow::MainWindow(QWidget *parent)
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
 #ifdef QWEBENGINE
-    mHelpWidget = new HelpWidget(this);
+    mHelpWidget = new help::HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
     ui->dockHelpView->hide();
 #endif
@@ -194,7 +194,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
-    mSearchDialog = new SearchDialog(this);
+    mSearchDialog = new search::SearchDialog(this);
 
     if (mSettings->resetSettingsSwitch()) mSettings->resetSettings();
 
@@ -221,7 +221,7 @@ MainWindow::MainWindow(QWidget *parent)
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
-    SearchLocator::provide(mSearchDialog);
+    search::SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
@@ -457,7 +457,7 @@ void MainWindow::receiveAction(const QString &action)
         on_actionChangelog_triggered();
 }
 
-void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
+void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryItem* model)
 {
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
@@ -533,7 +533,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     on_actionHelp_View_triggered(true);
 }
 
-SearchDialog* MainWindow::searchDialog() const
+search::SearchDialog* MainWindow::searchDialog() const
 {
     return mSearchDialog;
 }
@@ -1557,17 +1557,17 @@ void MainWindow::on_actionHelp_triggered()
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
         QString optionName = mGamsOptionWidget->getSelectedOptionName(widget);
         if (optionName.isEmpty())
-            mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                  HelpData::getStudioSectionName(StudioSection::OptionEditor));
+            mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                  help::HelpData::getStudioSectionName(help::StudioSection::OptionEditor));
         else
-            mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, optionName);
+            mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
     } else {
          QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
          if (editWidget) {
              FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
              if (!fm) {
-                 mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                       HelpData::getStudioSectionName(StudioSection::WelcomePage));
+                 mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                       help::HelpData::getStudioSectionName(help::StudioSection::WelcomePage));
              } else {
                  if (mRecent.editor() != nullptr) {
                      if (widget == mRecent.editor()) {
@@ -1578,11 +1578,11 @@ void MainWindow::on_actionHelp_triggered()
                             ce->wordInfo(ce->textCursor(), word, iKind);
 
                             if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
-                                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, "title");
+                                mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
                             } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
-                                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, word);
+                                mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
                             } else {
-                                mHelpWidget->on_helpContentRequested(DocumentType::Index, word);
+                                mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);
                             }
                          }
                      } else {
@@ -1590,30 +1590,30 @@ void MainWindow::on_actionHelp_triggered()
                          if (optionEdit) {
                              QString optionName = optionEdit->getSelectedOptionName(widget);
                              if (optionName.isEmpty())
-                                 mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                       HelpData::getStudioSectionName(StudioSection::SolverOptionEditor));
+                                 mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                       help::HelpData::getStudioSectionName(help::StudioSection::SolverOptionEditor));
                              else
-                                 mHelpWidget->on_helpContentRequested( DocumentType::Solvers, optionName,
+                                 mHelpWidget->on_helpContentRequested( help::DocumentType::Solvers, optionName,
                                                                        optionEdit->getSolverName());
                          } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                          HelpData::getStudioSectionName(StudioSection::GDXViewer));
+                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                          help::HelpData::getStudioSectionName(help::StudioSection::GDXViewer));
                          } else if (ViewHelper::toReferenceViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                          HelpData::getStudioSectionName(StudioSection::ReferenceFileViewer));
+                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                          help::HelpData::getStudioSectionName(help::StudioSection::ReferenceFileViewer));
                          } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                          HelpData::getStudioSectionName(StudioSection::ListingViewer));
+                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                          help::HelpData::getStudioSectionName(help::StudioSection::ListingViewer));
                          } else {
-                             mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+                             mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
                          }
                      }
                  } else {
-                     mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+                     mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
                  }
              }
          } else {
-             mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+             mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
          }
     }
 
@@ -1834,7 +1834,7 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
     showWelcomePage();
 }
 
-void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
+void MainWindow::triggerGamsLibFileCreation(modeldialog::LibraryItem *item)
 {
     openModelFromLib(item->library()->glbFile(), item);
 }
@@ -1894,10 +1894,10 @@ bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> 
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    ModelDialog dialog(mSettings->userModelLibraryDir(), this);
+    modeldialog::ModelDialog dialog(mSettings->userModelLibraryDir(), this);
     if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
-        LibraryItem *item = dialog.selectedLibraryItem();
+        modeldialog::LibraryItem *item = dialog.selectedLibraryItem();
 
         triggerGamsLibFileCreation(item);
     }
@@ -2350,7 +2350,7 @@ void MainWindow::updateRunState()
 }
 
 #ifdef QWEBENGINE
-HelpWidget *MainWindow::helpWidget() const
+help::HelpWidget *MainWindow::helpWidget() const
 {
     return mHelpWidget;
 }
@@ -2567,13 +2567,13 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             CodeEdit* ce = ViewHelper::toCodeEdit(edit);
             connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
             connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
-            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
-            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
+            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
             tv->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-            connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
-            connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+            connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
+            connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
         }
         if (ViewHelper::toCodeEdit(edit)) {
@@ -2882,13 +2882,13 @@ void MainWindow::openSearchDialog()
     }
 }
 
-void MainWindow::showResults(SearchResultList* results)
+void MainWindow::showResults(search::SearchResultList* results)
 {
     int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
     // only update if new results available
-    searchDialog()->setResultsView(new ResultsView(results, this));
-    connect(searchDialog()->resultsView(), &ResultsView::updateMatchLabel, searchDialog(), &SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    searchDialog()->setResultsView(new search::ResultsView(results, this));
+    connect(searchDialog()->resultsView(), &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
 
     QString nr;
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
