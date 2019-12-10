@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINEOPTION_H
-#define COMMANDLINEOPTION_H
+#ifndef COMMANDLINE_H
+#define COMMANDLINE_H
 
 #include <QComboBox>
 
@@ -26,31 +26,31 @@ namespace gams {
 namespace studio {
 namespace option {
 
-class CommandLineOption : public QComboBox
+class CommandLine : public QComboBox
 {
     Q_OBJECT
 
 public:
-    CommandLineOption(QWidget* parent);
-    ~CommandLineOption();
+    CommandLine(QWidget* parent);
+    ~CommandLine() override;
 
-    QString getOptionString() const;
+    QString getParameterString() const;
 
     void resetCurrentValue();
 
 signals:
-    void optionRunChanged();
-    void optionEditCancelled();
-    void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
+    void parameterRunChanged();
+    void parameterEditCancelled();
+    void commandLineChanged(QLineEdit* lineEdit, const QString &commandLineStr);
 
 public slots:
-    void validateChangedOption(const QString &text);
+    void validateChangedParameter(const QString &text);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e) override;
 
 private:
-    QString mOptionString;
+    QString mParameterString;
     int mCurrentIndex;
 };
 
@@ -58,5 +58,5 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // COMMANDLINEOPTION_H
+#endif // COMMANDLINE_H
 
