@@ -88,7 +88,7 @@ void FileMapper::closeAndReset()
     mFile.setFileName(mFile.fileName()); // JM: Workaround for file kept locked (close wasn't enough)
 
     mSize = 0;
-    reset();
+    AbstractTextMapper::reset();
     setPosAbsolute(nullptr, 0, 0);
     stopPeeking();
 }
@@ -180,7 +180,6 @@ void FileMapper::closeFile()
     mTimer.stop();
     if (mFile.isOpen()) {
         mFile.close();
-        mSize = 0;
     }
 }
 
@@ -233,11 +232,12 @@ void FileMapper::peekChunksForLineNrs()
 
 void FileMapper::reset()
 {
-    while (!mChunkCache.isEmpty()) {
-        Chunk* chunk = mChunkCache.takeLast();
-        chunkUncached(chunk);
-    }
-    AbstractTextMapper::reset();
+//    while (!mChunkCache.isEmpty()) {
+//        Chunk* chunk = mChunkCache.takeLast();
+//        chunkUncached(chunk);
+//    }
+//    AbstractTextMapper::reset();
+    closeAndReset();
 }
 
 void FileMapper::stopPeeking()
