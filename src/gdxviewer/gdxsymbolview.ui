@@ -76,7 +76,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>  Show Columns  </string>
+        <string>  Columns  </string>
        </property>
        <property name="popupMode">
         <enum>QToolButton::InstantPopup</enum>
