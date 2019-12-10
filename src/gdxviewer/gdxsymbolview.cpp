@@ -408,6 +408,7 @@ void GdxSymbolView::enableControls()
     else
         mSqDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);
+    ui->tbPreferences->setEnabled(true);
     if (mSym->dim()>1)
         ui->pbToggleView->setEnabled(true);
 }
