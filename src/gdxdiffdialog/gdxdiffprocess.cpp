@@ -1,7 +1,7 @@
 #include "gdxdiffprocess.h"
 #include <QDir>
-#include <locators/abstractsystemlogger.h>
-#include "locators/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {
