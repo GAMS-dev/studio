@@ -28,11 +28,13 @@
 #include "option/solveroptionwidget.h"
 #include "settingslocator.h"
 #include "editors/viewhelper.h"
+#include "lxiviewer/lxiviewer.h"
 #include "../keys.h"
 
 #include <QMessageBox>
 #include <QTextDocumentFragment>
 #include <QThread>
+
 
 
 namespace gams {
@@ -548,8 +550,12 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         e->accept();
         mMain->setSearchWidgetPos(pos());
         hide();
-        if (mMain->projectRepo()->findFileNode(mMain->recent()->editor()))
-            mMain->recent()->editor()->setFocus();
+        if (mMain->projectRepo()->findFileNode(mMain->recent()->editor())) {
+            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mMain->recent()->editor()))
+                lv->textView()->setFocus();
+            else
+                mMain->recent()->editor()->setFocus();
+        }
 
     } else if (e == Hotkey::SearchFindPrev) {
         e->accept();
@@ -606,13 +612,13 @@ void SearchDialog::on_btn_clear_clicked()
 
 void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
 {
-    Q_UNUSED(arg1);
+    Q_UNUSED(arg1)
     searchParameterChanged();
 }
 
 void SearchDialog::on_cb_regex_stateChanged(int arg1)
 {
-    Q_UNUSED(arg1);
+    Q_UNUSED(arg1)
     searchParameterChanged();
 }
 
