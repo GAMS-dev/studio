@@ -187,6 +187,7 @@ SOURCES += \
     studiosettings.cpp \
     support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
+    svgengine.cpp \
     support/distributionvalidator.cpp \
     support/gamslicenseinfo.cpp         \
     support/solverconfiginfo.cpp        \
@@ -324,6 +325,7 @@ HEADERS += \
     support/solverconfiginfo.h      \
     support/solvertablemodel.h      \
     support/updatedialog.h \
+    svgengine.h \
     syntax.h \
     syntax/basehighlighter.h \
     syntax/blockcode.h \

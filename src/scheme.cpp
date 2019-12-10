@@ -1,7 +1,9 @@
 #include "scheme.h"
 #include <QHash>
 #include "logger.h"
+#include "svgengine.h"
 #include <QMetaEnum>
+#include <QFile>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -10,10 +12,17 @@ namespace gams {
 namespace studio {
 
 Scheme *Scheme::mInstance = nullptr;
-const QColor CUndefined(255,0,200);
+const QColor CUndefined(255, 0, 200);
 
 Scheme::Scheme(QObject *parent) : QObject(parent)
 {}
+
+Scheme::~Scheme()
+{
+    for (SvgEngine *eng: mEngines)
+        eng->unbind();
+    mEngines.clear();
+}
 
 Scheme *Scheme::instance()
 {
@@ -26,52 +35,66 @@ void Scheme::initDefault()
     mColorSchemes.clear();
     mSchemeNames.clear();
 
+    // Add and switch to first color scheme  ------- Standard -------
+    int sNr = 0;
     mColorSchemes << ColorScheme();
     mSchemeNames << "Standard";
-    mColorSchemes[0].clear();
-    mColorSchemes[0].insert(invalid,                        CUndefined);
-    mColorSchemes[0].insert(Edit_currentLineBg,             QColor(255, 250, 170));
-    mColorSchemes[0].insert(Edit_errorBg,                   QColor(Qt::lightGray));
-    mColorSchemes[0].insert(Edit_currentWordBg,             QColor(210,200,200));
-    mColorSchemes[0].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
-    mColorSchemes[0].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
-    mColorSchemes[0].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black));
-    mColorSchemes[0].insert(Edit_parenthesesValidBg,        QColor(Qt::green).lighter(170));
-    mColorSchemes[0].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).lighter(150));
-    mColorSchemes[0].insert(Edit_parenthesesValidBgBlink,   QColor(Qt::green).lighter(130));
-    mColorSchemes[0].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).lighter(115));
-    mColorSchemes[0].insert(Edit_linenrAreaBg,              QColor(245,245,245));
-    mColorSchemes[0].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
-    mColorSchemes[0].insert(Edit_linenrAreaFg,              QColor(Qt::black));
-    mColorSchemes[0].insert(Edit_linenrAreaMarkFg,          QColor(Qt::gray));
-    mColorSchemes[0].insert(Edit_blockSelectBg,             QColor(Qt::cyan).lighter(150));
 
-    mColorSchemes[0].insert(Mark_errorFg,                   QColor(Qt::darkRed));
-    mColorSchemes[0].insert(Mark_listingFg,                 QColor(Qt::blue));
-    mColorSchemes[0].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
+    mColorSchemes[sNr].clear();
+    mColorSchemes[sNr].insert(invalid,                        CUndefined);
+    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
+    mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(Qt::lightGray));
+    mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
+    mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
+    mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black));
+    mColorSchemes[sNr].insert(Edit_parenthesesValidBg,        QColor(Qt::green).lighter(170));
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).lighter(150));
+    mColorSchemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(Qt::green).lighter(130));
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).lighter(115));
+    mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(245,245,245));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
+    mColorSchemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
+    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(Qt::cyan).lighter(150));
 
-    mColorSchemes[0].insert(Icon_Main,                      QColor(Qt::white));
-    mColorSchemes[0].insert(Icon_Invers,                    QColor(Qt::black));
+    mColorSchemes[sNr].insert(Mark_errorFg,                   QColor(Qt::darkRed));
+    mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
+    mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[0].insert(Syntax_undefined,               CUndefined);
-    mColorSchemes[0].insert(Syntax_neutral,                 Color());
-    mColorSchemes[0].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
-    mColorSchemes[0].insert(Syntax_assign,                  Color());
-    mColorSchemes[0].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
-    mColorSchemes[0].insert(Syntax_comment,                 Color(QColor(80, 145, 75), fItalic));
-    mColorSchemes[0].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBoldItalic));
-    mColorSchemes[0].insert(Syntax_keyword,                 Color(QColor(Qt::darkBlue).lighter(140), fBold));
-    mColorSchemes[0].insert(Syntax_declaration,             Color(QColor(Qt::darkBlue).lighter(140), fBold));
-    mColorSchemes[0].insert(Syntax_identifier,              Color(QColor(Qt::black)));
-    mColorSchemes[0].insert(Syntax_description,             Color(QColor(Qt::darkBlue).lighter(170)));
-    mColorSchemes[0].insert(Syntax_identifierAssign,        Color(QColor(Qt::darkGreen).darker(140)));
-    mColorSchemes[0].insert(Syntax_assignLabel,             Color(QColor(Qt::darkGreen).darker(110)));
-    mColorSchemes[0].insert(Syntax_assignValue,             Color(QColor(0, 80, 120)));
-    mColorSchemes[0].insert(Syntax_tableHeader,             Color(QColor(Qt::darkGreen).darker(140), fBold));
-    mColorSchemes[0].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
+    mColorSchemes[sNr].insert(Icon_Main,                      QColor(Qt::white));
+    mColorSchemes[sNr].insert(Icon_Invers,                    QColor(Qt::black));
 
-//    mColorSchemes << ColorScheme();
-//    mSchemeNames << "Dark";
+    mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
+    mColorSchemes[sNr].insert(Syntax_neutral,                 Color());
+    mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
+    mColorSchemes[sNr].insert(Syntax_assign,                  Color());
+    mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
+    mColorSchemes[sNr].insert(Syntax_comment,                 Color(QColor(80, 145, 75), fItalic));
+    mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBoldItalic));
+    mColorSchemes[sNr].insert(Syntax_keyword,                 Color(QColor(Qt::darkBlue).lighter(140), fBold));
+    mColorSchemes[sNr].insert(Syntax_declaration,             Color(QColor(Qt::darkBlue).lighter(140), fBold));
+    mColorSchemes[sNr].insert(Syntax_identifier,              Color(QColor(Qt::black)));
+    mColorSchemes[sNr].insert(Syntax_description,             Color(QColor(Qt::darkBlue).lighter(170)));
+    mColorSchemes[sNr].insert(Syntax_identifierAssign,        Color(QColor(Qt::darkGreen).darker(140)));
+    mColorSchemes[sNr].insert(Syntax_assignLabel,             Color(QColor(Qt::darkGreen).darker(110)));
+    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(QColor(0, 80, 120)));
+    mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(QColor(Qt::darkGreen).darker(140), fBold));
+    mColorSchemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
+
+    // Add and switch to second color scheme  ------- Dark -------
+    mColorSchemes << mColorSchemes.at(sNr++);
+    mSchemeNames << "Dark";
+
+    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(205, 220, 255));
+    mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
+
+    mColorSchemes[sNr].insert(Icon_Invers,                    QColor(Qt::darkRed));
+
+    mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkRed).lighter(140), fBold));
+    mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkGreen).darker(120), fBold));
 
 }
 
@@ -83,18 +106,21 @@ QStringList Scheme::schemes()
 int Scheme::setActiveScheme(QString schemeName)
 {
     int scheme = mSchemeNames.indexOf(schemeName);
+    return setActiveScheme(scheme);
+}
+
+int Scheme::setActiveScheme(int scheme)
+{
+    DEB() << "Scheme switched to " << scheme;
     if (scheme < 0 || scheme >= mSchemeNames.size()) return -1;
     mActiveScheme = scheme;
-    emit colorsChanged();
+    invalidate();
     return mActiveScheme;
 }
 
-QString Scheme::setActiveScheme(int scheme)
+int Scheme::activeScheme() const
 {
-    if (scheme < 0 || scheme >= mSchemeNames.size()) return QString();
-    mActiveScheme = scheme;
-    emit colorsChanged();
-    return mSchemeNames.at(scheme);
+    return mActiveScheme;
 }
 
 QString Scheme::name(Scheme::ColorSlot slot)
@@ -110,9 +136,80 @@ Scheme::ColorSlot Scheme::slot(QString name)
     return ColorSlot(value);
 }
 
+QHash<QString, QString> Scheme::iconCodes() const
+{
+    QHash<QString, QString> res;
+    const ColorScheme &scheme = mColorSchemes.at(mActiveScheme);
+    for (ColorSlot &slot: scheme.keys()) {
+        QString key = name(slot);
+        if (key.startsWith("Icon_")) {
+            res.insert(key.mid(5, key.length()-5), scheme.value(slot).color.name());
+        }
+    }
+    return res;
+}
+
+QByteArray Scheme::colorizedContent(QString name)
+{
+    QFile file(name);
+    if (!file.open(QFile::ReadOnly)) return QByteArray();
+    QByteArray data = file.readAll();
+    file.close();
+    QHash<QString, QString>::const_iterator it = mIconCode.constBegin();
+    while (it != mIconCode.constEnd()) {
+        QString key = QString(".%1{fill:").arg(it.key());
+        int from = data.indexOf(key);
+        if (from >= 0) {
+            from += key.length();
+            int len = data.indexOf(";", from) - from;
+            data.replace(from, len, it.value().toLatin1());
+        }
+        ++it;
+    }
+    return data;
+}
+
+void Scheme::invalidate()
+{
+    mIconCode = iconCodes();
+    mIconCache.clear();
+    mDataCache.clear();
+    emit changed();
+}
+
+void Scheme::unbind(SvgEngine *engine)
+{
+    mEngines.removeAll(engine);
+}
+
+void Scheme::next()
+{
+    int index = (instance()->mActiveScheme + 1) % instance()->mSchemeNames.size();
+    instance()->setActiveScheme(index);
+}
+
 QColor Scheme::color(Scheme::ColorSlot slot)
 {
     return instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot, CUndefined).color;
+}
+
+QIcon Scheme::icon(QString name)
+{
+    if (!instance()->mIconCache.contains(name)) {
+        SvgEngine *eng = new SvgEngine(name);
+        instance()->mEngines << eng;
+        instance()->mIconCache.insert(name, QIcon(eng));
+    }
+    return instance()->mIconCache.value(name);
+}
+
+QByteArray &Scheme::data(QString name)
+{
+    if (!instance()->mDataCache.contains(name)) {
+        QByteArray data(instance()->colorizedContent(name));
+        instance()->mDataCache.insert(name, data);
+    }
+    return instance()->mDataCache[name];
 }
 
 bool Scheme::hasFlag(Scheme::ColorSlot slot, Scheme::FontFlag flag)
@@ -172,6 +269,7 @@ void Scheme::importJsonColorSchemes(const QByteArray &jsonData)
             }
         }
     }
+    invalidate();
 }
 
 } // namespace studio

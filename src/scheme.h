@@ -4,9 +4,12 @@
 #include <QObject>
 #include <QColor>
 #include <QBrush>
+#include <QIcon>
 
 namespace gams {
 namespace studio {
+
+class SvgEngine;
 
 class Scheme : public QObject
 {
@@ -67,32 +70,46 @@ private:
     };
 
 public:
+    ~Scheme();
     static Scheme *instance();
     void initDefault();
+    int schemeCount() { return mSchemeNames.size(); }
     QStringList schemes();
     int setActiveScheme(QString schemeName);
-    QString setActiveScheme(int scheme);
+    int setActiveScheme(int scheme);
+    int activeScheme() const;
     ColorSlot slot(QString name);
+    void invalidate();
+    void unbind(SvgEngine *engine);
+    static void next();
 
     QByteArray exportJsonColorSchemes();
     void importJsonColorSchemes(const QByteArray &jsonData);
 
     static QString name(ColorSlot slot);
     static QColor color(ColorSlot slot);
+    static QIcon icon(QString name);
+    static QByteArray &data(QString name);
     static bool hasFlag(ColorSlot slot, FontFlag flag);
 
 signals:
-    void colorsChanged();
+    void changed();
 
 private:
     explicit Scheme(QObject *parent = nullptr);
+    QHash<QString, QString> iconCodes() const;
+    QByteArray colorizedContent(QString name);
 
 private:
     static Scheme *mInstance;
     typedef QHash<ColorSlot, Color> ColorScheme;
     QList<ColorScheme> mColorSchemes;
     QStringList mSchemeNames;
+    QHash<QString, QString> mIconCode;
+    QHash<QString, QIcon> mIconCache;
+    QHash<QString, QByteArray> mDataCache;
     int mActiveScheme = 0;
+    QVector<SvgEngine*> mEngines;
 };
 
 inline QColor toColor(Scheme::ColorSlot code) { return Scheme::color(code); }

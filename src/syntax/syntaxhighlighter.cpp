@@ -370,13 +370,7 @@ void SyntaxHighlighter::xinitKind(SyntaxAbstract *syntax, QColor color, Scheme::
 void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, Scheme::ColorSlot slot)
 {
     if (debug) syntax->charFormat().setBackground(backColor(debug));
-
-    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
-    if (toColor(slot).isValid()) syntax->charFormat().setForeground(toColor(slot));
-    if (Scheme::hasFlag(slot, Scheme::fItalic))
-        syntax->charFormat().setFontItalic(true);
-    if (Scheme::hasFlag(slot, Scheme::fBold))
-        syntax->charFormat().setFontWeight(QFont::Bold);
+    syntax->assignColorSlot(slot);
 
     // TODO(JM) check if mSingleLineKinds can be left out of mKinds because the code won't be passed to the next line
 //    if (!mSingleLineKinds.contains(syntax->kind())) {}
@@ -387,6 +381,13 @@ void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, Scheme::Colo
 void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, Scheme::ColorSlot slot)
 {
     initKind(false, syntax, slot);
+}
+
+void SyntaxHighlighter::reloadColors()
+{
+    for (SyntaxAbstract* syntax: mKinds) {
+        syntax->assignColorSlot(syntax->colorSlot());
+    }
 }
 
 int SyntaxHighlighter::addCode(KindIndex si, CodeIndex ci)

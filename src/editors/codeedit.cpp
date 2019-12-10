@@ -1388,8 +1388,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
     if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
-    int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
-    int bottom = top + static_cast<int>(blockBoundingRect(block).height());
+    QRectF fRect = blockBoundingGeometry(block).translated(contentOffset());
+    int top = static_cast<int>(fRect.top());
+    int bottom = top + static_cast<int>(fRect.height());
     int markFrom = textCursor().blockNumber();
     int markTo = textCursor().blockNumber();
     if (markFrom > markTo) qSwap(markFrom, markTo);
@@ -1397,7 +1398,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
     QRect paintRect(event->rect());
     painter.fillRect(paintRect, toColor(Scheme::Edit_linenrAreaBg));
 
-    QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(blockBoundingRect(block).height())+1);
+    QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(fRect.height())+1);
     while (block.isValid() && top <= paintRect.bottom()) {
         if (block.isVisible() && bottom >= paintRect.top()) {
             bool mark = mBlockEdit ? mBlockEdit->hasBlock(block.blockNumber())
@@ -1413,9 +1414,8 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 QFont f = font();
                 f.setBold(mark);
                 painter.setFont(f);
-                painter.setPen(mark ? toColor(Scheme::Edit_linenrAreaFg) : toColor(Scheme::Edit_linenrAreaMarkFg));
-                int realtop = top; // (top+bottom-fontMetrics().height())/2;
-                painter.drawText(0, realtop, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+                painter.setPen(mark ? toColor(Scheme::Edit_linenrAreaMarkFg) : toColor(Scheme::Edit_linenrAreaFg));
+                painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 
             if (hasMarks && marks()->contains(absoluteBlockNr(blockNumber))) {

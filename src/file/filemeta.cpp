@@ -291,6 +291,20 @@ void FileMeta::invalidate()
     }
 }
 
+void FileMeta::invalidateScheme()
+{
+    if (mHighlighter) {
+        mHighlighter->reloadColors();
+        for (QWidget *w: mEditors) {
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(w)) {
+                mHighlighter->rehighlight();
+                ce->updateExtraSelections();
+                ce->lineNumberArea()->repaint();
+            }
+        }
+    }
+}
+
 void FileMeta::addEditor(QWidget *edit)
 {
     if (!edit) return;

@@ -211,11 +211,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
-    QPushButton *tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTabs);
+    initIcons();
+    QPushButton *tabMenu = new QPushButton(Scheme::icon(":/img/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->mainTabs->setCornerWidget(tabMenu);
-    tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->logTabs);
+    tabMenu = new QPushButton(Scheme::icon(":/img/menu"), "", ui->logTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
@@ -231,6 +232,7 @@ MainWindow::MainWindow(QWidget *parent)
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
     updateMiroMenu();
+    invalidateScheme();
 }
 
 
@@ -1637,7 +1639,7 @@ void MainWindow::on_actionAbout_Studio_triggered()
     about.setTextFormat(Qt::RichText);
     about.setText(support::AboutGAMSDialog::header());
     about.setInformativeText(support::AboutGAMSDialog::aboutStudio());
-    about.setIconPixmap(QPixmap(":/img/gams-w24"));
+    about.setIconPixmap(Scheme::icon(":/img/gams-w24").pixmap(QSize(64, 64)));
     about.addButton(QMessageBox::Ok);
     about.exec();
 }
@@ -2191,6 +2193,9 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
         focusCmdLine();
         e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F11)) {
+        Scheme::next();
+        e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
         toggleDebugMode();
         e->accept(); return;
@@ -2635,6 +2640,70 @@ void MainWindow::updateMiroMenu()
         ui->menuMIRO->setEnabled(true);
     else
         ui->menuMIRO->setEnabled(false);
+}
+
+void MainWindow::invalidateScheme()
+{
+    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme, Qt::UniqueConnection);
+    assignColors();
+    assignIcons();
+    for (FileMeta *fm: mFileMetaRepo.fileMetas()) {
+        fm->invalidateScheme();
+    }
+    // TODO(JM) repaint all colorized content
+}
+
+void MainWindow::assignColors()
+{
+
+}
+
+void MainWindow::assignIcons()
+{
+    // trigger repaint of all icons
+    setWindowIcon(windowIcon());
+    for (QObject *obj: children()) {
+        if (QAction *act = qobject_cast<QAction*>(obj)) {
+            if (!act->icon().isNull()) {
+                if (act->icon().name().isEmpty())
+                    DEB() << "Warning: icon of action " << act->text() << " can't be colorized.";
+                else
+                    act->setIcon(act->icon());
+            }
+        } else if (QTabWidget *tabs = qobject_cast<QTabWidget*>(obj)) {
+            if (QPushButton *bt = qobject_cast<QPushButton*>(tabs->cornerWidget()))
+                bt->setIcon(bt->icon());
+        }
+    }
+}
+
+void MainWindow::initIcons()
+{
+    setWindowIcon(Scheme::icon(":/img/gams-w"));
+    ui->actionProcess_Log->setIcon(Scheme::icon(":/img/output"));
+    ui->actionProject_View->setIcon(Scheme::icon(":/img/project"));
+    ui->actionNew->setIcon(Scheme::icon(":/img/file"));
+    ui->actionOpen->setIcon(Scheme::icon(":/img/folder-open-bw"));
+    ui->actionSave->setIcon(Scheme::icon(":/img/save"));
+    ui->actionGAMS_Library->setIcon(Scheme::icon(":/img/books"));
+    ui->actionRun->setIcon(Scheme::icon(":/img/play"));
+    ui->actionCompile->setIcon(Scheme::icon(":/img/compile"));
+    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/img/run-gdx"));
+    ui->actionSettings->setIcon(Scheme::icon(":/img/cogs"));
+    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/img/compile-gdx"));
+    ui->actionCopy->setIcon(Scheme::icon(":/img/copy"));
+    ui->actionPaste->setIcon(Scheme::icon(":/img/paste"));
+    ui->actionUndo->setIcon(Scheme::icon(":/img/undo"));
+    ui->actionRedo->setIcon(Scheme::icon(":/img/redo"));
+    ui->actionCut->setIcon(Scheme::icon(":/img/cut"));
+    ui->actionHelp_View->setIcon(Scheme::icon(":/img/question"));
+    ui->actionInterrupt->setIcon(Scheme::icon(":/img/interrupt"));
+    ui->actionStop->setIcon(Scheme::icon(":/img/stop"));
+    ui->actionToggleBookmark->setIcon(Scheme::icon(":/img/bookmark"));
+    ui->actionNextBookmark->setIcon(Scheme::icon(":/img/forward"));
+    ui->actionPreviousBookmark->setIcon(Scheme::icon(":/img/backward"));
+    ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/img/show"));
+
 }
 
 void MainWindow::ensureInScreen()
@@ -3475,10 +3544,10 @@ void MainWindow::setExtendedEditorVisibility(bool visible)
 void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
 {
     if (checked) {
-        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/hide"));
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/img/hide"));
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     } else {
-        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/show") );
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/img/show") );
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     }
 
