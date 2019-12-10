@@ -618,6 +618,11 @@ void FileMeta::marksChanged(QSet<int> lines)
 
 void FileMeta::reloadDelayed()
 {
+    for (QWidget *wid: mEditors) {
+        if (TextView *tv = ViewHelper::toTextView(wid)) {
+            tv->reset();
+        }
+    }
     mReloadTimer.start(100);
 }
 
