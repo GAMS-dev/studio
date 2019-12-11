@@ -62,32 +62,8 @@ void TextViewEdit::disconnectTimers()
 
 int TextViewEdit::lineCount()
 {
-    bool underline = false;
-    bool bold = false;
-    bool italic = false;
-    for (QTextFormat fmt: document()->allFormats()) {
-        if (fmt.isCharFormat() && fmt.toCharFormat().fontUnderline()) underline = true;
-        if (fmt.isCharFormat() && fmt.toCharFormat().fontItalic()) italic = true;
-        if (fmt.isCharFormat() && fmt.toCharFormat().fontWeight() == QFont::Bold) bold = true;
-    }
-    QFont f = font();
-    int lineHeight = qMax(0, QFontMetrics(f).lineSpacing());
-    if (underline) {
-        f.setUnderline(true);
-        lineHeight = qMax(lineHeight, QFontMetrics(f).lineSpacing());
-    }
-    if (italic) {
-        f = font();
-        f.setItalic(true);
-        lineHeight = qMax(lineHeight, QFontMetrics(f).lineSpacing());
-    }
-    if (bold) {
-        f = font();
-        f.setBold(true);
-        lineHeight = qMax(lineHeight, QFontMetrics(f).lineSpacing());
-    }
-    DEB() << "LineCount: (" << viewport()->height() << "/" << lineHeight << ") = "
-          << qFloor(qreal(viewport()->height()) / lineHeight);
+    QFontMetricsF metric(font());
+    qreal lineHeight = qCeil(metric.lineSpacing());
     return qFloor(qreal(viewport()->height()) / lineHeight);
 }
 

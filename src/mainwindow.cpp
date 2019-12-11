@@ -203,7 +203,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
-    mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+    mSyslog->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
@@ -2276,7 +2276,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-        wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        wid->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
         if (ViewHelper::toTextView(wid))
             ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                       : AbstractEdit::NoWrap);
@@ -2440,7 +2440,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-            wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            wid->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (ViewHelper::toTextView(wid))
                 ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                           : AbstractEdit::NoWrap);
@@ -2571,14 +2571,14 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
-            tv->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            tv->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
             connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
             connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
         }
         if (ViewHelper::toCodeEdit(edit)) {
             AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-            ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            ae->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         } else if (ViewHelper::toSolverOptionEdit(edit)) {
@@ -2915,7 +2915,7 @@ void MainWindow::closeResultsPage()
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
-    QFont font(fontFamily, fontSize);
+    QFont font = createEditorFont(fontFamily, fontSize);
     for (QWidget* edit: openEditors()) {
         if (ViewHelper::toCodeEdit(edit))
             ViewHelper::toAbstractEdit(edit)->setFont(font);
@@ -3556,6 +3556,13 @@ void MainWindow::deleteScratchDirs(const QString &path)
             }
         }
     }
+}
+
+QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
+{
+    QFont font(fontFamily, pointSize);
+    font.setHintingPreference(QFont::PreferNoHinting);
+    return font;
 }
 
 void MainWindow::openGdxDiffFile()
