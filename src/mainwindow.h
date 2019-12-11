@@ -342,6 +342,7 @@ private:
     void initToolBar();
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
+    QFont createEditorFont(const QString &fontFamily, int pointSize);
 
 private:
     QTime mTestTimer;
