@@ -28,6 +28,7 @@
 
 #include <QClipboard>
 #include <QWidgetAction>
+#include <QLabel>
 
 namespace gams {
 namespace studio {
@@ -70,6 +71,33 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->addAction(aSelectAll);
     ui->tvTableView->addAction(aSelectAll);
 
+    // populate preferences
+    QWidgetAction* preferences = new QWidgetAction(ui->tbPreferences);
+    QVBoxLayout* vLayout = new QVBoxLayout();
+    QWidget* widget = new QWidget();
+    widget->setAutoFillBackground(true);
+    mSqDefaults = new QCheckBox("Squeeze Defaults", this);
+    vLayout->addWidget(mSqDefaults);
+    mSqDefaults->setEnabled(false);
+    mSqZeroes = new QCheckBox("Squeeze Trailing Zeroes", this);
+    mSqZeroes->setChecked(true);
+    vLayout->addWidget(mSqZeroes);
+
+    QHBoxLayout* hLayout = new QHBoxLayout();
+
+    QLabel* lblDecimals = new QLabel("Show Decimals", this);
+    hLayout->addWidget(lblDecimals);
+    mNrDecimals = new QSpinBox(this);
+    mNrDecimals->setRange(-1, 6);
+    mNrDecimals->setSpecialValueText("MAX");
+    mNrDecimals->setValue(6);
+    hLayout->addWidget(mNrDecimals);
+
+    vLayout->addItem(hLayout);
+    widget->setLayout(vLayout);
+    preferences->setDefaultWidget(widget);
+    ui->tbPreferences->addAction(preferences);
+
     //create header for list view
     GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
     headerView->setEnabled(false);
@@ -86,11 +114,11 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
-    connect(ui->cbSqueezeDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
+    connect(mSqDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
-    connect(ui->sbPrecision, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
+    connect(mNrDecimals, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -101,12 +129,12 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-
-    //mSym->setTvTableView(ui->tvTableView);
 }
 
 GdxSymbolView::~GdxSymbolView()
 {
+    delete mSqDefaults;
+    delete mSqZeroes;
     if (mTvModel)
         delete mTvModel;
     delete ui;
@@ -164,15 +192,15 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
-        ui->sbPrecision->setValue(ui->sbPrecision->maximum()); // this is not to be confused with "MAX". The value will be 6
-        ui->cbSqueezeZeroes->setChecked(true);
+        mNrDecimals->setValue(mNrDecimals->maximum()); // this is not to be confused with "MAX". The value will be 6
+        mSqZeroes->setChecked(true);
         if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
         }
         mSym->resetSortFilter();
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
-        ui->cbSqueezeDefaults->setChecked(false);
+        mSqDefaults->setChecked(false);
         showListView();
         if (mTvModel) {
             ui->tvTableView->setModel(nullptr);
@@ -188,7 +216,7 @@ void GdxSymbolView::refreshView()
         return;
     if(mSym->isLoaded())
         mSym->filterRows();
-    toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
+    toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
 GdxSymbol *GdxSymbolView::sym() const
@@ -211,6 +239,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
         valColNames<< "Level" << "Marginal" << "Lower Bound" << "Upper Bound" << "Scale";
         QWidgetAction *checkableAction = new QWidgetAction(ui->tbVisibleValCols);
         QWidget *widget = new QWidget();
+        widget->setAutoFillBackground(true);
         QVBoxLayout *layout = new QVBoxLayout();
         widget->setLayout(layout);
         checkableAction->setDefaultWidget(widget);
@@ -227,7 +256,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
 
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
-    connect(ui->cbSqueezeZeroes, &QCheckBox::stateChanged, this, &GdxSymbolView::updateNumericalPrecision);
+    connect(mSqZeroes, &QCheckBox::stateChanged, this, &GdxSymbolView::updateNumericalPrecision);
 
     refreshView();
 }
@@ -293,14 +322,14 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
 
 void GdxSymbolView::toggleColumnHidden()
 {
-    toggleSqueezeDefaults(ui->cbSqueezeDefaults->isChecked());
+    toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
 void GdxSymbolView::updateNumericalPrecision()
 {
     if (!mSym)
         return;
-    this->mSym->setNumericalPrecision(ui->sbPrecision->value(), ui->cbSqueezeZeroes->isChecked());
+    this->mSym->setNumericalPrecision(mNrDecimals->value(), mSqZeroes->isChecked());
     if (mTvModel)
         ui->tvTableView->reset();
 }
@@ -373,12 +402,13 @@ void GdxSymbolView::enableControls()
     ui->tvListView->horizontalHeader()->setEnabled(true);
     mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
-        ui->cbSqueezeDefaults->setEnabled(true);
+        mSqDefaults->setEnabled(true);
         ui->tbVisibleValCols->setEnabled(true);
     }
     else
-        ui->cbSqueezeDefaults->setEnabled(false);
+        mSqDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);
+    ui->tbPreferences->setEnabled(true);
     if (mSym->dim()>1)
         ui->pbToggleView->setEnabled(true);
 }
