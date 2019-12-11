@@ -614,7 +614,7 @@ int AbstractTextMapper::findChunk(int lineNr)
     int clFirst = 0;
     int clLast = lastChunkWithLineNr();
     ChunkMetrics *cm = chunkMetrics(clLast);
-    if (lineNr < 0 || lineNr >= cm->startLineNr + cm->lineCount)
+    if (!cm || lineNr < 0 || lineNr >= cm->startLineNr + cm->lineCount)
         return -1;
 
     while (clFirst < clLast) {
