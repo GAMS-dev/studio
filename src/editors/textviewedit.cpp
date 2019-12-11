@@ -62,22 +62,8 @@ void TextViewEdit::disconnectTimers()
 
 int TextViewEdit::lineCount()
 {
-    qreal qLineHeight = 0;
-    QTextBlock block = document()->firstBlock();
-    if (block.isValid()) {
-        QTextLine line = block.layout()->lineAt(0);
-        if (line.isValid())
-            qLineHeight = line.height();
-    }
-
     QFontMetricsF metric(font());
-    DEB() << "  height: " << metric.height()
-          << "  leading: " << metric.leading()
-          << "  lineSpacing:" << metric.lineSpacing()
-          << tr("  'Äg' height:") << metric.boundingRect("Äg").height()
-          << "  qLineHeight:" << qLineHeight
-             ;
-    qreal lineHeight = qCeil(metric.lineSpacing());
+    qreal lineHeight = qCeil(qMax(metric.lineSpacing(), metric.boundingRect("Äg").height()));
     return qFloor(qreal(viewport()->height()) / lineHeight);
 }
 
