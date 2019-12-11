@@ -83,6 +83,9 @@
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search the symbol table using a &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard &lt;/span&gt;syntax. The &lt;span style=&quot; font-weight:600;&quot;&gt;All Columns&lt;/span&gt; checkbox can be used to toggle between searching in the &lt;span style=&quot; font-weight:600;&quot;&gt;Name&lt;/span&gt; column only or in all columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
