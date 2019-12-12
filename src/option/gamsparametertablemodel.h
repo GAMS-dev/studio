@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSOPTIONTABLEMODEL_H
-#define GAMSOPTIONTABLEMODEL_H
+#ifndef GAMSPARAMETERTABLEMODEL_H
+#define GAMSPARAMETERTABLEMODEL_H
 
 #include <QAbstractItemModel>
 #include <QMimeData>
@@ -30,12 +30,12 @@ namespace gams {
 namespace studio {
 namespace option {
 
-class GamsOptionTableModel : public QAbstractTableModel
+class GamsParameterTableModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    GamsOptionTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
-    GamsOptionTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    GamsParameterTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    GamsParameterTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -70,7 +70,7 @@ signals:
 
 public slots:
     void toggleActiveOptionItem(int index);
-    void on_optionTableModelChanged(const QString &text);
+    void on_ParameterTableModelChanged(const QString &text);
 
 private:
     QList<OptionItem> mOptionItem;
@@ -86,11 +86,11 @@ private:
     void itemizeOptionFromCommandLineStr(const QString text);
 
     QList<OptionItem> getCurrentListOfOptionItems();
-    QString getOptionTableEntry(int row);
+    QString getParameterTableEntry(int row);
 };
 
 } // namepsace option
 } // namespace studio
 } // namespace gams
 
-#endif // GAMSOPTIONTABLEMODEL_H
+#endif // GAMSPARAMETERTABLEMODEL_H

@@ -152,7 +152,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mAppSettings->beginGroup("viewMenu");
     mAppSettings->setValue("projectView", main->projectViewVisibility());
     mAppSettings->setValue("outputView", main->outputViewVisibility());
-    mAppSettings->setValue("gamsArguments", main->gamsOptionWidget()->isEditorExtended());
+    mAppSettings->setValue("gamsArguments", main->gamsParameterEditor()->isEditorExtended());
     mAppSettings->setValue("helpView", main->helpViewVisibility());
     mAppSettings->setValue("encodingMIBs", main->encodingMIBsString());
 
