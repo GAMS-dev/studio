@@ -29,21 +29,38 @@
 namespace gams {
 namespace studio {
 
-class AbstractProcess
-        : public QObject
+class AbstractProcess : public QObject
 {
     Q_OBJECT
 
 protected:
-    AbstractProcess(const QString &appName, QObject *parent = Q_NULLPTR);
-    virtual ~AbstractProcess() {}
+    AbstractProcess(const QString &appName, QObject *parent = nullptr);
 
 public:
+    virtual ~AbstractProcess() {}
+
     void setInputFile(const QString &file);
     QString inputFile() const;
 
     virtual void execute() = 0;
-    QProcess::ProcessState state() const;
+    virtual void interrupt();
+    virtual void terminate();
+
+    virtual QProcess::ProcessState state() const = 0;
+
+    QString application() const {
+        return mApplication;
+    }
+
+    void setApplication(const QString &application) {
+        mApplication = application;
+    }
+
+    QStringList parameters() const;
+    void setParameters(const QStringList &parameters);
+
+    QString workingDirectory() const;
+    void setWorkingDirectory(const QString &workingDirectory);
 
     NodeId groupId() const;
     void setGroupId(const NodeId &groupId);
@@ -56,13 +73,12 @@ signals:
     void stateChanged(QProcess::ProcessState newState);
 
 protected slots:
-    void completed(int exitCode);
-    void readStdOut();
-    void readStdErr();
-    void readStdChannel(QProcess::ProcessChannel channel);
+    virtual void completed(int exitCode);
+    virtual void readStdOut() = 0;
+    virtual void readStdErr() = 0;
 
 protected:
-    QString nativeAppPath();
+    virtual QString nativeAppPath();
 
 protected:
     NodeId mGroupId = NodeId();
@@ -70,8 +86,38 @@ protected:
     QMutex mOutputMutex;
 
 private:
-    QString mAppName;
+    QString mApplication;
     QString mInputFile;
+    QString mWorkingDirectory;
+    QStringList mParameters;
+};
+
+class AbstractSingleProcess : public AbstractProcess
+{
+    Q_OBJECT
+
+public:
+    AbstractSingleProcess(const QString &application, QObject *parent = nullptr);
+
+    QProcess::ProcessState state() const override;
+
+protected:
+    void readStdChannel(QProcess::ProcessChannel channel);
+
+protected slots:
+    void readStdOut() override;
+    void readStdErr() override;
+};
+
+class AbstractGamsProcess : public AbstractSingleProcess
+{
+    Q_OBJECT
+
+public:
+    AbstractGamsProcess(const QString &application, QObject *parent = nullptr);
+
+protected:
+    QString nativeAppPath() override;
 };
 
 } // namespace studio

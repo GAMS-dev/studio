@@ -210,7 +210,15 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
     }
 }
 
-GamsProcess *ProjectRunGroupNode::gamsProcess() const
+void ProjectRunGroupNode::setProcess(std::unique_ptr<AbstractProcess> process)
+{
+    mGamsProcess->disconnect();
+    mGamsProcess = std::move(process);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this,
+            &ProjectRunGroupNode::onGamsProcessStateChanged);
+}
+
+AbstractProcess *ProjectRunGroupNode::process() const
 {
     return mGamsProcess.get();
 }

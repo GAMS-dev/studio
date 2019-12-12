@@ -28,6 +28,7 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/abstractprocess.h \
            $$SRCPATH/application.h \
            $$SRCPATH/autosavehandler.h \
+           $$SRCPATH/gamsmiroprocess.h \
            $$SRCPATH/support/checkforupdatewrapper.h \
            $$SRCPATH/commandlineparser.h \
            $$SRCPATH/common.h \
@@ -155,6 +156,7 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/abstractprocess.cpp \
            $$SRCPATH/application.cpp \
            $$SRCPATH/autosavehandler.cpp \
+           $$SRCPATH/gamsmiroprocess.h \
            $$SRCPATH/support/checkforupdatewrapper.cpp \
            $$SRCPATH/commandlineparser.cpp \
            $$SRCPATH/commonpaths.cpp \

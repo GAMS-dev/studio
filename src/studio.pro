@@ -75,10 +75,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    abstractmiroprocess.cpp \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
     gdxdiffdialog/filepathlineedit.cpp \
+    mirodeploydialog.cpp \
+    mirodeployprocess.cpp \
+    miromodelassemblydialog.cpp \
+    miropaths.cpp \
+    miroprocess.cpp \
     support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -197,10 +203,16 @@ SOURCES += \
     gdxdiffdialog/gdxdiffprocess.cpp
 
 HEADERS += \
+    abstractmiroprocess.h \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
     gdxdiffdialog/filepathlineedit.h \
+    mirodeploydialog.h \
+    mirodeployprocess.h \
+    miromodelassemblydialog.h \
+    miropaths.h \
+    miroprocess.h \
     support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
@@ -329,6 +341,8 @@ FORMS += \
     gdxviewer/gdxviewer.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
+    mirodeploydialog.ui \
+    miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
     option/solveroptionwidget.ui \

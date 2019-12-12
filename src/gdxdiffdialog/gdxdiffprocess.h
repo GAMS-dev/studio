@@ -1,16 +1,16 @@
 #ifndef GDXDIFFPROCESS_H
 #define GDXDIFFPROCESS_H
 
-#include <abstractprocess.h>
+#include "abstractprocess.h"
 
 namespace gams {
 namespace studio {
 namespace gdxdiffdialog {
 
 class GdxDiffProcess
-        : public gams::studio::AbstractProcess
+        : public AbstractGamsProcess
 {
-        Q_OBJECT
+    Q_OBJECT
 
 public:
     GdxDiffProcess(QObject *parent = Q_NULLPTR);
@@ -25,9 +25,11 @@ public:
     void setFieldToCompare(const QString &fieldToCompare);
     void setEps(const QString &eps);
     void setRelEps(const QString &relEps);
-    void setWorkingDir(const QString &workingDir);
     QString diffFile() const;
     void stop(int waitMSec=0);
+
+private slots:
+    void appendSystemLog(const QString &text);
 
 private:
     QString mInput1;
@@ -39,11 +41,7 @@ private:
     bool mDiffOnly;
     bool mFieldOnly;
     QString mFieldToCompare;
-    QString mWorkingDir;
     QString mDiffFile;
-
-private slots:
-    void appendSystemLog(const QString &text);
 };
 
 } // namespace gdxdiffdialog

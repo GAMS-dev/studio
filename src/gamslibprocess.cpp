@@ -18,60 +18,49 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamslibprocess.h"
-#include "commonpaths.h"
 
 #include <QDir>
 
 namespace gams {
 namespace studio {
 
-GAMSLibProcess::GAMSLibProcess(QObject *parent)
-    : AbstractProcess("gamslib", parent)
+GamsLibProcess::GamsLibProcess(QObject *parent)
+    : AbstractGamsProcess("gamslib", parent)
 {
 
 }
 
-void GAMSLibProcess::setTargetDir(const QString &targetDir)
-{
-    mTargetDir = targetDir;
-}
-
-QString GAMSLibProcess::targetDir() const
-{
-    return mTargetDir;
-}
-
-void GAMSLibProcess::setModelNumber(int modelNumber)
+void GamsLibProcess::setModelNumber(int modelNumber)
 {
     mModelNumber = modelNumber;
 }
 
-int GAMSLibProcess::modelNumber() const
+int GamsLibProcess::modelNumber() const
 {
     return mModelNumber;
 }
 
-void GAMSLibProcess::setModelName(const QString &modelName)
+void GamsLibProcess::setModelName(const QString &modelName)
 {
     mModelName = modelName;
 }
 
-QString GAMSLibProcess::modelName() const
+QString GamsLibProcess::modelName() const
 {
     return mModelName;
 }
 
-void GAMSLibProcess::execute()
+void GamsLibProcess::execute()
 {
     QStringList args;
     args << "-lib";
     args << QDir::toNativeSeparators(mGlbFile);
     args << (mModelName.isEmpty() ? QString::number(mModelNumber) : mModelName);
-    args << QDir::toNativeSeparators(mTargetDir);
+    args << QDir::toNativeSeparators(workingDirectory());
     mProcess.start(nativeAppPath(), args);
 }
 
-void GAMSLibProcess::setGlbFile(const QString &glbFile)
+void GamsLibProcess::setGlbFile(const QString &glbFile)
 {
     mGlbFile = glbFile;
 }

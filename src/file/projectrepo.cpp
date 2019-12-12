@@ -556,15 +556,15 @@ QVector<ProjectRunGroupNode *> ProjectRepo::runGroups(const FileId &fileId) cons
     return res;
 }
 
-QVector<GamsProcess *> ProjectRepo::listProcesses()
+QVector<AbstractProcess*> ProjectRepo::listProcesses()
 {
-    QVector<GamsProcess *> res;
+    QVector<AbstractProcess*> res;
     QHashIterator<NodeId, ProjectAbstractNode*> i(mNodes);
     while (i.hasNext()) {
         i.next();
         ProjectRunGroupNode* runGroup = i.value()->toRunGroup();
-        if (runGroup && runGroup->gamsProcess()) {
-            res << runGroup->gamsProcess();
+        if (runGroup && runGroup->process()) {
+            res << runGroup->process();
         }
     }
     return res;
@@ -712,7 +712,7 @@ void ProjectRepo::gamsProcessStateChange(ProjectGroupNode *group)
 {
     ProjectRunGroupNode *runGroup = group->toRunGroup();
     QModelIndex ind = mTreeModel->index(runGroup);
-    if (runGroup->gamsProcess()->state() == QProcess::NotRunning) {
+    if (runGroup->process()->state() == QProcess::NotRunning) {
         mRunnigGroups.removeAll(runGroup);
         if (ind.isValid()) emit mTreeModel->dataChanged(ind, ind);
     } else if (!mRunnigGroups.contains(runGroup)) {
