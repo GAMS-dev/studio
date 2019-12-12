@@ -1,6 +1,10 @@
 #include "svgengine.h"
 #include "scheme.h"
+#include "logger.h"
 #include <QPainter>
+#include <QStyleOption>
+#include <QGuiApplication>
+#include <QApplication>
 
 namespace gams {
 namespace studio {
@@ -49,12 +53,18 @@ QIconEngine *SvgEngine::clone() const
 
 QPixmap SvgEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
-    QImage img(size, QImage::Format_ARGB32); // TODO(JM) test this using Format_ARGB32_Premultiplied
-    img.fill(qRgba(0, 0, 0, 0));
-    QPixmap res = QPixmap::fromImage(img, Qt::NoFormatConversion);
-    QPainter painter(&res);
+    QImage img(size, QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::transparent);
+    QPainter painter(&img);
     paint(&painter, QRect(0, 0, size.width(), size.height()), mode, state);
-    return res;
+    painter.end();
+    QPixmap res = QPixmap::fromImage(img, Qt::NoFormatConversion);
+    if (mode == QIcon::Disabled) {
+        QStyleOption opt(0);
+        opt.palette = QGuiApplication::palette();
+        return QApplication::style()->generatedIconPixmap(mode, res, &opt);
+    }
+    return  res;
 }
 
 } // namespace studio

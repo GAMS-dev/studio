@@ -80,10 +80,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
-//    QFile css(":/data/style.css");
-//    if (css.open(QFile::ReadOnly | QFile::Text)) {
-//        this->setStyleSheet(css.readAll());
-//    }
 
     ui->setupUi(this);
 
@@ -2651,6 +2647,7 @@ void MainWindow::invalidateScheme()
         fm->invalidateScheme();
     }
     // TODO(JM) repaint all colorized content
+
 }
 
 void MainWindow::assignColors()
@@ -2689,7 +2686,7 @@ void MainWindow::initIcons()
     ui->actionRun->setIcon(Scheme::icon(":/img/play"));
     ui->actionCompile->setIcon(Scheme::icon(":/img/compile"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/img/run-gdx"));
-    ui->actionSettings->setIcon(Scheme::icon(":/img/cogs"));
+    ui->actionSettings->setIcon(Scheme::icon(":/img/cog"));
     ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/img/compile-gdx"));
     ui->actionCopy->setIcon(Scheme::icon(":/img/copy"));
     ui->actionPaste->setIcon(Scheme::icon(":/img/paste"));
@@ -2697,8 +2694,8 @@ void MainWindow::initIcons()
     ui->actionRedo->setIcon(Scheme::icon(":/img/redo"));
     ui->actionCut->setIcon(Scheme::icon(":/img/cut"));
     ui->actionHelp_View->setIcon(Scheme::icon(":/img/question"));
-    ui->actionInterrupt->setIcon(Scheme::icon(":/img/interrupt"));
-    ui->actionStop->setIcon(Scheme::icon(":/img/stop"));
+    ui->actionInterrupt->setIcon(Scheme::icon(":/img/stop"));
+    ui->actionStop->setIcon(Scheme::icon(":/img/interrupt"));
     ui->actionToggleBookmark->setIcon(Scheme::icon(":/img/bookmark"));
     ui->actionNextBookmark->setIcon(Scheme::icon(":/img/forward"));
     ui->actionPreviousBookmark->setIcon(Scheme::icon(":/img/backward"));

@@ -5,7 +5,7 @@
         <file alias="books">books.svg</file>
         <file alias="bookmark">bookmark.svg</file>
         <file alias="bug-r">bug-r.svg</file>
-        <file alias="cogs">cogs.svg</file>
+        <file alias="cog">cog.svg</file>
         <file alias="compile">compile.svg</file>
         <file alias="compile-gdx">compile-gdx.svg</file>
         <file alias="config">gear.svg</file>
@@ -80,8 +80,5 @@
         <file>square-red-yellow.svg</file>
         <file>square-gray-yellow.svg</file>
         <file>gdxdiff.svg</file>
-    </qresource>
-    <qresource prefix="/data">
-        <file>style.css</file>
     </qresource>
 </RCC>
