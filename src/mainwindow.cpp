@@ -2723,11 +2723,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     }
     // set keyboard focus to editor
     if (tabWidget->currentWidget())
-        if (focus) {
-            tabWidget->currentWidget()->setFocus();
-            if (runGroup)
-                mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
-        }
+        if (focus) tabWidget->currentWidget()->setFocus();
+
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
         ProjectFileNode* fileNode = mProjectRepo.findFileNode(edit);
