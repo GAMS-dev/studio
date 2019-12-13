@@ -2684,10 +2684,10 @@ void MainWindow::initIcons()
     ui->actionSave->setIcon(Scheme::icon(":/img/save"));
     ui->actionGAMS_Library->setIcon(Scheme::icon(":/img/books"));
     ui->actionRun->setIcon(Scheme::icon(":/img/play"));
-    ui->actionCompile->setIcon(Scheme::icon(":/img/compile"));
+    ui->actionCompile->setIcon(Scheme::icon(":/img/code"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/img/run-gdx"));
     ui->actionSettings->setIcon(Scheme::icon(":/img/cog"));
-    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/img/compile-gdx"));
+    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/img/code-gdx"));
     ui->actionCopy->setIcon(Scheme::icon(":/img/copy"));
     ui->actionPaste->setIcon(Scheme::icon(":/img/paste"));
     ui->actionUndo->setIcon(Scheme::icon(":/img/undo"));
@@ -2695,7 +2695,8 @@ void MainWindow::initIcons()
     ui->actionCut->setIcon(Scheme::icon(":/img/cut"));
     ui->actionHelp_View->setIcon(Scheme::icon(":/img/question"));
     ui->actionInterrupt->setIcon(Scheme::icon(":/img/stop"));
-    ui->actionStop->setIcon(Scheme::icon(":/img/interrupt"));
+    ui->actionStop->setIcon(Scheme::icon(":/img/kill"));
+    ui->actionSearch->setIcon(Scheme::icon(":/img/glasses"));
     ui->actionToggleBookmark->setIcon(Scheme::icon(":/img/bookmark"));
     ui->actionNextBookmark->setIcon(Scheme::icon(":/img/forward"));
     ui->actionPreviousBookmark->setIcon(Scheme::icon(":/img/backward"));

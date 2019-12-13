@@ -670,7 +670,7 @@
   <action name="actionCompile">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/compile</normaloff>:/img/compile</iconset>
+     <normaloff>:/img/code</normaloff>:/img/code</iconset>
    </property>
    <property name="text">
     <string>&amp;Compile</string>
@@ -715,7 +715,7 @@
   <action name="actionCompile_with_GDX_Creation">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/compile-gdx</normaloff>:/img/compile-gdx</iconset>
+     <normaloff>:/img/code-gdx</normaloff>:/img/code-gdx</iconset>
    </property>
    <property name="text">
     <string>Compile with GDX Creation</string>
@@ -728,6 +728,10 @@
    </property>
   </action>
   <action name="actionSearch">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/glasses</normaloff>:/img/glasses</iconset>
+   </property>
    <property name="text">
     <string>&amp;Search &amp;&amp; Replace</string>
    </property>
@@ -1000,7 +1004,7 @@
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/interrupt</normaloff>:/img/interrupt</iconset>
    </property>
    <property name="text">
