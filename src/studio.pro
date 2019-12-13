@@ -130,10 +130,10 @@ SOURCES += \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
     option/addoptionheaderview.cpp \
-    option/commandlineoption.cpp \
+    option/commandline.cpp \
     option/definitionitemdelegate.cpp \
     option/gamsoptiondefinitionmodel.cpp \
-    option/gamsoptiontablemodel.cpp \
+    option/gamsparametertablemodel.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
     option/optioncompleterdelegate.cpp \
@@ -141,7 +141,7 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
     option/optiontokenizer.cpp \
-    option/optionwidget.cpp \
+    option/parametereditor.cpp \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
@@ -259,10 +259,10 @@ HEADERS += \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
     option/addoptionheaderview.h \
-    option/commandlineoption.h \
+    option/commandline.h \
     option/definitionitemdelegate.h \
     option/gamsoptiondefinitionmodel.h \
-    option/gamsoptiontablemodel.h \
+    option/gamsparametertablemodel.h \
     option/lineeditcompleteevent.h \
     option/option.h \
     option/optioncompleterdelegate.h \
@@ -270,7 +270,7 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
     option/optiontokenizer.h \
-    option/optionwidget.h \
+    option/parametereditor.h \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
@@ -344,7 +344,7 @@ FORMS += \
     mirodeploydialog.ui \
     miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
-    option/optionwidget.ui \
+    option/parametereditor.ui \
     option/solveroptionwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \

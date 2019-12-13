@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gams::studio::option::OptionWidget</class>
- <widget class="QWidget" name="gams::studio::option::OptionWidget">
+ <class>gams::studio::option::ParameterEditor</class>
+ <widget class="QWidget" name="gams::studio::option::ParameterEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -101,7 +101,7 @@
        </widget>
       </item>
       <item>
-       <widget class="gams::studio::option::CommandLineOption" name="gamsOptionCommandLine">
+       <widget class="gams::studio::option::CommandLine" name="gamsParameterCommandLine">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -120,7 +120,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="gamsOptionWidget" native="true">
+    <widget class="QWidget" name="gamsParameterEditor" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -145,7 +145,7 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-        <widget class="QTableView" name="gamsOptionTableView">
+        <widget class="QTableView" name="gamsParameterTableView">
          <property name="dragDropMode">
           <enum>QAbstractItemView::DragDrop</enum>
          </property>
@@ -171,14 +171,14 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="gamsOptionSearch">
+           <widget class="QLineEdit" name="gamsParameterSearch">
             <property name="placeholderText">
              <string>Search Parameter...</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QTreeView" name="gamsOptionTreeView"/>
+           <widget class="QTreeView" name="gamsParameterTreeView"/>
           </item>
          </layout>
         </widget>
@@ -191,9 +191,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>gams::studio::option::CommandLineOption</class>
+   <class>gams::studio::option::CommandLine</class>
    <extends>QComboBox</extends>
-   <header>option/commandlineoption.h</header>
+   <header>option/commandline.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

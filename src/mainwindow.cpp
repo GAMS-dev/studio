@@ -271,7 +271,7 @@ void MainWindow::initTabs()
 
 void MainWindow::initToolBar()
 {
-    mGamsOptionWidget = new option::OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
+    mGamsParameterEditor = new option::ParameterEditor(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
@@ -279,7 +279,7 @@ void MainWindow::initToolBar()
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionSettings);
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
-    ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsOptionWidget);
+    ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsParameterEditor);
     ui->toolBar->insertSeparator(ui->actionProject_View);
 }
 
@@ -368,7 +368,7 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
-    mGamsOptionWidget->setEditorExtended(visibility);
+    mGamsParameterEditor->setEditorExtended(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -395,7 +395,7 @@ bool MainWindow::projectViewVisibility()
 
 bool MainWindow::optionEditorVisibility()
 {
-    return mGamsOptionWidget->isEditorExtended();
+    return mGamsParameterEditor->isEditorExtended();
 }
 
 bool MainWindow::helpViewVisibility()
@@ -724,7 +724,7 @@ void MainWindow::focusCmdLine()
 {
     raise();
     activateWindow();
-    mGamsOptionWidget->focus();
+    mGamsParameterEditor->focus();
 }
 
 void MainWindow::focusProjectExplorer()
@@ -1134,15 +1134,15 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn)
+void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
     if (oldfn) { // switch from a non-welcome page
         ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup();
         if (!oldgroup) return;
-        oldgroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
+        oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
 
         if (!fn) { // switch to a welcome page
-            mGamsOptionWidget->loadCommandLineOption(QStringList());
+            mGamsParameterEditor->loadCommandLine(QStringList());
             return;
         }
 
@@ -1150,17 +1150,17 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
         if (!group) return;
         if (group == oldgroup) return;
 
-        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
+        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
 
     } else { // switch from a welcome page
         if (!fn) { // switch to a welcome page
-            mGamsOptionWidget->loadCommandLineOption(QStringList());
+            mGamsParameterEditor->loadCommandLine(QStringList());
             return;
         }
 
         ProjectRunGroupNode* group = fn->assignedRunGroup();
         if (!group) return;
-        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
+        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
     }
 }
 
@@ -1171,7 +1171,7 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
 
-    loadCommandLineOptions(oldTab, node);
+    loadCommandLines(oldTab, node);
     updateRunState();
 
     if (node) {
@@ -1561,8 +1561,8 @@ void MainWindow::on_actionHelp_triggered()
 {
 #ifdef QWEBENGINE
     QWidget* widget = focusWidget();
-    if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
-        QString optionName = mGamsOptionWidget->getSelectedOptionName(widget);
+    if (mGamsParameterEditor->isAParameterEditorFocused(widget)) {
+        QString optionName = mGamsParameterEditor->getSelectedParameterName(widget);
         if (optionName.isEmpty())
             mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
                                                   help::HelpData::getStudioSectionName(help::StudioSection::OptionEditor));
@@ -2117,7 +2117,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (runGroup) runGroup->addRunParametersHistory(mGamsOptionWidget->getCurrentCommandLineData());
+    if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
     mSettings->saveSettings(this);
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
@@ -2158,8 +2158,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             e->accept(); return;
         } else if (focusWidget() == ui->projectView) {
                   setProjectViewVisibility(false);
-        } else if (mGamsOptionWidget->isAnOptionWidgetFocused(focusWidget())) {
-                   mGamsOptionWidget->deSelectOptions();
+        } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
+                   mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
                   ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
         }
@@ -2328,9 +2328,9 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-option::OptionWidget *MainWindow::gamsOptionWidget() const
+option::ParameterEditor *MainWindow::gamsParameterEditor() const
 {
-    return mGamsOptionWidget;
+    return mGamsParameterEditor;
 }
 
 void MainWindow::execute(QString commandLineStr,
@@ -2345,7 +2345,7 @@ void MainWindow::execute(QString commandLineStr,
         return;
     }
 
-    runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
+    runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     runGroup->clearErrorTexts();
 
     // gather modified files and autosave or request to save
@@ -2446,7 +2446,7 @@ void MainWindow::execute(QString commandLineStr,
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
 
     // prepare the options and process and run it
-    QList<option::OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
+    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize( commandLineStr );
     if (process)
         runGroup->setProcess(std::move(process));
     else
@@ -2473,7 +2473,7 @@ void MainWindow::execute(QString commandLineStr,
 
 void MainWindow::updateRunState()
 {
-    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
+    mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
 #ifdef QWEBENGINE
@@ -2492,10 +2492,10 @@ void MainWindow::setMainGms(ProjectFileNode *node)
     }
 }
 
-void MainWindow::optionRunChanged()
+void MainWindow::parameterRunChanged()
 {
     if (isActiveTabRunnable() && !isRecentGroupRunning())
-        mGamsOptionWidget->runDefaultAction();
+        mGamsParameterEditor->runDefaultAction();
 }
 
 void MainWindow::openInitialFiles()
@@ -2512,22 +2512,22 @@ void MainWindow::openInitialFiles()
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::Run) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Run) );
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::RunWithGDXCreation) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation) );
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::Compile) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Compile) );
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::CompileWithGDXCreation) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
 }
 
 void MainWindow::on_actionInterrupt_triggered()
@@ -2536,7 +2536,7 @@ void MainWindow::on_actionInterrupt_triggered()
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
     if (!group)
         return;
-    mGamsOptionWidget->on_interruptAction();
+    mGamsParameterEditor->on_interruptAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &AbstractProcess::interrupt);
 }
@@ -2547,7 +2547,7 @@ void MainWindow::on_actionStop_triggered()
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
     if (!group)
         return;
-    mGamsOptionWidget->on_stopAction();
+    mGamsParameterEditor->on_stopAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &GamsProcess::terminate);
 }
@@ -2941,9 +2941,9 @@ void MainWindow::openSearchDialog()
 #ifdef QWEBENGINE
         mHelpWidget->on_searchHelp();
 #endif
-    } else if (mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::focusWidget()) ||
-               mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::activeWindow())) {
-                mGamsOptionWidget->selectSearchField();
+    } else if (mGamsParameterEditor->isAParameterEditorFocused(QApplication::focusWidget()) ||
+               mGamsParameterEditor->isAParameterEditorFocused(QApplication::activeWindow())) {
+                mGamsParameterEditor->selectSearchField();
     } else {
        ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
        if (fc) {
@@ -3462,7 +3462,7 @@ void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     }
 
-    mGamsOptionWidget->setEditorExtended(checked);
+    mGamsParameterEditor->setEditorExtended(checked);
 }
 
 QWidget *RecentData::editor() const
@@ -3536,13 +3536,13 @@ void MainWindow::resetViews()
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         }
     }
-    mGamsOptionWidget->setEditorExtended(false);
-    addDockWidget(Qt::TopDockWidgetArea, mGamsOptionWidget->extendedEditor());
+    mGamsParameterEditor->setEditorExtended(false);
+    addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
 {
-    mGamsOptionWidget->resize(size);
+    mGamsParameterEditor->resize(size);
 }
 
 void MainWindow::setForeground()

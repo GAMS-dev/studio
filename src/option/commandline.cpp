@@ -19,13 +19,13 @@
  */
 #include <QKeyEvent>
 #include <QLineEdit>
-#include "commandlineoption.h"
+#include "commandline.h"
 
 namespace gams {
 namespace studio {
 namespace option {
 
-CommandLineOption::CommandLineOption(QWidget* parent) :
+CommandLine::CommandLine(QWidget* parent) :
     QComboBox(parent)
 {
     setDisabled(true);
@@ -34,39 +34,39 @@ CommandLineOption::CommandLineOption(QWidget* parent) :
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     setInsertPolicy(QComboBox::InsertAtTop);
     lineEdit()->setClearButtonEnabled(true);
-    mOptionString = "";
+    mParameterString = "";
     mCurrentIndex = -1;
 }
 
-CommandLineOption::~CommandLineOption()
+CommandLine::~CommandLine()
 {
 }
 
-void CommandLineOption::validateChangedOption(const QString &text)
+void CommandLine::validateChangedParameter(const QString &text)
 {
-    mOptionString = text.simplified();
+    mParameterString = text.simplified();
     this->lineEdit()->setToolTip("");
-    emit commandLineOptionChanged(this->lineEdit(), text);
+    emit commandLineChanged(this->lineEdit(), text);
 }
 
-QString CommandLineOption::getOptionString() const
+QString CommandLine::getParameterString() const
 {
-    return mOptionString;
+    return mParameterString;
 }
 
-void CommandLineOption::keyPressEvent(QKeyEvent *event)
+void CommandLine::keyPressEvent(QKeyEvent *event)
 {
     QComboBox::keyPressEvent(event);
     if ((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return)) {
-        emit optionRunChanged();
+        emit parameterRunChanged();
     } else if (event->key() == Qt::Key_Escape) {
-              emit optionEditCancelled();
+              emit parameterEditCancelled();
     }
 }
 
-void CommandLineOption::resetCurrentValue()
+void CommandLine::resetCurrentValue()
 {
-    mOptionString = "";
+    mParameterString = "";
 }
 
 } // namespace option
