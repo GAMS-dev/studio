@@ -97,11 +97,11 @@ void TestDocLocation::testSolverAnchor()
     QFETCH(QString, location);
     QFETCH(QString, anchor);
 
-    QCOMPARE( HelpData::getSolverChapterLocation(solverName), location);
+    QCOMPARE( help::HelpData::getSolverChapterLocation(solverName), location);
     if (optionName.isEmpty())
-        QVERIFY( HelpData::getSolverOptionAnchor(solverName, optionName).isEmpty() );
+        QVERIFY( help::HelpData::getSolverOptionAnchor(solverName, optionName).isEmpty() );
     else
-        QCOMPARE( HelpData::getSolverOptionAnchor(solverName, optionName), anchor);
+        QCOMPARE( help::HelpData::getSolverOptionAnchor(solverName, optionName), anchor);
 }
 
 QTEST_MAIN(TestDocLocation)

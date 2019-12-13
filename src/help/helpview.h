@@ -22,6 +22,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 class HelpPage;
 
@@ -44,6 +45,7 @@ private:
     QString mCurrentHovered;
 };
 
+} // namespace help
 } // namespace studio
 } // namespace gams
 

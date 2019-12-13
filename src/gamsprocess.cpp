@@ -21,40 +21,29 @@
 
 #include <QStandardPaths>
 #include <QDir>
-#include "logger.h"
 
 #ifdef _WIN32
-#include "windows.h"
+#include "Windows.h"
 #endif
 
 namespace gams {
 namespace studio {
 
 GamsProcess::GamsProcess(QObject *parent)
-    : AbstractProcess("gams", parent)
+    : AbstractGamsProcess("gams", parent)
 {
 }
 
 void GamsProcess::execute()
 {
-    mProcess.setWorkingDirectory(mWorkingDir);
+    mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), mParameters);
+    mProcess.start(nativeAppPath(), parameters());
 #else
-    mProcess.setNativeArguments(mParameters.join(" "));
+    mProcess.setNativeArguments(parameters().join(" "));
     mProcess.setProgram(nativeAppPath());
     mProcess.start();
 #endif
-}
-
-void GamsProcess::setWorkingDir(const QString &workingDir)
-{
-    mWorkingDir = workingDir;
-}
-
-QString GamsProcess::workingDir() const
-{
-    return mWorkingDir;
 }
 
 QString GamsProcess::aboutGAMS()
@@ -104,16 +93,6 @@ void GamsProcess::interrupt()
     proc.start();
     proc.waitForFinished(-1);
 #endif
-}
-
-void GamsProcess::stop()
-{
-    mProcess.kill();
-}
-
-void GamsProcess::setParameters(const QStringList &parameters)
-{
-    mParameters = parameters;
 }
 
 } // namespace studio

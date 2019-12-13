@@ -17,24 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SETTINGSLOCATOR_H
-#define SETTINGSLOCATOR_H
+#include "searchlocator.h"
+#include "searchdialog.h"
+#include "result.h"
+#include <QList>
 
 namespace gams {
 namespace studio {
+namespace search {
 
-class StudioSettings;
-class SettingsLocator
+search::SearchDialog* SearchLocator::mSd = nullptr;
+
+void SearchLocator::provide(search::SearchDialog *sd)
 {
-public:
-    static StudioSettings* settings();
-    static void provide(StudioSettings* s);
+    mSd = sd;
+}
 
-private:
-    static StudioSettings* mSettings;
-};
-
+search::SearchDialog* SearchLocator::searchDialog()
+{
+    return mSd;
+}
 
 }
 }
-#endif // SETTINGSLOCATOR_H
+}

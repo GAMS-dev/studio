@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 LibraryModel::LibraryModel(QList<LibraryItem> data, QObject *parent)
     : QAbstractTableModel(parent), mData(data)
@@ -73,5 +74,6 @@ QModelIndex LibraryModel::index(int row, int column, const QModelIndex &parent) 
     return QModelIndex();
 }
 
+} // namespace modeldialog
 } // namespace studio
 } // namespace gams

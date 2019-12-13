@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 class Library
 {
@@ -56,6 +57,7 @@ private:
     QString mGlbFile;
 };
 
+} // namespace modeldialog
 } // namespace studio
 } // namespace gams
 

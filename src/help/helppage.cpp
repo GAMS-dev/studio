@@ -23,6 +23,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 HelpPage::HelpPage(QWidget *parent) : QWebEnginePage(parent)
 {
@@ -37,5 +38,6 @@ bool HelpPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::Navigati
     return QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
 }
 
+} // namespace help
 } // namespace studio
 } // namespace gams

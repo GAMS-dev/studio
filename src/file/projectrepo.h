@@ -30,7 +30,6 @@
 #include "projectgroupnode.h"
 #include "filetype.h"
 #include "filemetarepo.h"
-#include "gamsprocess.h"
 #include "projecttreeview.h"
 
 namespace gams {
@@ -120,7 +119,7 @@ public:
     ProjectFileNode *findOrCreateFileNode(FileMeta* fileMeta, ProjectGroupNode *fileGroup = nullptr, QString explicitName = QString());
     QVector<ProjectFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     QVector<ProjectRunGroupNode*> runGroups(const FileId &fileId = FileId()) const;
-    QVector<GamsProcess*> listProcesses();
+    QVector<AbstractProcess*> listProcesses();
     void editorActivated(QWidget *edit, bool select);
 
     ProjectLogNode *logNode(ProjectAbstractNode *node);

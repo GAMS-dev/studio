@@ -58,7 +58,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     if (isEmpty()) return false;
     Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
-
+    bool wasMax = (mTopLine == mMaxTopLine);
     int remainingLines = visibleLineCount();
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
@@ -75,7 +75,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
         }
         chunk = getChunk(chunk->nr -1);
     }
-    if (mTopLine > mMaxTopLine) mTopLine = mMaxTopLine;
+    if (mTopLine > mMaxTopLine || wasMax) mTopLine = mMaxTopLine;
     return true;
 }
 
@@ -177,7 +177,7 @@ void AbstractTextMapper::updateLineOffsets(Chunk *chunk) const
 bool AbstractTextMapper::setMappingSizes(int visibleLines, int chunkSizeInBytes, int chunkOverlap)
 {
     // check constraints
-    mVisibleLineCount = qBound(1, visibleLines, 100);
+    mVisibleLineCount = qMax(1, visibleLines);
     mMaxLineWidth = qBound(100, chunkOverlap, 10000);
     mChunkSize = qMax(chunkOverlap *8, chunkSizeInBytes);
     updateMaxTop();
@@ -614,7 +614,7 @@ int AbstractTextMapper::findChunk(int lineNr)
     int clFirst = 0;
     int clLast = lastChunkWithLineNr();
     ChunkMetrics *cm = chunkMetrics(clLast);
-    if (lineNr < 0 || lineNr >= cm->startLineNr + cm->lineCount)
+    if (!cm || lineNr < 0 || lineNr >= cm->startLineNr + cm->lineCount)
         return -1;
 
     while (clFirst < clLast) {

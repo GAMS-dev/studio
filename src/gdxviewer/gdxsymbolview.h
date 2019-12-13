@@ -25,6 +25,7 @@
 #include <QVector>
 #include <QAction>
 #include <QCheckBox>
+#include <QSpinBox>
 #include "gdxsymboltable.h"
 #include "tableviewmodel.h"
 
@@ -77,6 +78,9 @@ private:
     void selectAll();
 
     QVector<QCheckBox *> mShowValColActions;
+    QCheckBox* mSqDefaults = nullptr;
+    QCheckBox* mSqZeroes = nullptr;
+    QSpinBox* mNrDecimals = nullptr;
 
     GdxSymbolTable* mGdxSymbolTable = nullptr;
     bool mTableView = false;

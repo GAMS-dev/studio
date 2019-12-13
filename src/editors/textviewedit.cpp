@@ -19,7 +19,7 @@
  */
 #include "textviewedit.h"
 #include "search/searchdialog.h"
-#include "locators/searchlocator.h"
+#include "search/searchlocator.h"
 #include "keys.h"
 #include "logger.h"
 #include <QMenu>
@@ -39,6 +39,7 @@ TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
     setAllowBlockEdit(false);
     setLineWrapMode(QPlainTextEdit::NoWrap);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     disconnect(&wordDelayTimer(), &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     setMouseTracking(true);
     connect(&mScrollTimer, &QTimer::timeout, this, &TextViewEdit::scrollStep);
@@ -57,7 +58,13 @@ bool TextViewEdit::hasSelection() const
 void TextViewEdit::disconnectTimers()
 {
     CodeEdit::disconnectTimers();
-//    disconnect(&mResizeTimer, &QTimer::timeout, this, &TextViewEdit::recalcVisibleLines);
+}
+
+int TextViewEdit::lineCount()
+{
+    QFontMetricsF metric(font());
+    qreal lineHeight = qCeil(qMax(metric.lineSpacing(), metric.boundingRect("Äg").height()));
+    return qFloor(qreal(viewport()->height()) / lineHeight);
 }
 
 void TextViewEdit::copySelection()

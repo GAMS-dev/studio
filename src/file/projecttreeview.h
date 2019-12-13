@@ -29,6 +29,7 @@ class ProjectTreeView : public QTreeView
     Q_OBJECT
 public:
     explicit ProjectTreeView(QWidget *parent = nullptr);
+    static const QString ItemModelDataType;
 
 signals:
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction,

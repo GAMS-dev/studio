@@ -22,18 +22,20 @@
 #include <QByteArray>
 #include <QTextCodec>
 #include <QApplication>
-#include "file.h"
-#include "projectlognode.h"
-#include "exception.h"
-#include "projectgroupnode.h"
-#include "logger.h"
+#include "abstractprocess.h"
 #include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
-#include "locators/settingslocator.h"
-#include "locators/sysloglocator.h"
-#include "locators/abstractsystemlogger.h"
-#include "studiosettings.h"
+#include "settingslocator.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "editors/viewhelper.h"
+#include "exception.h"
+#include "file.h"
+#include "logger.h"
+#include "projectgroupnode.h"
+#include "projectlognode.h"
+#include "studiosettings.h"
+#include "syntax/textmarkrepo.h"
 
 namespace gams {
 namespace studio {
@@ -161,11 +163,11 @@ ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
     return mRunGroup;
 }
 
-void ProjectLogNode::linkToProcess(GamsProcess *process)
+void ProjectLogNode::linkToProcess(AbstractProcess *process)
 {
     QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
     TextView *tv = ViewHelper::toTextView(wid);
-    if (tv) connect(process, &GamsProcess::newStdChannelData, tv, &TextView::addProcessData, Qt::UniqueConnection);
+    if (tv) connect(process, &AbstractProcess::newStdChannelData, tv, &TextView::addProcessData, Qt::UniqueConnection);
 }
 
 } // namespace studio

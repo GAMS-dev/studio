@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 HelpToolBar::HelpToolBar(QWidget *parent)
     : QToolBar(parent)
@@ -102,5 +103,6 @@ void HelpToolBar::createWebActionTrigger(QAction *action, QWebEnginePage::WebAct
     });
 }
 
+} // namespace help
 } // namespace studio
 } // namespace gams

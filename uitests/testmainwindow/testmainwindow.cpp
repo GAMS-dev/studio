@@ -19,7 +19,7 @@
  */
 #include "testmainwindow.h"
 #include "studiosettings.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "modeldialog/modeldialog.h"
 #include "search/searchdialog.h"
 #include "commonpaths.h"

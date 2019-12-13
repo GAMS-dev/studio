@@ -24,12 +24,12 @@
 #include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
-#include "locators/sysloglocator.h"
-#include "locators/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "support/solverconfiginfo.h"
 
 #include <QTabWidget>
@@ -583,7 +583,7 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int leng
         return;
     }
     if (TextView *tv = ViewHelper::toTextView(mEditors.first())) {
-        tv->jumpTo(line, column, length);
+        tv->jumpTo(line, column, length, focus);
     }
 }
 
@@ -618,6 +618,11 @@ void FileMeta::marksChanged(QSet<int> lines)
 
 void FileMeta::reloadDelayed()
 {
+    for (QWidget *wid: mEditors) {
+        if (TextView *tv = ViewHelper::toTextView(wid)) {
+            tv->reset();
+        }
+    }
     mReloadTimer.start(100);
 }
 

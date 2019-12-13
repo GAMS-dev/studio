@@ -23,7 +23,7 @@
 #include <QTextLayout>
 #include <QLineEdit>
 #include "option.h"
-#include "locators/abstractsystemlogger.h"
+#include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {

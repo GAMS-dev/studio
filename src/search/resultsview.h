@@ -23,17 +23,21 @@
 #include <QTableWidget>
 #include <QTextCursor>
 #include <QWidget>
-#include "search/searchresultlist.h"
+#include "searchresultlist.h"
+
+
+namespace gams {
+namespace studio {
+
+class MainWindow;
+
+namespace search {
 
 namespace Ui {
 class ResultsView;
 }
 
-namespace gams {
-namespace studio {
-
 class Result;
-class MainWindow;
 
 class ResultsView : public QWidget
 {
@@ -71,6 +75,7 @@ private:
     int selectNextItem(bool backwards = false);
 };
 
+}
 }
 }
 

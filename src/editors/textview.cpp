@@ -108,7 +108,6 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
     mMapper->setCodec(codecMib == -1 ? QTextCodec::codecForMib(codecMib) : QTextCodec::codecForLocale());
 
     if (!static_cast<FileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
-    mMapper->setMappingSizes();
     recalcVisibleLines();
     if (initAnchor)
         mMapper->setVisibleTopLine(0);
@@ -266,12 +265,13 @@ void TextView::horizontalScrollAction(int action)
 void TextView::resizeEvent(QResizeEvent *event)
 {
     QAbstractScrollArea::resizeEvent(event);
-    recalcVisibleLines();
+    QTimer::singleShot(0, this, &TextView::recalcVisibleLines);
+    QTimer::singleShot(0, this, &TextView::topLineMoved);
 }
 
 void TextView::recalcVisibleLines()
 {
-    int visibleLines = mEdit->viewport()->height() / mEdit->fontMetrics().lineSpacing();
+    int visibleLines = mEdit->lineCount();
     if (visibleLines > 0) {
         mMapper->setVisibleLineCount(visibleLines);
         updateVScrollZone();
@@ -337,6 +337,10 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
             }
         }
         return true;
+    }
+    if (event->type() == QEvent::FontChange) {
+        QTimer::singleShot(0, this, &TextView::recalcVisibleLines);
+        QTimer::singleShot(0, this, &TextView::topLineMoved);
     }
     if (event->type() == QEvent::FocusOut) {
         mEdit->setCursorWidth(0);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ModelDialog</class>
- <widget class="QDialog" name="ModelDialog">
+ <class>gams::studio::modeldialog::ModelDialog</class>
+ <widget class="QDialog" name="gams::studio::modeldialog::ModelDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

@@ -25,6 +25,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 class LibraryModel : public QAbstractTableModel
 {
@@ -44,6 +45,7 @@ private:
     QList<LibraryItem> mData;
 };
 
+} // namespace modeldialog
 } // namespace studio
 } // namespace gams
 

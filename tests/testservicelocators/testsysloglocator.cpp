@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "testsysloglocator.h"
-#include "locators/sysloglocator.h"
-#include "locators/defaultsystemlogger.h"
+#include "editors/sysloglocator.h"
+#include "editors/defaultsystemlogger.h"
 
 using namespace gams::studio;
 

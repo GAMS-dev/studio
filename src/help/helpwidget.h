@@ -28,17 +28,19 @@
 
 #include "helpdata.h"
 
-namespace Ui {
-class HelpWidget;
-}
 
 class QMenu;
-class HelpToolBar;
 class QToolButton;
 
 namespace gams {
 namespace studio {
+namespace help {
 
+namespace Ui {
+class HelpWidget;
+}
+
+class HelpToolBar;
 class HelpWidget : public QWidget
 {
     Q_OBJECT
@@ -124,6 +126,7 @@ private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction, QIcon icon);
 };
 
+} // namespace help
 } // namespace studio
 } // namespace gams
 

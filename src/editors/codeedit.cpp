@@ -27,8 +27,8 @@
 #include "keys.h"
 #include "editorhelper.h"
 #include "viewhelper.h"
-#include "locators/searchlocator.h"
-#include "locators/settingslocator.h"
+#include "search/searchlocator.h"
+#include "settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -298,71 +298,72 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
     e->ignore();
     if (mBlockEdit) {
-        if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
+        if (e == Hotkey::SelectAll) {
+            endBlockEdit();
+        } else if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
             return;
         } else {
             mBlockEdit->keyPressEvent(e);
             return;
         }
-    } else {
-        QTextCursor cur = textCursor();
-        if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
-            ParenthesesMatch pm = matchParentheses();
-            bool sel = (e == Hotkey::SelectParentheses);
-            QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            if (pm.match >= 0) {
-                if (sel) cur.clearSelection();
-                if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
-                cur.setPosition(pm.match+1, mm);
-                e->accept();
-            }
-        } else if (e == Hotkey::MoveToEndOfLine) {
-            QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            cur.movePosition(QTextCursor::EndOfLine, mm);
-            e->accept();
-        } else if (e == Hotkey::MoveToStartOfLine) {
-            QTextBlock block = cur.block();
-            QTextCursor::MoveMode mm = QTextCursor::MoveAnchor;
-
-            if (e->modifiers() & Qt::ShiftModifier)
-                mm = QTextCursor::KeepAnchor;
-
-            QRegularExpression leadingSpaces("^(\\s*)");
-            QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
-
-            if (cur.positionInBlock()==0 || lsMatch.capturedLength(1) < cur.positionInBlock())
-                cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
-            else cur.setPosition(block.position(), mm);
-            e->accept();
-        } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
-            QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            int p = cur.positionInBlock();
-            EditorHelper::nextWord(0, p, cur.block().text());
-            if (p >= cur.block().length()) {
-                QTextBlock block = cur.block().next();
-                if (block.isValid()) cur.setPosition(block.position(), mm);
-                else cur.movePosition(QTextCursor::EndOfBlock, mm);
-            } else {
-                cur.setPosition(cur.block().position() + p, mm);
-            }
-            e->accept();
-        } else if (e == Hotkey::MoveCharGroupLeft || e == Hotkey::SelectCharGroupLeft) {
-            QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupLeft) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
-            int p = cur.positionInBlock();
-            if (p == 0) {
-                QTextBlock block = cur.block().previous();
-                if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
-            } else {
-                EditorHelper::prevWord(0, p, cur.block().text());
-                cur.setPosition(cur.block().position() + p, mm);
-            }
+    }
+    QTextCursor cur = textCursor();
+    if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
+        ParenthesesMatch pm = matchParentheses();
+        bool sel = (e == Hotkey::SelectParentheses);
+        QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        if (pm.match >= 0) {
+            if (sel) cur.clearSelection();
+            if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
+            cur.setPosition(pm.match+1, mm);
             e->accept();
         }
-        if (e->isAccepted()) {
-            setTextCursor(cur);
-            return;
+    } else if (e == Hotkey::MoveToEndOfLine) {
+        QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        cur.movePosition(QTextCursor::EndOfLine, mm);
+        e->accept();
+    } else if (e == Hotkey::MoveToStartOfLine) {
+        QTextBlock block = cur.block();
+        QTextCursor::MoveMode mm = QTextCursor::MoveAnchor;
+
+        if (e->modifiers() & Qt::ShiftModifier)
+            mm = QTextCursor::KeepAnchor;
+
+        QRegularExpression leadingSpaces("^(\\s*)");
+        QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
+
+        if (cur.positionInBlock()==0 || lsMatch.capturedLength(1) < cur.positionInBlock())
+            cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
+        else cur.setPosition(block.position(), mm);
+        e->accept();
+    } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
+        QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        int p = cur.positionInBlock();
+        EditorHelper::nextWord(0, p, cur.block().text());
+        if (p >= cur.block().length()) {
+            QTextBlock block = cur.block().next();
+            if (block.isValid()) cur.setPosition(block.position(), mm);
+            else cur.movePosition(QTextCursor::EndOfBlock, mm);
+        } else {
+            cur.setPosition(cur.block().position() + p, mm);
         }
+        e->accept();
+    } else if (e == Hotkey::MoveCharGroupLeft || e == Hotkey::SelectCharGroupLeft) {
+        QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupLeft) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+        int p = cur.positionInBlock();
+        if (p == 0) {
+            QTextBlock block = cur.block().previous();
+            if (block.isValid()) cur.setPosition(block.position()+block.length()-1, mm);
+        } else {
+            EditorHelper::prevWord(0, p, cur.block().text());
+            cur.setPosition(cur.block().position() + p, mm);
+        }
+        e->accept();
+    }
+    if (e->isAccepted()) {
+        setTextCursor(cur);
+        return;
     }
 
     if (!isReadOnly()) {
@@ -408,9 +409,9 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     }
 
-    if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3))
+    if (e == Hotkey::SearchFindPrev)
         emit searchFindPrevPressed();
-    else if (e->key() == Qt::Key_F3)
+    else if (e == Hotkey::SearchFindNext)
         emit searchFindNextPressed();
 
     // smart typing:
@@ -589,9 +590,10 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
         }
     } else {
         if (mBlockEdit) {
-            if (e->modifiers() || e->buttons() != Qt::RightButton)
+            if (e->modifiers() || e->buttons() != Qt::RightButton) {
                 endBlockEdit(false);
-            else if (e->button() == Qt::RightButton) {
+                AbstractEdit::mousePressEvent(e);
+            } else if (e->button() == Qt::RightButton) {
                 QTextCursor mouseTC = cursorForPosition(e->pos());
                 if (mouseTC.blockNumber() < qMin(mBlockEdit->startLine(), mBlockEdit->currentLine())
                         || mouseTC.blockNumber() > qMax(mBlockEdit->startLine(), mBlockEdit->currentLine())) {
@@ -1221,8 +1223,8 @@ void CodeEdit::updateExtraSelections()
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
-        QRegularExpression regexp = SearchLocator::searchDialog()->results()
-                                    ? SearchLocator::searchDialog()->results()->searchRegex()
+        QRegularExpression regexp = search::SearchLocator::searchDialog()->results()
+                                    ? search::SearchLocator::searchDialog()->results()->searchRegex()
                                     : QRegularExpression();
 
         // word boundary (\b) only matches start-of-string when first character is \w
@@ -1318,10 +1320,10 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    SearchDialog *searchDialog = SearchLocator::searchDialog();
+    search::SearchDialog *searchDialog = search::SearchLocator::searchDialog();
     if (!searchDialog || searchDialog->searchTerm().isEmpty()) return;
 
-    SearchResultList* list = searchDialog->results();
+    search::SearchResultList* list = searchDialog->results();
     if (!list) return;
 
     if (list->filteredResultList(ViewHelper::location(this)).isEmpty()) return;

@@ -39,11 +39,13 @@ SystemLogEdit::SystemLogEdit(QWidget *parent)
 
 void SystemLogEdit::append(const QString &msg, LogMsgType type)
 {
-    if (msg.isEmpty()) return;
+    QString out = msg.trimmed();
+    if (out.isEmpty()) return;
+
     QString logLevel = level(type);
     QString time = QTime::currentTime().toString("hh:mm:ss");
-    appendPlainText(logLevel + " [" + time + "]: " + msg);
-    DEB() << logLevel << " [" << time << "]: " << msg;
+    appendPlainText(logLevel + " [" + time + "]: " + out);
+    DEB() << logLevel << " [" << time << "]: " << out;
 }
 
 void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)

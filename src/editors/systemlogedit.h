@@ -21,7 +21,7 @@
 #define SYSTEMLOGEDIT_H
 
 #include "abstractedit.h"
-#include "locators/abstractsystemlogger.h"
+#include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {

@@ -19,23 +19,27 @@
  */
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "../studiosettings.h"
-#include "../syntax.h"
-#include "../file.h"
-#include "../exception.h"
+#include "studiosettings.h"
+#include "syntax.h"
+#include "file.h"
+#include "exception.h"
 #include "searchresultlist.h"
 #include "searchworker.h"
 #include "option/solveroptionwidget.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "editors/viewhelper.h"
+#include "lxiviewer/lxiviewer.h"
+#include "../keys.h"
 
 #include <QMessageBox>
 #include <QTextDocumentFragment>
 #include <QThread>
 
 
+
 namespace gams {
 namespace studio {
+namespace search {
 
 SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
@@ -536,23 +540,27 @@ void SearchDialog::on_searchPrev()
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
-    Q_UNUSED(from); Q_UNUSED(charsRemoved); Q_UNUSED(charsAdded);
+    Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
     searchParameterChanged();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
-    if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e->modifiers() & Qt::ControlModifier && (e->key() == Qt::Key_F))) ) {
+    if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
         mMain->setSearchWidgetPos(pos());
         hide();
-        if (mMain->projectRepo()->findFileNode(mMain->recent()->editor()))
-            mMain->recent()->editor()->setFocus();
+        if (mMain->projectRepo()->findFileNode(mMain->recent()->editor())) {
+            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mMain->recent()->editor()))
+                lv->textView()->setFocus();
+            else
+                mMain->recent()->editor()->setFocus();
+        }
 
-    } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_F3)) {
+    } else if (e == Hotkey::SearchFindPrev) {
         e->accept();
         on_searchPrev();
-    } else if (e->key() == Qt::Key_F3) {
+    } else if (e == Hotkey::SearchFindNext) {
         e->accept();
         on_searchNext();
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
@@ -604,13 +612,13 @@ void SearchDialog::on_btn_clear_clicked()
 
 void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
 {
-    Q_UNUSED(arg1);
+    Q_UNUSED(arg1)
     searchParameterChanged();
 }
 
 void SearchDialog::on_cb_regex_stateChanged(int arg1)
 {
-    Q_UNUSED(arg1);
+    Q_UNUSED(arg1)
     searchParameterChanged();
 }
 
@@ -928,5 +936,6 @@ QFlags<QTextDocument::FindFlag> SearchDialog::setFlags(SearchDirection direction
     return flags;
 }
 
+}
 }
 }

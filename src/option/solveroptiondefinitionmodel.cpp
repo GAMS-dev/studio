@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "solveroptiondefinitionmodel.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 
 namespace gams {

@@ -152,6 +152,10 @@ void Keys::reset()
     *seq << QKeySequence("Shift+Ctrl+Left");
     setHotkey(Hotkey::SelectCharGroupLeft, seq);
 
+    seq = new KeySeqList("SelectAll","Select all text");
+    *seq << QKeySequence("Ctrl+A");
+    setHotkey(Hotkey::SelectAll, seq);
+
 //    seq = new KeySeqList("BookmarkToggle","Set or erase bookmark of the current line");
 //    *seq << QKeySequence("Ctrl+M") << QKeySequence("Meta+M");
 //    setHotkey(Hotkey::BookmarkToggle, seq);
@@ -172,6 +176,15 @@ void Keys::reset()
     *seq << QKeySequence("Up") << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
          << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
     setHotkey(Hotkey::BlockEditEnd, seq);
+
+    seq = new KeySeqList("Ctrl+F", "Open Search Dialog");
+    setHotkey(Hotkey::SearchOpen, seq);
+
+    seq = new KeySeqList("F3", "Find Next");
+    setHotkey(Hotkey::SearchFindNext, seq);
+
+    seq = new KeySeqList("Shift+F3", "Find Previous");
+    setHotkey(Hotkey::SearchFindPrev, seq);
 
     seq = new KeySeqList("Shift+Ctrl+L","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);

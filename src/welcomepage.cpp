@@ -19,7 +19,7 @@
  */
 #include "welcomepage.h"
 #include "commonpaths.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 #include "ui_welcomepage.h"
 #include "mainwindow.h"

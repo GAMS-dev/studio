@@ -35,16 +35,16 @@
 #include "gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
-#include "locators/searchlocator.h"
-#include "locators/settingslocator.h"
-#include "locators/sysloglocator.h"
-#include "locators/abstractsystemlogger.h"
+#include "settingslocator.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "logger.h"
 #include "studiosettings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
+#include "search/searchlocator.h"
 #include "search/searchresultlist.h"
-#include "resultsview.h"
+#include "search/resultsview.h"
 #include "gotodialog.h"
 #include "support/updatedialog.h"
 #include "support/checkforupdatewrapper.h"
@@ -54,6 +54,11 @@
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
+#include "miroprocess.h"
+#include "miropaths.h"
+#include "mirodeploydialog.h"
+#include "mirodeployprocess.h"
+#include "miromodelassemblydialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -70,7 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
       mTextMarkRepo(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
-      mLogTabContextMenu(this)
+      mLogTabContextMenu(this),
+      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
@@ -130,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent)
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
 
 #ifdef QWEBENGINE
-    mHelpWidget = new HelpWidget(this);
+    mHelpWidget = new help::HelpWidget(this);
     ui->dockHelpView->setWidget(mHelpWidget);
     ui->dockHelpView->hide();
 #endif
@@ -158,13 +164,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialog);
-    connect(&mProjectContextMenu, &ProjectContextMenu::runFile, this, &MainWindow::runGmsFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::openTerminal, this, &MainWindow::actionTerminalTriggered);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openGdxDiffDialog, this, &MainWindow::actionGDX_Diff_triggered);
 
     ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mainTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
@@ -186,11 +192,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
+    connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
     mSettings->loadSettings(this);
     mRecent.path = mSettings->defaultWorkspace();
-    mSearchDialog = new SearchDialog(this);
+    mSearchDialog = new search::SearchDialog(this);
 
     if (mSettings->resetSettingsSwitch()) mSettings->resetSettings();
 
@@ -199,7 +207,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
-    mSyslog->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+    mSyslog->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
     ui->logTabs->addTab(mSyslog, "System");
 
     initTabs();
@@ -217,10 +225,13 @@ MainWindow::MainWindow(QWidget *parent)
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
-    SearchLocator::provide(mSearchDialog);
+    search::SearchLocator::provide(mSearchDialog);
     SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
+
+    // TODO (AF)
+    //ui->menuMIRO->setEnabled(!mSettings->miroInstallationLocation().isEmpty());
 }
 
 
@@ -453,7 +464,7 @@ void MainWindow::receiveAction(const QString &action)
         on_actionChangelog_triggered();
 }
 
-void MainWindow::openModelFromLib(const QString &glbFile, LibraryItem* model)
+void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryItem* model)
 {
     QFileInfo file(model->files().first());
     QString inputFile = file.completeBaseName() + ".gms";
@@ -498,11 +509,11 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     }
 
     QDir gamsSysDir(CommonPaths::systemDir());
-    mLibProcess = new GAMSLibProcess(this);
+    mLibProcess = new GamsLibProcess(this);
     mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
     mLibProcess->setModelName(modelName);
     mLibProcess->setInputFile(inputFile);
-    mLibProcess->setTargetDir(mSettings->defaultWorkspace());
+    mLibProcess->setWorkingDirectory(mSettings->defaultWorkspace());
     mLibProcess->execute();
 
     // This log is passed to the system-wide log
@@ -529,7 +540,7 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
     on_actionHelp_View_triggered(true);
 }
 
-SearchDialog* MainWindow::searchDialog() const
+search::SearchDialog* MainWindow::searchDialog() const
 {
     return mSearchDialog;
 }
@@ -1169,6 +1180,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setEncoding(node->file()->codecMib());
         mRecent.setEditor(editWidget, this);
         mRecent.group = mProjectRepo.asGroup(ViewHelper::groupId(editWidget));
+        mRecent.path = node->location();
 
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
             mStatusWidgets->setLineCount(edit->blockCount());
@@ -1437,7 +1449,7 @@ void MainWindow::processFileEvents()
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    mSyslog->append(text.trimmed(), LogMsgType::Info);
+    mSyslog->append(text, LogMsgType::Info);
 }
 
 void MainWindow::showErrorMessage(QString text)
@@ -1525,9 +1537,9 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->targetDir() + "/" + mLibProcess->inputFile());
+    ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
     if (!node)
-        node = addNode(mLibProcess->targetDir(), mLibProcess->inputFile());
+        node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
     if (node) mFileMetaRepo.watch(node->file());
     if (node && !node->file()->editors().isEmpty()) {
         if (node->file()->kind() != FileKind::Log)
@@ -1552,17 +1564,17 @@ void MainWindow::on_actionHelp_triggered()
     if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
         QString optionName = mGamsOptionWidget->getSelectedOptionName(widget);
         if (optionName.isEmpty())
-            mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                  HelpData::getStudioSectionName(StudioSection::OptionEditor));
+            mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                  help::HelpData::getStudioSectionName(help::StudioSection::OptionEditor));
         else
-            mHelpWidget->on_helpContentRequested( DocumentType::GamsCall, optionName);
+            mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
     } else {
          QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
          if (editWidget) {
              FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
              if (!fm) {
-                 mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                       HelpData::getStudioSectionName(StudioSection::WelcomePage));
+                 mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                       help::HelpData::getStudioSectionName(help::StudioSection::WelcomePage));
              } else {
                  if (mRecent.editor() != nullptr) {
                      if (widget == mRecent.editor()) {
@@ -1573,11 +1585,11 @@ void MainWindow::on_actionHelp_triggered()
                             ce->wordInfo(ce->textCursor(), word, iKind);
 
                             if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
-                                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, "title");
+                                mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
                             } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
-                                mHelpWidget->on_helpContentRequested(DocumentType::DollarControl, word);
+                                mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
                             } else {
-                                mHelpWidget->on_helpContentRequested(DocumentType::Index, word);
+                                mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);
                             }
                          }
                      } else {
@@ -1585,30 +1597,30 @@ void MainWindow::on_actionHelp_triggered()
                          if (optionEdit) {
                              QString optionName = optionEdit->getSelectedOptionName(widget);
                              if (optionName.isEmpty())
-                                 mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                       HelpData::getStudioSectionName(StudioSection::SolverOptionEditor));
+                                 mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                       help::HelpData::getStudioSectionName(help::StudioSection::SolverOptionEditor));
                              else
-                                 mHelpWidget->on_helpContentRequested( DocumentType::Solvers, optionName,
+                                 mHelpWidget->on_helpContentRequested( help::DocumentType::Solvers, optionName,
                                                                        optionEdit->getSolverName());
                          } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                          HelpData::getStudioSectionName(StudioSection::GDXViewer));
+                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                          help::HelpData::getStudioSectionName(help::StudioSection::GDXViewer));
                          } else if (ViewHelper::toReferenceViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                          HelpData::getStudioSectionName(StudioSection::ReferenceFileViewer));
+                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                          help::HelpData::getStudioSectionName(help::StudioSection::ReferenceFileViewer));
                          } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( DocumentType::StudioMain, "",
-                                                                          HelpData::getStudioSectionName(StudioSection::ListingViewer));
+                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                          help::HelpData::getStudioSectionName(help::StudioSection::ListingViewer));
                          } else {
-                             mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+                             mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
                          }
                      }
                  } else {
-                     mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+                     mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
                  }
              }
          } else {
-             mHelpWidget->on_helpContentRequested( DocumentType::Main, "");
+             mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
          }
     }
 
@@ -1829,7 +1841,7 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
     showWelcomePage();
 }
 
-void MainWindow::triggerGamsLibFileCreation(LibraryItem *item)
+void MainWindow::triggerGamsLibFileCreation(modeldialog::LibraryItem *item)
 {
     openModelFromLib(item->library()->glbFile(), item);
 }
@@ -1865,7 +1877,7 @@ bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> 
     QVector<ProjectRunGroupNode *> runningGroups;
     QStringList runningNames;
     for (ProjectRunGroupNode* runGroup: runGroups) {
-        if (runGroup->gamsProcess() && runGroup->gamsProcess()->state() != QProcess::NotRunning) {
+        if (runGroup->process() && runGroup->process()->state() != QProcess::NotRunning) {
             runningGroups << runGroup;
             runningNames << runGroup->name();
         }
@@ -1882,20 +1894,167 @@ bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> 
                           "Stop", "Cancel");
     if (choice == 1) return false;
     for (ProjectRunGroupNode* runGroup: runningGroups) {
-        runGroup->gamsProcess()->stop();
+        runGroup->process()->terminate();
     }
     return true;
 }
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    ModelDialog dialog(mSettings->userModelLibraryDir(), this);
+    modeldialog::ModelDialog dialog(mSettings->userModelLibraryDir(), this);
     if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
-        LibraryItem *item = dialog.selectedLibraryItem();
+        modeldialog::LibraryItem *item = dialog.selectedLibraryItem();
 
         triggerGamsLibFileCreation(item);
     }
+}
+
+void MainWindow::on_actionGDX_Diff_triggered()
+{
+    QString path = QFileInfo(mRecent.path).path();
+    actionGDX_Diff_triggered(path);
+}
+
+void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString input1, QString input2)
+{
+    mGdxDiffDialog->setRecentPath(workingDirectory);
+    if (!input1.isEmpty()) { // function call was triggered from the context menu
+        // when both input1 and input2 are specified, the corresponding files in the dialog need to be set
+        if (!input2.isEmpty()) {
+            mGdxDiffDialog->setInput1(input1);
+            mGdxDiffDialog->setInput2(input2);
+        } else {
+            if (mGdxDiffDialog->input1().trimmed().isEmpty()) // set input1 line edit if empty
+                mGdxDiffDialog->setInput1(input1);
+            else if (mGdxDiffDialog->input2().trimmed().isEmpty()) // set input2 if input1 is not empty but input1 is empty
+                mGdxDiffDialog->setInput2(input1);
+            else // set input1 otherwise
+                mGdxDiffDialog->setInput1(input1);
+        }
+    }
+    // for Mac OS
+    if (mGdxDiffDialog->isVisible()) {
+        mGdxDiffDialog->raise();
+        mGdxDiffDialog->activateWindow();
+    } else {
+        mGdxDiffDialog->show();
+    }
+}
+
+void MainWindow::on_actionBase_mode_triggered()
+{
+    if (!mRecent.group)
+        qDebug() << "NO GROUP!";
+    auto runGroup = mRecent.group->toRunGroup();
+    if (!runGroup)
+        qDebug() << "NO RUN GROUP!";
+    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
+    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
+    miroProcess->setWorkingDirectory(runGroup->location());
+    miroProcess->setModelName(mRecent.group->name());
+    MiroPaths miroPaths(mSettings->miroInstallationLocation());
+    miroProcess->setMiroPath(miroPaths.path());
+    miroProcess->setMiroMode(MiroMode::Base);
+
+    execute({}, std::move(miroProcess));
+}
+
+void MainWindow::on_actionHypercube_mode_triggered()
+{
+    if (!mRecent.group)
+        qDebug() << "NO GROUP!";
+    auto runGroup = mRecent.group->toRunGroup();
+    if (!runGroup)
+        qDebug() << "NO RUN GROUP!";
+    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
+    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
+    miroProcess->setWorkingDirectory(runGroup->location());
+    miroProcess->setModelName(mRecent.group->name());
+    MiroPaths miroPaths(mSettings->miroInstallationLocation());
+    miroProcess->setMiroPath(miroPaths.path());
+    miroProcess->setMiroMode(MiroMode::Hypercube);
+
+    execute({}, std::move(miroProcess));
+}
+
+void MainWindow::on_actionConfiguration_mode_triggered()
+{
+    if (!mRecent.group)
+        qDebug() << "NO GROUP!";
+    auto runGroup = mRecent.group->toRunGroup();
+    if (!runGroup)
+        qDebug() << "NO RUN GROUP!";
+    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
+    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
+    miroProcess->setWorkingDirectory(runGroup->location());
+    miroProcess->setModelName(mRecent.group->name());
+    MiroPaths miroPaths(mSettings->miroInstallationLocation());
+    miroProcess->setMiroPath(miroPaths.path());
+    miroProcess->setMiroMode(MiroMode::Configuration);
+
+    execute({}, std::move(miroProcess));
+}
+
+void MainWindow::on_actionStop_MIRO_triggered()
+{
+    if (!mRecent.group)
+        qDebug() << "NO GROUP!";
+    auto runGroup = mRecent.group->toRunGroup();
+    if (!runGroup)
+        qDebug() << "NO RUN GROUP!";
+    runGroup->process()->terminate();
+}
+
+void MainWindow::on_actionCreate_model_assembly_triggered()
+{
+    if (!mRecent.group)
+        qDebug() << "NO GROUP!";
+    auto runGroup = mRecent.group->toRunGroup();
+    if (!runGroup)
+        qDebug() << "NO RUN GROUP!";
+    qDebug() << "on_actionCreate_model_assembly_triggered";
+    MiroModelAssemblyDialog dlg(runGroup->location(), this);
+    if (dlg.exec() == QDialog::Rejected)
+        return;
+
+    auto fileName = runGroup->location() + "/" + mRecent.group->name() + "_files.txt";
+    QFile file(fileName);
+    auto selectedFiles = dlg.selectedFiles();
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&file);
+        for (auto selectedFile: selectedFiles)
+            stream << selectedFile << "\n";
+    } else {
+        SysLogLocator::systemLog()->append(QString("Could not open file: %1").arg(fileName),
+                                           LogMsgType::Error);
+    }
+}
+
+void MainWindow::on_actionDeploy_triggered()
+{
+    if (!mRecent.group)
+        qDebug() << "NO GROUP!";
+    auto runGroup = mRecent.group->toRunGroup();
+    if (!runGroup)
+        qDebug() << "NO RUN GROUP!";
+    // TODO (AF) func for assembly file
+    auto assemblyFile = runGroup->location() + "/" + mRecent.group->name() + "_files.txt";
+    MiroDeployDialog dlg(assemblyFile, this);
+    if (dlg.exec() == QDialog::Rejected)
+        return;
+
+    auto process = std::make_unique<MiroDeployProcess>(new MiroDeployProcess);
+    MiroPaths miroPaths(mSettings->miroInstallationLocation());
+    process->setMiroPath(miroPaths.path());
+    process->setWorkingDirectory(runGroup->location());
+    process->setModelName(mRecent.group->name());
+    process->setBaseMode(dlg.baseMode());
+    process->setHypercubeMode(dlg.hypercubeMode());
+    process->setTestDeployment(dlg.testDeployment());
+    process->setTargetEnvironment(dlg.targetEnvironment());
+
+    execute({}, std::move(process));
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -2174,7 +2333,9 @@ option::OptionWidget *MainWindow::gamsOptionWidget() const
     return mGamsOptionWidget;
 }
 
-void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
+void MainWindow::execute(QString commandLineStr,
+                         std::unique_ptr<AbstractProcess> process,
+                         ProjectFileNode* gmsFileNode)
 {
     mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
@@ -2239,7 +2400,7 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-        wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+        wid->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
         if (ViewHelper::toTextView(wid))
             ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                       : AbstractEdit::NoWrap);
@@ -2286,8 +2447,12 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
-    GamsProcess* process = runGroup->gamsProcess();
-    process->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+    if (process)
+        runGroup->setProcess(std::move(process));
+    else
+        runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
+    AbstractProcess* groupProc = runGroup->process();
+    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
@@ -2295,15 +2460,14 @@ void MainWindow::execute(QString commandLineStr, ProjectFileNode* gmsFileNode)
             if (TextView *tv = ViewHelper::toTextView(wid)) tv->prepareRun();
         }
     }
-    process->setGroupId(runGroup->id());
-    process->setWorkingDir(workDir);
+    groupProc->setGroupId(runGroup->id());
+    groupProc->setWorkingDirectory(workDir);
 
-    process->execute();
+    groupProc->execute();
     ui->toolBar->repaint();
 
-    logNode->linkToProcess(process);
-//    connect(process, &GamsProcess::newStdChannelData, logNode, &ProjectLogNode::addProcessData, Qt::UniqueConnection);
-    connect(process, &GamsProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
+    logNode->linkToProcess(groupProc);
+    connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
     ui->dockProcessLog->raise();
 }
 
@@ -2313,16 +2477,11 @@ void MainWindow::updateRunState()
 }
 
 #ifdef QWEBENGINE
-HelpWidget *MainWindow::helpWidget() const
+help::HelpWidget *MainWindow::helpWidget() const
 {
     return mHelpWidget;
 }
 #endif
-
-void MainWindow::runGmsFile(ProjectFileNode *node)
-{
-    execute("", node);
-}
 
 void MainWindow::setMainGms(ProjectFileNode *node)
 {
@@ -2378,8 +2537,8 @@ void MainWindow::on_actionInterrupt_triggered()
     if (!group)
         return;
     mGamsOptionWidget->on_interruptAction();
-    GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::interrupt);
+    AbstractProcess* process = group->process();
+    QtConcurrent::run(process, &AbstractProcess::interrupt);
 }
 
 void MainWindow::on_actionStop_triggered()
@@ -2389,8 +2548,8 @@ void MainWindow::on_actionStop_triggered()
     if (!group)
         return;
     mGamsOptionWidget->on_stopAction();
-    GamsProcess* process = group->gamsProcess();
-    QtConcurrent::run(process, &GamsProcess::stop);
+    AbstractProcess* process = group->process();
+    QtConcurrent::run(process, &GamsProcess::terminate);
 }
 
 void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool createMissing)
@@ -2403,7 +2562,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-            wid->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            wid->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (ViewHelper::toTextView(wid))
                 ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
                                                                                           : AbstractEdit::NoWrap);
@@ -2530,18 +2689,18 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             CodeEdit* ce = ViewHelper::toCodeEdit(edit);
             connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
             connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
-            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
-            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
+            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
-            tv->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
-            connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &SearchDialog::on_searchNext);
-            connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &SearchDialog::on_searchPrev);
+            tv->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
+            connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
+            connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
         }
         if (ViewHelper::toCodeEdit(edit)) {
             AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-            ae->setFont(QFont(mSettings->fontFamily(), mSettings->fontSize()));
+            ae->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         } else if (ViewHelper::toSolverOptionEdit(edit)) {
@@ -2564,11 +2723,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     }
     // set keyboard focus to editor
     if (tabWidget->currentWidget())
-        if (focus) {
-            tabWidget->currentWidget()->setFocus();
-            if (runGroup)
-                mGamsOptionWidget->loadCommandLineOption( runGroup->getRunParametersHistory() );
-        }
+        if (focus) tabWidget->currentWidget()->setFocus();
+
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
         ProjectFileNode* fileNode = mProjectRepo.findFileNode(edit);
@@ -2845,13 +3001,13 @@ void MainWindow::openSearchDialog()
     }
 }
 
-void MainWindow::showResults(SearchResultList* results)
+void MainWindow::showResults(search::SearchResultList* results)
 {
     int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
     // only update if new results available
-    searchDialog()->setResultsView(new ResultsView(results, this));
-    connect(searchDialog()->resultsView(), &ResultsView::updateMatchLabel, searchDialog(), &SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    searchDialog()->setResultsView(new search::ResultsView(results, this));
+    connect(searchDialog()->resultsView(), &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
 
     QString nr;
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
@@ -2878,7 +3034,7 @@ void MainWindow::closeResultsPage()
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 {
-    QFont font(fontFamily, fontSize);
+    QFont font = createEditorFont(fontFamily, fontSize);
     for (QWidget* edit: openEditors()) {
         if (ViewHelper::toCodeEdit(edit))
             ViewHelper::toAbstractEdit(edit)->setFont(font);
@@ -3519,6 +3675,49 @@ void MainWindow::deleteScratchDirs(const QString &path)
             }
         }
     }
+}
+
+QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
+{
+    QFont font(fontFamily, pointSize);
+    font.setHintingPreference(QFont::PreferNoHinting);
+    return font;
+}
+
+void MainWindow::openGdxDiffFile()
+{
+    QString diffFile = mGdxDiffDialog->lastDiffFile();
+
+    QString input1 = mGdxDiffDialog->lastInput1();
+    QString input2 = mGdxDiffDialog->lastInput2();
+    if (diffFile.isEmpty())
+        return;
+
+    FileMeta *fmInput1 = mFileMetaRepo.fileMeta(input1);
+    FileMeta *fmInput2 = mFileMetaRepo.fileMeta(input2);
+    ProjectGroupNode* pgDiff   = nullptr;
+
+    // if possible get the group to which both input files belong
+    if (fmInput1 && fmInput2) {
+        QVector<ProjectFileNode*> nodesInput1 = mProjectRepo.fileNodes(fmInput1->id());
+        QVector<ProjectFileNode*> nodesInput2 = mProjectRepo.fileNodes(fmInput2->id());
+
+        if (nodesInput1.size() == 1 && nodesInput2.size() == 1) {
+            if (nodesInput1.first()->parentNode() == nodesInput2.first()->parentNode())
+                pgDiff = nodesInput1.first()->parentNode();
+        }
+    }
+    // if no group was found, we try to open the file in the first node that contains the it
+    if (pgDiff == nullptr) {
+        FileMeta *fm = mFileMetaRepo.fileMeta(diffFile);
+        if (fm) {
+            QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
+            if(v.size() == 1)
+                pgDiff = v.first()->parentNode();
+        }
+    }
+    ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
+    openFile(node->file());
 }
 
 void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)

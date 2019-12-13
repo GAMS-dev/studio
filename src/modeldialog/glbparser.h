@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 class GlbParser
 {
@@ -45,6 +46,7 @@ private:
     QString mGlbFile;
 };
 
+} // namespace modeldialog
 } // namespace studio
 } // namespace gams
 

@@ -37,6 +37,9 @@
     <enum>Qt::NoContextMenu</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetMinimumSize</enum>
+    </property>
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -60,7 +63,7 @@
       <item row="0" column="1">
        <widget class="QTabWidget" name="mainTabs">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
           <horstretch>3</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -101,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>23</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -247,10 +250,28 @@
      <string>Tools</string>
     </property>
     <addaction name="actionTerminal"/>
+    <addaction name="actionGDX_Diff"/>
+   </widget>
+   <widget class="QMenu" name="menuMIRO">
+    <property name="title">
+     <string>MIRO</string>
+    </property>
+    <addaction name="actionBase_mode"/>
+    <addaction name="actionHypercube_mode"/>
+    <addaction name="actionConfiguration_mode"/>
+    <addaction name="separator"/>
+    <addaction name="actionStop_MIRO"/>
+    <addaction name="separator"/>
+    <addaction name="actionSkip_model_execution"/>
+    <addaction name="separator"/>
+    <addaction name="actionCreate_model_assembly"/>
+    <addaction name="separator"/>
+    <addaction name="actionDeploy"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menu_GAMs"/>
+   <addaction name="menuMIRO"/>
    <addaction name="menuTools"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
@@ -710,7 +731,7 @@
   </action>
   <action name="actionSearch">
    <property name="text">
-    <string>&amp;Search</string>
+    <string>&amp;Search &amp;&amp; Replace</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -1151,8 +1172,81 @@
    <property name="text">
     <string>Terminal</string>
    </property>
+  </action>
+  <action name="actionGDX_Diff">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/gdxdiff.svg</normaloff>:/img/gdxdiff.svg</iconset>
+   </property>
+   <property name="text">
+    <string>GDX Diff</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
    <property name="shortcut">
-    <string>Alt+T</string>
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionBase_mode">
+   <property name="text">
+    <string>Run base mode</string>
+   </property>
+  </action>
+  <action name="actionHypercube_mode">
+   <property name="text">
+    <string>Run hypercube mode</string>
+   </property>
+  </action>
+  <action name="actionConfiguration_mode">
+   <property name="text">
+    <string>Run configuration mode</string>
+   </property>
+  </action>
+  <action name="actionStop_MIRO">
+   <property name="text">
+    <string>Stop MIRO</string>
+   </property>
+  </action>
+  <action name="actionRun_in_random_location">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Run in random location</string>
+   </property>
+  </action>
+  <action name="actionExport_with_iDir">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Export with inputDir</string>
+   </property>
+  </action>
+  <action name="actionExport_for_single_user">
+   <property name="text">
+    <string>Export for single user</string>
+   </property>
+  </action>
+  <action name="actionSkip_model_execution">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Skip model execution</string>
+   </property>
+  </action>
+  <action name="actionDeploy">
+   <property name="text">
+    <string>Deploy</string>
+   </property>
+  </action>
+  <action name="actionCreate_model_assembly">
+   <property name="text">
+    <string>Create model assembly</string>
    </property>
   </action>
  </widget>

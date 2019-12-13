@@ -28,12 +28,8 @@ namespace studio {
 AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
     : QObject (parent),
       mProcess(this),
-      mAppName(appName)
+      mApplication(appName)
 {
-    connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
-    connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractProcess::readStdOut);
-    connect(&mProcess, &QProcess::readyReadStandardError, this, &AbstractProcess::readStdErr);
-    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 void AbstractProcess::setInputFile(const QString &file)
@@ -46,9 +42,34 @@ QString AbstractProcess::inputFile() const
     return mInputFile;
 }
 
-QProcess::ProcessState AbstractProcess::state() const
+void AbstractProcess::interrupt()
 {
-    return mProcess.state();
+    mProcess.kill();
+}
+
+void AbstractProcess::terminate()
+{
+    mProcess.kill();
+}
+
+void AbstractProcess::setWorkingDirectory(const QString &workingDirectory)
+{
+    mWorkingDirectory = workingDirectory;
+}
+
+QStringList AbstractProcess::parameters() const
+{
+    return mParameters;
+}
+
+void AbstractProcess::setParameters(const QStringList &parameters)
+{
+    mParameters = parameters;
+}
+
+QString AbstractProcess::workingDirectory() const
+{
+    return mWorkingDirectory;
 }
 
 void AbstractProcess::completed(int exitCode)
@@ -56,39 +77,9 @@ void AbstractProcess::completed(int exitCode)
     emit finished(mGroupId, exitCode);
 }
 
-void AbstractProcess::readStdOut()
-{
-    readStdChannel(QProcess::StandardOutput);
-}
-
-void AbstractProcess::readStdErr()
-{
-    readStdChannel(QProcess::StandardError);
-}
-
-void AbstractProcess::readStdChannel(QProcess::ProcessChannel channel)
-{
-    mOutputMutex.lock();
-    mProcess.setReadChannel(channel);
-    bool avail = mProcess.bytesAvailable();
-    mOutputMutex.unlock();
-
-    while (avail) {
-        mOutputMutex.lock();
-        mProcess.setReadChannel(channel);
-        emit newStdChannelData(mProcess.readLine().constData());
-        avail = mProcess.bytesAvailable();
-        mOutputMutex.unlock();
-    }
-}
-
 QString AbstractProcess::nativeAppPath()
 {
-    QString systemDir = CommonPaths::systemDir();
-    if (systemDir.isEmpty())
-        return QString();
-    auto appPath = QDir(systemDir).filePath(mAppName);
-    return QDir::toNativeSeparators(appPath);
+    return QDir::toNativeSeparators(mApplication);
 }
 
 NodeId AbstractProcess::groupId() const
@@ -106,6 +97,60 @@ int AbstractProcess::exitCode() const
     return mProcess.exitCode();
 }
 
+AbstractSingleProcess::AbstractSingleProcess(const QString &application, QObject *parent)
+    : AbstractProcess(application, parent)
+{
+    connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
+    connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractSingleProcess::readStdOut);
+    connect(&mProcess, &QProcess::readyReadStandardError, this, &AbstractSingleProcess::readStdErr);
+    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
+}
+
+QProcess::ProcessState AbstractSingleProcess::state() const
+{
+    return mProcess.state();
+}
+
+void AbstractSingleProcess::readStdChannel(QProcess::ProcessChannel channel)
+{
+    mOutputMutex.lock();
+    mProcess.setReadChannel(channel);
+    bool avail = mProcess.bytesAvailable();
+    mOutputMutex.unlock();
+
+    while (avail) {
+        mOutputMutex.lock();
+        mProcess.setReadChannel(channel);
+        emit newStdChannelData(mProcess.readLine().constData());
+        avail = mProcess.bytesAvailable();
+        mOutputMutex.unlock();
+    }
+}
+
+void AbstractSingleProcess::readStdOut()
+{
+    readStdChannel(QProcess::StandardOutput);
+}
+
+void AbstractSingleProcess::readStdErr()
+{
+    readStdChannel(QProcess::StandardError);
+}
+
+AbstractGamsProcess::AbstractGamsProcess(const QString &application, QObject *parent)
+    : AbstractSingleProcess(application, parent)
+{
+
+}
+
+QString AbstractGamsProcess::nativeAppPath()
+{
+    QString systemDir = CommonPaths::systemDir();
+    if (systemDir.isEmpty())
+        return QString();
+    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath());
+    return QDir::toNativeSeparators(appPath);
+}
 
 } // namespace studio
 } // namespace gams

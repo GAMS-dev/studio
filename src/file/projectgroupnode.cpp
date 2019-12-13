@@ -30,8 +30,8 @@
 #include "logger.h"
 #include "syntax.h"
 #include "option/option.h"
-#include "locators/sysloglocator.h"
-#include "locators/settingslocator.h"
+#include "editors/sysloglocator.h"
+#include "settingslocator.h"
 #include "studiosettings.h"
 #include <QFileInfo>
 #include <QDir>
@@ -210,7 +210,15 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
     }
 }
 
-GamsProcess *ProjectRunGroupNode::gamsProcess() const
+void ProjectRunGroupNode::setProcess(std::unique_ptr<AbstractProcess> process)
+{
+    mGamsProcess->disconnect();
+    mGamsProcess = std::move(process);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this,
+            &ProjectRunGroupNode::onGamsProcessStateChanged);
+}
+
+AbstractProcess *ProjectRunGroupNode::process() const
 {
     return mGamsProcess.get();
 }
@@ -489,7 +497,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     }
 
     QFileInfo fi(gmsLocation);
-    if (filestem.isEmpty()) filestem = fi.path() + '/' + fi.completeBaseName();
+    if (filestem.isEmpty()) filestem = fi.completeBaseName();
     if (path.isEmpty()) path = fi.path();
     else if (QDir(path).isRelative()) path = fi.path() + '/' + path;
 

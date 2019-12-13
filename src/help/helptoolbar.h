@@ -26,6 +26,7 @@
 
 namespace gams {
 namespace studio {
+namespace help {
 
 class HelpToolBar : public QToolBar
 {
@@ -57,6 +58,7 @@ private:
     QAction* mActionStop = new QAction(this);
 };
 
+} // namespace help
 } // namespace studio
 } // namespace gams
 

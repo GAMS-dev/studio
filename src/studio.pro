@@ -75,9 +75,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    abstractmiroprocess.cpp \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
+    gdxdiffdialog/filepathlineedit.cpp \
+    mirodeploydialog.cpp \
+    mirodeployprocess.cpp \
+    miromodelassemblydialog.cpp \
+    miropaths.cpp \
+    miroprocess.cpp \
     support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -110,7 +117,6 @@ SOURCES += \
     gdxviewer/nestedheaderview.cpp \
     gdxviewer/tableviewmodel.cpp \
     keys.cpp \
-    locators/searchlocator.cpp \
     logger.cpp \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreeitem.cpp \
@@ -149,10 +155,11 @@ SOURCES += \
     reference/symbolreferenceitem.cpp \
     reference/symbolreferencewidget.cpp \
     reference/symboltablemodel.cpp \
-    resultsview.cpp \
+    search/resultsview.cpp \
     search/searchdialog.cpp \
     search/result.cpp \
     search/searchresultlist.cpp \
+    search/searchlocator.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
@@ -179,9 +186,9 @@ SOURCES += \
     editors/viewhelper.cpp \
     encodingsdialog.cpp \
     tabdialog.cpp \
-    locators/settingslocator.cpp \
-    locators/sysloglocator.cpp \
-    locators/defaultsystemlogger.cpp \
+    settingslocator.cpp \
+    editors/sysloglocator.cpp \
+    editors/defaultsystemlogger.cpp \
     support/aboutgamsdialog.cpp         \
     support/gamslicenseinfo.cpp         \
     support/solverconfiginfo.cpp        \
@@ -191,12 +198,21 @@ SOURCES += \
     search/searchworker.cpp \
     editors/filemapper.cpp \
     editors/memorymapper.cpp \
-    editors/logparser.cpp
+    editors/logparser.cpp \
+    gdxdiffdialog/gdxdiffdialog.cpp \
+    gdxdiffdialog/gdxdiffprocess.cpp
 
 HEADERS += \
+    abstractmiroprocess.h \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
+    gdxdiffdialog/filepathlineedit.h \
+    mirodeploydialog.h \
+    mirodeployprocess.h \
+    miromodelassemblydialog.h \
+    miropaths.h \
+    miroprocess.h \
     support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
@@ -231,7 +247,6 @@ HEADERS += \
     gdxviewer/nestedheaderview.h \
     gdxviewer/tableviewmodel.h \
     keys.h \
-    locators/searchlocator.h \
     logger.h \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreeitem.h \
@@ -269,10 +284,11 @@ HEADERS += \
     reference/symbolreferenceitem.h \
     reference/symbolreferencewidget.h \
     reference/symboltablemodel.h \
-    resultsview.h \
+    search/resultsview.h \
     search/searchdialog.h \
     search/result.h \
     search/searchresultlist.h \
+    search/searchlocator.h \
     settingsdialog.h \
     statuswidgets.h \
     studiosettings.h \
@@ -302,10 +318,10 @@ HEADERS += \
     editors/viewhelper.h \
     encodingsdialog.h \
     tabdialog.h \
-    locators/settingslocator.h \
-    locators/sysloglocator.h \
-    locators/abstractsystemlogger.h \
-    locators/defaultsystemlogger.h \
+    settingslocator.h \
+    editors/sysloglocator.h \
+    editors/abstractsystemlogger.h \
+    editors/defaultsystemlogger.h \
     support/aboutgamsdialog.h       \
     support/gamslicenseinfo.h       \
     support/solverconfiginfo.h      \
@@ -315,7 +331,9 @@ HEADERS += \
     search/searchworker.h \
     editors/filemapper.h \
     editors/memorymapper.h \
-    editors/logparser.h
+    editors/logparser.h \
+    gdxdiffdialog/gdxdiffdialog.h \
+    gdxdiffdialog/gdxdiffprocess.h
 
 FORMS += \
     gdxviewer/columnfilterframe.ui \
@@ -323,12 +341,14 @@ FORMS += \
     gdxviewer/gdxviewer.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
+    mirodeploydialog.ui \
+    miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
     option/optionwidget.ui \
     option/solveroptionwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
-    resultsview.ui \
+    search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
     support/updatedialog.ui \
@@ -336,7 +356,8 @@ FORMS += \
     gotodialog.ui \
     encodingsdialog.ui \
     tabdialog.ui \
-    support/aboutgamsdialog.ui
+    support/aboutgamsdialog.ui \
+    gdxdiffdialog/gdxdiffdialog.ui
 
 RESOURCES += \
     ../icons/icons.qrc

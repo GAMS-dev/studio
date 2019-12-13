@@ -22,7 +22,7 @@
 
 #include "codeedit.h"
 #include "abstracttextmapper.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include <QWidget>
 
 namespace gams {
@@ -37,6 +37,7 @@ public:
     void protectWordUnderCursor(bool protect);
     bool hasSelection() const override;
     void disconnectTimers() override;
+    int lineCount();
 
 signals:
     void keyPressed(QKeyEvent *event);

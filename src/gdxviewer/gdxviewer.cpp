@@ -24,8 +24,8 @@
 #include "gdxsymbolview.h"
 #include "common.h"
 #include "exception.h"
-#include "locators/abstractsystemlogger.h"
-#include "locators/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 
 #include <QMutex>
 #include <QtConcurrent>
@@ -176,6 +176,13 @@ void GdxViewer::selectSearchField()
     ui->lineEdit->setFocus();
 }
 
+void GdxViewer::releaseFile()
+{
+    if (ui->splitter->widget(1) != ui->widget)
+        ui->splitter->replaceWidget(1, ui->widget);
+    free();
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
@@ -251,11 +258,14 @@ bool GdxViewer::init()
 
     this->hideUniverseSymbol(); //first entry is the universe which we do not want to show
     ui->tvSymbols->setColumnHidden(5,true); //hide the "Loaded" column
+    mIsInitialized = true;
     return true;
 }
 
 void GdxViewer::free()
 {
+    if (!mIsInitialized)
+        return;
     GdxSymbol* selected = selectedSymbol();
     if(selected)
         selected->stopLoadingData();
@@ -276,6 +286,7 @@ void GdxViewer::free()
             delete view;
     }
     mSymbolViews.clear();
+    mIsInitialized = false;
 }
 
 void GdxViewer::hideUniverseSymbol()
@@ -300,7 +311,7 @@ void GdxViewer::toggleSearchColumns(bool checked)
 
 int GdxViewer::errorCallback(int count, const char *message)
 {
-    Q_UNUSED(count);
+    Q_UNUSED(count)
     auto logger = SysLogLocator::systemLog();
     logger->append(InvalidGAMS, LogMsgType::Error);
     logger->append(message, LogMsgType::Error);

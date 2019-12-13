@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace search {
 
 Result::Result(int lineNr, int colNr, int length, QString fileLoc, QString context) :
     mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mContext(context)
@@ -51,5 +52,6 @@ int Result::length() const
     return mLength;
 }
 
+}
 }
 }

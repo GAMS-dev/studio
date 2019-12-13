@@ -21,6 +21,7 @@
 
 namespace gams {
 namespace studio {
+namespace modeldialog {
 
 LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files, int suffixNumber):
     mLibrary(library), mDescription(description), mLongDescription(longDescription), mFiles(files), mValues(values), mSuffixNumber(suffixNumber)
@@ -61,5 +62,6 @@ QString LibraryItem::nameWithSuffix() const
     return name;
 }
 
+} // namespace modeldialog
 } // namespace studio
 } // namespace gams

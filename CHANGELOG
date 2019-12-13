@@ -1,3 +1,23 @@
+Version 0.14.0
+==================
+
+## General
+- **added GDX Diff dialog**
+- **added basic GAMS MIRO integration**
+- fixed `F3` not focussing lst file, breaking functionality after first press
+- improved GDX Viewer layout to optimize used screen space
+- fixed filestem command line parameter breaking path to lst file
+- removed Terminal shortcut because there was a conflict on windows
+- added clear button to filter input field in GDX Viewer and Reference File Viewer
+- adjusted layout of Reference File Viewer to be consistent with other components
+- fixed Select All (`Ctrl+A`) in BlockEdit mode
+- fixed behavior of BlockEdit when clicking outside of selected block
+- added workaround to focus editor in Lxi Viewer when closing search
+- fixed crash when double-clicking in Process Log while GAMS is running
+- fixed Process Log not scrolled to end for certain fonts after GAMS run
+- fixed Command Line Parameter changes getting lost when using search
+- removed empty lines from System Log
+
 Version 0.13.3
 ==================
 

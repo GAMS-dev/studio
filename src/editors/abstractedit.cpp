@@ -23,7 +23,7 @@
 #include <QToolTip>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
-#include "locators/settingslocator.h"
+#include "settingslocator.h"
 #include "logger.h"
 #include "keys.h"
 
