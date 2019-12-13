@@ -2693,6 +2693,8 @@ void MainWindow::initIcons()
     ui->actionUndo->setIcon(Scheme::icon(":/img/undo"));
     ui->actionRedo->setIcon(Scheme::icon(":/img/redo"));
     ui->actionCut->setIcon(Scheme::icon(":/img/cut"));
+    ui->actionZoom_In->setIcon(Scheme::icon(":/img/search-plus"));
+    ui->actionZoom_Out->setIcon(Scheme::icon(":/img/search-minus"));
     ui->actionHelp_View->setIcon(Scheme::icon(":/img/question"));
     ui->actionInterrupt->setIcon(Scheme::icon(":/img/stop"));
     ui->actionStop->setIcon(Scheme::icon(":/img/kill"));

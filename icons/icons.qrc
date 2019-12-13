@@ -71,7 +71,8 @@
         <file alias="run-gdx">play-gdx.svg</file>
         <file alias="save">save.svg</file>
         <file alias="scroll">scroll.svg</file>
-        <file alias="search">search.svg</file>
+        <file alias="search-minus">search-minus.svg</file>
+        <file alias="search-plus">search-plus.svg</file>
         <file alias="show">angle-double-down.svg</file>
         <file alias="square-darkyellow">square-darkyellow.svg</file>
         <file alias="square-green">square-green.svg</file>

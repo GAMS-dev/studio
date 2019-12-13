@@ -918,6 +918,10 @@
    </property>
   </action>
   <action name="actionZoom_In">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/search-plus</normaloff>:/img/search-plus</iconset>
+   </property>
    <property name="text">
     <string>Zoom In</string>
    </property>
@@ -926,6 +930,10 @@
    </property>
   </action>
   <action name="actionZoom_Out">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/search-minus</normaloff>:/img/search-minus</iconset>
+   </property>
    <property name="text">
     <string>Zoom Out</string>
    </property>
