@@ -1,10 +1,32 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "miromodelassemblydialog.h"
 #include "ui_miromodelassemblydialog.h"
 
+#include <QDir>
 #include <QMessageBox>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
+namespace miro {
 
 FilteredFileSystemModel::FilteredFileSystemModel(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -46,14 +68,12 @@ bool FileSystemModel::setData(const QModelIndex &index, const QVariant &value, i
     if (role == Qt::CheckStateRole && index.column() == 0) {
         if (value.toBool()) {
             mCheckedIndexes.insert(index);
-//            mCheckedIndexes.unite(childs(index));
             emit dataChanged(index,
                              match(index, Qt::DisplayRole, "*", -1, Qt::MatchWildcard | Qt::MatchRecursive).last());
             return true;
         } else {
             auto pos = mCheckedIndexes.find(index);
             mCheckedIndexes.erase(pos);
-//            mCheckedIndexes.subtract(childs(index));
             emit dataChanged(index,
                              match(index, Qt::DisplayRole, "*", -1, Qt::MatchWildcard | Qt::MatchRecursive).last());
             return true;
@@ -67,35 +87,39 @@ Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
     return QFileSystemModel::flags(index) | Qt::ItemIsUserCheckable;
 }
 
+void FileSystemModel::selectAll()
+{
+    QDir dir(rootPath());
+    auto entries = dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    for (auto entry: entries) {
+        auto idx = index(rootPath() + "/" + entry);
+        mCheckedIndexes.insert(idx);
+        emit dataChanged(idx, idx);
+    }
+}
+
+void FileSystemModel::clearSelection()
+{
+    auto checkedIndexes = mCheckedIndexes;
+    for (auto index: checkedIndexes) {
+        mCheckedIndexes.remove(index);
+        emit dataChanged(index, index);
+    }
+}
+
 QStringList FileSystemModel::selectedFiles()
 {
+    QDir dir(rootPath());
     QStringList selection;
     for (auto index: mCheckedIndexes)
-        selection << index.data().toString();
+        selection << dir.relativeFilePath(filePath(index));
     return selection;
 }
 
-// TODO (AF) read files.txt and check selection
-//QSet<QModelIndex> FileSystemModel::childs(const QModelIndex &parent)
-//{
-//    qDebug() << "#### ROWC >> " << rowCount(parent);
-
-//    QSet<QModelIndex> subTree;
-//    for (int i=0; i<rowCount(parent); ++i) {
-//        auto child = index(i, 0, parent);
-//        if (rowCount(child))
-//            subTree.unite(childs(child));
-//        subTree.insert(child);
-//        qDebug() << "#### >> " << child.data().toString();
-//    }
-
-//    return subTree;
-//}
-
-MiroModelAssemblyDialog::MiroModelAssemblyDialog(const QString &workingDirectory, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::MiroModelAssemblyDialog),
-    mFileSystemModel(new FileSystemModel(this))
+MiroModelAssemblyDialog::MiroModelAssemblyDialog(const QString &workingDirectory, QWidget *parent)
+    : QDialog(parent),
+      ui(new Ui::MiroModelAssemblyDialog),
+      mFileSystemModel(new FileSystemModel(this))
 {
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -133,10 +157,21 @@ void MiroModelAssemblyDialog::on_createButton_clicked()
     accept();
 }
 
+void MiroModelAssemblyDialog::on_selectAllButton_clicked()
+{
+    mFileSystemModel->selectAll();
+}
+
+void MiroModelAssemblyDialog::on_clearButton_clicked()
+{
+    mFileSystemModel->clearSelection();
+}
+
 void MiroModelAssemblyDialog::showMessageBox()
 {
     QMessageBox::critical(this, "No deployment files!", "Please select the files for your MIRO deployment.");
 }
 
+}
 }
 }

@@ -70,6 +70,8 @@ struct RecentData {
     QWidget *editor() const;
     void setEditor(QWidget *editor, MainWindow* window);
 
+    bool validRunGroup();
+
     FileId editFileId = -1;
     QString path = ".";
     ProjectGroupNode* group = nullptr;
@@ -191,6 +193,7 @@ private slots:
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
+    void updateMiroMenu();
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);

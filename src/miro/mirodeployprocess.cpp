@@ -1,13 +1,42 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "mirodeployprocess.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
+#include "commonpaths.h"
+
+#include <QDir>
 
 namespace gams {
 namespace studio {
+namespace miro {
 
 MiroDeployProcess::MiroDeployProcess(QObject *parent)
     : AbstractMiroProcess("gams", parent)
 {
+}
+
+QStringList MiroDeployProcess::defaultParameters() const
+{
+    return { QString("IDCJSON=%1/%2_io.json").arg(confFolder()).arg(modelName()),
+             "a=c" };
 }
 
 void MiroDeployProcess::setBaseMode(bool baseMode)
@@ -33,9 +62,10 @@ void MiroDeployProcess::setTargetEnvironment(MiroTargetEnvironment targetEnviron
 QProcessEnvironment MiroDeployProcess::miroProcessEnvironment()
 {
     auto environment = QProcessEnvironment::systemEnvironment();
+    environment.insert("PATH", QDir::toNativeSeparators(CommonPaths::systemDir()) +
+                               ":" + environment.value("PATH"));
     auto miroBuild = mTestDeployment ? "false" : "true";
     auto miroTestDeploy = mTestDeployment ? "true" : "false";
-
 
     switch (mTargetEnvironment) {
     case MiroTargetEnvironment::SingleUser:
@@ -69,12 +99,6 @@ QProcessEnvironment MiroDeployProcess::miroProcessEnvironment()
     return environment;
 }
 
-QStringList MiroDeployProcess::miroGamsParameters()
-{
-    return { QString("IDCJSON=%1/%2_io.json").arg(confFolder()).arg(modelName()),
-             "a=c" };
-}
-
 QString MiroDeployProcess::deployMode()
 {
     if (mBaseMode && mHypercubeMode)
@@ -86,5 +110,6 @@ QString MiroDeployProcess::deployMode()
     return QString();
 }
 
+}
 }
 }

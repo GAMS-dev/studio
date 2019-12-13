@@ -75,7 +75,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    abstractmiroprocess.cpp \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
@@ -137,11 +136,12 @@ SOURCES += \
     main.cpp \
     maintabcontextmenu.cpp \
     mainwindow.cpp \
-    mirodeploydialog.cpp \
-    mirodeployprocess.cpp \
-    miromodelassemblydialog.cpp \
-    miropaths.cpp \
-    miroprocess.cpp \
+    miro/abstractmiroprocess.cpp \
+    miro/mirocommon.cpp \
+    miro/mirodeploydialog.cpp \
+    miro/mirodeployprocess.cpp \
+    miro/miromodelassemblydialog.cpp \
+    miro/miroprocess.cpp \
     modeldialog/glbparser.cpp   \
     modeldialog/library.cpp     \
     modeldialog/libraryitem.cpp \
@@ -203,7 +203,6 @@ SOURCES += \
     wplabel.cpp
 
 HEADERS += \
-    abstractmiroprocess.h \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
@@ -267,11 +266,12 @@ HEADERS += \
     lxiviewer/lxiviewer.h \
     maintabcontextmenu.h \
     mainwindow.h \
-    mirodeploydialog.h \
-    mirodeployprocess.h \
-    miromodelassemblydialog.h \
-    miropaths.h \
-    miroprocess.h \
+    miro/abstractmiroprocess.h \
+    miro/mirocommon.h \
+    miro/mirodeploydialog.h \
+    miro/mirodeployprocess.h \
+    miro/miromodelassemblydialog.h \
+    miro/miroprocess.h \
     modeldialog/glbparser.h \
     modeldialog/library.h \
     modeldialog/libraryitem.h \
@@ -344,8 +344,8 @@ FORMS += \
     gotodialog.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
-    mirodeploydialog.ui \
-    miromodelassemblydialog.ui \
+    miro/mirodeploydialog.ui \
+    miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
     option/parametereditor.ui \
     option/solveroptionwidget.ui \

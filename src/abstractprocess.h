@@ -59,6 +59,15 @@ public:
     QStringList parameters() const;
     void setParameters(const QStringList &parameters);
 
+    virtual QStringList defaultParameters() const {
+        return QStringList();
+    }
+
+    // TODO (AF) mind param order and check/move ProjectRunGroupNode::analyzeParameters()
+    QStringList callParameters() const {
+        return parameters() + defaultParameters();
+    }
+
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &workingDirectory);
 

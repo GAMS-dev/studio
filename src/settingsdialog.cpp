@@ -25,7 +25,7 @@
 #include "studiosettings.h"
 #include "settingslocator.h"
 #include "ui_settingsdialog.h"
-#include "miropaths.h"
+#include "miro/mirocommon.h"
 
 namespace gams {
 namespace studio {
@@ -104,8 +104,7 @@ void SettingsDialog::loadSettings()
     // MIRO page
     ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->miroInstallationLocation()));
     if (ui->miroEdit->text().isEmpty()) {
-        MiroPaths paths("");
-        auto path = QDir::toNativeSeparators(paths.path());
+        auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
         ui->miroEdit->setText(path);
         mSettings->setMiroInstallationLocation(path);
     }
