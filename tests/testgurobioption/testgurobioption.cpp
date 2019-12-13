@@ -247,7 +247,7 @@ void TestGUROBIOption::testOptionIntegerType_data()
     QTest::newRow("bariterlimit")   << "bariterlimit"   << true  << 0    << gams::studio::option::OPTION_VALUE_MAXINT << gams::studio::option::OPTION_VALUE_MAXINT;
     QTest::newRow("concurrentmip")  << "concurrentmip"  << true  << 1    << gams::studio::option::OPTION_VALUE_MAXINT << 1;
     QTest::newRow("degenmoves")     << "degenmoves"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
-    QTest::newRow(".genconstrtype") << ".genconstrtype" << true  << 0    << 5                                         << 0;
+    QTest::newRow(".genconstrtype") << ".genconstrtype" << true  << 0    << 13                                         << 0;
     QTest::newRow("icpriority")     << "icpriority"     << true  << -100 << 100                                       << 0;
     QTest::newRow(".lazy")          << ".lazy"          << true  << 0    << 3                                         << 0;
     QTest::newRow("minrelnodes")    << "minrelnodes"    << true  << 0    << gams::studio::option::OPTION_VALUE_MAXINT << 0;

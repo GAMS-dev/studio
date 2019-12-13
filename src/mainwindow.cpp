@@ -1449,7 +1449,7 @@ void MainWindow::processFileEvents()
 
 void MainWindow::appendSystemLog(const QString &text)
 {
-    mSyslog->append(text.trimmed(), LogMsgType::Info);
+    mSyslog->append(text, LogMsgType::Info);
 }
 
 void MainWindow::showErrorMessage(QString text)
@@ -2723,11 +2723,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     }
     // set keyboard focus to editor
     if (tabWidget->currentWidget())
-        if (focus) {
-            tabWidget->currentWidget()->setFocus();
-            if (runGroup)
-                mGamsParameterEditor->loadCommandLine( runGroup->getRunParametersHistory() );
-        }
+        if (focus) tabWidget->currentWidget()->setFocus();
+
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
         ProjectFileNode* fileNode = mProjectRepo.findFileNode(edit);
