@@ -79,16 +79,23 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    gdxdiffdialog/filepathlineedit.cpp \
-    mirodeploydialog.cpp \
-    mirodeployprocess.cpp \
-    miromodelassemblydialog.cpp \
-    miropaths.cpp \
-    miroprocess.cpp \
-    support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
-    support/distributionvalidator.cpp \
+    editors/abstractedit.cpp \
+    editors/abstracttextmapper.cpp \
+    editors/codeedit.cpp \
+    editors/defaultsystemlogger.cpp \
+    editors/editorhelper.cpp \
+    editors/filemapper.cpp \
+    editors/logparser.cpp \
+    editors/memorymapper.cpp \
+    editors/processlogedit.cpp \
+    editors/sysloglocator.cpp \
+    editors/systemlogedit.cpp \
+    editors/textview.cpp \
+    editors/textviewedit.cpp \
+    editors/viewhelper.cpp \
+    encodingsdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
     file/fileevent.cpp \
@@ -106,6 +113,9 @@ SOURCES += \
     file/treeitemdelegate.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
+    gdxdiffdialog/filepathlineedit.cpp \
+    gdxdiffdialog/gdxdiffdialog.cpp \
+    gdxdiffdialog/gdxdiffprocess.cpp \
     gdxviewer/columnfilter.cpp \
     gdxviewer/columnfilterframe.cpp \
     gdxviewer/filteruelmodel.cpp \
@@ -116,14 +126,22 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/nestedheaderview.cpp \
     gdxviewer/tableviewmodel.cpp \
+    gotodialog.cpp \
     keys.cpp \
     logger.cpp \
+    logtabcontextmenu.cpp \
     lxiviewer/lxiparser.cpp \
     lxiviewer/lxitreeitem.cpp \
     lxiviewer/lxitreemodel.cpp \
     lxiviewer/lxiviewer.cpp \
     main.cpp \
+    maintabcontextmenu.cpp \
     mainwindow.cpp \
+    mirodeploydialog.cpp \
+    mirodeployprocess.cpp \
+    miromodelassemblydialog.cpp \
+    miropaths.cpp \
+    miroprocess.cpp \
     modeldialog/glbparser.cpp   \
     modeldialog/library.cpp     \
     modeldialog/libraryitem.cpp \
@@ -146,23 +164,32 @@ SOURCES += \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
     reference/reference.cpp \
-    reference/referencetabstyle.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
+    reference/referencetabstyle.cpp \
     reference/referencetreemodel.cpp \
     reference/referenceviewer.cpp \
     reference/symboldatatype.cpp \
     reference/symbolreferenceitem.cpp \
     reference/symbolreferencewidget.cpp \
     reference/symboltablemodel.cpp \
+    search/result.cpp \
     search/resultsview.cpp \
     search/searchdialog.cpp \
-    search/result.cpp \
-    search/searchresultlist.cpp \
     search/searchlocator.cpp \
+    search/searchresultlist.cpp \
+    search/searchworker.cpp \
     settingsdialog.cpp \
+    settingslocator.cpp \
     statuswidgets.cpp \
     studiosettings.cpp \
+    support/aboutgamsdialog.cpp         \
+    support/checkforupdatewrapper.cpp \
+    support/distributionvalidator.cpp \
+    support/gamslicenseinfo.cpp         \
+    support/solverconfiginfo.cpp        \
+    support/solvertablemodel.cpp        \
+    support/updatedialog.cpp \
     syntax/basehighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
@@ -171,53 +198,34 @@ SOURCES += \
     syntax/systemloghighlighter.cpp \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
-    support/updatedialog.cpp \
-    welcomepage.cpp \
-    wplabel.cpp \
-    gotodialog.cpp \
-    editors/abstractedit.cpp \
-    editors/abstracttextmapper.cpp \
-    editors/codeedit.cpp \
-    editors/editorhelper.cpp \
-    editors/processlogedit.cpp \
-    editors/systemlogedit.cpp \
-    editors/textview.cpp \
-    editors/textviewedit.cpp \
-    editors/viewhelper.cpp \
-    encodingsdialog.cpp \
     tabdialog.cpp \
-    settingslocator.cpp \
-    editors/sysloglocator.cpp \
-    editors/defaultsystemlogger.cpp \
-    support/aboutgamsdialog.cpp         \
-    support/gamslicenseinfo.cpp         \
-    support/solverconfiginfo.cpp        \
-    support/solvertablemodel.cpp        \
-    maintabcontextmenu.cpp \
-    logtabcontextmenu.cpp \
-    search/searchworker.cpp \
-    editors/filemapper.cpp \
-    editors/memorymapper.cpp \
-    editors/logparser.cpp \
-    gdxdiffdialog/gdxdiffdialog.cpp \
-    gdxdiffdialog/gdxdiffprocess.cpp
+    welcomepage.cpp \
+    wplabel.cpp
 
 HEADERS += \
     abstractmiroprocess.h \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    gdxdiffdialog/filepathlineedit.h \
-    mirodeploydialog.h \
-    mirodeployprocess.h \
-    miromodelassemblydialog.h \
-    miropaths.h \
-    miroprocess.h \
-    support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \
-    support/distributionvalidator.h \
+    editors/abstractedit.h \
+    editors/abstractsystemlogger.h \
+    editors/abstracttextmapper.h \
+    editors/codeedit.h \
+    editors/defaultsystemlogger.h \
+    editors/editorhelper.h \
+    editors/filemapper.h \
+    editors/logparser.h \
+    editors/memorymapper.h \
+    editors/processlogedit.h \
+    editors/sysloglocator.h \
+    editors/systemlogedit.h \
+    editors/textview.h \
+    editors/textviewedit.h \
+    editors/viewhelper.h \
+    encodingsdialog.h \
     exception.h \
     file.h \
     file/dynamicfile.h \
@@ -236,6 +244,9 @@ HEADERS += \
     file/treeitemdelegate.h \
     gamslibprocess.h \
     gamsprocess.h \
+    gdxdiffdialog/filepathlineedit.h \
+    gdxdiffdialog/gdxdiffdialog.h \
+    gdxdiffdialog/gdxdiffprocess.h \
     gdxviewer/columnfilter.h \
     gdxviewer/columnfilterframe.h \
     gdxviewer/filteruelmodel.h \
@@ -246,13 +257,21 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/nestedheaderview.h \
     gdxviewer/tableviewmodel.h \
+    gotodialog.h \
     keys.h \
     logger.h \
+    logtabcontextmenu.h \
     lxiviewer/lxiparser.h \
     lxiviewer/lxitreeitem.h \
     lxiviewer/lxitreemodel.h \
     lxiviewer/lxiviewer.h \
+    maintabcontextmenu.h \
     mainwindow.h \
+    mirodeploydialog.h \
+    mirodeployprocess.h \
+    miromodelassemblydialog.h \
+    miropaths.h \
+    miroprocess.h \
     modeldialog/glbparser.h \
     modeldialog/library.h \
     modeldialog/libraryitem.h \
@@ -275,23 +294,32 @@ HEADERS += \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
     reference/reference.h \
-    reference/referencetabstyle.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \
+    reference/referencetabstyle.h \
     reference/referencetreemodel.h \
     reference/referenceviewer.h \
     reference/symboldatatype.h \
     reference/symbolreferenceitem.h \
     reference/symbolreferencewidget.h \
     reference/symboltablemodel.h \
+    search/result.h \
     search/resultsview.h \
     search/searchdialog.h \
-    search/result.h \
-    search/searchresultlist.h \
     search/searchlocator.h \
+    search/searchresultlist.h \
+    search/searchworker.h \
     settingsdialog.h \
+    settingslocator.h \
     statuswidgets.h \
     studiosettings.h \
+    support/aboutgamsdialog.h       \
+    support/checkforupdatewrapper.h \
+    support/distributionvalidator.h \
+    support/gamslicenseinfo.h       \
+    support/solverconfiginfo.h      \
+    support/solvertablemodel.h      \
+    support/updatedialog.h \
     syntax.h \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
@@ -302,43 +330,18 @@ HEADERS += \
     syntax/systemloghighlighter.h \
     syntax/textmark.h \
     syntax/textmarkrepo.h \
-    support/updatedialog.h \
+    tabdialog.h \
     version.h \
     welcomepage.h \
-    wplabel.h \
-    gotodialog.h \
-    editors/abstractedit.h \
-    editors/abstracttextmapper.h \
-    editors/codeedit.h \
-    editors/editorhelper.h \
-    editors/processlogedit.h \
-    editors/systemlogedit.h \
-    editors/textview.h \
-    editors/textviewedit.h \
-    editors/viewhelper.h \
-    encodingsdialog.h \
-    tabdialog.h \
-    settingslocator.h \
-    editors/sysloglocator.h \
-    editors/abstractsystemlogger.h \
-    editors/defaultsystemlogger.h \
-    support/aboutgamsdialog.h       \
-    support/gamslicenseinfo.h       \
-    support/solverconfiginfo.h      \
-    support/solvertablemodel.h      \
-    maintabcontextmenu.h \
-    logtabcontextmenu.h \
-    search/searchworker.h \
-    editors/filemapper.h \
-    editors/memorymapper.h \
-    editors/logparser.h \
-    gdxdiffdialog/gdxdiffdialog.h \
-    gdxdiffdialog/gdxdiffprocess.h
+    wplabel.h
 
 FORMS += \
+    encodingsdialog.ui \
+    gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
+    gotodialog.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     mirodeploydialog.ui \
@@ -351,13 +354,10 @@ FORMS += \
     search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
-    support/updatedialog.ui \
-    welcomepage.ui \
-    gotodialog.ui \
-    encodingsdialog.ui \
-    tabdialog.ui \
     support/aboutgamsdialog.ui \
-    gdxdiffdialog/gdxdiffdialog.ui
+    support/updatedialog.ui \
+    tabdialog.ui \
+    welcomepage.ui
 
 RESOURCES += \
     ../icons/icons.qrc
