@@ -104,8 +104,7 @@ int TextView::lineCount() const
 bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 {
     if (mTextKind != FileText) return false;
-    if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
-    mMapper->setCodec(codecMib == -1 ? QTextCodec::codecForMib(codecMib) : QTextCodec::codecForLocale());
+    mMapper->setCodec(codecMib == -1 ? QTextCodec::codecForLocale() : QTextCodec::codecForMib(codecMib));
 
     if (!static_cast<FileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
     recalcVisibleLines();
