@@ -512,7 +512,10 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     for (option::OptionItem item : itemList) {
 
         // keep unmodified value as option for output
-        gamsArgs[item.key] = item.value;
+        if (item.recurrent)
+             gamsArgs.insert(item.key, item.value);
+        else
+            gamsArgs.insertMulti(item.key, item.value);
 
         // convert to native seperator
         QString value = item.value;
