@@ -450,6 +450,7 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
     ui->gamsParameterTreeView->clearSelection();
     ui->gamsParameterTreeView->collapseAll();
     ui->gamsParameterCommandLine->clear();
+    ui->gamsParameterCommandLine->resetCurrentValue();
     for (QString str: history) {
         ui->gamsParameterCommandLine->insertItem(0, str );
     }
