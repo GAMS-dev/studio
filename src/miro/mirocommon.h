@@ -17,28 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPROCESS_H
-#define GAMSPROCESS_H
+#ifndef MIROCOMMON_H
+#define MIROCOMMON_H
 
-#include "abstractprocess.h"
+#include <QString>
 
 namespace gams {
 namespace studio {
+namespace miro {
 
-class GamsProcess : public AbstractGamsProcess
+class MiroCommon
 {
-    Q_OBJECT
+protected:
+    MiroCommon() {}
 
 public:
-    GamsProcess(QObject *parent = nullptr);
+    static QString path(const QString &configMiroPath);
 
-    void execute() override;
-    void interrupt() override;
+    static QString assemblyFileName(const QString &modelName);
 
-    QString aboutGAMS();
+private:
+    static bool exists(const QString &miro);
+    static QString searchLocations(const QStringList &locations);
+    static QStringList standardLocations();
 };
 
-} // namespace studio
-} // namespace gams
+}
+}
+}
 
-#endif // GAMSPROCESS_H
+#endif // MIROCOMMON_H

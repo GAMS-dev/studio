@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef ABSTRACTMIROPROCESS_H
 #define ABSTRACTMIROPROCESS_H
 
@@ -5,6 +24,7 @@
 
 namespace gams {
 namespace studio {
+namespace miro {
 
 class AbstractMiroProcess : public AbstractProcess
 {
@@ -40,13 +60,14 @@ protected:
     QString nativeAppPath() override;
 
     virtual QProcessEnvironment miroProcessEnvironment() = 0;
-    virtual QStringList miroGamsParameters() = 0;
 
     QString confFolder() const;
     QString dataFolder() const;
 
-protected:
     void readStdChannel(QProcess &process, QProcess::ProcessChannel channel);
+
+private:
+    void gamsInterrupt();
 
 private:
     QString mMiroPath;
@@ -57,6 +78,7 @@ private:
     static const QString DataFolderPrefix;
 };
 
+}
 }
 }
 

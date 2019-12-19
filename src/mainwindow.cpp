@@ -54,11 +54,11 @@
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
-#include "miroprocess.h"
-#include "miropaths.h"
-#include "mirodeploydialog.h"
-#include "mirodeployprocess.h"
-#include "miromodelassemblydialog.h"
+#include "miro/miroprocess.h"
+#include "miro/mirocommon.h"
+#include "miro/mirodeploydialog.h"
+#include "miro/mirodeployprocess.h"
+#include "miro/miromodelassemblydialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -230,8 +230,7 @@ MainWindow::MainWindow(QWidget *parent)
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
-    // TODO (AF)
-    //ui->menuMIRO->setEnabled(!mSettings->miroInstallationLocation().isEmpty());
+    updateMiroMenu();
 }
 
 
@@ -1944,81 +1943,87 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
 
 void MainWindow::on_actionBase_mode_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
+    if (!mRecent.validRunGroup())
+        return;
+
+    auto node = mProjectRepo.findFile(mRecent.group->toRunGroup()->parameter("lst"));
+    if (node)
+        closeFileEditors(node->file()->id());
+
+    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(runGroup->location());
+    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.group->name());
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    miroProcess->setMiroPath(miroPaths.path());
-    miroProcess->setMiroMode(MiroMode::Base);
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroMode(miro::MiroMode::Base);
 
     execute({}, std::move(miroProcess));
 }
 
 void MainWindow::on_actionHypercube_mode_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
+    if (!mRecent.validRunGroup())
+        return;
+
+    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(runGroup->location());
+    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.group->name());
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    miroProcess->setMiroPath(miroPaths.path());
-    miroProcess->setMiroMode(MiroMode::Hypercube);
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
     execute({}, std::move(miroProcess));
 }
 
 void MainWindow::on_actionConfiguration_mode_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
+    if (!mRecent.validRunGroup())
+        return;
+
+    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(runGroup->location());
+    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.group->name());
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    miroProcess->setMiroPath(miroPaths.path());
-    miroProcess->setMiroMode(MiroMode::Configuration);
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
     execute({}, std::move(miroProcess));
 }
 
 void MainWindow::on_actionStop_MIRO_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    runGroup->process()->terminate();
+    if (!mRecent.validRunGroup())
+        return;
+    mRecent.group->toRunGroup()->process()->terminate();
 }
 
 void MainWindow::on_actionCreate_model_assembly_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    qDebug() << "on_actionCreate_model_assembly_triggered";
-    MiroModelAssemblyDialog dlg(runGroup->location(), this);
+    if (!mRecent.validRunGroup())
+        return;
+
+    QStringList checkedFiles;
+    auto fileName = mRecent.group->toRunGroup()->location() + "/" + miro::MiroCommon::assemblyFileName(mRecent.group->name());
+    if (QFileInfo().exists(fileName)) {
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            while (!file.atEnd()) {
+                auto line = file.readLine().trimmed();
+                if (line.isEmpty())
+                    continue;
+                checkedFiles << line;
+            }
+            file.close();
+        }
+    } else {
+        checkedFiles << mRecent.group->toRunGroup()->runnableGms()->name();
+    }
+
+    miro::MiroModelAssemblyDialog dlg(mRecent.group->toRunGroup()->location(), this);
+    // TODO (AF) set checked files
     if (dlg.exec() == QDialog::Rejected)
         return;
 
-    auto fileName = runGroup->location() + "/" + mRecent.group->name() + "_files.txt";
     QFile file(fileName);
     auto selectedFiles = dlg.selectedFiles();
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -2038,15 +2043,13 @@ void MainWindow::on_actionDeploy_triggered()
     auto runGroup = mRecent.group->toRunGroup();
     if (!runGroup)
         qDebug() << "NO RUN GROUP!";
-    // TODO (AF) func for assembly file
-    auto assemblyFile = runGroup->location() + "/" + mRecent.group->name() + "_files.txt";
-    MiroDeployDialog dlg(assemblyFile, this);
+    auto assemblyFile = runGroup->location() + "/" + miro::MiroCommon::assemblyFileName(mRecent.group->name());
+    miro::MiroDeployDialog dlg(assemblyFile, this);
     if (dlg.exec() == QDialog::Rejected)
         return;
 
-    auto process = std::make_unique<MiroDeployProcess>(new MiroDeployProcess);
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    process->setMiroPath(miroPaths.path());
+    auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
+    process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     process->setWorkingDirectory(runGroup->location());
     process->setModelName(mRecent.group->name());
     process->setBaseMode(dlg.baseMode());
@@ -2453,6 +2456,11 @@ void MainWindow::execute(QString commandLineStr,
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+
+    QString msg = "Running GAMS:";
+    msg.append(groupProc->callParameters().join(" "));
+    SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
+
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
@@ -2616,6 +2624,17 @@ void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
         if (choice == 1) mFileMetaRepo.setAskBigFileEdit(false);
     }
     canOpen = true;
+}
+
+void MainWindow::updateMiroMenu()
+{
+    if (mSettings->miroInstallationLocation().isEmpty())
+        mSettings->setMiroInstallationLocation(miro::MiroCommon::path(""));
+    QFileInfo fileInfo(mSettings->miroInstallationLocation());
+    if (fileInfo.exists())
+        ui->menuMIRO->setEnabled(true);
+    else
+        ui->menuMIRO->setEnabled(false);
 }
 
 void MainWindow::ensureInScreen()
@@ -2927,6 +2946,7 @@ void MainWindow::on_actionSettings_triggered()
     sd.exec();
     sd.disconnect();
     mSettings->saveSettings(this);
+    updateMiroMenu();
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -3506,6 +3526,13 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     }
     window->updateEditorMode();
     window->updateEditorPos();
+}
+
+bool RecentData::validRunGroup()
+{
+    if (!group)
+        return false;
+    return group->toRunGroup() != nullptr;
 }
 
 void MainWindow::on_actionReset_Views_triggered()

@@ -1,13 +1,36 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "abstractmiroprocess.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "commonpaths.h"
 
 #include <QDir>
-#include <QDebug>
+
+#ifdef _WIN32
+#include "Windows.h"
+#endif
 
 namespace gams {
 namespace studio {
+namespace miro {
 
 const QString AbstractMiroProcess::ConfFolderPrefix = "conf_";
 const QString AbstractMiroProcess::DataFolderPrefix = "data_";
@@ -33,10 +56,9 @@ void AbstractMiroProcess::execute()
 {
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), parameters() + miroGamsParameters());
+    mProcess.start(nativeAppPath(), callParameters());
 #else
-    auto params = parameters() + miroGamsParameters();
-    qDebug() << "#### PARAMS " << params;
+    auto params = callParameters();
     mProcess.setNativeArguments(params.join(" "));
     mProcess.setProgram(nativeAppPath());
     mProcess.start();
@@ -45,7 +67,10 @@ void AbstractMiroProcess::execute()
 
 void AbstractMiroProcess::interrupt()
 {
-    terminate();
+    if (mProcess.state() == QProcess::Running || mProcess.state() == QProcess::Starting)
+        gamsInterrupt();
+    if (mMiro.state() == QProcess::Running || mMiro.state() == QProcess::Starting)
+        mMiro.terminate();
 }
 
 void AbstractMiroProcess::terminate()
@@ -53,7 +78,7 @@ void AbstractMiroProcess::terminate()
     if (mProcess.state() == QProcess::Running || mProcess.state() == QProcess::Starting)
         mProcess.kill();
     if (mMiro.state() == QProcess::Running || mMiro.state() == QProcess::Starting)
-        mMiro.kill();
+        mMiro.terminate();
 }
 
 QProcess::ProcessState AbstractMiroProcess::state() const
@@ -160,5 +185,33 @@ void AbstractMiroProcess::readStdChannel(QProcess &process, QProcess::ProcessCha
     }
 }
 
+void AbstractMiroProcess::gamsInterrupt()
+{
+    QString pid = QString::number(mProcess.processId());
+#ifdef _WIN32
+    //IntPtr receiver;
+    COPYDATASTRUCT cds;
+    const char* msgText = "GAMS Message Interrupt";
+
+    QString windowName("___GAMSMSGWINDOW___");
+    windowName += pid;
+    HWND receiver = FindWindowA(nullptr, windowName.toUtf8().constData());
+
+    cds.dwData = (ULONG_PTR) 1;
+    cds.lpData = (PVOID) msgText;
+    cds.cbData = (DWORD) (strlen(msgText) + 1);
+
+    SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+#else // Linux and Mac OS X
+    QProcess proc;
+    proc.setProgram("/bin/bash");
+    QStringList args { "-c", "kill -2 " + pid};
+    proc.setArguments(args);
+    proc.start();
+    proc.waitForFinished(-1);
+#endif
+}
+
+}
 }
 }

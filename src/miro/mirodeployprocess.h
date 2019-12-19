@@ -17,28 +17,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPROCESS_H
-#define GAMSPROCESS_H
+#ifndef MIRODEPLOYPROCESS_H
+#define MIRODEPLOYPROCESS_H
 
-#include "abstractprocess.h"
+#include "abstractmiroprocess.h"
 
 namespace gams {
 namespace studio {
+namespace miro {
 
-class GamsProcess : public AbstractGamsProcess
+enum class MiroTargetEnvironment
+{
+    SingleUser      = 0,
+    LocalMultiUser  = 1,
+    MultiUser       = 2
+};
+
+class MiroDeployProcess : public AbstractMiroProcess
 {
     Q_OBJECT
 
 public:
-    GamsProcess(QObject *parent = nullptr);
+    MiroDeployProcess(QObject *parent = nullptr);
 
-    void execute() override;
-    void interrupt() override;
+    QStringList defaultParameters() const override;
 
-    QString aboutGAMS();
+    void setBaseMode(bool baseMode);
+    void setHypercubeMode(bool hcubeMode);
+    void setTestDeployment(bool testDeploy);
+    void setTargetEnvironment(MiroTargetEnvironment targetEnvironment);
+
+protected:
+    QProcessEnvironment miroProcessEnvironment() override;
+
+private:
+    QString deployMode();
+
+private:
+    bool mBaseMode;
+    bool mHypercubeMode;
+    bool mTestDeployment;
+    MiroTargetEnvironment mTargetEnvironment;
+
+    QProcess mMiro;
 };
 
-} // namespace studio
-} // namespace gams
+}
+}
+}
 
-#endif // GAMSPROCESS_H
+#endif // MIRODEPLOYPROCESS_H

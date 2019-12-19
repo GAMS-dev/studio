@@ -17,28 +17,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPROCESS_H
-#define GAMSPROCESS_H
+#ifndef MIRODEPLOYDIALOG_H
+#define MIRODEPLOYDIALOG_H
 
-#include "abstractprocess.h"
+#include <QDialog>
+
+#include "mirodeployprocess.h"
 
 namespace gams {
 namespace studio {
+namespace miro {
 
-class GamsProcess : public AbstractGamsProcess
+namespace Ui {
+class MiroDeployDialog;
+}
+
+class MiroDeployDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    GamsProcess(QObject *parent = nullptr);
+    MiroDeployDialog(const QString &modelAssemblyFile, QWidget *parent = nullptr);
 
-    void execute() override;
-    void interrupt() override;
+    bool baseMode() const;
+    bool hypercubeMode() const;
+    bool testDeployment() const;
+    MiroTargetEnvironment targetEnvironment();
 
-    QString aboutGAMS();
+private slots:
+    void on_deployButton_clicked();
+    void on_testDeployButton_clicked();
+
+private:
+    bool showMessageBox();
+
+private:
+    Ui::MiroDeployDialog *ui;
+    QString mModelAssemblyFile;
+    bool mTestDeploy;
 };
 
-} // namespace studio
-} // namespace gams
+}
+}
+}
 
-#endif // GAMSPROCESS_H
+#endif // MIRODEPLOYDIALOG_H

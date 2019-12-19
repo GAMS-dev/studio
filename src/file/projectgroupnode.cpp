@@ -582,11 +582,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         }
     }
 
-    // console output
-    QString msg = "Running GAMS:";
-    msg.append(output.join(" "));
-    SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
-
     return output;
 }
 

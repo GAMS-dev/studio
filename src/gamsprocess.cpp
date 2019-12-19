@@ -46,28 +46,6 @@ void GamsProcess::execute()
 #endif
 }
 
-QString GamsProcess::aboutGAMS()
-{
-    QProcess process;
-    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QStringList args({"/??", "lo=3", "curdir=" + tempDir});
-    QString appPath = nativeAppPath();
-    if (appPath.isEmpty())
-        return QString();
-    process.start(appPath, args);
-    QString about;
-    if (process.waitForFinished()) {
-        about = process.readAllStandardOutput();
-    }
-    QStringList lines = about.split('\n', QString::SkipEmptyParts, Qt::CaseInsensitive);
-    if (lines.size() >= 3) {
-        lines.removeFirst();
-        lines.removeLast();
-        lines.removeLast();
-    }
-    return lines.join("\n");
-}
-
 void GamsProcess::interrupt()
 {
     QString pid = QString::number(mProcess.processId());
@@ -93,6 +71,28 @@ void GamsProcess::interrupt()
     proc.start();
     proc.waitForFinished(-1);
 #endif
+}
+
+QString GamsProcess::aboutGAMS()
+{
+    QProcess process;
+    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    QStringList args({"/??", "lo=3", "curdir=" + tempDir});
+    QString appPath = nativeAppPath();
+    if (appPath.isEmpty())
+        return QString();
+    process.start(appPath, args);
+    QString about;
+    if (process.waitForFinished()) {
+        about = process.readAllStandardOutput();
+    }
+    QStringList lines = about.split('\n', QString::SkipEmptyParts, Qt::CaseInsensitive);
+    if (lines.size() >= 3) {
+        lines.removeFirst();
+        lines.removeLast();
+        lines.removeLast();
+    }
+    return lines.join("\n");
 }
 
 } // namespace studio
