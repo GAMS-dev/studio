@@ -512,7 +512,10 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     for (option::OptionItem item : itemList) {
 
         // keep unmodified value as option for output
-        gamsArgs[item.key] = item.value;
+        if (item.recurrent)
+             gamsArgs.insert(item.key, item.value);
+        else
+            gamsArgs.insertMulti(item.key, item.value);
 
         // convert to native seperator
         QString value = item.value;
@@ -561,9 +564,24 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QStringList output { "\""+QDir::toNativeSeparators(gmsLocation)+"\"" };
 #endif
     // normalize gams parameter format
-    for(QString k : gamsArgs.keys()) {
-        output.append(k + "=" + gamsArgs.value(k));
+    QStringList defaultArgumentList;
+    defaultArgumentList << "lo" << "ide" << "er" << "errmsg" << "pagesize" << "LstTitleLeftAligned";
+    for(QString arg : defaultArgumentList) {
+        output.append( arg + "=" + defaultGamsArgs[arg] );
     }
+    QStringList recurrentArgumentList(defaultArgumentList);
+    for (option::OptionItem item : itemList) {
+        if (item.recurrent) {
+            if (recurrentArgumentList.contains(item.key))
+                output.append( item.key + "=" + gamsArgs[item.key] );
+            else
+                recurrentArgumentList << item.key;
+        } else {
+            output.append( item.key + "=" + item.value );
+            recurrentArgumentList << item.key;
+        }
+    }
+
     // console output
     QString msg = "Running GAMS:";
     msg.append(output.join(" "));
