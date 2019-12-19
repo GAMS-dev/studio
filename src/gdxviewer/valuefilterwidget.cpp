@@ -17,22 +17,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "columnfilter.h"
-#include "columnfilterframe.h"
+#include "valuefilterwidget.h"
+#include "ui_valuefilterwidget.h"
+#include "valuefilter.h"
+
+#include <QMenu>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-ColumnFilter::ColumnFilter(GdxSymbol *symbol, int column, QWidget *parent)
-    :QWidgetAction(parent), mSymbol(symbol), mColumn(column)
+ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) :
+    QWidget(parent), mValueFilter(valueFilter),
+    ui(new Ui::ValueFilterWidget)
 {
+    ui->setupUi(this);
 
+    ui->leMin->setValidator(new QDoubleValidator());
+    ui->leMax->setValidator(new QDoubleValidator());
+
+    //TODO(CW): use maxPrecision from class GDXSymbol?
+    ui->leMin->setText(QString::number(mValueFilter->currentMin(), 'g', 16));
+    ui->leMax->setText(QString::number(mValueFilter->currentMax(), 'g', 16));
 }
 
-QWidget *ColumnFilter::createWidget(QWidget *parent)
+ValueFilterWidget::~ValueFilterWidget()
 {
-    return new ColumnFilterFrame(mSymbol, mColumn, parent);
+    delete ui;
+}
+
+void ValueFilterWidget::on_pbApply_clicked()
+{
+    mValueFilter->setFilter(ui->leMin->text().toDouble(), ui->leMax->text().toDouble());
+    static_cast<QMenu*>(this->parent())->close();
 }
 
 } // namespace gdxviewer

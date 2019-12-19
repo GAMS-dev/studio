@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "gdxsymboltable.h"
 #include "nestedheaderview.h"
+#include "valuefilter.h"
 
 #include <QMutex>
 #include <QSet>
@@ -45,9 +46,13 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive.resize(mDim);
-    for(int i=0; i<mDim; i++)
+    mFilterActive.resize(filterColumnCount());
+    for(int i=0; i<filterColumnCount(); i++)
         mFilterActive[i] = false;
+
+    mValueFilters.resize(mNumericalColumnCount);
+    for (int i=0; i<mNumericalColumnCount; i++)
+        mValueFilters[i] = nullptr;
 
     mSpecValSortVal.push_back(5.0E300); // GMS_SV_UNDEF
     mSpecValSortVal.push_back(4.0E300); // GMS_SV_NA
@@ -164,6 +169,7 @@ void GdxSymbol::loadData()
     mMinUel.resize(mDim);
     for(int i=0; i<mDim; i++)
         mMinUel[i] = INT_MAX;
+    initNumericalBounds();
     mMaxUel.resize(mDim);
     for(int i=0; i<mDim; i++)
         mMaxUel[i] = INT_MIN;
@@ -220,6 +226,10 @@ void GdxSymbol::loadData()
                 valOffset = i*GMS_VAL_MAX;
                 for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
                     mValues[valOffset+vIdx] =  values[vIdx];
+            }
+            for(int vIdx=0; vIdx<mNumericalColumnCount; vIdx++) {
+                mMinDouble[vIdx] = qMin(mMinDouble[vIdx], values[vIdx]);
+                mMaxDouble[vIdx] = qMax(mMaxDouble[vIdx], values[vIdx]);
             }
             mLoadedRecCount++;
             if (mLoadedRecCount == triggerAutoResizeListViewCount || mLoadedRecCount == mRecordCount) {
@@ -316,6 +326,13 @@ void GdxSymbol::loadMetaData()
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
         mSubType = gmsFixVarType(mSubType);
+
+    if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+        mNumericalColumnCount = GMS_VAL_MAX;
+    else if (mType == GMS_DT_PAR)
+        mNumericalColumnCount = 1;
+    else
+        mNumericalColumnCount = 0;
 }
 
 void GdxSymbol::loadDomains()
@@ -389,12 +406,54 @@ QVariant GdxSymbol::formatValue(double val) const
     return QVariant();
 }
 
+void GdxSymbol::initNumericalBounds()
+{
+    if(mType == GMS_DT_PAR) {
+        mMinDouble.resize(1);
+        mMaxDouble.resize(1);
+        mMinDouble[0] = INT_MAX;
+        mMaxDouble[0] = INT_MIN;
+    } else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR) {
+        mMinDouble.resize(GMS_VAL_MAX);
+        mMaxDouble.resize(GMS_VAL_MAX);
+        for (int i=0; i<GMS_VAL_MAX; i++) {
+            mMinDouble[i] = INT_MAX;
+            mMaxDouble[i] = INT_MIN;
+        }
+    }
+}
+
+std::vector<ValueFilter *> GdxSymbol::valueFilters() const
+{
+    return mValueFilters;
+}
+
+int GdxSymbol::filterColumnCount()
+{
+    return mDim+mNumericalColumnCount;
+}
+
 void GdxSymbol::setNumericalPrecision(int numericalPrecision, bool squeezeTrailingZeroes)
 {
     beginResetModel();
     mNumericalPrecision = numericalPrecision;
     mSqueezeTrailingZeroes = squeezeTrailingZeroes;
     endResetModel();
+}
+
+double GdxSymbol::minDouble(int valCol)
+{
+    return mMinDouble[valCol];
+}
+
+double GdxSymbol::maxDouble(int valCol)
+{
+    return mMaxDouble[valCol];
+}
+
+void GdxSymbol::registerValueFilter(int valueColumn, ValueFilter *valueFilter)
+{
+    mValueFilters.at(valueColumn) = valueFilter;
 }
 
 bool GdxSymbol::filterHasChanged() const
@@ -439,10 +498,13 @@ void GdxSymbol::resetSortFilter()
         mRecFilterIdx[i] = i;
     }
     for(int dim=0; dim<mDim; dim++) {
-        mFilterActive[dim] = false;
         for(int uel : *mUelsInColumn.at(dim))
             mShowUelInColumn.at(dim)[uel] = true;
     }
+    for(int i=0; i<mNumericalColumnCount; i++)
+        mValueFilters[i] = nullptr;
+    for(int i=0; i<filterColumnCount(); i++)
+        mFilterActive[i] = false;
     mFilterRecCount = mLoadedRecCount;
     layoutChanged();
 }
@@ -552,11 +614,28 @@ void GdxSymbol::filterRows()
     for(int row=0; row<mRecordCount; row++) {
         int recIdx = mRecSortIdx[row];
         mRecFilterIdx[row-removedCount] = row;
-        for(int dim=0; dim<mDim; dim++) {
-            if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) { //filter record
-                mFilterRecCount--;
-                removedCount++;
-                break;
+        for(int dim=0; dim<filterColumnCount(); dim++) {
+            if (dim<mDim) { // filter by key column
+                if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) { //filter record
+                    mFilterRecCount--;
+                    removedCount++;
+                    break;
+                }
+            } else { // filter by numerical column
+                bool alreadyRemoved=false;
+                for(int i=0; i<mNumericalColumnCount; i++) {
+                    if (mFilterActive[mDim+i]) {
+                        double val = mValues[recIdx*mNumericalColumnCount+i];
+                        if (val < mValueFilters[i]->currentMin() || val > mValueFilters[i]->currentMax()) {
+                            mFilterRecCount--;
+                            removedCount++;
+                            alreadyRemoved=true;
+                            break;
+                        }
+                    }
+                }
+                if (alreadyRemoved)
+                    break;
             }
         }
     }

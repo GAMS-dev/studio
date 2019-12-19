@@ -34,6 +34,7 @@ namespace gdxviewer {
 
 class GdxSymbolTable;
 class TableViewModel;
+class ValueFilter;
 
 class GdxSymbol : public QAbstractTableModel
 {
@@ -80,6 +81,14 @@ public:
 
     void setNumericalPrecision(int numericalPrecision, bool squeezeTrailingZeroes);
 
+    double minDouble(int valCol=0);
+    double maxDouble(int valCol=0);
+
+    void registerValueFilter(int valueColumn, ValueFilter *valueFilter);
+
+    std::vector<ValueFilter *> valueFilters() const;
+    int filterColumnCount();
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();
@@ -94,6 +103,7 @@ private:
     QVariant formatValue(double val) const;
 
 private:
+    void initNumericalBounds();
     gdxHandle_t mGdx = nullptr;
     int mNr;
     QMutex* mGdxMutex = nullptr;
@@ -106,6 +116,9 @@ private:
 
     std::vector<int> mMinUel;
     std::vector<int> mMaxUel;
+
+    std::vector<double> mMinDouble;
+    std::vector<double> mMaxDouble;
 
     GdxSymbolTable* mGdxSymbolTable = nullptr;
 
@@ -137,6 +150,9 @@ private:
     bool mSqueezeTrailingZeroes = true;
 
     int mMaxPrecision = 15;
+
+    std::vector<ValueFilter*> mValueFilters;
+    int mNumericalColumnCount;
 };
 
 } // namespace gdxviewer
