@@ -41,7 +41,7 @@ void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QI
 {
     Q_UNUSED(mode)
     Q_UNUSED(state)
-    QByteArray &data = mController->data(mName);
+    QByteArray &data = mController->data(mName, mode);
     QSvgRenderer renderer(data);
     renderer.render(painter, rect);
 }
@@ -59,11 +59,11 @@ QPixmap SvgEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State stat
     paint(&painter, QRect(0, 0, size.width(), size.height()), mode, state);
     painter.end();
     QPixmap res = QPixmap::fromImage(img, Qt::NoFormatConversion);
-    if (mode == QIcon::Disabled) {
-        QStyleOption opt(0);
-        opt.palette = QGuiApplication::palette();
-        return QApplication::style()->generatedIconPixmap(mode, res, &opt);
-    }
+//    if (mode == QIcon::Disabled) {
+//        QStyleOption opt(0);
+//        opt.palette = QGuiApplication::palette();
+//        return QApplication::style()->generatedIconPixmap(mode, res, &opt);
+//    }
     return  res;
 }
 

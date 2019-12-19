@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QBrush>
 #include <QIcon>
+#include <QPalette>
 
 namespace gams {
 namespace studio {
@@ -38,8 +39,14 @@ public:
         Mark_listingFg,
         Mark_fileFg,
 
-        Icon_Main,
-        Icon_Invers,
+        Icon_Back,
+        Icon_Line,
+        Disable_Line,
+        Disable_Back,
+        Active_Line,
+        Active_Back,
+        Select_Line,
+        Select_Back,
 
         Syntax_undefined,
         Syntax_neutral,
@@ -81,15 +88,16 @@ public:
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
-    static void next();
+    QPalette palette() const { return mPalette; }
 
     QByteArray exportJsonColorSchemes();
     void importJsonColorSchemes(const QByteArray &jsonData);
 
+    static void next();
     static QString name(ColorSlot slot);
     static QColor color(ColorSlot slot);
     static QIcon icon(QString name);
-    static QByteArray &data(QString name);
+    static QByteArray &data(QString name, QIcon::Mode mode);
     static bool hasFlag(ColorSlot slot, FontFlag flag);
 
 signals:
@@ -97,19 +105,20 @@ signals:
 
 private:
     explicit Scheme(QObject *parent = nullptr);
-    QHash<QString, QString> iconCodes() const;
-    QByteArray colorizedContent(QString name);
+    QHash<QString, QStringList> iconCodes() const;
+    QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
 
 private:
     static Scheme *mInstance;
     typedef QHash<ColorSlot, Color> ColorScheme;
     QList<ColorScheme> mColorSchemes;
     QStringList mSchemeNames;
-    QHash<QString, QString> mIconCode;
+    QHash<QString, QStringList> mIconCode;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
     int mActiveScheme = 0;
     QVector<SvgEngine*> mEngines;
+    QPalette mPalette;
 };
 
 inline QColor toColor(Scheme::ColorSlot code) { return Scheme::color(code); }

@@ -17,12 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QIcon>
+
 #include <QMessageBox>
 
 #include "solveroptiontablemodel.h"
 #include "settingslocator.h"
 #include "studiosettings.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -96,20 +97,19 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
             if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(QIcon(":/img/square-red-yellow"));
+               return QVariant::fromValue(Scheme::icon(":/img/square-red-yellow"));
             else
-               return QVariant::fromValue(QIcon(":/img/square-red"));
-
+                return QVariant::fromValue(Scheme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
                   if (mOptionItem.at(index)->recurrent)
-                      return QVariant::fromValue(QIcon(":/img/square-gray-yellow"));
+                      return QVariant::fromValue(Scheme::icon(":/img/square-gray-yellow"));
                   else
-                     return QVariant::fromValue(QIcon(":/img/square-gray"));
+                     return QVariant::fromValue(Scheme::icon(":/img/square-gray"));
         } else {
             if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
+               return QVariant::fromValue(Scheme::icon(":/img/square-green-yellow"));
            else
-               return QVariant::fromValue(QIcon(":/img/square-green"));
+               return QVariant::fromValue(Scheme::icon(":/img/square-green"));
         }
     }
 

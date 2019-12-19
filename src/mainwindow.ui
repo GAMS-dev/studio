@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -942,6 +942,10 @@
    </property>
   </action>
   <action name="actionReset_Zoom">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/search-off</normaloff>:/img/search-off</iconset>
+   </property>
    <property name="text">
     <string>Reset Zoom</string>
    </property>

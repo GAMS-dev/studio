@@ -1,17 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 66 66" xml:space="preserve">
-<style type="text/css">
-   .st0{fill:#FFFFFF;}
-   .st1{fill:#F39619;}
-   .st2{fill:#348619;}
-</style>
-<path class="st0" d="M 0 0 V 62 H 62 V 0" />
-<g transform="translate(1.1,1) scale(0.91,0.905)" id="g4540">
-   <path d="M 3.1,34 V 62.7 H 31 V 35.2 C 18.2,25 6,32.1 3.1,34 Z" />
-   <path d="M 34.5,36.6 V 62.7 H 62.4 V 27.8 c -1.5,1.6 -14,12.6 -27.9,8.8 z" />
-   <g id="g4538">
-      <path class="st1" d="M 32.9,30.4 C 47.1,35.7 62.4,17.8 62.4,17.8 V 3.2 H 3.1 v 28 c 10.6,-6.7 15.9,-6 29.8,-0.8 z" />
-   </g>
-</g>
-<path class="st2" stroke="white" stroke-width="45" transform="translate(25,18) scale(0.1,0.1)" d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"/>
-</svg>
+<svg width="128" height="128" version="1.0" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><style type="text/css">.st0{fill:#FFFFFF;}.st1{fill:#F39619;}.st2{fill:#348619;stroke-width:8.0526;stroke:#fff;}</style><rect class="st0" x=".27119" width="128" height="128"/><path d="m32.895 60.119c-12.197 0.15968-21.642 5.7339-24.895 7.8574v52.023h50.576v-51.361c-9.0838-6.5338-17.937-8.6209-25.682-8.5195z"/><path d="m120 56.307c-2.7762 2.9513-25.505 22.874-51.119 16.943v46.75h51.119v-63.693z"/><path class="st1" d="m64.283 59.2c26.82 9.9765 55.717-23.718 55.717-23.718v-27.482h-112v52.706c20.02-12.612 30.03-11.294 56.283-1.5059z"/><path class="st2" d="m127.94 76.771-62.989-37.239c-5.1179-3.0242-12.956-0.08949-12.956 7.3905v74.459c0 6.7105 7.2831 10.755 12.956 7.3904l62.989-37.221c5.6189-3.3105 5.6368-11.47 0-14.781z"/></svg>

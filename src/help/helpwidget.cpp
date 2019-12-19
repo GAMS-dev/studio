@@ -37,6 +37,7 @@
 #include "gclgms.h"
 #include "helpdata.h"
 #include "helppage.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -47,6 +48,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
     ui(new Ui::HelpWidget)
 {
     ui->setupUi(this);
+    ui->actionHome->setIcon(Scheme::icon(":/img/home"));
 
     ui->webEngineView->showMaximized();
     ui->webEngineView->setPage( new HelpPage(ui->webEngineView) );
@@ -63,10 +65,8 @@ HelpWidget::HelpWidget(QWidget *parent) :
     mStatusBarLabel.setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QToolButton* bookmarkToolButton = new QToolButton(this);
-    QIcon bookmarkButtonIcon(":/img/bookmark");
     bookmarkToolButton->setToolTip("Bookmarks");
-    bookmarkToolButton->setIcon(bookmarkButtonIcon);
-    bookmarkToolButton->setIcon(bookmarkButtonIcon);
+    bookmarkToolButton->setIcon(Scheme::icon(":/img/bookmark"));
     bookmarkToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     bookmarkToolButton->setMenu(mBookmarkMenu);
 
@@ -85,16 +85,15 @@ HelpWidget::HelpWidget(QWidget *parent) :
     ui->actionCopyPageURL->setStatusTip(tr("Copy URL of this page to Clipboard"));
 
     QToolButton* helpToolButton = new QToolButton(this);
-    QIcon toolButtonIcon(":/img/config");
     helpToolButton->setToolTip("Help Option");
-    helpToolButton->setIcon(toolButtonIcon);
+    helpToolButton->setIcon(Scheme::icon(":/img/cog"));
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     helpToolButton->setMenu(helpMenu);
 
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back, QIcon(":/img/backward"));
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward, QIcon(":/img/forward"));
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload, QIcon(":/img/reload"));
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop, QIcon(":/img/stop"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back, Scheme::icon(":/img/backward"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward, Scheme::icon(":/img/forward"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload, Scheme::icon(":/img/reload"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop, Scheme::icon(":/img/stop"));
 
     setupToolbar(bookmarkToolButton, helpToolButton);
 
@@ -446,11 +445,9 @@ void HelpWidget::addBookmarkAction(const QString &objectName, const QString &tit
     action->setToolTip(objectName);
 
     if (objectName.startsWith("file")) {
-           QIcon linkButtonIcon(":/img/link");
-           action->setIcon(linkButtonIcon);
+           action->setIcon(Scheme::icon(":/img/link"));
     } else if (objectName.startsWith("http")) {
-           QIcon linkButtonIcon(":/img/external-link");
-           action->setIcon(linkButtonIcon);
+           action->setIcon(Scheme::icon(":/img/external-link"));
     }
     connect(action, &QAction::triggered, this, &HelpWidget::on_bookmarkaction);
     mBookmarkMenu->addAction(action);
@@ -529,10 +526,10 @@ qreal HelpWidget::getZoomFactor()
 QWebEngineView *HelpWidget::createHelpView()
 {
     HelpPage* page = new HelpPage(ui->webEngineView);
-    createWebActionTrigger(page, QWebEnginePage::Back, QIcon(":/img/backward"));
-    createWebActionTrigger(page, QWebEnginePage::Forward, QIcon(":/img/forward"));
-    createWebActionTrigger(page, QWebEnginePage::Reload, QIcon(":/img/reload"));
-    createWebActionTrigger(page, QWebEnginePage::Stop, QIcon(":/img/stop"));
+    createWebActionTrigger(page, QWebEnginePage::Back, Scheme::icon(":/img/backward"));
+    createWebActionTrigger(page, QWebEnginePage::Forward, Scheme::icon(":/img/forward"));
+    createWebActionTrigger(page, QWebEnginePage::Reload, Scheme::icon(":/img/reload"));
+    createWebActionTrigger(page, QWebEnginePage::Stop, Scheme::icon(":/img/stop"));
     ui->webEngineView->setPage( page );
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     return ui->webEngineView;

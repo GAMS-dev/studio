@@ -118,12 +118,12 @@ MainWindow::MainWindow(QWidget *parent)
     mStatusWidgets = new StatusWidgets(this);
 
     // Project View Setup
-    int iconSize = fontInfo().pixelSize()*2-1;
+    int iconSize = fontMetrics().lineSpacing();
     ui->projectView->setModel(mProjectRepo.treeModel());
     ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
+    ui->projectView->setIconSize(QSize(iconSize, qRound(iconSize*1.2)));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
@@ -2641,37 +2641,24 @@ void MainWindow::updateMiroMenu()
 void MainWindow::invalidateScheme()
 {
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme, Qt::UniqueConnection);
+
     assignColors();
-    assignIcons();
     for (FileMeta *fm: mFileMetaRepo.fileMetas()) {
         fm->invalidateScheme();
     }
-    // TODO(JM) repaint all colorized content
-
+    assignIcons();
+    repaint();
 }
 
 void MainWindow::assignColors()
 {
-
+    QPalette pal = Scheme::instance()->palette();
+    qApp->setPalette(pal);
 }
 
 void MainWindow::assignIcons()
 {
-    // trigger repaint of all icons
     setWindowIcon(windowIcon());
-    for (QObject *obj: children()) {
-        if (QAction *act = qobject_cast<QAction*>(obj)) {
-            if (!act->icon().isNull()) {
-                if (act->icon().name().isEmpty())
-                    DEB() << "Warning: icon of action " << act->text() << " can't be colorized.";
-                else
-                    act->setIcon(act->icon());
-            }
-        } else if (QTabWidget *tabs = qobject_cast<QTabWidget*>(obj)) {
-            if (QPushButton *bt = qobject_cast<QPushButton*>(tabs->cornerWidget()))
-                bt->setIcon(bt->icon());
-        }
-    }
 }
 
 void MainWindow::initIcons()
@@ -2695,6 +2682,7 @@ void MainWindow::initIcons()
     ui->actionCut->setIcon(Scheme::icon(":/img/cut"));
     ui->actionZoom_In->setIcon(Scheme::icon(":/img/search-plus"));
     ui->actionZoom_Out->setIcon(Scheme::icon(":/img/search-minus"));
+    ui->actionReset_Zoom->setIcon(Scheme::icon(":/img/search-off"));
     ui->actionHelp_View->setIcon(Scheme::icon(":/img/question"));
     ui->actionInterrupt->setIcon(Scheme::icon(":/img/stop"));
     ui->actionStop->setIcon(Scheme::icon(":/img/kill"));
@@ -2703,7 +2691,6 @@ void MainWindow::initIcons()
     ui->actionNextBookmark->setIcon(Scheme::icon(":/img/forward"));
     ui->actionPreviousBookmark->setIcon(Scheme::icon(":/img/backward"));
     ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/img/show"));
-
 }
 
 void MainWindow::ensureInScreen()

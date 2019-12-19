@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QGuiApplication>
 
 namespace gams {
 namespace studio {
@@ -62,8 +63,14 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Main,                      QColor(Qt::white));
-    mColorSchemes[sNr].insert(Icon_Invers,                    QColor(Qt::black));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::white));
+    mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::black));
+    mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
+    mColorSchemes[sNr].insert(Disable_Back,                   QColor("#EEEEFF"));
+    mColorSchemes[sNr].insert(Active_Line,                    QColor("#4444CC"));
+    mColorSchemes[sNr].insert(Active_Back,                    QColor("#EEEEFF"));
+    mColorSchemes[sNr].insert(Select_Line,                    QColor("#4444CC"));
+    mColorSchemes[sNr].insert(Select_Back,                    QColor("#EEEEFF"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color());
@@ -91,7 +98,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
 
-    mColorSchemes[sNr].insert(Icon_Invers,                    QColor(Qt::darkRed));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor(40,40,40));
+    mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::darkRed));
 
     mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkRed).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkGreen).darker(120), fBold));
@@ -136,37 +144,87 @@ Scheme::ColorSlot Scheme::slot(QString name)
     return ColorSlot(value);
 }
 
-QHash<QString, QString> Scheme::iconCodes() const
+QHash<QString, QStringList> Scheme::iconCodes() const
 {
-    QHash<QString, QString> res;
+    QHash<QString, QStringList> res;
     const ColorScheme &scheme = mColorSchemes.at(mActiveScheme);
     for (ColorSlot &slot: scheme.keys()) {
-        QString key = name(slot);
-        if (key.startsWith("Icon_")) {
-            res.insert(key.mid(5, key.length()-5), scheme.value(slot).color.name());
+        QString slotName = name(slot);
+        if (slotName.startsWith("Icon_")) {
+            QString key = slotName.mid(5, slotName.length()-5);
+            res.insert(key, QStringList());
+            for (int i = 0 ; i < 4 ; ++i)
+                res[key] << scheme.value(slot).color.name();
+        }
+    }
+    for (ColorSlot &slot: scheme.keys()) {
+        QString slotName = name(slot);
+        if (slotName.startsWith("Disable_")) {
+            QString key = slotName.mid(8, slotName.length()-8);
+            if (res.contains(key))
+                res[key].replace(1, scheme.value(slot).color.name());
+        }
+        if (slotName.startsWith("Active_")) {
+            QString key = slotName.mid(7, slotName.length()-7);
+            if (res.contains(key))
+                res[key].replace(2, scheme.value(slot).color.name());
+        }
+        if (slotName.startsWith("Select_")) {
+            QString key = slotName.mid(7, slotName.length()-7);
+            if (res.contains(key))
+                res[key].replace(3, scheme.value(slot).color.name());
         }
     }
     return res;
 }
 
-QByteArray Scheme::colorizedContent(QString name)
+QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
 {
     QFile file(name);
     if (!file.open(QFile::ReadOnly)) return QByteArray();
     QByteArray data = file.readAll();
     file.close();
-    QHash<QString, QString>::const_iterator it = mIconCode.constBegin();
+    int iMode = int(mode);
+
+    QHash<QString, QStringList>::const_iterator it = mIconCode.constBegin();
     while (it != mIconCode.constEnd()) {
         QString key = QString(".%1{fill:").arg(it.key());
         int from = data.indexOf(key);
         if (from >= 0) {
             from += key.length();
             int len = data.indexOf(";", from) - from;
-            data.replace(from, len, it.value().toLatin1());
+            data.replace(from, len, it.value().at(iMode).toLatin1());
+            DEB() << key << " -> " << it.value().at(iMode).toLatin1();
         }
         ++it;
     }
     return data;
+}
+
+QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
+{
+    return QColor::fromRgbF((c1.redF()*weight + c2.redF()*(1-weight)),
+                            (c1.greenF()*weight + c2.redF()*(1-weight)),
+                            (c1.blueF()*weight + c2.blueF()*(1-weight)));
+}
+
+void generatePalette(QPalette &pal, const QColor &line, const QColor &back)
+{
+    int h, s, v;
+    back.getHsv(&h, &s, &v);
+    // inactive and active are the same..
+    const QColor buttonBrushDark = QColor(back.darker());
+    const QColor buttonBrushDark150 = QColor(back.darker(150));
+    const QColor buttonBrushLight150 = QColor(back.lighter(150));
+    pal.setColorGroup(QPalette::Active, line, back, buttonBrushLight150,
+                      buttonBrushDark, buttonBrushDark150, line, line,
+                      back, back);
+    pal.setColorGroup(QPalette::Inactive, line, back, buttonBrushLight150,
+                      buttonBrushDark, buttonBrushDark150, line, line,
+                      back, back);
+    pal.setColorGroup(QPalette::Disabled, buttonBrushDark, back, buttonBrushLight150,
+                      buttonBrushDark, buttonBrushDark150, buttonBrushDark, line,
+                      back, back);
 }
 
 void Scheme::invalidate()
@@ -174,6 +232,8 @@ void Scheme::invalidate()
     mIconCode = iconCodes();
     mIconCache.clear();
     mDataCache.clear();
+    mPalette = qApp->palette();
+//    generatePalette(mPalette, color(Icon_Line), color(Icon_Back));
     emit changed();
 }
 
@@ -203,13 +263,15 @@ QIcon Scheme::icon(QString name)
     return instance()->mIconCache.value(name);
 }
 
-QByteArray &Scheme::data(QString name)
+QByteArray &Scheme::data(QString name, QIcon::Mode mode)
 {
-    if (!instance()->mDataCache.contains(name)) {
-        QByteArray data(instance()->colorizedContent(name));
-        instance()->mDataCache.insert(name, data);
+    QStringList ext {"_N","_D","_A","_S"};
+    QString nameKey = name + ext.at(int(mode));
+    if (!instance()->mDataCache.contains(nameKey)) {
+        QByteArray data(instance()->colorizedContent(name, mode));
+        instance()->mDataCache.insert(nameKey, data);
     }
-    return instance()->mDataCache[name];
+    return instance()->mDataCache[nameKey];
 }
 
 bool Scheme::hasFlag(Scheme::ColorSlot slot, Scheme::FontFlag flag)
