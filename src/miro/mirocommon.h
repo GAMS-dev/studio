@@ -26,6 +26,13 @@ namespace gams {
 namespace studio {
 namespace miro {
 
+enum class MiroDeployMode
+{
+    None      = 0,
+    Base      = 1,
+    Hypercube = 2
+};
+
 class MiroCommon
 {
 protected:

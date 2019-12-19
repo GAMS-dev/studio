@@ -34,6 +34,7 @@
 #include "maintabcontextmenu.h"
 #include "logtabcontextmenu.h"
 #include "gdxdiffdialog/gdxdiffdialog.h"
+#include "miro/mirocommon.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -63,7 +64,9 @@ class ParameterEditor;
 namespace gdxdiffdialog {
 class GdxDiffDialog;
 }
-
+namespace miro {
+class MiroDeployDialog;
+}
 
 struct RecentData {
 
@@ -239,6 +242,7 @@ private slots:
     void on_actionStop_MIRO_triggered();
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
+    void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
 
     // Tools
     void on_actionGDX_Diff_triggered();
@@ -396,6 +400,8 @@ private:
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
     std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
+
+    std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;
 };
 
 }
