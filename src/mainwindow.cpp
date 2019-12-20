@@ -2640,6 +2640,7 @@ void MainWindow::updateMiroMenu()
 
 void MainWindow::invalidateScheme()
 {
+    DEB() << "was here";
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme, Qt::UniqueConnection);
 
     assignColors();

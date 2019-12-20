@@ -53,6 +53,7 @@ private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_fontComboBox_currentIndexChanged(const QString &arg1);
     void on_sb_fontsize_valueChanged(int arg1);
+    void schemeModified();
     void setModified();
 
     void on_btn_openUserLibLocation_clicked();
@@ -64,11 +65,14 @@ private slots:
     void on_sb_nrLogBackups_valueChanged(int arg1);
     void on_miroBrowseButton_clicked();
 
+    void on_cbSchemes_currentIndexChanged(int index);
+
 private:
     Ui::SettingsDialog *ui;
     StudioSettings *mSettings;
     MainWindow *mMain;
     bool isModified = false;
+    bool mInitializing = true;
 
     void saveSettings();
     void loadSettings();

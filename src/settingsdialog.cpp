@@ -75,6 +75,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
+    mInitializing = false;
 }
 
 void SettingsDialog::loadSettings()
@@ -118,6 +119,9 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->addCommentDescriptionAboveOption());
     ui->addEOLCommentCheckBox->setChecked(mSettings->addEOLCommentDescriptionOption());
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
+
+    // scheme data
+
 }
 
 void SettingsDialog::setModified()
@@ -205,6 +209,12 @@ void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
 {
     emit editorFontChanged(ui->fontComboBox->currentFont().family(), arg1);
+}
+
+void SettingsDialog::schemeModified()
+{
+    emit setModified();
+    Scheme::instance()->invalidate();
 }
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
@@ -304,13 +314,25 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 
 void SettingsDialog::initColorPage()
 {
+    ui->cbSchemes->clear();
+    ui->cbSchemes->addItems(Scheme::instance()->schemes());
+    ui->cbSchemes->setCurrentIndex(Scheme::instance()->activeScheme());
     QGroupBox * box = ui->groupIconColors;
+    QGridLayout * grid = qobject_cast<QGridLayout*>(box->layout());
     QVector<Scheme::ColorSlot> slot {Scheme::Icon_Line, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
                                      Scheme::Icon_Back, Scheme::Disable_Back, Scheme::Active_Back, Scheme::Select_Back};
     for (int i = 0; i < slot.size(); ++i) {
-
+        SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
+        grid->addWidget(wid, (i/4)+1, (i%4)+1);
+        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
     }
 }
 
 }
+}
+
+void gams::studio::SettingsDialog::on_cbSchemes_currentIndexChanged(int index)
+{
+    if (!mInitializing)
+        Scheme::instance()->setActiveScheme(index);
 }

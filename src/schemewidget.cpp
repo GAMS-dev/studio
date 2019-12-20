@@ -69,6 +69,7 @@ void SchemeWidget::selectColor()
     diag.setCurrentColor(ui->colorFrame->palette().window().color());
     if (diag.exec()) {
         setColor(diag.currentColor());
+        Scheme::setColor(mSlot, diag.currentColor());
         emit changed();
     }
 }

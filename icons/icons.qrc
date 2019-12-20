@@ -68,8 +68,11 @@
         <file alias="show">angle-double-down.svg</file>
         <file alias="square-darkyellow">square-darkyellow.svg</file>
         <file alias="square-green">square-green.svg</file>
+        <file alias="square-green-yellow">square-green-yellow.svg</file>
         <file alias="square-gray">square-gray.svg</file>
+        <file alias="square-gray-yellow">square-gray-yellow.svg</file>
         <file alias="square-red">square-red.svg</file>
+        <file alias="square-red-yellow">square-red-yellow.svg</file>
         <file alias="stop">stop.svg</file>
         <file alias="terminal">terminal.svg</file>
         <file alias="truck">truck.svg</file>

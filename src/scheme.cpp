@@ -16,7 +16,9 @@ Scheme *Scheme::mInstance = nullptr;
 const QColor CUndefined(255, 0, 200);
 
 Scheme::Scheme(QObject *parent) : QObject(parent)
-{}
+{
+    DEB() << "Scheme constructor called";
+}
 
 Scheme::~Scheme()
 {
@@ -253,6 +255,13 @@ QColor Scheme::color(Scheme::ColorSlot slot)
     return instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot, CUndefined).color;
 }
 
+void Scheme::setColor(Scheme::ColorSlot slot, QColor color)
+{
+    Color dat = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    dat.color = color;
+    instance()->mColorSchemes[instance()->mActiveScheme].insert(slot, dat);
+}
+
 QIcon Scheme::icon(QString name)
 {
     if (!instance()->mIconCache.contains(name)) {
@@ -279,6 +288,13 @@ bool Scheme::hasFlag(Scheme::ColorSlot slot, Scheme::FontFlag flag)
     Color cl = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
     if (flag == fNormal) return (cl.fontFlag == fNormal);
     return (FontFlag(flag & cl.fontFlag) == flag);
+}
+
+void Scheme::setFlags(Scheme::ColorSlot slot, Scheme::FontFlag flag)
+{
+    Color dat = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    dat.fontFlag = flag;
+    instance()->mColorSchemes[instance()->mActiveScheme].insert(slot, dat);
 }
 
 QByteArray Scheme::exportJsonColorSchemes()
@@ -319,8 +335,7 @@ void Scheme::importJsonColorSchemes(const QByteArray &jsonData)
             mSchemeNames << schemeName;
             mColorSchemes << mColorSchemes.at(0);
         }
-        if (jsonScheme["Active"].toInt(0))
-            mActiveScheme = index;
+        if (jsonScheme["Active"].toInt(0)) mActiveScheme = index;
         if (jsonScheme.contains("Scheme") && jsonScheme["Scheme"].isObject()) {
             QJsonObject slotObject = jsonScheme["Scheme"].toObject();
             for (QString key: slotObject.keys()) {
