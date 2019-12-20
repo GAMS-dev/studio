@@ -42,12 +42,6 @@ QWidget *ValueFilter::createWidget(QWidget *parent)
     return new ValueFilterWidget(this, parent);
 }
 
-void ValueFilter::setRange(double min, double max)
-{
-    mCurrentMin = min;
-    mCurrentMax = max;
-}
-
 void ValueFilter::updateFilter()
 {
     std::vector<bool> filterActive = mSymbol->filterActive();
@@ -149,6 +143,16 @@ bool ValueFilter::invert() const
 void ValueFilter::setInvert(bool invert)
 {
     mInvert = invert;
+}
+
+void ValueFilter::setCurrentMin(double currentMin)
+{
+    mCurrentMin = currentMin;
+}
+
+void ValueFilter::setCurrentMax(double currentMax)
+{
+    mCurrentMax = currentMax;
 }
 
 } // namespace gdxviewer

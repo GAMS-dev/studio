@@ -37,8 +37,16 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
     ui->leMax->setValidator(new QDoubleValidator());
 
     //TODO(CW): use maxPrecision from class GDXSymbol?
-    ui->leMin->setText(QString::number(mValueFilter->currentMin(), 'g', 16));
-    ui->leMax->setText(QString::number(mValueFilter->currentMax(), 'g', 16));
+
+    // we do not have numerical values other than special values and therefore disable the numerical range
+    if (mValueFilter->min() == INT_MAX && mValueFilter->max() == INT_MIN) {
+        ui->leMin->setEnabled(false);
+        ui->leMax->setEnabled(false);
+        ui->cbInvert->setEnabled(false);
+    } else {
+        ui->leMin->setText(QString::number(mValueFilter->currentMin(), 'g', 16));
+        ui->leMax->setText(QString::number(mValueFilter->currentMax(), 'g', 16));
+    }
 
     ui->cbInvert->setChecked(mValueFilter->invert());
 
@@ -57,7 +65,14 @@ ValueFilterWidget::~ValueFilterWidget()
 
 void ValueFilterWidget::on_pbApply_clicked()
 {
-    mValueFilter->setRange(ui->leMin->text().toDouble(), ui->leMax->text().toDouble());
+    if (ui->leMin->text().trimmed().isEmpty())
+        mValueFilter->setCurrentMin(mValueFilter->min());
+    else
+        mValueFilter->setCurrentMin(ui->leMin->text().toDouble());
+    if (ui->leMax->text().trimmed().isEmpty())
+        mValueFilter->setCurrentMax(mValueFilter->max());
+    else
+        mValueFilter->setCurrentMax(ui->leMax->text().toDouble());
     mValueFilter->setInvert(ui->cbInvert->isChecked());
     mValueFilter->setShowUndef(ui->cbUndef->isChecked());
     mValueFilter->setShowNA(ui->cbNa->isChecked());

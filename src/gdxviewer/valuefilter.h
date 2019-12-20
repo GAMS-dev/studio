@@ -32,7 +32,6 @@ class ValueFilter : public QWidgetAction
 public:
     ValueFilter(GdxSymbol* symbol, int valueColumn, QWidget *parent = nullptr);
     QWidget* createWidget(QWidget * parent) override;
-    void setRange(double min, double max);
     void updateFilter();
 
     double min() const;
@@ -60,6 +59,9 @@ public:
 
     bool invert() const;
     void setInvert(bool invert);
+
+    void setCurrentMin(double currentMin);
+    void setCurrentMax(double currentMax);
 
 private:
     GdxSymbol* mSymbol = nullptr;
