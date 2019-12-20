@@ -21,6 +21,7 @@
 #include <QMessageBox>
 
 #include "option.h"
+#include "scheme.h"
 #include "gamsparametertablemodel.h"
 
 namespace gams {
@@ -62,19 +63,19 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
             if (mOptionItem.at(index).recurrent)
-               return QVariant::fromValue(QIcon(":/img/square-red-yellow"));
+               return QVariant::fromValue(Scheme::icon(":/img/square-red-yellow"));
             else
-               return QVariant::fromValue(QIcon(":/img/square-red"));
+               return QVariant::fromValue(Scheme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
                   if (mOptionItem.at(index).recurrent)
-                     return QVariant::fromValue(QIcon(":/img/square-gray-yellow"));
+                     return QVariant::fromValue(Scheme::icon(":/img/square-gray-yellow"));
                   else
-                     return QVariant::fromValue(QIcon(":/img/square-gray"));
+                     return QVariant::fromValue(Scheme::icon(":/img/square-gray"));
         } else {
             if (mOptionItem.at(index).recurrent)
-                return QVariant::fromValue(QIcon(":/img/square-green-yellow"));
+                return QVariant::fromValue(Scheme::icon(":/img/square-green-yellow"));
             else
-                return QVariant::fromValue(QIcon(":/img/square-green"));
+                return QVariant::fromValue(Scheme::icon(":/img/square-green"));
         }
     case Qt::ToolTipRole:
         QString tooltipText = "";

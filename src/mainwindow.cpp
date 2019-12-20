@@ -2664,33 +2664,35 @@ void MainWindow::assignIcons()
 void MainWindow::initIcons()
 {
     setWindowIcon(Scheme::icon(":/img/gams-w"));
-    ui->actionProcess_Log->setIcon(Scheme::icon(":/img/output"));
-    ui->actionProject_View->setIcon(Scheme::icon(":/img/project"));
-    ui->actionNew->setIcon(Scheme::icon(":/img/file"));
-    ui->actionOpen->setIcon(Scheme::icon(":/img/folder-open-bw"));
-    ui->actionSave->setIcon(Scheme::icon(":/img/save"));
-    ui->actionGAMS_Library->setIcon(Scheme::icon(":/img/books"));
-    ui->actionRun->setIcon(Scheme::icon(":/img/play"));
     ui->actionCompile->setIcon(Scheme::icon(":/img/code"));
-    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/img/run-gdx"));
-    ui->actionSettings->setIcon(Scheme::icon(":/img/cog"));
     ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/img/code-gdx"));
     ui->actionCopy->setIcon(Scheme::icon(":/img/copy"));
-    ui->actionPaste->setIcon(Scheme::icon(":/img/paste"));
-    ui->actionUndo->setIcon(Scheme::icon(":/img/undo"));
-    ui->actionRedo->setIcon(Scheme::icon(":/img/redo"));
     ui->actionCut->setIcon(Scheme::icon(":/img/cut"));
-    ui->actionZoom_In->setIcon(Scheme::icon(":/img/search-plus"));
-    ui->actionZoom_Out->setIcon(Scheme::icon(":/img/search-minus"));
-    ui->actionReset_Zoom->setIcon(Scheme::icon(":/img/search-off"));
+    ui->actionGAMS_Library->setIcon(Scheme::icon(":/img/books"));
+    ui->actionGDX_Diff->setIcon(Scheme::icon(":/img/gdxdiff"));
     ui->actionHelp_View->setIcon(Scheme::icon(":/img/question"));
     ui->actionInterrupt->setIcon(Scheme::icon(":/img/stop"));
-    ui->actionStop->setIcon(Scheme::icon(":/img/kill"));
-    ui->actionSearch->setIcon(Scheme::icon(":/img/glasses"));
-    ui->actionToggleBookmark->setIcon(Scheme::icon(":/img/bookmark"));
+    ui->actionNew->setIcon(Scheme::icon(":/img/file"));
     ui->actionNextBookmark->setIcon(Scheme::icon(":/img/forward"));
+    ui->actionOpen->setIcon(Scheme::icon(":/img/folder-open-bw"));
+    ui->actionPaste->setIcon(Scheme::icon(":/img/paste"));
     ui->actionPreviousBookmark->setIcon(Scheme::icon(":/img/backward"));
+    ui->actionProcess_Log->setIcon(Scheme::icon(":/img/output"));
+    ui->actionProject_View->setIcon(Scheme::icon(":/img/project"));
+    ui->actionRedo->setIcon(Scheme::icon(":/img/redo"));
+    ui->actionReset_Zoom->setIcon(Scheme::icon(":/img/search-off"));
+    ui->actionRun->setIcon(Scheme::icon(":/img/play"));
+    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/img/run-gdx"));
+    ui->actionSave->setIcon(Scheme::icon(":/img/save"));
+    ui->actionSearch->setIcon(Scheme::icon(":/img/glasses"));
+    ui->actionSettings->setIcon(Scheme::icon(":/img/cog"));
+    ui->actionStop->setIcon(Scheme::icon(":/img/kill"));
+    ui->actionTerminal->setIcon(Scheme::icon(":/img/terminal"));
+    ui->actionToggleBookmark->setIcon(Scheme::icon(":/img/bookmark"));
     ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/img/show"));
+    ui->actionUndo->setIcon(Scheme::icon(":/img/undo"));
+    ui->actionZoom_In->setIcon(Scheme::icon(":/img/search-plus"));
+    ui->actionZoom_Out->setIcon(Scheme::icon(":/img/search-minus"));
 }
 
 void MainWindow::ensureInScreen()

@@ -71,12 +71,10 @@
         <file alias="square-gray">square-gray.svg</file>
         <file alias="square-red">square-red.svg</file>
         <file alias="stop">stop.svg</file>
+        <file alias="terminal">terminal.svg</file>
         <file alias="truck">truck.svg</file>
         <file alias="undo">undo.svg</file>
         <file alias="user">user.svg</file>
-        <file>square-green-yellow.svg</file>
-        <file>square-red-yellow.svg</file>
-        <file>square-gray-yellow.svg</file>
-        <file>gdxdiff.svg</file>
+        <file alias="gdxdiff">gdxdiff.svg</file>
     </qresource>
 </RCC>

@@ -1183,6 +1183,10 @@
    </property>
   </action>
   <action name="actionTerminal">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/terminal</normaloff>:/img/terminal</iconset>
+   </property>
    <property name="text">
     <string>Terminal</string>
    </property>
@@ -1190,7 +1194,7 @@
   <action name="actionGDX_Diff">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/gdxdiff.svg</normaloff>:/img/gdxdiff.svg</iconset>
+     <normaloff>:/img/gdxdiff</normaloff>:/img/gdxdiff</iconset>
    </property>
    <property name="text">
     <string>GDX Diff</string>
