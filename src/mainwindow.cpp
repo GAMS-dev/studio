@@ -55,7 +55,6 @@
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
 #include "miro/miroprocess.h"
-#include "miro/mirocommon.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
@@ -76,7 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
-      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this))
+      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
+      mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
@@ -193,6 +193,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
+            this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
+            this, &MainWindow::miroDeploy);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -2038,24 +2042,39 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
 
 void MainWindow::on_actionDeploy_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto assemblyFile = runGroup->location() + "/" + miro::MiroCommon::assemblyFileName(mRecent.group->name());
-    miro::MiroDeployDialog dlg(assemblyFile, this);
-    if (dlg.exec() == QDialog::Rejected)
+    if (!mRecent.validRunGroup())
         return;
 
+    auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
+                        miro::MiroCommon::assemblyFileName(mRecent.group->name());
+    mMiroDeployDialog->setDefaults();
+    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
+    mMiroDeployDialog->open();
+}
+
+void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
+{
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
-    process->setWorkingDirectory(runGroup->location());
+    process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     process->setModelName(mRecent.group->name());
-    process->setBaseMode(dlg.baseMode());
-    process->setHypercubeMode(dlg.hypercubeMode());
-    process->setTestDeployment(dlg.testDeployment());
-    process->setTargetEnvironment(dlg.targetEnvironment());
+    if (testDeploy) {
+        switch(mode){
+        case miro::MiroDeployMode::Base:
+            process->setBaseMode(mMiroDeployDialog->baseMode());
+            break;
+        case miro::MiroDeployMode::Hypercube:
+            process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+            break;
+        default:
+            break;
+        }
+    } else {
+        process->setBaseMode(mMiroDeployDialog->baseMode());
+        process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+    }
+    process->setTestDeployment(testDeploy);
+    process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
     execute({}, std::move(process));
 }

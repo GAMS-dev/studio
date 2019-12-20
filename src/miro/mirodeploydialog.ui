@@ -6,44 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>330</width>
-    <height>192</height>
+    <width>466</width>
+    <height>211</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Deploy MIRO Model</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Modes to deploy</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="baseBox">
-       <property name="font">
-        <font>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Base</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QCheckBox" name="baseBox">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Base</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QLabel" name="label_2">
          <property name="font">
@@ -76,33 +63,64 @@
          </item>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="testBaseButton">
+         <property name="text">
+          <string>Test Deploy</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="hypercubeBox">
-       <property name="font">
-        <font>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Hypercube</string>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QCheckBox" name="hypercubeBox">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Hypercube</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>24</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="testHcubeButton">
+         <property name="text">
+          <string>Test Deploy</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -120,25 +138,22 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QPushButton" name="testDeployButton">
-       <property name="text">
-        <string>Test Deploy</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="deployButton">
-       <property name="text">
-        <string>Deploy</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QPushButton" name="deployButton">
+     <property name="text">
+      <string>Deploy</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>baseBox</tabstop>
+  <tabstop>targetEnvBox</tabstop>
+  <tabstop>testBaseButton</tabstop>
+  <tabstop>hypercubeBox</tabstop>
+  <tabstop>testHcubeButton</tabstop>
+  <tabstop>deployButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
