@@ -21,6 +21,7 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include "mainwindow.h"
+#include "scheme.h"
 #include "settingsdialog.h"
 #include "studiosettings.h"
 #include "settingslocator.h"
@@ -41,6 +42,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     loadSettings();
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    initColorPage();
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
@@ -298,6 +300,14 @@ void SettingsDialog::on_miroBrowseButton_clicked()
     if (miro.isEmpty()) return;
 
     ui->miroEdit->setText(QDir::toNativeSeparators(miro));
+void SettingsDialog::initColorPage()
+{
+    QGroupBox * box = ui->groupIconColors;
+    QVector<Scheme::ColorSlot> slot {Scheme::Icon_Line, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
+                                     Scheme::Icon_Back, Scheme::Disable_Back, Scheme::Active_Back, Scheme::Select_Back};
+    for (int i = 0; i < slot.size(); ++i) {
+
+    }
 }
 
 }

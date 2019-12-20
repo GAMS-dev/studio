@@ -78,6 +78,7 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
+    schemewidget.cpp \
     support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
@@ -209,6 +210,7 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
+    schemewidget.h \
     support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
@@ -358,6 +360,7 @@ FORMS += \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     search/resultsview.ui \
+    schemewidget.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
     support/aboutgamsdialog.ui \

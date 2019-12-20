@@ -68,11 +68,12 @@ private:
     Ui::SettingsDialog *ui;
     StudioSettings *mSettings;
     MainWindow *mMain;
+    bool isModified = false;
 
     void saveSettings();
     void loadSettings();
     void setModifiedStatus(bool status);
-    bool isModified = false;
+    void initColorPage();
 };
 
 }

@@ -67,9 +67,9 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::black));
     mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Disable_Back,                   QColor("#EEEEFF"));
-    mColorSchemes[sNr].insert(Active_Line,                    QColor("#4444CC"));
+    mColorSchemes[sNr].insert(Active_Line,                    QColor("#0044EE"));
     mColorSchemes[sNr].insert(Active_Back,                    QColor("#EEEEFF"));
-    mColorSchemes[sNr].insert(Select_Line,                    QColor("#4444CC"));
+    mColorSchemes[sNr].insert(Select_Line,                    QColor("#0044EE"));
     mColorSchemes[sNr].insert(Select_Back,                    QColor("#EEEEFF"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
@@ -194,7 +194,7 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
             from += key.length();
             int len = data.indexOf(";", from) - from;
             data.replace(from, len, it.value().at(iMode).toLatin1());
-            DEB() << key << " -> " << it.value().at(iMode).toLatin1();
+//            DEB() << key << " -> " << it.value().at(iMode).toLatin1();
         }
         ++it;
     }
