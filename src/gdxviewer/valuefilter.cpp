@@ -51,7 +51,7 @@ void ValueFilter::setRange(double min, double max)
 void ValueFilter::updateFilter()
 {
     std::vector<bool> filterActive = mSymbol->filterActive();
-    if (mMin==mCurrentMin && mMax==mCurrentMax && mShowUndef && mShowNA && mShowPInf && mShowMInf && mShowEps && mShowAcronym)
+    if (mMin==mCurrentMin && mMax==mCurrentMax && !mInvert && mShowUndef && mShowNA && mShowPInf && mShowMInf && mShowEps && mShowAcronym)
         filterActive[mValueColumn+mSymbol->dim()] = false;
     else
         filterActive[mValueColumn+mSymbol->dim()] = true;
@@ -139,6 +139,16 @@ bool ValueFilter::showAcronym() const
 void ValueFilter::setShowAcronym(bool showAcronym)
 {
     mShowAcronym = showAcronym;
+}
+
+bool ValueFilter::invert() const
+{
+    return mInvert;
+}
+
+void ValueFilter::setInvert(bool invert)
+{
+    mInvert = invert;
 }
 
 } // namespace gdxviewer

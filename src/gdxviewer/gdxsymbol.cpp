@@ -630,7 +630,8 @@ void GdxSymbol::filterRows()
                         double val = mValues[recIdx*mNumericalColumnCount+i];
                         ValueFilter* vf = mValueFilters[i];
                         if (val < GMS_SV_UNDEF) {
-                            if (val < vf->currentMin() || val > vf->currentMax()) {
+                            if ( (!vf->invert() && (val < vf->currentMin() || val > vf->currentMax())) ||
+                                 ( vf->invert() && (val > vf->currentMin() && val < vf->currentMax())) ) {
                                 mFilterRecCount--;
                                 removedCount++;
                                 alreadyRemoved=true;

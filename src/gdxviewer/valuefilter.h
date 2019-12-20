@@ -58,6 +58,9 @@ public:
     bool showAcronym() const;
     void setShowAcronym(bool showAcronym);
 
+    bool invert() const;
+    void setInvert(bool invert);
+
 private:
     GdxSymbol* mSymbol = nullptr;
     int mValueColumn;
@@ -67,6 +70,8 @@ private:
 
     double mCurrentMin;
     double mCurrentMax;
+
+    bool mInvert = false;
 
     bool mShowUndef = true;
     bool mShowNA = true;

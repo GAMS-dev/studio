@@ -40,6 +40,8 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
     ui->leMin->setText(QString::number(mValueFilter->currentMin(), 'g', 16));
     ui->leMax->setText(QString::number(mValueFilter->currentMax(), 'g', 16));
 
+    ui->cbInvert->setChecked(mValueFilter->invert());
+
     ui->cbUndef->setChecked(mValueFilter->showUndef());
     ui->cbNa->setChecked(mValueFilter->showNA());
     ui->cbPInf->setChecked(mValueFilter->showPInf());
@@ -56,6 +58,7 @@ ValueFilterWidget::~ValueFilterWidget()
 void ValueFilterWidget::on_pbApply_clicked()
 {
     mValueFilter->setRange(ui->leMin->text().toDouble(), ui->leMax->text().toDouble());
+    mValueFilter->setInvert(ui->cbInvert->isChecked());
     mValueFilter->setShowUndef(ui->cbUndef->isChecked());
     mValueFilter->setShowNA(ui->cbNa->isChecked());
     mValueFilter->setShowPInf(ui->cbPInf->isChecked());

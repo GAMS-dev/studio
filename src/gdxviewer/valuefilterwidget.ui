@@ -68,7 +68,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox">
+      <widget class="QCheckBox" name="cbInvert">
        <property name="text">
         <string>invert</string>
        </property>
