@@ -78,8 +78,6 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
-    schemewidget.cpp \
-    support/checkforupdatewrapper.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
     editors/abstractedit.cpp \
@@ -175,9 +173,10 @@ SOURCES += \
     reference/symbolreferenceitem.cpp \
     reference/symbolreferencewidget.cpp \
     reference/symboltablemodel.cpp \
+    scheme.cpp \
+    schemewidget.cpp \
     search/result.cpp \
     search/resultsview.cpp \
-    scheme.cpp \
     search/searchdialog.cpp \
     search/searchlocator.cpp \
     search/searchresultlist.cpp \
@@ -188,12 +187,12 @@ SOURCES += \
     studiosettings.cpp \
     support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
-    svgengine.cpp \
     support/distributionvalidator.cpp \
     support/gamslicenseinfo.cpp         \
     support/solverconfiginfo.cpp        \
     support/solvertablemodel.cpp        \
     support/updatedialog.cpp \
+    svgengine.cpp \
     syntax/basehighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
@@ -210,8 +209,6 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
-    schemewidget.h \
-    support/checkforupdatewrapper.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \
@@ -309,9 +306,10 @@ HEADERS += \
     reference/symbolreferenceitem.h \
     reference/symbolreferencewidget.h \
     reference/symboltablemodel.h \
+    scheme.h \
+    schemewidget.h \
     search/result.h \
     search/resultsview.h \
-    scheme.h \
     search/searchdialog.h \
     search/searchlocator.h \
     search/searchresultlist.h \
@@ -359,8 +357,8 @@ FORMS += \
     option/solveroptionwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
-    search/resultsview.ui \
     schemewidget.ui \
+    search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
     support/aboutgamsdialog.ui \

@@ -300,6 +300,8 @@ void SettingsDialog::on_miroBrowseButton_clicked()
     if (miro.isEmpty()) return;
 
     ui->miroEdit->setText(QDir::toNativeSeparators(miro));
+}
+
 void SettingsDialog::initColorPage()
 {
     QGroupBox * box = ui->groupIconColors;
