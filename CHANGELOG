@@ -1,3 +1,17 @@
+Version 0.14.1
+==================
+
+## General
+
+- preserve order of default and command line gams parameters; only override multiple non-immediate parameters
+- allow multiple insertion of the same key if parameter is not recurrent (eg. one instance or immediate parameter)
+- allow immediate gams parameter to occur multiple times without a warning (set recurrent flag to false)
+- handle subdirectories during MIRO assembly file generation
+- disable MIRO menu when MIRO is not available
+- show MIRO parameters in system log
+- improved MIRO assembly file dialog
+
+
 Version 0.14.0
 ==================
 
