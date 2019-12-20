@@ -228,8 +228,10 @@ void GdxSymbol::loadData()
                     mValues[valOffset+vIdx] =  values[vIdx];
             }
             for(int vIdx=0; vIdx<mNumericalColumnCount; vIdx++) {
-                mMinDouble[vIdx] = qMin(mMinDouble[vIdx], values[vIdx]);
-                mMaxDouble[vIdx] = qMax(mMaxDouble[vIdx], values[vIdx]);
+                if (values[vIdx] < GMS_SV_UNDEF) {
+                    mMinDouble[vIdx] = qMin(mMinDouble[vIdx], values[vIdx]);
+                    mMaxDouble[vIdx] = qMax(mMaxDouble[vIdx], values[vIdx]);
+                }
             }
             mLoadedRecCount++;
             if (mLoadedRecCount == triggerAutoResizeListViewCount || mLoadedRecCount == mRecordCount) {
@@ -626,7 +628,20 @@ void GdxSymbol::filterRows()
                 for(int i=0; i<mNumericalColumnCount; i++) {
                     if (mFilterActive[mDim+i]) {
                         double val = mValues[recIdx*mNumericalColumnCount+i];
-                        if (val < mValueFilters[i]->currentMin() || val > mValueFilters[i]->currentMax()) {
+                        ValueFilter* vf = mValueFilters[i];
+                        if (val < GMS_SV_UNDEF) {
+                            if (val < vf->currentMin() || val > vf->currentMax()) {
+                                mFilterRecCount--;
+                                removedCount++;
+                                alreadyRemoved=true;
+                                break;
+                            }
+                        } else if (    (!vf->showUndef()   && val == GMS_SV_UNDEF)
+                                    || (!vf->showNA()      && val == GMS_SV_NA   )
+                                    || (!vf->showPInf()    && val == GMS_SV_PINF )
+                                    || (!vf->showMInf()    && val == GMS_SV_MINF )
+                                    || (!vf->showEps()     && val == GMS_SV_EPS  )
+                                    || (!vf->showAcronym() && val >= GMS_SV_ACR  ) ) {
                             mFilterRecCount--;
                             removedCount++;
                             alreadyRemoved=true;

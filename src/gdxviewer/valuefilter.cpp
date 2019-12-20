@@ -42,19 +42,19 @@ QWidget *ValueFilter::createWidget(QWidget *parent)
     return new ValueFilterWidget(this, parent);
 }
 
-void ValueFilter::setFilter(double min, double max)
+void ValueFilter::setRange(double min, double max)
 {
-    if (min == mMin && max == mMax) {
-        std::vector<bool> filterActive = mSymbol->filterActive();
-        filterActive[mValueColumn+mSymbol->dim()] = false;
-        mSymbol->setFilterActive(filterActive);
-        return;
-    }
-
     mCurrentMin = min;
     mCurrentMax = max;
+}
+
+void ValueFilter::updateFilter()
+{
     std::vector<bool> filterActive = mSymbol->filterActive();
-    filterActive[mValueColumn+mSymbol->dim()] = true;
+    if (mMin==mCurrentMin && mMax==mCurrentMax && mShowUndef && mShowNA && mShowPInf && mShowMInf && mShowEps && mShowAcronym)
+        filterActive[mValueColumn+mSymbol->dim()] = false;
+    else
+        filterActive[mValueColumn+mSymbol->dim()] = true;
     mSymbol->registerValueFilter(mValueColumn, this);
     mSymbol->setFilterActive(filterActive);
     mSymbol->filterRows();
@@ -79,6 +79,66 @@ double ValueFilter::currentMin() const
 double ValueFilter::currentMax() const
 {
     return mCurrentMax;
+}
+
+bool ValueFilter::showUndef() const
+{
+    return mShowUndef;
+}
+
+void ValueFilter::setShowUndef(bool showUndef)
+{
+    mShowUndef = showUndef;
+}
+
+bool ValueFilter::showNA() const
+{
+    return mShowNA;
+}
+
+void ValueFilter::setShowNA(bool showNA)
+{
+    mShowNA = showNA;
+}
+
+bool ValueFilter::showPInf() const
+{
+    return mShowPInf;
+}
+
+void ValueFilter::setShowPInf(bool showPInf)
+{
+    mShowPInf = showPInf;
+}
+
+bool ValueFilter::showMInf() const
+{
+    return mShowMInf;
+}
+
+void ValueFilter::setShowMInf(bool showNInf)
+{
+    mShowMInf = showNInf;
+}
+
+bool ValueFilter::showEps() const
+{
+    return mShowEps;
+}
+
+void ValueFilter::setShowEps(bool showEps)
+{
+    mShowEps = showEps;
+}
+
+bool ValueFilter::showAcronym() const
+{
+    return mShowAcronym;
+}
+
+void ValueFilter::setShowAcronym(bool showAcronym)
+{
+    mShowAcronym = showAcronym;
 }
 
 } // namespace gdxviewer

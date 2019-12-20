@@ -39,6 +39,13 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
     //TODO(CW): use maxPrecision from class GDXSymbol?
     ui->leMin->setText(QString::number(mValueFilter->currentMin(), 'g', 16));
     ui->leMax->setText(QString::number(mValueFilter->currentMax(), 'g', 16));
+
+    ui->cbUndef->setChecked(mValueFilter->showUndef());
+    ui->cbNa->setChecked(mValueFilter->showNA());
+    ui->cbPInf->setChecked(mValueFilter->showPInf());
+    ui->cbMInf->setChecked(mValueFilter->showMInf());
+    ui->cbEps->setChecked(mValueFilter->showEps());
+    ui->cbAcronym->setChecked(mValueFilter->showAcronym());
 }
 
 ValueFilterWidget::~ValueFilterWidget()
@@ -48,7 +55,14 @@ ValueFilterWidget::~ValueFilterWidget()
 
 void ValueFilterWidget::on_pbApply_clicked()
 {
-    mValueFilter->setFilter(ui->leMin->text().toDouble(), ui->leMax->text().toDouble());
+    mValueFilter->setRange(ui->leMin->text().toDouble(), ui->leMax->text().toDouble());
+    mValueFilter->setShowUndef(ui->cbUndef->isChecked());
+    mValueFilter->setShowNA(ui->cbNa->isChecked());
+    mValueFilter->setShowPInf(ui->cbPInf->isChecked());
+    mValueFilter->setShowMInf(ui->cbMInf->isChecked());
+    mValueFilter->setShowEps(ui->cbEps->isChecked());
+    mValueFilter->setShowAcronym(ui->cbAcronym->isChecked());
+    mValueFilter->updateFilter();
     static_cast<QMenu*>(this->parent())->close();
 }
 

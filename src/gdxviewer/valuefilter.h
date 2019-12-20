@@ -32,12 +32,31 @@ class ValueFilter : public QWidgetAction
 public:
     ValueFilter(GdxSymbol* symbol, int valueColumn, QWidget *parent = nullptr);
     QWidget* createWidget(QWidget * parent) override;
-    void setFilter(double min, double max);
+    void setRange(double min, double max);
+    void updateFilter();
 
     double min() const;
     double max() const;
     double currentMin() const;
     double currentMax() const;
+
+    bool showUndef() const;
+    void setShowUndef(bool showUndef);
+
+    bool showNA() const;
+    void setShowNA(bool showNA);
+
+    bool showPInf() const;
+    void setShowPInf(bool showPInf);
+
+    bool showMInf() const;
+    void setShowMInf(bool showMInf);
+
+    bool showEps() const;
+    void setShowEps(bool showEps);
+
+    bool showAcronym() const;
+    void setShowAcronym(bool showAcronym);
 
 private:
     GdxSymbol* mSymbol = nullptr;
@@ -48,6 +67,13 @@ private:
 
     double mCurrentMin;
     double mCurrentMax;
+
+    bool mShowUndef = true;
+    bool mShowNA = true;
+    bool mShowPInf = true;
+    bool mShowMInf = true;
+    bool mShowEps = true;
+    bool mShowAcronym = true;
 };
 
 } // namespace gdxviewer
