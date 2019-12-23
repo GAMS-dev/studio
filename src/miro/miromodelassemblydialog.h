@@ -51,16 +51,17 @@ class FileSystemModel : public QFileSystemModel
 public:
     FileSystemModel(QObject *parent = nullptr);
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex &idx, const QVariant &value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     void selectAll();
     void clearSelection();
     QStringList selectedFiles();
+    void setSelectedFiles(const QStringList &files);
 
 private:
-    QSet<QModelIndex> mCheckedIndexes;
+    QSet<QString> mCheckedFiles;
 };
 
 class MiroModelAssemblyDialog : public QDialog
@@ -72,6 +73,9 @@ public:
     ~MiroModelAssemblyDialog();
 
     QStringList selectedFiles();
+    void setSelectedFiles(const QStringList &files) {
+        mFileSystemModel->setSelectedFiles(files);
+    }
 
 private slots:
     void on_createButton_clicked();

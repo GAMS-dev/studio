@@ -2024,7 +2024,7 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
     }
 
     miro::MiroModelAssemblyDialog dlg(mRecent.group->toRunGroup()->location(), this);
-    // TODO (AF) set checked files
+    dlg.setSelectedFiles(checkedFiles);
     if (dlg.exec() == QDialog::Rejected)
         return;
 
