@@ -53,7 +53,7 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
     // show filter icon
     if (logicalIndex < symbol->filterColumnCount()) {
         QString iconRes;
-        if (symbol->filterActive()[logicalIndex])
+        if (symbol->filterActive(logicalIndex))
             iconRes = iconFilterOn;
         else
             iconRes = iconFilterOff;

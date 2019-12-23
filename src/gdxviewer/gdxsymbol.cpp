@@ -468,19 +468,19 @@ void GdxSymbol::setFilterHasChanged(bool filterHasChanged)
     mFilterHasChanged = filterHasChanged;
 }
 
-std::vector<bool> GdxSymbol::filterActive() const
-{
-    return mFilterActive;
-}
-
-void GdxSymbol::setFilterActive(const std::vector<bool> &filterActive)
-{
-    mFilterActive = filterActive;
-}
-
 void GdxSymbol::setShowUelInColumn(const std::vector<bool *> &showUelInColumn)
 {
     mShowUelInColumn = showUelInColumn;
+}
+
+bool GdxSymbol::filterActive(int column) const
+{
+    return mFilterActive.at(column);
+}
+
+void GdxSymbol::setFilterActive(int column, bool active)
+{
+    mFilterActive[column] = active;
 }
 
 std::vector<bool *> GdxSymbol::showUelInColumn() const

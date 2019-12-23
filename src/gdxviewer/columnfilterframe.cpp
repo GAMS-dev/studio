@@ -66,15 +66,14 @@ void ColumnFilterFrame::apply()
     bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);
     std::vector<int>* uelsInColumn = mSymbol->uelsInColumn().at(mColumn);
     bool checked;
-    std::vector<bool> filterActive = mSymbol->filterActive();
-    filterActive[mColumn] = false;
+    bool activateFilter = false;
     for (size_t idx=0; idx<uelsInColumn->size(); idx++) {
         checked = mModel->checked()[idx];
         showUelInColumn[uelsInColumn->at(idx)] = checked;
         if(!checked)
-            filterActive[mColumn] = true;
+            activateFilter = true;
     }
-    mSymbol->setFilterActive(filterActive);
+    mSymbol->setFilterActive(mColumn, activateFilter);
     mSymbol->filterRows();
     static_cast<QMenu*>(this->parent())->close();
     mSymbol->setFilterHasChanged(true);

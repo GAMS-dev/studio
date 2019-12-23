@@ -71,8 +71,9 @@ public:
     std::vector<std::vector<int> *> uelsInColumn() const;
     std::vector<bool *> showUelInColumn() const;
     void setShowUelInColumn(const std::vector<bool *> &showUelInColumn);
-    std::vector<bool> filterActive() const;
-    void setFilterActive(const std::vector<bool> &filterActive);
+
+    bool filterActive(int column) const;
+    void setFilterActive(int column, bool active=true);
 
     int tvColDim() const;
 

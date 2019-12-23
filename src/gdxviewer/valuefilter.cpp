@@ -44,13 +44,11 @@ QWidget *ValueFilter::createWidget(QWidget *parent)
 
 void ValueFilter::updateFilter()
 {
-    std::vector<bool> filterActive = mSymbol->filterActive();
     if (mMin==mCurrentMin && mMax==mCurrentMax && !mInvert && mShowUndef && mShowNA && mShowPInf && mShowMInf && mShowEps && mShowAcronym)
-        filterActive[mValueColumn+mSymbol->dim()] = false;
+        mSymbol->setFilterActive(mValueColumn+mSymbol->dim(), false);
     else
-        filterActive[mValueColumn+mSymbol->dim()] = true;
+        mSymbol->setFilterActive(mValueColumn+mSymbol->dim(), true);
     mSymbol->registerValueFilter(mValueColumn, this);
-    mSymbol->setFilterActive(filterActive);
     mSymbol->filterRows();
     mSymbol->setFilterHasChanged(true);
 }
