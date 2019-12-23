@@ -43,6 +43,7 @@ public:
 
 private slots:
     void on_pbApply_clicked();
+    void on_pbReset_clicked();
 
 private:
     Ui::ValueFilterWidget *ui;

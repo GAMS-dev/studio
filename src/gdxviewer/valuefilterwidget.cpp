@@ -84,6 +84,12 @@ void ValueFilterWidget::on_pbApply_clicked()
     static_cast<QMenu*>(this->parent())->close();
 }
 
+void ValueFilterWidget::on_pbReset_clicked()
+{
+    mValueFilter->reset();
+    static_cast<QMenu*>(this->parent())->close();
+}
+
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams

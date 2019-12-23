@@ -53,6 +53,14 @@ void ValueFilter::updateFilter()
     mSymbol->setFilterHasChanged(true);
 }
 
+void ValueFilter::reset()
+{
+    mSymbol->setFilterActive(mValueColumn+mSymbol->dim(), false);
+    mSymbol->registerValueFilter(mValueColumn, nullptr);
+    mSymbol->filterRows();
+    mSymbol->setFilterHasChanged(true);
+}
+
 double ValueFilter::min() const
 {
     return mMin;

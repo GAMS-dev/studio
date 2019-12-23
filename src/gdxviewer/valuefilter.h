@@ -33,6 +33,7 @@ public:
     ValueFilter(GdxSymbol* symbol, int valueColumn, QWidget *parent = nullptr);
     QWidget* createWidget(QWidget * parent) override;
     void updateFilter();
+    void reset();
 
     double min() const;
     double max() const;
