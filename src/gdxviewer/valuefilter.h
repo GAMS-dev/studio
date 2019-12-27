@@ -58,8 +58,8 @@ public:
     bool showAcronym() const;
     void setShowAcronym(bool showAcronym);
 
-    bool invert() const;
-    void setInvert(bool invert);
+    bool exclude() const;
+    void setExclude(bool exclude);
 
     void setCurrentMin(double currentMin);
     void setCurrentMax(double currentMax);
@@ -74,7 +74,7 @@ private:
     double mCurrentMin;
     double mCurrentMax;
 
-    bool mInvert = false;
+    bool mExclude = false;
 
     bool mShowUndef = true;
     bool mShowNA = true;

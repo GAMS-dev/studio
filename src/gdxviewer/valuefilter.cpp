@@ -44,7 +44,7 @@ QWidget *ValueFilter::createWidget(QWidget *parent)
 
 void ValueFilter::updateFilter()
 {
-    if (mMin==mCurrentMin && mMax==mCurrentMax && !mInvert && mShowUndef && mShowNA && mShowPInf && mShowMInf && mShowEps && mShowAcronym)
+    if (mMin==mCurrentMin && mMax==mCurrentMax && !mExclude && mShowUndef && mShowNA && mShowPInf && mShowMInf && mShowEps && mShowAcronym)
         mSymbol->unregisterValueFilter(mValueColumn);
     else
         mSymbol->registerValueFilter(mValueColumn, this);
@@ -139,14 +139,14 @@ void ValueFilter::setShowAcronym(bool showAcronym)
     mShowAcronym = showAcronym;
 }
 
-bool ValueFilter::invert() const
+bool ValueFilter::exclude() const
 {
-    return mInvert;
+    return mExclude;
 }
 
-void ValueFilter::setInvert(bool invert)
+void ValueFilter::setExclude(bool invert)
 {
-    mInvert = invert;
+    mExclude = invert;
 }
 
 void ValueFilter::setCurrentMin(double currentMin)

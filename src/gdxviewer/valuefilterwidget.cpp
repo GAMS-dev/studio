@@ -48,7 +48,7 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
         ui->leMax->setText(QString::number(mValueFilter->currentMax(), 'g', 16));
     }
 
-    ui->cbExclude->setChecked(mValueFilter->invert());
+    ui->cbExclude->setChecked(mValueFilter->exclude());
 
     ui->cbUndef->setChecked(mValueFilter->showUndef());
     ui->cbNa->setChecked(mValueFilter->showNA());
@@ -73,7 +73,7 @@ void ValueFilterWidget::on_pbApply_clicked()
         mValueFilter->setCurrentMax(mValueFilter->max());
     else
         mValueFilter->setCurrentMax(ui->leMax->text().toDouble());
-    mValueFilter->setInvert(ui->cbExclude->isChecked());
+    mValueFilter->setExclude(ui->cbExclude->isChecked());
     mValueFilter->setShowUndef(ui->cbUndef->isChecked());
     mValueFilter->setShowNA(ui->cbNa->isChecked());
     mValueFilter->setShowPInf(ui->cbPInf->isChecked());
