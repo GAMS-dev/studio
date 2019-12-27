@@ -47,7 +47,7 @@ private slots:
 
 private:
     Ui::ValueFilterWidget *ui;
-    ValueFilter* mValueFilter = nullptr;
+    ValueFilter* mValueFilter;
     double mMin;
     double mMax;
 };
