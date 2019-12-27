@@ -150,12 +150,9 @@ void GdxSymbolView::showColumnFilter(QPoint p)
             ColumnFilter cf(mSym, column, this);
             m.addAction(&cf);
             m.exec(ui->tvListView->mapToGlobal(p));
-
         } else {
             QMenu m(this);
-            ValueFilter* vf = mSym->valueFilters().at(column-mSym->dim());
-            if (!vf)
-                vf = new ValueFilter(mSym, column-mSym->dim(), this);
+            ValueFilter* vf = mSym->valueFilter(column-mSym->dim());
             m.addAction(vf);
             m.exec(ui->tvListView->mapToGlobal(p));
         }

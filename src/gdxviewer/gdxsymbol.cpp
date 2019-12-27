@@ -425,11 +425,6 @@ void GdxSymbol::initNumericalBounds()
     }
 }
 
-std::vector<ValueFilter *> GdxSymbol::valueFilters() const
-{
-    return mValueFilters;
-}
-
 int GdxSymbol::filterColumnCount()
 {
     return mDim+mNumericalColumnCount;
@@ -456,6 +451,23 @@ double GdxSymbol::maxDouble(int valCol)
 void GdxSymbol::registerValueFilter(int valueColumn, ValueFilter *valueFilter)
 {
     mValueFilters.at(valueColumn) = valueFilter;
+    mFilterActive.at(mDim+valueColumn) = true;
+}
+
+void GdxSymbol::unregisterValueFilter(int valueColumn)
+{
+    if (mValueFilters[valueColumn] != nullptr) {
+        delete mValueFilters[valueColumn];
+        mValueFilters[valueColumn] = nullptr;
+    }
+    mFilterActive.at(mDim+valueColumn) = false;
+}
+
+ValueFilter *GdxSymbol::valueFilter(int valueColumn)
+{
+    if (mValueFilters[valueColumn] == nullptr)
+        mValueFilters[valueColumn] = new ValueFilter(this, valueColumn);
+    return mValueFilters[valueColumn];
 }
 
 bool GdxSymbol::filterHasChanged() const

@@ -45,20 +45,18 @@ QWidget *ValueFilter::createWidget(QWidget *parent)
 void ValueFilter::updateFilter()
 {
     if (mMin==mCurrentMin && mMax==mCurrentMax && !mInvert && mShowUndef && mShowNA && mShowPInf && mShowMInf && mShowEps && mShowAcronym)
-        mSymbol->setFilterActive(mValueColumn+mSymbol->dim(), false);
+        mSymbol->unregisterValueFilter(mValueColumn);
     else
-        mSymbol->setFilterActive(mValueColumn+mSymbol->dim(), true);
-    mSymbol->registerValueFilter(mValueColumn, this);
+        mSymbol->registerValueFilter(mValueColumn, this);
     mSymbol->filterRows();
     mSymbol->setFilterHasChanged(true);
 }
 
 void ValueFilter::reset()
 {
-    mSymbol->setFilterActive(mValueColumn+mSymbol->dim(), false);
-    mSymbol->registerValueFilter(mValueColumn, nullptr);
+    mSymbol->unregisterValueFilter(mValueColumn);
     mSymbol->filterRows();
-    mSymbol->setFilterHasChanged(true);
+    mSymbol->setFilterHasChanged(true); 
 }
 
 double ValueFilter::min() const

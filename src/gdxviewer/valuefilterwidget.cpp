@@ -80,14 +80,14 @@ void ValueFilterWidget::on_pbApply_clicked()
     mValueFilter->setShowMInf(ui->cbMInf->isChecked());
     mValueFilter->setShowEps(ui->cbEps->isChecked());
     mValueFilter->setShowAcronym(ui->cbAcronym->isChecked());
-    mValueFilter->updateFilter();
     static_cast<QMenu*>(this->parent())->close();
+    mValueFilter->updateFilter();
 }
 
 void ValueFilterWidget::on_pbReset_clicked()
 {
-    mValueFilter->reset();
     static_cast<QMenu*>(this->parent())->close();
+    mValueFilter->reset();
 }
 
 } // namespace gdxviewer

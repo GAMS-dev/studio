@@ -86,8 +86,9 @@ public:
     double maxDouble(int valCol=0);
 
     void registerValueFilter(int valueColumn, ValueFilter *valueFilter);
+    void unregisterValueFilter(int valueColumn);
+    ValueFilter* valueFilter(int valueColumn);
 
-    std::vector<ValueFilter *> valueFilters() const;
     int filterColumnCount();
 
 signals:
