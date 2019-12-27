@@ -2006,38 +2006,15 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
     if (!mRecent.validRunGroup())
         return;
 
-    QStringList checkedFiles;
-    auto fileName = mRecent.group->toRunGroup()->location() + "/" + miro::MiroCommon::assemblyFileName(mRecent.group->name());
-    if (QFileInfo().exists(fileName)) {
-        QFile file(fileName);
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            while (!file.atEnd()) {
-                auto line = file.readLine().trimmed();
-                if (line.isEmpty())
-                    continue;
-                checkedFiles << line;
-            }
-            file.close();
-        }
-    } else {
-        checkedFiles << mRecent.group->toRunGroup()->runnableGms()->name();
-    }
-
+    auto assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.group->name());
+    auto checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.group->toRunGroup()->runnableGms()->name());
     miro::MiroModelAssemblyDialog dlg(mRecent.group->toRunGroup()->location(), this);
     dlg.setSelectedFiles(checkedFiles);
     if (dlg.exec() == QDialog::Rejected)
         return;
 
-    QFile file(fileName);
-    auto selectedFiles = dlg.selectedFiles();
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream stream(&file);
-        for (auto selectedFile: selectedFiles)
-            stream << selectedFile << "\n";
-    } else {
-        SysLogLocator::systemLog()->append(QString("Could not open file: %1").arg(fileName),
-                                           LogMsgType::Error);
-    }
+    if (!miro::MiroCommon::writeAssemblyFile(assemblyFile, dlg.selectedFiles()))
+        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1").arg(assemblyFile), LogMsgType::Error);
 }
 
 void MainWindow::on_actionDeploy_triggered()
