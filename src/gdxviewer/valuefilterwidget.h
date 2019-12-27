@@ -46,8 +46,8 @@ private slots:
     void on_pbReset_clicked();
 
 private:
-    Ui::ValueFilterWidget *ui;
     ValueFilter* mValueFilter;
+    Ui::ValueFilterWidget *ui;
     double mMin;
     double mMax;
 };
