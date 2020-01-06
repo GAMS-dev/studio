@@ -90,7 +90,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Special Values:</string>
+      <string>Show Special Values:</string>
      </property>
     </widget>
    </item>
