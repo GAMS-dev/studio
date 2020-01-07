@@ -391,7 +391,7 @@ QVariant GdxSymbol::formatValue(double val) const
         return str;
     }
     if (val == GMS_SV_UNDEF)
-        return "UNDEF";
+        return "UNDF";
     if (val == GMS_SV_NA)
         return "NA";
     if (val == GMS_SV_PINF)

@@ -102,7 +102,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter settings for special value &lt;span style=&quot; font-weight:600;&quot;&gt;Epsilon&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Eps</string>
+        <string>EPS</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -115,7 +115,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter settings for special value &lt;span style=&quot; font-weight:600;&quot;&gt;Infinity&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Inf</string>
+        <string>+INF</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -128,7 +128,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter settings for special value &lt;span style=&quot; font-weight:600;&quot;&gt;-Infinity&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>-Inf</string>
+        <string>-INF</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -138,10 +138,10 @@
      <item row="1" column="0">
       <widget class="QCheckBox" name="cbNa">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter settings for special value &lt;span style=&quot; font-weight:600;&quot;&gt;NaN&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter settings for special value &lt;span style=&quot; font-weight:600;&quot;&gt;NA&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>NaN</string>
+        <string>NA</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -154,7 +154,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter settings for special value &lt;span style=&quot; font-weight:600;&quot;&gt;Undefined&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Undef</string>
+        <string>UNDF</string>
        </property>
        <property name="checked">
         <bool>true</bool>
