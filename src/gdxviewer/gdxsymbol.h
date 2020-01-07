@@ -91,6 +91,8 @@ public:
 
     int filterColumnCount();
 
+    static QString formatNumericalValue(double val, int precision, int maxPrecision, bool squeezeTrailingZeroes);
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();

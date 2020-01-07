@@ -367,28 +367,32 @@ double GdxSymbol::specVal2SortVal(double val)
         return val; // should be an acronym
 }
 
+QString GdxSymbol::formatNumericalValue(double val, int precision, int maxPrecision, bool squeezeTrailingZeroes)
+{
+    QString strFullPrec = QString::number(val, 'g', maxPrecision);
+    QString str = QString::number(val, 'f', precision);
+
+    if (strFullPrec.contains('e'))
+        str = QString::number(str.toDouble(), 'g', precision);
+
+    if (squeezeTrailingZeroes) {
+        if (str.contains(QLocale::c().decimalPoint())) {
+            while (str.back() == '0') // remove trailing zeroes
+                str.chop(1);
+            if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
+                str.chop(1);
+        }
+    }
+    return str;
+}
+
 QVariant GdxSymbol::formatValue(double val) const
 {
     if (val<GMS_SV_UNDEF) {
         int prec = mNumericalPrecision;
         if (prec == -1) // Max
             prec = mMaxPrecision;
-
-        QString strFullPrec = QString::number(val, 'g', mMaxPrecision);
-        QString str = QString::number(val, 'f', prec);
-
-        if (strFullPrec.contains('e'))
-            str = QString::number(str.toDouble(), 'g', prec);
-
-        if (mSqueezeTrailingZeroes) {
-            if (str.contains(QLocale::c().decimalPoint())) {
-                while (str.back() == '0') // remove trailing zeroes
-                    str.chop(1);
-                if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
-                    str.chop(1);
-            }
-        }
-        return str;
+        return formatNumericalValue(val, prec, mMaxPrecision, mSqueezeTrailingZeroes);
     }
     if (val == GMS_SV_UNDEF)
         return "UNDF";
