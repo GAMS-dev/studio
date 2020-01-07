@@ -92,6 +92,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mNrDecimals->setRange(-1, 6);
     mNrDecimals->setSpecialValueText("MAX");
     mNrDecimals->setValue(6);
+    mNrDecimals->setWrapping(true);
     hLayout->addWidget(mNrDecimals);
 
     vLayout->addItem(hLayout);
