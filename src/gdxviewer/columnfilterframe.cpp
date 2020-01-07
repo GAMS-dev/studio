@@ -61,6 +61,15 @@ void ColumnFilterFrame::mouseMoveEvent(QMouseEvent *event)
     Q_UNUSED(event)
 }
 
+void ColumnFilterFrame::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+        e->accept();
+        ui.pbApply->clicked();
+    }
+    QFrame::keyPressEvent(e);
+}
+
 void ColumnFilterFrame::apply()
 {
     bool* showUelInColumn =  mSymbol->showUelInColumn().at(mColumn);

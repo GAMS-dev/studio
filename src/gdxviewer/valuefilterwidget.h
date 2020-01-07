@@ -41,6 +41,9 @@ public:
     explicit ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent = nullptr);
     ~ValueFilterWidget();
 
+protected:
+    void keyPressEvent(QKeyEvent *e);
+
 private slots:
     void on_pbApply_clicked();
     void on_pbReset_clicked();

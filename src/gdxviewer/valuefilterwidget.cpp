@@ -21,6 +21,7 @@
 #include "ui_valuefilterwidget.h"
 #include "valuefilter.h"
 
+#include <QKeyEvent>
 #include <QMenu>
 
 namespace gams {
@@ -61,6 +62,15 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
 ValueFilterWidget::~ValueFilterWidget()
 {
     delete ui;
+}
+
+void ValueFilterWidget::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+        e->accept();
+        ui->pbApply->clicked();
+    }
+    QWidget::keyPressEvent(e);
 }
 
 void ValueFilterWidget::on_pbApply_clicked()

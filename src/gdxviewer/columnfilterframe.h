@@ -40,6 +40,7 @@ protected:
     //mouse events overwritten to prevent closing of the filter menu if user click on empty spaces regions within the frame
     void mousePressEvent(QMouseEvent * event) override;
     void mouseMoveEvent(QMouseEvent * event) override;
+    void keyPressEvent(QKeyEvent *e);
 
 private slots:
     void apply();
