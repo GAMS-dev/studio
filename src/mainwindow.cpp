@@ -2475,7 +2475,7 @@ void MainWindow::execute(QString commandLineStr,
     groupProc->setWorkingDirectory(workDir);
 
     // disable MIRO menus
-    if (dynamic_cast<miro::MiroProcess*>(groupProc) ) {
+    if (dynamic_cast<miro::AbstractMiroProcess*>(groupProc) ) {
         setMiroRunning(true);
         connect(groupProc, &AbstractProcess::finished, [this](){setMiroRunning(false);});
     }
