@@ -129,7 +129,19 @@ void SettingsDialog::setModifiedStatus(bool status)
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(status);
 }
 
-    // save settings from ui to qsettings
+bool SettingsDialog::miroSettingsEnabled() const
+{
+    return mMiroSettingsEnabled;
+}
+
+void SettingsDialog::setMiroSettingsEnabled(bool enabled)
+{
+    mMiroSettingsEnabled = enabled;
+    ui->miroEdit->setEnabled(enabled);
+    ui->miroBrowseButton->setEnabled(enabled);
+}
+
+// save settings from ui to qsettings
 void SettingsDialog::saveSettings()
 {
     // general page

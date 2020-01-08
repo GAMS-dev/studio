@@ -42,6 +42,9 @@ public:
     explicit SettingsDialog(MainWindow *parent = nullptr);
     ~SettingsDialog();
 
+    bool miroSettingsEnabled() const;
+    void setMiroSettingsEnabled(bool enabled);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -73,6 +76,7 @@ private:
     void loadSettings();
     void setModifiedStatus(bool status);
     bool isModified = false;
+    bool mMiroSettingsEnabled = true;
 };
 
 }
