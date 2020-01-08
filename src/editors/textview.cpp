@@ -569,7 +569,6 @@ void TextView::setDebugMode(bool debug)
 
 void TextView::invalidate()
 {
-    mMapper->restoreCodec();
     recalcVisibleLines();
 }
 
