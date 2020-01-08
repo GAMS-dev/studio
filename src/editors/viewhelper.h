@@ -114,18 +114,18 @@ public:
     }
 
     inline static QStringList dialogFileFilterEditable() {
-        return QStringList("GAMS source (*.gms);;")
-               << "Text files (*.txt);;"
-               << "Option files (*.opt *.op* *.o*);;"
+        return QStringList("GAMS source (*.gms)")
+               << "Text files (*.txt)"
+               << "Option files (*.opt *.op* *.o*)"
                << "All files (*.*)";
     }
 
     inline static QStringList dialogFileFilterNonEditable() {
-        return QStringList("GAMS Source (*.gms);;")
-               << "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.op* *.o *.ref *.dmp);;"
-               << "Option files (*.opt *.op* *.o*);;"
-               << "Reference files (*.ref);;"
-               << "Text files (*.txt);;"
+        return QStringList("GAMS Source (*.gms)")
+               << "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
+               << "Option files (*.opt *.op* *.o*)"
+               << "Reference files (*.ref)"
+               << "Text files (*.txt)"
                << "All files (*.*)";
     }
 
