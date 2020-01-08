@@ -31,6 +31,7 @@ namespace studio {
 AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 {
     mCodec = QTextCodec::codecForLocale();
+    mCodecMib = mCodec->mibEnum();
     setMappingSizes();
     setPosAbsolute(nullptr, 0, 0);
 }
@@ -46,6 +47,7 @@ QTextCodec *AbstractTextMapper::codec() const
 void AbstractTextMapper::setCodec(QTextCodec *codec)
 {
     mCodec = codec;
+    mCodecMib = codec->mibEnum();
 }
 
 bool AbstractTextMapper::isEmpty() const
@@ -395,6 +397,9 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
                        uint(chunk->lineBytes.at(chunkInterval.first+chunkInterval.second)
                             - chunk->lineBytes.at(chunkInterval.first) - mDelimiter.size()));
         if (!res.isEmpty()) res.append(mDelimiter);
+        QByteArray abc("abc");
+        QString xyz;
+        xyz.append(mCodec ? mCodec->toUnicode(abc) : QString(abc));
         res.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
         interval.first += chunkInterval.second;
         interval.second -= chunkInterval.second;
@@ -753,6 +758,11 @@ void AbstractTextMapper::dumpPos() const
 bool AbstractTextMapper::atTail()
 {
     return (lineCount() >= 0 && mMaxTopLine == mTopLine);
+}
+
+void AbstractTextMapper::restoreCodec()
+{
+    mCodec = QTextCodec::codecForMib(mCodecMib);
 }
 
 AbstractTextMapper::ChunkMetrics *AbstractTextMapper::chunkMetrics(int chunkNr) const

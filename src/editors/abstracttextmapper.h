@@ -172,6 +172,7 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     bool atTail();
+    void restoreCodec();
 
     void dumpPos() const;
 
@@ -233,6 +234,7 @@ private:
     int mCursorColumn = 0;
 
     QTextCodec *mCodec = nullptr;
+    int mCodecMib = -1;
     int mMaxChunksInCache = 5;
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
