@@ -243,6 +243,7 @@ private slots:
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
+    void setMiroEnabled(bool enabled);
 
     // Tools
     void on_actionGDX_Diff_triggered();

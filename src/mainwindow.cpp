@@ -2056,6 +2056,12 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     execute({}, std::move(process));
 }
 
+void MainWindow::setMiroEnabled(bool enabled)
+{
+    ui->menuMIRO->setEnabled(enabled);
+    mMiroDeployDialog->setEnabled(enabled);
+}
+
 void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
     ProjectAbstractNode* node = mProjectRepo.node(index);
@@ -2467,6 +2473,11 @@ void MainWindow::execute(QString commandLineStr,
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
 
+    // disable MIRO menues
+    if (static_cast<miro::MiroProcess*>(groupProc) ) {
+        setMiroEnabled(false);
+        connect(groupProc, &AbstractProcess::finished, [this](){setMiroEnabled(true);});
+    }
     groupProc->execute();
     ui->toolBar->repaint();
 
