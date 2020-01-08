@@ -67,7 +67,7 @@ private:
     QList<QSortFilterProxyModel*> proxyModelList;
 
     QString mUserLibPath;
-    QString mIconUserLib = ":/img/user";
+    QString mIconUserLib = ":/%1/user";
 
     bool mHasGlbErrors = false;
 };

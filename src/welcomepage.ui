@@ -387,7 +387,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/img/file&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Create New File&lt;/span&gt;&lt;br&gt;&lt;span style=&quot; font-size:small;&quot;&gt;Creates a new and empty .gms file.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/thin/file&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Create New File&lt;/span&gt;&lt;br&gt;&lt;span style=&quot; font-size:small;&quot;&gt;Creates a new and empty .gms file.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="textFormat">
                   <enum>Qt::AutoText</enum>
@@ -412,7 +412,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/img/books&quot; height=&quot;17&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse GAMS Libraries&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;The GAMS libraries contain an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/thin/books&quot; height=&quot;17&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse GAMS Libraries&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;The GAMS libraries contain an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -447,7 +447,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/img/truck&quot; height=&quot;17&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Transport Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;A simple GAMS example to find a cost efficient solution for a shipping problem featuring demand and supply.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/thin/truck&quot; height=&quot;17&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Transport Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;A simple GAMS example to find a cost efficient solution for a shipping problem featuring demand and supply.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -476,7 +476,7 @@
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/img/film&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio Introduction Video&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;External link to youtube.com&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/thin/film&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio Introduction Video&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;External link to youtube.com&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -535,7 +535,7 @@
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/img/book&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600; &quot;&gt;GAMS Tutorial&lt;/span&gt;&lt;br&gt;&lt;small&gt;General tutorial about the GAMS language.&lt;/small&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/thin/book&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600; &quot;&gt;GAMS Tutorial&lt;/span&gt;&lt;br&gt;&lt;small&gt;General tutorial about the GAMS language.&lt;/small&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="scaledContents">
                   <bool>false</bool>
@@ -641,7 +641,7 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;img src=&quot;:/img/new&quot; width=&quot;16&quot; height=&quot;16&quot; style=&quot;vertical-align: middle;&quot;/&gt;&lt;/p&gt;&lt;/td&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;  What's new in Studio?&lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table border=&quot;0&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;&quot; cellspacing=&quot;2&quot; cellpadding=&quot;0&quot;&gt;&lt;tr&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;img src=&quot;:/thin/new&quot; width=&quot;16&quot; height=&quot;16&quot; style=&quot;vertical-align: middle;&quot;/&gt;&lt;/p&gt;&lt;/td&gt;&lt;td style=&quot; vertical-align:middle;&quot;&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;  What's new in Studio?&lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>4</number>
@@ -666,7 +666,7 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: middle;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/img/scroll&quot; height=&quot;17&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Release Notes&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: middle;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/thin/scroll&quot; height=&quot;17&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;GAMS Release Notes&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="margin">
               <number>4</number>
@@ -720,7 +720,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: middle;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/img/envelope&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;Contact GAMS&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: middle;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;img src=&quot;:/thin/envelope&quot; height=&quot;16&quot; width=&quot;16&quot;/&gt;&lt;/td&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;nbsp;&amp;nbsp;Contact GAMS&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="scaledContents">
               <bool>false</bool>

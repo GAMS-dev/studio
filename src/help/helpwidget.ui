@@ -96,7 +96,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../icons/icons.qrc">
-          <normaloff>:/img/backward</normaloff>:/img/backward</iconset>
+          <normaloff>:/thin/backward</normaloff>:/thin/backward</iconset>
         </property>
        </widget>
       </item>
@@ -113,7 +113,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../icons/icons.qrc">
-          <normaloff>:/img/forward</normaloff>:/img/forward</iconset>
+          <normaloff>:/thin/forward</normaloff>:/thin/forward</iconset>
         </property>
        </widget>
       </item>
@@ -157,7 +157,7 @@
         </property>
         <property name="icon">
          <iconset resource="../../icons/icons.qrc">
-          <normaloff>:/img/delete</normaloff>:/img/delete</iconset>
+          <normaloff>:/thin/delete</normaloff>:/thin/delete</iconset>
         </property>
        </widget>
       </item>
@@ -168,7 +168,7 @@
   <action name="actionHome">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/home</normaloff>:/img/home</iconset>
+     <normaloff>:/thin/home</normaloff>:/thin/home</iconset>
    </property>
    <property name="text">
     <string/>

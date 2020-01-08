@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>768</height>
+    <width>1014</width>
+    <height>745</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -60,7 +60,7 @@
       <property name="horizontalSpacing">
        <number>6</number>
       </property>
-      <item row="0" column="1">
+      <item row="0" column="0">
        <widget class="QTabWidget" name="mainTabs">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
@@ -103,7 +103,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1014</width>
      <height>22</height>
     </rect>
    </property>
@@ -533,7 +533,7 @@
    </property>
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/output</normaloff>:/img/output</iconset>
+     <normaloff>:/thin/output</normaloff>:/thin/output</iconset>
    </property>
    <property name="text">
     <string>&amp;Process Log</string>
@@ -551,7 +551,7 @@
    </property>
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/project</normaloff>:/img/project</iconset>
+     <normaloff>:/thin/project</normaloff>:/thin/project</iconset>
    </property>
    <property name="text">
     <string>Project &amp;Explorer</string>
@@ -563,7 +563,7 @@
   <action name="actionNew">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/file</normaloff>:/img/file</iconset>
+     <normaloff>:/thin/file</normaloff>:/thin/file</iconset>
    </property>
    <property name="text">
     <string>&amp;New...</string>
@@ -575,7 +575,7 @@
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/folder-open-bw</normaloff>:/img/folder-open-bw</iconset>
+     <normaloff>:/thin/folder-open-bw</normaloff>:/thin/folder-open-bw</iconset>
    </property>
    <property name="text">
     <string>&amp;Open...</string>
@@ -587,7 +587,7 @@
   <action name="actionSave">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/save</normaloff>:/img/save</iconset>
+     <normaloff>:/thin/save</normaloff>:/thin/save</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -646,7 +646,7 @@
   <action name="actionGAMS_Library">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/books</normaloff>:/img/books</iconset>
+     <normaloff>:/thin/books</normaloff>:/thin/books</iconset>
    </property>
    <property name="text">
     <string>&amp;Model Library Explorer</string>
@@ -658,7 +658,7 @@
   <action name="actionRun">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/play</normaloff>:/img/play</iconset>
+     <normaloff>:/thin/play</normaloff>:/thin/play</iconset>
    </property>
    <property name="text">
     <string>&amp;Run</string>
@@ -670,7 +670,7 @@
   <action name="actionCompile">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/code</normaloff>:/img/code</iconset>
+     <normaloff>:/thin/code</normaloff>:/thin/code</iconset>
    </property>
    <property name="text">
     <string>&amp;Compile</string>
@@ -685,7 +685,7 @@
   <action name="actionRun_with_GDX_Creation">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/run-gdx</normaloff>:/img/run-gdx</iconset>
+     <normaloff>:/thin/run-gdx</normaloff>:/thin/run-gdx</iconset>
    </property>
    <property name="text">
     <string>Run with GDX Creation</string>
@@ -700,7 +700,7 @@
   <action name="actionSettings">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/cog</normaloff>:/img/cog</iconset>
+     <normaloff>:/thin/cog</normaloff>:/thin/cog</iconset>
    </property>
    <property name="text">
     <string>Settings</string>
@@ -715,7 +715,7 @@
   <action name="actionCompile_with_GDX_Creation">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/code-gdx</normaloff>:/img/code-gdx</iconset>
+     <normaloff>:/thin/code-gdx</normaloff>:/thin/code-gdx</iconset>
    </property>
    <property name="text">
     <string>Compile with GDX Creation</string>
@@ -730,7 +730,7 @@
   <action name="actionSearch">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/glasses</normaloff>:/img/glasses</iconset>
+     <normaloff>:/thin/search</normaloff>:/thin/search</iconset>
    </property>
    <property name="text">
     <string>&amp;Search &amp;&amp; Replace</string>
@@ -767,7 +767,7 @@
   <action name="actionCopy">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/copy</normaloff>:/img/copy</iconset>
+     <normaloff>:/thin/copy</normaloff>:/thin/copy</iconset>
    </property>
    <property name="text">
     <string>&amp;Copy</string>
@@ -782,7 +782,7 @@
   <action name="actionPaste">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/paste</normaloff>:/img/paste</iconset>
+     <normaloff>:/thin/paste</normaloff>:/thin/paste</iconset>
    </property>
    <property name="text">
     <string>&amp;Paste</string>
@@ -794,7 +794,7 @@
   <action name="actionUndo">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/undo</normaloff>:/img/undo</iconset>
+     <normaloff>:/thin/undo</normaloff>:/thin/undo</iconset>
    </property>
    <property name="text">
     <string>&amp;Undo</string>
@@ -806,7 +806,7 @@
   <action name="actionRedo">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/redo</normaloff>:/img/redo</iconset>
+     <normaloff>:/thin/redo</normaloff>:/thin/redo</iconset>
    </property>
    <property name="text">
     <string>&amp;Redo</string>
@@ -826,7 +826,7 @@
   <action name="actionCut">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/cut</normaloff>:/img/cut</iconset>
+     <normaloff>:/thin/cut</normaloff>:/thin/cut</iconset>
    </property>
    <property name="text">
     <string>&amp;Cut</string>
@@ -865,7 +865,7 @@
    </property>
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/question</normaloff>:/img/question</iconset>
+     <normaloff>:/thin/question</normaloff>:/thin/question</iconset>
    </property>
    <property name="text">
     <string>&amp;Help</string>
@@ -920,7 +920,7 @@
   <action name="actionZoom_In">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/search-plus</normaloff>:/img/search-plus</iconset>
+     <normaloff>:/thin/search-plus</normaloff>:/thin/search-plus</iconset>
    </property>
    <property name="text">
     <string>Zoom In</string>
@@ -932,7 +932,7 @@
   <action name="actionZoom_Out">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/search-minus</normaloff>:/img/search-minus</iconset>
+     <normaloff>:/thin/search-minus</normaloff>:/thin/search-minus</iconset>
    </property>
    <property name="text">
     <string>Zoom Out</string>
@@ -944,7 +944,7 @@
   <action name="actionReset_Zoom">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/search-off</normaloff>:/img/search-off</iconset>
+     <normaloff>:/thin/search-off</normaloff>:/thin/search-off</iconset>
    </property>
    <property name="text">
     <string>Reset Zoom</string>
@@ -1002,7 +1002,7 @@
   <action name="actionInterrupt">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/stop</normaloff>:/img/stop</iconset>
+     <normaloff>:/thin/stop</normaloff>:/thin/stop</iconset>
    </property>
    <property name="text">
     <string>Interrupt</string>
@@ -1017,7 +1017,7 @@
   <action name="actionStop">
    <property name="icon">
     <iconset>
-     <normaloff>:/img/interrupt</normaloff>:/img/interrupt</iconset>
+     <normaloff>:/thin/interrupt</normaloff>:/thin/interrupt</iconset>
    </property>
    <property name="text">
     <string>Stop</string>
@@ -1073,7 +1073,7 @@
   <action name="actionToggleBookmark">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/bookmark</normaloff>:/img/bookmark</iconset>
+     <normaloff>:/thin/bookmark</normaloff>:/thin/bookmark</iconset>
    </property>
    <property name="text">
     <string>Toggle Bookmark</string>
@@ -1088,7 +1088,7 @@
   <action name="actionNextBookmark">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/forward</normaloff>:/img/forward</iconset>
+     <normaloff>:/thin/forward</normaloff>:/thin/forward</iconset>
    </property>
    <property name="text">
     <string>Next Bookmark</string>
@@ -1103,7 +1103,7 @@
   <action name="actionPreviousBookmark">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/backward</normaloff>:/img/backward</iconset>
+     <normaloff>:/thin/backward</normaloff>:/thin/backward</iconset>
    </property>
    <property name="text">
     <string>Previous Bookmark</string>
@@ -1140,7 +1140,7 @@
    </property>
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/show</normaloff>:/img/show</iconset>
+     <normaloff>:/thin/show</normaloff>:/thin/show</iconset>
    </property>
    <property name="text">
     <string>Toggle Extended Parameter Editor</string>
@@ -1185,7 +1185,7 @@
   <action name="actionTerminal">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/terminal</normaloff>:/img/terminal</iconset>
+     <normaloff>:/thin/terminal</normaloff>:/thin/terminal</iconset>
    </property>
    <property name="text">
     <string>Terminal</string>
@@ -1194,7 +1194,7 @@
   <action name="actionGDX_Diff">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/gdxdiff</normaloff>:/img/gdxdiff</iconset>
+     <normaloff>:/thin/gdxdiff</normaloff>:/thin/gdxdiff</iconset>
    </property>
    <property name="text">
     <string>GDX Diff</string>

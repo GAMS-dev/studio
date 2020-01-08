@@ -48,7 +48,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
     ui(new Ui::HelpWidget)
 {
     ui->setupUi(this);
-    ui->actionHome->setIcon(Scheme::icon(":/img/home"));
+    ui->actionHome->setIcon(Scheme::icon(":/%1/home"));
 
     ui->webEngineView->showMaximized();
     ui->webEngineView->setPage( new HelpPage(ui->webEngineView) );
@@ -66,7 +66,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     QToolButton* bookmarkToolButton = new QToolButton(this);
     bookmarkToolButton->setToolTip("Bookmarks");
-    bookmarkToolButton->setIcon(Scheme::icon(":/img/bookmark"));
+    bookmarkToolButton->setIcon(Scheme::icon(":/%1/bookmark"));
     bookmarkToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     bookmarkToolButton->setMenu(mBookmarkMenu);
 
@@ -86,14 +86,14 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     QToolButton* helpToolButton = new QToolButton(this);
     helpToolButton->setToolTip("Help Option");
-    helpToolButton->setIcon(Scheme::icon(":/img/cog"));
+    helpToolButton->setIcon(Scheme::icon(":/%1/cog"));
     helpToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     helpToolButton->setMenu(helpMenu);
 
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back, Scheme::icon(":/img/backward"));
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward, Scheme::icon(":/img/forward"));
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload, Scheme::icon(":/img/reload"));
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop, Scheme::icon(":/img/stop"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back, Scheme::icon(":/%1/backward"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward, Scheme::icon(":/%1/forward"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload, Scheme::icon(":/%1/reload"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop, Scheme::icon(":/%1/stop"));
 
     setupToolbar(bookmarkToolButton, helpToolButton);
 
@@ -445,9 +445,9 @@ void HelpWidget::addBookmarkAction(const QString &objectName, const QString &tit
     action->setToolTip(objectName);
 
     if (objectName.startsWith("file")) {
-           action->setIcon(Scheme::icon(":/img/link"));
+           action->setIcon(Scheme::icon(":/%1/link"));
     } else if (objectName.startsWith("http")) {
-           action->setIcon(Scheme::icon(":/img/external-link"));
+           action->setIcon(Scheme::icon(":/%1/external-link"));
     }
     connect(action, &QAction::triggered, this, &HelpWidget::on_bookmarkaction);
     mBookmarkMenu->addAction(action);
@@ -526,10 +526,10 @@ qreal HelpWidget::getZoomFactor()
 QWebEngineView *HelpWidget::createHelpView()
 {
     HelpPage* page = new HelpPage(ui->webEngineView);
-    createWebActionTrigger(page, QWebEnginePage::Back, Scheme::icon(":/img/backward"));
-    createWebActionTrigger(page, QWebEnginePage::Forward, Scheme::icon(":/img/forward"));
-    createWebActionTrigger(page, QWebEnginePage::Reload, Scheme::icon(":/img/reload"));
-    createWebActionTrigger(page, QWebEnginePage::Stop, Scheme::icon(":/img/stop"));
+    createWebActionTrigger(page, QWebEnginePage::Back, Scheme::icon(":/%1/backward"));
+    createWebActionTrigger(page, QWebEnginePage::Forward, Scheme::icon(":/%1/forward"));
+    createWebActionTrigger(page, QWebEnginePage::Reload, Scheme::icon(":/%1/reload"));
+    createWebActionTrigger(page, QWebEnginePage::Stop, Scheme::icon(":/%1/stop"));
     ui->webEngineView->setPage( page );
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     return ui->webEngineView;

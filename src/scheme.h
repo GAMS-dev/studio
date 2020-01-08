@@ -69,6 +69,8 @@ public:
 
     enum FontFlag {fNormal, fBold, fItalic, fBoldItalic};
 
+    enum IconSet {ThinIcons, SolidIcons};
+
 private:
     struct Color {
         Color(QColor _color = QColor(), FontFlag _fontFlag = fNormal) : color(_color), fontFlag(_fontFlag) {}
@@ -85,6 +87,7 @@ public:
     int setActiveScheme(QString schemeName);
     int setActiveScheme(int scheme);
     int activeScheme() const;
+    void setIconSet(IconSet iconSet = ThinIcons);
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
@@ -115,6 +118,7 @@ private:
     typedef QHash<ColorSlot, Color> ColorScheme;
     QList<ColorScheme> mColorSchemes;
     QStringList mSchemeNames;
+    QString mIconSet;
     QHash<QString, QStringList> mIconCode;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;

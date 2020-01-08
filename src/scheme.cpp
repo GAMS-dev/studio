@@ -17,7 +17,7 @@ const QColor CUndefined(255, 0, 200);
 
 Scheme::Scheme(QObject *parent) : QObject(parent)
 {
-    DEB() << "Scheme constructor called";
+    mIconSet = "thin";
 }
 
 Scheme::~Scheme()
@@ -133,6 +133,15 @@ int Scheme::activeScheme() const
     return mActiveScheme;
 }
 
+void Scheme::setIconSet(Scheme::IconSet iconSet)
+{
+    switch (iconSet) {
+    case ThinIcons: mIconSet = "thin"; break;
+    case SolidIcons: mIconSet = "solid"; break;
+    }
+    invalidate();
+}
+
 QString Scheme::name(Scheme::ColorSlot slot)
 {
     return QMetaEnum::fromType<ColorSlot>().valueToKey(slot);
@@ -189,16 +198,16 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
     int iMode = int(mode);
 
     QHash<QString, QStringList>::const_iterator it = mIconCode.constBegin();
-    while (it != mIconCode.constEnd()) {
+    for ( ; it != mIconCode.constEnd() ; ++it) {
+        if (mode == QIcon::Normal && it.key() == "Back") continue;
         QString key = QString(".%1{fill:").arg(it.key());
         int from = data.indexOf(key);
         if (from >= 0) {
             from += key.length();
-            int len = data.indexOf(";", from) - from;
+            int len = data.indexOf(";\"", from) - from;
             data.replace(from, len, it.value().at(iMode).toLatin1());
 //            DEB() << key << " -> " << it.value().at(iMode).toLatin1();
         }
-        ++it;
     }
     return data;
 }
@@ -264,6 +273,7 @@ void Scheme::setColor(Scheme::ColorSlot slot, QColor color)
 
 QIcon Scheme::icon(QString name)
 {
+    if (name.contains("%")) name = name.arg(instance()->mIconSet);
     if (!instance()->mIconCache.contains(name)) {
         SvgEngine *eng = new SvgEngine(name);
         instance()->mEngines << eng;
@@ -275,7 +285,7 @@ QIcon Scheme::icon(QString name)
 QByteArray &Scheme::data(QString name, QIcon::Mode mode)
 {
     QStringList ext {"_N","_D","_A","_S"};
-    QString nameKey = name + ext.at(int(mode));
+    QString nameKey = name.arg(instance()->mIconSet) + ext.at(int(mode));
     if (!instance()->mDataCache.contains(nameKey)) {
         QByteArray data(instance()->colorizedContent(name, mode));
         instance()->mDataCache.insert(nameKey, data);
