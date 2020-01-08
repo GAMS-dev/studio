@@ -2053,7 +2053,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
-    execute({}, std::move(process));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(process));
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
