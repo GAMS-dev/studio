@@ -1991,7 +1991,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionStop_MIRO_triggered()
