@@ -1961,7 +1961,7 @@ void MainWindow::on_actionBase_mode_triggered()
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionHypercube_mode_triggered()
