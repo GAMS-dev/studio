@@ -2026,7 +2026,7 @@ void MainWindow::on_actionDeploy_triggered()
                         miro::MiroCommon::assemblyFileName(mRecent.group->name());
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
-    mMiroDeployDialog->open();
+    mMiroDeployDialog->exec();
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
