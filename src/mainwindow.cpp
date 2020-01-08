@@ -2473,7 +2473,7 @@ void MainWindow::execute(QString commandLineStr,
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
 
-    // disable MIRO menues
+    // disable MIRO menus
     if (dynamic_cast<miro::MiroProcess*>(groupProc) ) {
         setMiroEnabled(false);
         connect(groupProc, &AbstractProcess::finished, [this](){setMiroEnabled(true);});
