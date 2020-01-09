@@ -1950,10 +1950,6 @@ void MainWindow::on_actionBase_mode_triggered()
     if (!mRecent.validRunGroup())
         return;
 
-    auto node = mProjectRepo.findFile(mRecent.group->toRunGroup()->parameter("lst"));
-    if (node)
-        closeFileEditors(node->file()->id());
-
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
