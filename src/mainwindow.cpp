@@ -2031,12 +2031,16 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     process->setModelName(mRecent.group->name());
+    process->setTestDeployment(testDeploy);
+    process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
+
     if (testDeploy) {
         switch(mode){
         case miro::MiroDeployMode::Base:
             process->setBaseMode(mMiroDeployDialog->baseMode());
             break;
         case miro::MiroDeployMode::Hypercube:
+            process->setTargetEnvironment(miro::MiroTargetEnvironment::MultiUser);
             process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
             break;
         default:
@@ -2046,8 +2050,6 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
         process->setBaseMode(mMiroDeployDialog->baseMode());
         process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
     }
-    process->setTestDeployment(testDeploy);
-    process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(process));
 }
