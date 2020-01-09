@@ -168,7 +168,7 @@ QString ParameterEditor::on_runAction(RunActionState state)
     if (!commandLineStr.endsWith(" "))
         commandLineStr.append(" ");
 
-    bool gdxParam = commandLineStr.contains(QRegularExpression("\\Agdx[= ]", QRegularExpression::CaseInsensitiveOption));
+    bool gdxParam = commandLineStr.contains(QRegularExpression("gdx[= ]", QRegularExpression::CaseInsensitiveOption));
     bool actParam = commandLineStr.contains("ACTION=C",Qt::CaseInsensitive);
 
     if (state == RunActionState::RunWithGDXCreation && !gdxParam) {
