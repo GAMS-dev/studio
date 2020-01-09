@@ -32,9 +32,12 @@ GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *p
     : QHeaderView(orientation, parent)
 {
     int maxColumns = GMS_MAX_INDEX_DIM+GMS_VAL_MAX;
-    mFilterIconWidth.resize(maxColumns);
     mFilterIconX.resize(maxColumns);
     mFilterIconY.resize(maxColumns);
+
+    int h = sectionSizeFromContents(0).height();
+    mFilterIconWidth  = h*ICON_SCALE_FACTOR;
+    mFilterIconMargin = h*ICON_MARGIN_FACTOR;
 }
 
 GdxSymbolHeaderView::~GdxSymbolHeaderView()
@@ -58,16 +61,13 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
         else
             iconRes = iconFilterOff;
         QIcon icon(iconRes);
-        int iconWidth = rect.height()*ICON_SCALE_FACTOR;
-        int iconMargin = rect.height()*ICON_MARGIN_FACTOR;
-        QPixmap pm = icon.pixmap(iconWidth, iconWidth);
+        QPixmap pm = icon.pixmap(mFilterIconWidth, mFilterIconWidth);
 
-        int posX = rect.bottomRight().x()-iconWidth-iconMargin;
-        int posY = rect.bottomRight().y()-iconWidth-iconMargin;
+        int posX = rect.bottomRight().x()-mFilterIconWidth-mFilterIconMargin;
+        int posY = rect.bottomRight().y()-mFilterIconWidth-mFilterIconMargin;
 
         painter->drawImage(posX, posY, pm.toImage());
 
-        mFilterIconWidth[logicalIndex] = iconWidth;
         mFilterIconX[logicalIndex] = posX;
         mFilterIconY[logicalIndex] = posY;
     }
@@ -88,11 +88,18 @@ bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
     if (index < symbol->filterColumnCount()) {
-        if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth[index] &&
-           p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth[index])
+        if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth &&
+           p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth)
             return true;
     }
     return false;
+}
+
+QSize GdxSymbolHeaderView::sectionSizeFromContents(int logicalIndex) const
+{
+    QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);
+    s.setWidth(s.width() + SECTION_WIDTH_FACTOR*(mFilterIconWidth + mFilterIconMargin));
+    return s;
 }
 
 } // namespace gdxviewer

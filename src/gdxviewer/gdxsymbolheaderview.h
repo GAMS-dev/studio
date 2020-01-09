@@ -33,6 +33,7 @@ class GdxSymbolHeaderView : public QHeaderView
 public:
     GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent = nullptr);
     ~GdxSymbolHeaderView() override;
+    QSize sectionSizeFromContents(int logicalIndex) const override;
 
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
@@ -46,8 +47,10 @@ private:
     QString iconFilterOff = ":/img/filter-off";
     const double ICON_SCALE_FACTOR = 0.5;
     const double ICON_MARGIN_FACTOR = 0.1;
+    const double SECTION_WIDTH_FACTOR = 1.5;
 
-    mutable std::vector<int> mFilterIconWidth;
+    int mFilterIconWidth;
+    int mFilterIconMargin;
     mutable std::vector<int> mFilterIconX;
     mutable std::vector<int> mFilterIconY;
 };
