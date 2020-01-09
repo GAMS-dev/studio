@@ -243,6 +243,7 @@ private slots:
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
+    void setMiroRunning(bool running);
 
     // Tools
     void on_actionGDX_Diff_triggered();
@@ -402,6 +403,7 @@ private:
     std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 
     std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;
+    bool mMiroRunning = false;
 };
 
 }

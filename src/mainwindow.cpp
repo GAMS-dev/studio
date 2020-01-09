@@ -2056,6 +2056,13 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     execute({}, std::move(process));
 }
 
+void MainWindow::setMiroRunning(bool running)
+{
+    mMiroRunning = running;
+    ui->menuMIRO->setEnabled(!running);
+    mMiroDeployDialog->setEnabled(!running);
+}
+
 void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
     ProjectAbstractNode* node = mProjectRepo.node(index);
@@ -2467,6 +2474,11 @@ void MainWindow::execute(QString commandLineStr,
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
 
+    // disable MIRO menus
+    if (dynamic_cast<miro::AbstractMiroProcess*>(groupProc) ) {
+        setMiroRunning(true);
+        connect(groupProc, &AbstractProcess::finished, [this](){setMiroRunning(false);});
+    }
     groupProc->execute();
     ui->toolBar->repaint();
 
@@ -2937,12 +2949,14 @@ void MainWindow::on_mainTabs_currentChanged(int index)
 void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(this);
+    sd.setMiroSettingsEnabled(!mMiroRunning);
     connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
     mSettings->saveSettings(this);
-    updateMiroMenu();
+    if (sd.miroSettingsEnabled())
+        updateMiroMenu();
 }
 
 void MainWindow::on_actionSearch_triggered()
