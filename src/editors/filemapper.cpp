@@ -95,7 +95,7 @@ void FileMapper::closeAndReset()
 
 FileMapper::Chunk* FileMapper::getChunk(int chunkNr, bool cache) const
 {
-    // if the is cached, return it directly
+    // if the Chunk is cached, return it directly
     Chunk *res = getFromCache(chunkNr);
     if (res) return res;
 
@@ -103,29 +103,30 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr, bool cache) const
     qint64 chunkStart = qint64(chunkNr) * chunkSize();
     if (chunkStart < 0 || chunkStart >= size()) return nullptr;
 
-    // map file
+    // read relevant part of file
     qint64 cStart = chunkStart - maxLineWidth();
     if (cStart < 0) cStart = 0;                                     // crop at start of file
     qint64 cEnd = chunkStart + chunkSize();
     if (cEnd > size()) cEnd = size();   // crop at end of file
-    uchar* map = nullptr;
-    {
-        QMutexLocker locker(&mMutex);
-        if (mFile.isOpen() || mFile.open(QFile::ReadOnly)) {
-            map = mFile.map(cStart, cEnd - cStart);
-            mTimer.start();
-        } else {
-            DEB() << "Could not open file " << mFile.fileName();
-        }
-    }
-    if (!map) return nullptr;
 
-    // mapping succeeded: initialise chunk
+    int bSize = 0;
+    QByteArray bArray;
+    if (!mFile.isOpen() && !mFile.open(QFile::ReadOnly)) {
+        DEB() << "Could not open file " << mFile.fileName();
+        return nullptr;
+    } else {
+        QMutexLocker locker(&mMutex);
+        mFile.seek(cStart);
+        bArray.resize(chunkSize()+maxLineWidth());
+        bSize = int(mFile.read(bArray.data(), cEnd - cStart));
+    }
+    mTimer.start();
+
+    // mapping succeeded: initialize chunk
     res = new Chunk();
     res->nr = chunkNr;
     res->bStart = cStart;
-    int bSize = int(cEnd - cStart);
-    res->bArray.setRawData(reinterpret_cast<char*>(map), uint(bSize));
+    res->bArray = bArray;
 
     // if delimiter isn't initialized
     if (delimiter().isEmpty()) initDelimiter(res);
@@ -160,7 +161,9 @@ FileMapper::Chunk* FileMapper::getChunk(int chunkNr, bool cache) const
 
 void FileMapper::chunkUncached(AbstractTextMapper::Chunk *chunk) const
 {
-    mFile.unmap(reinterpret_cast<uchar*>(chunk->bArray.data()));
+    if (!chunk) return;
+    chunk->bArray.resize(0);
+    chunk->bArray.squeeze();
     delete chunk;
 }
 
@@ -213,10 +216,11 @@ void FileMapper::peekChunksForLineNrs()
 {
     // peek and keep timer alive if not done
     int known = lastChunkWithLineNr();
-    Chunk *chunk = nullptr;
     for (int i = 1; i <= 4; ++i) {
-        chunk = getChunk(known + i, false);
+        Chunk *chunk = getChunk(known + i, false);
         if (!chunk) break;
+        if (!mChunkCache.contains(chunk))
+            chunkUncached(chunk);
     }
     if (lastChunkWithLineNr() < this->chunkCount()-1) mPeekTimer.start(50);
 
