@@ -2451,10 +2451,10 @@ void MainWindow::execute(QString commandLineStr,
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
-    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     QString msg = "Running GAMS:";
-    msg.append(groupProc->callParameters().join(" "));
+    msg.append(groupProc->parameters().join(" "));
     SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
 
     logNode->prepareRun();

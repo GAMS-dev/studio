@@ -56,9 +56,9 @@ void AbstractMiroProcess::execute()
 {
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), callParameters());
+    mProcess.start(nativeAppPath(), parameters());
 #else
-    auto params = callParameters();
+    auto params = parameters();
     mProcess.setNativeArguments(params.join(" "));
     mProcess.setProgram(nativeAppPath());
     mProcess.start();
