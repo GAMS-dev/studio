@@ -48,7 +48,7 @@ QString MiroCommon::assemblyFileName(const QString &modelName)
 
 QString MiroCommon::assemblyFileName(const QString &modelLocation, const QString &modelName)
 {
-    return QFileInfo(modelLocation, miro::MiroCommon::assemblyFileName(modelName)).canonicalFilePath();
+    return QDir(modelLocation).filePath(miro::MiroCommon::assemblyFileName(modelName));
 }
 
 QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile, const QString &mainFile)
