@@ -168,15 +168,15 @@ QString ParameterEditor::on_runAction(RunActionState state)
     if (!commandLineStr.endsWith(" "))
         commandLineStr.append(" ");
 
-    bool gdxParam = commandLineStr.contains(QRegularExpression("\\Agdx[= ]", QRegularExpression::CaseInsensitiveOption));
+    bool gdxParam = commandLineStr.contains(QRegularExpression("gdx[= ]", QRegularExpression::CaseInsensitiveOption));
     bool actParam = commandLineStr.contains("ACTION=C",Qt::CaseInsensitive);
 
-    if (state == RunActionState::RunWithGDXCreation && !gdxParam) {
-       commandLineStr.append("GDX=default");
+    if (state == RunActionState::RunWithGDXCreation) {
+       if (!gdxParam) commandLineStr.append("GDX=default");
        ui->gamsRunToolButton->setDefaultAction( actionRun_with_GDX_Creation );
 
-    } else if (state == RunActionState::Compile && !actParam) {
-        commandLineStr.append("ACTION=C");
+    } else if (state == RunActionState::Compile) {
+        if (!actParam) commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile );
 
     } else if (state == RunActionState::CompileWithGDXCreation) {

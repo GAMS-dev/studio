@@ -1961,7 +1961,7 @@ void MainWindow::on_actionBase_mode_triggered()
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionHypercube_mode_triggered()
@@ -1976,7 +1976,7 @@ void MainWindow::on_actionHypercube_mode_triggered()
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionConfiguration_mode_triggered()
@@ -1991,7 +1991,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionStop_MIRO_triggered()
@@ -2053,7 +2053,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
-    execute({}, std::move(process));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(process));
 }
 
 void MainWindow::setMiroRunning(bool running)
@@ -2458,10 +2458,10 @@ void MainWindow::execute(QString commandLineStr,
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
-    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     QString msg = "Running GAMS:";
-    msg.append(groupProc->callParameters().join(" "));
+    msg.append(groupProc->parameters().join(" "));
     SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
 
     logNode->prepareRun();

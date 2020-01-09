@@ -452,7 +452,7 @@ QStringList ProjectRunGroupNode::getRunParametersHistory() const
 /// \param itemList list of options given by studio and user
 /// \return QStringList all arguments
 ///
-QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QList<option::OptionItem> itemList)
+QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList)
 {
     // set studio default parameters
     QMap<QString, QString> defaultGamsArgs;
@@ -462,7 +462,17 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     defaultGamsArgs.insert("errmsg", "1");
     defaultGamsArgs.insert("pagesize", "0");
     defaultGamsArgs.insert("LstTitleLeftAligned", "1");
+    QStringList defaultArgumentList;
+    defaultArgumentList << "lo" << "ide" << "er" << "errmsg" << "pagesize" << "LstTitleLeftAligned";
+    for(QString param: defaultParameters) {
+        QStringList list = param.split("=", QString::SkipEmptyParts);
+        if (list.count() != 2)
+            continue;
+        defaultGamsArgs.insert( list[0], list[1] );
+        defaultArgumentList << list[0];
+    }
     QMap<QString, QString> gamsArgs(defaultGamsArgs);
+
 
     // find directory changes first
     QString path = "";
@@ -564,8 +574,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QStringList output { "\""+QDir::toNativeSeparators(gmsLocation)+"\"" };
 #endif
     // normalize gams parameter format
-    QStringList defaultArgumentList;
-    defaultArgumentList << "lo" << "ide" << "er" << "errmsg" << "pagesize" << "LstTitleLeftAligned";
     for(QString arg : defaultArgumentList) {
         output.append( arg + "=" + defaultGamsArgs[arg] );
     }

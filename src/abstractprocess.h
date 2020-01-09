@@ -63,11 +63,6 @@ public:
         return QStringList();
     }
 
-    // TODO (AF) mind param order and check/move ProjectRunGroupNode::analyzeParameters()
-    QStringList callParameters() const {
-        return parameters() + defaultParameters();
-    }
-
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &workingDirectory);
 
