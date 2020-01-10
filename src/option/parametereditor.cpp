@@ -168,8 +168,15 @@ QString ParameterEditor::on_runAction(RunActionState state)
     if (!commandLineStr.endsWith(" "))
         commandLineStr.append(" ");
 
-    bool gdxParam = commandLineStr.contains(QRegularExpression("gdx[= ]", QRegularExpression::CaseInsensitiveOption));
-    bool actParam = commandLineStr.contains("ACTION=C",Qt::CaseInsensitive);
+    bool gdxParam = false;
+    bool actParam = false;
+    for (option::OptionItem item : getOptionTokenizer()->tokenize( commandLineStr)) {
+        if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
+            gdxParam = true;
+        if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
+            (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
+            actParam = true;
+    }
 
     if (state == RunActionState::RunWithGDXCreation) {
        if (!gdxParam) commandLineStr.append("GDX=default");
