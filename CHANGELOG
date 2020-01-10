@@ -3,12 +3,13 @@ Version 0.14.1
 
 ## General
 
-- preserve order of default and command line gams parameters; only override multiple non-immediate parameters
-- allow multiple insertion of the same key if parameter is not recurrent (eg. one instance or immediate parameter)
-- allow immediate gams parameter to occur multiple times without a warning (set recurrent flag to false)
-- handle subdirectories during MIRO assembly file generation
+- fixed crash related to file encodings
+- preserve order of default and command line GAMS parameters; only override multiple non-immediate parameters
+- allow multiple insertion of the same key if parameter is not recurrent (e.g. one instance or immediate parameter)
+- allow immediate GAMS parameters to occur multiple times without a warning (set recurrent flag to false)
 - disable MIRO menu when MIRO is not available
-- show MIRO parameters in system log
+- show GAMS call MIRO parameters in system log
+- enable wrapping in the Show Decimals field of the GDX Viewer again
 - improved MIRO assembly file dialog
 
 
