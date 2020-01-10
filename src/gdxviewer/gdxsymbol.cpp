@@ -32,6 +32,8 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+int GdxSymbol::maxPrecision = 15;
+
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
 {
@@ -367,7 +369,7 @@ double GdxSymbol::specVal2SortVal(double val)
         return val; // should be an acronym
 }
 
-QString GdxSymbol::formatNumericalValue(double val, int precision, int maxPrecision, bool squeezeTrailingZeroes)
+QString GdxSymbol::formatNumericalValue(double val, int precision, bool squeezeTrailingZeroes)
 {
     QString strFullPrec = QString::number(val, 'g', maxPrecision);
     QString str = QString::number(val, 'f', precision);
@@ -391,8 +393,8 @@ QVariant GdxSymbol::formatValue(double val) const
     if (val<GMS_SV_UNDEF) {
         int prec = mNumericalPrecision;
         if (prec == -1) // Max
-            prec = mMaxPrecision;
-        return formatNumericalValue(val, prec, mMaxPrecision, mSqueezeTrailingZeroes);
+            prec = maxPrecision;
+        return formatNumericalValue(val, prec, mSqueezeTrailingZeroes);
     }
     if (val == GMS_SV_UNDEF)
         return "UNDF";

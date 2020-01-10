@@ -46,6 +46,7 @@ public:
     explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr,
                        GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
     ~GdxSymbol() override;
+    static int maxPrecision;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -91,7 +92,7 @@ public:
 
     int filterColumnCount();
 
-    static QString formatNumericalValue(double val, int precision, int maxPrecision, bool squeezeTrailingZeroes);
+    static QString formatNumericalValue(double val, int precision, bool squeezeTrailingZeroes);
 
 signals:
     void loadFinished();
@@ -152,8 +153,6 @@ private:
 
     int mNumericalPrecision = 6;
     bool mSqueezeTrailingZeroes = true;
-
-    int mMaxPrecision = 15;
 
     std::vector<ValueFilter*> mValueFilters;
     int mNumericalColumnCount;
