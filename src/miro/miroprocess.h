@@ -17,46 +17,52 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef COMMANDLINEOPTION_H
-#define COMMANDLINEOPTION_H
+#ifndef GAMSMIROPROCESS_H
+#define GAMSMIROPROCESS_H
 
-#include <QComboBox>
+#include "abstractmiroprocess.h"
 
 namespace gams {
 namespace studio {
-namespace option {
+namespace miro {
 
-class CommandLineOption : public QComboBox
+enum class MiroMode
+{
+    Base,
+    Hypercube,
+    Configuration
+};
+
+class MiroProcess : public AbstractMiroProcess
 {
     Q_OBJECT
 
 public:
-    CommandLineOption(QWidget* parent);
-    ~CommandLineOption();
+    MiroProcess(QObject *parent = nullptr);
 
-    QString getOptionString() const;
+    void execute() override;
 
-    void resetCurrentValue();
+    QStringList defaultParameters() const override;
 
-signals:
-    void optionRunChanged();
-    void optionEditCancelled();
-    void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
+    void setMiroMode(MiroMode mode);
 
-public slots:
-    void validateChangedOption(const QString &text);
+    void setSkipModelExecution(bool skipModelExeution) {
+        mSkipModelExecution = skipModelExeution;
+    }
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *e) override;
+    QProcessEnvironment miroProcessEnvironment() override;
 
 private:
-    QString mOptionString;
-    int mCurrentIndex;
+    void setupMiroEnvironment();
+
+private:
+    MiroMode mMiroMode;
+    bool mSkipModelExecution;
 };
 
-} // namespace option
-} // namespace studio
-} // namespace gams
+}
+}
+}
 
-#endif // COMMANDLINEOPTION_H
-
+#endif // GAMSMIROPROCESS_H

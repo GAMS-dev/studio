@@ -91,7 +91,7 @@ void testmainwindow::test_gdxValue()
     QVERIFY2(mMainWindow->recent()->editor()->property("location").toString() == mGms.filePath(), "Wrong file focussed. Expected: trnsport.gms");
 
     // set gams options
-    CommandLineOption* combobox = mMainWindow->gamsOptionWidget()->findChild<option::CommandLineOption*>("gamsOptionCommandLine");
+    CommandLine* combobox = mMainWindow->gamsParameterEditor()->findChild<option::CommandLine*>("gamsParameterCommandLine");
     Q_ASSERT(combobox);
     QString refFileName = "xxx.rf";
     combobox->setCurrentText("rf=" + refFileName);

@@ -27,13 +27,14 @@
 #include "file.h"
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
-#include "option/optionwidget.h"
 #include "search/resultsview.h"
+#include "option/parametereditor.h"
 #include "commandlineparser.h"
 #include "statuswidgets.h"
 #include "maintabcontextmenu.h"
 #include "logtabcontextmenu.h"
 #include "gdxdiffdialog/gdxdiffdialog.h"
+#include "miro/mirocommon.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -58,17 +59,21 @@ namespace search {
 class SearchDialog;
 }
 namespace option {
-class OptionWidget;
+class ParameterEditor;
 }
 namespace gdxdiffdialog {
 class GdxDiffDialog;
 }
-
+namespace miro {
+class MiroDeployDialog;
+}
 
 struct RecentData {
 
     QWidget *editor() const;
     void setEditor(QWidget *editor, MainWindow* window);
+
+    bool validRunGroup();
 
     FileId editFileId = -1;
     QString path = ".";
@@ -142,7 +147,7 @@ public:
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
 #endif
-    option::OptionWidget *gamsOptionWidget() const;
+    option::ParameterEditor *gamsParameterEditor() const;
 
 signals:
     void saved();
@@ -163,7 +168,7 @@ public slots:
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLog(const QString &text);
     void showErrorMessage(QString text);
-    void optionRunChanged();
+    void parameterRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     bool eventFilter(QObject*, QEvent* event);
     void dockTopLevelChanged(bool);
@@ -191,6 +196,7 @@ private slots:
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
+    void updateMiroMenu();
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -236,6 +242,8 @@ private slots:
     void on_actionStop_MIRO_triggered();
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
+    void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
+    void setMiroRunning(bool running);
 
     // Tools
     void on_actionGDX_Diff_triggered();
@@ -338,7 +346,7 @@ private:
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
     bool isActiveTabRunnable();
     bool isRecentGroupRunning();
-    void loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn);
+    void loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn);
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void analyzeCommandLine(GamsProcess *process, const QString &commandLineStr, ProjectGroupNode *fgc);
@@ -365,7 +373,7 @@ private:
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
 #endif
-    option::OptionWidget *mGamsOptionWidget = nullptr;
+    option::ParameterEditor *mGamsParameterEditor = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
 
@@ -393,6 +401,9 @@ private:
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
     std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
+
+    std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;
+    bool mMiroRunning = false;
 };
 
 }

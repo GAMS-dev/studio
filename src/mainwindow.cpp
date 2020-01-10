@@ -54,11 +54,10 @@
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
-#include "miroprocess.h"
-#include "miropaths.h"
-#include "mirodeploydialog.h"
-#include "mirodeployprocess.h"
-#include "miromodelassemblydialog.h"
+#include "miro/miroprocess.h"
+#include "miro/mirodeploydialog.h"
+#include "miro/mirodeployprocess.h"
+#include "miro/miromodelassemblydialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -76,7 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
-      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this))
+      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
+      mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
@@ -193,6 +193,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
+            this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
+            this, &MainWindow::miroDeploy);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -230,8 +234,7 @@ MainWindow::MainWindow(QWidget *parent)
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
-    // TODO (AF)
-    //ui->menuMIRO->setEnabled(!mSettings->miroInstallationLocation().isEmpty());
+    updateMiroMenu();
 }
 
 
@@ -271,7 +274,7 @@ void MainWindow::initTabs()
 
 void MainWindow::initToolBar()
 {
-    mGamsOptionWidget = new option::OptionWidget(ui->actionRun, ui->actionRun_with_GDX_Creation,
+    mGamsParameterEditor = new option::ParameterEditor(ui->actionRun, ui->actionRun_with_GDX_Creation,
                                          ui->actionCompile, ui->actionCompile_with_GDX_Creation,
                                          ui->actionInterrupt, ui->actionStop,
                                          this);
@@ -279,7 +282,7 @@ void MainWindow::initToolBar()
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionSettings);
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
-    ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsOptionWidget);
+    ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsParameterEditor);
     ui->toolBar->insertSeparator(ui->actionProject_View);
 }
 
@@ -368,7 +371,7 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
-    mGamsOptionWidget->setEditorExtended(visibility);
+    mGamsParameterEditor->setEditorExtended(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -395,7 +398,7 @@ bool MainWindow::projectViewVisibility()
 
 bool MainWindow::optionEditorVisibility()
 {
-    return mGamsOptionWidget->isEditorExtended();
+    return mGamsParameterEditor->isEditorExtended();
 }
 
 bool MainWindow::helpViewVisibility()
@@ -724,7 +727,7 @@ void MainWindow::focusCmdLine()
 {
     raise();
     activateWindow();
-    mGamsOptionWidget->focus();
+    mGamsParameterEditor->focus();
 }
 
 void MainWindow::focusProjectExplorer()
@@ -1134,15 +1137,15 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode* fn)
+void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
     if (oldfn) { // switch from a non-welcome page
         ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup();
         if (!oldgroup) return;
-        oldgroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
+        oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
 
         if (!fn) { // switch to a welcome page
-            mGamsOptionWidget->loadCommandLineOption(QStringList());
+            mGamsParameterEditor->loadCommandLine(QStringList());
             return;
         }
 
@@ -1150,17 +1153,17 @@ void MainWindow::loadCommandLineOptions(ProjectFileNode* oldfn, ProjectFileNode*
         if (!group) return;
         if (group == oldgroup) return;
 
-        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
+        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
 
     } else { // switch from a welcome page
         if (!fn) { // switch to a welcome page
-            mGamsOptionWidget->loadCommandLineOption(QStringList());
+            mGamsParameterEditor->loadCommandLine(QStringList());
             return;
         }
 
         ProjectRunGroupNode* group = fn->assignedRunGroup();
         if (!group) return;
-        mGamsOptionWidget->loadCommandLineOption( group->getRunParametersHistory() );
+        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
     }
 }
 
@@ -1171,7 +1174,7 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
 
-    loadCommandLineOptions(oldTab, node);
+    loadCommandLines(oldTab, node);
     updateRunState();
 
     if (node) {
@@ -1561,8 +1564,8 @@ void MainWindow::on_actionHelp_triggered()
 {
 #ifdef QWEBENGINE
     QWidget* widget = focusWidget();
-    if (mGamsOptionWidget->isAnOptionWidgetFocused(widget)) {
-        QString optionName = mGamsOptionWidget->getSelectedOptionName(widget);
+    if (mGamsParameterEditor->isAParameterEditorFocused(widget)) {
+        QString optionName = mGamsParameterEditor->getSelectedParameterName(widget);
         if (optionName.isEmpty())
             mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
                                                   help::HelpData::getStudioSectionName(help::StudioSection::OptionEditor));
@@ -1944,117 +1947,118 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
 
 void MainWindow::on_actionBase_mode_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
-    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(runGroup->location());
-    miroProcess->setModelName(mRecent.group->name());
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    miroProcess->setMiroPath(miroPaths.path());
-    miroProcess->setMiroMode(MiroMode::Base);
+    if (!mRecent.validRunGroup())
+        return;
 
-    execute({}, std::move(miroProcess));
+    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
+    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
+    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
+    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroMode(miro::MiroMode::Base);
+
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionHypercube_mode_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
-    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(runGroup->location());
-    miroProcess->setModelName(mRecent.group->name());
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    miroProcess->setMiroPath(miroPaths.path());
-    miroProcess->setMiroMode(MiroMode::Hypercube);
+    if (!mRecent.validRunGroup())
+        return;
 
-    execute({}, std::move(miroProcess));
+    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
+    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
+    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
+    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroMode(miro::MiroMode::Hypercube);
+
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionConfiguration_mode_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto miroProcess = std::make_unique<MiroProcess>(new MiroProcess);
-    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(runGroup->location());
-    miroProcess->setModelName(mRecent.group->name());
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    miroProcess->setMiroPath(miroPaths.path());
-    miroProcess->setMiroMode(MiroMode::Configuration);
+    if (!mRecent.validRunGroup())
+        return;
 
-    execute({}, std::move(miroProcess));
+    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
+    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
+    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
+    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroMode(miro::MiroMode::Configuration);
+
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionStop_MIRO_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    runGroup->process()->terminate();
+    if (!mRecent.validRunGroup())
+        return;
+    mRecent.group->toRunGroup()->process()->terminate();
 }
 
 void MainWindow::on_actionCreate_model_assembly_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    qDebug() << "on_actionCreate_model_assembly_triggered";
-    MiroModelAssemblyDialog dlg(runGroup->location(), this);
+    if (!mRecent.validRunGroup())
+        return;
+
+    auto assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.group->name());
+    auto checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.group->toRunGroup()->runnableGms()->name());
+    miro::MiroModelAssemblyDialog dlg(mRecent.group->toRunGroup()->location(), this);
+    dlg.setSelectedFiles(checkedFiles);
     if (dlg.exec() == QDialog::Rejected)
         return;
 
-    auto fileName = runGroup->location() + "/" + mRecent.group->name() + "_files.txt";
-    QFile file(fileName);
-    auto selectedFiles = dlg.selectedFiles();
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream stream(&file);
-        for (auto selectedFile: selectedFiles)
-            stream << selectedFile << "\n";
-    } else {
-        SysLogLocator::systemLog()->append(QString("Could not open file: %1").arg(fileName),
-                                           LogMsgType::Error);
-    }
+    if (!miro::MiroCommon::writeAssemblyFile(assemblyFile, dlg.selectedFiles()))
+        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1").arg(assemblyFile), LogMsgType::Error);
 }
 
 void MainWindow::on_actionDeploy_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    // TODO (AF) func for assembly file
-    auto assemblyFile = runGroup->location() + "/" + mRecent.group->name() + "_files.txt";
-    MiroDeployDialog dlg(assemblyFile, this);
-    if (dlg.exec() == QDialog::Rejected)
+    if (!mRecent.validRunGroup())
         return;
 
-    auto process = std::make_unique<MiroDeployProcess>(new MiroDeployProcess);
-    MiroPaths miroPaths(mSettings->miroInstallationLocation());
-    process->setMiroPath(miroPaths.path());
-    process->setWorkingDirectory(runGroup->location());
-    process->setModelName(mRecent.group->name());
-    process->setBaseMode(dlg.baseMode());
-    process->setHypercubeMode(dlg.hypercubeMode());
-    process->setTestDeployment(dlg.testDeployment());
-    process->setTargetEnvironment(dlg.targetEnvironment());
+    auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
+                        miro::MiroCommon::assemblyFileName(mRecent.group->name());
+    mMiroDeployDialog->setDefaults();
+    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
+    mMiroDeployDialog->exec();
+}
 
-    execute({}, std::move(process));
+void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
+{
+    auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
+    process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
+    process->setModelName(mRecent.group->name());
+    process->setTestDeployment(testDeploy);
+    process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
+
+    if (testDeploy) {
+        switch(mode){
+        case miro::MiroDeployMode::Base:
+            process->setBaseMode(mMiroDeployDialog->baseMode());
+            break;
+        case miro::MiroDeployMode::Hypercube:
+            process->setTargetEnvironment(miro::MiroTargetEnvironment::MultiUser);
+            process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+            break;
+        default:
+            break;
+        }
+    } else {
+        process->setBaseMode(mMiroDeployDialog->baseMode());
+        process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+    }
+
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(process));
+}
+
+void MainWindow::setMiroRunning(bool running)
+{
+    mMiroRunning = running;
+    ui->menuMIRO->setEnabled(!running);
+    mMiroDeployDialog->setEnabled(!running);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -2117,7 +2121,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (runGroup) runGroup->addRunParametersHistory(mGamsOptionWidget->getCurrentCommandLineData());
+    if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
     mSettings->saveSettings(this);
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
@@ -2158,8 +2162,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             e->accept(); return;
         } else if (focusWidget() == ui->projectView) {
                   setProjectViewVisibility(false);
-        } else if (mGamsOptionWidget->isAnOptionWidgetFocused(focusWidget())) {
-                   mGamsOptionWidget->deSelectOptions();
+        } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
+                   mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
                   ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
         }
@@ -2328,9 +2332,9 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-option::OptionWidget *MainWindow::gamsOptionWidget() const
+option::ParameterEditor *MainWindow::gamsParameterEditor() const
 {
-    return mGamsOptionWidget;
+    return mGamsParameterEditor;
 }
 
 void MainWindow::execute(QString commandLineStr,
@@ -2345,7 +2349,7 @@ void MainWindow::execute(QString commandLineStr,
         return;
     }
 
-    runGroup->addRunParametersHistory( mGamsOptionWidget->getCurrentCommandLineData() );
+    runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     runGroup->clearErrorTexts();
 
     // gather modified files and autosave or request to save
@@ -2446,13 +2450,18 @@ void MainWindow::execute(QString commandLineStr,
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
 
     // prepare the options and process and run it
-    QList<option::OptionItem> itemList = mGamsOptionWidget->getOptionTokenizer()->tokenize( commandLineStr );
+    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize( commandLineStr );
     if (process)
         runGroup->setProcess(std::move(process));
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
-    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
+    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
+
+    QString msg = "Running GAMS:";
+    msg.append(groupProc->parameters().join(" "));
+    SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
+
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
@@ -2463,6 +2472,11 @@ void MainWindow::execute(QString commandLineStr,
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
 
+    // disable MIRO menus
+    if (dynamic_cast<miro::AbstractMiroProcess*>(groupProc) ) {
+        setMiroRunning(true);
+        connect(groupProc, &AbstractProcess::finished, [this](){setMiroRunning(false);});
+    }
     groupProc->execute();
     ui->toolBar->repaint();
 
@@ -2473,7 +2487,7 @@ void MainWindow::execute(QString commandLineStr,
 
 void MainWindow::updateRunState()
 {
-    mGamsOptionWidget->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
+    mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
 #ifdef QWEBENGINE
@@ -2492,10 +2506,10 @@ void MainWindow::setMainGms(ProjectFileNode *node)
     }
 }
 
-void MainWindow::optionRunChanged()
+void MainWindow::parameterRunChanged()
 {
     if (isActiveTabRunnable() && !isRecentGroupRunning())
-        mGamsOptionWidget->runDefaultAction();
+        mGamsParameterEditor->runDefaultAction();
 }
 
 void MainWindow::openInitialFiles()
@@ -2512,22 +2526,22 @@ void MainWindow::openInitialFiles()
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::Run) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Run) );
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::RunWithGDXCreation) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation) );
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::Compile) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Compile) );
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    execute( mGamsOptionWidget->on_runAction(option::RunActionState::CompileWithGDXCreation) );
+    execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
 }
 
 void MainWindow::on_actionInterrupt_triggered()
@@ -2536,7 +2550,7 @@ void MainWindow::on_actionInterrupt_triggered()
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
     if (!group)
         return;
-    mGamsOptionWidget->on_interruptAction();
+    mGamsParameterEditor->on_interruptAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &AbstractProcess::interrupt);
 }
@@ -2547,7 +2561,7 @@ void MainWindow::on_actionStop_triggered()
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
     if (!group)
         return;
-    mGamsOptionWidget->on_stopAction();
+    mGamsParameterEditor->on_stopAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &GamsProcess::terminate);
 }
@@ -2616,6 +2630,17 @@ void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
         if (choice == 1) mFileMetaRepo.setAskBigFileEdit(false);
     }
     canOpen = true;
+}
+
+void MainWindow::updateMiroMenu()
+{
+    if (mSettings->miroInstallationLocation().isEmpty())
+        mSettings->setMiroInstallationLocation(miro::MiroCommon::path(""));
+    QFileInfo fileInfo(mSettings->miroInstallationLocation());
+    if (fileInfo.exists())
+        ui->menuMIRO->setEnabled(true);
+    else
+        ui->menuMIRO->setEnabled(false);
 }
 
 void MainWindow::ensureInScreen()
@@ -2922,11 +2947,14 @@ void MainWindow::on_mainTabs_currentChanged(int index)
 void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(this);
+    sd.setMiroSettingsEnabled(!mMiroRunning);
     connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
     mSettings->saveSettings(this);
+    if (sd.miroSettingsEnabled())
+        updateMiroMenu();
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -2941,9 +2969,9 @@ void MainWindow::openSearchDialog()
 #ifdef QWEBENGINE
         mHelpWidget->on_searchHelp();
 #endif
-    } else if (mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::focusWidget()) ||
-               mGamsOptionWidget->isAnOptionWidgetFocused(QApplication::activeWindow())) {
-                mGamsOptionWidget->selectSearchField();
+    } else if (mGamsParameterEditor->isAParameterEditorFocused(QApplication::focusWidget()) ||
+               mGamsParameterEditor->isAParameterEditorFocused(QApplication::activeWindow())) {
+                mGamsParameterEditor->selectSearchField();
     } else {
        ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
        if (fc) {
@@ -3462,7 +3490,7 @@ void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     }
 
-    mGamsOptionWidget->setEditorExtended(checked);
+    mGamsParameterEditor->setEditorExtended(checked);
 }
 
 QWidget *RecentData::editor() const
@@ -3508,6 +3536,13 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     window->updateEditorPos();
 }
 
+bool RecentData::validRunGroup()
+{
+    if (!group)
+        return false;
+    return group->toRunGroup() != nullptr;
+}
+
 void MainWindow::on_actionReset_Views_triggered()
 {
     resetViews();
@@ -3536,13 +3571,13 @@ void MainWindow::resetViews()
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         }
     }
-    mGamsOptionWidget->setEditorExtended(false);
-    addDockWidget(Qt::TopDockWidgetArea, mGamsOptionWidget->extendedEditor());
+    mGamsParameterEditor->setEditorExtended(false);
+    addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
 {
-    mGamsOptionWidget->resize(size);
+    mGamsParameterEditor->resize(size);
 }
 
 void MainWindow::setForeground()

@@ -1,11 +1,32 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "miroprocess.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
+#include "commonpaths.h"
 
 #include <QDir>
 
 namespace gams {
 namespace studio {
+namespace miro {
 
 MiroProcess::MiroProcess(QObject *parent)
     : AbstractMiroProcess("gams", parent)
@@ -26,9 +47,18 @@ void MiroProcess::execute()
         AbstractMiroProcess::execute();
 }
 
+QStringList MiroProcess::defaultParameters() const
+{
+    return { QString("IDCGenerateJSON=%1/%2_io.json").arg(confFolder()).arg(modelName()),
+             QString("IDCGenerateGDX=%1/default.gdx").arg(dataFolder()) };
+}
+
 QProcessEnvironment MiroProcess::miroProcessEnvironment()
 {
     auto environment = QProcessEnvironment::systemEnvironment();
+    environment.insert("PATH", QDir::toNativeSeparators(CommonPaths::systemDir()) +
+                               ":" + environment.value("PATH"));
+
     switch (mMiroMode) {
     case MiroMode::Base:
         environment.insert("MIRO_DEV_MODE", "true");
@@ -52,12 +82,6 @@ QProcessEnvironment MiroProcess::miroProcessEnvironment()
     return environment;
 }
 
-QStringList MiroProcess::miroGamsParameters()
-{
-    return { QString("IDCGenerateJSON=%1/%2_io.json").arg(confFolder()).arg(modelName()),
-             QString("IDCGenerateGDX=%1/default.gdx").arg(dataFolder()) };
-}
-
 void MiroProcess::setupMiroEnvironment()
 {
     QDir confDir(workingDirectory()+"/"+confFolder());
@@ -73,5 +97,6 @@ void MiroProcess::setupMiroEnvironment()
     }
 }
 
+}
 }
 }

@@ -79,7 +79,7 @@ HEADERS += $$files(*.h, true) \
            $$SRCPATH/modeldialog/librarymodel.h \
            $$SRCPATH/modeldialog/modeldialog.h \
            $$SRCPATH/option/addoptionheaderview.h \
-           $$SRCPATH/option/commandlineoption.h \
+           $$SRCPATH/option/commandline.h \
            $$SRCPATH/option/definitionitemdelegate.h \
            $$SRCPATH/option/gamsoptiondefinitionmodel.h \
            $$SRCPATH/option/gamsoptiontablemodel.h \
@@ -205,7 +205,7 @@ SOURCES += $$files(*.cpp, true) \
            $$SRCPATH/modeldialog/librarymodel.cpp \
            $$SRCPATH/modeldialog/modeldialog.cpp \
            $$SRCPATH/option/addoptionheaderview.cpp \
-           $$SRCPATH/option/commandlineoption.cpp \
+           $$SRCPATH/option/commandline.cpp \
            $$SRCPATH/option/definitionitemdelegate.cpp \
            $$SRCPATH/option/gamsoptiondefinitionmodel.cpp \
            $$SRCPATH/option/gamsoptiontablemodel.cpp \

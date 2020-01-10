@@ -17,28 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPROCESS_H
-#define GAMSPROCESS_H
+#ifndef TESTMIROCOMMON_H
+#define TESTMIROCOMMON_H
 
-#include "abstractprocess.h"
+#include <QtTest/QTest>
 
-namespace gams {
-namespace studio {
-
-class GamsProcess : public AbstractGamsProcess
+class TestMiroCommon : public QObject
 {
     Q_OBJECT
 
-public:
-    GamsProcess(QObject *parent = nullptr);
+private slots:
+    void testPath();
+    void testPathWithRealFile();
+    void testPathWithSpaces();
 
-    void execute() override;
-    void interrupt() override;
-
-    QString aboutGAMS();
+    void testAssemblyFileName();
 };
 
-} // namespace studio
-} // namespace gams
-
-#endif // GAMSPROCESS_H
+#endif // TESTMIROCOMMON_H

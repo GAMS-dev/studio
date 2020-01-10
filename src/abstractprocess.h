@@ -59,6 +59,10 @@ public:
     QStringList parameters() const;
     void setParameters(const QStringList &parameters);
 
+    virtual QStringList defaultParameters() const {
+        return QStringList();
+    }
+
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &workingDirectory);
 

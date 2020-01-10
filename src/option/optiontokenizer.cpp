@@ -144,12 +144,22 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
         }
     }
 
+    QList<int> idList;
     for (OptionItem& item : commandLineList) {
         QString key = item.key;
         if (mOption->isASynonym(item.key))
            key = mOption->getNameFromSynonym(item.key);
         if (mOption->isValid(key) || mOption->isASynonym(key))
             item.optionId = mOption->getOptionDefinition(key).number;
+        idList << item.optionId;
+    }
+
+    for(OptionItem& item : commandLineList) {
+        QString key = (mOption->isASynonym(item.key) ? mOption->getNameFromSynonym(item.key) : item.key);
+        if (mOption->getOptionType(key) == optTypeImmediate)
+            item.recurrent = false;
+        else
+           item.recurrent = (item.optionId != -1 && idList.count(item.optionId) > 1);
     }
 
     return commandLineList;
@@ -387,7 +397,11 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
         } // if (key.isEmpty()) { } else {
     } // for (OptionItem item : items)
 
-    for (OptionItem item : itemList) {
+    for (OptionItem& item : itemList) {
+        QString key = (mOption->isASynonym(item.key)?  mOption->getNameFromSynonym(item.key) : item.key);
+        if (mOption->getOptionType(key) == optTypeImmediate)
+            continue;
+
         if (idList.count(item.optionId)>1) {
             QTextLayout::FormatRange fr;
             fr.start = item.keyPosition;
@@ -1280,7 +1294,12 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
        }
    }
    for(OptionItem& item : items) {
-       item.recurrent = (item.optionId != -1 && idList.count(item.optionId) > 1);
+
+       QString key = (mOption->isASynonym(item.key) ? mOption->getNameFromSynonym(item.key) : item.key);
+       if (mOption->getOptionType(key) == optTypeImmediate)
+           item.recurrent = false;
+       else
+          item.recurrent = (item.optionId != -1 && idList.count(item.optionId) > 1);
    }
 }
 

@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OPTIONWIDGET_H
-#define OPTIONWIDGET_H
+#ifndef PARAMETEREDITOR_H
+#define PARAMETEREDITOR_H
 
 #include <QDockWidget>
 #include <QWidget>
 #include <QMenu>
 
 #include "option.h"
-#include "commandlineoption.h"
+#include "commandline.h"
 #include "optiontokenizer.h"
-#include "gamsoptiontablemodel.h"
+#include "gamsparametertablemodel.h"
 #include "optioncompleterdelegate.h"
 
 namespace gams {
@@ -38,7 +38,7 @@ class MainWindow;
 namespace option {
 
 namespace Ui {
-class OptionWidget;
+class ParameterEditor;
 }
 
 enum class RunActionState {
@@ -48,15 +48,15 @@ enum class RunActionState {
     CompileWithGDXCreation
 };
 
-class OptionWidget : public QWidget
+class ParameterEditor : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit OptionWidget(QAction* aRun, QAction* aRunGDX, QAction* aCompile, QAction* aCompileGDX,
+    explicit ParameterEditor(QAction* aRun, QAction* aRunGDX, QAction* aCompile, QAction* aCompileGDX,
                           QAction* aInterrupt, QAction* aStop,
                           MainWindow *parent = nullptr);
-    ~OptionWidget();
+    ~ParameterEditor();
 
     QString on_runAction(RunActionState state);
     void on_interruptAction();
@@ -64,10 +64,10 @@ public:
 
 
     OptionTokenizer *getOptionTokenizer() const;
-    bool isAnOptionWidgetFocused(QWidget* focusWidget) const;
-    bool isAnOptionTableFocused(QWidget* focusWidget) const;
+    bool isAParameterEditorFocused(QWidget* focusWidget) const;
+    bool isAParameterTableFocused(QWidget* focusWidget) const;
 
-    QString getSelectedOptionName(QWidget* widget) const;
+    QString getSelectedParameterName(QWidget* widget) const;
 
     QString getCurrentCommandLineData() const;
     void focus();
@@ -79,43 +79,43 @@ public:
     QDockWidget* extendedEditor() const;
 
 signals:
-    void optionLoaded(const QString &location);
-    void optionTableModelChanged(const QString &commandLineStr);
-    void commandLineOptionChanged(QLineEdit* lineEdit, const QString &commandLineStr);
-    void commandLineOptionChanged(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
+    void parameterLoaded(const QString &location);
+    void ParameterTableModelChanged(const QString &commandLineStr);
+    void commandLineChanged(QLineEdit* lineEdit, const QString &commandLineStr);
+    void commandLineChanged(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
 
 public slots:
-    void updateOptionTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
+    void updateParameterTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
     void updateCommandLineStr(const QList<OptionItem> &optionItems);
 
-    void showOptionContextMenu(const QPoint &pos);
+    void showParameterContextMenu(const QPoint &pos);
     void showDefinitionContextMenu(const QPoint &pos);
 
     void updateRunState(bool isRunnable, bool isRunning);
-    void addOptionFromDefinition(const QModelIndex &index);
-    void loadCommandLineOption(const QStringList &history);
+    void addParameterFromDefinition(const QModelIndex &index);
+    void loadCommandLine(const QStringList &history);
 
     void selectSearchField();
-    void optionItemCommitted(QWidget *editor);
+    void parameterItemCommitted(QWidget *editor);
 
-    void deSelectOptions();
+    void deSelectParameters();
 
 private slots:
-    void findAndSelectionOptionFromDefinition();
+    void findAndSelectionParameterFromDefinition();
 
-    void showOptionDefinition();
-    void showOptionRecurrence();
-    void deleteOption();
-    void deleteAllOptions();
-    void insertOption();
+    void showParameterDefinition();
+    void showParameterRecurrence();
+    void deleteParameter();
+    void deleteAllParameters();
+    void insertParameter();
 
-    void moveOptionUp();
-    void moveOptionDown();
+    void moveParameterUp();
+    void moveParameterDown();
 
     void on_newTableRowDropped(const QModelIndex &index);
-    void on_optionTableNameChanged(const QString &from, const QString &to);
-    void on_optionValueChanged(const QModelIndex &index);
-    void on_optionTableModelChanged(const QString &commandLineStr);
+    void on_parameterTableNameChanged(const QString &from, const QString &to);
+    void on_parameterValueChanged(const QModelIndex &index);
+    void on_parameterTableModelChanged(const QString &commandLineStr);
 
     void resizeColumnsToContents();
 
@@ -127,10 +127,10 @@ private:
 
     void addActions();
 
-    QList<int> getRecurrentOption(const QModelIndex &index);
-    QString getOptionTableEntry(int row);
+    QList<int> getRecurrentParameter(const QModelIndex &index);
+    QString getParameterTableEntry(int row);
 
-    Ui::OptionWidget *ui;
+    Ui::ParameterEditor *ui;
     QDockWidget *mExtendedEditor = nullptr;
 
     QAction* actionRun;
@@ -147,11 +147,11 @@ private:
     MainWindow* main;
 
     OptionTokenizer* mOptionTokenizer;
-    GamsOptionTableModel* mOptionTableModel;
+    GamsParameterTableModel* mParameterTableModel;
 };
 
 }
 }
 }
 
-#endif // OPTIONWIDGET_H
+#endif // PARAMETEREDITOR_H

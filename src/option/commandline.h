@@ -17,28 +17,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPROCESS_H
-#define GAMSPROCESS_H
+#ifndef COMMANDLINE_H
+#define COMMANDLINE_H
 
-#include "abstractprocess.h"
+#include <QComboBox>
 
 namespace gams {
 namespace studio {
+namespace option {
 
-class GamsProcess : public AbstractGamsProcess
+class CommandLine : public QComboBox
 {
     Q_OBJECT
 
 public:
-    GamsProcess(QObject *parent = nullptr);
+    CommandLine(QWidget* parent);
+    ~CommandLine() override;
 
-    void execute() override;
-    void interrupt() override;
+    QString getParameterString() const;
 
-    QString aboutGAMS();
+    void resetCurrentValue();
+
+signals:
+    void parameterRunChanged();
+    void parameterEditCancelled();
+    void commandLineChanged(QLineEdit* lineEdit, const QString &commandLineStr);
+
+public slots:
+    void validateChangedParameter(const QString &text);
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *e) override;
+
+private:
+    QString mParameterString;
+    int mCurrentIndex;
 };
 
+} // namespace option
 } // namespace studio
 } // namespace gams
 
-#endif // GAMSPROCESS_H
+#endif // COMMANDLINE_H
+
