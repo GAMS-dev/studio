@@ -60,7 +60,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
     bool wasMax = (mTopLine == mMaxTopLine);
-    int remainingLines = qCeil(visibleLineCount() * 0.9);
+    int remainingLines = reducedVisibleLineCount();
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -87,7 +87,7 @@ qint64 AbstractTextMapper::lastTopAbsPos()
     if (!chunk || !chunk->isValid()) return size();
 
     qint64 lastPos = 0LL;
-    int remainingLines = visibleLineCount();
+    int remainingLines = reducedVisibleLineCount();
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -194,6 +194,11 @@ void AbstractTextMapper::setVisibleLineCount(int visibleLines)
 int AbstractTextMapper::visibleLineCount() const
 {
     return mVisibleLineCount;
+}
+
+int AbstractTextMapper::reducedVisibleLineCount()
+{
+    return qCeil(visibleLineCount() * 0.95);
 }
 
 bool AbstractTextMapper::setTopLine(const Chunk* chunk, int localLine)

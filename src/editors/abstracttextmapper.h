@@ -147,6 +147,7 @@ public:
     virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
     virtual void setVisibleLineCount(int visibleLines);
     virtual int visibleLineCount() const;
+    int reducedVisibleLineCount();
     virtual bool setVisibleTopLine(double region);
     virtual bool setVisibleTopLine(int lineNr);
     virtual int moveVisibleTopLine(int lineDelta);
