@@ -24,6 +24,7 @@
 #include <QTextStream>
 #include <QGuiApplication>
 #include <QClipboard>
+#include <QtMath>
 
 namespace gams {
 namespace studio {
@@ -59,7 +60,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
     bool wasMax = (mTopLine == mMaxTopLine);
-    int remainingLines = visibleLineCount();
+    int remainingLines = qCeil(visibleLineCount() * 0.9);
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {

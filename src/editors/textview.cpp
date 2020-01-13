@@ -29,6 +29,7 @@
 #include <QTextBlock>
 #include <QPlainTextDocumentLayout>
 #include <QBoxLayout>
+#include <QtMath>
 
 namespace gams {
 namespace studio {
@@ -353,7 +354,7 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
 void TextView::jumpToEnd()
 {
     if (mMapper->lineCount() > 0) {
-        mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount());
+        mMapper->setVisibleTopLine(mMapper->lineCount() - qCeil(mMapper->visibleLineCount() *0.9));
         if (mStayAtTail) *mStayAtTail = mMapper->atTail();
     } else {
         mMapper->setVisibleTopLine(1.0);
@@ -496,7 +497,7 @@ void TextView::init()
 void TextView::updateVScrollZone()
 {
     verticalScrollBar()->setPageStep(mMapper->visibleLineCount());
-    verticalScrollBar()->setMaximum(qMax(0, qAbs(mMapper->lineCount()) - mMapper->visibleLineCount()));
+    verticalScrollBar()->setMaximum(qMax(0, qAbs(mMapper->lineCount()) - qCeil(mMapper->visibleLineCount() * 0.9)));
     if (mMapper->kind() == AbstractTextMapper::fileMapper) {
         if (verticalScrollBar()->maximum()) {
             verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));
