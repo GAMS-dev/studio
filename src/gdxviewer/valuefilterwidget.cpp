@@ -45,8 +45,8 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
         ui->leMax->setEnabled(false);
         ui->cbExclude->setEnabled(false);
     } else {
-        ui->leMin->setText(QString::number(mValueFilter->currentMin(), 'g', 16));
-        ui->leMax->setText(QString::number(mValueFilter->currentMax(), 'g', 16));
+        ui->leMin->setText(GdxSymbol::formatNumericalValue(mValueFilter->currentMin(), GdxSymbol::maxPrecision, true));
+        ui->leMax->setText(GdxSymbol::formatNumericalValue(mValueFilter->currentMax(), GdxSymbol::maxPrecision, true));
     }
 
     ui->cbExclude->setChecked(mValueFilter->exclude());
