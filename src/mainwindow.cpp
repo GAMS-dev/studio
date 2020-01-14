@@ -846,7 +846,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
     QString filePath = solverName.isEmpty()
                              ? QFileDialog::getSaveFileName(this, "Create new file...",
                                                             path,
-                                                            ViewHelper::dialogFileFilterEditable().join(";;"), nullptr, QFileDialog::DontConfirmOverwrite)
+                                                            ViewHelper::dialogFileFilterUserCreated().join(";;"), nullptr, QFileDialog::DontConfirmOverwrite)
                              : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
                                                             path,
                                                             tr(QString("%1 option file (%1*);;All files (*)").arg(solverName).toLatin1()),
@@ -907,7 +907,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                      ViewHelper::dialogFileFilterEditable().join(";;"),
+                                                      ViewHelper::dialogFileFilterSystemCreated().join(";;"),
                                                       nullptr,
                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
     openFiles(files);
@@ -917,7 +917,7 @@ void MainWindow::on_actionOpenNew_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                      ViewHelper::dialogFileFilterEditable().join(";;"),
+                                                      ViewHelper::dialogFileFilterSystemCreated().join(";;"),
                                                       nullptr,
                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
     openFiles(files, true);
@@ -953,7 +953,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                     &filters.first(),
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
-            filters = ViewHelper::dialogFileFilterNonEditable();
+            filters = ViewHelper::dialogFileFilterSystemCreated();
 
             QString selFilter = filters.first();
             for (QString f: filters) {
