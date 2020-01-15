@@ -335,6 +335,19 @@ int StudioSettings::compareVersion(QString currentVersion, QString otherVersion)
     return 0;
 }
 
+QFont findFixedFont()
+{
+    QFontDatabase fdb;
+    QStringList list = fdb.families();
+    for (int i = 0; i < list.size(); ++i) {
+        if (fdb.isPrivateFamily(list.at(i)))
+            continue;
+        if (fdb.isFixedPitch(list.at(i)))
+            return list.at(i);
+    }
+    return QString();
+}
+
 void StudioSettings::loadUserSettings()
 {
     mUserSettings->beginGroup("General");
@@ -361,6 +374,9 @@ void StudioSettings::loadUserSettings()
     DEB() << "Testing QFont::TypeWriter -> " << (QFontMetrics(font).width("W") == QFontMetrics(font).width("l") ? "isMono" : "noMono");
     font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     DEB() << "Testing QFontDb::FixedFont -> " << (QFontMetrics(font).width("W") == QFontMetrics(font).width("l") ? "isMono" : "noMono");
+
+    font = QFont(findFixedFont());
+    DEB() << "Testing findFixedFont -> " << (QFontMetrics(font).width("W") == QFontMetrics(font).width("l") ? "isMono" : "noMono");
 
     setFontFamily(mUserSettings->value("fontFamily", font.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
