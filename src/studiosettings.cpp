@@ -335,7 +335,21 @@ int StudioSettings::compareVersion(QString currentVersion, QString otherVersion)
     return 0;
 }
 
-QFont findFixedFont()
+void checkFixedFont()
+{
+    QFontDatabase fdb;
+    QStringList list = fdb.families();
+    for (int i = 0; i < list.size(); ++i) {
+        if (fdb.isPrivateFamily(list.at(i)))
+            continue;
+        QFontMetrics metrics(QFont(list.at(i)));
+        DEB() << list.at(i) << "   fixed:" << (fdb.isFixedPitch(list.at(i)) ? "TRUE":"FALSE")
+              << "  width('W'=='l'):" << (metrics.width("W") == metrics.width("l") ? "TRUE":"FALSE")
+              << (fdb.isFixedPitch(list.at(i)) != (metrics.width("W") == metrics.width("l")) ? "  !!" : "");
+    }
+}
+
+QString findFixedFont()
 {
     QFontDatabase fdb;
     QStringList list = fdb.families();
@@ -343,7 +357,7 @@ QFont findFixedFont()
         if (fdb.isPrivateFamily(list.at(i)))
             continue;
         if (fdb.isFixedPitch(list.at(i)))
-            return list.at(i);
+            return  list.at(i);
     }
     return QString();
 }
@@ -365,18 +379,19 @@ void StudioSettings::loadUserSettings()
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-    QFont font;
-    font = QFont("any-name-needed-but-replaced");
-    font.setStyleHint(QFont::Monospace);
-    DEB() << "Testing QFont::Monospace ->  \"" << font.defaultFamily() << "\"  " << (QFontMetrics(font).width("W") == QFontMetrics(font).width("l") ? "isMono" : "noMono");
-    font = QFont("any-name-needed-but-replaced");
-    font.setStyleHint(QFont::TypeWriter);
-    DEB() << "Testing QFont::TypeWriter ->  \"" << font.defaultFamily() << "\"  " << (QFontMetrics(font).width("W") == QFontMetrics(font).width("l") ? "isMono" : "noMono");
-    font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    DEB() << "Testing QFontDb::FixedFont ->  \"" << font.defaultFamily() << "\"  " << (QFontMetrics(font).width("W") == QFontMetrics(font).width("l") ? "isMono" : "noMono");
+    checkFixedFont();
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    if (!font.fixedPitch()) {
+        QString fontFamily = findFixedFont();
+        font = QFont(fontFamily);
+        if (fontFamily.isNull())
+            DEB() << "No fixed font found on system. Using " << font.defaultFamily();
+        else
+            DEB() << "Fixed font found: " << font.defaultFamily();
+    } else {
+        DEB() << "Using fixed font of system: " << font.defaultFamily();
+    }
 
-    font = QFont(findFixedFont());
-    DEB() << "Testing findFixedFont ->  \"" << font.defaultFamily() << "\"  " << (QFontMetrics(font).width("W") == QFontMetrics(font).width("l") ? "isMono" : "noMono");
 
     setFontFamily(mUserSettings->value("fontFamily", font.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
