@@ -10,7 +10,7 @@ class TestDialogFileFilter : public QObject
 {
     Q_OBJECT
 
-public:
+private slots:
     void testUserCreatedTypes();
     void testAllFileTypes();
 };

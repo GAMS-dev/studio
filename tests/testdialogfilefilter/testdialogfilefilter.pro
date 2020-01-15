@@ -23,13 +23,13 @@ TEMPLATE = app
 include(../tests.pri)
 
 INCLUDEPATH +=  \
-        $$SRCPATH
+        $$SRCPATH \
+        $$SRCPATH/editors
 
 HEADERS += \
     testdialogfilefilter.h \
-    testdialogfilefilter.h
+    $$SRCPATH/editors/viewhelper.h
 
 SOURCES += \
-    testdialogfilefilter.cpp \
-    testdialogfilefilter.cpp \
+    testdialogfilefilter.cpp
 
