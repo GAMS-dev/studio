@@ -18,24 +18,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS +=                              \
-           testblockcode                \
-           testcheckforupdatewrapper    \
-           testcommonpaths              \
-           testconopt4option            \
-           testcplexoption              \
-           testdialogfilefilter         \
-           testdoclocation              \
-           testeditors                  \
-           testgamslicenseinfo          \
-           testgamsoption               \
-           testgurobioption             \
-           testmemorymapper             \
-           testminosoption              \
-           testmiro                     \
-           testoptionapi                \
-           testservicelocators          \
-           testsolverconfiginfo
-#           testfilemapper               \
+include(../tests.pri)
+
+INCLUDEPATH +=  \
+        $$SRCPATH
+
+HEADERS += \
+    testdialogfilefilter.h \
+    testdialogfilefilter.h
+
+SOURCES += \
+    testdialogfilefilter.cpp \
+    testdialogfilefilter.cpp \
+
