@@ -352,7 +352,7 @@ void StudioSettings::loadUserSettings()
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-    QFont font;
+    QFont font("any-name-needed-but-replaced");
     font.setStyleHint(QFont::Monospace);
     setFontFamily(mUserSettings->value("fontFamily", font.defaultFamily()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
