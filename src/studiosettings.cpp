@@ -385,15 +385,15 @@ void StudioSettings::loadUserSettings()
         QString fontFamily = findFixedFont();
         font = QFont(fontFamily);
         if (fontFamily.isNull())
-            DEB() << "No fixed font found on system. Using " << font.defaultFamily();
+            DEB() << "No fixed font found on system. Using " << font.family();
         else
-            DEB() << "Fixed font found: " << font.defaultFamily();
+            DEB() << "Fixed font found: " << font.family();
     } else {
-        DEB() << "Using fixed font of system: " << font.defaultFamily();
+        DEB() << "Using fixed font of system: " << font.family();
     }
 
 
-    setFontFamily(mUserSettings->value("fontFamily", font.defaultFamily()).toString());
+    setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
