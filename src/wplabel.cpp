@@ -67,7 +67,6 @@ void WpLabel::paintEvent(QPaintEvent *event)
             rect.moveLeft(mAlignment.testFlag(Qt::AlignRight) ? indent()-rect.width() : (indent()-rect.width())/2);
     if (!mAlignment.testFlag(Qt::AlignTop))
             rect.moveTop(mAlignment.testFlag(Qt::AlignBottom) ? cHei-rect.height() : (cHei-rect.height())/2);
-    DEB() << " paint-pos: " << rect.x() << "," << rect.y() << " - " << rect.width() << "," << rect.height();
     mIcon.paint(&painter, rect, mAlignment);
 }
 
