@@ -52,14 +52,10 @@ public:
         return mApplication;
     }
 
-    void setApplication(const QString &application) {
-        mApplication = application;
-    }
-
     QStringList parameters() const;
     void setParameters(const QStringList &parameters);
 
-    virtual QStringList defaultParameters() const {
+    virtual QStringList defaultParameters() const { // TODO (AF) review/needed?
         return QStringList();
     }
 
@@ -75,6 +71,7 @@ signals:
     void finished(NodeId origin, int exitCode);
     void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
+    void newProcessCall(const QString &text, const QString &call);
 
 protected slots:
     virtual void completed(int exitCode);
@@ -83,6 +80,10 @@ protected slots:
 
 protected:
     virtual QString nativeAppPath();
+
+    inline QString appCall(const QString &app, const QStringList &args) {
+        return app + " " + args.join(" ");
+    }
 
 protected:
     NodeId mGroupId = NodeId();

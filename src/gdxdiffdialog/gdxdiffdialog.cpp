@@ -35,6 +35,29 @@ GdxDiffDialog::~GdxDiffDialog()
     delete ui;
 }
 
+QStringList GdxDiffDialog::gdxDiffParamters()
+{
+    QStringList args;
+    args << QDir::toNativeSeparators(mLastInput1);
+    args << QDir::toNativeSeparators(mLastInput2);
+    if (!mLastDiffFile.isEmpty())
+        args << QDir::toNativeSeparators(mLastDiffFile);
+    args << "Field=" + ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex());
+    auto eps = ui->lineEdit_4->text().trimmed();
+    if (!eps.isEmpty())
+        args << "Eps=" + eps;
+    auto relEps = ui->lineEdit_5->text().trimmed();
+    if (!relEps.isEmpty())
+        args << "RelEps=" + relEps;
+    if (ui->cbFieldOnly->isChecked())
+        args << "FldOnly";
+    if (ui->cbDiffOnly->isChecked())
+        args << "DiffOnly";
+    if (ui->cbIgnoreSetText->isChecked())
+        args << "SetDesc=0";
+    return args;
+}
+
 } // namespace gdxdiffdialog
 } // namespace studio
 } // namespace gams
@@ -143,15 +166,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     setControlsEnabled(false);
 
     mProc->setWorkingDirectory(mWorkingDir);
-    mProc->setInput1(mLastInput1);
-    mProc->setInput2(mLastInput2);
-    mProc->setDiff(mLastDiffFile);
-    mProc->setEps(ui->lineEdit_4->text().trimmed());
-    mProc->setRelEps(ui->lineEdit_5->text().trimmed());
-    mProc->setIgnoreSetText(ui->cbIgnoreSetText->isChecked());
-    mProc->setDiffOnly(ui->cbDiffOnly->isChecked());
-    mProc->setFieldOnly(ui->cbFieldOnly->isChecked());
-    mProc->setFieldToCompare(ui->cbFieldToCompare->itemText(ui->cbFieldToCompare->currentIndex()));
+    mProc->setParameters(gdxDiffParamters());
 
     MainWindow* mainWindow = static_cast<MainWindow*>(parent());
     mDiffFm = mainWindow->fileRepo()->fileMeta(QDir::cleanPath(mLastDiffFile));

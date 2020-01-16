@@ -513,15 +513,23 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
 
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GamsLibProcess(this);
-    mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
-    mLibProcess->setModelName(modelName);
     mLibProcess->setInputFile(inputFile);
     mLibProcess->setWorkingDirectory(mSettings->defaultWorkspace());
-    mLibProcess->execute();
+
+    QStringList args {
+        "-lib",
+        QDir::toNativeSeparators(gamsSysDir.filePath(glbFile)),
+        (modelName.isEmpty() ? QString::number(-1) : modelName),
+        QDir::toNativeSeparators(mSettings->defaultWorkspace())
+    };
+    mLibProcess->setParameters(args);
 
     // This log is passed to the system-wide log
+    connect(mLibProcess, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
     connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendSystemLog);
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+
+    mLibProcess->execute();
 }
 
 void MainWindow::receiveModLibLoad(QString gmsFile, bool forceOverwrite)
@@ -1540,6 +1548,7 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
+    qDebug() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
@@ -2458,10 +2467,6 @@ void MainWindow::execute(QString commandLineStr,
     AbstractProcess* groupProc = runGroup->process();
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
-    QString msg = "Running GAMS:";
-    msg.append(groupProc->parameters().join(" "));
-    SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
-
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
     if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
@@ -2477,11 +2482,13 @@ void MainWindow::execute(QString commandLineStr,
         setMiroRunning(true);
         connect(groupProc, &AbstractProcess::finished, [this](){setMiroRunning(false);});
     }
+    connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
+    connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
+
     groupProc->execute();
     ui->toolBar->repaint();
 
     logNode->linkToProcess(groupProc);
-    connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
     ui->dockProcessLog->raise();
 }
 
@@ -2641,6 +2648,11 @@ void MainWindow::updateMiroMenu()
         ui->menuMIRO->setEnabled(true);
     else
         ui->menuMIRO->setEnabled(false);
+}
+
+void MainWindow::newProcessCall(const QString &text, const QString &call)
+{
+    SysLogLocator::systemLog()->append(text + " " + call, LogMsgType::Info);
 }
 
 void MainWindow::ensureInScreen()

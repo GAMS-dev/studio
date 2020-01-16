@@ -33,7 +33,7 @@ enum class MiroTargetEnvironment
     MultiUser       = 2
 };
 
-class MiroDeployProcess : public AbstractMiroProcess
+class MiroDeployProcess final : public AbstractMiroProcess
 {
     Q_OBJECT
 

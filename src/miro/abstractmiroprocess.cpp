@@ -56,11 +56,12 @@ void AbstractMiroProcess::execute()
 {
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start(nativeAppPath(), parameters());
 #else
-    auto params = parameters();
-    mProcess.setNativeArguments(params.join(" "));
+    mProcess.setNativeArguments(parameters().join(" "));
     mProcess.setProgram(nativeAppPath());
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start();
 #endif
 }
@@ -148,6 +149,7 @@ void AbstractMiroProcess::executeNext()
     mMiro.setProgram(mMiroPath);
     mMiro.setWorkingDirectory(workingDirectory());
     mMiro.setProcessEnvironment(miroProcessEnvironment());
+    emit newProcessCall("Running:", appCall(mMiroPath, mMiro.arguments()));
     mMiro.start();
 }
 

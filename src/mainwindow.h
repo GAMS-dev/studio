@@ -197,6 +197,7 @@ private slots:
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void updateMiroMenu();
+    void newProcessCall(const QString &text, const QString &call);
 
     // View
     void gamsProcessStateChanged(ProjectGroupNode* group);
