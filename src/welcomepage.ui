@@ -42,13 +42,13 @@
     <number>9</number>
    </property>
    <property name="topMargin">
-    <number>9</number>
+    <number>20</number>
    </property>
    <property name="rightMargin">
     <number>9</number>
    </property>
    <property name="bottomMargin">
-    <number>9</number>
+    <number>20</number>
    </property>
    <item>
     <layout class="QVBoxLayout" name="vl_parent">
@@ -87,7 +87,7 @@
         </sizepolicy>
        </property>
        <property name="styleSheet">
-        <string notr="true">QLabel { background-color : white; margin: 0 20 0 20 }</string>
+        <string notr="true"/>
        </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>

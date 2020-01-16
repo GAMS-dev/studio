@@ -26,33 +26,47 @@ namespace studio {
 
 WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
 {
-    setStyleSheet("QLabel { background-color : white; }");
+    WpLabel("", "", parent);
 }
 
 WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     : QLabel(parent), mContent(content), mLink(link)
 {
-    QLabel::setText(mContent);
-    setStyleSheet("QLabel { background-color : white; }");
+    DEFAULT_COLOR = palette().color(QPalette::AlternateBase);
+    auto p = palette();
+    p.setColor(QPalette::Window, DEFAULT_COLOR);
+    setPalette(p);
+
     setFrameShape(QFrame::StyledPanel);
     setMargin(4);
     setWordWrap(true);
+    setAutoFillBackground(true);
+
+    QLabel::setText(mContent);
 }
 
 void WpLabel::enterEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
+
     setFrameShape(QFrame::Box);
-    setStyleSheet("QLabel { background-color : #f39619; }");
+    updateMouseOverColor(true);
 }
 
 void WpLabel::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
+
     setFrameShape(QFrame::StyledPanel);
-    setStyleSheet("QLabel { background-color : white; }");
+    updateMouseOverColor(false);
+}
+
+void WpLabel::updateMouseOverColor(bool hovered) {
+    auto p = palette();
+    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : DEFAULT_COLOR);
+    setPalette(p);
 }
 
 void WpLabel::paintEvent(QPaintEvent *event)
