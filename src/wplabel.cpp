@@ -41,7 +41,7 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
 
 void WpLabel::enterEvent(QEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     if (mInactive) return;
     setFrameShape(QFrame::Box);
     setStyleSheet("QLabel { background-color : #f39619; }");
@@ -49,10 +49,26 @@ void WpLabel::enterEvent(QEvent *event)
 
 void WpLabel::leaveEvent(QEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     if (mInactive) return;
     setFrameShape(QFrame::StyledPanel);
     setStyleSheet("QLabel { background-color : white; }");
+}
+
+void WpLabel::paintEvent(QPaintEvent *event)
+{
+    QLabel::paintEvent(event);
+    if (mIcon.isNull()) return;
+    QPainter painter(this);
+
+    QRect rect = QRect(contentsRect().topLeft(), mIconSize);
+    int cHei = contentsRect().height();
+    if (!mAlignment.testFlag(Qt::AlignLeft))
+            rect.moveLeft(mAlignment.testFlag(Qt::AlignRight) ? indent()-rect.width() : (indent()-rect.width())/2);
+    if (!mAlignment.testFlag(Qt::AlignTop))
+            rect.moveTop(mAlignment.testFlag(Qt::AlignBottom) ? cHei-rect.height() : (cHei-rect.height())/2);
+    DEB() << " paint-pos: " << rect.x() << "," << rect.y() << " - " << rect.width() << "," << rect.height();
+    mIcon.paint(&painter, rect, mAlignment);
 }
 
 void WpLabel::setInactive(bool inactive)
@@ -60,9 +76,28 @@ void WpLabel::setInactive(bool inactive)
     mInactive = inactive;
 }
 
+void WpLabel::setIcon(QIcon icon)
+{
+    mIcon = icon;
+    update();
+}
+
+void WpLabel::setIconSize(const QSize &size)
+{
+    mIconSize = size;
+    if (indent() < mIconSize.width()) setIndent(mIconSize.width()+10);
+    update();
+}
+
+void WpLabel::setIconAlignment(Qt::Alignment alignment)
+{
+    mAlignment = alignment;
+    update();
+}
+
 void WpLabel::mousePressEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     if (mInactive || event->button() == Qt::RightButton) return;
 
     if (!mLink.isNull()) { // file history

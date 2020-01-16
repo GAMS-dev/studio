@@ -62,6 +62,7 @@ private slots:
 protected:
     void showEvent(QShowEvent *event);
     void hideEvent(QHideEvent *event);
+    void setupIcons();
 
 private:
     Ui::WelcomePage *ui;

@@ -24,6 +24,7 @@
 #include "ui_welcomepage.h"
 #include "mainwindow.h"
 #include "wplabel.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -42,6 +43,8 @@ WelcomePage::WelcomePage(MainWindow *parent)
     ui->label_doc_release->setProperty("documentation", path + docs);
     docs = ui->label_doc_tut->property("documentation").toString();
     ui->label_doc_tut->setProperty("documentation", path + docs);
+
+    setupIcons();
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
@@ -118,6 +121,41 @@ void WelcomePage::hideEvent(QHideEvent *event)
 {
     Q_UNUSED(event)
     mMain->setOutputViewVisibility(mOutputVisible);
+}
+
+void WelcomePage::setupIcons()
+{
+    QSize size(16,16);
+    ui->label_newfile->setIconSize(size);
+    ui->label_newfile->setIcon(Scheme::icon(":/%1/file"));
+    ui->label_browseLib->setIndent(30);
+    ui->label_browseLib->setIconSize(size);
+    ui->label_browseLib->setIcon(Scheme::icon(":/%1/books"));
+    ui->label_trnsport->setIndent(30);
+    ui->label_trnsport->setIconSize(size);
+    ui->label_trnsport->setIcon(Scheme::icon(":/%1/truck"));
+    ui->label_tutvid->setIndent(30);
+    ui->label_tutvid->setIconSize(size);
+    ui->label_tutvid->setIcon(Scheme::icon(":/%1/film"));
+    ui->label_doc_studio->setIndent(30);
+    ui->label_doc_studio->setIconSize(size);
+    ui->label_doc_studio->setIcon(Scheme::icon(":/img/gams-w"));
+    ui->label_doc_tut->setIndent(30);
+    ui->label_doc_tut->setIconSize(size);
+    ui->label_doc_tut->setIcon(Scheme::icon(":/%1/book"));
+
+    ui->label_whatsnew->setIndent(30);
+    ui->label_whatsnew->setIconSize(size);
+    ui->label_whatsnew->setIcon(Scheme::icon(":/%1/new"));
+    ui->label_doc_release->setIndent(30);
+    ui->label_doc_release->setIconSize(size);
+    ui->label_doc_release->setIcon(Scheme::icon(":/%1/scroll"));
+    ui->label_gamsworld->setIndent(30);
+    ui->label_gamsworld->setIconSize(size);
+    ui->label_gamsworld->setIcon(Scheme::icon(":/img/gams-w"));
+    ui->label_contact->setIndent(30);
+    ui->label_contact->setIconSize(size);
+    ui->label_contact->setIcon(Scheme::icon(":/%1/envelope"));
 }
 
 }

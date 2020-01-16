@@ -1209,6 +1209,10 @@
    </property>
   </action>
   <action name="actionBase_mode">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/miro</normaloff>:/img/miro</iconset>
+   </property>
    <property name="text">
     <string>Run base mode</string>
    </property>

@@ -17,7 +17,7 @@ const QColor CUndefined(255, 0, 200);
 
 Scheme::Scheme(QObject *parent) : QObject(parent)
 {
-    mIconSet = "thin";
+    mIconSet = "solid"; // thin, solid
 }
 
 Scheme::~Scheme()
@@ -39,6 +39,7 @@ void Scheme::initDefault()
     mSchemeNames.clear();
 
     // Add and switch to first color scheme  ------- Standard -------
+     mActiveScheme = 0;
     int sNr = 0;
     mColorSchemes << ColorScheme();
     mSchemeNames << "Standard";
@@ -65,14 +66,14 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::white));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::transparent));
     mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::black));
     mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
-    mColorSchemes[sNr].insert(Disable_Back,                   QColor("#EEEEFF"));
+    mColorSchemes[sNr].insert(Disable_Back,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Active_Line,                    QColor("#0044EE"));
-    mColorSchemes[sNr].insert(Active_Back,                    QColor("#EEEEFF"));
+    mColorSchemes[sNr].insert(Active_Back,                    QColor("#3377EE"));
     mColorSchemes[sNr].insert(Select_Line,                    QColor("#0044EE"));
-    mColorSchemes[sNr].insert(Select_Back,                    QColor("#EEEEFF"));
+    mColorSchemes[sNr].insert(Select_Back,                    QColor("#4499FF"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color());
@@ -106,6 +107,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkRed).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkGreen).darker(120), fBold));
 
+    invalidate();
 }
 
 QStringList Scheme::schemes()
@@ -197,16 +199,19 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
     file.close();
     int iMode = int(mode);
 
+    QStringList masks {".%1{fill:", ".%1C{fill:"};
     QHash<QString, QStringList>::const_iterator it = mIconCode.constBegin();
     for ( ; it != mIconCode.constEnd() ; ++it) {
         if (mode == QIcon::Normal && it.key() == "Back") continue;
-        QString key = QString(".%1{fill:").arg(it.key());
-        int from = data.indexOf(key);
-        if (from >= 0) {
-            from += key.length();
-            int len = data.indexOf(";\"", from) - from;
-            data.replace(from, len, it.value().at(iMode).toLatin1());
-//            DEB() << key << " -> " << it.value().at(iMode).toLatin1();
+        for (const QString &mask: masks) {
+            QString key = QString(mask).arg(it.key());
+            int from = data.indexOf(key);
+            if (from >= 0) {
+                from += key.length();
+                int len = data.indexOf(";}", from) - from;
+                data.replace(from, len, it.value().at(iMode).toLatin1());
+    //            DEB() << name << " [" << from << ", " << (end) << "] \n" << data;
+            }
         }
     }
     return data;
@@ -285,7 +290,7 @@ QIcon Scheme::icon(QString name)
 QByteArray &Scheme::data(QString name, QIcon::Mode mode)
 {
     QStringList ext {"_N","_D","_A","_S"};
-    QString nameKey = name.arg(instance()->mIconSet) + ext.at(int(mode));
+    QString nameKey = name + ext.at(int(mode));
     if (!instance()->mDataCache.contains(nameKey)) {
         QByteArray data(instance()->colorizedContent(name, mode));
         instance()->mDataCache.insert(nameKey, data);

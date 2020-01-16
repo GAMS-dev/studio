@@ -405,6 +405,7 @@ void StudioSettings::loadUserSettings()
 
 void StudioSettings::readScheme()
 {
+    Scheme::instance()->initDefault();
     if (mColorSettings && mColorSettings->open(QIODevice::ReadOnly)) {
         QByteArray jsonColors = mColorSettings->readAll();
         Scheme::instance()->importJsonColorSchemes(jsonColors);
