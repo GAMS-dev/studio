@@ -47,6 +47,11 @@ WelcomePage::WelcomePage(MainWindow *parent)
 
     setupIcons();
 
+    auto p = palette();
+    p.setColor(QPalette::Window, p.color(QPalette::AlternateBase));
+    ui->welcometext->setPalette(p);
+    ui->welcometext->setAutoFillBackground(true);
+
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
     connect(this, &WelcomePage::relayDocOpen, parent, &MainWindow::receiveOpenDoc);

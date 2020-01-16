@@ -26,7 +26,9 @@ namespace studio {
 
 WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
 {
-    WpLabel("", "", parent);
+    DEFAULT_COLOR = palette().color(QPalette::AlternateBase);
+    setAutoFillBackground(true);
+    updateMouseOverColor(false);
 }
 
 WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
@@ -41,6 +43,7 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     setMargin(4);
     setWordWrap(true);
     setAutoFillBackground(true);
+    updateMouseOverColor(false);
 
     QLabel::setText(mContent);
 }
