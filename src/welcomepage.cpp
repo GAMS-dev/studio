@@ -97,6 +97,20 @@ WelcomePage::~WelcomePage()
     delete ui;
 }
 
+bool WelcomePage::event(QEvent *event)
+{
+    if (event->type() == QEvent::PaletteChange) {
+        auto p = palette();
+        p.setColor(QPalette::Window, p.color(QPalette::BrightText));
+
+        ui->welcometext->setPalette(p);
+        for (WpLabel* w : findChildren<WpLabel*>())
+            w->setPalette(p);
+
+    }
+    return QWidget::event(event);
+}
+
 void WelcomePage::on_relayAction(QString action)
 {
     emit relayActionWp(action);
