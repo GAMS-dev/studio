@@ -48,7 +48,7 @@ WelcomePage::WelcomePage(MainWindow *parent)
     setupIcons();
 
     auto p = palette();
-    p.setColor(QPalette::Window, p.color(QPalette::AlternateBase));
+    p.setColor(QPalette::Window, p.color(QPalette::BrightText));
     ui->welcometext->setPalette(p);
     ui->welcometext->setAutoFillBackground(true);
 

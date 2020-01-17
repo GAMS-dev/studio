@@ -24,21 +24,12 @@
 namespace gams {
 namespace studio {
 
-WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
-{
-    DEFAULT_COLOR = palette().color(QPalette::AlternateBase);
-    setAutoFillBackground(true);
-    updateMouseOverColor(false);
-}
+WpLabel::WpLabel(QWidget *parent) : WpLabel("", "", parent)
+{ }
 
 WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     : QLabel(parent), mContent(content), mLink(link)
 {
-    DEFAULT_COLOR = palette().color(QPalette::AlternateBase);
-    auto p = palette();
-    p.setColor(QPalette::Window, DEFAULT_COLOR);
-    setPalette(p);
-
     setFrameShape(QFrame::StyledPanel);
     setMargin(4);
     setWordWrap(true);
@@ -68,7 +59,7 @@ void WpLabel::leaveEvent(QEvent *event)
 
 void WpLabel::updateMouseOverColor(bool hovered) {
     auto p = palette();
-    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : DEFAULT_COLOR);
+    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::BrightText));
     setPalette(p);
 }
 
