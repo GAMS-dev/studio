@@ -74,6 +74,11 @@ void SchemeWidget::selectColor()
     }
 }
 
+void SchemeWidget::refresh()
+{
+    setColor(toColor(mSlot));
+}
+
 void SchemeWidget::setColor(const QColor &color)
 {
     QPalette pal = ui->colorFrame->palette();

@@ -26,6 +26,7 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void selectColor();
     void saveToScheme();
+    void refresh();
 
 signals:
     void changed();

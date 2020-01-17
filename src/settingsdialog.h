@@ -73,6 +73,7 @@ private:
     MainWindow *mMain;
     bool isModified = false;
     bool mInitializing = true;
+    QHash<int, QWidget*> mColorWidgets;
 
     void saveSettings();
     void loadSettings();

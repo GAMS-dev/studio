@@ -20,6 +20,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QMessageBox>
+#include <QtGlobal>
 #include "mainwindow.h"
 #include "scheme.h"
 #include "settingsdialog.h"
@@ -215,6 +216,7 @@ void SettingsDialog::schemeModified()
 {
     emit setModified();
     Scheme::instance()->invalidate();
+//    initColorPage();
 }
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
@@ -317,22 +319,30 @@ void SettingsDialog::initColorPage()
     ui->cbSchemes->clear();
     ui->cbSchemes->addItems(Scheme::instance()->schemes());
     ui->cbSchemes->setCurrentIndex(Scheme::instance()->activeScheme());
+    connect(ui->cbSchemes, qOverload<int>(&QComboBox::currentIndexChanged), this, &SettingsDialog::schemeModified);
     QGroupBox * box = ui->groupIconColors;
     QGridLayout * grid = qobject_cast<QGridLayout*>(box->layout());
     QVector<Scheme::ColorSlot> slot {Scheme::Icon_Line, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
                                      Scheme::Icon_Back, Scheme::Disable_Back, Scheme::Active_Back, Scheme::Select_Back};
     for (int i = 0; i < slot.size(); ++i) {
-        SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
-        grid->addWidget(wid, (i/4)+1, (i%4)+1);
-        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
+        if (!mColorWidgets.contains(slot.at(i))) {
+            SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
+            grid->addWidget(wid, (i/4)+1, (i%4)+1);
+            connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
+        } else {
+            static_cast<SchemeWidget*>(mColorWidgets.value(slot.at(i)))->refresh();
+        }
+    }
+}
+
+void SettingsDialog::on_cbSchemes_currentIndexChanged(int index)
+{
+    if (!mInitializing) {
+        Scheme::instance()->setActiveScheme(index);
+        schemeModified();
     }
 }
 
 }
 }
 
-void gams::studio::SettingsDialog::on_cbSchemes_currentIndexChanged(int index)
-{
-    if (!mInitializing)
-        Scheme::instance()->setActiveScheme(index);
-}
