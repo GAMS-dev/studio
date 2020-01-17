@@ -59,8 +59,8 @@ void WpLabel::paintEvent(QPaintEvent *event)
 {
     QLabel::paintEvent(event);
     if (mIcon.isNull()) return;
-    QPainter painter(this);
 
+    QPainter painter(this);
     QRect rect = QRect(contentsRect().topLeft(), mIconSize);
     int cHei = contentsRect().height();
     if (!mAlignment.testFlag(Qt::AlignLeft))

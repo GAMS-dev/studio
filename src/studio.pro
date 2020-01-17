@@ -98,6 +98,7 @@ SOURCES += \
     exception.cpp \
     file/dynamicfile.cpp \
     file/fileevent.cpp \
+    file/fileicon.cpp \
     file/filemeta.cpp \
     file/filemetarepo.cpp \
     file/filetype.cpp \
@@ -232,6 +233,7 @@ HEADERS += \
     file.h \
     file/dynamicfile.h \
     file/fileevent.h \
+    file/fileicon.h \
     file/filemeta.h \
     file/filemetarepo.h \
     file/filetype.h \

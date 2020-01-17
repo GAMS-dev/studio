@@ -42,7 +42,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     loadSettings();
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    initColorPage();
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
@@ -121,6 +120,7 @@ void SettingsDialog::loadSettings()
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
 
     // scheme data
+    initColorPage();
 
 }
 

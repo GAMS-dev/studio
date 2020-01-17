@@ -25,6 +25,7 @@
 #include "mainwindow.h"
 #include "wplabel.h"
 #include "scheme.h"
+#include "file/fileicon.h"
 
 namespace gams {
 namespace studio {
@@ -72,6 +73,8 @@ void WelcomePage::historyChanged()
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
                                   + "<small>" + file.filePath() + "</small>", file.filePath(), this);
             tmpLabel->setToolTip(file.filePath());
+            tmpLabel->setIconSize(QSize(16,16));
+            tmpLabel->setIcon(FileIcon::iconForFileKind(FileType::from(file.suffix()).kind()));
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
             ui->layout_lastFiles->addWidget(tmpLabel);
             j++;
