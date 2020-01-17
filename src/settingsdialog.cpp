@@ -20,7 +20,6 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QMessageBox>
-#include <QtGlobal>
 #include "mainwindow.h"
 #include "scheme.h"
 #include "settingsdialog.h"
@@ -319,7 +318,6 @@ void SettingsDialog::initColorPage()
     ui->cbSchemes->clear();
     ui->cbSchemes->addItems(Scheme::instance()->schemes());
     ui->cbSchemes->setCurrentIndex(Scheme::instance()->activeScheme());
-    connect(ui->cbSchemes, qOverload<int>(&QComboBox::currentIndexChanged), this, &SettingsDialog::schemeModified);
     QGroupBox * box = ui->groupIconColors;
     QGridLayout * grid = qobject_cast<QGridLayout*>(box->layout());
     QVector<Scheme::ColorSlot> slot {Scheme::Icon_Line, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
