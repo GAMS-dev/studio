@@ -27,6 +27,7 @@ SUBDIRS +=                              \
            testcommonpaths              \
            testconopt4option            \
            testcplexoption              \
+           testdialogfilefilter         \
            testdoclocation              \
            testeditors                  \
            testgamslicenseinfo          \
