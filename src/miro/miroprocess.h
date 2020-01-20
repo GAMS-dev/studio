@@ -33,7 +33,7 @@ enum class MiroMode
     Configuration
 };
 
-class MiroProcess : public AbstractMiroProcess
+class MiroProcess final : public AbstractMiroProcess
 {
     Q_OBJECT
 

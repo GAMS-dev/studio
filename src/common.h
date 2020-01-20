@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef COMMON_H
 #define COMMON_H
+
 #include <QHashFunctions>
 #include <QObject>
 #include <QTextStream>

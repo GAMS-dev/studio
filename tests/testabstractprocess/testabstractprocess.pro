@@ -17,25 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+TEMPLATE = app
 
-TEMPLATE = subdirs
+include(../tests.pri)
 
-SUBDIRS +=                              \
-           testabstractprocess          \
-           testblockcode                \
-           testcheckforupdatewrapper    \
-           testcommonpaths              \
-           testconopt4option            \
-           testcplexoption              \
-           testdoclocation              \
-           testeditors                  \
-           testgamslicenseinfo          \
-           testgamsoption               \
-           testgurobioption             \
-           testmemorymapper             \
-           testminosoption              \
-           testmiro                     \
-           testoptionapi                \
-           testservicelocators          \
-           testsolverconfiginfo
-#           testfilemapper               \
+#INCLUDEPATH += $$SRCPATH
+
+HEADERS +=                          \
+    testabstractprocess.h           \
+    $$SRCPATH/abstractprocess.h     \
+    $$SRCPATH/commonpaths.h         \
+    $$SRCPATH/exception.h
+
+SOURCES +=                          \
+    testabstractprocess.cpp         \
+    $$SRCPATH/abstractprocess.cpp   \
+    $$SRCPATH/commonpaths.cpp       \
+    $$SRCPATH/exception.cpp
+
+message($$SRCPATH)

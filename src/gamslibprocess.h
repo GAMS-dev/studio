@@ -25,27 +25,14 @@
 namespace gams {
 namespace studio {
 
-class GamsLibProcess : public AbstractGamsProcess
+class GamsLibProcess final : public AbstractGamsProcess
 {
     Q_OBJECT
 
 public:
     GamsLibProcess(QObject *parent = nullptr);
 
-    void setModelNumber(int modelNumber);
-    int modelNumber() const;
-
-    void setModelName(const QString &modelName);
-    QString modelName() const;
-
     void execute() override;
-
-    void setGlbFile(const QString &glbFile);
-
-private:
-    int mModelNumber = -1;
-    QString mModelName;
-    QString mGlbFile;
 };
 
 } // namespace studio

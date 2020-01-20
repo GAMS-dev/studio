@@ -32,6 +32,9 @@ public:
     QString input2() const;
     void prepopulateDiff();
 
+protected:
+    void closeEvent(QCloseEvent *e) override;
+
 private slots:
     void on_pbInput1_clicked();
     void on_pbInput2_clicked();
@@ -47,6 +50,7 @@ private slots:
 private:
     const QString defaultDiffFile = "diff.gdx";
     void setControlsEnabled(bool enabled);
+    QStringList gdxDiffParamters();
 
     Ui::GdxDiffDialog *ui;
     QString mRecentPath;
@@ -63,8 +67,6 @@ private:
 
     void cancelProcess(int waitMSec=0);
 
-protected:
-    void closeEvent(QCloseEvent *e) override;
 
 };
 

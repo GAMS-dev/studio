@@ -38,10 +38,12 @@ void GamsProcess::execute()
 {
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start(nativeAppPath(), parameters());
 #else
     mProcess.setNativeArguments(parameters().join(" "));
     mProcess.setProgram(nativeAppPath());
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start();
 #endif
 }
