@@ -212,7 +212,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
-    ui->logTabs->addTab(mSyslog, "System");
+    on_actionShow_System_Log_triggered();
 
     initTabs();
     QPushButton *tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTabs);
@@ -1781,20 +1781,15 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
     }
 
     QWidget* edit = ui->logTabs->widget(index);
-    if (edit) {
+    if (!edit) return;
+
+    ui->logTabs->removeTab(index);
+
+    // dont remove syslog and dont delete resultsView
+    if (!(edit == mSyslog || isResults)) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
         if (log) log->removeEditor(edit);
-        ui->logTabs->removeTab(index);
-
-        // keeps internal data of syslog
-        AbstractEdit* ed = ViewHelper::toAbstractEdit(edit);
-        if (ed) ed->setDocument(nullptr);
-
-        // remark to keep process-logs remove the TextView from the tab-bar without deleting
-
-        // dont remove syslog and dont delete resultsView
-        if (!(edit == mSyslog || isResults))
-            edit->deleteLater();
+        edit->deleteLater();
     }
 }
 
@@ -1829,10 +1824,12 @@ bool MainWindow::isRecentGroupRunning()
 void MainWindow::on_actionShow_System_Log_triggered()
 {
     int index = ui->logTabs->indexOf(mSyslog);
-    if (index < 0)
+    if (index < 0) {
         ui->logTabs->addTab(mSyslog, "System");
-    else
+        ui->logTabs->setCurrentWidget(mSyslog);
+    } else {
         ui->logTabs->setCurrentIndex(index);
+    }
     mSyslog->raise();
     dockWidgetShow(ui->dockProcessLog, true);
 }
