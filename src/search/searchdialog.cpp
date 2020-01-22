@@ -870,8 +870,11 @@ QRegularExpression SearchDialog::createRegex()
 
 void SearchDialog::invalidateCache()
 {
-    delete mCachedResults;
-    mCachedResults = nullptr;
+    // dont delete cache when thread is running
+    if (mThread.isFinished()) {
+        delete mCachedResults;
+        mCachedResults = nullptr;
+    }
     mHasChanged = true;
     if (resultsView()) resultsView()->setOutdated();
 }

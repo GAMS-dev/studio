@@ -3037,7 +3037,7 @@ void MainWindow::showResults(search::SearchResultList* results)
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
     else nr = QString::number(results->size());
 
-    QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
+    QString title("Results: " + results->searchRegex().pattern() + " (" + nr + ")");
 
     ui->dockProcessLog->show();
     ui->dockProcessLog->activateWindow();
