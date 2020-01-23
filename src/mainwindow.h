@@ -75,6 +75,12 @@ struct RecentData {
 
     bool validRunGroup();
 
+    /**
+     * @brief Name of the main model.
+     * @remark Call <c>validRunGroup()</c> before.
+     */
+    QString mainModelName(bool stripped = true);
+
     FileId editFileId = -1;
     QString path = ".";
     ProjectGroupNode* group = nullptr;
