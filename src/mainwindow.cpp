@@ -1949,7 +1949,7 @@ void MainWindow::on_actionBase_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setModelName(mRecent.mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -1964,7 +1964,7 @@ void MainWindow::on_actionHypercube_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setModelName(mRecent.mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
@@ -1979,7 +1979,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setModelName(mRecent.mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -1998,8 +1998,8 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
     if (!mRecent.validRunGroup())
         return;
 
-    auto assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.group->name());
-    auto checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.group->toRunGroup()->runnableGms()->name());
+    auto assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.mainModelName());
+    auto checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.mainModelName(false));
     miro::MiroModelAssemblyDialog dlg(mRecent.group->toRunGroup()->location(), this);
     dlg.setSelectedFiles(checkedFiles);
     if (dlg.exec() == QDialog::Rejected)
@@ -2015,7 +2015,7 @@ void MainWindow::on_actionDeploy_triggered()
         return;
 
     auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.group->name());
+                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
     mMiroDeployDialog->exec();
@@ -2023,10 +2023,13 @@ void MainWindow::on_actionDeploy_triggered()
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 {
+    if (!mRecent.validRunGroup())
+        return;
+
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    process->setModelName(mRecent.group->name());
+    process->setModelName(mRecent.mainModelName());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
@@ -3537,6 +3540,22 @@ bool RecentData::validRunGroup()
     if (!group)
         return false;
     return group->toRunGroup() != nullptr;
+}
+
+QString RecentData::mainModelName(bool stripped)
+{
+    auto fileMeta = group->toRunGroup()->runnableGms();
+
+    if (!fileMeta) {
+        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for group: %1")
+                .arg(group->toRunGroup()->name()), LogMsgType::Error);
+        return QString();
+    }
+
+    QFileInfo fileInfo(fileMeta->name());
+    if (stripped)
+        return fileInfo.completeBaseName();
+    return fileInfo.fileName();
 }
 
 void MainWindow::on_actionReset_Views_triggered()
