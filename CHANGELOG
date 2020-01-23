@@ -2,7 +2,19 @@ Version 0.14.1
 ==================
 
 ## General
+- fixed use main model file name instead of group name for MIRO
+- fixed keyboard navigation for MIRO and Tools main menu
+- fixed crash in search when editing search term while search is ongoing
+- fixed ctrl+k not working on linux when code editor focussed
+- fixed system log losing formatting when closing and re-opening
+- fixed selected a valid monospace font on macOS
+- system log lists all process calls including parameters
+- supported file extensions reviewed and unified
 
+Version 0.14.1
+==================
+
+## General
 - fixed crash related to file encodings
 - preserve order of default and command line GAMS parameters; only override multiple non-immediate parameters
 - allow multiple insertion of the same key if parameter is not recurrent (e.g. one instance or immediate parameter)
@@ -32,103 +44,3 @@ Version 0.14.0
 - fixed Process Log not scrolled to end for certain fonts after GAMS run
 - fixed Command Line Parameter changes getting lost when using search
 - removed empty lines from System Log
-
-Version 0.13.3
-==================
-
-## General
-- **added opening of OS specific terminal in current working dir (Tools > Terminal or shortcut `Alt+T`)**
-    - **Note:** This feature does not work on all Linux distributions yet (e.g. Ubuntu)
-- fixed Ctrl+MouseWheel not working in Help View
-- fixed search terms not being added to search history for certain actions
-- improved behavior of GAMS license detection from clipboard
-- fixed missing update of cursor position in status bar
-
-Version 0.13.2
-==================
-
-## General
-- added "What's new in Studio" button to welcome page to open changelog
-- improved behavior of welcome page last opened files list
-- removed extra new lines from log output
-- added missing shortcut (Ctrl+0) to reset zoom in help view
-- fixed behavior of double click in log
-- fixed missing check that allowed users to get two identical file entries in project explorer
-- added Return/Enter key to open file from Project Explorer (macOS)
-- improved up/down key behavior in tab browser (macOS)
-- added missing tab navigation arrows if more tabs are open than can be displayed (macOS)
-- fixed inappropriate resize behavior when opening a file from Finder (macOS)
-- fixed file modification marker after closing a file without saving (macOS)
-- fixed size of help toolbar (macOS)
-- fixed behavior of home key (FN+Left) (macOS)
-- added missing Ctrl+C shortcut in help view
-- fixed scrolling issue in log where last lines out of view
-
-## Code Edit & Syntax Highlighter
-- fixed search jumping to results outside of selected scope under certain circumstances
-- fixed syntax highlighting for descriptions that include a comma character
-- fixed and enhanced syntax highlighting for eolCom keyword
-- fixed problem caused by opening brace inside of IdentifierAssignment
-- fixed highlighting of matching braces around newline characters
-- fixed syntax highlighting in data statements
-- fixed behavior of Ctrl+Left/Right Arrow (macOS)
-
-## Solver Option Editor
-- added icon and colors to report recurrence of parameters and options
-- added and improved shortcuts to parameter and option editor
-
-Version 0.13.1
-===============
-
-## General
-- fixed studio ignoring changes in command line parameter "filestem"
-- fixed handling of files where user changed the extension of a file via "Save As"
-- fixed wrong deletion when using block edit mode that includes short lines
-- fixed crash when using "Next/Previous Tab" action but no tabs where open
-- fixed bug where gdx command line parameter was ignored under certain circumstances
-- renamed "Output View" to "Process Log"
-
-## Solver Option Editor
-- fixed solver option editor not opening option files for certain solvers
-- improved visualization of selected options in solver option editor
-
-Version 0.13.0
-===============
-
-## General
-- **dropped support for Windows 32bit systems**
-- **reworked log to better handle long and fast log output**
-- improved behavior of F1 (Help) Key. Studio now opens widget specific help if available
-- fixed search status update when having no results
-- added raise to result view to pop up over help
-- fixed crash when jumping to a result after invalidating cache
-- Enhanced icon size in Help on Mac OS
-- fixed bookmarks sometimes not being able to be set
-- improved add new/existing file dialog: now opens dialog in group folder if available
-- **added dialog to create license file (pops up when a license is in the user's clipboard and the "About GAMS" is opened)**
-- disabled top dockwidget area for all widgets as it should be used solely by the extended parameter editor
-- fixed behavior of jumping to matching parenthesis ([Shift+]F8)
-- fixed missing parenthesis highlighting for variables
-- reduced flickering when minimizing/maximizing Studio
-- removed online version check on Studio startup
-- fixed Studio not popping up for warning when drag'n'droping many files
-- disabled GoTo dialog for all non-applicable widgets
-- fixed crash when opening files with certain parenthesis constructs
-- **added fullscreen mode (Windows/Linux: ALT+Return, macOS: META+CMD+F)**
-- fixed accidental closing of log tab when closing results page
-
-## GDX Viewer
-- **added adjustment of numerical precision in the GDX Viewer**
-- improved tooltip for GDX Viewer precision spin box
-
-## GLB Parser
-- Read and use InitialSort key in GLB files
-- fixed crash when GLB file does not contain any models, added proper warning/error instead
-
-## Model Library
-- make model library explorer aware of initial sort column
-- fixed Model Library Explorer feeling slow on macOS
-
-## Reference Viewer
-- **added auto resize when opening**
-- added context menu to let users auto resize after doing manual changes
