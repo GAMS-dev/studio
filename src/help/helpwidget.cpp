@@ -329,6 +329,8 @@ void HelpWidget::on_loadFinished(bool ok)
            if (ui->webEngineView->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
                ui->actionOnlineHelp->setEnabled( false );
        }
+   } else {
+        qDebug() << "on loadFinished with an error";
    }
 }
 
@@ -388,6 +390,8 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                         baseLocation.size(),
                         onlineStartPageUrl.toDisplayString() );
         url = QUrl(urlStr, QUrl::TolerantMode);
+        qDebug() << "checked : url(" << url.toString(QUrl::PrettyDecoded) << ")";
+        ui->webEngineView->load( url );
     } else {
        if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
            if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
@@ -397,7 +401,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    urlStr.replace( 0, docsidx, baseLocation );
                    url.setUrl(urlStr);
                    url.setScheme("file");
-                   qDebug() << url.toString();
+                   ui->webEngineView->load( url );
                }  else {
                    ui->webEngineView->load( getStartPageUrl() );
                }
@@ -411,8 +415,6 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
            ui->webEngineView->load( getStartPageUrl() );
        }
     }
-    ui->actionOnlineHelp->setChecked( checked );
-    ui->webEngineView->load( url );
 }
 
 void HelpWidget::on_actionOpenInBrowser_triggered()
