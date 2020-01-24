@@ -387,7 +387,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
         urlStr.replace( urlStr.indexOf( baseLocation),
                         baseLocation.size(),
                         onlineStartPageUrl.toDisplayString() );
-        url = QUrl(urlStr);
+        url = QUrl(urlStr, QUrl::TolerantMode);
     } else {
        if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
            if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
@@ -606,9 +606,9 @@ QUrl HelpWidget::getOnlineStartPageUrl()
     } else {
         int marjorversion = c4uWrapper.currentDistribVersion()/100;
         if (marjorversion>=26)
-            return QUrl( QString("https://www.gams.com/%1").arg( marjorversion ));
+            return QUrl( QString("https://www.gams.com/%1").arg( marjorversion ), QUrl::TolerantMode);
         else
-          return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
+          return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
     }
 }
 

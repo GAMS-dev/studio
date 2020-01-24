@@ -152,7 +152,7 @@ public:
     }
 
     inline static QUrl getLatestOnlineHelpUrl() {
-        return QUrl("https://www.gams.com/latest");
+        return QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
     }
 
     inline static QString getChapterLocation(const DocumentType type) {
