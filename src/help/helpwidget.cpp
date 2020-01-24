@@ -332,10 +332,12 @@ void HelpWidget::on_loadFinished(bool ok)
            if (ui->webEngineView->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
                ui->actionOnlineHelp->setEnabled( false );
        }
-   } else {
-        QString message = QString("on loadFinished with and error, current url(%1)").arg(ui->webEngineView->url().toString(QUrl::PrettyDecoded));
-        SysLogLocator::systemLog()->append(message, LogMsgType::Warning);
    }
+
+   QString message = QString("on loadFinished with %1, current url : %2")
+           .arg(ok ? "true" : "false")
+           .arg(ui->webEngineView->url().toString(QUrl::PrettyDecoded));
+   SysLogLocator::systemLog()->append(message, LogMsgType::Warning);
 }
 
 void HelpWidget::linkHovered(const QString &url)
@@ -394,7 +396,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                         baseLocation.size(),
                         onlineStartPageUrl.toDisplayString() );
         url = QUrl(urlStr, QUrl::TolerantMode);
-        QString message = QString("to load (online) url(%1)").arg(url.toString(QUrl::PrettyDecoded));
+        QString message = QString("to load (online) url : %1").arg(url.toString(QUrl::PrettyDecoded));
         SysLogLocator::systemLog()->append(message, LogMsgType::Info);
         ui->webEngineView->load( url );
     } else {
@@ -615,9 +617,9 @@ QUrl HelpWidget::getOnlineStartPageUrl()
     } else {
         int marjorversion = c4uWrapper.currentDistribVersion()/100;
         if (marjorversion>=26)
-            return QUrl( QString("https://www.gams.com/%1").arg( marjorversion ), QUrl::TolerantMode);
+            return QUrl( QString("http://www.gams.com/%1").arg( marjorversion ), QUrl::TolerantMode);
         else
-          return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
+          return QUrl( QString("http://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
     }
 }
 
