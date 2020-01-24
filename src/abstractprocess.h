@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,14 +52,10 @@ public:
         return mApplication;
     }
 
-    void setApplication(const QString &application) {
-        mApplication = application;
-    }
-
     QStringList parameters() const;
     void setParameters(const QStringList &parameters);
 
-    virtual QStringList defaultParameters() const {
+    virtual QStringList defaultParameters() const { // TODO (AF) review/needed?
         return QStringList();
     }
 
@@ -75,6 +71,7 @@ signals:
     void finished(NodeId origin, int exitCode);
     void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
+    void newProcessCall(const QString &text, const QString &call);
 
 protected slots:
     virtual void completed(int exitCode);
@@ -83,6 +80,10 @@ protected slots:
 
 protected:
     virtual QString nativeAppPath();
+
+    inline QString appCall(const QString &app, const QStringList &args) {
+        return app + " " + args.join(" ");
+    }
 
 protected:
     NodeId mGroupId = NodeId();

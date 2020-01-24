@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -247,12 +247,7 @@ void ProjectContextMenu::onAddExisitingFile()
     else emit getSourcePath(sourcePath);
 
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent, "Add existing files", sourcePath,
-                                                    tr("GAMS Source (*.gms);;"
-                                                       "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
-                                                       "Option files (*.opt *.op* *.o*);;"
-                                                       "Reference files (*.ref);;"
-                                                       "Text files (*.txt);;"
-                                                       "All files (*.*)"),
+                                                    ViewHelper::dialogFileFilterAll().join(";;"),
                                                     nullptr,
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;

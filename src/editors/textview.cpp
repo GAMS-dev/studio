@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <QTextBlock>
 #include <QPlainTextDocumentLayout>
 #include <QBoxLayout>
+#include <QtMath>
 
 namespace gams {
 namespace studio {
@@ -353,7 +354,7 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
 void TextView::jumpToEnd()
 {
     if (mMapper->lineCount() > 0) {
-        mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->visibleLineCount());
+        mMapper->setVisibleTopLine(mMapper->lineCount() - mMapper->reducedVisibleLineCount());
         if (mStayAtTail) *mStayAtTail = mMapper->atTail();
     } else {
         mMapper->setVisibleTopLine(1.0);
@@ -496,7 +497,7 @@ void TextView::init()
 void TextView::updateVScrollZone()
 {
     verticalScrollBar()->setPageStep(mMapper->visibleLineCount());
-    verticalScrollBar()->setMaximum(qMax(0, qAbs(mMapper->lineCount()) - mMapper->visibleLineCount()));
+    verticalScrollBar()->setMaximum(qMax(0, qAbs(mMapper->lineCount()) - mMapper->reducedVisibleLineCount()));
     if (mMapper->kind() == AbstractTextMapper::fileMapper) {
         if (verticalScrollBar()->maximum()) {
             verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));

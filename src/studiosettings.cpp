@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -335,6 +335,33 @@ int StudioSettings::compareVersion(QString currentVersion, QString otherVersion)
     return 0;
 }
 
+//void checkFixedFont()
+//{
+//    QFontDatabase fdb;
+//    QStringList list = fdb.families();
+//    for (int i = 0; i < list.size(); ++i) {
+//        if (fdb.isPrivateFamily(list.at(i)))
+//            continue;
+//        QFontMetrics metrics(QFont(list.at(i)));
+//        DEB() << list.at(i) << "   fixed:" << (fdb.isFixedPitch(list.at(i)) ? "TRUE":"FALSE")
+//              << "  width('W'=='l'):" << (metrics.width("W") == metrics.width("l") ? "TRUE":"FALSE")
+//              << (fdb.isFixedPitch(list.at(i)) != (metrics.width("W") == metrics.width("l")) ? "  !!" : "");
+//    }
+//}
+
+QString findFixedFont()
+{
+    QFontDatabase fdb;
+    QStringList list = fdb.families();
+    for (int i = 0; i < list.size(); ++i) {
+        if (fdb.isPrivateFamily(list.at(i)))
+            continue;
+        if (fdb.isFixedPitch(list.at(i)))
+            return  list.at(i);
+    }
+    return QString();
+}
+
 void StudioSettings::loadUserSettings()
 {
     mUserSettings->beginGroup("General");
@@ -352,9 +379,16 @@ void StudioSettings::loadUserSettings()
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-    QFont font;
-    font.setStyleHint(QFont::Monospace);
-    setFontFamily(mUserSettings->value("fontFamily", font.defaultFamily()).toString());
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    if (!font.fixedPitch()) {
+        QString fontFamily = findFixedFont();
+        font = QFont(fontFamily);
+        if (fontFamily.isNull()) {
+            DEB() << "No fixed font found on system. Using " << font.family();
+        }
+    }
+
+    setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
     setTabSize(mUserSettings->value("tabSize", 4).toInt());

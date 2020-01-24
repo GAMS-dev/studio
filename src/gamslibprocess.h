@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,27 +25,14 @@
 namespace gams {
 namespace studio {
 
-class GamsLibProcess : public AbstractGamsProcess
+class GamsLibProcess final : public AbstractGamsProcess
 {
     Q_OBJECT
 
 public:
     GamsLibProcess(QObject *parent = nullptr);
 
-    void setModelNumber(int modelNumber);
-    int modelNumber() const;
-
-    void setModelName(const QString &modelName);
-    QString modelName() const;
-
     void execute() override;
-
-    void setGlbFile(const QString &glbFile);
-
-private:
-    int mModelNumber = -1;
-    QString mModelName;
-    QString mGlbFile;
 };
 
 } // namespace studio

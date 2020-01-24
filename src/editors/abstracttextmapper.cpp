@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <QTextStream>
 #include <QGuiApplication>
 #include <QClipboard>
+#include <QtMath>
 
 namespace gams {
 namespace studio {
@@ -59,7 +60,7 @@ bool AbstractTextMapper::updateMaxTop() // to be updated on change of size or mV
     Chunk *chunk = getChunk(chunkCount()-1);
     if (!chunk || !chunk->isValid()) return false;
     bool wasMax = (mTopLine == mMaxTopLine);
-    int remainingLines = visibleLineCount();
+    int remainingLines = reducedVisibleLineCount();
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -86,7 +87,7 @@ qint64 AbstractTextMapper::lastTopAbsPos()
     if (!chunk || !chunk->isValid()) return size();
 
     qint64 lastPos = 0LL;
-    int remainingLines = visibleLineCount();
+    int remainingLines = reducedVisibleLineCount();
     while (remainingLines > 0) {
         remainingLines -= chunk->lineCount();
         if (remainingLines <= 0) {
@@ -193,6 +194,11 @@ void AbstractTextMapper::setVisibleLineCount(int visibleLines)
 int AbstractTextMapper::visibleLineCount() const
 {
     return mVisibleLineCount;
+}
+
+int AbstractTextMapper::reducedVisibleLineCount()
+{
+    return qCeil(visibleLineCount() * 0.95);
 }
 
 bool AbstractTextMapper::setTopLine(const Chunk* chunk, int localLine)
