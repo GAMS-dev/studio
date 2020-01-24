@@ -38,6 +38,9 @@
 #include "helpdata.h"
 #include "helppage.h"
 
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
+
 namespace gams {
 namespace studio {
 namespace help {
@@ -330,7 +333,8 @@ void HelpWidget::on_loadFinished(bool ok)
                ui->actionOnlineHelp->setEnabled( false );
        }
    } else {
-        qDebug() << "on loadFinished with an error";
+        QString message = QString("on loadFinished with and error, current url(%1)").arg(ui->webEngineView->url().toString(QUrl::PrettyDecoded));
+        SysLogLocator::systemLog()->append(message, LogMsgType::Warning);
    }
 }
 
@@ -390,7 +394,8 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                         baseLocation.size(),
                         onlineStartPageUrl.toDisplayString() );
         url = QUrl(urlStr, QUrl::TolerantMode);
-        qDebug() << "checked : url(" << url.toString(QUrl::PrettyDecoded) << ")";
+        QString message = QString("to load (online) url(%1)").arg(url.toString(QUrl::PrettyDecoded));
+        SysLogLocator::systemLog()->append(message, LogMsgType::Info);
         ui->webEngineView->load( url );
     } else {
        if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
@@ -401,6 +406,8 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    urlStr.replace( 0, docsidx, baseLocation );
                    url.setUrl(urlStr);
                    url.setScheme("file");
+                   QString message = QString("to load (offline) url(%1)").arg(url.toString(QUrl::PrettyDecoded));
+                   SysLogLocator::systemLog()->append(message, LogMsgType::Info);
                    ui->webEngineView->load( url );
                }  else {
                    ui->webEngineView->load( getStartPageUrl() );
