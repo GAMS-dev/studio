@@ -396,7 +396,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
    QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
-        QString urlStr = "http://www.gamsworld.org/"; //url.toDisplayString();
+        QString urlStr = url.toDisplayString();
         urlStr.replace( urlStr.indexOf("file://"), 7, "");
         urlStr.replace( urlStr.indexOf( baseLocation),
                         baseLocation.size(),
@@ -416,9 +416,9 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    url.setScheme("file");
                    QString message = QString("to load (offline) url(%1)").arg(url.toString(QUrl::PrettyDecoded));
                    SysLogLocator::systemLog()->append(message, LogMsgType::Info);
-                   ui->webEngineView->load( url );
+                   ui->webEngineView->page()->setUrl( url );
                }  else {
-                   ui->webEngineView->load( getStartPageUrl() );
+                   ui->webEngineView->page()->setUrl( getStartPageUrl() );
                }
            } else {
                QString htmlText;
@@ -427,10 +427,10 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
            }
 
        }  else {
-           ui->webEngineView->load( getStartPageUrl() );
+           ui->webEngineView->page()->setUrl( getStartPageUrl() );
        }
-       ui->webEngineView->setFocus();
     }
+    ui->webEngineView->setFocus();
 }
 
 void HelpWidget::on_actionOpenInBrowser_triggered()
