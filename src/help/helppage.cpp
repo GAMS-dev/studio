@@ -18,8 +18,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QDesktopServices>
+#include <QWebEngineCertificateError>
 
 #include "helppage.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
@@ -33,10 +36,20 @@ bool HelpPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::Navigati
 {
     if (url.path().toLower().endsWith(".pdf")) {
         QDesktopServices::openUrl(url);
-        return false;
+        return true;
     }
     return QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
 }
+
+bool HelpPage::certificateError(const QWebEngineCertificateError &error)
+{
+    QString message = QString("certificate Error : %1")
+            .arg(error.errorDescription());
+    SysLogLocator::systemLog()->append(message, LogMsgType::Error);
+
+    return true;
+}
+
 
 } // namespace help
 } // namespace studio

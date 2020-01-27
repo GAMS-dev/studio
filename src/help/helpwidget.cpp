@@ -108,7 +108,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
         getErrorHTMLText( htmlText, getStartPageUrl());
         ui->webEngineView->setHtml( htmlText );
     }
-    connect(ui->webEngineView, &QWebEngineView::loadFinished, this, &HelpWidget::on_loadFinished);
+    connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
 
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &HelpWidget::searchText);
@@ -334,9 +334,10 @@ void HelpWidget::on_loadFinished(bool ok)
        }
    }
 
-   QString message = QString("on loadFinished with %1, current url : %2")
+   QString message = QString("on loadFinished with %1, request url : %2 current url : %3")
            .arg(ok ? "true" : "false")
-           .arg(ui->webEngineView->url().toString(QUrl::PrettyDecoded));
+           .arg(ui->webEngineView->page()->requestedUrl().toString(QUrl::PrettyDecoded))
+           .arg(ui->webEngineView->page()->url().toString(QUrl::PrettyDecoded));
    SysLogLocator::systemLog()->append(message, LogMsgType::Warning);
 }
 
@@ -423,6 +424,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
        }  else {
            ui->webEngineView->load( getStartPageUrl() );
        }
+       ui->webEngineView->setFocus();
     }
 }
 
@@ -546,6 +548,7 @@ QWebEngineView *HelpWidget::createHelpView()
     createWebActionTrigger(page, QWebEnginePage::Stop, QIcon(":/img/stop"));
     ui->webEngineView->setPage( page );
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
+    connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
     return ui->webEngineView;
 }
 
