@@ -7,19 +7,21 @@
 namespace gams {
 namespace studio {
 
-SchemeWidget::SchemeWidget(QWidget *parent, Scheme::ColorSlot slot) :
+SchemeWidget::SchemeWidget(QWidget *parent, Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg, Scheme::ColorSlot slotBg2) :
     QWidget(parent),
     ui(new Ui::SchemeWidget)
 {
     ui->setupUi(this);
-    ui->colorFrame->installEventFilter(this);
+    ui->colorFG->installEventFilter(this);
+    ui->colorBG1->installEventFilter(this);
+    ui->colorBG2->installEventFilter(this);
     if (parent) {
         QVariant var = parent->property("hideName");
         if (var.isValid() && var.canConvert<bool>()) setTextVisible(!var.toBool());
         var = parent->property("hideFormat");
         if (var.isValid() && var.canConvert<bool>()) setFormatVisible(!var.toBool());
     }
-    setColorSlot(slot);
+    setColorSlot(slotFg, slotBg, slotBg2);
 }
 
 SchemeWidget::~SchemeWidget()
@@ -27,11 +29,13 @@ SchemeWidget::~SchemeWidget()
     delete ui;
 }
 
-void SchemeWidget::setColorSlot(const Scheme::ColorSlot slot)
+void SchemeWidget::setColorSlot(const Scheme::ColorSlot slotFG, const Scheme::ColorSlot slotBG, const Scheme::ColorSlot slotBG2)
 {
-    if (mSlot == slot) return;
-    mSlot = slot;
-    setColor(toColor(slot));
+    if (mSlotFg != slotFG) {
+        mSlotFg = slotFG;
+        if (mSlotFg != Scheme::invalid) setColor(ui->colorFG, toColor(slotFG));
+//        else ui->
+    }
 }
 
 void SchemeWidget::setText(const QString &text)
@@ -57,26 +61,28 @@ void SchemeWidget::setFormatVisible(bool visible)
 
 bool SchemeWidget::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::MouseButtonRelease && watched == ui->colorFrame) {
-        selectColor();
+    if (event->type() == QEvent::MouseButtonRelease && watched == ui->colorFG) {
+        selectColor(ui->colorFG);
     }
     return false;
 }
 
-void SchemeWidget::selectColor()
+void SchemeWidget::selectColor(QFrame *frame)
 {
     QColorDialog diag;
-    diag.setCurrentColor(ui->colorFrame->palette().window().color());
+    diag.setCurrentColor(frame->palette().window().color());
     if (diag.exec()) {
-        setColor(diag.currentColor());
-        Scheme::setColor(mSlot, diag.currentColor());
+        setColor(frame, diag.currentColor());
+        Scheme::setColor(mSlotFg, diag.currentColor());
         emit changed();
     }
 }
 
 void SchemeWidget::refresh()
 {
-    setColor(toColor(mSlot));
+    setColor(ui->colorFG, toColor(mSlotFg));
+    setColor(ui->colorBG1, toColor(mSlotBg));
+    setColor(ui->colorBG2, toColor(mSlotBg2));
 }
 
 void SchemeWidget::setAlignment(Qt::Alignment align)
@@ -93,7 +99,7 @@ void SchemeWidget::setAlignment(Qt::Alignment align)
     }
 }
 
-void SchemeWidget::setColor(const QColor &color)
+void SchemeWidget::setColor(QFrame *frame, const QColor &color)
 {
     QPalette pal = ui->colorFrame->palette();
     pal.setColor(QPalette::Window, color);
