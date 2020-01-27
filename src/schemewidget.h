@@ -27,6 +27,7 @@ public:
     void selectColor();
     void saveToScheme();
     void refresh();
+    void setAlignment(Qt::Alignment align);
 
 signals:
     void changed();

@@ -79,6 +79,20 @@ void SchemeWidget::refresh()
     setColor(toColor(mSlot));
 }
 
+void SchemeWidget::setAlignment(Qt::Alignment align)
+{
+    if (align.testFlag(Qt::AlignLeft) || align.testFlag(Qt::AlignJustify)) {
+        ui->spLeft->changeSize(10, 10);
+    } else {
+        ui->spLeft->changeSize(10, 10, QSizePolicy::MinimumExpanding);
+    }
+    if (align.testFlag(Qt::AlignRight) || align.testFlag(Qt::AlignJustify)) {
+        ui->spRight->changeSize(10, 10);
+    } else {
+        ui->spRight->changeSize(10, 10, QSizePolicy::MinimumExpanding);
+    }
+}
+
 void SchemeWidget::setColor(const QColor &color)
 {
     QPalette pal = ui->colorFrame->palette();

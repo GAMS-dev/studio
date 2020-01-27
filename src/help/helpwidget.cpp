@@ -93,7 +93,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
     createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Back, Scheme::icon(":/%1/backward"));
     createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Forward, Scheme::icon(":/%1/forward"));
     createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Reload, Scheme::icon(":/%1/reload"));
-    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop, Scheme::icon(":/%1/stop"));
+    createWebActionTrigger(ui->webEngineView->page(), QWebEnginePage::Stop, Scheme::icon(":/%1/stop2"));
 
     setupToolbar(bookmarkToolButton, helpToolButton);
 
@@ -529,7 +529,7 @@ QWebEngineView *HelpWidget::createHelpView()
     createWebActionTrigger(page, QWebEnginePage::Back, Scheme::icon(":/%1/backward"));
     createWebActionTrigger(page, QWebEnginePage::Forward, Scheme::icon(":/%1/forward"));
     createWebActionTrigger(page, QWebEnginePage::Reload, Scheme::icon(":/%1/reload"));
-    createWebActionTrigger(page, QWebEnginePage::Stop, Scheme::icon(":/%1/stop"));
+    createWebActionTrigger(page, QWebEnginePage::Stop, Scheme::icon(":/%1/stop2"));
     ui->webEngineView->setPage( page );
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     return ui->webEngineView;

@@ -79,6 +79,7 @@ private:
     void loadSettings();
     void setModifiedStatus(bool status);
     void initColorPage();
+    void reloadColors();
 };
 
 }

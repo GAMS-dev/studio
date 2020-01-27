@@ -38,8 +38,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->setupUi(this);
 
     mSettings = SettingsLocator::settings();
+
     // load from settings to UI
+    initColorPage();
     loadSettings();
+
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -120,8 +123,7 @@ void SettingsDialog::loadSettings()
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
 
     // scheme data
-    initColorPage();
-
+    reloadColors();
 }
 
 void SettingsDialog::setModified()
@@ -164,6 +166,9 @@ void SettingsDialog::saveSettings()
 
     // MIRO page
     mSettings->setMiroInstallationLocation(ui->miroEdit->text());
+
+    // colors page
+    mSettings->writeScheme();
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());
@@ -215,7 +220,10 @@ void SettingsDialog::schemeModified()
 {
     emit setModified();
     Scheme::instance()->invalidate();
-//    initColorPage();
+//    reloadColors();
+    for (QWidget *wid: mColorWidgets.values()) {
+        static_cast<SchemeWidget*>(wid)->refresh();
+    }
 }
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
@@ -315,22 +323,88 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 
 void SettingsDialog::initColorPage()
 {
+    if (!mColorWidgets.isEmpty()) return;
     ui->cbSchemes->clear();
     ui->cbSchemes->addItems(Scheme::instance()->schemes());
     ui->cbSchemes->setCurrentIndex(Scheme::instance()->activeScheme());
-    QGroupBox * box = ui->groupIconColors;
-    QGridLayout * grid = qobject_cast<QGridLayout*>(box->layout());
-    QVector<Scheme::ColorSlot> slot {Scheme::Icon_Line, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
-                                     Scheme::Icon_Back, Scheme::Disable_Back, Scheme::Active_Back, Scheme::Select_Back};
+
+    QWidget *box = nullptr;
+    QGridLayout *grid = nullptr;
+    QVector<Scheme::ColorSlot> slot;
+    QStringList names;
+
+    // EDIT colors
+    box = ui->editP1;
+    grid = qobject_cast<QGridLayout*>(box->layout());
+    slot = {
+        Scheme::Edit_linenrAreaFg,     Scheme::Edit_currentLineBg, Scheme::Edit_blockSelectBg,
+        Scheme::Edit_linenrAreaBg,     Scheme::Edit_currentWordBg, Scheme::invalid,
+        Scheme::Edit_linenrAreaMarkFg, Scheme::Edit_matchesBg,     Scheme::invalid,
+        Scheme::Edit_linenrAreaMarkBg, Scheme::Edit_errorBg,       Scheme::invalid,
+//        Scheme::Edit_parenthesesValidFg, Scheme::Edit_parenthesesValidBg, Scheme::Edit_parenthesesValidBgBlink,
+//        Scheme::Edit_parenthesesInvalidFg, Scheme::Edit_parenthesesInvalidBg, Scheme::Edit_parenthesesInvalidBgBlink,
+    };
+    names << "Line Number"        << "Current Line" << "Block";
+    names << "- Background"       << "Current Word" << "";
+    names << "Marked Line Number" << "Match"        << "";
+    names << "- Background"       << "Error"        << "";
+//    names << "valid parentheses text" << "background" << "2nd background";
+//    names << "invalid parentheses text" << "background" << "2nd background";
+    Q_ASSERT(names.size() == slot.size());
     for (int i = 0; i < slot.size(); ++i) {
-        if (!mColorWidgets.contains(slot.at(i))) {
-            SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
-            grid->addWidget(wid, (i/4)+1, (i%4)+1);
-            connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
-        } else {
-            static_cast<SchemeWidget*>(mColorWidgets.value(slot.at(i)))->refresh();
-        }
+        if (slot.at(i) == Scheme::invalid) continue;
+        SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
+        wid->setText(names.at(i));
+        wid->setAlignment(Qt::AlignRight);
+        grid->addWidget(wid, (i/3), (i%3));
+        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
+        mColorWidgets.insert(slot.at(i), wid);
     }
+
+    box = ui->editP2;
+    grid = qobject_cast<QGridLayout*>(box->layout());
+    slot = {
+//        Scheme::Edit_linenrAreaFg,     Scheme::Edit_currentLineBg, Scheme::Edit_blockSelectBg,
+//        Scheme::Edit_linenrAreaBg,     Scheme::Edit_currentWordBg, Scheme::invalid,
+//        Scheme::Edit_linenrAreaMarkFg, Scheme::Edit_matchesBg,     Scheme::invalid,
+//        Scheme::Edit_linenrAreaMarkBg, Scheme::Edit_errorBg,       Scheme::invalid,
+        Scheme::Edit_parenthesesValidFg, Scheme::Edit_parenthesesValidBg, Scheme::Edit_parenthesesValidBgBlink,
+        Scheme::Edit_parenthesesInvalidFg, Scheme::Edit_parenthesesInvalidBg, Scheme::Edit_parenthesesInvalidBgBlink,
+    };
+    names.clear();
+//    names << "Line Number"        << "Current Line" << "Block";
+//    names << "- Background"       << "Current Word" << "";
+//    names << "Marked Line Number" << "Match"        << "";
+//    names << "- Background"       << "Error"        << "";
+    names << "valid parentheses text" << "background" << "2nd background";
+    names << "invalid parentheses text" << "background" << "2nd background";
+    Q_ASSERT(names.size() == slot.size());
+    for (int i = 0; i < slot.size(); ++i) {
+        if (slot.at(i) == Scheme::invalid) continue;
+        SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
+        wid->setText(names.at(i));
+        wid->setAlignment(Qt::AlignRight);
+        grid->addWidget(wid, (i/3), (i%3));
+        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
+        mColorWidgets.insert(slot.at(i), wid);
+    }
+
+    // ICON colors
+    box = ui->groupIconColors;
+    grid = qobject_cast<QGridLayout*>(box->layout());
+    slot = {Scheme::Icon_Line, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
+            Scheme::Icon_Back, Scheme::Disable_Back, Scheme::Active_Back, Scheme::Select_Back};
+    for (int i = 0; i < slot.size(); ++i) {
+        SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
+        grid->addWidget(wid, (i/4)+1, (i%4)+1);
+        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
+        mColorWidgets.insert(slot.at(i), wid);
+    }
+}
+
+void SettingsDialog::reloadColors()
+{
+    mSettings->readScheme();
 }
 
 void SettingsDialog::on_cbSchemes_currentIndexChanged(int index)

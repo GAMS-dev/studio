@@ -122,6 +122,7 @@
         <file alias="search-plus">solid/search-plus.svg</file>
         <file alias="show">solid/angle-double-down.svg</file>
         <file alias="stop">solid/stop.svg</file>
+        <file alias="stop2">solid/ban.svg</file>
         <file alias="terminal">solid/terminal.svg</file>
         <file alias="truck">solid/truck.svg</file>
         <file alias="undo">solid/undo.svg</file>
