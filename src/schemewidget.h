@@ -26,7 +26,7 @@ public:
     void setTextVisible(bool visible);
     void setFormatVisible(bool visible);
     bool eventFilter(QObject *watched, QEvent *event) override;
-    void selectColor(QFrame &frame);
+    void selectColor(QFrame *frame);
     void saveToScheme();
     void refresh();
     void setAlignment(Qt::Alignment align);
@@ -41,7 +41,7 @@ private:
     Scheme::ColorSlot mSlotBg2 = Scheme::invalid;
     bool mChanged = false;
 
-    void setColor(const QColor &color);
+    void setColor(QFrame *frame, const QColor &color);
 
 };
 

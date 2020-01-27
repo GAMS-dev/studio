@@ -101,9 +101,9 @@ void SchemeWidget::setAlignment(Qt::Alignment align)
 
 void SchemeWidget::setColor(QFrame *frame, const QColor &color)
 {
-    QPalette pal = ui->colorFrame->palette();
+    QPalette pal = frame->palette();
     pal.setColor(QPalette::Window, color);
-    ui->colorFrame->setPalette(pal);
+    frame->setPalette(pal);
 }
 
 } // namespace studio
