@@ -108,9 +108,14 @@ HelpWidget::HelpWidget(QWidget *parent) :
         getErrorHTMLText( htmlText, getStartPageUrl());
         ui->webEngineView->setHtml( htmlText );
     }
-    connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
-
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
+    connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
+    connect(ui->webEngineView->page(), &QWebEnginePage::urlChanged, this, [this]() {
+        QString message = QString("url changed : %1")
+                .arg(ui->webEngineView->page()->url().toString(QUrl::PrettyDecoded));
+        SysLogLocator::systemLog()->append(message, LogMsgType::Info);
+    });
+
     connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &HelpWidget::searchText);
     connect(ui->backButton, &QPushButton::clicked, this, &HelpWidget::on_backButtonTriggered);
     connect(ui->forwardButton, &QPushButton::clicked, this, &HelpWidget::on_forwardButtonTriggered);
@@ -391,7 +396,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
    QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
-        QString urlStr = url.toDisplayString();
+        QString urlStr = "http://www.gamsworld.org/"; //url.toDisplayString();
         urlStr.replace( urlStr.indexOf("file://"), 7, "");
         urlStr.replace( urlStr.indexOf( baseLocation),
                         baseLocation.size(),
@@ -399,7 +404,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
         url = QUrl(urlStr, QUrl::TolerantMode);
         QString message = QString("to load (online) url : %1").arg(url.toString(QUrl::PrettyDecoded));
         SysLogLocator::systemLog()->append(message, LogMsgType::Info);
-        ui->webEngineView->load( url );
+        ui->webEngineView->page()->setUrl( url );
     } else {
        if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
            if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
