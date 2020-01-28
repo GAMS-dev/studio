@@ -638,9 +638,9 @@ QUrl HelpWidget::getOnlineStartPageUrl()
     } else {
         int marjorversion = c4uWrapper.currentDistribVersion()/100;
         if (marjorversion>=26)
-            return QUrl( QString("https://www.gams.com/%1/docs/").arg( marjorversion ), QUrl::TolerantMode);
+            return QUrl( QString("https://www.gams.com/%1/").arg( marjorversion ), QUrl::TolerantMode);
         else
-          return QUrl( QString("https://www.gams.com/%1/docs/").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
+          return QUrl( QString("https://www.gams.com/%1/").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
     }
 }
 
