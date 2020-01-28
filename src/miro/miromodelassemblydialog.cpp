@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,38 +48,38 @@ FileSystemModel::FileSystemModel(QObject *parent)
 {
 }
 
-QVariant FileSystemModel::data(const QModelIndex &index, int role) const
+QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
 {
-    if (!index.isValid())
+    if (!idx.isValid())
         return QVariant();
 
     if (role == Qt::CheckStateRole) {
-        if (mCheckedIndexes.contains(index)) {
+        auto file = rootDirectory().relativeFilePath(filePath(idx));
+        if (mCheckedFiles.contains(file)) {
             return Qt::Checked;
         } else {
             return Qt::Unchecked;
         }
     }
-    return QFileSystemModel::data(index, role);
+    return QFileSystemModel::data(idx, role);
 }
 
-bool FileSystemModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int role)
 {
-    if (role == Qt::CheckStateRole && index.column() == 0) {
+    if (role == Qt::CheckStateRole && idx.column() == 0) {
+        auto file = rootDirectory().relativeFilePath(filePath(idx));
         if (value.toBool()) {
-            mCheckedIndexes.insert(index);
-            emit dataChanged(index,
-                             match(index, Qt::DisplayRole, "*", -1, Qt::MatchWildcard | Qt::MatchRecursive).last());
+            mCheckedFiles.insert(file);
+            emit dataChanged(idx, idx);
             return true;
         } else {
-            auto pos = mCheckedIndexes.find(index);
-            mCheckedIndexes.erase(pos);
-            emit dataChanged(index,
-                             match(index, Qt::DisplayRole, "*", -1, Qt::MatchWildcard | Qt::MatchRecursive).last());
+            auto pos = mCheckedFiles.find(file);
+            mCheckedFiles.erase(pos);
+            emit dataChanged(idx, idx);
             return true;
         }
     }
-    return  QFileSystemModel::setData(index, value, role);
+    return  QFileSystemModel::setData(idx, value, role);
 }
 
 Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
@@ -89,31 +89,39 @@ Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
 
 void FileSystemModel::selectAll()
 {
-    QDir dir(rootPath());
-    auto entries = dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    auto entries = rootDirectory().entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     for (auto entry: entries) {
-        auto idx = index(rootPath() + "/" + entry);
-        mCheckedIndexes.insert(idx);
+        auto idx = index(rootDirectory().absoluteFilePath(entry));
+        mCheckedFiles.insert(idx.data().toString());
         emit dataChanged(idx, idx);
     }
 }
 
 void FileSystemModel::clearSelection()
 {
-    auto checkedIndexes = mCheckedIndexes;
-    for (auto index: checkedIndexes) {
-        mCheckedIndexes.remove(index);
-        emit dataChanged(index, index);
+    auto checkedFiles = mCheckedFiles;
+    for (auto idx: checkedFiles) {
+        mCheckedFiles.remove(idx);
+        emit dataChanged(index(rootDirectory().absoluteFilePath(idx)),
+                         index(rootDirectory().absoluteFilePath(idx)));
     }
 }
 
 QStringList FileSystemModel::selectedFiles()
 {
-    QDir dir(rootPath());
     QStringList selection;
-    for (auto index: mCheckedIndexes)
-        selection << dir.relativeFilePath(filePath(index));
+    for (auto file: mCheckedFiles)
+        selection << file;
     return selection;
+}
+
+void FileSystemModel::setSelectedFiles(const QStringList &files)
+{
+    for (auto file: files) {
+        auto idx = index(rootDirectory().absoluteFilePath(file));
+        if (idx.isValid())
+            setData(idx, true, Qt::CheckStateRole);
+    }
 }
 
 MiroModelAssemblyDialog::MiroModelAssemblyDialog(const QString &workingDirectory, QWidget *parent)
@@ -134,7 +142,6 @@ MiroModelAssemblyDialog::MiroModelAssemblyDialog(const QString &workingDirectory
 
     auto rootIndex = mFileSystemModel->index(workingDirectory);
     ui->directoryView->setRootIndex(filterModel->mapFromSource(rootIndex));
-
     ui->directoryView->expandAll();
 }
 

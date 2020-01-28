@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,6 +113,21 @@ public:
         return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
     }
 
+    inline static QStringList dialogFileFilterUserCreated() {
+        return QStringList("GAMS source (*.gms)")
+               << "Text files (*.txt)"
+               << "Option files (*.opt *.op* *.o*)"
+               << "All files (*.*)";
+    }
+
+    inline static QStringList dialogFileFilterAll() {
+        return QStringList("GAMS Source (*.gms)")
+               << "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
+               << "Option files (*.opt *.op* *.o*)"
+               << "Reference files (*.ref)"
+               << "Text files (*.txt)"
+               << "All files (*.*)";
+    }
 
 };
 

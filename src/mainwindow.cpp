@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,6 @@
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
 #include "miro/miroprocess.h"
-#include "miro/mirocommon.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
@@ -76,7 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
-      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this))
+      mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
+      mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
@@ -189,6 +189,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
+            this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
+            this, &MainWindow::miroDeploy);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -204,7 +208,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
-    ui->logTabs->addTab(mSyslog, "System");
+    on_actionShow_System_Log_triggered();
 
     initTabs();
     initIcons();
@@ -220,6 +224,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
@@ -507,15 +512,23 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
 
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GamsLibProcess(this);
-    mLibProcess->setGlbFile(gamsSysDir.filePath(glbFile));
-    mLibProcess->setModelName(modelName);
     mLibProcess->setInputFile(inputFile);
     mLibProcess->setWorkingDirectory(mSettings->defaultWorkspace());
-    mLibProcess->execute();
+
+    QStringList args {
+        "-lib",
+        QDir::toNativeSeparators(gamsSysDir.filePath(glbFile)),
+        (modelName.isEmpty() ? QString::number(-1) : modelName),
+        QDir::toNativeSeparators(mSettings->defaultWorkspace())
+    };
+    mLibProcess->setParameters(args);
 
     // This log is passed to the system-wide log
+    connect(mLibProcess, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
     connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendSystemLog);
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
+
+    mLibProcess->execute();
 }
 
 void MainWindow::receiveModLibLoad(QString gmsFile, bool forceOverwrite)
@@ -840,9 +853,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
     QString filePath = solverName.isEmpty()
                              ? QFileDialog::getSaveFileName(this, "Create new file...",
                                                             path,
-                                                            tr("GAMS source (*.gms);;"
-                                                               "Text files (*.txt);;"
-                                                               "All files (*.*)"), nullptr, QFileDialog::DontConfirmOverwrite)
+                                                            ViewHelper::dialogFileFilterUserCreated().join(";;"), nullptr, QFileDialog::DontConfirmOverwrite)
                              : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
                                                             path,
                                                             tr(QString("%1 option file (%1*);;All files (*)").arg(solverName).toLatin1()),
@@ -903,12 +914,9 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                       tr("GAMS Source (*.gms);;"
-                                                          "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
-                                                          "Text files (*.txt);;"
-                                                          "All files (*.*)"),
-                                                       nullptr,
-                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
+                                                      ViewHelper::dialogFileFilterAll().join(";;"),
+                                                      nullptr,
+                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
     openFiles(files);
 }
 
@@ -916,12 +924,9 @@ void MainWindow::on_actionOpenNew_triggered()
 {
     QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                      tr("GAMS Source (*.gms);;"
-                                                         "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp);;"
-                                                         "Text files (*.txt);;"
-                                                         "All files (*.*)"),
-                                                       nullptr,
-                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
+                                                      ViewHelper::dialogFileFilterAll().join(";;"),
+                                                      nullptr,
+                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
     openFiles(files, true);
 }
 
@@ -955,10 +960,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                     &filters.first(),
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
-            filters << tr("GAMS Source (*.gms)");
-            filters << tr("All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.ref *.dmp)");
-            filters << tr("Text files (*.txt)");
-            filters << tr("All files (*.*)");
+            filters = ViewHelper::dialogFileFilterAll();
 
             QString selFilter = filters.first();
             for (QString f: filters) {
@@ -1534,6 +1536,7 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
+    qDebug() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
@@ -1777,20 +1780,15 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
     }
 
     QWidget* edit = ui->logTabs->widget(index);
-    if (edit) {
+    if (!edit) return;
+
+    ui->logTabs->removeTab(index);
+
+    // dont remove syslog and dont delete resultsView
+    if (!(edit == mSyslog || isResults)) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
         if (log) log->removeEditor(edit);
-        ui->logTabs->removeTab(index);
-
-        // keeps internal data of syslog
-        AbstractEdit* ed = ViewHelper::toAbstractEdit(edit);
-        if (ed) ed->setDocument(nullptr);
-
-        // remark to keep process-logs remove the TextView from the tab-bar without deleting
-
-        // dont remove syslog and dont delete resultsView
-        if (!(edit == mSyslog || isResults))
-            edit->deleteLater();
+        edit->deleteLater();
     }
 }
 
@@ -1825,10 +1823,12 @@ bool MainWindow::isRecentGroupRunning()
 void MainWindow::on_actionShow_System_Log_triggered()
 {
     int index = ui->logTabs->indexOf(mSyslog);
-    if (index < 0)
+    if (index < 0) {
         ui->logTabs->addTab(mSyslog, "System");
-    else
+        ui->logTabs->setCurrentWidget(mSyslog);
+    } else {
         ui->logTabs->setCurrentIndex(index);
+    }
     mSyslog->raise();
     dockWidgetShow(ui->dockProcessLog, true);
 }
@@ -1944,18 +1944,14 @@ void MainWindow::on_actionBase_mode_triggered()
     if (!mRecent.validRunGroup())
         return;
 
-    auto node = mProjectRepo.findFile(mRecent.group->toRunGroup()->parameter("lst"));
-    if (node)
-        closeFileEditors(node->file()->id());
-
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setModelName(mRecent.mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionHypercube_mode_triggered()
@@ -1966,11 +1962,11 @@ void MainWindow::on_actionHypercube_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setModelName(mRecent.mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionConfiguration_mode_triggered()
@@ -1981,11 +1977,11 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group->name());
+    miroProcess->setModelName(mRecent.mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
-    execute({}, std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
 void MainWindow::on_actionStop_MIRO_triggered()
@@ -2000,62 +1996,66 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
     if (!mRecent.validRunGroup())
         return;
 
-    QStringList checkedFiles;
-    auto fileName = mRecent.group->toRunGroup()->location() + "/" + miro::MiroCommon::assemblyFileName(mRecent.group->name());
-    if (QFileInfo().exists(fileName)) {
-        QFile file(fileName);
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            while (!file.atEnd()) {
-                auto line = file.readLine().trimmed();
-                if (line.isEmpty())
-                    continue;
-                checkedFiles << line;
-            }
-            file.close();
-        }
-    } else {
-        checkedFiles << mRecent.group->toRunGroup()->runnableGms()->name();
-    }
-
+    auto assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.mainModelName());
+    auto checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.mainModelName(false));
     miro::MiroModelAssemblyDialog dlg(mRecent.group->toRunGroup()->location(), this);
-    // TODO (AF) set checked files
+    dlg.setSelectedFiles(checkedFiles);
     if (dlg.exec() == QDialog::Rejected)
         return;
 
-    QFile file(fileName);
-    auto selectedFiles = dlg.selectedFiles();
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream stream(&file);
-        for (auto selectedFile: selectedFiles)
-            stream << selectedFile << "\n";
-    } else {
-        SysLogLocator::systemLog()->append(QString("Could not open file: %1").arg(fileName),
-                                           LogMsgType::Error);
-    }
+    if (!miro::MiroCommon::writeAssemblyFile(assemblyFile, dlg.selectedFiles()))
+        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1").arg(assemblyFile), LogMsgType::Error);
 }
 
 void MainWindow::on_actionDeploy_triggered()
 {
-    if (!mRecent.group)
-        qDebug() << "NO GROUP!";
-    auto runGroup = mRecent.group->toRunGroup();
-    if (!runGroup)
-        qDebug() << "NO RUN GROUP!";
-    auto assemblyFile = runGroup->location() + "/" + miro::MiroCommon::assemblyFileName(mRecent.group->name());
-    miro::MiroDeployDialog dlg(assemblyFile, this);
-    if (dlg.exec() == QDialog::Rejected)
+    if (!mRecent.validRunGroup())
+        return;
+
+    auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
+                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
+    mMiroDeployDialog->setDefaults();
+    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
+    mMiroDeployDialog->exec();
+}
+
+void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
+{
+    if (!mRecent.validRunGroup())
         return;
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
-    process->setWorkingDirectory(runGroup->location());
-    process->setModelName(mRecent.group->name());
-    process->setBaseMode(dlg.baseMode());
-    process->setHypercubeMode(dlg.hypercubeMode());
-    process->setTestDeployment(dlg.testDeployment());
-    process->setTargetEnvironment(dlg.targetEnvironment());
+    process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
+    process->setModelName(mRecent.mainModelName());
+    process->setTestDeployment(testDeploy);
+    process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
-    execute({}, std::move(process));
+    if (testDeploy) {
+        switch(mode){
+        case miro::MiroDeployMode::Base:
+            process->setBaseMode(mMiroDeployDialog->baseMode());
+            break;
+        case miro::MiroDeployMode::Hypercube:
+            process->setTargetEnvironment(miro::MiroTargetEnvironment::MultiUser);
+            process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+            break;
+        default:
+            break;
+        }
+    } else {
+        process->setBaseMode(mMiroDeployDialog->baseMode());
+        process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+    }
+
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(process));
+}
+
+void MainWindow::setMiroRunning(bool running)
+{
+    mMiroRunning = running;
+    ui->menuMIRO->setEnabled(!running);
+    mMiroDeployDialog->setEnabled(!running);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -2182,9 +2182,6 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
         focusProjectExplorer();
-        e->accept(); return;
-    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_K)) {
-        showTabsMenu();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
         focusCmdLine();
@@ -2456,11 +2453,7 @@ void MainWindow::execute(QString commandLineStr,
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
-    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, itemList));
-
-    QString msg = "Running GAMS:";
-    msg.append(groupProc->callParameters().join(" "));
-    SysLogLocator::systemLog()->append(msg, LogMsgType::Info);
+    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
@@ -2472,11 +2465,18 @@ void MainWindow::execute(QString commandLineStr,
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
 
+    // disable MIRO menus
+    if (dynamic_cast<miro::AbstractMiroProcess*>(groupProc) ) {
+        setMiroRunning(true);
+        connect(groupProc, &AbstractProcess::finished, [this](){setMiroRunning(false);});
+    }
+    connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
+    connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
+
     groupProc->execute();
     ui->toolBar->repaint();
 
     logNode->linkToProcess(groupProc);
-    connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
     ui->dockProcessLog->raise();
 }
 
@@ -2636,6 +2636,11 @@ void MainWindow::updateMiroMenu()
         ui->menuMIRO->setEnabled(true);
     else
         ui->menuMIRO->setEnabled(false);
+}
+
+void MainWindow::newProcessCall(const QString &text, const QString &call)
+{
+    SysLogLocator::systemLog()->append(text + " " + call, LogMsgType::Info);
 }
 
 void MainWindow::invalidateScheme()
@@ -2999,12 +3004,14 @@ void MainWindow::on_mainTabs_currentChanged(int index)
 void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(this);
+    sd.setMiroSettingsEnabled(!mMiroRunning);
     connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
     mSettings->saveSettings(this);
-    updateMiroMenu();
+    if (sd.miroSettingsEnabled())
+        updateMiroMenu();
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -3091,7 +3098,7 @@ void MainWindow::showResults(search::SearchResultList* results)
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
     else nr = QString::number(results->size());
 
-    QString title("Results: " + mSearchDialog->searchTerm() + " (" + nr + ")");
+    QString title("Results: " + results->searchRegex().pattern() + " (" + nr + ")");
 
     ui->dockProcessLog->show();
     ui->dockProcessLog->activateWindow();
@@ -3591,6 +3598,22 @@ bool RecentData::validRunGroup()
     if (!group)
         return false;
     return group->toRunGroup() != nullptr;
+}
+
+QString RecentData::mainModelName(bool stripped)
+{
+    auto fileMeta = group->toRunGroup()->runnableGms();
+
+    if (!fileMeta) {
+        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for group: %1")
+                .arg(group->toRunGroup()->name()), LogMsgType::Error);
+        return QString();
+    }
+
+    QFileInfo fileInfo(fileMeta->name());
+    if (stripped)
+        return fileInfo.completeBaseName();
+    return fileInfo.fileName();
 }
 
 void MainWindow::on_actionReset_Views_triggered()

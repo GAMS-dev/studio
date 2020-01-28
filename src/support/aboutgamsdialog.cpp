@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,8 +167,8 @@ QString AboutGAMSDialog::header()
 QString AboutGAMSDialog::aboutStudio()
 {
     QString about = studioInfo();
-    about += "Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com><br/>";
-    about += "Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com><br/><br/>";
+    about += "Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com><br/>";
+    about += "Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com><br/><br/>";
     about += "This program is free software: you can redistribute it and/or modify ";
     about += "it under the terms of the GNU General Public License as published by ";
     about += "the Free Software Foundation, either version 3 of the License, or ";

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,39 +30,10 @@ GamsLibProcess::GamsLibProcess(QObject *parent)
 
 }
 
-void GamsLibProcess::setModelNumber(int modelNumber)
-{
-    mModelNumber = modelNumber;
-}
-
-int GamsLibProcess::modelNumber() const
-{
-    return mModelNumber;
-}
-
-void GamsLibProcess::setModelName(const QString &modelName)
-{
-    mModelName = modelName;
-}
-
-QString GamsLibProcess::modelName() const
-{
-    return mModelName;
-}
-
 void GamsLibProcess::execute()
 {
-    QStringList args;
-    args << "-lib";
-    args << QDir::toNativeSeparators(mGlbFile);
-    args << (mModelName.isEmpty() ? QString::number(mModelNumber) : mModelName);
-    args << QDir::toNativeSeparators(workingDirectory());
-    mProcess.start(nativeAppPath(), args);
-}
-
-void GamsLibProcess::setGlbFile(const QString &glbFile)
-{
-    mGlbFile = glbFile;
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    mProcess.start(nativeAppPath(), parameters());
 }
 
 } // namespace studio

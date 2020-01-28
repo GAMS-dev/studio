@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,11 +56,12 @@ void AbstractMiroProcess::execute()
 {
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), callParameters());
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    mProcess.start(nativeAppPath(), parameters());
 #else
-    auto params = callParameters();
-    mProcess.setNativeArguments(params.join(" "));
+    mProcess.setNativeArguments(parameters().join(" "));
     mProcess.setProgram(nativeAppPath());
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start();
 #endif
 }
@@ -137,6 +138,7 @@ void AbstractMiroProcess::subProcessCompleted(int exitCode)
     if (exitCode) {
         SysLogLocator::systemLog()->append(QString("Could not run GAMS. Exit Code: %1")
                                            .arg(exitCode), LogMsgType::Error);
+        emit finished(mGroupId, exitCode);
         return;
     }
     emit executeMiro();
@@ -147,6 +149,7 @@ void AbstractMiroProcess::executeNext()
     mMiro.setProgram(mMiroPath);
     mMiro.setWorkingDirectory(workingDirectory());
     mMiro.setProcessEnvironment(miroProcessEnvironment());
+    emit newProcessCall("Running:", appCall(mMiroPath, mMiro.arguments()));
     mMiro.start();
 }
 

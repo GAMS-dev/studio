@@ -1,7 +1,7 @@
 /* This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -168,15 +168,22 @@ QString ParameterEditor::on_runAction(RunActionState state)
     if (!commandLineStr.endsWith(" "))
         commandLineStr.append(" ");
 
-    bool gdxParam = commandLineStr.contains(QRegularExpression("\\Agdx[= ]", QRegularExpression::CaseInsensitiveOption));
-    bool actParam = commandLineStr.contains("ACTION=C",Qt::CaseInsensitive);
+    bool gdxParam = false;
+    bool actParam = false;
+    for (option::OptionItem item : getOptionTokenizer()->tokenize( commandLineStr)) {
+        if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
+            gdxParam = true;
+        if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
+            (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
+            actParam = true;
+    }
 
-    if (state == RunActionState::RunWithGDXCreation && !gdxParam) {
-       commandLineStr.append("GDX=default");
+    if (state == RunActionState::RunWithGDXCreation) {
+       if (!gdxParam) commandLineStr.append("GDX=default");
        ui->gamsRunToolButton->setDefaultAction( actionRun_with_GDX_Creation );
 
-    } else if (state == RunActionState::Compile && !actParam) {
-        commandLineStr.append("ACTION=C");
+    } else if (state == RunActionState::Compile) {
+        if (!actParam) commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile );
 
     } else if (state == RunActionState::CompileWithGDXCreation) {

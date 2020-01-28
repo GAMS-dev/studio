@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "maintabcontextmenu.h"
 #include "logtabcontextmenu.h"
 #include "gdxdiffdialog/gdxdiffdialog.h"
+#include "miro/mirocommon.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -63,7 +64,9 @@ class ParameterEditor;
 namespace gdxdiffdialog {
 class GdxDiffDialog;
 }
-
+namespace miro {
+class MiroDeployDialog;
+}
 
 struct RecentData {
 
@@ -71,6 +74,12 @@ struct RecentData {
     void setEditor(QWidget *editor, MainWindow* window);
 
     bool validRunGroup();
+
+    /**
+     * @brief Name of the main model.
+     * @remark Call <c>validRunGroup()</c> before.
+     */
+    QString mainModelName(bool stripped = true);
 
     FileId editFileId = -1;
     QString path = ".";
@@ -194,6 +203,7 @@ private slots:
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void updateMiroMenu();
+    void newProcessCall(const QString &text, const QString &call);
 
     // View
     void invalidateScheme();
@@ -240,6 +250,8 @@ private slots:
     void on_actionStop_MIRO_triggered();
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
+    void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
+    void setMiroRunning(bool running);
 
     // Tools
     void on_actionGDX_Diff_triggered();
@@ -400,6 +412,9 @@ private:
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
     std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
+
+    std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;
+    bool mMiroRunning = false;
 };
 
 }

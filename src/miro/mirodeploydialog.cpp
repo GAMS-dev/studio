@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,13 +27,18 @@ namespace gams {
 namespace studio {
 namespace miro {
 
-MiroDeployDialog::MiroDeployDialog(const QString &modelAssemblyFile, QWidget *parent)
+MiroDeployDialog::MiroDeployDialog(QWidget *parent)
     : QDialog(parent),
-      ui(new Ui::MiroDeployDialog),
-      mModelAssemblyFile(modelAssemblyFile)
+      ui(new Ui::MiroDeployDialog)
 {
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    updateTestDeployButtons();
+    connect(ui->baseBox, &QCheckBox::stateChanged,
+            this, &MiroDeployDialog::updateTestDeployButtons);
+    connect(ui->hypercubeBox, &QCheckBox::stateChanged,
+            this, &MiroDeployDialog::updateTestDeployButtons);
 }
 
 bool MiroDeployDialog::baseMode() const
@@ -46,11 +51,6 @@ bool MiroDeployDialog::hypercubeMode() const
     return ui->hypercubeBox->isChecked();
 }
 
-bool MiroDeployDialog::testDeployment() const
-{
-    return mTestDeploy;
-}
-
 MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
 {
     if (ui->targetEnvBox->currentText() == "Single user")
@@ -60,20 +60,39 @@ MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
     return MiroTargetEnvironment::LocalMultiUser;
 }
 
+void MiroDeployDialog::setDefaults()
+{
+    ui->baseBox->setCheckState(Qt::Unchecked);
+    ui->hypercubeBox->setCheckState(Qt::Unchecked);
+    ui->targetEnvBox->setCurrentIndex(0);
+}
+
+void MiroDeployDialog::on_testBaseButton_clicked()
+{
+    if (showMessageBox())
+        return;
+    emit testDeploy(true, MiroDeployMode::Base);
+}
+
+void MiroDeployDialog::on_testHcubeButton_clicked()
+{
+    if (showMessageBox())
+        return;
+    emit testDeploy(true, MiroDeployMode::Hypercube);
+}
+
 void MiroDeployDialog::on_deployButton_clicked()
 {
     if (showMessageBox())
         return;
-    mTestDeploy = false;
     accept();
 }
 
-void MiroDeployDialog::on_testDeployButton_clicked()
+void MiroDeployDialog::updateTestDeployButtons()
 {
-    if (showMessageBox())
-        return;
-    mTestDeploy = true;
-    accept();
+    ui->testBaseButton->setEnabled(ui->baseBox->isChecked());
+    ui->testHcubeButton->setEnabled(ui->hypercubeBox->isChecked());
+    ui->deployButton->setEnabled(ui->baseBox->isChecked() || ui->hypercubeBox->isChecked());
 }
 
 bool MiroDeployDialog::showMessageBox()

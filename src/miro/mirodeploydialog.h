@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <QDialog>
 
 #include "mirodeployprocess.h"
+#include "mirocommon.h"
 
 namespace gams {
 namespace studio {
@@ -37,16 +38,27 @@ class MiroDeployDialog : public QDialog
     Q_OBJECT
 
 public:
-    MiroDeployDialog(const QString &modelAssemblyFile, QWidget *parent = nullptr);
+    MiroDeployDialog(QWidget *parent = nullptr);
 
     bool baseMode() const;
     bool hypercubeMode() const;
-    bool testDeployment() const;
     MiroTargetEnvironment targetEnvironment();
 
+    void setDefaults();
+
+    void setModelAssemblyFile(const QString &file) {
+        mModelAssemblyFile = file;
+    }
+
+signals:
+    void testDeploy(bool testDeploy, MiroDeployMode mode);
+
 private slots:
+    void on_testBaseButton_clicked();
+    void on_testHcubeButton_clicked();
     void on_deployButton_clicked();
-    void on_testDeployButton_clicked();
+
+    void updateTestDeployButtons();
 
 private:
     bool showMessageBox();
@@ -54,7 +66,6 @@ private:
 private:
     Ui::MiroDeployDialog *ui;
     QString mModelAssemblyFile;
-    bool mTestDeploy;
 };
 
 }

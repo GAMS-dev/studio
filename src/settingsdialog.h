@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,9 @@ public:
     explicit SettingsDialog(MainWindow *parent = nullptr);
     ~SettingsDialog();
 
+    bool miroSettingsEnabled() const;
+    void setMiroSettingsEnabled(bool enabled);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -73,13 +76,14 @@ private:
     MainWindow *mMain;
     bool isModified = false;
     bool mInitializing = true;
-    QHash<int, QWidget*> mColorWidgets;
+    QList<QWidget*> mColorWidgets;
 
     void saveSettings();
     void loadSettings();
     void setModifiedStatus(bool status);
     void initColorPage();
     void reloadColors();
+    bool mMiroSettingsEnabled = true;
 };
 
 }
