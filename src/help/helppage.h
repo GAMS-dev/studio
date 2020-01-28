@@ -35,7 +35,6 @@ public:
 
 protected:
     bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool isMainFrame) override;
-    bool certificateError(const QWebEngineCertificateError &error) override;
 
 };
 

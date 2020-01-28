@@ -38,9 +38,6 @@
 #include "helpdata.h"
 #include "helppage.h"
 
-#include "editors/sysloglocator.h"
-#include "editors/abstractsystemlogger.h"
-
 namespace gams {
 namespace studio {
 namespace help {
@@ -110,11 +107,6 @@ HelpWidget::HelpWidget(QWidget *parent) :
     }
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
-    connect(ui->webEngineView->page(), &QWebEnginePage::urlChanged, this, [this]() {
-        QString message = QString("url changed : %1")
-                .arg(ui->webEngineView->page()->url().toString(QUrl::PrettyDecoded));
-        SysLogLocator::systemLog()->append(message, LogMsgType::Info);
-    });
 
     connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &HelpWidget::searchText);
     connect(ui->backButton, &QPushButton::clicked, this, &HelpWidget::on_backButtonTriggered);
@@ -322,11 +314,11 @@ void HelpWidget::on_loadFinished(bool ok)
     ui->actionOnlineHelp->setEnabled( true );
     ui->actionOnlineHelp->setChecked( false );
     if (ok) {
-       if (ui->webEngineView->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
+       if (ui->webEngineView->page()->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
            if (onlineStartPageUrl.isValid()) {
-               if (ui->webEngineView->url().path().contains( onlineStartPageUrl.path()))
+               if (ui->webEngineView->page()->url().path().contains( onlineStartPageUrl.path()))
                    ui->actionOnlineHelp->setChecked( true );
-               else if (ui->webEngineView->url().path().contains("latest"))
+               else if (ui->webEngineView->page()->url().path().contains("latest"))
                    ui->actionOnlineHelp->setChecked( true );
                else
                    ui->actionOnlineHelp->setEnabled( false );
@@ -334,16 +326,14 @@ void HelpWidget::on_loadFinished(bool ok)
                ui->actionOnlineHelp->setEnabled( false );
            }
        } else {
-           if (ui->webEngineView->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
+           if (ui->webEngineView->page()->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
                ui->actionOnlineHelp->setEnabled( false );
        }
-   }
-
-   QString message = QString("on loadFinished with %1, request url : %2 current url : %3")
-           .arg(ok ? "true" : "false")
-           .arg(ui->webEngineView->page()->requestedUrl().toString(QUrl::PrettyDecoded))
-           .arg(ui->webEngineView->page()->url().toString(QUrl::PrettyDecoded));
-   SysLogLocator::systemLog()->append(message, LogMsgType::Warning);
+   } /*else {
+        QString htmlText;
+        getErrorHTMLText( htmlText, ui->webEngineView->page()->requestedUrl());
+        ui->webEngineView->setHtml( htmlText );
+    }*/
 }
 
 void HelpWidget::linkHovered(const QString &url)
@@ -411,8 +401,6 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
        onlineUrl.setPath("/" + pathList.join("/"));
        if (!url.fragment().isEmpty())
            onlineUrl.setFragment(url.fragment());
-       QString message = QString("to load (online) url : %1").arg(onlineUrl.toString(QUrl::PrettyDecoded));
-       SysLogLocator::systemLog()->append(message, LogMsgType::Info);
        if (url.isValid())
            ui->webEngineView->page()->setUrl( onlineUrl );
        else
@@ -436,8 +424,6 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    if (!url.fragment().isEmpty())
                        localUrl.setFragment(url.fragment());
 
-                   QString message = QString("to load (offline) url(%1)").arg(localUrl.toString(QUrl::PrettyDecoded));
-                   SysLogLocator::systemLog()->append(message, LogMsgType::Info);
                    if (localUrl.isValid())
                        ui->webEngineView->page()->setUrl( localUrl );
                    else

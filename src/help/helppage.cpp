@@ -21,8 +21,6 @@
 #include <QWebEngineCertificateError>
 
 #include "helppage.h"
-#include "editors/sysloglocator.h"
-#include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
@@ -40,16 +38,6 @@ bool HelpPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::Navigati
     }
     return QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
 }
-
-bool HelpPage::certificateError(const QWebEngineCertificateError &error)
-{
-    QString message = QString("certificate Error : %1")
-            .arg(error.errorDescription());
-    SysLogLocator::systemLog()->append(message, LogMsgType::Error);
-
-    return true;
-}
-
 
 } // namespace help
 } // namespace studio
