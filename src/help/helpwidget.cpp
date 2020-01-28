@@ -408,7 +408,8 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
        onlineUrl.setScheme(onlineStartPageUrl.scheme());
        onlineUrl.setHost(onlineStartPageUrl.host());
        onlineUrl.setPath("/" + pathList.join("/"));
-
+       if (!url.fragment().isEmpty())
+           onlineUrl.setFragment(url.fragment());
        QString message = QString("to load (online) url : %1").arg(onlineUrl.toString(QUrl::PrettyDecoded));
        SysLogLocator::systemLog()->append(message, LogMsgType::Info);
        if (url.isValid())
