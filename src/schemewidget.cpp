@@ -7,36 +7,76 @@
 namespace gams {
 namespace studio {
 
-SchemeWidget::SchemeWidget(QWidget *parent, Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg,
-                           Scheme::ColorSlot slotBg2) :
+SchemeWidget::SchemeWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SchemeWidget)
 {
     ui->setupUi(this);
-    ui->name->setText("");
+    ui->iconEx->setVisible(false);
+}
+
+SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, QWidget *parent, bool showIconExample) :
+    QWidget(parent),
+    ui(new Ui::SchemeWidget)
+{
+    ui->setupUi(this);
+    ui->iconEx->setVisible(showIconExample);
+    ui->textFrame->setVisible(!showIconExample);
+    if (showIconExample) {
+        mIconEng = new SvgEngine(":/solid/user");
+        ui->iconEx->setIcon(QIcon(mIconEng));
+    }
+
+    ui->name->setText(Scheme::instance()->text(slotFg));
+    setFormatVisible(Scheme::hasFontProps(slotFg));
+    initSlot(mSlotFg, slotFg, ui->colorFG);
+    ui->colorBG1->hide();
+    ui->colorBG2->hide();
+}
+
+SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg, QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::SchemeWidget)
+{
+    ui->setupUi(this);
+    ui->iconEx->setVisible(false);
+
+    setFormatVisible(Scheme::hasFontProps(slotFg));
+    ui->name->setText(Scheme::instance()->text(slotFg ? slotFg : slotBg));
+    initSlot(mSlotFg, slotFg, ui->colorFG);
+    initSlot(mSlotBg, slotBg, ui->colorBG1);
+    ui->colorBG2->hide();
+}
+
+SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg, Scheme::ColorSlot slotBg2, QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::SchemeWidget)
+{
+    ui->setupUi(this);
+    ui->iconEx->setVisible(false);
+
+    setFormatVisible(Scheme::hasFontProps(slotFg));
+    ui->name->setText(Scheme::instance()->text(slotFg ? slotFg : slotBg));
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     initSlot(mSlotBg2, slotBg2, ui->colorBG2);
-    setFormatVisible(Scheme::hasFontProps(mSlotFg));
 }
 
 SchemeWidget::~SchemeWidget()
 {
     delete ui;
+    mIconEng->unbind();
 }
 
-void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot &slotVal, QFrame *frame)
+void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot &slot, QFrame *frame)
 {
-    if (slotVar != Scheme::invalid) {
-        slotVar = slotVal;
-        frame->setEnabled(slotVar != Scheme::invalid);
-        frame->setAutoFillBackground(frame->isEnabled());
-        if (frame->isEnabled()) {
-            setColor(frame, toColor(slotVal));
-            frame->installEventFilter(this);
-        }
-        if (ui->name->text().isEmpty())
-            ui->name->setText(Scheme::instance()->text(slotVal));
+    slotVar = slot;
+    bool active = slot != Scheme::invalid;
+    frame->setEnabled(active);
+    frame->setAutoFillBackground(active);
+    if (active) {
+        setColor(frame, toColor(slot), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
+        frame->installEventFilter(this);
     }
 }
 
@@ -63,28 +103,30 @@ void SchemeWidget::setFormatVisible(bool visible)
 
 bool SchemeWidget::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::MouseButtonRelease && watched == ui->colorFG) {
-        selectColor(ui->colorFG);
+    if (event->type() == QEvent::MouseButtonRelease) {
+        if (watched == ui->colorFG) selectColor(ui->colorFG, mSlotFg);
+        if (watched == ui->colorBG1) selectColor(ui->colorBG1, mSlotBg);
+        if (watched == ui->colorBG2) selectColor(ui->colorBG2, mSlotBg2);
     }
     return false;
 }
 
-void SchemeWidget::selectColor(QFrame *frame)
+void SchemeWidget::selectColor(QFrame *frame, Scheme::ColorSlot slot)
 {
     QColorDialog diag;
     diag.setCurrentColor(frame->palette().window().color());
     if (diag.exec()) {
-        setColor(frame, diag.currentColor());
-        Scheme::setColor(mSlotFg, diag.currentColor());
+        setColor(frame, diag.currentColor(), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
+        Scheme::setColor(slot, diag.currentColor());
         emit changed();
     }
 }
 
 void SchemeWidget::refresh()
 {
-    setColor(ui->colorFG, toColor(mSlotFg));
-    setColor(ui->colorBG1, toColor(mSlotBg));
-    setColor(ui->colorBG2, toColor(mSlotBg2));
+    if (mSlotFg) setColor(ui->colorFG, toColor(mSlotFg), 1);
+    if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg), 2);
+    if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2));
 }
 
 void SchemeWidget::setAlignment(Qt::Alignment align)
@@ -101,11 +143,22 @@ void SchemeWidget::setAlignment(Qt::Alignment align)
     }
 }
 
-void SchemeWidget::setColor(QFrame *frame, const QColor &color)
+void SchemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
 {
     QPalette pal = frame->palette();
     pal.setColor(QPalette::Window, color);
     frame->setPalette(pal);
+    if (examplePart) {
+        if (ui->textFrame->isVisible()) {
+            pal = ui->textEx->palette();
+            pal.setColor(examplePart == 1 ? QPalette::WindowText : QPalette::Window, color);
+            ui->textEx->setPalette(pal);
+        }
+        if (ui->iconEx->isVisible()) {
+            // TODO(JM) colorize Icon
+//            Scheme::instance()->data(":/solid/user", );
+        }
+    }
 }
 
 } // namespace studio

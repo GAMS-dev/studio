@@ -17,7 +17,7 @@ class Scheme : public QObject
     Q_OBJECT
 public:
     enum ColorSlot {
-        invalid,
+        invalid = 0,
 
         Edit_currentLineBg,
         Edit_errorBg,
