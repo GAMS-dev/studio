@@ -140,6 +140,23 @@ void SearchDialog::setSearchOngoing(bool searching)
         ui->btn_FindAll->setText("Abort");
     else
         ui->btn_FindAll->setText("Find All");
+
+    // deactivate actions while search is ongoing
+    ui->btn_forward->setEnabled(!searching);
+    ui->btn_back->setEnabled(!searching);
+    ui->btn_Replace->setEnabled(!searching);
+    ui->btn_ReplaceAll->setEnabled(!searching);
+    ui->btn_clear->setEnabled(!searching);
+    ui->cb_regex->setEnabled(!searching);
+    ui->cb_caseSens->setEnabled(!searching);
+    ui->cb_wholeWords->setEnabled(!searching);
+    ui->combo_filePattern->setEnabled(!searching);
+    ui->combo_scope->setEnabled(!searching);
+    ui->combo_search->setEnabled(!searching);
+    ui->txt_replace->setEnabled(!searching);
+    ui->label->setEnabled(!searching);
+    ui->label_2->setEnabled(!searching);
+    ui->label_3->setEnabled(!searching);
 }
 
 ///
