@@ -433,6 +433,7 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
             mCachedResults->filteredResultList(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location()).size() == 0;
 
     if (!mCachedResults || mHasChanged || requestNewCache) {
+        setSearchOngoing(true);
         invalidateCache();
         updateSearchCache(ignoreReadOnly);
         QApplication::processEvents(QEventLoop::AllEvents, 50);
