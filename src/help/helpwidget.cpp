@@ -392,19 +392,29 @@ void HelpWidget::on_actionOrganizeBookmark_triggered()
 
 void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 {
-   QUrl url = ui->webEngineView->url();
+   QUrl url = ui->webEngineView->page()->url();
    QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
-        QString urlStr = url.toDisplayString();
-        urlStr.replace( urlStr.indexOf("file://"), 7, "");
-        urlStr.replace( urlStr.indexOf( baseLocation),
-                        baseLocation.size(),
-                        onlineStartPageUrl.toDisplayString() );
-        url = QUrl(urlStr, QUrl::TolerantMode);
-        QString message = QString("to load (online) url : %1").arg(url.toString(QUrl::PrettyDecoded));
-        SysLogLocator::systemLog()->append(message, LogMsgType::Info);
-        ui->webEngineView->page()->setUrl( url );
+       QString urlLocalFile = url.toLocalFile();
+
+       int newSize = urlLocalFile.size() - urlLocalFile.indexOf(baseLocation) - baseLocation.size();
+       QString newPath = urlLocalFile.right(newSize);
+       QString onlinepath = onlineStartPageUrl.path();
+       QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
+       pathList << newPath.split("/", QString::SkipEmptyParts) ;
+
+       QUrl onlineUrl;
+       onlineUrl.setScheme(onlineStartPageUrl.scheme());
+       onlineUrl.setHost(onlineStartPageUrl.host());
+       onlineUrl.setPath("/" + pathList.join("/"));
+
+       QString message = QString("to load (online) url : %1").arg(onlineUrl.toString(QUrl::PrettyDecoded));
+       SysLogLocator::systemLog()->append(message, LogMsgType::Info);
+       if (url.isValid())
+           ui->webEngineView->page()->setUrl( onlineUrl );
+       else
+           ui->webEngineView->page()->setUrl( onlineStartPageUrl );
     } else {
        if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
            if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
@@ -416,7 +426,10 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    url.setScheme("file");
                    QString message = QString("to load (offline) url(%1)").arg(url.toString(QUrl::PrettyDecoded));
                    SysLogLocator::systemLog()->append(message, LogMsgType::Info);
-                   ui->webEngineView->page()->setUrl( url );
+                   if (url.isValid())
+                       ui->webEngineView->page()->setUrl( url );
+                   else
+                       ui->webEngineView->page()->setUrl( getStartPageUrl() );
                }  else {
                    ui->webEngineView->page()->setUrl( getStartPageUrl() );
                }
@@ -625,9 +638,9 @@ QUrl HelpWidget::getOnlineStartPageUrl()
     } else {
         int marjorversion = c4uWrapper.currentDistribVersion()/100;
         if (marjorversion>=26)
-            return QUrl( QString("http://www.gams.com/%1").arg( marjorversion ), QUrl::TolerantMode);
+            return QUrl( QString("https://www.gams.com/%1/docs/").arg( marjorversion ), QUrl::TolerantMode);
         else
-          return QUrl( QString("http://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
+          return QUrl( QString("https://www.gams.com/%1/docs/").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
     }
 }
 
