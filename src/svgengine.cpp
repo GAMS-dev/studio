@@ -32,6 +32,11 @@ QString SvgEngine::iconName() const
     return mName;
 }
 
+void SvgEngine::replaceNormalMode(QIcon::Mode mode)
+{
+    mNormalMode = mode;
+}
+
 void SvgEngine::unbind()
 {
     mController = nullptr;
@@ -41,6 +46,7 @@ void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QI
 {
     Q_UNUSED(mode)
     Q_UNUSED(state)
+    if (mode == QIcon::Normal) mode = mNormalMode;
     QByteArray &data = mController->data(mName, mode);
     QSvgRenderer renderer(data);
     renderer.render(painter, rect);

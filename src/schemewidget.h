@@ -17,7 +17,7 @@ class SchemeWidget : public QWidget
     Q_OBJECT
 public:
     explicit SchemeWidget(QWidget *parent);
-    explicit SchemeWidget(Scheme::ColorSlot slotFg, QWidget *parent, bool showIconExample = false);
+    explicit SchemeWidget(Scheme::ColorSlot slotFg, QWidget *parent, bool iconExample = false);
     explicit SchemeWidget(Scheme::ColorSlot slotFg = Scheme::invalid,
                           Scheme::ColorSlot slotBg = Scheme::invalid, QWidget *parent = nullptr);
     explicit SchemeWidget(Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg,

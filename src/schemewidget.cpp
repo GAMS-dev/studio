@@ -15,15 +15,18 @@ SchemeWidget::SchemeWidget(QWidget *parent) :
     ui->iconEx->setVisible(false);
 }
 
-SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, QWidget *parent, bool showIconExample) :
+SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, QWidget *parent, bool iconExample) :
     QWidget(parent),
     ui(new Ui::SchemeWidget)
 {
     ui->setupUi(this);
-    ui->iconEx->setVisible(showIconExample);
-    ui->textFrame->setVisible(!showIconExample);
-    if (showIconExample) {
-        mIconEng = new SvgEngine(":/solid/user");
+    ui->iconEx->setVisible(iconExample);
+    ui->textFrame->setVisible(!iconExample);
+    if (iconExample) {
+        mIconEng = new SvgEngine(Scheme::name(slotFg).endsWith("_Line") ? ":/thin/user" : ":/solid/user");
+        if (Scheme::name(slotFg).startsWith("Disable_")) mIconEng->replaceNormalMode(QIcon::Disabled);
+        if (Scheme::name(slotFg).startsWith("Active_")) mIconEng->replaceNormalMode(QIcon::Active);
+        if (Scheme::name(slotFg).startsWith("Select_")) mIconEng->replaceNormalMode(QIcon::Selected);
         ui->iconEx->setIcon(QIcon(mIconEng));
     }
 
@@ -64,8 +67,8 @@ SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg, S
 
 SchemeWidget::~SchemeWidget()
 {
+    if (mIconEng) mIconEng->unbind();
     delete ui;
-    mIconEng->unbind();
 }
 
 void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot &slot, QFrame *frame)
@@ -156,7 +159,7 @@ void SchemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
         }
         if (ui->iconEx->isVisible()) {
             // TODO(JM) colorize Icon
-//            Scheme::instance()->data(":/solid/user", );
+            ui->iconEx->setIcon(ui->iconEx->icon());
         }
     }
 }

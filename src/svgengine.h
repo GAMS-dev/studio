@@ -17,6 +17,7 @@ public:
     SvgEngine(const SvgEngine &other);
     ~SvgEngine() override;
     QString iconName() const override;
+    void replaceNormalMode(QIcon::Mode mode);
     void unbind();
     void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) override;
     QIconEngine * clone() const override;
@@ -24,6 +25,7 @@ public:
 private:
     Scheme *mController = nullptr;
     QString mName;
+    QIcon::Mode mNormalMode = QIcon::Normal;
 
 };
 
