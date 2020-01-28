@@ -226,13 +226,21 @@ public:
     inline static int getURLIndexFrom(const QString &urlStr)  {
         int index = -1;
         QStringList pathList;
-        pathList << "/docs" << "/gamslib_ml" << "/testlib_ml" << "/datalib_ml" << "/emplib_ml" << "/apilib_ml" << "/finlib_ml" << "/noalib_ml" << "/psoptlib_ml";
-        for(QString path : pathList) {
-            index = urlStr.indexOf(path);
-            if (index > -1)
+        for(QString path : getPathList()) {
+            index++;
+            if (urlStr.indexOf(path) > -1)
                return index;
         }
-        return -1;
+        return index;
+    }
+
+    inline static QStringList getPathList() {
+        QStringList pathList = {
+            "/docs",
+            "/gamslib_ml", "/testlib_ml", "/datalib_ml", "/emplib_ml",
+            "/apilib_ml", "/finlib_ml", "/noalib_ml", "/psoptlib_ml"
+        };
+        return  pathList;
     }
 };
 

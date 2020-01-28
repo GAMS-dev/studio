@@ -393,13 +393,14 @@ void HelpWidget::on_actionOrganizeBookmark_triggered()
 void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 {
    QUrl url = ui->webEngineView->page()->url();
+
    QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
        QString urlLocalFile = url.toLocalFile();
-
        int newSize = urlLocalFile.size() - urlLocalFile.indexOf(baseLocation) - baseLocation.size();
        QString newPath = urlLocalFile.right(newSize);
+
        QString onlinepath = onlineStartPageUrl.path();
        QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
        pathList << newPath.split("/", QString::SkipEmptyParts) ;
@@ -422,13 +423,23 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                QString urlStr = url.toDisplayString();
                int docsidx = HelpData::getURLIndexFrom(urlStr);
                if (docsidx > -1) {
-                   urlStr.replace( 0, docsidx, baseLocation );
-                   url.setUrl(urlStr);
-                   url.setScheme("file");
-                   QString message = QString("to load (offline) url(%1)").arg(url.toString(QUrl::PrettyDecoded));
+                   QStringList pathStrList = HelpData::getPathList();
+                   QString pathStr = pathStrList.at(docsidx);
+                   int pathIndex = url.path().indexOf( pathStr );
+                   QString newPath = url.path().mid( pathIndex, url.path().size());
+                   QStringList pathList;
+                   pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
+
+                   QUrl localUrl = QUrl::fromLocalFile(QString());
+                   localUrl.setScheme("file");
+                   localUrl.setPath("/" + pathList.join("/"));
+                   if (!url.fragment().isEmpty())
+                       localUrl.setFragment(url.fragment());
+
+                   QString message = QString("to load (offline) url(%1)").arg(localUrl.toString(QUrl::PrettyDecoded));
                    SysLogLocator::systemLog()->append(message, LogMsgType::Info);
-                   if (url.isValid())
-                       ui->webEngineView->page()->setUrl( url );
+                   if (localUrl.isValid())
+                       ui->webEngineView->page()->setUrl( localUrl );
                    else
                        ui->webEngineView->page()->setUrl( getStartPageUrl() );
                }  else {
