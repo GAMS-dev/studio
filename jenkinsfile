@@ -136,7 +136,7 @@ pipeline {
                             # collect files
                             cp src/bin/studio appdir/usr/bin/
                             cp platform/linux/gamsstudio.desktop appdir/usr/share/studio.desktop
-                            cp icons/* appdir/usr/share/pixmaps
+                            cp -r icons/* appdir/usr/share/pixmaps
                             cp CHANGELOG appdir/usr/resources/Changelog
 
                             STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION version | cut -f2 -d"=")
