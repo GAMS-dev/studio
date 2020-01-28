@@ -7,21 +7,17 @@
 namespace gams {
 namespace studio {
 
-SchemeWidget::SchemeWidget(QWidget *parent, Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg, Scheme::ColorSlot slotBg2) :
+SchemeWidget::SchemeWidget(QWidget *parent, Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg,
+                           Scheme::ColorSlot slotBg2) :
     QWidget(parent),
     ui(new Ui::SchemeWidget)
 {
     ui->setupUi(this);
-    ui->colorFG->installEventFilter(this);
-    ui->colorBG1->installEventFilter(this);
-    ui->colorBG2->installEventFilter(this);
-    if (parent) {
-        QVariant var = parent->property("hideName");
-        if (var.isValid() && var.canConvert<bool>()) setTextVisible(!var.toBool());
-        var = parent->property("hideFormat");
-        if (var.isValid() && var.canConvert<bool>()) setFormatVisible(!var.toBool());
-    }
-    setColorSlot(slotFg, slotBg, slotBg2);
+    ui->name->setText("");
+    initSlot(mSlotFg, slotFg, ui->colorFG);
+    initSlot(mSlotBg, slotBg, ui->colorBG1);
+    initSlot(mSlotBg2, slotBg2, ui->colorBG2);
+    setFormatVisible(Scheme::hasFontProps(mSlotFg));
 }
 
 SchemeWidget::~SchemeWidget()
@@ -29,12 +25,18 @@ SchemeWidget::~SchemeWidget()
     delete ui;
 }
 
-void SchemeWidget::setColorSlot(const Scheme::ColorSlot slotFG, const Scheme::ColorSlot slotBG, const Scheme::ColorSlot slotBG2)
+void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot &slotVal, QFrame *frame)
 {
-    if (mSlotFg != slotFG) {
-        mSlotFg = slotFG;
-        if (mSlotFg != Scheme::invalid) setColor(ui->colorFG, toColor(slotFG));
-//        else ui->
+    if (slotVar != Scheme::invalid) {
+        slotVar = slotVal;
+        frame->setEnabled(slotVar != Scheme::invalid);
+        frame->setAutoFillBackground(frame->isEnabled());
+        if (frame->isEnabled()) {
+            setColor(frame, toColor(slotVal));
+            frame->installEventFilter(this);
+        }
+        if (ui->name->text().isEmpty())
+            ui->name->setText(Scheme::instance()->text(slotVal));
     }
 }
 

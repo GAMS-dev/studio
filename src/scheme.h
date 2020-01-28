@@ -98,6 +98,8 @@ public:
 
     static void next();
     static QString name(ColorSlot slot);
+    static QString text(ColorSlot slot);
+    static bool hasFontProps(ColorSlot slot);
     static QColor color(ColorSlot slot);
     static void setColor(ColorSlot slot, QColor color);
     static QIcon icon(QString name);
@@ -110,6 +112,7 @@ signals:
 
 private:
     explicit Scheme(QObject *parent = nullptr);
+    void initSlotTexts();
     QHash<QString, QStringList> iconCodes() const;
     QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
 
@@ -117,6 +120,7 @@ private:
     static Scheme *mInstance;
     typedef QHash<ColorSlot, Color> ColorScheme;
     QList<ColorScheme> mColorSchemes;
+    QHash<ColorSlot, QString> mSlotText;
     QStringList mSchemeNames;
     QString mIconSet;
     QHash<QString, QStringList> mIconCode;

@@ -18,6 +18,7 @@ const QColor CUndefined(255, 0, 200);
 Scheme::Scheme(QObject *parent) : QObject(parent)
 {
     mIconSet = "solid"; // thin, solid
+    initSlotTexts();
 }
 
 Scheme::~Scheme()
@@ -31,6 +32,38 @@ Scheme *Scheme::instance()
 {
     if (!mInstance) mInstance = new Scheme();
     return mInstance;
+}
+
+void Scheme::initSlotTexts()
+{
+    mSlotText.clear();
+    mSlotText.insert(Edit_currentLineBg,        "Current line");
+    mSlotText.insert(Edit_errorBg,              "Error");
+    mSlotText.insert(Edit_currentWordBg,        "Current word");
+    mSlotText.insert(Edit_matchesBg,            "matches");
+    mSlotText.insert(Edit_parenthesesValidFg,   "Valid parentheses");
+    mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
+    mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
+    mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
+    mSlotText.insert(Edit_blockSelectBg,        "Block selection");
+
+    mSlotText.insert(Icon_Line,                 "Icon pen");
+    mSlotText.insert(Icon_Back,                 "Icon brush");
+
+    mSlotText.insert(Syntax_assign,             "Assignment");
+    mSlotText.insert(Syntax_comment,            "Comment");
+    mSlotText.insert(Syntax_directive,          "Dollar-Command");
+    mSlotText.insert(Syntax_directiveBody,      "Dollar-Command body");
+    mSlotText.insert(Syntax_title,              "Title");
+    mSlotText.insert(Syntax_keyword,            "Keyword");
+    mSlotText.insert(Syntax_declaration,        "Declaration");
+    mSlotText.insert(Syntax_identifier,         "Identifier");
+    mSlotText.insert(Syntax_description,        "Description");
+    mSlotText.insert(Syntax_identifierAssign,   "Identifier assignment");
+    mSlotText.insert(Syntax_assignLabel,        "Assignment label");
+    mSlotText.insert(Syntax_assignValue,        "Assignment value");
+    mSlotText.insert(Syntax_tableHeader,        "Table header");
+    mSlotText.insert(Syntax_embedded,           "Embedded code");
 }
 
 void Scheme::initDefault()
@@ -66,8 +99,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::transparent));
     mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::black));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::transparent));
     mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Disable_Back,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Active_Line,                    QColor("#0044EE"));
@@ -147,6 +180,16 @@ void Scheme::setIconSet(Scheme::IconSet iconSet)
 QString Scheme::name(Scheme::ColorSlot slot)
 {
     return QMetaEnum::fromType<ColorSlot>().valueToKey(slot);
+}
+
+QString Scheme::text(Scheme::ColorSlot slot)
+{
+    return instance()->mSlotText.value(slot);
+}
+
+bool Scheme::hasFontProps(Scheme::ColorSlot slot)
+{
+    return slot >= Syntax_undefined;
 }
 
 Scheme::ColorSlot Scheme::slot(QString name)

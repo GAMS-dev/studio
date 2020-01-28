@@ -17,10 +17,9 @@ class SchemeWidget : public QWidget
 
 public:
     explicit SchemeWidget(QWidget *parent = nullptr, Scheme::ColorSlot slotFg = Scheme::invalid,
-                          Scheme::ColorSlot slotBg = Scheme::invalid, Scheme::ColorSlot slotBg2 = Scheme::invalid);
+                          Scheme::ColorSlot slotBg = Scheme::invalid,
+                          Scheme::ColorSlot slotBg2 = Scheme::invalid);
     ~SchemeWidget() override;
-    void setColorSlot(const Scheme::ColorSlot slotFG, const Scheme::ColorSlot slotBG = Scheme::invalid,
-                      const Scheme::ColorSlot slotBG2 = Scheme::invalid);
     void setText(const QString &text);
     QString text() const;
     void setTextVisible(bool visible);
@@ -41,8 +40,8 @@ private:
     Scheme::ColorSlot mSlotBg2 = Scheme::invalid;
     bool mChanged = false;
 
+    void initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot &slotVal, QFrame *frame);
     void setColor(QFrame *frame, const QColor &color);
-
 };
 
 
