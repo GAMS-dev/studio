@@ -99,14 +99,16 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::black));
-    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::transparent));
+    mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::gray));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::gray));
     mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Disable_Back,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Active_Line,                    QColor("#0044EE"));
     mColorSchemes[sNr].insert(Active_Back,                    QColor("#3377EE"));
     mColorSchemes[sNr].insert(Select_Line,                    QColor("#0044EE"));
     mColorSchemes[sNr].insert(Select_Back,                    QColor("#4499FF"));
+    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
+    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66BB66"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color());
@@ -133,9 +135,6 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
-
-    mColorSchemes[sNr].insert(Icon_Back,                      QColor(40,40,40));
-    mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::darkRed));
 
     mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkRed).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkGreen).darker(120), fBold));
@@ -211,6 +210,8 @@ QHash<QString, QStringList> Scheme::iconCodes() const
             res.insert(key, QStringList());
             for (int i = 0 ; i < 4 ; ++i)
                 res[key] << scheme.value(slot).color.name();
+            res[key] << scheme.value(Normal_Red).color.name();
+            res[key] << scheme.value(Normal_Green).color.name();
         }
     }
     for (ColorSlot &slot: scheme.keys()) {
@@ -240,21 +241,31 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
     if (!file.open(QFile::ReadOnly)) return QByteArray();
     QByteArray data = file.readAll();
     file.close();
+
+    int end = data.indexOf("</style");
+    if (end < 0) return data;
     int iMode = int(mode);
 
-    QStringList masks {".%1{fill:", ".%1C{fill:"};
-    QHash<QString, QStringList>::const_iterator it = mIconCode.constBegin();
+    QHash<QString, QStringList>::const_iterator it = mIconCode.constBegin(); // Icon_Line + Icon_Back
     for ( ; it != mIconCode.constEnd() ; ++it) {
-        if (mode == QIcon::Normal && it.key() == "Back") continue;
-        for (const QString &mask: masks) {
-            QString key = QString(mask).arg(it.key());
-            int from = data.indexOf(key);
-            if (from >= 0) {
-                from += key.length();
-                int len = data.indexOf(";}", from) - from;
-                data.replace(from, len, it.value().at(iMode).toLatin1());
-    //            DEB() << name << " [" << from << ", " << (end) << "] \n" << data;
+        int start = data.indexOf("<style");
+        while (start >= 0 && start < end) {
+            QString key = QString(".%1").arg(it.key());
+            int from = data.indexOf('.'+it.key(), start+1);
+            if (from < 0 || from+10 > end) break;
+            start = from;
+            QString colorCode = it.value().at(iMode);
+            from += key.length();
+            if (mode == QIcon::Normal) {
+                if (data.at(from) == 'R') colorCode = it.value().at(4);
+                if (data.at(from) == 'G') colorCode = it.value().at(5);
             }
+            while (data.length() > from && data.at(from) != '{') ++from;
+            if (data.indexOf("fill:", from) != from+1) continue;
+            from += 6;
+            int len = data.indexOf(";}", from) - from;
+            data.replace(from, len, colorCode.toLatin1());
+            DEB() << name << " [" << from << ", " << (end) << "] \n" << data;
         }
     }
     return data;

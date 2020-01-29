@@ -77,7 +77,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
-    mInitializing = false;
 }
 
 void SettingsDialog::loadSettings()
@@ -261,6 +260,17 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
     emit editorLineWrappingChanged();
 }
 
+void SettingsDialog::showEvent(QShowEvent *event)
+{
+    Q_UNUSED(event)
+    if (mInitializing) {
+        mInitializing = false;
+        for (SchemeWidget *wid : mColorWidgets) {
+            wid->refresh();
+        }
+    }
+}
+
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
@@ -350,16 +360,6 @@ void SettingsDialog::initColorPage()
     grid = qobject_cast<QGridLayout*>(box->layout());
     SchemeWidget *wid = nullptr;
 
-//    wid = new SchemeWidget(Scheme::Edit_linenrAreaFg, Scheme::Edit_linenrAreaBg, box);
-//    grid->addWidget(wid, 1, 0);
-//    connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
-//    mColorWidgets << wid;
-
-//    wid = new SchemeWidget(Scheme::Edit_linenrAreaMarkFg, Scheme::Edit_linenrAreaMarkBg, box);
-//    grid->addWidget(wid, 2, 0);
-//    connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
-//    mColorWidgets << wid;
-
     slot2 = {
         {Scheme::Edit_linenrAreaFg, Scheme::Edit_linenrAreaBg},
         {Scheme::Edit_linenrAreaMarkFg, Scheme::Edit_linenrAreaMarkBg},
@@ -384,18 +384,6 @@ void SettingsDialog::initColorPage()
         connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
         mColorWidgets << wid;
     }
-
-//    for (int row = 0; row < 3; ++row) {
-//        for (int col = 0; col < 3; ++col) {
-//            int i = (3*col+row)*2;
-//            if (!slot.at(i) && !slot.at(i+1)) continue;
-//            wid = new SchemeWidget(slot.at(i), slot.at(i+1), box);
-//            grid->addWidget(wid, row+1, col);
-//            connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
-//            mColorWidgets << wid;
-//            ++i;
-//        }
-//    }
 
 //        Scheme::Edit_parenthesesValidFg, Scheme::Edit_parenthesesValidBg, Scheme::Edit_parenthesesValidBgBlink,
 //        Scheme::Edit_parenthesesInvalidFg, Scheme::Edit_parenthesesInvalidBg, Scheme::Edit_parenthesesInvalidBgBlink,

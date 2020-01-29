@@ -33,6 +33,7 @@ namespace studio {
 
 class MainWindow;
 class StudioSettings;
+class SchemeWidget;
 
 class SettingsDialog : public QDialog
 {
@@ -46,7 +47,8 @@ public:
     void setMiroSettingsEnabled(bool enabled);
 
 protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
 signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
@@ -76,7 +78,7 @@ private:
     MainWindow *mMain;
     bool isModified = false;
     bool mInitializing = true;
-    QList<QWidget*> mColorWidgets;
+    QList<SchemeWidget*> mColorWidgets;
 
     void saveSettings();
     void loadSettings();
@@ -84,6 +86,7 @@ private:
     void initColorPage();
     void reloadColors();
     bool mMiroSettingsEnabled = true;
+
 };
 
 }

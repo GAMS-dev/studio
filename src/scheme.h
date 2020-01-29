@@ -47,6 +47,8 @@ public:
         Active_Back,
         Select_Line,
         Select_Back,
+        Normal_Red,
+        Normal_Green,
 
         Syntax_undefined,
         Syntax_neutral,
