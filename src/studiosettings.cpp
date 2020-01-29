@@ -564,6 +564,17 @@ void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
     mEditableMaxSizeMB = editableMaxSizeMB;
 }
 
+int StudioSettings::colorSchemeIndex() const
+{
+    return mColorSchemeIndex;
+}
+
+void StudioSettings::setColorSchemeIndex(int colorSchemeIndex)
+{
+    mColorSchemeIndex = colorSchemeIndex;
+    Scheme::instance()->setActiveScheme(mColorSchemeIndex);
+}
+
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)
 {
     bool res = true;

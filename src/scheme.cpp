@@ -72,11 +72,11 @@ void Scheme::initDefault()
     mColorSchemes.clear();
     mSchemeNames.clear();
 
-    // Add and switch to first color scheme  ------- Standard -------
-     mActiveScheme = 0;
+    // Add and switch to first color scheme
+    mActiveScheme = 0;
     int sNr = 0;
     mColorSchemes << ColorScheme();
-    mSchemeNames << "Standard";
+    mSchemeNames << "Light";
 
     mColorSchemes[sNr].clear();
     mColorSchemes[sNr].insert(invalid,                        CUndefined);
@@ -130,7 +130,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(QColor(Qt::darkGreen).darker(140), fBold));
     mColorSchemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
 
-    // Add and switch to second color scheme  ------- Dark -------
+    // Add and switch to second color scheme
     mColorSchemes << mColorSchemes.at(sNr++);
     mSchemeNames << "Dark";
 
