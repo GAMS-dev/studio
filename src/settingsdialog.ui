@@ -608,7 +608,16 @@
           <bool>true</bool>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
           <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
            <number>0</number>
           </property>
           <property name="bottomMargin">
@@ -626,14 +635,48 @@
            </widget>
           </item>
           <item>
-           <widget class="QWidget" name="editP2" native="true">
+           <widget class="QWidget" name="editP2c" native="true">
             <property name="hideName" stdset="0">
              <bool>false</bool>
             </property>
             <property name="hideFormat" stdset="0">
              <bool>true</bool>
             </property>
-            <layout class="QGridLayout" name="gridLayout_14"/>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QWidget" name="editP2" native="true">
+               <layout class="QGridLayout" name="gridLayout_14"/>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>675</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>
@@ -663,8 +706,10 @@
           <property name="verticalSpacing">
            <number>4</number>
           </property>
-          <item row="0" column="0">
-           <widget class="gams::studio::SchemeWidget" name="widget_3" native="true"/>
+          <item row="1" column="0">
+           <widget class="QWidget" name="syntax" native="true">
+            <layout class="QGridLayout" name="gridLayout_15"/>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -774,39 +819,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QToolBox" name="toolBox">
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="page">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>698</width>
-            <height>105</height>
-           </rect>
-          </property>
-          <attribute name="label">
-           <string>Page 1</string>
-          </attribute>
-         </widget>
-         <widget class="QWidget" name="page_2">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <attribute name="label">
-           <string>Page 2</string>
-          </attribute>
-         </widget>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -983,14 +995,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>gams::studio::SchemeWidget</class>
-   <extends>QWidget</extends>
-   <header>schemewidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections>
   <connection>

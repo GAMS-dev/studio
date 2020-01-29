@@ -27,6 +27,7 @@
 #include "settingslocator.h"
 #include "ui_settingsdialog.h"
 #include "miro/mirocommon.h"
+#include "schemewidget.h"
 
 namespace gams {
 namespace studio {
@@ -355,7 +356,7 @@ void SettingsDialog::initColorPage()
     QVector<QVector<Scheme::ColorSlot>> slot2;
     QStringList names;
 
-    // EDIT colors
+    // EDIT first colors
     box = ui->editP1;
     grid = qobject_cast<QGridLayout*>(box->layout());
     SchemeWidget *wid = nullptr;
@@ -373,57 +374,82 @@ void SettingsDialog::initColorPage()
         {Scheme::invalid, Scheme::Edit_matchesBg},
         {Scheme::invalid, Scheme::Edit_errorBg},
     };
+    int cols = 3;
+    int rows = ((slot2.count()-1) / cols) + 1;
     for (int i = 0; i < slot2.size(); ++i) {
         if (slot2.at(i).isEmpty()) continue;
-        int row = i % 3;
-        int col = i / 3;
+        int row = i % rows;
+        int col = i / rows;
         wid = (slot2.at(i).size() == 1) ? new SchemeWidget(slot2.at(i).at(0), box)
-                                       : new SchemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), box);
+                                        : new SchemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), box);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
         connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
         mColorWidgets << wid;
     }
+    for (int col = 0; col < 3; ++col)
+        grid->setColumnStretch(col, 1);
 
-//        Scheme::Edit_parenthesesValidFg, Scheme::Edit_parenthesesValidBg, Scheme::Edit_parenthesesValidBgBlink,
-//        Scheme::Edit_parenthesesInvalidFg, Scheme::Edit_parenthesesInvalidBg, Scheme::Edit_parenthesesInvalidBgBlink,
-//    for (int i = 0; i < slot.size(); ++i) {
-//        if (slot.at(i) == Scheme::invalid) continue;
-//        SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
-//        wid->setText(names.at(i));
-//        wid->setAlignment(Qt::AlignRight);
-//        grid->addWidget(wid, (i/3), (i%3));
-//        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
-//        mColorWidgets.insert(slot.at(i), wid);
-//    }
+    // EDIT second colors
+    box = ui->editP2;
+    grid = qobject_cast<QGridLayout*>(box->layout());
+    slot2 = {
+        {Scheme::Edit_parenthesesValidFg, Scheme::Edit_parenthesesValidBg, Scheme::Edit_parenthesesValidBgBlink},
+        {Scheme::Edit_parenthesesInvalidFg, Scheme::Edit_parenthesesInvalidBg, Scheme::Edit_parenthesesInvalidBgBlink},
+        {},
+        {},
+    };
+    rows = ((slot2.count()-1) / cols) + 1;
+    for (int i = 0; i < slot2.size(); ++i) {
+        if (slot2.at(i).isEmpty()) continue;
+        int row = i % rows;
+        int col = i / rows;
+        if (slot2.at(i).size()) {
+            wid = new SchemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), slot2.at(i).at(2), box);
+            wid->setAlignment(Qt::AlignRight);
+            grid->addWidget(wid, row+1, col, Qt::AlignRight);
+            connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
+            mColorWidgets << wid;
+        } else {
+            grid->addWidget(new QWidget(box), row+1, col);
+        }
+    }
 
-//    box = ui->editP2;
-//    grid = qobject_cast<QGridLayout*>(box->layout());
-//    slot = {
-////        Scheme::Edit_linenrAreaFg,     Scheme::Edit_currentLineBg, Scheme::Edit_blockSelectBg,
-////        Scheme::Edit_linenrAreaBg,     Scheme::Edit_currentWordBg, Scheme::invalid,
-////        Scheme::Edit_linenrAreaMarkFg, Scheme::Edit_matchesBg,     Scheme::invalid,
-////        Scheme::Edit_linenrAreaMarkBg, Scheme::Edit_errorBg,       Scheme::invalid,
-//        Scheme::Edit_parenthesesValidFg, Scheme::Edit_parenthesesValidBg, Scheme::Edit_parenthesesValidBgBlink,
-//        Scheme::Edit_parenthesesInvalidFg, Scheme::Edit_parenthesesInvalidBg, Scheme::Edit_parenthesesInvalidBgBlink,
-//    };
-//    names.clear();
-////    names << "Line Number"        << "Current Line" << "Block";
-////    names << "- Background"       << "Current Word" << "";
-////    names << "Marked Line Number" << "Match"        << "";
-////    names << "- Background"       << "Error"        << "";
-//    names << "valid parentheses text" << "background" << "2nd background";
-//    names << "invalid parentheses text" << "background" << "2nd background";
-//    Q_ASSERT(names.size() == slot.size());
-//    for (int i = 0; i < slot.size(); ++i) {
-//        if (slot.at(i) == Scheme::invalid) continue;
-//        SchemeWidget *wid = new SchemeWidget(box, slot.at(i));
-//        wid->setText(names.at(i));
-//        wid->setAlignment(Qt::AlignRight);
-//        grid->addWidget(wid, (i/3), (i%3));
-//        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
-//        mColorWidgets.insert(slot.at(i), wid);
-//    }
+    // SYNTAX colors
+    box = ui->syntax;
+    grid = qobject_cast<QGridLayout*>(box->layout());
+    slot2 = {
+        {Scheme::Syntax_directive},
+        {Scheme::Syntax_directiveBody},
+        {Scheme::Syntax_assign},
+        {Scheme::Syntax_declaration},
+        {Scheme::Syntax_keyword},
+
+        {Scheme::Syntax_identifier},
+        {Scheme::Syntax_identifierAssign},
+        {Scheme::Syntax_assignLabel},
+        {Scheme::Syntax_assignValue},
+        {Scheme::Syntax_tableHeader},
+
+        {Scheme::Syntax_comment},
+        {Scheme::Syntax_title},
+        {Scheme::Syntax_description},
+        {Scheme::Syntax_embedded},
+    };
+    cols = 3;
+    rows = ((slot2.count()-1) / cols) + 1;
+    for (int i = 0; i < slot2.size(); ++i) {
+        if (slot2.at(i).isEmpty()) continue;
+        int row = i % rows;
+        int col = i / rows;
+        wid = new SchemeWidget(slot2.at(i).at(0), box);
+        wid->setAlignment(Qt::AlignRight);
+        grid->addWidget(wid, row+1, col, Qt::AlignRight);
+        connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
+        mColorWidgets << wid;
+    }
+    for (int col = 0; col < 3; ++col)
+        grid->setColumnStretch(col, 1);
 
     // ICON colors
     box = ui->groupIconColors;

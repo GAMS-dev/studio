@@ -41,7 +41,7 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
     mSlotText.insert(Edit_matchesBg,            "matches");
-    mSlotText.insert(Edit_parenthesesValidFg,   "Valid parentheses");
+    mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
