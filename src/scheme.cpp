@@ -119,7 +119,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_assign,                  Color());
     mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
     mColorSchemes[sNr].insert(Syntax_comment,                 Color(QColor(80, 145, 75), fItalic));
-    mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBoldItalic));
+    mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_keyword,                 Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_declaration,             Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_identifier,              Color(QColor(Qt::black)));
@@ -139,11 +139,14 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
 
-    mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkRed).lighter(140), fBold));
+    mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(243,150,25), fBold));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkGreen).darker(120), fBold));
     mColorSchemes[sNr].insert(Syntax_keyword,                 Color(QColor(243,150,25), fBold));
+    mColorSchemes[sNr].insert(Syntax_declaration,             Color(QColor(243,150,25), fBold));
+    mColorSchemes[sNr].insert(Syntax_description,             Color(QColor(168,198,188)));
     mColorSchemes[sNr].insert(Syntax_comment,                 Color(QColor(191, 195, 186), fItalic));
     mColorSchemes[sNr].insert(Syntax_identifier,              Color(QColor(102,155,168)));
+    mColorSchemes[sNr].insert(Syntax_assign,                  Color(QColor(Qt::white)));
 
     invalidate();
 }
@@ -161,7 +164,7 @@ int Scheme::setActiveScheme(QString schemeName)
 
 int Scheme::setActiveScheme(int scheme)
 {
-    DEB() << "Scheme switched to " << scheme;
+//    DEB() << "Scheme switched to " << scheme;
     if (scheme < 0 || scheme >= mSchemeNames.size()) return -1;
     mActiveScheme = scheme;
     invalidate();

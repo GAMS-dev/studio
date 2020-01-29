@@ -101,6 +101,7 @@ void SettingsDialog::loadSettings()
     ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
+    ui->combo_editorTheme->setCurrentIndex(mSettings->colorSchemeIndex());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
