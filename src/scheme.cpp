@@ -134,6 +134,7 @@ void Scheme::initDefault()
     mColorSchemes << mColorSchemes.at(sNr++);
     mSchemeNames << "Dark";
 
+    mColorSchemes[sNr].insert(Syntax_neutral,                 Color(QColor(Qt::white)));
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(168,198,188));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
