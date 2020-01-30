@@ -56,11 +56,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     mSettings = Settings::settings();
     mSettings->block(); // prevent changes from outside this dialog
     loadSettings();
-
-    // TODO(JM) temporarily removed
-//    initColorPage();
-    ui->tabWidget->removeTab(3);
-
+    initColorPage();
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
 
