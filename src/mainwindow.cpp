@@ -118,12 +118,12 @@ MainWindow::MainWindow(QWidget *parent)
     mStatusWidgets = new StatusWidgets(this);
 
     // Project View Setup
-    int iconSize = fontMetrics().lineSpacing();
+    int iconSize = fontMetrics().lineSpacing() + 4;
     ui->projectView->setModel(mProjectRepo.treeModel());
     ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(iconSize, qRound(iconSize*1.2)));
+    ui->projectView->setIconSize(QSize(iconSize, iconSize));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);

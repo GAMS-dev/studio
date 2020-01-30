@@ -99,16 +99,16 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Line,                      QColor(Qt::gray));
-    mColorSchemes[sNr].insert(Icon_Back,                      QColor(Qt::gray));
+    mColorSchemes[sNr].insert(Icon_Line,                      QColor("#334455"));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor("#334455"));
     mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Disable_Back,                   QColor("#aaaaaa"));
-    mColorSchemes[sNr].insert(Active_Line,                    QColor("#0044EE"));
-    mColorSchemes[sNr].insert(Active_Back,                    QColor("#3377EE"));
-    mColorSchemes[sNr].insert(Select_Line,                    QColor("#0044EE"));
-    mColorSchemes[sNr].insert(Select_Back,                    QColor("#4499FF"));
-    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
-    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66BB66"));
+    mColorSchemes[sNr].insert(Active_Line,                    QColor("#2266AA"));
+    mColorSchemes[sNr].insert(Active_Back,                    QColor("#2266AA"));
+    mColorSchemes[sNr].insert(Select_Line,                    QColor("#2266AA"));
+    mColorSchemes[sNr].insert(Select_Back,                    QColor("#2266AA"));
+    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB3333"));
+    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#448822"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color());
@@ -265,7 +265,7 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
             from += 6;
             int len = data.indexOf(";}", from) - from;
             data.replace(from, len, colorCode.toLatin1());
-            DEB() << name << " [" << from << ", " << (end) << "] \n" << data;
+//            DEB() << name << " [" << from << ", " << (end) << "] \n" << data;
         }
     }
     return data;

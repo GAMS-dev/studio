@@ -96,7 +96,8 @@ void StudioSettings::resetSettings()
     Scheme::instance()->initDefault();
     mAppSettings->sync();
     mUserSettings->sync();
-    writeScheme();
+    // TODO(JM) temporarily deactivated
+//    writeScheme();
 }
 
 void StudioSettings::resetViewSettings()
@@ -253,7 +254,8 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->sync();
 
-    writeScheme();
+    // TODO(JM) temporarily deactivated
+//    writeScheme();
 }
 
 bool StudioSettings::writeScheme()
@@ -434,12 +436,14 @@ void StudioSettings::loadUserSettings()
 
     mUserSettings->endGroup();
 
-    readScheme();
+    // TODO(JM) temporarily deactivated: reactivate
+//    readScheme();
 }
 
 void StudioSettings::readScheme()
 {
     Scheme::instance()->initDefault();
+
     if (mColorSettings && mColorSettings->open(QIODevice::ReadOnly)) {
         QByteArray jsonColors = mColorSettings->readAll();
         Scheme::instance()->importJsonColorSchemes(jsonColors);

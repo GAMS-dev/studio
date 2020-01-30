@@ -79,6 +79,14 @@ void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot 
     frame->setAutoFillBackground(active);
     if (active) {
         setColor(frame, toColor(slot), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
+        if (Scheme::hasFontProps(slot)) {
+            ui->btBold->setDown(Scheme::hasFlag(slot, Scheme::fBold));
+            ui->btItalic->setDown(Scheme::hasFlag(slot, Scheme::fItalic));
+            QFont font = ui->textEx->font();
+            font.setBold(Scheme::hasFlag(slot, Scheme::fBold));
+            font.setItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+            ui->textEx->setFont(font);
+        }
         frame->installEventFilter(this);
     }
 }

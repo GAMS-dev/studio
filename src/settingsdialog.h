@@ -48,7 +48,6 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
-    void showEvent(QShowEvent *event) override;
 
 signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
@@ -56,6 +55,7 @@ signals:
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
+    void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &arg1);
     void on_sb_fontsize_valueChanged(int arg1);
     void schemeModified();
@@ -71,6 +71,7 @@ private slots:
     void on_miroBrowseButton_clicked();
 
     void on_cbSchemes_currentIndexChanged(int index);
+
 
 private:
     Ui::SettingsDialog *ui;

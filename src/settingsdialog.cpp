@@ -41,7 +41,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     mSettings = SettingsLocator::settings();
 
     // load from settings to UI
-    initColorPage();
+
+    // TODO(JM) temporarily removed
+//    initColorPage();
+    ui->tabWidget->removeTab(3);
+
     loadSettings();
 
     setModifiedStatus(false);
@@ -124,6 +128,16 @@ void SettingsDialog::loadSettings()
 
     // scheme data
     reloadColors();
+}
+
+void SettingsDialog::on_tabWidget_currentChanged(int index)
+{
+    if (mInitializing && ui->tabWidget->widget(index) == ui->tabColors) {
+        mInitializing = false;
+        for (SchemeWidget *wid : mColorWidgets) {
+            wid->refresh();
+        }
+    }
 }
 
 void SettingsDialog::setModified()
@@ -259,17 +273,6 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
         }
     }
     emit editorLineWrappingChanged();
-}
-
-void SettingsDialog::showEvent(QShowEvent *event)
-{
-    Q_UNUSED(event)
-    if (mInitializing) {
-        mInitializing = false;
-        for (SchemeWidget *wid : mColorWidgets) {
-            wid->refresh();
-        }
-    }
 }
 
 SettingsDialog::~SettingsDialog()
@@ -479,6 +482,8 @@ void SettingsDialog::on_cbSchemes_currentIndexChanged(int index)
     }
 }
 
+
 }
 }
+
 
