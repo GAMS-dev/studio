@@ -165,7 +165,6 @@ int Scheme::setActiveScheme(QString schemeName)
 
 int Scheme::setActiveScheme(int scheme)
 {
-//    DEB() << "Scheme switched to " << scheme;
     if (scheme < 0 || scheme >= mSchemeNames.size()) return -1;
     mActiveScheme = scheme;
     invalidate();

@@ -40,3 +40,9 @@ void MacOSCocoaBridge::setFullScreenMenuItemEverywhere(bool flag)
 {
     [[NSUserDefaults standardUserDefaults] setBool:flag forKey:@"NSFullScreenMenuItemEverywhere"];
 }
+
+bool MacOSCocoaBridge::isDarkMode()
+{
+    NSString *interfaceStyle = [NSUserDefaults.standardUserDefaults valueForKey:@"AppleInterfaceStyle"];
+    return [interfaceStyle isEqualToString:@"Dark"];
+}
