@@ -134,20 +134,33 @@ void Scheme::initDefault()
     mColorSchemes << mColorSchemes.at(sNr++);
     mSchemeNames << "Dark";
 
-    mColorSchemes[sNr].insert(Syntax_neutral,                 Color(QColor(Qt::white)));
+    // Dark Colors
+    QColor dark_highlight(243,150,25);
+    QColor dark_id(153,240,255);        //QColor(102,155,188);
+    QColor dark_assignment(168,198,134);//QColor(168,198,134);
+    QColor dark_unobstrusive(191, 195, 186);
+    QColor dark_neutral(186,216,224);       //QColor(186,216,224);
+
+    mColorSchemes[sNr].insert(Syntax_neutral,                 Color(dark_neutral));
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(168,198,188));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
 
-    mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(243,150,25), fBold));
-    mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkGreen).darker(120), fBold));
-    mColorSchemes[sNr].insert(Syntax_keyword,                 Color(QColor(243,150,25), fBold));
-    mColorSchemes[sNr].insert(Syntax_declaration,             Color(QColor(243,150,25), fBold));
-    mColorSchemes[sNr].insert(Syntax_description,             Color(QColor(168,198,188)));
-    mColorSchemes[sNr].insert(Syntax_comment,                 Color(QColor(191, 195, 186), fItalic));
-    mColorSchemes[sNr].insert(Syntax_identifier,              Color(QColor(102,155,168)));
-    mColorSchemes[sNr].insert(Syntax_assign,                  Color(QColor(Qt::white)));
+    mColorSchemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
+    mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment, fBold));
+    mColorSchemes[sNr].insert(Syntax_keyword,                 Color(dark_neutral, fBold));
+    mColorSchemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
+    mColorSchemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
+    mColorSchemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
+    mColorSchemes[sNr].insert(Syntax_identifier,              Color(dark_id));
+    mColorSchemes[sNr].insert(Syntax_assign,                  Color(dark_id));
+    mColorSchemes[sNr].insert(Syntax_identifierAssign,        Color(dark_assignment));
+    mColorSchemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
+    mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
+    mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
+    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter(), fBold));
+    mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
 
     invalidate();
 }
