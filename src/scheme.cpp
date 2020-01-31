@@ -18,6 +18,7 @@ const QColor CUndefined(255, 0, 200);
 Scheme::Scheme(QObject *parent) : QObject(parent)
 {
     mIconSet = "solid"; // thin, solid
+    initDefault();
     initSlotTexts();
 }
 
@@ -107,8 +108,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Active_Back,                    QColor("#2266AA"));
     mColorSchemes[sNr].insert(Select_Line,                    QColor("#2266AA"));
     mColorSchemes[sNr].insert(Select_Back,                    QColor("#2266AA"));
-    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB3333"));
-    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#448822"));
+    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
+    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66AA66"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color());
