@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/img">
+        <file alias="bookmark">bookmark.svg</file>
         <file alias="database">database.svg</file>
         <file alias="delete">remove.svg</file>
         <file alias="delete-all">trash.svg</file>

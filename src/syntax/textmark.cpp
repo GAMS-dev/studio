@@ -129,11 +129,11 @@ QIcon TextMark::icon()
 {
     switch (mType) {
     case error:
-        return Scheme::icon(":/%1/exclam-circle-r");
+        return Scheme::icon(":/img/exclam-circle-r");
     case link:
-        return mReference ? Scheme::icon(":/%1/err-ref") : Scheme::icon(":/%1/err-ref-missing");
+        return mReference ? Scheme::icon(":/img/err-ref") : Scheme::icon(":/img/err-ref-missing");
     case bookmark: {
-        QIcon ico = Scheme::icon(":/%1/bookmark");
+        QIcon ico = Scheme::icon(":/img/bookmark");
         return ico;
     }
     default:
