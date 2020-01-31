@@ -3598,6 +3598,7 @@ void MainWindow::resetViews()
         }
     }
     mGamsParameterEditor->setEditorExtended(false);
+    ui->toolBar->setVisible(true);
     addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
 }
 
