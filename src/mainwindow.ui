@@ -198,6 +198,7 @@
     <addaction name="actionProject_View"/>
     <addaction name="actionProcess_Log"/>
     <addaction name="actionHelp_View"/>
+    <addaction name="actionShowToolbar"/>
     <addaction name="separator"/>
     <addaction name="actionShow_System_Log"/>
     <addaction name="actionShow_Welcome_Page"/>
@@ -451,7 +452,7 @@
     </sizepolicy>
    </property>
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Toolbar</string>
    </property>
    <property name="movable">
     <bool>false</bool>
@@ -1245,6 +1246,14 @@
   <action name="actionCreate_model_assembly">
    <property name="text">
     <string>Create model assembly</string>
+   </property>
+  </action>
+  <action name="actionShowToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toolbar</string>
    </property>
   </action>
  </widget>
