@@ -65,7 +65,7 @@ QString CommonPaths::helpDocumentsDir()
 //    [sysdir]/Resources/docs
     QDir helpDocDir(systemDir());
     QString dochelp = helpDocDir.cleanPath(helpDocDir.absoluteFilePath(DocumentationDir));
-    return helpDocDir.path();
+    return dochelp;
 #else
     QDir helpDocDir(systemDir() + "/" + DocumentationDir);
     return helpDocDir.path();
