@@ -108,10 +108,13 @@ HelpWidget::HelpWidget(QWidget *parent) :
 
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
     connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &HelpWidget::searchText);
-    connect(ui->backButton, &QPushButton::clicked, this, &HelpWidget::on_backButtonTriggered);
-    connect(ui->forwardButton, &QPushButton::clicked, this, &HelpWidget::on_forwardButtonTriggered);
+    connect(ui->backButton, &QToolButton::clicked, this, &HelpWidget::on_backButtonTriggered);
+    connect(ui->forwardButton, &QToolButton::clicked, this, &HelpWidget::on_forwardButtonTriggered);
     connect(ui->caseSenstivity, &QCheckBox::clicked, this, &HelpWidget::on_caseSensitivityToggled);
-    connect(ui->closeButton, &QPushButton::clicked, this, &HelpWidget::on_closeButtonTriggered);
+    connect(ui->closeButton, &QToolButton::clicked, this, &HelpWidget::on_closeButtonTriggered);
+    ui->backButton->setIcon(Scheme::icon(":/%1/backward"));
+    ui->forwardButton->setIcon(Scheme::icon(":/%1/forward"));
+    ui->closeButton->setIcon(Scheme::icon(":/%1/remove"));
 
     clearStatusBar();
     ui->searchbarWidget->hide();
