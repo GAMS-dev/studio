@@ -123,6 +123,23 @@ void TestCommonPaths::testHelpDocumentDir()
     QVERIFY(QFileInfo(QDir(dir), "T_STUDIO.html").exists());
 }
 
+void TestCommonPaths::tesConvertHelpDocdirToGamsSysdir()
+{
+    //given
+    CommonPaths::setSystemDir();
+    QString sysdir = CommonPaths::systemDir();
+    QString helpdir = CommonPaths::helpDocumentsDir();
+    // when
+    QDir gamsHelpdir(helpdir);
+#ifdef __APPLE__
+    QString gamsSysdirPath = gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath("../../GAMS Terminal.app/Contents/MacOS"));
+#else
+    QString gamsSysdirPath = gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath(".."));
+#endif
+    // then
+    QVERIFY(QFileInfo(sysdir)==QFileInfo(gamsSysdirPath));
+}
+
 void TestCommonPaths::testAbsoluteFilePathEmpty()
 {
     auto result = CommonPaths::absolutFilePath("");
