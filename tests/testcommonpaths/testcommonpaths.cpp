@@ -111,6 +111,18 @@ void TestCommonPaths::testIsSystemDirInValid()
     QVERIFY(!CommonPaths::isSystemDirValid());
 }
 
+void TestCommonPaths::testHelpDocumentDir()
+{
+    //given
+    CommonPaths::setSystemDir();
+    // when
+    QString dir = CommonPaths::helpDocumentsDir();
+    // then
+    QVERIFY(dir.endsWith("docs"));
+    QVERIFY(QFileInfo(QDir(dir), "index.html").exists());
+    QVERIFY(QFileInfo(QDir(dir), "T_STUDIO.html").exists());
+}
+
 void TestCommonPaths::testAbsoluteFilePathEmpty()
 {
     auto result = CommonPaths::absolutFilePath("");

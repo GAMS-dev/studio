@@ -58,6 +58,20 @@ const QString& CommonPaths::documentationDir()
     return DocumentationDir;
 }
 
+QString CommonPaths::helpDocumentsDir()
+{
+#ifdef __APPLE__
+//    [sysdir]/GAMS Terminal.app/Contents/MacOS
+//    [sysdir]/Resources/docs
+    QDir helpDocDir(systemDir());
+    QString dochelp = helpDocDir.cleanPath(helpDocDir.absoluteFilePath(DocumentationDir));
+    return helpDocDir.path();
+#else
+    QDir helpDocDir(systemDir() + "/" + DocumentationDir);
+    return helpDocDir.path();
+#endif
+}
+
 const QString& CommonPaths::systemDir()
 {
     return SystemDir;
