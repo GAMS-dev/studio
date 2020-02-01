@@ -127,14 +127,14 @@ void TestCommonPaths::tesConvertHelpDocdirToGamsSysdir()
 {
     //given
     CommonPaths::setSystemDir();
-    QString sysdir = CommonPaths::systemDir();
+    QString sysdir = CommonPaths::canonicalPath(CommonPaths::systemDir());
     QString helpdir = CommonPaths::helpDocumentsDir();
     // when
     QDir gamsHelpdir(helpdir);
 #ifdef __APPLE__
-    QString gamsSysdirPath = gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath("../../GAMS Terminal.app/Contents/MacOS"));
+    QString gamsSysdirPath = CommonPaths::canonicalPath(gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath("../../GAMS Terminal.app/Contents/MacOS")));
 #else
-    QString gamsSysdirPath = gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath(".."));
+    QString gamsSysdirPath = CommonPaths::canonicalPath(gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath("..")));
 #endif
     // then
     QVERIFY(QFileInfo(sysdir)==QFileInfo(gamsSysdirPath));
