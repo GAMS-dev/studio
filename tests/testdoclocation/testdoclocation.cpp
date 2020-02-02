@@ -104,4 +104,17 @@ void TestDocLocation::testSolverAnchor()
         QCOMPARE( help::HelpData::getSolverOptionAnchor(solverName, optionName), anchor);
 }
 
+void TestDocLocation::testUrlLocalFile()
+{
+    // given
+    CommonPaths::setSystemDir();
+    QString docdir = CommonPaths::helpDocumentsDir();
+    QString indexFile = QFileInfo(QDir(docdir), "index.html").canonicalFilePath();
+    QUrl url = QUrl::fromLocalFile(indexFile);
+    // when
+    QString urlIndexFile = url.toLocalFile();
+    // then
+    QVERIFY2(QFileInfo(urlIndexFile).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+}
+
 QTEST_MAIN(TestDocLocation)

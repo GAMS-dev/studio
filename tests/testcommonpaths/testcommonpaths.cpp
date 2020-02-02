@@ -119,8 +119,9 @@ void TestCommonPaths::testHelpDocumentDir()
     QString dir = CommonPaths::helpDocumentsDir();
     // then
     QVERIFY(dir.endsWith("docs"));
-    QVERIFY(QFileInfo(QDir(dir), "index.html").exists());
-    QVERIFY(QFileInfo(QDir(dir), "T_STUDIO.html").exists());
+    QVERIFY2(QFileInfo(dir).exists(), QString("directory: '%1' does not exist").arg(dir).toLatin1());
+    QVERIFY2(QFileInfo(QDir(dir), "index.html").exists(), QString("File 'index.html' under directory: '%2' does not exist").arg(dir).toLatin1());
+    QVERIFY2(QFileInfo(QDir(dir), "T_STUDIO.html").exists(), QString("File 'T_STUDIO.html' under directory: '%2' does not exist").arg(dir).toLatin1());
 }
 
 void TestCommonPaths::tesConvertHelpDocdirToGamsSysdir()
@@ -137,7 +138,7 @@ void TestCommonPaths::tesConvertHelpDocdirToGamsSysdir()
     QString gamsSysdirPath = CommonPaths::canonicalPath(gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath("..")));
 #endif
     // then
-    QVERIFY(QFileInfo(sysdir)==QFileInfo(gamsSysdirPath));
+    QVERIFY2(QFileInfo(sysdir)==QFileInfo(gamsSysdirPath), QString("Two directorires: '%1' and '%2' are not the same").arg(sysdir).arg(gamsSysdirPath).toLatin1());
 }
 
 void TestCommonPaths::testAbsoluteFilePathEmpty()

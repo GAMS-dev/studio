@@ -33,6 +33,7 @@ class TestDocLocation : public QObject
 private slots:
     void testSolverAnchor_data();
     void testSolverAnchor();
+    void testUrlLocalFile();
 };
 
 #endif // TESTGAMSOPTION_H
