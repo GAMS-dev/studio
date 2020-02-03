@@ -228,7 +228,7 @@ public:
         QStringList pathList;
         for(QString path : getPathList()) {
             index++;
-            if (urlStr.indexOf(path) > -1)
+            if (urlStr.lastIndexOf(path) > -1)
                return index;
         }
         return index;
