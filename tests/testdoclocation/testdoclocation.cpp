@@ -120,34 +120,45 @@ void TestDocLocation::testUrlLocalFile()
 
 void TestDocLocation::testLocalFileToOnlineUrl_data()
 {
+    QTest::addColumn<QString>("section");
     QTest::addColumn<QString>("filename");
     QTest::addColumn<QString>("fragment");
     QTest::addColumn<QString>("expectedurlstr");
 
-    QTest::newRow("index")    << "index.html"    << ""   << "https://www.gams.com/latest/docs/index.html";
-    QTest::newRow("RN 29")    << "RN_29.html"    << "RN_2910"
+    QTest::newRow("index")    << "docs" << "index.html"    << ""   << "https://www.gams.com/latest/docs/index.html";
+    QTest::newRow("RN 29")    << "docs" << "RN_29.html"    << "RN_2910"
                               << "https://www.gams.com/latest/docs/RN_29.html#RN_2910";
-    QTest::newRow("set definition")   << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction"
+    QTest::newRow("set definition")   << "docs" << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction"
                                       << "https://www.gams.com/latest/docs/UG_SetDefinition.html#UG_SetDefinition_Introduction";
-    QTest::newRow("Gams param List")  << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters"
+    QTest::newRow("Gams param List")  << "docs" << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters"
                                       << "https://www.gams.com/latest/docs/UG_GamsCall.html#UG_GamsCall_ListOfCommandLineParameters";
-    QTest::newRow("Cplex Intro")      << "S_CPLEX.html"          << "CPLEX_INTRODUCTION"
+    QTest::newRow("Cplex Intro")      << "docs" << "S_CPLEX.html"          << "CPLEX_INTRODUCTION"
                                       << "https://www.gams.com/latest/docs/S_CPLEX.html#CPLEX_INTRODUCTION";
-    QTest::newRow("studio")           << "T_STUDIO.html" << ""   << "https://www.gams.com/latest/docs/T_STUDIO.html";
-    QTest::newRow("C++ TransportGDX") << "apis/examples_cpp/transportGDX_8cpp.html"  << ""
+    QTest::newRow("studio")           << "docs" << "T_STUDIO.html" << ""   << "https://www.gams.com/latest/docs/T_STUDIO.html";
+    QTest::newRow("C++ TransportGDX") << "docs" << "apis/examples_cpp/transportGDX_8cpp.html"  << ""
                                       << "https://www.gams.com/latest/docs/apis/examples_cpp/transportGDX_8cpp.html";
-    QTest::newRow("OPT API#optcount") << "apis/expert-level/optqdrep.html"           << "optCount"
+    QTest::newRow("OPT API#optcount") << "docs" << "apis/expert-level/optqdrep.html"           << "optCount"
                                       << "https://www.gams.com/latest/docs/apis/expert-level/optqdrep.html#optCount";
+
+    QTest::newRow("gamslib trnsport")  << "gamslib_ml/libhtml"  << "gamslib_trnsport.html"           << ""
+                                       << "https://www.gams.com/latest/gamslib_ml/libhtml/gamslib_trnsport.html";
+    QTest::newRow("datalib")           << "datalib_ml/libhtml"  << "index.html"           << "datalib"
+                                       << "https://www.gams.com/latest/datalib_ml/libhtml/index.html#datalib";
+    QTest::newRow("emplib trnsportvi") << "emplib_ml/libhtml"  << "emplib_transvi.html"           << ""
+                                       << "https://www.gams.com/latest/emplib_ml/libhtml/emplib_transvi.html";
+    QTest::newRow("apilib CPPtrseq" )  << "apilib_ml/libhtml"  << "apilib_CPPtrseq.html"           << ""
+                                       << "https://www.gams.com/latest/apilib_ml/libhtml/apilib_CPPtrseq.html";
 }
 
 void TestDocLocation::testLocalFileToOnlineUrl()
 {
+    QFETCH(QString, section);
     QFETCH(QString, filename);
     QFETCH(QString, fragment);
     QFETCH(QString, expectedurlstr);
 
     // given
-    QString docdir = CommonPaths::systemDir() + "/" + CommonPaths::documentationDir();
+    QString docdir = CommonPaths::systemDir() + "/" + section;
     QString indexFile = docdir + "/" + filename;
 
     qDebug() << "docdir:" << docdir;
@@ -164,9 +175,17 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     QString onlinepath = onlineStartPageUrl.path();
     QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
 
+
     QString filePath = QDir(docdir).canonicalPath();
     qDebug() << "filePath=" << filePath;
-    int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf("docs");
+
+    int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlLocalFile);
+    QVERIFY(docsidx > -1);
+
+    QStringList pathStrList = gams::studio::help::HelpData::HelpData::getPathList();
+    QString pathStr = pathStrList.at(docsidx);
+
+    int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf(pathStr);
     QString newPath = urlLocalFile.right(newSize);
     pathList << newPath.split("/", QString::SkipEmptyParts) ;
 
@@ -190,39 +209,50 @@ void TestDocLocation::testLocalFileToOnlineUrl()
 void TestDocLocation::testOnlineUrlToLocalFile_data()
 {
     QTest::addColumn<QString>("urlstr");
+    QTest::addColumn<QString>("section");
     QTest::addColumn<QString>("localfile");
     QTest::addColumn<QString>("fragment");
 
-    QTest::newRow("index")            << "https://www.gams.com/latest/docs/index.html" << "index.html"    << "";
+    QTest::newRow("index")            << "https://www.gams.com/latest/docs/index.html" << "docs" << "index.html"    << "";
     QTest::newRow("RN 29")            << "https://www.gams.com/latest/docs/RN_29.html#RN_2910"
-                                      << "RN_29.html"    << "RN_2910";
+                                      << "docs" << "RN_29.html"    << "RN_2910";
     QTest::newRow("set definition")   << "https://www.gams.com/latest/docs/UG_SetDefinition.html#UG_SetDefinition_Introduction"
-                                      << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction";
+                                      << "docs" << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction";
     QTest::newRow("Gams param List")  << "https://www.gams.com/latest/docs/UG_GamsCall.html#UG_GamsCall_ListOfCommandLineParameters"
-                                      << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters";
+                                      << "docs" << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters";
     QTest::newRow("Cplex Intro")      << "https://www.gams.com/latest/docs/S_CPLEX.html#CPLEX_INTRODUCTION"
-                                      << "S_CPLEX.html"          << "CPLEX_INTRODUCTION";
-    QTest::newRow("studio")           << "https://www.gams.com/latest/docs/T_STUDIO.html" << "T_STUDIO.html" << "";
+                                      << "docs" << "S_CPLEX.html"          << "CPLEX_INTRODUCTION";
+    QTest::newRow("studio")           << "https://www.gams.com/latest/docs/T_STUDIO.html" << "docs" << "T_STUDIO.html" << "";
     QTest::newRow("C++ TransportGDX") << "https://www.gams.com/latest/docs/apis/examples_cpp/transportGDX_8cpp.html"
-                                      << "apis/examples_cpp/transportGDX_8cpp.html"  << "";
+                                      << "docs" << "apis/examples_cpp/transportGDX_8cpp.html"  << "";
     QTest::newRow("OPT API#optcount") << "https://www.gams.com/latest/docs/apis/expert-level/optqdrep.html#optCount"
-                                      << "apis/expert-level/optqdrep.html"           << "optCount";
+                                      << "docs" << "apis/expert-level/optqdrep.html"           << "optCount";
+
+    QTest::newRow("gamslib trnsport")  << "https://www.gams.com/latest/gamslib_ml/libhtml/gamslib_trnsport.html"
+                                       << "gamslib_ml/libhtml"  << "gamslib_trnsport.html"           << "";
+    QTest::newRow("datalib")           << "https://www.gams.com/latest/datalib_ml/libhtml/index.html#datalib"
+                                       << "datalib_ml/libhtml"  << "index.html"           << "datalib";
+    QTest::newRow("emplib trnsportvi") << "https://www.gams.com/latest/emplib_ml/libhtml/emplib_transvi.html"
+                                       << "emplib_ml/libhtml"  << "emplib_transvi.html"           << "";
+    QTest::newRow("apilib CPPtrseq" )  << "https://www.gams.com/latest/apilib_ml/libhtml/apilib_CPPtrseq.html"
+                                       << "apilib_ml/libhtml"  << "apilib_CPPtrseq.html"           << "";
 }
 
 void TestDocLocation::testOnlineUrlToLocalFile()
 {
     QFETCH(QString, urlstr);
+    QFETCH(QString, section);
     QFETCH(QString, localfile);
     QFETCH(QString, fragment);
 
     // given
     QString baseLocation = QDir(CommonPaths::systemDir()).canonicalPath();
-    QString docdir = CommonPaths::helpDocumentsDir();
-    QString docdirStr = QDir(docdir).canonicalPath();
-    QString indexFileStr = QFileInfo(docdirStr, localfile).canonicalFilePath();
+    QString docdir = baseLocation + "/" + section;
+    QString indexFile = docdir + "/" + localfile;
+
     qDebug() << "baseLocation:" << baseLocation;
-    qDebug() << "docdirstr:" << docdirStr;
-    qDebug() << "indexFileStr:" << indexFileStr;
+    qDebug() << "docdir:" << docdir;
+    qDebug() << "indexFile:" << indexFile;
 
     QUrl url(urlstr, QUrl::TolerantMode);
 
@@ -241,15 +271,19 @@ void TestDocLocation::testOnlineUrlToLocalFile()
     localUrl.setScheme("file");
     localUrl.setPath("/" + pathList.join("/"));
 
-    QVERIFY2(QFileInfo(localUrl.toLocalFile())==QFileInfo(indexFileStr), QString("Expect two files:'%1' and '%2' to be equal")
+    QVERIFY2(QFileInfo(localUrl.toLocalFile())==QFileInfo(indexFile), QString("Expect two files:'%1' and '%2' to be equal")
                                                                              .arg(localUrl.toLocalFile())
-                                                                             .arg(indexFileStr)
-                                                                        .toLatin1()
+                                                                             .arg(indexFile)
+                                                                     .toLatin1()
              );
 
     if (!url.fragment().isEmpty())
         localUrl.setFragment(url.fragment());
-    QVERIFY(localUrl.isValid());
+    QVERIFY2(fragment.compare(url.fragment(), Qt::CaseInsensitive)==0, QString("Expect two fragments:'%1' and '%2' to be the same")
+                                                                         .arg(url.fragment())
+                                                                         .arg(fragment)
+                                                                       .toLatin1()
+    );
 
 }
 

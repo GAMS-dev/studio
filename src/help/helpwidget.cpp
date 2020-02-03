@@ -388,24 +388,33 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
    if (checked) {
        QString urlLocalFile = url.toLocalFile();
 
-       int newSize = urlLocalFile.size() - urlLocalFile.indexOf(baseLocation) - baseLocation.size();
-       QString newPath = urlLocalFile.right(newSize);
-
        QString onlinepath = onlineStartPageUrl.path();
        QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
-       pathList << newPath.split("/", QString::SkipEmptyParts) ;
 
-       QUrl onlineUrl;
-       onlineUrl.setScheme(onlineStartPageUrl.scheme());
-       onlineUrl.setHost(onlineStartPageUrl.host());
-       onlineUrl.setPath("/" + pathList.join("/"));
+       int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlLocalFile);
+       if(docsidx > -1) {
+           QStringList pathStrList = gams::studio::help::HelpData::HelpData::getPathList();
+           QString pathStr = pathStrList.at(docsidx);
 
-       if (!url.fragment().isEmpty())
-           onlineUrl.setFragment(url.fragment());
-       if (url.isValid())
-           ui->webEngineView->page()->setUrl( onlineUrl );
-       else
+           int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf(pathStr);
+           QString newPath = urlLocalFile.right(newSize);
+           pathList << newPath.split("/", QString::SkipEmptyParts) ;
+
+           QUrl onlineUrl;
+           onlineUrl.setScheme(onlineStartPageUrl.scheme());
+           onlineUrl.setHost(onlineStartPageUrl.host());
+           onlineUrl.setPath("/" + pathList.join("/"));
+
+           if (!url.fragment().isEmpty())
+               onlineUrl.setFragment(url.fragment());
+
+           if (url.isValid())
+               ui->webEngineView->page()->setUrl( onlineUrl );
+           else
+               ui->webEngineView->page()->setUrl( onlineStartPageUrl );
+       } else {
            ui->webEngineView->page()->setUrl( onlineStartPageUrl );
+       }
     } else {
        if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
            if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
