@@ -118,11 +118,12 @@ void TestCommonPaths::testHelpDocumentDir()
     QVERIFY2(QFileInfo(CommonPaths::systemDir()).exists(), QString("system directory: '%1' does not exist").arg(CommonPaths::systemDir()).toLatin1());
     // when
     QString dir = CommonPaths::helpDocumentsDir();
+    qDebug() << "docdir:" << dir;
     // then
-    QVERIFY(dir.endsWith("docs"));
     QVERIFY2(QFileInfo(dir).exists(), QString("directory: '%1' does not exist").arg(dir).toLatin1());
     QVERIFY2(QFileInfo(QDir(dir), "index.html").exists(), QString("File 'index.html' under directory: '%2' does not exist").arg(dir).toLatin1());
     QVERIFY2(QFileInfo(QDir(dir), "T_STUDIO.html").exists(), QString("File 'T_STUDIO.html' under directory: '%2' does not exist").arg(dir).toLatin1());
+    QVERIFY2(dir.endsWith("docs"), QString("expected directory: '%1' to end with 'docs'").arg(dir).toLatin1());
 }
 
 void TestCommonPaths::tesConvertHelpDocdirToGamsSysdir()

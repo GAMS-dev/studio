@@ -19,6 +19,7 @@
  */
 #include "testdoclocation.h"
 #include "commonpaths.h"
+#include "help/helpdata.h"
 
 #include <QStandardPaths>
 
@@ -124,7 +125,7 @@ void TestDocLocation::testLocalFileToOnlineUrl_data()
     QTest::addColumn<QString>("expectedurlstr");
 
     QTest::newRow("index")    << "index.html"    << ""   << "https://www.gams.com/latest/docs/index.html";
-    QTest::newRow("RN 30")    << "RN_29.html"    << "RN_2910"
+    QTest::newRow("RN 29")    << "RN_29.html"    << "RN_2910"
                               << "https://www.gams.com/latest/docs/RN_29.html#RN_2910";
     QTest::newRow("set definition")   << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction"
                                       << "https://www.gams.com/latest/docs/UG_SetDefinition.html#UG_SetDefinition_Introduction";
@@ -156,7 +157,7 @@ void TestDocLocation::testLocalFileToOnlineUrl()
 
     QUrl url = QUrl::fromLocalFile(indexFileStr);
     QString urlLocalFile = url.toLocalFile();
-qDebug() << "urlLocalFile:" << urlLocalFile;
+    qDebug() << "urlLocalFile:" << urlLocalFile;
      QUrl onlineStartPageUrl = QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
 
     // when
@@ -181,7 +182,73 @@ qDebug() << "urlLocalFile:" << urlLocalFile;
                                       .arg(expectUrl.toDisplayString())
                                       .arg(onlineUrl.toDisplayString())
                                    .toLatin1()
-    );
+             );
+}
+
+void TestDocLocation::testOnlineUrlToLocalFile_data()
+{
+    QTest::addColumn<QString>("urlstr");
+    QTest::addColumn<QString>("localfile");
+    QTest::addColumn<QString>("fragment");
+
+    QTest::newRow("index")            << "https://www.gams.com/latest/docs/index.html" << "index.html"    << "";
+    QTest::newRow("RN 29")            << "https://www.gams.com/latest/docs/RN_29.html#RN_2910"
+                                      << "RN_29.html"    << "RN_2910";
+    QTest::newRow("set definition")   << "https://www.gams.com/latest/docs/UG_SetDefinition.html#UG_SetDefinition_Introduction"
+                                      << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction";
+    QTest::newRow("Gams param List")  << "https://www.gams.com/latest/docs/UG_GamsCall.html#UG_GamsCall_ListOfCommandLineParameters"
+                                      << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters";
+    QTest::newRow("Cplex Intro")      << "https://www.gams.com/latest/docs/S_CPLEX.html#CPLEX_INTRODUCTION"
+                                      << "S_CPLEX.html"          << "CPLEX_INTRODUCTION";
+    QTest::newRow("studio")           << "https://www.gams.com/latest/docs/T_STUDIO.html" << "T_STUDIO.html" << "";
+    QTest::newRow("C++ TransportGDX") << "https://www.gams.com/latest/docs/apis/examples_cpp/transportGDX_8cpp.html"
+                                      << "apis/examples_cpp/transportGDX_8cpp.html"  << "";
+    QTest::newRow("OPT API#optcount") << "https://www.gams.com/latest/docs/apis/expert-level/optqdrep.html#optCount"
+                                      << "apis/expert-level/optqdrep.html"           << "optCount";
+}
+
+void TestDocLocation::testOnlineUrlToLocalFile()
+{
+    QFETCH(QString, urlstr);
+    QFETCH(QString, localfile);
+    QFETCH(QString, fragment);
+
+    // given
+    QString baseLocation = QDir(CommonPaths::systemDir()).canonicalPath();
+    QString docdir = CommonPaths::helpDocumentsDir();
+    QString docdirStr = QDir(docdir).canonicalPath();
+    QString indexFileStr = QFileInfo(docdirStr, localfile).canonicalFilePath();
+    qDebug() << "baseLocation:" << baseLocation;
+    qDebug() << "docdirstr:" << docdirStr;
+    qDebug() << "indexFileStr:" << indexFileStr;
+
+    QUrl url(urlstr, QUrl::TolerantMode);
+
+    // when
+    int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlstr);
+    QVERIFY(docsidx > -1);
+
+    QStringList pathStrList = gams::studio::help::HelpData::HelpData::getPathList();
+    QString pathStr = pathStrList.at(docsidx);
+    int pathIndex = url.path().indexOf( pathStr );
+    QString newPath = url.path().mid( pathIndex, url.path().size());
+    QStringList pathList;
+    pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
+
+    QUrl localUrl = QUrl::fromLocalFile(QString());
+    localUrl.setScheme("file");
+    localUrl.setPath("/" + pathList.join("/"));
+
+    QVERIFY2(QFileInfo(localUrl.toLocalFile())==QFileInfo(indexFileStr), QString("Expect two files:'%1' and '%2' to be equal")
+                                                                             .arg(localUrl.toLocalFile())
+                                                                             .arg(indexFileStr)
+                                                                        .toLatin1()
+             );
+
+    if (!url.fragment().isEmpty())
+        localUrl.setFragment(url.fragment());
+    QVERIFY(localUrl.isValid());
+
 }
 
 QTEST_MAIN(TestDocLocation)
