@@ -147,25 +147,27 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     QFETCH(QString, expectedurlstr);
 
     // given
-    QString baseLocation = QDir(CommonPaths::systemDir()).canonicalPath();
-    QString docdir = CommonPaths::helpDocumentsDir();
-    QString docdirStr = QDir(docdir).canonicalPath();
-    QString indexFileStr = QFileInfo(docdirStr, filename).canonicalFilePath();
-    qDebug() << "baseLocation:" << baseLocation;
-    qDebug() << "docdirstr:" << docdirStr;
-    qDebug() << "indexFileStr:" << indexFileStr;
+    QString docdir = CommonPaths::systemDir() + "/" + CommonPaths::documentationDir();
+    QString indexFile = docdir + "/" + filename;
 
-    QUrl url = QUrl::fromLocalFile(indexFileStr);
+    qDebug() << "docdir:" << docdir;
+    qDebug() << "indexFile:" << indexFile;
+
+    QUrl url = QUrl::fromLocalFile(indexFile);
     QString urlLocalFile = url.toLocalFile();
     qDebug() << "urlLocalFile:" << urlLocalFile;
-     QUrl onlineStartPageUrl = QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
+
+    QVERIFY2(QFileInfo(urlLocalFile).exists(), QString("expect an existence of %1").arg( urlLocalFile ).toLatin1());
 
     // when
-    int newSize = urlLocalFile.size() - urlLocalFile.indexOf(baseLocation) - baseLocation.size();
-    QString newPath = urlLocalFile.right(newSize);
-
+    QUrl onlineStartPageUrl = QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
     QString onlinepath = onlineStartPageUrl.path();
     QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
+
+    QString filePath = QDir(docdir).canonicalPath();
+    qDebug() << "filePath=" << filePath;
+    int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf("docs");
+    QString newPath = urlLocalFile.right(newSize);
     pathList << newPath.split("/", QString::SkipEmptyParts) ;
 
     QUrl onlineUrl;
