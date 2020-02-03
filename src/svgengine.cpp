@@ -9,12 +9,12 @@
 namespace gams {
 namespace studio {
 
-SvgEngine::SvgEngine(const QString &name) : mName(name)
+SvgEngine::SvgEngine(const QString &name) : QIconEngine(), mName(name)
 {
     mController = Scheme::instance();
 }
 
-SvgEngine::SvgEngine(const SvgEngine &other)
+SvgEngine::SvgEngine(const SvgEngine &other) : QIconEngine()
 {
     mController = other.mController;
     mName = other.mName;
