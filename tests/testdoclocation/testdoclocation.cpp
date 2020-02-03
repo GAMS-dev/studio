@@ -110,12 +110,15 @@ void TestDocLocation::testUrlLocalFile()
     // given
     CommonPaths::setSystemDir();
     QString docdir = CommonPaths::systemDir() + "/" + CommonPaths::documentationDir();
-    QString indexFile = QFileInfo(QDir(docdir), "index.html").canonicalFilePath();
-    QUrl url = QUrl::fromLocalFile(indexFile);
     // when
-    QString urlIndexFile = url.toLocalFile();
+    QString urlIndexFile = QDir::cleanPath(docdir);
+    qDebug() << "urlIndexFile:" << urlIndexFile;
     // then
-    QVERIFY2(QFileInfo(urlIndexFile).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+    QFileInfo fi(urlIndexFile);
+    if (fi.isSymLink())
+        QVERIFY2(QFileInfo(fi.symLinkTarget()).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+    else
+        QVERIFY2(fi.exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
 }
 
 void TestDocLocation::testLocalFileToOnlineUrl_data()
@@ -168,7 +171,15 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     QString urlLocalFile = url.toLocalFile();
     qDebug() << "urlLocalFile:" << urlLocalFile;
 
-    QVERIFY2(QFileInfo(urlLocalFile).exists(), QString("expect an existence of %1").arg( urlLocalFile ).toLatin1());
+    QString urlIndexFile = QDir::cleanPath(docdir);
+    qDebug() << "urlIndexFile:" << urlIndexFile;
+
+    // then
+    QFileInfo fi(urlIndexFile);
+    if (fi.isSymLink())
+        QVERIFY2(QFileInfo(fi.symLinkTarget()).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+    else
+        QVERIFY2(fi.exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
 
     // when
     QUrl onlineStartPageUrl = QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
