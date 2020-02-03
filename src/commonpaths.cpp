@@ -58,12 +58,6 @@ const QString& CommonPaths::documentationDir()
     return DocumentationDir;
 }
 
-QString CommonPaths::helpDocumentsDir()
-{
-    QDir docdir(CommonPaths::systemDir() + "/" + DocumentationDir);
-    return docdir.canonicalPath();
-}
-
 const QString& CommonPaths::systemDir()
 {
     return SystemDir;

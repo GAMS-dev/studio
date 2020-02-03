@@ -69,12 +69,6 @@ public:
     static QString userModelLibraryDir();
 
     ///
-    /// \brief Get GAMS documentation directory.
-    /// \return Returns the GAMS documentation directory.
-    ///
-    static QString helpDocumentsDir();
-
-    ///
     /// \brief Get the absolut file path.
     /// \param filePath File to get the absolute path for.
     /// \return Returns the absolute file path if \p filePath is not empty;

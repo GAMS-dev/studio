@@ -111,47 +111,6 @@ void TestCommonPaths::testIsSystemDirInValid()
     QVERIFY(!CommonPaths::isSystemDirValid());
 }
 
-void TestCommonPaths::testHelpDocumentDir()
-{
-    //given
-    CommonPaths::setSystemDir();
-    QVERIFY2(QFileInfo(CommonPaths::systemDir()).exists(), QString("system directory: '%1' does not exist").arg(CommonPaths::systemDir()).toLatin1());
-    // when
-    QString dir = CommonPaths::helpDocumentsDir();
-    qDebug() << "sysdir:" << CommonPaths::systemDir();
-    qDebug() << "docdir:" << dir;
-
-    QDir d(CommonPaths::systemDir());
-    QString docdir1 = d.absoluteFilePath(CommonPaths::documentationDir());
-    qDebug()<< "docdir1:" << QFileInfo(docdir1).canonicalFilePath();
-    QString link = CommonPaths::systemDir() + "/" + CommonPaths::documentationDir();
-    QDir docdir2(link);
-    qDebug() << "docdir2:" << docdir2.canonicalPath();
-    qDebug() << "docdir3:" << QFileInfo(link).canonicalFilePath();
-    qDebug() << "docdir4:" << QDir(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir()).canonicalPath();
-
-    // then
-    QVERIFY2(QFileInfo(dir).exists(), QString("directory: '%1' does not exist").arg(dir).toLatin1());
-    QVERIFY2(QFileInfo(QDir(dir), "index.html").exists(), QString("File 'index.html' under directory: '%2' does not exist").arg(dir).toLatin1());
-    QVERIFY2(QFileInfo(QDir(dir), "T_STUDIO.html").exists(), QString("File 'T_STUDIO.html' under directory: '%2' does not exist").arg(dir).toLatin1());
-    QVERIFY2(dir.endsWith("docs"), QString("expected directory: '%1' to end with 'docs'").arg(dir).toLatin1());
-}
-
-void TestCommonPaths::tesConvertHelpDocdirToGamsSysdir()
-{
-    //given
-    CommonPaths::setSystemDir();
-    QString sysdir = CommonPaths::systemDir();
-    QString helpdir = CommonPaths::helpDocumentsDir();
-    // when
-    QString sysdirStr = QDir(sysdir).canonicalPath();
-    QString helpdirStr = QDir(helpdir).canonicalPath();
-    QString indexFileStr = QFileInfo(helpdirStr,"index.html").canonicalFilePath();
-    // then
-    QVERIFY(indexFileStr.indexOf(helpdirStr) >= 0);
-    QVERIFY(indexFileStr.indexOf(sysdirStr) >= 0);
-}
-
 void TestCommonPaths::testAbsoluteFilePathEmpty()
 {
     auto result = CommonPaths::absolutFilePath("");

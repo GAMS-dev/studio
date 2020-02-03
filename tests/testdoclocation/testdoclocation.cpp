@@ -109,7 +109,7 @@ void TestDocLocation::testUrlLocalFile()
 {
     // given
     CommonPaths::setSystemDir();
-    QString docdir = CommonPaths::helpDocumentsDir();
+    QString docdir = CommonPaths::systemDir() + "/" + CommonPaths::documentationDir();
     QString indexFile = QFileInfo(QDir(docdir), "index.html").canonicalFilePath();
     QUrl url = QUrl::fromLocalFile(indexFile);
     // when

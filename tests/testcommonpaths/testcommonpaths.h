@@ -44,9 +44,6 @@ private slots:
     void testIsSystemDirValid();
     void testIsSystemDirInValid();
 
-    void testHelpDocumentDir();
-    void tesConvertHelpDocdirToGamsSysdir();
-
     void testAbsoluteFilePathEmpty();
     void testAbsoluteFilePathNullStr();
     void testAbsoluteFilePathExisting();
