@@ -383,11 +383,11 @@ void HelpWidget::on_actionOrganizeBookmark_triggered()
 void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 {
    QUrl url = ui->webEngineView->page()->url();
-
-   QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
+   QString baseLocation = QDir(CommonPaths::systemDir()).canonicalPath();
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
        QString urlLocalFile = url.toLocalFile();
+
        int newSize = urlLocalFile.size() - urlLocalFile.indexOf(baseLocation) - baseLocation.size();
        QString newPath = urlLocalFile.right(newSize);
 
@@ -399,6 +399,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
        onlineUrl.setScheme(onlineStartPageUrl.scheme());
        onlineUrl.setHost(onlineStartPageUrl.host());
        onlineUrl.setPath("/" + pathList.join("/"));
+
        if (!url.fragment().isEmpty())
            onlineUrl.setFragment(url.fragment());
        if (url.isValid())

@@ -115,6 +115,7 @@ void TestCommonPaths::testHelpDocumentDir()
 {
     //given
     CommonPaths::setSystemDir();
+    QVERIFY2(QFileInfo(CommonPaths::systemDir()).exists(), QString("system directory: '%1' does not exist").arg(CommonPaths::systemDir()).toLatin1());
     // when
     QString dir = CommonPaths::helpDocumentsDir();
     // then
@@ -128,17 +129,15 @@ void TestCommonPaths::tesConvertHelpDocdirToGamsSysdir()
 {
     //given
     CommonPaths::setSystemDir();
-    QString sysdir = CommonPaths::canonicalPath(CommonPaths::systemDir());
+    QString sysdir = CommonPaths::systemDir();
     QString helpdir = CommonPaths::helpDocumentsDir();
     // when
-    QDir gamsHelpdir(helpdir);
-#ifdef __APPLE__
-    QString gamsSysdirPath = CommonPaths::canonicalPath(gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath("../../GAMS Terminal.app/Contents/MacOS")));
-#else
-    QString gamsSysdirPath = CommonPaths::canonicalPath(gamsHelpdir.cleanPath(gamsHelpdir.absoluteFilePath("..")));
-#endif
+    QString sysdirStr = QDir(sysdir).canonicalPath();
+    QString helpdirStr = QDir(helpdir).canonicalPath();
+    QString indexFileStr = QFileInfo(helpdirStr,"index.html").canonicalFilePath();
     // then
-    QVERIFY2(QFileInfo(sysdir)==QFileInfo(gamsSysdirPath), QString("Two directorires: '%1' and '%2' are not the same").arg(sysdir).arg(gamsSysdirPath).toLatin1());
+    QVERIFY(indexFileStr.indexOf(helpdirStr) >= 0);
+    QVERIFY(indexFileStr.indexOf(sysdirStr) >= 0);
 }
 
 void TestCommonPaths::testAbsoluteFilePathEmpty()

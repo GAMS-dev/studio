@@ -117,4 +117,71 @@ void TestDocLocation::testUrlLocalFile()
     QVERIFY2(QFileInfo(urlIndexFile).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
 }
 
+void TestDocLocation::testLocalFileToOnlineUrl_data()
+{
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<QString>("fragment");
+    QTest::addColumn<QString>("expectedurlstr");
+
+    QTest::newRow("index")    << "index.html"    << ""   << "https://www.gams.com/latest/docs/index.html";
+    QTest::newRow("RN 30")    << "RN_29.html"    << "RN_2910"
+                              << "https://www.gams.com/latest/docs/RN_29.html#RN_2910";
+    QTest::newRow("set definition")   << "UG_SetDefinition.html" << "UG_SetDefinition_Introduction"
+                                      << "https://www.gams.com/latest/docs/UG_SetDefinition.html#UG_SetDefinition_Introduction";
+    QTest::newRow("Gams param List")  << "UG_GamsCall.html"      << "UG_GamsCall_ListOfCommandLineParameters"
+                                      << "https://www.gams.com/latest/docs/UG_GamsCall.html#UG_GamsCall_ListOfCommandLineParameters";
+    QTest::newRow("Cplex Intro")      << "S_CPLEX.html"          << "CPLEX_INTRODUCTION"
+                                      << "https://www.gams.com/latest/docs/S_CPLEX.html#CPLEX_INTRODUCTION";
+    QTest::newRow("studio")           << "T_STUDIO.html" << ""   << "https://www.gams.com/latest/docs/T_STUDIO.html";
+    QTest::newRow("C++ TransportGDX") << "apis/examples_cpp/transportGDX_8cpp.html"  << ""
+                                      << "https://www.gams.com/latest/docs/apis/examples_cpp/transportGDX_8cpp.html";
+    QTest::newRow("OPT API#optcount") << "apis/expert-level/optqdrep.html"           << "optCount"
+                                      << "https://www.gams.com/latest/docs/apis/expert-level/optqdrep.html#optCount";
+}
+
+void TestDocLocation::testLocalFileToOnlineUrl()
+{
+    QFETCH(QString, filename);
+    QFETCH(QString, fragment);
+    QFETCH(QString, expectedurlstr);
+
+    // given
+    QString baseLocation = QDir(CommonPaths::systemDir()).canonicalPath();
+    QString docdir = CommonPaths::helpDocumentsDir();
+    QString docdirStr = QDir(docdir).canonicalPath();
+    QString indexFileStr = QFileInfo(docdirStr, filename).canonicalFilePath();
+    qDebug() << "baseLocation:" << baseLocation;
+    qDebug() << "docdirstr:" << docdirStr;
+    qDebug() << "indexFileStr:" << indexFileStr;
+
+    QUrl url = QUrl::fromLocalFile(indexFileStr);
+    QString urlLocalFile = url.toLocalFile();
+qDebug() << "urlLocalFile:" << urlLocalFile;
+     QUrl onlineStartPageUrl = QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
+
+    // when
+    int newSize = urlLocalFile.size() - urlLocalFile.indexOf(baseLocation) - baseLocation.size();
+    QString newPath = urlLocalFile.right(newSize);
+
+    QString onlinepath = onlineStartPageUrl.path();
+    QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
+    pathList << newPath.split("/", QString::SkipEmptyParts) ;
+
+    QUrl onlineUrl;
+    onlineUrl.setScheme(onlineStartPageUrl.scheme());
+    onlineUrl.setHost(onlineStartPageUrl.host());
+    onlineUrl.setPath("/" + pathList.join("/"));
+
+    if (!fragment.isEmpty())
+        onlineUrl.setFragment(fragment);
+
+    // then
+    QUrl expectUrl(expectedurlstr, QUrl::TolerantMode);
+    QVERIFY2(expectUrl==onlineUrl, QString("Expect two urls:'%1' and '%2' to be equal")
+                                      .arg(expectUrl.toDisplayString())
+                                      .arg(onlineUrl.toDisplayString())
+                                   .toLatin1()
+    );
+}
+
 QTEST_MAIN(TestDocLocation)
