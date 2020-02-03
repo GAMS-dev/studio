@@ -211,14 +211,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>HelpToolBar</class>
-   <extends>QWidget</extends>
-   <header>helptoolbar.h</header>
+  <class>gams::studio::HelpView</class>
+  <extends>QWidget</extends>
+  <header>help/helpview.h</header>
   </customwidget>
   <customwidget>
-   <class>HelpView</class>
-   <extends>QWidget</extends>
-   <header>helpview.h</header>
+  <class>gams::studio::HelpToolBar</class>
+  <extends>QWidget</extends>
+  <header>help/helptoolbar.h</header>
   </customwidget>
  </customwidgets>
  <resources>
