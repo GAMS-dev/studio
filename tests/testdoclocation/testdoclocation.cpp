@@ -270,12 +270,13 @@ void TestDocLocation::testOnlineUrlToLocalFile()
         QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
         newPathList.removeLast();
         pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
-    } else
+    } else {
         pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
     }
 #else
     pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
 #endif
+
     QUrl localUrl = QUrl::fromLocalFile(QString());
     localUrl.setScheme("file");
     localUrl.setPath("/" + pathList.join("/"));

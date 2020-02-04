@@ -438,6 +438,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 #else
                    pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
 #endif
+
                    QUrl localUrl = QUrl::fromLocalFile(QString());
                    localUrl.setScheme("file");
                    localUrl.setPath("/" + pathList.join("/"));
