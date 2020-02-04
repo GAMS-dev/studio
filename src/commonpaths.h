@@ -85,14 +85,6 @@ public:
     static QString absolutPath(const QString &dir);
 
     ///
-    /// \brief the canonical path.
-    /// \param dir Directory to get the absolute path for.
-    /// \return Returns , i.e. a path without symbolic links
-    ///         or redundant "." or ".." elements.
-    ///
-    static QString canonicalPath(const QString &dir);
-
-    ///
     /// \brief Get GAMS config file name (with path).
     /// \return Returns GAMS config file name.
     ///

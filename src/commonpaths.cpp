@@ -140,14 +140,6 @@ QString CommonPaths::absolutPath(const QString &dir)
     return d.absolutePath();
 }
 
-QString CommonPaths::canonicalPath(const QString &dir)
-{
-    if (dir.isEmpty())
-        return "";
-    QDir d(dir);
-    return d.canonicalPath();
-}
-
 QString CommonPaths::configFile()
 {
     QDir configFile(systemDir() + "/" + ConfigFile);
