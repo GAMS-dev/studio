@@ -19,6 +19,8 @@ public:
     enum ColorSlot {
         invalid = 0,
 
+        Edit_text,
+        Edit_background,
         Edit_currentLineBg,
         Edit_errorBg,
         Edit_currentWordBg,

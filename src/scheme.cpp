@@ -80,6 +80,8 @@ void Scheme::initDefault()
 
     mColorSchemes[sNr].clear();
     mColorSchemes[sNr].insert(invalid,                        CUndefined);
+    mColorSchemes[sNr].insert(Edit_text,                      QColor(Qt::black));
+    mColorSchemes[sNr].insert(Edit_background,                QColor(Qt::white));
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
     mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
@@ -112,7 +114,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66AA66"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
-    mColorSchemes[sNr].insert(Syntax_neutral,                 Color());
+    mColorSchemes[sNr].insert(Syntax_neutral,                 Color(Qt::black));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
     mColorSchemes[sNr].insert(Syntax_assign,                  Color());
     mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
