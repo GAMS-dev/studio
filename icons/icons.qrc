@@ -49,12 +49,14 @@
         <file alias="cog">solid/cog.svg</file>
         <file alias="copy">solid/copy.svg</file>
         <file alias="cut">solid/cut.svg</file>
+        <file alias="door-open">solid/door-open.svg</file>
         <file alias="envelope">solid/envelope.svg</file>
         <file alias="external-link">solid/external-link.svg</file>
         <file alias="file">solid/file.svg</file>
         <file alias="film">solid/film.svg</file>
         <file alias="folder-open-bw">solid/folder-open-bw.svg</file>
         <file alias="forward">solid/arrow-right.svg</file>
+        <file alias="hammer">solid/hammer.svg</file>
         <file alias="home">solid/home.svg</file>
         <file alias="hide">solid/angle-double-up.svg</file>
         <file alias="kill">solid/kill.svg</file>
@@ -83,6 +85,7 @@
         <file alias="terminal">solid/terminal.svg</file>
         <file alias="truck">solid/truck.svg</file>
         <file alias="undo">solid/undo.svg</file>
+        <file alias="update">solid/update.svg</file>
         <file alias="user">solid/user.svg</file>
         <file alias="gdxdiff">solid/gdxdiff.svg</file>
     </qresource>
