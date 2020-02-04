@@ -255,8 +255,7 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->sync();
 
-    // TODO(JM) temporarily deactivated
-//    writeScheme();
+    writeScheme();
 }
 
 bool StudioSettings::writeScheme()

@@ -131,9 +131,6 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->addCommentDescriptionAboveOption());
     ui->addEOLCommentCheckBox->setChecked(mSettings->addEOLCommentDescriptionOption());
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
-
-    // scheme data
-    reloadColors();
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)

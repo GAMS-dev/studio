@@ -81,9 +81,12 @@ void Scheme::initDefault()
     mColorSchemes[sNr].clear();
     mColorSchemes[sNr].insert(invalid,                        CUndefined);
     mColorSchemes[sNr].insert(Edit_text,                      QColor(Qt::black));
+    mColorSchemes[sNr].insert(Syntax_neutral,                 QColor(Qt::black));
     mColorSchemes[sNr].insert(Edit_background,                QColor(Qt::white));
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
     mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
+    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255,247,235));
+    mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(Qt::lightGray));
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
@@ -96,7 +99,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
     mColorSchemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
-    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(Qt::cyan).lighter(150));
+    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(palette().color(QPalette::Highlight))); // use OS specific color for selection, even if block
 
     mColorSchemes[sNr].insert(Mark_errorFg,                   QColor(Qt::darkRed));
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
@@ -114,7 +117,6 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Normal_Green,                   QColor("#23aa23"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
-    mColorSchemes[sNr].insert(Syntax_neutral,                 Color(Qt::black));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
     mColorSchemes[sNr].insert(Syntax_assign,                  Color());
     mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
@@ -130,19 +132,48 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(QColor(Qt::darkGreen).darker(140), fBold));
     mColorSchemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
 
+    // Alternative Light Theme
+    mColorSchemes << mColorSchemes.at(sNr++);
+    mSchemeNames << "Light Alternative";
+
+    QColor light_highlight(243,150,25);     //QColor(243,150,25);
+    QColor light_id(0,146,122);             //QColor(0,146,122);
+    QColor light_assignment(82,68,56);      //QColor(82,68,56);
+    QColor light_unobstrusive(98,186,172);  //QColor(98,186,172);
+    QColor light_neutral(82,68,56);         //QColor(82,68,56);
+
+    mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
+    mColorSchemes[sNr].insert(Edit_text,                      Color());
+    mColorSchemes[sNr].insert(Syntax_directive,               Color(light_assignment));
+    mColorSchemes[sNr].insert(Syntax_assign,                  Color(light_id));
+    mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(light_highlight, fItalic));
+    mColorSchemes[sNr].insert(Syntax_comment,                 Color(light_unobstrusive, fItalic));
+    mColorSchemes[sNr].insert(Syntax_title,                   Color(light_highlight, fBold));
+    mColorSchemes[sNr].insert(Syntax_keyword,                 Color(light_neutral.lighter(), fBold));
+    mColorSchemes[sNr].insert(Syntax_declaration,             Color(light_highlight, fBold));
+    mColorSchemes[sNr].insert(Syntax_identifier,              Color(light_id, fBold));
+    mColorSchemes[sNr].insert(Syntax_description,             Color(light_unobstrusive));
+    mColorSchemes[sNr].insert(Syntax_identifierAssign,        Color(light_assignment));
+    mColorSchemes[sNr].insert(Syntax_assignLabel,             Color(light_assignment));
+    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(light_assignment.darker(), fBold));
+    mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(light_assignment, fBold));
+    mColorSchemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
+
     // Add and switch to second color scheme
     mColorSchemes << mColorSchemes.at(sNr++);
     mSchemeNames << "Dark";
 
     // Dark Colors
     QColor dark_highlight(243,150,25);
-    QColor dark_id(153,240,255);        //QColor(102,155,188);
-    QColor dark_assignment(168,198,134);//QColor(168,198,134);
+    QColor dark_id(153,240,255);            //QColor(153,240,255);
+    QColor dark_assignment(144,226,149);    //QColor(168,198,134);
     QColor dark_unobstrusive(191, 195, 186);
-    QColor dark_neutral(186,216,224);       //QColor(186,216,224);
+    QColor dark_neutral(223,224,223);       //QColor(223,224,223);
 
+    mColorSchemes[sNr].insert(Edit_text,                      Color(dark_neutral));
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color(dark_neutral));
-    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(168,198,188));
+    mColorSchemes[sNr].insert(Edit_background,                QColor(30,30,30));
+    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(0,146,122)); // or 0,203,174?
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
@@ -153,7 +184,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
     mColorSchemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
-    mColorSchemes[sNr].insert(Syntax_identifier,              Color(dark_id));
+    mColorSchemes[sNr].insert(Syntax_identifier,              Color(dark_id, fBold));
     mColorSchemes[sNr].insert(Syntax_assign,                  Color(dark_id));
     mColorSchemes[sNr].insert(Syntax_identifierAssign,        Color(dark_assignment));
     mColorSchemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
