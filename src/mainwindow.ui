@@ -1231,18 +1231,26 @@
   <action name="actionBase_mode">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/img/miro</normaloff>:/img/miro</iconset>
+     <normaloff>:/img/miro-b</normaloff>:/img/miro-b</iconset>
    </property>
    <property name="text">
     <string>Run base mode</string>
    </property>
   </action>
   <action name="actionHypercube_mode">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/miro-h</normaloff>:/img/miro-h</iconset>
+   </property>
    <property name="text">
     <string>Run hypercube mode</string>
    </property>
   </action>
   <action name="actionConfiguration_mode">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/miro-c</normaloff>:/img/miro-c</iconset>
+   </property>
    <property name="text">
     <string>Run configuration mode</string>
    </property>
@@ -1282,6 +1290,10 @@
    </property>
   </action>
   <action name="actionDeploy">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/miro-deploy</normaloff>:/img/miro-deploy</iconset>
+   </property>
    <property name="text">
     <string>Deploy</string>
    </property>

@@ -26,6 +26,10 @@
         <file alias="insert">insert.svg</file>
         <file alias="minus">minus.svg</file>
         <file alias="miro">miro.svg</file>
+        <file alias="miro-b">miro-b.svg</file>
+        <file alias="miro-deploy">miro-deploy.svg</file>
+        <file alias="miro-c">miro-c.svg</file>
+        <file alias="miro-h">miro-h.svg</file>
         <file alias="move-up">move-up.svg</file>
         <file alias="move-down">move-down.svg</file>
         <file alias="option-file">option.svg</file>
