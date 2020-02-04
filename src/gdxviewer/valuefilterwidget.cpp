@@ -37,8 +37,6 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
     ui->leMin->setValidator(new QDoubleValidator());
     ui->leMax->setValidator(new QDoubleValidator());
 
-    //TODO(CW): use maxPrecision from class GDXSymbol?
-
     // we do not have numerical values other than special values and therefore disable the numerical range
     if (mValueFilter->min() == INT_MAX && mValueFilter->max() == INT_MIN) {
         ui->leMin->setEnabled(false);
