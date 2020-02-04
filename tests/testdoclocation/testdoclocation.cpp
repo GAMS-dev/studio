@@ -109,16 +109,19 @@ void TestDocLocation::testUrlLocalFile()
 {
     // given
     CommonPaths::setSystemDir();
-    QString docdir = CommonPaths::systemDir() + "/" + CommonPaths::documentationDir();
-    // when
-    QString urlIndexFile = QDir::cleanPath(docdir);
-    qDebug() << "urlIndexFile:" << urlIndexFile;
-    // then
-    QFileInfo fi(urlIndexFile);
-    if (fi.isSymLink())
-        QVERIFY2(QFileInfo(fi.symLinkTarget()).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
-    else
-        QVERIFY2(fi.exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+//    QString docdir = CommonPaths::systemDir() + "/" + CommonPaths::documentationDir();
+//    // when
+//    QString urlIndexFile = QDir::cleanPath(docdir);
+//    // then
+//    QFileInfo fi(urlIndexFile);
+//    if (fi.isSymLink())
+//        QVERIFY2(QFileInfo(fi.symLinkTarget()).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+//    else
+//        QVERIFY2(fi.exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+
+    QDir dir = QDir(CommonPaths::systemDir()).filePath(  CommonPaths::documentationDir() + "/index.html" );
+    QVERIFY2 (!dir.canonicalPath().isEmpty(), QString("expected non-empty file: %1").arg(dir.canonicalPath()).toLatin1());
+    QVERIFY2 (QFileInfo::exists(dir.canonicalPath()), QString("expected an existence of file : %1").arg(dir.canonicalPath()).toLatin1());
 }
 
 void TestDocLocation::testLocalFileToOnlineUrl_data()
@@ -164,31 +167,20 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     QString docdir = CommonPaths::systemDir() + "/" + section;
     QString indexFile = docdir + "/" + filename;
 
-    qDebug() << "docdir:" << docdir;
-    qDebug() << "indexFile:" << indexFile;
-
     QUrl url = QUrl::fromLocalFile(indexFile);
     QString urlLocalFile = url.toLocalFile();
-    qDebug() << "urlLocalFile:" << urlLocalFile;
+//    QString urlIndexFile = QDir::cleanPath(docdir);
 
-    QString urlIndexFile = QDir::cleanPath(docdir);
-    qDebug() << "urlIndexFile:" << urlIndexFile;
-
-    // then
-    QFileInfo fi(urlIndexFile);
-    if (fi.isSymLink())
-        QVERIFY2(QFileInfo(fi.symLinkTarget()).exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
-    else
-        QVERIFY2(fi.exists(), QString("directory: '%1' does not exist").arg(urlIndexFile).toLatin1());
+    QDir dir = QDir(CommonPaths::systemDir()).filePath(  CommonPaths::documentationDir() + "/index.html" );
+    QVERIFY2 (!dir.canonicalPath().isEmpty(), QString("expected non-empty file: %1").arg(dir.canonicalPath()).toLatin1());
+    QVERIFY2 (QFileInfo::exists(dir.canonicalPath()), QString("expected an existence of file : %1").arg(dir.canonicalPath()).toLatin1());
 
     // when
     QUrl onlineStartPageUrl = QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
     QString onlinepath = onlineStartPageUrl.path();
     QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
 
-
     QString filePath = QDir(docdir).canonicalPath();
-    qDebug() << "filePath=" << filePath;
 
     int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlLocalFile);
     QVERIFY(docsidx > -1);
@@ -261,10 +253,6 @@ void TestDocLocation::testOnlineUrlToLocalFile()
     QString docdir = baseLocation + "/" + section;
     QString indexFile = docdir + "/" + localfile;
 
-    qDebug() << "baseLocation:" << baseLocation;
-    qDebug() << "docdir:" << docdir;
-    qDebug() << "indexFile:" << indexFile;
-
     QUrl url(urlstr, QUrl::TolerantMode);
 
     // when
@@ -276,8 +264,18 @@ void TestDocLocation::testOnlineUrlToLocalFile()
     int pathIndex = url.path().indexOf( pathStr );
     QString newPath = url.path().mid( pathIndex, url.path().size());
     QStringList pathList;
+#ifdef __APPLE__
+    if (pathIndex == 0) {
+        baseLocation = QDir(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir()).canonicalPath();
+        QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
+        newPathList.removeLast();
+        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
+    } else
+        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
+    }
+#else
     pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
-
+#endif
     QUrl localUrl = QUrl::fromLocalFile(QString());
     localUrl.setScheme("file");
     localUrl.setPath("/" + pathList.join("/"));

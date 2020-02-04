@@ -426,8 +426,18 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    int pathIndex = url.path().indexOf( pathStr );
                    QString newPath = url.path().mid( pathIndex, url.path().size());
                    QStringList pathList;
+#ifdef __APPLE__
+                   if (pathIndex == 0) {
+                       baseLocation = QDir(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir()).canonicalPath();
+                       QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
+                       newPathList.removeLast();
+                       pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
+                   } else  {
+                       pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
+                   }
+#else
                    pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
-
+#endif
                    QUrl localUrl = QUrl::fromLocalFile(QString());
                    localUrl.setScheme("file");
                    localUrl.setPath("/" + pathList.join("/"));
