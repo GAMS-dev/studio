@@ -110,8 +110,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Active_Back,                    QColor("#2266AA"));
     mColorSchemes[sNr].insert(Select_Line,                    QColor("#2266AA"));
     mColorSchemes[sNr].insert(Select_Back,                    QColor("#2266AA"));
-    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
-    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66AA66"));
+    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#bb0000"));
+    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#23aa23"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color(Qt::black));
