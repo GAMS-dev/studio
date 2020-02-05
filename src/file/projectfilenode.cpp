@@ -23,9 +23,10 @@
 #include "exception.h"
 #include "syntax/textmarkrepo.h"
 #include "filemeta.h"
+#include "fileicon.h"
+#include "editors/viewhelper.h"
 #include "editors/codeedit.h"
 #include "logger.h"
-#include "editors/viewhelper.h"
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextCodec>
@@ -53,18 +54,7 @@ QIcon ProjectFileNode::icon()
     ProjectGroupNode* par = parentNode();
     while (par && !par->toRunGroup()) par = par->parentNode();
     if (!par) return QIcon();
-    QString runMark = par->toRunGroup()->parameter("gms") == location() ? "-run" : "";
-    if (file()->kind() == FileKind::Gms)
-        return QIcon(":/img/gams-w"+runMark);
-    if (file()->kind() == FileKind::Gdx)
-        return QIcon(":/img/database");
-    if (file()->kind() == FileKind::Ref)
-        return QIcon(":/img/ref-file");
-    if (file()->kind() == FileKind::Opt)
-        return QIcon(":/img/option-file");
-    if (!file()->isReadOnly())
-        return QIcon(":/img/file-edit");
-    return QIcon(":/img/file-alt"+runMark);
+    return FileIcon::iconForFileKind(file()->kind(), !file()->isReadOnly(), par->toRunGroup()->parameter("gms") == location());
 }
 
 QString ProjectFileNode::name(NameModifier mod) const

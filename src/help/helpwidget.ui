@@ -84,36 +84,30 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="backButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QToolButton" name="backButton">
         <property name="text">
-         <string/>
+         <string>...</string>
         </property>
         <property name="icon">
          <iconset resource="../../icons/icons.qrc">
-          <normaloff>:/img/backward</normaloff>:/img/backward</iconset>
+          <normaloff>:/solid/backward</normaloff>:/solid/backward</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="forwardButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QToolButton" name="forwardButton">
         <property name="text">
-         <string/>
+         <string>...</string>
         </property>
         <property name="icon">
          <iconset resource="../../icons/icons.qrc">
-          <normaloff>:/img/forward</normaloff>:/img/forward</iconset>
+          <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -145,19 +139,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="closeButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QToolButton" name="closeButton">
         <property name="text">
-         <string/>
+         <string>...</string>
         </property>
         <property name="icon">
          <iconset resource="../../icons/icons.qrc">
-          <normaloff>:/img/delete</normaloff>:/img/delete</iconset>
+          <normaloff>:/solid/remove</normaloff>:/solid/remove</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -168,7 +159,7 @@
   <action name="actionHome">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/home</normaloff>:/img/home</iconset>
+     <normaloff>:/thin/home</normaloff>:/thin/home</iconset>
    </property>
    <property name="text">
     <string/>
@@ -220,16 +211,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>gams::studio::HelpView</class>
-   <extends>QWidget</extends>
-   <header>help/helpview.h</header>
-   <container>1</container>
+  <class>gams::studio::HelpView</class>
+  <extends>QWidget</extends>
+  <header>help/helpview.h</header>
   </customwidget>
   <customwidget>
-   <class>gams::studio::HelpToolBar</class>
-   <extends>QWidget</extends>
-   <header>help/helptoolbar.h</header>
-   <container>1</container>
+  <class>gams::studio::HelpToolBar</class>
+  <extends>QWidget</extends>
+  <header>help/helptoolbar.h</header>
   </customwidget>
  </customwidgets>
  <resources>

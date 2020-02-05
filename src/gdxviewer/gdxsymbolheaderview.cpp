@@ -19,6 +19,7 @@
  */
 #include "gdxsymbolheaderview.h"
 #include "gdxsymbol.h"
+#include "scheme.h"
 
 #include <QPainter>
 #include <QTableView>
@@ -60,7 +61,7 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
             iconRes = iconFilterOn;
         else
             iconRes = iconFilterOff;
-        QIcon icon(iconRes);
+        QIcon icon(Scheme::icon(iconRes));
         QPixmap pm = icon.pixmap(mFilterIconWidth, mFilterIconWidth);
 
         int posX = rect.bottomRight().x()-mFilterIconWidth-mFilterIconMargin;

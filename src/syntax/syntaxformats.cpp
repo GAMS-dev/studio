@@ -33,6 +33,18 @@ QString syntaxKindName(SyntaxKind kind)
     return QVariant::fromValue(kind).toString();
 }
 
+void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
+{
+    mColorSlot = slot;
+    charFormat().setProperty(QTextFormat::UserProperty, intSyntaxType());
+    if (toColor(slot).isValid())
+        charFormat().setForeground(toColor(slot));
+    else
+        charFormat().setForeground(Qt::black);
+    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::fBold) ? QFont::Bold : QFont::Normal);
+    charFormat().setFontItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+}
+
 SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 {
     if (emptyLine && !mEmptyLineKinds.isEmpty()) return mEmptyLineKinds;

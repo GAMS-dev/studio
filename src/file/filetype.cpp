@@ -22,6 +22,7 @@
 
 #include "filetype.h"
 #include "exception.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {

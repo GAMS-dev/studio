@@ -76,6 +76,9 @@
         <property name="popupMode">
          <enum>QToolButton::MenuButtonPopup</enum>
         </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -97,6 +100,9 @@
         </property>
         <property name="popupMode">
          <enum>QToolButton::MenuButtonPopup</enum>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

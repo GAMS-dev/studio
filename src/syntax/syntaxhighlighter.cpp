@@ -26,6 +26,8 @@
 #include "exception.h"
 #include "file.h"
 #include "common.h"
+#include "studiosettings.h"
+#include "settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -73,15 +75,15 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     mSingleLineKinds << SyntaxKind::Directive << SyntaxKind::DirectiveBody << SyntaxKind::CommentEndline
                      << SyntaxKind::CommentLine << SyntaxKind::Title;
 
-    // To visualize one format: add color index at start e.g. initKind(1, new SyntaxReservedBody());
-    initKind(new SyntaxStandard(), Qt::red);
+    // To visualize one format in DEBUG: add color index at start e.g. initKind(1, new SyntaxReservedBody());
+    initKind(new SyntaxStandard(), Scheme::Syntax_undefined);
     SyntaxDirective *syntaxDirective = new SyntaxDirective();
-    initKind(syntaxDirective, cl.value(SyntaxDirex));
+    initKind(syntaxDirective, Scheme::Syntax_directive);
     SyntaxDirectiveBody *syntaxDirectiveBody = new SyntaxDirectiveBody(SyntaxKind::DirectiveBody);
-    initKind(syntaxDirectiveBody, cl.value(SyntaxDiBdy));
+    initKind(syntaxDirectiveBody, Scheme::Syntax_directiveBody);
     syntaxDirective->setDirectiveBody(syntaxDirectiveBody);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), cl.value(SyntaxComnt), fItalic);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::Title), cl.value(SyntaxTitle), fBoldItalic);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), Scheme::Syntax_comment);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::Title), Scheme::Syntax_title);
 
     SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
     initKind(syntaxFormula);
@@ -93,50 +95,50 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(syntaxOptionBody);
     syntaxDirective->addSubBody(syntaxOptionBody);
 
-    initKind(new SyntaxAssign(), cl.value(SyntaxAssgn), fBold);
-    initKind(new SyntaxString(), cl.value(SyntaxStrin));
-    initKind(new SyntaxCommentLine(), cl.value(SyntaxComnt), fItalic);
-    initKind(new SyntaxCommentBlock(), cl.value(SyntaxComnt), fItalic);
+    initKind(new SyntaxAssign(), Scheme::Syntax_assign);
+    initKind(new SyntaxString(), Scheme::Syntax_neutral);
+    initKind(new SyntaxCommentLine(), Scheme::Syntax_comment);
+    initKind(new SyntaxCommentBlock(), Scheme::Syntax_comment);
     SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
-    initKind(syntaxCommentEndline, cl.value(SyntaxComnt), fItalic);
+    initKind(syntaxCommentEndline, Scheme::Syntax_comment);
     syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
 
-    initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), cl.value(SyntaxKeywd), fBold);
-    initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), cl.value(SyntaxKeywd), fBold);
+    initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), Scheme::Syntax_keyword);
+    initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), Scheme::Syntax_keyword);
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
     initKind(new SyntaxDelimiter(SyntaxKind::CommaIdent));
     initKind(new SyntaxDelimiter(SyntaxKind::CommaTable));
-    initKind(new SyntaxReserved(SyntaxKind::Reserved), cl.value(SyntaxKeywd), fBold);
-    initKind(new SyntaxReserved(SyntaxKind::Solve), cl.value(SyntaxKeywd), fBold);
-    initKind(new SyntaxReserved(SyntaxKind::Option), cl.value(SyntaxKeywd), fBold);
-    initKind(new SyntaxEmbedded(SyntaxKind::Embedded), cl.value(SyntaxKeywd), fBold);
-    initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd), cl.value(SyntaxKeywd), fBold);
-    initKind(new SyntaxEmbeddedBody(), cl.value(SyntaxEmbed), fNormal);
-    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationSetType), cl.value(SyntaxDeclr), fBold);
-    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationVariableType), cl.value(SyntaxDeclr), fBold);
-    initKind(new SyntaxDeclaration(), cl.value(SyntaxDeclr), fBold);
-    initKind(new SyntaxDeclarationTable(), cl.value(SyntaxDeclr), fBold);
+    initKind(new SyntaxReserved(SyntaxKind::Reserved), Scheme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::Solve), Scheme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::Option), Scheme::Syntax_keyword);
+    initKind(new SyntaxEmbedded(SyntaxKind::Embedded), Scheme::Syntax_keyword);
+    initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd), Scheme::Syntax_keyword);
+    initKind(new SyntaxEmbeddedBody(), Scheme::Syntax_embedded);
+    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationSetType), Scheme::Syntax_declaration);
+    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationVariableType), Scheme::Syntax_declaration);
+    initKind(new SyntaxDeclaration(), Scheme::Syntax_declaration);
+    initKind(new SyntaxDeclarationTable(), Scheme::Syntax_declaration);
 
-    initKind(new SyntaxIdentifier(SyntaxKind::Identifier));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2));
-    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription), cl.value(SyntaxDescr));
-    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), cl.value(SyntaxIdAsn));
-    initKind(new AssignmentLabel(), cl.value(SyntaxAsLab));
-    initKind(new AssignmentValue(), cl.value(SyntaxAsVal));
-    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), cl.value(SyntaxIdAsn));
+    initKind(new SyntaxIdentifier(SyntaxKind::Identifier), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription), Scheme::Syntax_description);
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), Scheme::Syntax_identifierAssign);
+    initKind(new AssignmentLabel(), Scheme::Syntax_assignLabel);
+    initKind(new AssignmentValue(), Scheme::Syntax_assignValue);
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), Scheme::Syntax_identifierAssign);
 
-    initKind(new SyntaxIdentifier(SyntaxKind::IdentifierTable));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim1));
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim2));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd1));
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd2));
-    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierTableDescription), cl.value(SyntaxDescr));
+    initKind(new SyntaxIdentifier(SyntaxKind::IdentifierTable), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim1), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierTableDim2), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd1), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierTableDimEnd2), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierTableDescription), Scheme::Syntax_description);
 
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), cl.value(SyntaxTabHd), fBold);
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), cl.value(SyntaxIdAsn));
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), Scheme::Syntax_tableHeader);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), Scheme::Syntax_identifierAssign);
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
@@ -346,14 +348,14 @@ QColor backColor(int index) {
     return debColor.at(index);
 }
 
-void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, QColor color, FontModifier fMod)
+void SyntaxHighlighter::xinitKind(int debug, SyntaxAbstract *syntax, QColor color, Scheme::FontFlag fMod)
 {
     if (debug) syntax->charFormat().setBackground(backColor(debug));
 
     syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
     if (color.isValid()) syntax->charFormat().setForeground(color);
-    if (fMod & fItalic) syntax->charFormat().setFontItalic(true);
-    if (fMod & fBold) syntax->charFormat().setFontWeight(QFont::Bold);
+    if (fMod & Scheme::fItalic) syntax->charFormat().setFontItalic(true);
+    if (fMod & Scheme::fBold) syntax->charFormat().setFontWeight(QFont::Bold);
 
     // TODO(JM) check if mSingleLineKinds can be left out of mKinds because the code won't be passed to the next line
 //    if (!mSingleLineKinds.contains(syntax->kind())) {}
@@ -361,9 +363,32 @@ void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, QColor color
     addCode(mKinds.length()-1, 0);
 }
 
-void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, QColor color, FontModifier fMod)
+void SyntaxHighlighter::xinitKind(SyntaxAbstract *syntax, QColor color, Scheme::FontFlag fMod)
 {
-    initKind(false, syntax, color, fMod);
+    xinitKind(false, syntax, color, fMod);
+}
+
+void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, Scheme::ColorSlot slot)
+{
+    if (debug) syntax->charFormat().setBackground(backColor(debug));
+    syntax->assignColorSlot(slot);
+
+    // TODO(JM) check if mSingleLineKinds can be left out of mKinds because the code won't be passed to the next line
+//    if (!mSingleLineKinds.contains(syntax->kind())) {}
+    mKinds << syntax;
+    addCode(mKinds.length()-1, 0);
+}
+
+void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, Scheme::ColorSlot slot)
+{
+    initKind(false, syntax, slot);
+}
+
+void SyntaxHighlighter::reloadColors()
+{
+    for (SyntaxAbstract* syntax: mKinds) {
+        syntax->assignColorSlot(syntax->colorSlot());
+    }
 }
 
 int SyntaxHighlighter::addCode(KindIndex si, CodeIndex ci)

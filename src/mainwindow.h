@@ -206,6 +206,7 @@ private slots:
     void newProcessCall(const QString &text, const QString &call);
 
     // View
+    void invalidateScheme();
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);
@@ -335,12 +336,15 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
+    void assignColors();
+    void assignIcons();
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();
 
 private:
     void initTabs();
+    void initIcons();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId, bool ask, int count = 1);
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);

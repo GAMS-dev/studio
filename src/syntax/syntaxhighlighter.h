@@ -25,6 +25,7 @@
 #include "syntaxformats.h"
 #include "blockcode.h"
 #include "logger.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -43,6 +44,7 @@ public:
     ~SyntaxHighlighter();
 
     void highlightBlock(const QString &text);
+    void reloadColors();
 
 public slots:
     void syntaxKind(int position, int &intKind);
@@ -53,8 +55,6 @@ private:
     void scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind,SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
 
 private:
-    enum FontModifier {fNormal, fBold, fItalic, fBoldItalic};
-    Q_DECLARE_FLAGS(FontModifiers, FontModifier)
     typedef int KindIndex;
     typedef int CodeIndex;
     typedef QPair<KindIndex, CodeIndex> KindCode;
@@ -65,8 +65,10 @@ private:
     /// \param syntax The syntax to be added to the stack
     /// \param ci The index in mKinds of the previous syntax
     void addKind(SyntaxAbstract* syntax, CodeIndex ci = 0);
-    void initKind(int debug, SyntaxAbstract* syntax, QColor color = QColor(), FontModifier fMod = fNormal);
-    void initKind(SyntaxAbstract* syntax, QColor color = QColor(), FontModifier fMod = fNormal);
+    void xinitKind(int debug, SyntaxAbstract* syntax, QColor color = QColor(), Scheme::FontFlag fMod = Scheme::fNormal);
+    void xinitKind(SyntaxAbstract* syntax, QColor color = QColor(), Scheme::FontFlag fMod = Scheme::fNormal);
+    void initKind(int debug, SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
+    void initKind(SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
 
     int addCode(KindIndex si, CodeIndex ci);
     BlockCode getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest = 0);

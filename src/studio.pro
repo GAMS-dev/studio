@@ -98,6 +98,7 @@ SOURCES += \
     exception.cpp \
     file/dynamicfile.cpp \
     file/fileevent.cpp \
+    file/fileicon.cpp \
     file/filemeta.cpp \
     file/filemetarepo.cpp \
     file/filetype.cpp \
@@ -175,6 +176,8 @@ SOURCES += \
     reference/symbolreferenceitem.cpp \
     reference/symbolreferencewidget.cpp \
     reference/symboltablemodel.cpp \
+    scheme.cpp \
+    schemewidget.cpp \
     search/result.cpp \
     search/resultsview.cpp \
     search/searchdialog.cpp \
@@ -192,6 +195,7 @@ SOURCES += \
     support/solverconfiginfo.cpp        \
     support/solvertablemodel.cpp        \
     support/updatedialog.cpp \
+    svgengine.cpp \
     syntax/basehighlighter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
@@ -231,6 +235,7 @@ HEADERS += \
     file.h \
     file/dynamicfile.h \
     file/fileevent.h \
+    file/fileicon.h \
     file/filemeta.h \
     file/filemetarepo.h \
     file/filetype.h \
@@ -307,6 +312,8 @@ HEADERS += \
     reference/symbolreferenceitem.h \
     reference/symbolreferencewidget.h \
     reference/symboltablemodel.h \
+    scheme.h \
+    schemewidget.h \
     search/result.h \
     search/resultsview.h \
     search/searchdialog.h \
@@ -324,6 +331,7 @@ HEADERS += \
     support/solverconfiginfo.h      \
     support/solvertablemodel.h      \
     support/updatedialog.h \
+    svgengine.h \
     syntax.h \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
@@ -356,6 +364,7 @@ FORMS += \
     option/solveroptionwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
+    schemewidget.ui \
     search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
