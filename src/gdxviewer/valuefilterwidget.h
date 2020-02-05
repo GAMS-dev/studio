@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +17,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "columnfilter.h"
-#include "columnfilterframe.h"
+#ifndef GAMS_STUDIO_GDXVIEWER_VALUEFILTERWIDGET_H
+#define GAMS_STUDIO_GDXVIEWER_VALUEFILTERWIDGET_H
+
+#include "gdxsymbol.h"
+#include "valuefilter.h"
+
+#include <QWidget>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-ColumnFilter::ColumnFilter(GdxSymbol *symbol, int column, QWidget *parent)
-    :QWidgetAction(parent), mSymbol(symbol), mColumn(column)
-{
-
+namespace Ui {
+class ValueFilterWidget;
 }
 
-QWidget *ColumnFilter::createWidget(QWidget *parent)
+class ValueFilterWidget : public QWidget
 {
-    return new ColumnFilterFrame(mSymbol, mColumn, parent);
-}
+    Q_OBJECT
+
+public:
+    explicit ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent = nullptr);
+    ~ValueFilterWidget();
+
+protected:
+    void keyPressEvent(QKeyEvent *e);
+
+private slots:
+    void on_pbApply_clicked();
+    void on_pbReset_clicked();
+
+private:
+    ValueFilter* mValueFilter;
+    Ui::ValueFilterWidget *ui;
+    double mMin;
+    double mMax;
+};
+
 
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
+#endif // GAMS_STUDIO_GDXVIEWER_VALUEFILTERWIDGET_H

@@ -126,6 +126,8 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/nestedheaderview.cpp \
     gdxviewer/tableviewmodel.cpp \
+    gdxviewer/valuefilter.cpp \
+    gdxviewer/valuefilterwidget.cpp \
     gotodialog.cpp \
     keys.cpp \
     logger.cpp \
@@ -261,6 +263,8 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/nestedheaderview.h \
     gdxviewer/tableviewmodel.h \
+    gdxviewer/valuefilter.h \
+    gdxviewer/valuefilterwidget.h \
     gotodialog.h \
     keys.h \
     logger.h \
@@ -349,6 +353,7 @@ FORMS += \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
+    gdxviewer/valuefilterwidget.ui \
     gotodialog.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \

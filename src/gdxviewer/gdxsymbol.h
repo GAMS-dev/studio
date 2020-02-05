@@ -34,6 +34,7 @@ namespace gdxviewer {
 
 class GdxSymbolTable;
 class TableViewModel;
+class ValueFilter;
 
 class GdxSymbol : public QAbstractTableModel
 {
@@ -45,6 +46,7 @@ public:
     explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr,
                        GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
     ~GdxSymbol() override;
+    static int maxPrecision;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -70,8 +72,9 @@ public:
     std::vector<std::vector<int> *> uelsInColumn() const;
     std::vector<bool *> showUelInColumn() const;
     void setShowUelInColumn(const std::vector<bool *> &showUelInColumn);
-    std::vector<bool> filterActive() const;
-    void setFilterActive(const std::vector<bool> &filterActive);
+
+    bool filterActive(int column) const;
+    void setFilterActive(int column, bool active=true);
 
     int tvColDim() const;
 
@@ -79,6 +82,17 @@ public:
     void setFilterHasChanged(bool filterHasChanged);
 
     void setNumericalPrecision(int numericalPrecision, bool squeezeTrailingZeroes);
+
+    double minDouble(int valCol=0);
+    double maxDouble(int valCol=0);
+
+    void registerValueFilter(int valueColumn, ValueFilter *valueFilter);
+    void unregisterValueFilter(int valueColumn);
+    ValueFilter* valueFilter(int valueColumn);
+
+    int filterColumnCount();
+
+    static QString formatNumericalValue(double val, int precision, bool squeezeTrailingZeroes);
 
 signals:
     void loadFinished();
@@ -94,6 +108,7 @@ private:
     QVariant formatValue(double val) const;
 
 private:
+    void initNumericalBounds();
     gdxHandle_t mGdx = nullptr;
     int mNr;
     QMutex* mGdxMutex = nullptr;
@@ -106,6 +121,9 @@ private:
 
     std::vector<int> mMinUel;
     std::vector<int> mMaxUel;
+
+    std::vector<double> mMinDouble;
+    std::vector<double> mMaxDouble;
 
     GdxSymbolTable* mGdxSymbolTable = nullptr;
 
@@ -136,7 +154,8 @@ private:
     int mNumericalPrecision = 6;
     bool mSqueezeTrailingZeroes = true;
 
-    int mMaxPrecision = 15;
+    std::vector<ValueFilter*> mValueFilters;
+    int mNumericalColumnCount;
 };
 
 } // namespace gdxviewer
