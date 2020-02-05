@@ -179,6 +179,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
+    connect(ui->toolBar, &QToolBar::visibilityChanged, this, &MainWindow::toolbarVisibilityChanged);
 
     connect(ui->dockProjectView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
     connect(ui->dockProcessLog, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
@@ -371,6 +372,11 @@ void MainWindow::setProjectViewVisibility(bool visibility)
 void MainWindow::setOptionEditorVisibility(bool visibility)
 {
     mGamsParameterEditor->setEditorExtended(visibility);
+}
+
+void MainWindow::setToolbarVisibility(bool visibility)
+{
+    ui->toolBar->setVisible(visibility);
 }
 
 void MainWindow::setHelpViewVisibility(bool visibility)
@@ -704,6 +710,11 @@ void MainWindow::projectViewVisibiltyChanged(bool visibility)
 void MainWindow::helpViewVisibilityChanged(bool visibility)
 {
     ui->actionHelp_View->setChecked(visibility || tabifiedDockWidgets(ui->dockHelpView).count());
+}
+
+void MainWindow::toolbarVisibilityChanged(bool visibility)
+{
+    ui->actionShowToolbar->setChecked(visibility);
 }
 
 void MainWindow::showMainTabsMenu()
@@ -3647,6 +3658,7 @@ void MainWindow::resetViews()
         }
     }
     mGamsParameterEditor->setEditorExtended(false);
+    ui->toolBar->setVisible(true);
     addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
 }
 
@@ -3848,6 +3860,10 @@ void MainWindow::on_actionFull_Screen_triggered()
     }
 }
 
-}
+void MainWindow::on_actionShowToolbar_triggered(bool checked)
+{
+    ui->toolBar->setVisible(checked);
 }
 
+}
+}
