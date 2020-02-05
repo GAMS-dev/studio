@@ -1308,6 +1308,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/hammer</normaloff>:/solid/hammer</iconset>
+   </property>
    <property name="text">
     <string>Toolbar</string>
    </property>
