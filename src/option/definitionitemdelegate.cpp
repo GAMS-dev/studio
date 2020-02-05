@@ -71,6 +71,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
        opt.viewItemPosition = QStyleOptionViewItem::Middle;
        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
     }
+    QStyledItemDelegate::paint(painter, option, index);
 }
 
 } // namespace option
