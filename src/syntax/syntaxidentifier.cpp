@@ -33,7 +33,7 @@ SyntaxIdentifier::SyntaxIdentifier(SyntaxKind kind) : SyntaxAbstract(kind)
 
     switch (kind) {
     case SyntaxKind::Identifier:
-        mSubKinds << SyntaxKind::Comma
+        mSubKinds << SyntaxKind::CommaIdent
                   << SyntaxKind::IdentifierDim1
                   << SyntaxKind::IdentifierDim2
                   << SyntaxKind::IdentifierAssignment;
@@ -44,7 +44,8 @@ SyntaxIdentifier::SyntaxIdentifier(SyntaxKind kind) : SyntaxAbstract(kind)
         mSubKinds << SyntaxKind::IdentifierDescription;  // must not exist in emptyLineKinds
         break;
     case SyntaxKind::IdentifierTable:
-        mSubKinds << SyntaxKind::IdentifierTableDim1
+        mSubKinds << SyntaxKind::CommaTable
+                  << SyntaxKind::IdentifierTableDim1
                   << SyntaxKind::IdentifierTableDim2
                   << SyntaxKind::IdentifierTableAssignmentHead;
         mEmptyLineKinds << mSubKinds
@@ -164,7 +165,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
     switch (kind) {
     case SyntaxKind::IdentifierDimEnd1:
     case SyntaxKind::IdentifierDimEnd2:
-        mSubKinds << SyntaxKind::Comma << SyntaxKind::Semicolon
+        mSubKinds << SyntaxKind::CommaIdent << SyntaxKind::Semicolon
                   << SyntaxKind::IdentifierAssignment;
         mEmptyLineKinds << mSubKinds
                         << SyntaxKind::Identifier
@@ -175,7 +176,8 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
         break;
     case SyntaxKind::IdentifierTableDimEnd1:
     case SyntaxKind::IdentifierTableDimEnd2:
-        mSubKinds << SyntaxKind::IdentifierTableAssignmentHead;
+        mSubKinds  << SyntaxKind::CommaTable << SyntaxKind::Semicolon
+                   << SyntaxKind::IdentifierTableAssignmentHead;
         mEmptyLineKinds << mSubKinds
                         << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
                         << SyntaxKind::Declaration << SyntaxKind::DeclarationTable;
@@ -221,14 +223,14 @@ SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
         mEmptyLineKinds << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
                          << SyntaxKind::Declaration << SyntaxKind::DeclarationTable
                          << SyntaxKind::IdentifierAssignment << SyntaxKind::Identifier;
-        mSubKinds << SyntaxKind::Comma << SyntaxKind::Semicolon << SyntaxKind::IdentifierAssignment;
+        mSubKinds << SyntaxKind::CommaIdent << SyntaxKind::Semicolon << SyntaxKind::IdentifierAssignment;
         mTable = false;
         break;
     case SyntaxKind::IdentifierTableDescription:
         mEmptyLineKinds << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
                          << SyntaxKind::Declaration << SyntaxKind::DeclarationTable
                          << SyntaxKind::IdentifierTableAssignmentHead;
-        mSubKinds << SyntaxKind::IdentifierTableAssignmentHead;
+        mSubKinds << SyntaxKind::CommaTable << SyntaxKind::Semicolon << SyntaxKind::IdentifierTableAssignmentHead;
         mTable = true;
         break;
     default:
@@ -290,7 +292,7 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
         mEmptyLineKinds = mSubKinds;
         break;
     case SyntaxKind::IdentifierAssignmentEnd:
-        mSubKinds << SyntaxKind::Comma;
+        mSubKinds << SyntaxKind::CommaIdent;
         mEmptyLineKinds = mSubKinds << SyntaxKind::Identifier;
         break;
     default:

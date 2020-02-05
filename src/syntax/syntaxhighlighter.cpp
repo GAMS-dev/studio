@@ -104,7 +104,8 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
-    initKind(new SyntaxDelimiter(SyntaxKind::Comma));
+    initKind(new SyntaxDelimiter(SyntaxKind::CommaIdent));
+    initKind(new SyntaxDelimiter(SyntaxKind::CommaTable));
     initKind(new SyntaxReserved(SyntaxKind::Reserved), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxReserved(SyntaxKind::Solve), cl.value(SyntaxKeywd), fBold);
     initKind(new SyntaxReserved(SyntaxKind::Option), cl.value(SyntaxKeywd), fBold);
