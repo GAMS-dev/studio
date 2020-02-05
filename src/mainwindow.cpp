@@ -1708,10 +1708,10 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     }
     process.setWorkingDirectory(workingDir);
     environment.insert("PATH", QDir::toNativeSeparators(CommonPaths::systemDir()) + ":" + environment.value("PATH"));
-    if (process.program().endsWith("konsole"))
-        environment.insert("LD_LIBRARY_PATH", "/usr/lib64/");
+    environment.insert("LD_PRELOAD", "");
+    environment.insert("LD_LIBRARY_PATH", "");
     process.setProcessEnvironment(environment);
-    SysLogLocator::systemLog()->append("On some Linux distributions GAMS Studio may not be able to start a terminal.", LogMsgType::Warning);
+    SysLogLocator::systemLog()->append("On some Linux distributions GAMS Studio may not be able to start a terminal.", LogMsgType::Info);
 #else
     process.setProgram("cmd.exe");
     process.setArguments({"/k", "title", "GAMS Terminal"});

@@ -51,7 +51,8 @@ enum class SyntaxKind {
     CommentInline,
 
     Semicolon,
-    Comma,
+    CommaIdent,
+    CommaTable,
     DeclarationSetType,             // must be followed by Declaration
     DeclarationVariableType,        // must be followed by Declaration
     Declaration,

@@ -282,9 +282,12 @@ SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
     mSubKinds << SyntaxKind::CommentEndline;
     if (kind == SyntaxKind::Semicolon) {
         mDelimiter = ';';
-    } else if (kind == SyntaxKind::Comma) {
+    } else if (kind == SyntaxKind::CommaIdent) {
         mDelimiter = ',';
         mSubKinds << SyntaxKind::Identifier;
+    } else if (kind == SyntaxKind::CommaTable) {
+        mDelimiter = ',';
+        mSubKinds << SyntaxKind::IdentifierTable;
     } else {
         Q_ASSERT_X(false, "SyntaxDelimiter", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
