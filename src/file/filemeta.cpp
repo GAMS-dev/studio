@@ -296,7 +296,7 @@ void FileMeta::updateSyntaxColors()
     if (mHighlighter) {
         mHighlighter->reloadColors();
         for (QWidget *w: mEditors) {
-            if (CodeEdit *ce = ViewHelper::toCodeEdit(w)) {
+            if (ViewHelper::toCodeEdit(w)) {
                 mHighlighter->rehighlight();
             }
         }
