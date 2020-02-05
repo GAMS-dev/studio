@@ -175,19 +175,15 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     if (fis.isSymLink())
         sysdir = fis.symLinkTarget();
 
-    QString sectionPath = section.split("/", QString::SkipEmptyParts).first();
+    QStringList sectionPath = section.split("/", QString::SkipEmptyParts);
 
     QString docdir = sysdir;
-    if (sectionPath.compare("docs", Qt::CaseInsensitive)==0) {
+    if (sectionPath.first().compare("docs", Qt::CaseInsensitive)==0) {
         docdir = sysdir  + "/" + CommonPaths::documentationDir();
     } else  {
         docdir = sysdir  + "/" + CommonPaths::documentationDir() +  "/../" + section;
     }
     QString helpdocdir = QDir::cleanPath( docdir );
-    QFileInfo fid(helpdocdir);
-    if (fid.isSymLink())
-        helpdocdir = fid.symLinkTarget();
-
     QString indexFile = helpdocdir + "/" + filename;
 
     QUrl url = QUrl::fromLocalFile(indexFile);
@@ -203,13 +199,11 @@ void TestDocLocation::testLocalFileToOnlineUrl()
 
     QStringList pathStrList = gams::studio::help::HelpData::HelpData::getPathList();
     QString pathStr = pathStrList.at(docsidx);
-qDebug() << "pathStr:" << pathStr;
     int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf(pathStr);
+    QString newPath = urlLocalFile.right(newSize);
     if (docsidx==0) {
-        QString newPath = urlLocalFile.right(newSize);
         pathList << newPath.split("/", QString::SkipEmptyParts) ;
     } else {
-        QString newPath = urlLocalFile.right(newSize);
         QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
         newPathList.removeLast();
         pathList << newPath.split("/", QString::SkipEmptyParts) ;

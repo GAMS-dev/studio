@@ -387,7 +387,6 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
        QString urlLocalFile = url.toLocalFile();
-
        QString onlinepath = onlineStartPageUrl.path();
        QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
 
@@ -429,18 +428,10 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 
                    if (pathIndex == 0) {
                        baseLocation = QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir());
-                       QFileInfo fis(baseLocation);
-                       if (fis.isSymLink())
-                           baseLocation = fis.symLinkTarget();
-
                        QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
                        newPathList.removeLast();
                        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
                    } else  {
-                       QFileInfo fis(baseLocation);
-                       if (fis.isSymLink())
-                           baseLocation = fis.symLinkTarget();
-
                        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
                    }
 
