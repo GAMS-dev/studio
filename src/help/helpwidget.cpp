@@ -437,6 +437,10 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                        newPathList.removeLast();
                        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
                    } else  {
+                       QFileInfo fis(baseLocation);
+                       if (fis.isSymLink())
+                           baseLocation = fis.symLinkTarget();
+
                        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
                    }
 
