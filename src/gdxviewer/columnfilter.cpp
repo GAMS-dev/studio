@@ -19,7 +19,6 @@
  */
 #include "columnfilter.h"
 #include "columnfilterframe.h"
-#include "gdxsymbol.h"
 
 namespace gams {
 namespace studio {

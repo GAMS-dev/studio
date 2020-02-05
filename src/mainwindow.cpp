@@ -80,10 +80,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     mSettings = SettingsLocator::settings();
-//    QFile css(":/data/style.css");
-//    if (css.open(QFile::ReadOnly | QFile::Text)) {
-//        this->setStyleSheet(css.readAll());
-//    }
 
     ui->setupUi(this);
 
@@ -122,12 +118,12 @@ MainWindow::MainWindow(QWidget *parent)
     mStatusWidgets = new StatusWidgets(this);
 
     // Project View Setup
-    int iconSize = fontInfo().pixelSize()*2-1;
+    int iconSize = fontMetrics().lineSpacing() + 4;
     ui->projectView->setModel(mProjectRepo.treeModel());
     ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
     ui->projectView->setHeaderHidden(true);
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
-    ui->projectView->setIconSize(QSize(qRound(iconSize*0.8), qRound(iconSize*0.8)));
+    ui->projectView->setIconSize(QSize(iconSize, iconSize));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
@@ -216,11 +212,12 @@ MainWindow::MainWindow(QWidget *parent)
     on_actionShow_System_Log_triggered();
 
     initTabs();
-    QPushButton *tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->mainTabs);
+    initIcons();
+    QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->mainTabs->setCornerWidget(tabMenu);
-    tabMenu = new QPushButton(QIcon(":/img/menu"), "", ui->logTabs);
+    tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->logTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
@@ -237,6 +234,7 @@ MainWindow::MainWindow(QWidget *parent)
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
     updateMiroMenu();
+    invalidateScheme();
 }
 
 
@@ -1651,7 +1649,7 @@ void MainWindow::on_actionAbout_Studio_triggered()
     about.setTextFormat(Qt::RichText);
     about.setText(support::AboutGAMSDialog::header());
     about.setInformativeText(support::AboutGAMSDialog::aboutStudio());
-    about.setIconPixmap(QPixmap(":/img/gams-w24"));
+    about.setIconPixmap(Scheme::icon(":/img/gams-w24").pixmap(QSize(64, 64)));
     about.addButton(QMessageBox::Ok);
     about.exec();
 }
@@ -2199,6 +2197,9 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
         focusCmdLine();
         e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F11)) {
+        Scheme::next();
+        e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
         toggleDebugMode();
         e->accept(); return;
@@ -2651,6 +2652,65 @@ void MainWindow::updateMiroMenu()
 void MainWindow::newProcessCall(const QString &text, const QString &call)
 {
     SysLogLocator::systemLog()->append(text + " " + call, LogMsgType::Info);
+}
+
+void MainWindow::invalidateScheme()
+{
+    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme, Qt::UniqueConnection);
+
+    assignColors();
+    for (FileMeta *fm: mFileMetaRepo.fileMetas()) {
+        fm->invalidateScheme();
+    }
+    assignIcons();
+    repaint();
+}
+
+void MainWindow::assignColors()
+{
+    QPalette pal = Scheme::instance()->palette();
+    qApp->setPalette(pal);
+}
+
+void MainWindow::assignIcons()
+{
+    setWindowIcon(windowIcon());
+}
+
+void MainWindow::initIcons()
+{
+    setWindowIcon(Scheme::icon(":/img/gams-w"));
+    ui->actionCompile->setIcon(Scheme::icon(":/%1/code"));
+    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
+    ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
+    ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
+    ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
+    ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
+    ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
+    ui->actionHelp_View->setIcon(Scheme::icon(":/%1/question"));
+    ui->actionInterrupt->setIcon(Scheme::icon(":/%1/stop"));
+    ui->actionNew->setIcon(Scheme::icon(":/%1/file"));
+    ui->actionNextBookmark->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionOpen->setIcon(Scheme::icon(":/%1/folder-open-bw"));
+    ui->actionPaste->setIcon(Scheme::icon(":/%1/paste"));
+    ui->actionPreviousBookmark->setIcon(Scheme::icon(":/%1/backward"));
+    ui->actionProcess_Log->setIcon(Scheme::icon(":/%1/output"));
+    ui->actionProject_View->setIcon(Scheme::icon(":/%1/project"));
+    ui->actionRedo->setIcon(Scheme::icon(":/%1/redo"));
+    ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
+    ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
+    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
+    ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
+    ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
+    ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
+    ui->actionStop->setIcon(Scheme::icon(":/%1/kill"));
+    ui->actionTerminal->setIcon(Scheme::icon(":/%1/terminal"));
+    ui->actionToggleBookmark->setIcon(Scheme::icon(":/%1/bookmark"));
+    ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show"));
+    ui->actionUndo->setIcon(Scheme::icon(":/%1/undo"));
+    ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
+    ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
+    ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
 }
 
 void MainWindow::ensureInScreen()
@@ -3493,10 +3553,10 @@ void MainWindow::setExtendedEditorVisibility(bool visible)
 void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
 {
     if (checked) {
-        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/hide"));
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/hide"));
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     } else {
-        ui->actionToggle_Extended_Parameter_Editor->setIcon(QIcon(":/img/show") );
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show") );
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     }
 

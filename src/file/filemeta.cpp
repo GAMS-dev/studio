@@ -221,13 +221,13 @@ QWidget *FileMeta::topEditor() const
 
 void FileMeta::modificationChanged(bool modiState)
 {
-    Q_UNUSED(modiState);
+    Q_UNUSED(modiState)
     emit changed(id());
 }
 
 void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
 {
-    Q_UNUSED(charsRemoved);
+    Q_UNUSED(charsRemoved)
     if (!mDocument) return;
     if (!isOpen()) return;
     if (mLoading) return;
@@ -291,6 +291,58 @@ void FileMeta::invalidate()
     }
 }
 
+void FileMeta::updateSyntaxColors()
+{
+    if (mHighlighter) {
+        mHighlighter->reloadColors();
+        for (QWidget *w: mEditors) {
+            if (ViewHelper::toCodeEdit(w)) {
+                mHighlighter->rehighlight();
+            }
+        }
+    }
+
+}
+
+void FileMeta::initEditorColors()
+{
+    for (QWidget *w: mEditors) {
+        AbstractEdit *ed = ViewHelper::toAbstractEdit(w);
+        if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(w))
+            ed = lxi->textView()->edit();
+        if (!ed) continue;
+        if (Scheme::color(Scheme::Edit_text) == Qt::transparent &&
+                Scheme::color(Scheme::Edit_background) == Qt::transparent) {
+            ed->setAutoFillBackground(false);
+            ed->setPalette(QPalette());
+        } else if (ed->palette().windowText().color() != Scheme::color(Scheme::Edit_text) ||
+                ed->palette().window().color() != Scheme::color(Scheme::Edit_background)) {
+            ed->setAutoFillBackground(true);
+            QPalette pal = ed->palette();
+            pal.setColor(QPalette::Text, Scheme::color(Scheme::Edit_text));
+            pal.setColor(QPalette::Base, Scheme::color(Scheme::Edit_background));
+            ed->setPalette(pal);
+        }
+    }
+}
+
+void FileMeta::updateEditorColors()
+{
+    initEditorColors();
+    for (QWidget *w: mEditors) {
+        if (AbstractEdit *ce = ViewHelper::toAbstractEdit(w))
+            ce->updateExtraSelections();
+        if (CodeEdit *ce = ViewHelper::toCodeEdit(w))
+            ce->lineNumberArea()->repaint();
+    }
+}
+
+void FileMeta::invalidateScheme()
+{
+    updateEditorColors();
+    updateSyntaxColors();
+}
+
 void FileMeta::addEditor(QWidget *edit)
 {
     if (!edit) return;
@@ -302,6 +354,7 @@ void FileMeta::addEditor(QWidget *edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
 
     mEditors.prepend(edit);
+    initEditorColors();
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);

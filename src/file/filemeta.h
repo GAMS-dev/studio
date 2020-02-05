@@ -101,6 +101,7 @@ public:
 public slots:
     void reload();
     void invalidate();
+    void invalidateScheme();
 
 signals:
     void changed(FileId fileId);
@@ -132,6 +133,9 @@ private:
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();
+    void updateSyntaxColors();
+    void initEditorColors();
+    void updateEditorColors();
 
 private:
     FileId mId;
