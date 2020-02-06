@@ -164,10 +164,10 @@ void Scheme::initDefault()
     mSchemeNames << "Dark";
 
     // Dark Colors
-    QColor dark_highlight(243,150,25);
+    QColor dark_highlight(243,150,25);      //QColor(243,150,25);
     QColor dark_id(153,240,255);            //QColor(153,240,255);
     QColor dark_assignment(144,226,149);    //QColor(168,198,134);
-    QColor dark_unobstrusive(191, 195, 186);
+    QColor dark_unobstrusive(191, 195, 186);//QColor(191,195,186);
     QColor dark_neutral(223,224,223);       //QColor(223,224,223);
 
     mColorSchemes[sNr].insert(Edit_text,                      Color(dark_neutral));
@@ -192,6 +192,13 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
     mColorSchemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter(), fBold));
     mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
+
+
+    mColorSchemes[sNr].insert(Icon_Line,                      QColor(dark_neutral));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor(dark_neutral));
+    mColorSchemes[sNr].insert(Disable_Back,                   QColor("#334455"));
+    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
+    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66AA66"));
 
     invalidate();
 }
