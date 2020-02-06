@@ -1,3 +1,18 @@
+Version 0.14.3
+==================
+
+## General
+- **new icon design**
+- added action to show or hide toolbar to View menu
+- added toolbar restoration to "Reset View" action
+- added special comma handling for table statements
+- fixed behavior of calling external AppImages on linux (e.g. MIRO)
+
+## Search
+- fixed crash in search that was caused by being able to change parameters while searching
+- added "Abort" button for Find Next/Previous search actions
+
+
 Version 0.14.2
 ==================
 
