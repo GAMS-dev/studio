@@ -20,6 +20,7 @@
 #ifndef SYNTAXFORMATS_H
 #define SYNTAXFORMATS_H
 
+#include "scheme.h"
 #include <QTextCharFormat>
 #include <QHash>
 #include <QStringList>
@@ -50,7 +51,8 @@ enum class SyntaxKind {
     CommentInline,
 
     Semicolon,
-    Comma,
+    CommaIdent,
+    CommaTable,
     DeclarationSetType,             // must be followed by Declaration
     DeclarationVariableType,        // must be followed by Declaration
     Declaration,
@@ -144,6 +146,8 @@ public:
     SyntaxAbstract(SyntaxKind kind) : mKind(kind) {}
     virtual ~SyntaxAbstract() {}
     SyntaxKind kind() { return mKind; }
+    void assignColorSlot(Scheme::ColorSlot slot);
+    Scheme::ColorSlot colorSlot() const { return mColorSlot; }
 
     /// Finds the begin of this syntax
     virtual SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) = 0;
@@ -192,6 +196,7 @@ protected:
     }
 protected:
     SyntaxKind mKind;
+    Scheme::ColorSlot mColorSlot = Scheme::ColorSlot::invalid;
     QTextCharFormat mCharFormat;
     SyntaxTransitions mSubKinds;
     SyntaxTransitions mEmptyLineKinds;

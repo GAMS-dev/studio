@@ -25,6 +25,7 @@
 #include "nestedheaderview.h"
 #include "tableviewmodel.h"
 #include "common.h"
+#include "valuefilter.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -144,10 +145,18 @@ GdxSymbolView::~GdxSymbolView()
 void GdxSymbolView::showColumnFilter(QPoint p)
 {
     int column = ui->tvListView->horizontalHeader()->logicalIndexAt(p);
-    if(mSym->isLoaded() && column>=0 && column<mSym->dim()) {
-        QMenu m(this);
-        m.addAction(new ColumnFilter(mSym, column, this));
-        m.exec(ui->tvListView->mapToGlobal(p));
+    if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
+        if (column<mSym->dim()) {
+            QMenu m(this);
+            ColumnFilter cf(mSym, column, this);
+            m.addAction(&cf);
+            m.exec(ui->tvListView->mapToGlobal(p));
+        } else {
+            QMenu m(this);
+            ValueFilter* vf = mSym->valueFilter(column-mSym->dim());
+            m.addAction(vf);
+            m.exec(ui->tvListView->mapToGlobal(p));
+        }
     }
 }
 

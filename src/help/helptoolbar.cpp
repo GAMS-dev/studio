@@ -26,6 +26,7 @@ namespace help {
 HelpToolBar::HelpToolBar(QWidget *parent)
     : QToolBar(parent)
 {
+    setIconSize(QSize(16, 16));
     mActionBack->setEnabled(false);
     createWebActionTrigger( mActionBack, QWebEnginePage::Back );
 

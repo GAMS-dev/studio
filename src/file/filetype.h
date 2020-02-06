@@ -21,6 +21,7 @@
 #define FILETYPE_H
 
 #include <QStringList>
+#include <QIcon>
 #include "common.h"
 
 namespace gams {

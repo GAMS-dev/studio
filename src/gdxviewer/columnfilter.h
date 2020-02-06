@@ -21,12 +21,11 @@
 #define COLUMNFILTER_H
 
 #include <QWidgetAction>
+#include "gdxsymbol.h"
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
-
-class GdxSymbol;
 
 class ColumnFilter : public QWidgetAction
 {

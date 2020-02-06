@@ -33,6 +33,18 @@ QString syntaxKindName(SyntaxKind kind)
     return QVariant::fromValue(kind).toString();
 }
 
+void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
+{
+    mColorSlot = slot;
+    charFormat().setProperty(QTextFormat::UserProperty, intSyntaxType());
+    if (toColor(slot).isValid())
+        charFormat().setForeground(toColor(slot));
+    else
+        charFormat().setForeground(Qt::black);
+    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::fBold) ? QFont::Bold : QFont::Normal);
+    charFormat().setFontItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+}
+
 SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 {
     if (emptyLine && !mEmptyLineKinds.isEmpty()) return mEmptyLineKinds;
@@ -270,9 +282,12 @@ SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
     mSubKinds << SyntaxKind::CommentEndline;
     if (kind == SyntaxKind::Semicolon) {
         mDelimiter = ';';
-    } else if (kind == SyntaxKind::Comma) {
+    } else if (kind == SyntaxKind::CommaIdent) {
         mDelimiter = ',';
         mSubKinds << SyntaxKind::Identifier;
+    } else if (kind == SyntaxKind::CommaTable) {
+        mDelimiter = ',';
+        mSubKinds << SyntaxKind::IdentifierTable;
     } else {
         Q_ASSERT_X(false, "SyntaxDelimiter", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }

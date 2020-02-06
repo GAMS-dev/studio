@@ -122,6 +122,7 @@ public:
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
     void setHelpViewVisibility(bool visibility);
+    void setToolbarVisibility(bool visibility);
     FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
     TextMarkRepo* textMarkRepo();
@@ -206,6 +207,7 @@ private slots:
     void newProcessCall(const QString &text, const QString &call);
 
     // View
+    void invalidateScheme();
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);
@@ -216,6 +218,7 @@ private slots:
     void outputViewVisibiltyChanged(bool visibility);
     void projectViewVisibiltyChanged(bool visibility);
     void helpViewVisibilityChanged(bool visibility);
+    void toolbarVisibilityChanged(bool visibility);
     void showMainTabsMenu();
     void showLogTabsMenu();
     void showTabsMenu();
@@ -273,6 +276,7 @@ private slots:
     void on_actionShow_System_Log_triggered();
     void on_actionShow_Welcome_Page_triggered();
     void on_actionFull_Screen_triggered();
+    void on_actionShowToolbar_triggered(bool checked);
 
     // Other
     void on_mainTabs_tabCloseRequested(int index);
@@ -325,7 +329,6 @@ private slots:
     void on_actionChangelog_triggered();
 
     void openGdxDiffFile();
-
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);
@@ -335,12 +338,15 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
+    void assignColors();
+    void assignIcons();
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();
 
 private:
     void initTabs();
+    void initIcons();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId, bool ask, int count = 1);
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);

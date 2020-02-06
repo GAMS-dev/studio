@@ -21,6 +21,7 @@
 #define WPLABEL_H
 
 #include <QLabel>
+#include <QIcon>
 
 namespace gams {
 namespace studio {
@@ -35,10 +36,18 @@ public:
 
     void setInactive(bool inactive);
 
+    void setIcon(QIcon icon);
+    QIcon icon() const { return mIcon; }
+    void setIconSize(const QSize &size);
+    QSize iconSize() { return mIconSize; }
+    void setIconAlignment(Qt::Alignment alignment);
+    Qt::Alignment iconAlignment() const { return mAlignment; }
+
 protected:
-    void mousePressEvent(QMouseEvent *event);
-    void enterEvent(QEvent* event);
-    void leaveEvent(QEvent* event);
+    void mousePressEvent(QMouseEvent *event) override;
+    void enterEvent(QEvent* event) override;
+    void leaveEvent(QEvent* event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 signals:
     void relayActionLab(QString action);
@@ -49,6 +58,9 @@ private:
     QString mContent;
     QString mLink;
     bool mInactive = false;
+    QIcon mIcon;
+    QSize mIconSize;
+    Qt::Alignment mAlignment = Qt::AlignCenter;
 };
 
 }

@@ -25,6 +25,7 @@
 #include <QHash>
 
 class QSettings;
+class QFile;
 
 namespace gams {
 namespace studio {
@@ -40,6 +41,8 @@ public:
 
     void loadSettings(MainWindow *main);
     void saveSettings(MainWindow *main);
+    bool writeScheme();
+    void readScheme();
 
     QString defaultWorkspace() const;
     void setDefaultWorkspace(const QString &value);
@@ -88,13 +91,6 @@ public:
 
     bool clearLog() const;
     void setClearLog(bool value);
-
-    int colorSchemeIndex();
-    void setColorSchemeIndex(int value);
-
-    QHash<QString, QColor> &colorScheme();
-    QByteArray exportJsonColorSchemes();
-    void importJsonColorSchemes(const QByteArray &jsonData);
 
     bool searchUseRegex() const;
     void setSearchUseRegex(bool searchUseRegex);
@@ -164,6 +160,7 @@ public:
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
+    QFile *mColorSettings = nullptr;
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
 
@@ -216,7 +213,6 @@ private:
     QString mUserModelLibraryDir;
     void checkAndUpdateSettings();
     void initSettingsFiles();
-    void initDefaultColors();
     void loadViewStates(MainWindow *main);
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

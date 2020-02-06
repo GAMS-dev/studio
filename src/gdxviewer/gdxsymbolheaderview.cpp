@@ -19,6 +19,7 @@
  */
 #include "gdxsymbolheaderview.h"
 #include "gdxsymbol.h"
+#include "scheme.h"
 
 #include <QPainter>
 #include <QTableView>
@@ -31,9 +32,13 @@ namespace gdxviewer {
 GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
 {
-    mFilterIconWidth.resize(GMS_MAX_INDEX_DIM);
-    mFilterIconX.resize(GMS_MAX_INDEX_DIM);
-    mFilterIconY.resize(GMS_MAX_INDEX_DIM);
+    int maxColumns = GMS_MAX_INDEX_DIM+GMS_VAL_MAX;
+    mFilterIconX.resize(maxColumns);
+    mFilterIconY.resize(maxColumns);
+
+    int h = sectionSizeFromContents(0).height();
+    mFilterIconWidth  = h*ICON_SCALE_FACTOR;
+    mFilterIconMargin = h*ICON_MARGIN_FACTOR;
 }
 
 GdxSymbolHeaderView::~GdxSymbolHeaderView()
@@ -49,24 +54,21 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
     QTableView* tv = static_cast<QTableView*>(this->parent());
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
-    if (logicalIndex < symbol->dim()) {
+    // show filter icon
+    if (logicalIndex < symbol->filterColumnCount()) {
         QString iconRes;
-        if (symbol->filterActive()[logicalIndex])
+        if (symbol->filterActive(logicalIndex))
             iconRes = iconFilterOn;
         else
             iconRes = iconFilterOff;
+        QIcon icon(Scheme::icon(iconRes));
+        QPixmap pm = icon.pixmap(mFilterIconWidth, mFilterIconWidth);
 
-        QIcon icon(iconRes);
-        int iconWidth = rect.height()*ICON_SCALE_FACTOR;
-        int iconMargin = rect.height()*ICON_MARGIN_FACTOR;
-        QPixmap pm = icon.pixmap(iconWidth, iconWidth);
-
-        int posX = rect.bottomRight().x()-iconWidth-iconMargin;
-        int posY = rect.bottomRight().y()-iconWidth-iconMargin;
+        int posX = rect.bottomRight().x()-mFilterIconWidth-mFilterIconMargin;
+        int posY = rect.bottomRight().y()-mFilterIconWidth-mFilterIconMargin;
 
         painter->drawImage(posX, posY, pm.toImage());
 
-        mFilterIconWidth[logicalIndex] = iconWidth;
         mFilterIconX[logicalIndex] = posX;
         mFilterIconY[logicalIndex] = posY;
     }
@@ -86,12 +88,23 @@ bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
     QTableView* tv = static_cast<QTableView*>(this->parent());
     GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
 
-    if (index < symbol->dim()) {
-        if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth[index] &&
-           p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth[index])
+    if (index < symbol->filterColumnCount()) {
+        if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth &&
+           p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth)
             return true;
     }
     return false;
+}
+
+QSize GdxSymbolHeaderView::sectionSizeFromContents(int logicalIndex) const
+{
+    QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);
+#ifdef __APPLE__
+    // do not modify the width on MAC OS since there is already a sufficient width to display the filter icon
+#else
+    s.setWidth(s.width() + SECTION_WIDTH_FACTOR*(mFilterIconWidth + mFilterIconMargin));
+#endif
+    return s;
 }
 
 } // namespace gdxviewer

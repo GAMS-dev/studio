@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "gdxsymboltable.h"
 #include "nestedheaderview.h"
+#include "valuefilter.h"
 
 #include <QMutex>
 #include <QSet>
@@ -30,6 +31,8 @@
 namespace gams {
 namespace studio {
 namespace gdxviewer {
+
+int GdxSymbol::maxPrecision = 15;
 
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
@@ -45,9 +48,13 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
-    mFilterActive.resize(mDim);
-    for(int i=0; i<mDim; i++)
+    mFilterActive.resize(filterColumnCount());
+    for(int i=0; i<filterColumnCount(); i++)
         mFilterActive[i] = false;
+
+    mValueFilters.resize(mNumericalColumnCount);
+    for (int i=0; i<mNumericalColumnCount; i++)
+        mValueFilters[i] = nullptr;
 
     mSpecValSortVal.push_back(5.0E300); // GMS_SV_UNDEF
     mSpecValSortVal.push_back(4.0E300); // GMS_SV_NA
@@ -98,7 +105,7 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
             if (mType == GMS_DT_SET)
                 description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the explanatory text in alphabetical order using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
             else
-                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the numeric values using a stable sort mechanism. Sorting direction can be changed by clicking again.</p>";
+                description += "<p><span style=\" font-weight:600;\">Sort: </span>Left click sorts the numeric values using a stable sort mechanism. Sorting direction can be changed by clicking again.</p><p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
         }
         description += "<p><span style=\" font-weight:600;\">Rearrange columns: </span>Drag-and-drop can be used for changing the order of columns</p>";
         description += "</body></html>";
@@ -164,6 +171,7 @@ void GdxSymbol::loadData()
     mMinUel.resize(mDim);
     for(int i=0; i<mDim; i++)
         mMinUel[i] = INT_MAX;
+    initNumericalBounds();
     mMaxUel.resize(mDim);
     for(int i=0; i<mDim; i++)
         mMaxUel[i] = INT_MIN;
@@ -220,6 +228,12 @@ void GdxSymbol::loadData()
                 valOffset = i*GMS_VAL_MAX;
                 for(int vIdx=0; vIdx<GMS_VAL_MAX; vIdx++)
                     mValues[valOffset+vIdx] =  values[vIdx];
+            }
+            for(int vIdx=0; vIdx<mNumericalColumnCount; vIdx++) {
+                if (values[vIdx] < GMS_SV_UNDEF) {
+                    mMinDouble[vIdx] = qMin(mMinDouble[vIdx], values[vIdx]);
+                    mMaxDouble[vIdx] = qMax(mMaxDouble[vIdx], values[vIdx]);
+                }
             }
             mLoadedRecCount++;
             if (mLoadedRecCount == triggerAutoResizeListViewCount || mLoadedRecCount == mRecordCount) {
@@ -316,6 +330,13 @@ void GdxSymbol::loadMetaData()
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
         mSubType = gmsFixVarType(mSubType);
+
+    if (mType == GMS_DT_EQU || mType == GMS_DT_VAR)
+        mNumericalColumnCount = GMS_VAL_MAX;
+    else if (mType == GMS_DT_PAR)
+        mNumericalColumnCount = 1;
+    else
+        mNumericalColumnCount = 0;
 }
 
 void GdxSymbol::loadDomains()
@@ -348,31 +369,35 @@ double GdxSymbol::specVal2SortVal(double val)
         return val; // should be an acronym
 }
 
+QString GdxSymbol::formatNumericalValue(double val, int precision, bool squeezeTrailingZeroes)
+{
+    QString strFullPrec = QString::number(val, 'g', maxPrecision);
+    QString str = QString::number(val, 'f', precision);
+
+    if (strFullPrec.contains('e'))
+        str = QString::number(str.toDouble(), 'g', precision);
+
+    if (squeezeTrailingZeroes) {
+        if (str.contains(QLocale::c().decimalPoint())) {
+            while (str.back() == '0') // remove trailing zeroes
+                str.chop(1);
+            if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
+                str.chop(1);
+        }
+    }
+    return str;
+}
+
 QVariant GdxSymbol::formatValue(double val) const
 {
     if (val<GMS_SV_UNDEF) {
         int prec = mNumericalPrecision;
         if (prec == -1) // Max
-            prec = mMaxPrecision;
-
-        QString strFullPrec = QString::number(val, 'g', mMaxPrecision);
-        QString str = QString::number(val, 'f', prec);
-
-        if (strFullPrec.contains('e'))
-            str = QString::number(str.toDouble(), 'g', prec);
-
-        if (mSqueezeTrailingZeroes) {
-            if (str.contains(QLocale::c().decimalPoint())) {
-                while (str.back() == '0') // remove trailing zeroes
-                    str.chop(1);
-                if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
-                    str.chop(1);
-            }
-        }
-        return str;
+            prec = maxPrecision;
+        return formatNumericalValue(val, prec, mSqueezeTrailingZeroes);
     }
     if (val == GMS_SV_UNDEF)
-        return "UNDEF";
+        return "UNDF";
     if (val == GMS_SV_NA)
         return "NA";
     if (val == GMS_SV_PINF)
@@ -389,12 +414,66 @@ QVariant GdxSymbol::formatValue(double val) const
     return QVariant();
 }
 
+void GdxSymbol::initNumericalBounds()
+{
+    if(mType == GMS_DT_PAR) {
+        mMinDouble.resize(1);
+        mMaxDouble.resize(1);
+        mMinDouble[0] = INT_MAX;
+        mMaxDouble[0] = INT_MIN;
+    } else if (mType == GMS_DT_EQU || mType == GMS_DT_VAR) {
+        mMinDouble.resize(GMS_VAL_MAX);
+        mMaxDouble.resize(GMS_VAL_MAX);
+        for (int i=0; i<GMS_VAL_MAX; i++) {
+            mMinDouble[i] = INT_MAX;
+            mMaxDouble[i] = INT_MIN;
+        }
+    }
+}
+
+int GdxSymbol::filterColumnCount()
+{
+    return mDim+mNumericalColumnCount;
+}
+
 void GdxSymbol::setNumericalPrecision(int numericalPrecision, bool squeezeTrailingZeroes)
 {
     beginResetModel();
     mNumericalPrecision = numericalPrecision;
     mSqueezeTrailingZeroes = squeezeTrailingZeroes;
     endResetModel();
+}
+
+double GdxSymbol::minDouble(int valCol)
+{
+    return mMinDouble[valCol];
+}
+
+double GdxSymbol::maxDouble(int valCol)
+{
+    return mMaxDouble[valCol];
+}
+
+void GdxSymbol::registerValueFilter(int valueColumn, ValueFilter *valueFilter)
+{
+    mValueFilters.at(valueColumn) = valueFilter;
+    mFilterActive.at(mDim+valueColumn) = true;
+}
+
+void GdxSymbol::unregisterValueFilter(int valueColumn)
+{
+    if (mValueFilters[valueColumn] != nullptr) {
+        delete mValueFilters[valueColumn];
+        mValueFilters[valueColumn] = nullptr;
+    }
+    mFilterActive.at(mDim+valueColumn) = false;
+}
+
+ValueFilter *GdxSymbol::valueFilter(int valueColumn)
+{
+    if (mValueFilters[valueColumn] == nullptr)
+        mValueFilters[valueColumn] = new ValueFilter(this, valueColumn);
+    return mValueFilters[valueColumn];
 }
 
 bool GdxSymbol::filterHasChanged() const
@@ -407,19 +486,19 @@ void GdxSymbol::setFilterHasChanged(bool filterHasChanged)
     mFilterHasChanged = filterHasChanged;
 }
 
-std::vector<bool> GdxSymbol::filterActive() const
-{
-    return mFilterActive;
-}
-
-void GdxSymbol::setFilterActive(const std::vector<bool> &filterActive)
-{
-    mFilterActive = filterActive;
-}
-
 void GdxSymbol::setShowUelInColumn(const std::vector<bool *> &showUelInColumn)
 {
     mShowUelInColumn = showUelInColumn;
+}
+
+bool GdxSymbol::filterActive(int column) const
+{
+    return mFilterActive.at(column);
+}
+
+void GdxSymbol::setFilterActive(int column, bool active)
+{
+    mFilterActive[column] = active;
 }
 
 std::vector<bool *> GdxSymbol::showUelInColumn() const
@@ -439,10 +518,13 @@ void GdxSymbol::resetSortFilter()
         mRecFilterIdx[i] = i;
     }
     for(int dim=0; dim<mDim; dim++) {
-        mFilterActive[dim] = false;
         for(int uel : *mUelsInColumn.at(dim))
             mShowUelInColumn.at(dim)[uel] = true;
     }
+    for(int i=0; i<mNumericalColumnCount; i++)
+        mValueFilters[i] = nullptr;
+    for(int i=0; i<filterColumnCount(); i++)
+        mFilterActive[i] = false;
     mFilterRecCount = mLoadedRecCount;
     layoutChanged();
 }
@@ -552,11 +634,42 @@ void GdxSymbol::filterRows()
     for(int row=0; row<mRecordCount; row++) {
         int recIdx = mRecSortIdx[row];
         mRecFilterIdx[row-removedCount] = row;
-        for(int dim=0; dim<mDim; dim++) {
-            if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) { //filter record
-                mFilterRecCount--;
-                removedCount++;
-                break;
+        for(int dim=0; dim<filterColumnCount(); dim++) {
+            if (dim<mDim) { // filter by key column
+                if(!mShowUelInColumn.at(dim)[mKeys[recIdx*mDim + dim]]) { //filter record
+                    mFilterRecCount--;
+                    removedCount++;
+                    break;
+                }
+            } else { // filter by numerical column
+                bool alreadyRemoved=false;
+                for(int i=0; i<mNumericalColumnCount; i++) {
+                    if (mFilterActive[mDim+i]) {
+                        double val = mValues[recIdx*mNumericalColumnCount+i];
+                        ValueFilter* vf = mValueFilters[i];
+                        if (val < GMS_SV_UNDEF) {
+                            if ( (!vf->exclude() && (val <  vf->currentMin() || val >  vf->currentMax())) ||
+                                 ( vf->exclude() && (val >= vf->currentMin() && val <= vf->currentMax())) ) {
+                                mFilterRecCount--;
+                                removedCount++;
+                                alreadyRemoved=true;
+                                break;
+                            }
+                        } else if (    (!vf->showUndef()   && val == GMS_SV_UNDEF)
+                                    || (!vf->showNA()      && val == GMS_SV_NA   )
+                                    || (!vf->showPInf()    && val == GMS_SV_PINF )
+                                    || (!vf->showMInf()    && val == GMS_SV_MINF )
+                                    || (!vf->showEps()     && val == GMS_SV_EPS  )
+                                    || (!vf->showAcronym() && val >= GMS_SV_ACR  ) ) {
+                            mFilterRecCount--;
+                            removedCount++;
+                            alreadyRemoved=true;
+                            break;
+                        }
+                    }
+                }
+                if (alreadyRemoved)
+                    break;
             }
         }
     }

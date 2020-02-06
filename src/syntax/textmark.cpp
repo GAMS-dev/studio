@@ -22,6 +22,9 @@
 #include "file.h"
 #include "logger.h"
 #include "exception.h"
+#include "scheme.h"
+#include "studiosettings.h"
+#include "settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -104,12 +107,12 @@ void TextMark::clearBackRefs()
 QColor TextMark::color() const
 {
     if (mReference) {
-        if (mReference->type() == TextMark::error) return Qt::darkRed;
-        if (mReference->fileKind() == FileKind::Lst) return Qt::blue;
+        if (mReference->type() == TextMark::error) return toColor(Scheme::Mark_errorFg);
+        if (mReference->fileKind() == FileKind::Lst) return toColor(Scheme::Mark_listingFg);
     } else {
-        return Qt::darkRed;
+        return toColor(Scheme::Mark_errorFg);
     }
-    return Qt::darkGreen;
+    return toColor(Scheme::Mark_fileFg);
 }
 
 FileKind TextMark::fileKind()
@@ -126,11 +129,11 @@ QIcon TextMark::icon()
 {
     switch (mType) {
     case error:
-        return QIcon(":/img/exclam-circle-r");
+        return Scheme::icon(":/img/exclam-circle-r");
     case link:
-        return mReference ? QIcon(":/img/err-ref") : QIcon(":/img/err-ref-missing");
+        return mReference ? Scheme::icon(":/img/err-ref") : Scheme::icon(":/img/err-ref-missing");
     case bookmark: {
-        QIcon ico(":/img/bookmark");
+        QIcon ico = Scheme::icon(":/img/bookmark");
         return ico;
     }
     default:

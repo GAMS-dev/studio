@@ -58,8 +58,6 @@ private:
     bool mHypercubeMode;
     bool mTestDeployment;
     MiroTargetEnvironment mTargetEnvironment;
-
-    QProcess mMiro;
 };
 
 }
