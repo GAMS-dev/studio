@@ -424,16 +424,14 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    QString pathStr = pathStrList.at(docsidx);
                    int pathIndex = url.path().indexOf( pathStr );
                    QString newPath = url.path().mid( pathIndex, url.path().size());
-                   QStringList pathList;
+                   QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
+                   newPathList.removeFirst();
 
-                   if (pathIndex == 0) {
-                       baseLocation = QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir());
-                       QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
-                       newPathList.removeLast();
-                       pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
-                   } else  {
-                       pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
-                   }
+                   int docsidx = gams::studio::help::HelpData::getURLIndexFrom(pathStr);
+                   baseLocation = (docsidx == 0) ?  QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir())
+                                                 :  QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::modelLibraryDir(pathStr.mid(1)));
+                   QStringList pathList;
+                   pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
 
                    QUrl localUrl = QUrl::fromLocalFile(QString());
                    localUrl.setScheme("file");

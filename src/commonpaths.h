@@ -40,6 +40,7 @@ class CommonPaths
 public:
 
     static const QString& documentationDir();
+    static QString modelLibraryDir(const QString &libname);
 
     ///
     /// \brief Get GAMS system directory.
@@ -109,6 +110,7 @@ private:
     static QString SystemDir;
     static const QString ConfigFile;
     static const QString DocumentationDir;
+    static const QString ModlibsPrefixPath;
     static const QString LicenseFile;
 };
 
