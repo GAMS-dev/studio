@@ -200,6 +200,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
     mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66AA66"));
 
+    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(60,60,60));
+
     invalidate();
 }
 
