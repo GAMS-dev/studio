@@ -383,7 +383,7 @@ void HelpWidget::on_actionOrganizeBookmark_triggered()
 void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 {
    QUrl url = ui->webEngineView->page()->url();
-   QString baseLocation = QDir(CommonPaths::systemDir()).canonicalPath();
+   QString baseLocation = QDir::cleanPath(CommonPaths::systemDir());
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
        QString urlLocalFile = url.toLocalFile();
