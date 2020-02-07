@@ -51,8 +51,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
-    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
+//    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
+//    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
+    ui->label_11->setVisible(false);
+    ui->combo_editorTheme->setVisible(false);
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
