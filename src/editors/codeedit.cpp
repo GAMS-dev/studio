@@ -1620,7 +1620,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
     painter.setClipRect(evRect);
     int cursorColumn = mColumn+mSize;
     QFontMetrics metric(mEdit->font());
-    double spaceWidth = metric.width(QString(100,' ')) / 100.0;
+    double spaceWidth = metric.width(QString(10000,' ')) / 10000.0;
     QTextBlock block = mEdit->firstVisibleBlock();
     QTextCursor cursor(block);
     cursor.setPosition(block.position()+block.length()-1);
@@ -1640,10 +1640,10 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
             // we have to draw selection beyond the line-end
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRectF selRect = mEdit->cursorRect(cursor);
-//            qreal x = block.layout()->minimumWidth()+cursorOffset;
-//            selRect.setLeft(x);
-            if (block.length() <= beyondStart)
+            if (block.length() <= beyondStart) {
+                selRect.moveTo(block.layout()->minimumWidth() + block.layout()->boundingRect().left(), selRect.y());
                 selRect.translate(((beyondStart-block.length()+1) * spaceWidth), 0);
+            }
             selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
             painter.fillRect(selRect, toColor(Scheme::Edit_blockSelectBg));
         }
@@ -1657,6 +1657,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
         QRectF cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
+            cursorRect.setX(block.layout()->minimumWidth() + block.layout()->boundingRect().left());
             cursorRect.translate((cursorColumn-block.length()+1) * spaceWidth, 0);
         }
         cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
