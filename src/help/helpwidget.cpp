@@ -104,9 +104,9 @@ HelpWidget::HelpWidget(QWidget *parent) :
         getErrorHTMLText( htmlText, getStartPageUrl());
         ui->webEngineView->setHtml( htmlText );
     }
-    connect(ui->webEngineView, &QWebEngineView::loadFinished, this, &HelpWidget::on_loadFinished);
-
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
+    connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
+
     connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &HelpWidget::searchText);
     connect(ui->backButton, &QToolButton::clicked, this, &HelpWidget::on_backButtonTriggered);
     connect(ui->forwardButton, &QToolButton::clicked, this, &HelpWidget::on_forwardButtonTriggered);
@@ -316,11 +316,11 @@ void HelpWidget::on_loadFinished(bool ok)
     ui->actionOnlineHelp->setEnabled( true );
     ui->actionOnlineHelp->setChecked( false );
     if (ok) {
-       if (ui->webEngineView->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
+       if (ui->webEngineView->page()->url().host().compare("www.gams.com", Qt::CaseInsensitive) == 0 ) {
            if (onlineStartPageUrl.isValid()) {
-               if (ui->webEngineView->url().path().contains( onlineStartPageUrl.path()))
+               if (ui->webEngineView->page()->url().path().contains( onlineStartPageUrl.path()))
                    ui->actionOnlineHelp->setChecked( true );
-               else if (ui->webEngineView->url().path().contains("latest"))
+               else if (ui->webEngineView->page()->url().path().contains("latest"))
                    ui->actionOnlineHelp->setChecked( true );
                else
                    ui->actionOnlineHelp->setEnabled( false );
@@ -328,10 +328,14 @@ void HelpWidget::on_loadFinished(bool ok)
                ui->actionOnlineHelp->setEnabled( false );
            }
        } else {
-           if (ui->webEngineView->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
+           if (ui->webEngineView->page()->url().scheme().compare("file", Qt::CaseSensitive) !=0 )
                ui->actionOnlineHelp->setEnabled( false );
        }
-   }
+   } /*else {
+        QString htmlText;
+        getErrorHTMLText( htmlText, ui->webEngineView->page()->requestedUrl());
+        ui->webEngineView->setHtml( htmlText );
+    }*/
 }
 
 void HelpWidget::linkHovered(const QString &url)
@@ -380,28 +384,69 @@ void HelpWidget::on_actionOrganizeBookmark_triggered()
 
 void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 {
-   QUrl url = ui->webEngineView->url();
-   QString baseLocation = QDir(CommonPaths::systemDir()).absolutePath();
+   QUrl url = ui->webEngineView->page()->url();
+   QString baseLocation = QDir::cleanPath(CommonPaths::systemDir());
    onlineStartPageUrl = getOnlineStartPageUrl();
    if (checked) {
-        QString urlStr = url.toDisplayString();
-        urlStr.replace( urlStr.indexOf("file://"), 7, "");
-        urlStr.replace( urlStr.indexOf( baseLocation),
-                        baseLocation.size(),
-                        onlineStartPageUrl.toDisplayString() );
-        url = QUrl(urlStr);
+       QString urlLocalFile = url.toLocalFile();
+       QString onlinepath = onlineStartPageUrl.path();
+       QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
+
+       int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlLocalFile);
+       if(docsidx > -1) {
+           QStringList pathStrList = gams::studio::help::HelpData::HelpData::getPathList();
+           QString pathStr = pathStrList.at(docsidx);
+
+           int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf(pathStr);
+           QString newPath = urlLocalFile.right(newSize);
+           pathList << newPath.split("/", QString::SkipEmptyParts) ;
+
+           QUrl onlineUrl;
+           onlineUrl.setScheme(onlineStartPageUrl.scheme());
+           onlineUrl.setHost(onlineStartPageUrl.host());
+           onlineUrl.setPath("/" + pathList.join("/"));
+
+           if (!url.fragment().isEmpty())
+               onlineUrl.setFragment(url.fragment());
+
+           if (url.isValid())
+               ui->webEngineView->page()->setUrl( onlineUrl );
+           else
+               ui->webEngineView->page()->setUrl( onlineStartPageUrl );
+       } else {
+           ui->webEngineView->page()->setUrl( onlineStartPageUrl );
+       }
     } else {
        if (url.host().compare("www.gams.com", Qt::CaseInsensitive) == 0 )  {
            if (isDocumentAvailable(CommonPaths::systemDir(), HelpData::getChapterLocation(DocumentType::Main))) {
                QString urlStr = url.toDisplayString();
                int docsidx = HelpData::getURLIndexFrom(urlStr);
                if (docsidx > -1) {
-                   urlStr.replace( 0, docsidx, baseLocation );
-                   url.setUrl(urlStr);
-                   url.setScheme("file");
-                   qDebug() << url.toString();
+                   QStringList pathStrList = HelpData::getPathList();
+                   QString pathStr = pathStrList.at(docsidx);
+                   int pathIndex = url.path().indexOf( pathStr );
+                   QString newPath = url.path().mid( pathIndex, url.path().size());
+                   QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
+                   newPathList.removeFirst();
+
+                   int docsidx = gams::studio::help::HelpData::getURLIndexFrom(pathStr);
+                   baseLocation = (docsidx == 0) ?  QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir())
+                                                 :  QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::modelLibraryDir(pathStr.mid(1)));
+                   QStringList pathList;
+                   pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
+
+                   QUrl localUrl = QUrl::fromLocalFile(QString());
+                   localUrl.setScheme("file");
+                   localUrl.setPath("/" + pathList.join("/"));
+                   if (!url.fragment().isEmpty())
+                       localUrl.setFragment(url.fragment());
+
+                   if (localUrl.isValid())
+                       ui->webEngineView->page()->setUrl( localUrl );
+                   else
+                       ui->webEngineView->page()->setUrl( getStartPageUrl() );
                }  else {
-                   ui->webEngineView->load( getStartPageUrl() );
+                   ui->webEngineView->page()->setUrl( getStartPageUrl() );
                }
            } else {
                QString htmlText;
@@ -410,11 +455,10 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
            }
 
        }  else {
-           ui->webEngineView->load( getStartPageUrl() );
+           ui->webEngineView->page()->setUrl( getStartPageUrl() );
        }
     }
-    ui->actionOnlineHelp->setChecked( checked );
-    ui->webEngineView->load( url );
+    ui->webEngineView->setFocus();
 }
 
 void HelpWidget::on_actionOpenInBrowser_triggered()
@@ -535,6 +579,7 @@ QWebEngineView *HelpWidget::createHelpView()
     createWebActionTrigger(page, QWebEnginePage::Stop, Scheme::icon(":/%1/stop2"));
     ui->webEngineView->setPage( page );
     connect(ui->webEngineView->page(), &QWebEnginePage::linkHovered, this, &HelpWidget::linkHovered);
+    connect(ui->webEngineView->page(), &QWebEnginePage::loadFinished, this, &HelpWidget::on_loadFinished);
     return ui->webEngineView;
 }
 
@@ -606,9 +651,9 @@ QUrl HelpWidget::getOnlineStartPageUrl()
     } else {
         int marjorversion = c4uWrapper.currentDistribVersion()/100;
         if (marjorversion>=26)
-            return QUrl( QString("https://www.gams.com/%1").arg( marjorversion ));
+            return QUrl( QString("https://www.gams.com/%1/").arg( marjorversion ), QUrl::TolerantMode);
         else
-          return QUrl( QString("https://www.gams.com/%1").arg( c4uWrapper.currentDistribVersionShort() ) );
+          return QUrl( QString("https://www.gams.com/%1/").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
     }
 }
 

@@ -20,7 +20,6 @@
 #ifndef HELPPAGE_H
 #define HELPPAGE_H
 
-#include <QWidget>
 #include <QWebEnginePage>
 
 namespace gams {
@@ -35,9 +34,10 @@ public:
     HelpPage(QWidget *parent = nullptr);
 
 protected:
-    bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool isMainFrame);
+    bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool isMainFrame) override;
 
 };
+
 
 } //namespace help
 } // namespace studio
