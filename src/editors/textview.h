@@ -81,7 +81,7 @@ signals:
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
-    void appendLines(const QStringList &lines);
+    void appendLines(const QStringList &lines, bool overwritePreviousLine);
 
 public slots:
     void updateExtraSelections();

@@ -462,8 +462,9 @@ void MemoryMapper::parseNewLine()
     }
 
     // update log-file cache
-    if (!mLastLineIsOpen || mLastLineLen != line.length())
+    if (!mLastLineIsOpen || mLastLineLen != line.length()) {
         mNewLogLines << line;
+    }
 
     if (mLastLineIsOpen && mLastLineLen > line.length()) {
         ensureSpace(1);
@@ -512,6 +513,12 @@ void MemoryMapper::clearLastLine()
         chunk->lineBytes.last() = start+1;
         chunk->bArray[start] = '\n';
     }
+    if (mNewLogLines.size()) {
+        mNewLogLines.removeLast();
+    } else {
+        mWeakLastLogLine = true;
+    }
+
     if (mNewLines)
         newPending(PendingContentChange);
     mInstantRefresh = true;
@@ -520,8 +527,10 @@ void MemoryMapper::clearLastLine()
 
 void MemoryMapper::fetchLog()
 {
-    emit appendLines(mNewLogLines);
+    //TODO(JM) update weakLastLog
+    emit appendLines(mNewLogLines, mWeakLastLogLine);
     mNewLogLines.clear();
+    mWeakLastLogLine = false;
 }
 
 void MemoryMapper::fetchDisplay()
