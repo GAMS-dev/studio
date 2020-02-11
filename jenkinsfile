@@ -33,7 +33,6 @@ pipeline {
                         }
                     }
                 }
-                /*
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     steps {
@@ -55,7 +54,6 @@ pipeline {
                         }
                     }
                 }
-                */
                 stage ('macos') {
                     agent { label 'macos' }
                     steps {
@@ -90,7 +88,6 @@ pipeline {
                         }
                     }
                 }
-                /*
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     steps {
@@ -106,7 +103,6 @@ pipeline {
                         }
                     }
                 }
-                */
                 stage ('macos') {
                     agent { label 'macos' }
                     steps {
@@ -156,7 +152,6 @@ pipeline {
                         '''
                     }
                 }
-                /*
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     steps {
@@ -179,7 +174,6 @@ pipeline {
                         }
                     }
                 }
-                */
                 stage ('macos') {
                     agent { label 'macos' }
                     steps {
@@ -287,7 +281,6 @@ pipeline {
                         }
                     }
                 }
-                /*
                 stage('windowsX64') {
                     agent { label 'windowsX64' }
                     steps {
@@ -301,7 +294,6 @@ pipeline {
                         }
                     }
                 }
-                */
                 stage('macos') {
                     agent { label 'macos' }
                     steps {
