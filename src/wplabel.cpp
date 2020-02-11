@@ -24,8 +24,12 @@
 namespace gams {
 namespace studio {
 
-WpLabel::WpLabel(QWidget *parent) : WpLabel("", "", parent)
-{ }
+
+WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
+{
+    setAutoFillBackground(true);
+    updateMouseOverColor(false);
+}
 
 WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     : QLabel(parent), mContent(content), mLink(link)

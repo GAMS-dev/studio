@@ -42,7 +42,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
     QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt, widget);
     if (opt.checkState == Qt::Checked)  {
-        painter->fillRect(checkRect, Qt::darkGreen); //QBrush(QColor(0, 128, 0, 128)));
+        painter->fillRect(checkRect, QColor("#66AA66")); //QBrush(QColor(0, 128, 0, 128)));
     } else  {
         QPainterPath path;
         path.addRect(checkRect);
@@ -71,7 +71,6 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
        opt.viewItemPosition = QStyleOptionViewItem::Middle;
        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
     }
-    QStyledItemDelegate::paint(painter, option, index);
 }
 
 } // namespace option
