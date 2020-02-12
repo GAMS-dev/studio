@@ -21,6 +21,7 @@
 #include <QApplication>
 #include <QPalette>
 #include "optiondefinitionmodel.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -121,7 +122,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem &&  item->modified())
-            return  QVariant::fromValue(QColor("#66AA66"));
+            return  QVariant::fromValue(QColor(Scheme::Normal_Green));
         else
             return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
     }
@@ -132,7 +133,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
             if (index.row() % 2 == 0)
                return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
             else
-                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::AlternateBase));
+                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Background));
         } else {
             return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         }

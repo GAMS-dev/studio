@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "definitionitemdelegate.h"
+#include "scheme.h"
+
 #include <QPainter>
 #include <QStylePainter>
 #include <QApplication>
@@ -42,7 +44,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
     QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt, widget);
     if (opt.checkState == Qt::Checked)  {
-        painter->fillRect(checkRect, QColor("#66AA66")); //QBrush(QColor(0, 128, 0, 128)));
+        painter->fillRect(checkRect, QColor(Scheme::Normal_Green));
     } else  {
         QPainterPath path;
         path.addRect(checkRect);

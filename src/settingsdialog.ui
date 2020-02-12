@@ -509,7 +509,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="label_mirolocation">
          <property name="text">
           <string>MIRO installation location</string>
          </property>
@@ -559,7 +559,7 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="label_currentscheme">
             <property name="text">
              <string>Current Scheme</string>
             </property>
