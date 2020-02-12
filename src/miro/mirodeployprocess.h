@@ -47,6 +47,9 @@ public:
     void setTestDeployment(bool testDeploy);
     void setTargetEnvironment(MiroTargetEnvironment targetEnvironment);
 
+protected slots:
+    void completed(int exitCode) override;
+
 protected:
     QProcessEnvironment miroProcessEnvironment() override;
 

@@ -52,4 +52,11 @@ void TestMiroCommon::testAssemblyFileName()
     QCOMPARE(MiroCommon::assemblyFileName("model"), "model_files.txt");
 }
 
+void TestMiroCommon::testDeployFileName()
+{
+    QCOMPARE(MiroCommon::deployFileName(QString()), QString());
+    QCOMPARE(MiroCommon::deployFileName("mymodel"), "mymodel.miroapp");
+    QCOMPARE(MiroCommon::deployFileName("mymodel.out"), "mymodel.out.miroapp");
+}
+
 QTEST_MAIN(TestMiroCommon)
