@@ -38,6 +38,7 @@ class Application : public QApplication
 
 public:
     Application(int &argc, char **argv);
+    ~Application() override;
 
     ///
     /// \brief Get the application MainWindow.
