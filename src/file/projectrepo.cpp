@@ -50,6 +50,7 @@ ProjectRepo::ProjectRepo(QObject* parent)
 ProjectRepo::~ProjectRepo()
 {
     mRunAnimateTimer.stop();
+    mRunIcons.clear();
     FileType::clear();
     delete mTreeModel;
 }

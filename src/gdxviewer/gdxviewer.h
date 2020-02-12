@@ -67,7 +67,7 @@ private:
     void loadSymbol(GdxSymbol* selectedSymbol);
     void copySelectionToClipboard();
     bool init();
-    void free();
+    void freeSymbols();
     bool mIsInitialized = false;
 
     static int errorCallback(int count, const char *message);
