@@ -132,7 +132,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
             if (index.row() % 2 == 0)
                return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
             else
-                return QVariant::fromValue(QApplication::palette().color(QPalette::AlternateBase));
+                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::AlternateBase));
         } else {
             return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         }
