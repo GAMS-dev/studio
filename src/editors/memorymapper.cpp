@@ -527,7 +527,6 @@ void MemoryMapper::clearLastLine()
 
 void MemoryMapper::fetchLog()
 {
-    //TODO(JM) update weakLastLog
     emit appendLines(mNewLogLines, mWeakLastLogLine);
     mNewLogLines.clear();
     mWeakLastLogLine = false;
@@ -587,6 +586,8 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                     cleaned = ensureSpace(midData.size()+1);
                     chunk = mChunks.last();
                     appendLineData(midData, chunk);
+                } else if (!mLastLineIsOpen) {
+                    mNewLogLines << QString(delimiter());
                 }
                 start = i + 1;
                 cleaned = ensureSpace(1);
