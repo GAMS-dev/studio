@@ -761,6 +761,9 @@ void MainWindow::focusProcessLogs()
     setOutputViewVisibility(true);
     ui->dockProcessLog->activateWindow();
     ui->dockProcessLog->raise();
+    if (!ui->logTabs->currentWidget())
+        on_actionShow_System_Log_triggered();
+
     ui->logTabs->currentWidget()->setFocus();
 }
 
