@@ -21,6 +21,7 @@
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "commonpaths.h"
+#include "mirocommon.h"
 
 #include <QDir>
 
@@ -57,6 +58,22 @@ void MiroDeployProcess::setTestDeployment(bool testDeploy)
 void MiroDeployProcess::setTargetEnvironment(MiroTargetEnvironment targetEnvironment)
 {
     mTargetEnvironment = targetEnvironment;
+}
+
+void MiroDeployProcess::completed(int exitCode)
+{
+    QString msg;
+    if (exitCode)
+        msg = QString("Error deploying %1 (MIRO exit code %2) to location %3")
+                .arg(MiroCommon::deployFileName(modelName()))
+                .arg(exitCode).arg(workingDirectory());
+    else
+        msg = QString("%1 successfully deployed to location %2")
+                .arg(MiroCommon::deployFileName(modelName()))
+                .arg(workingDirectory());
+    emit newStdChannelData(msg.toLatin1());
+
+    AbstractProcess::completed(exitCode);
 }
 
 QProcessEnvironment MiroDeployProcess::miroProcessEnvironment()

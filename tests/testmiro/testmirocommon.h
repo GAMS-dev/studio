@@ -32,6 +32,7 @@ private slots:
     void testPathWithSpaces();
 
     void testAssemblyFileName();
+    void testDeployFileName();
 };
 
 #endif // TESTMIROCOMMON_H

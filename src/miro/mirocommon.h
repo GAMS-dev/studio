@@ -35,7 +35,7 @@ enum class MiroDeployMode
 
 class MiroCommon
 {
-protected:
+private:
     MiroCommon() {}
 
 public:
@@ -43,6 +43,7 @@ public:
 
     static QString assemblyFileName(const QString &modelName);
     static QString assemblyFileName(const QString &modelLocation, const QString &modelName);
+    static QString deployFileName(const QString &modelName);
 
     static QStringList unifiedAssemblyFileContent(const QString &assemblyFile, const QString &mainFile);
     static bool writeAssemblyFile(const QString &assemblyFile, const QStringList &selectedFiles);
