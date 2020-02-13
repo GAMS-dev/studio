@@ -333,11 +333,12 @@ void Scheme::setColor(Scheme::ColorSlot slot, QColor color)
     instance()->mColorSchemes[instance()->mActiveScheme].insert(slot, dat);
 }
 
-QIcon Scheme::icon(QString name)
+QIcon Scheme::icon(QString name, bool forceSquare)
 {
     if (name.contains("%")) name = name.arg(instance()->mIconSet);
     if (!instance()->mIconCache.contains(name)) {
         SvgEngine *eng = new SvgEngine(name);
+        if (forceSquare) eng->forceSquare(true);
         instance()->mEngines << eng;
         instance()->mIconCache.insert(name, QIcon(eng));
     }

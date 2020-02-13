@@ -106,7 +106,7 @@ public:
     static bool hasFontProps(ColorSlot slot);
     static QColor color(ColorSlot slot);
     static void setColor(ColorSlot slot, QColor color);
-    static QIcon icon(QString name);
+    static QIcon icon(QString name, bool forceSquare = false);
     static QByteArray &data(QString name, QIcon::Mode mode);
     static bool hasFlag(ColorSlot slot, FontFlag flag);
     static void setFlags(ColorSlot slot, FontFlag flag);

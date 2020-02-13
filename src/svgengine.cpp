@@ -37,6 +37,11 @@ void SvgEngine::replaceNormalMode(QIcon::Mode mode)
     mNormalMode = mode;
 }
 
+void SvgEngine::forceSquare(bool force)
+{
+    mForceSquare = force;
+}
+
 void SvgEngine::unbind()
 {
     mController = nullptr;
@@ -49,7 +54,9 @@ void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QI
     if (mode == QIcon::Normal) mode = mNormalMode;
     QByteArray &data = mController->data(mName, mode);
     QSvgRenderer renderer(data);
-    renderer.render(painter, rect);
+    QRect pRect = rect;
+    if (mForceSquare) pRect.setWidth(pRect.height());
+    renderer.render(painter, pRect);
 }
 
 QIconEngine *SvgEngine::clone() const

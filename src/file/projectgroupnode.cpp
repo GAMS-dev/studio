@@ -53,7 +53,7 @@ ProjectGroupNode::~ProjectGroupNode()
 
 QIcon ProjectGroupNode::icon()
 {
-    return Scheme::icon(":/img/folder-open");
+    return Scheme::icon(":/img/folder-open", true);
 }
 
 int ProjectGroupNode::childCount() const
