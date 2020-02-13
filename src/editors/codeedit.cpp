@@ -177,23 +177,34 @@ void CodeEdit::convertToLower()
 {
     if (isReadOnly()) return;
 
-    textCursor().insertText(textCursor().selectedText().toLower());
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toLower()
                                  .split("\n", QString::SplitBehavior::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
+    } else {
+        QTextCursor cursor = textCursor();
+        QPair<int,int> sel(cursor.anchor(), cursor.position());
+        textCursor().insertText(cursor.selectedText().toLower());
+        cursor.setPosition(sel.first);
+        cursor.setPosition(sel.second, QTextCursor::KeepAnchor);
+        setTextCursor(cursor);
     }
 }
 
 void CodeEdit::convertToUpper()
 {
     if (isReadOnly()) return;
-
-    textCursor().insertText(textCursor().selectedText().toUpper());
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toUpper()
                                  .split("\n", QString::SplitBehavior::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
+    } else {
+        QTextCursor cursor = textCursor();
+        QPair<int,int> sel(cursor.anchor(), cursor.position());
+        textCursor().insertText(cursor.selectedText().toUpper());
+        cursor.setPosition(sel.first);
+        cursor.setPosition(sel.second, QTextCursor::KeepAnchor);
+        setTextCursor(cursor);
     }
 }
 
