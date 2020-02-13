@@ -51,6 +51,7 @@ public:
         Select_Back,
         Normal_Red,
         Normal_Green,
+        Normal_Blue,
 
         Syntax_undefined,
         Syntax_neutral,

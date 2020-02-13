@@ -115,6 +115,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Select_Back,                    QColor("#2266AA"));
     mColorSchemes[sNr].insert(Normal_Red,                     QColor("#bb0000"));
     mColorSchemes[sNr].insert(Normal_Green,                   QColor("#23aa23"));
+    mColorSchemes[sNr].insert(Normal_Blue,                    QColor("#4499ee"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120), fBold));
@@ -247,6 +248,7 @@ QHash<QString, QStringList> Scheme::iconCodes() const
                 res[key] << scheme.value(slot).color.name();
             res[key] << scheme.value(Normal_Red).color.name();
             res[key] << scheme.value(Normal_Green).color.name();
+            res[key] << scheme.value(Normal_Blue).color.name();
         }
     }
     for (ColorSlot &slot: scheme.keys()) {
@@ -294,6 +296,7 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
             if (mode == QIcon::Normal) {
                 if (data.at(from) == 'R') colorCode = it.value().at(4);
                 if (data.at(from) == 'G') colorCode = it.value().at(5);
+                if (data.at(from) == 'B') colorCode = it.value().at(6);
             }
             while (data.length() > from && data.at(from) != '{') ++from;
             if (data.indexOf("fill:", from) != from+1) continue;
