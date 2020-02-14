@@ -90,6 +90,7 @@ public:
     AbstractTextMapper::Kind kind() const override { return AbstractTextMapper::memoryMapper; }
 
     void setLogParser(LogParser *parser);
+    LogParser *logParser();
     qint64 size() const override;
     void startRun() override;
     void endRun() override;

@@ -553,8 +553,15 @@ TextView::TextKind TextView::textKind() const
 
 void TextView::setLogParser(LogParser *logParser)
 {
-    if (qobject_cast<MemoryMapper*>(mMapper))
+    if (kind() == TextView::MemoryText)
         static_cast<MemoryMapper*>(mMapper)->setLogParser(logParser);
+}
+
+LogParser *TextView::logParser() const
+{
+    if (kind() == TextView::MemoryText)
+        return static_cast<MemoryMapper*>(mMapper)->logParser();
+    return nullptr;
 }
 
 void TextView::setDebugMode(bool debug)

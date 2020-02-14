@@ -55,8 +55,11 @@ public:
 
 public:
     LogParser(QTextCodec *codec);
+    QTextCodec *codec() const;
+    void setCodec(QTextCodec *codec);
     QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);
     void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart, int &lstLine);
+
 
 signals:
     void setErrorText(int lstLine, QString text);

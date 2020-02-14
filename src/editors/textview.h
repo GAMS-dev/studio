@@ -65,6 +65,7 @@ public:
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
     TextKind textKind() const;
     void setLogParser(LogParser *logParser);
+    LogParser *logParser() const;
     void reset();
     void setDebugMode(bool debug);
     void invalidate();

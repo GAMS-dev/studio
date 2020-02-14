@@ -31,6 +31,16 @@ LogParser::LogParser(QTextCodec *codec)
 {
 }
 
+QTextCodec *LogParser::codec() const
+{
+    return mCodec;
+}
+
+void LogParser::setCodec(QTextCodec *codec)
+{
+    mCodec = codec;
+}
+
 QString LogParser::parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState)
 {
     QTextCodec::ConverterState convState;
@@ -181,8 +191,6 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
     }
     return result;
 }
-
-
 
 } // namespace studio
 } // namespace gams

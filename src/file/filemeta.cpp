@@ -771,6 +771,12 @@ void FileMeta::setCodec(QTextCodec *codec)
     } else {
         mCodec = codec;
     }
+    for (QWidget *wid: mEditors) {
+        if (TextView *tv = ViewHelper::toTextView(wid)) {
+            if (tv->logParser())
+                tv->logParser()->setCodec(mCodec);
+        }
+    }
 }
 
 bool FileMeta::exists(bool ckeckNow) const

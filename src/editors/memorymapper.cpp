@@ -86,6 +86,11 @@ void MemoryMapper::setLogParser(LogParser *parser)
     mLogParser = parser;
 }
 
+LogParser *MemoryMapper::logParser()
+{
+    return mLogParser;
+}
+
 qint64 MemoryMapper::size() const
 {
     if (mSize < 0) {
