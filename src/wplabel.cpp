@@ -20,6 +20,7 @@
 #include "wplabel.h"
 #include "mainwindow.h"
 #include <QDesktopServices>
+#include <QPainter>
 
 namespace gams {
 namespace studio {

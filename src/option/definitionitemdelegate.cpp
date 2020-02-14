@@ -48,7 +48,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     } else  {
         QPainterPath path;
         path.addRect(checkRect);
-        QPen pen(QBrush(index.data(Qt::BackgroundColorRole).value<QColor>(), Qt::SolidPattern), 1);
+        QPen pen;
         painter->setPen(pen);
         painter->fillPath(path, QBrush(index.data(Qt::BackgroundColorRole).value<QColor>(), Qt::SolidPattern));
     }
