@@ -20,6 +20,7 @@
 #include "memorymapper.h"
 #include "file/dynamicfile.h"
 #include "logger.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -53,20 +54,20 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     // error
     fmt = QTextCharFormat();
     fmt.setAnchor(true);
-    fmt.setForeground(Qt::darkRed);
-    fmt.setUnderlineColor(Qt::darkRed);
+    fmt.setForeground(Scheme::color(Scheme::Normal_Red));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
     fmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     mBaseFormat << fmt;
     // lstLink
     fmt = QTextCharFormat();
-    fmt.setForeground(Qt::blue);
-    fmt.setUnderlineColor(Qt::blue);
+    fmt.setForeground(Scheme::color(Scheme::Normal_Blue));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Blue));
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
     // fileLink
     fmt = QTextCharFormat();
-    fmt.setForeground(Qt::darkGreen);
-    fmt.setUnderlineColor(Qt::darkGreen);
+    fmt.setForeground(Scheme::color(Scheme::Normal_Green));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Green));
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
     addChunk(true);
