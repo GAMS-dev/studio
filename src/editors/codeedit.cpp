@@ -1584,9 +1584,11 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         replaceBlockText("");
     } else if (e == Hotkey::Indent) {
         mEdit->indent(mEdit->mSettings->tabSize());
+        e->accept();
         return;
     } else if (e == Hotkey::Outdent) {
         mEdit->indent(-mEdit->mSettings->tabSize());
+        e->accept();
         return;
     } else if (e->text().length()) {
         mEdit->mBlockEditRealPos = mEdit->textCursor().position();
