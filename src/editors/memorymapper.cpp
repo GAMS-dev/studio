@@ -467,8 +467,9 @@ void MemoryMapper::parseNewLine()
     }
 
     // update log-file cache
-    if (!mLastLineIsOpen || mLastLineLen != line.length())
+    if (!mLastLineIsOpen || mLastLineLen != line.length()) {
         mNewLogLines << line;
+    }
 
     if (mLastLineIsOpen && mLastLineLen > line.length()) {
         ensureSpace(1);
@@ -517,6 +518,12 @@ void MemoryMapper::clearLastLine()
         chunk->lineBytes.last() = start+1;
         chunk->bArray[start] = '\n';
     }
+    if (mNewLogLines.size()) {
+        mNewLogLines.removeLast();
+    } else {
+        mWeakLastLogLine = true;
+    }
+
     if (mNewLines)
         newPending(PendingContentChange);
     mInstantRefresh = true;
@@ -525,8 +532,9 @@ void MemoryMapper::clearLastLine()
 
 void MemoryMapper::fetchLog()
 {
-    emit appendLines(mNewLogLines);
+    emit appendLines(mNewLogLines, mWeakLastLogLine);
     mNewLogLines.clear();
+    mWeakLastLogLine = false;
 }
 
 void MemoryMapper::fetchDisplay()
@@ -583,6 +591,8 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                     cleaned = ensureSpace(midData.size()+1);
                     chunk = mChunks.last();
                     appendLineData(midData, chunk);
+                } else if (!mLastLineIsOpen) {
+                    mNewLogLines << QString(delimiter());
                 }
                 start = i + 1;
                 cleaned = ensureSpace(1);

@@ -129,13 +129,12 @@ void ProjectLogNode::repaint()
     }
 }
 
-void ProjectLogNode::saveLines(const QStringList &lines)
+void ProjectLogNode::saveLines(const QStringList &lines, bool overwritePreviousLine)
 {
     if (!mLogFile) return;
+    if (!overwritePreviousLine)
+        mLogFile->confirmLastLine();
     for (const QString &line: lines) {
-        if (line.contains('\n') || line.contains('\r')) {
-            DEB() << ";";
-        }
         mLogFile->appendLine(line);
     }
     if (mLogFinished) mLogCloser.start();

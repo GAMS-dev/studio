@@ -52,7 +52,7 @@ public slots:
     void closeLog();
 
 private slots:
-    void saveLines(const QStringList &lines);
+    void saveLines(const QStringList &lines, bool overwritePreviousLine);
 
 protected:
     friend class ProjectRepo;

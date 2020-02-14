@@ -35,6 +35,7 @@ public:
     DynamicFile(QString fileName, int backups = 0, QObject *parent = nullptr);
     virtual ~DynamicFile();
     void appendLine(QString line);
+    void confirmLastLine();
 
 private slots:
     void closeFile();
@@ -47,6 +48,7 @@ private:
     QMutex mMutex;
     QFile mFile;
     int mBackups = 0;
+    qint64 mEnd = 0;
 };
 
 } // namespace studio
