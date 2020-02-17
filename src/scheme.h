@@ -43,6 +43,7 @@ public:
 
         Icon_Back,
         Icon_Line,
+        Icon_Paper,
         Disable_Line,
         Disable_Back,
         Active_Line,

@@ -50,6 +50,7 @@ void Scheme::initSlotTexts()
 
     mSlotText.insert(Icon_Line,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
+    mSlotText.insert(Icon_Paper,                "Icon paper");
 
     mSlotText.insert(Syntax_assign,             "Assignment");
     mSlotText.insert(Syntax_comment,            "Comment");
@@ -107,6 +108,7 @@ void Scheme::initDefault()
 
     mColorSchemes[sNr].insert(Icon_Line,                      QColor("#334455"));
     mColorSchemes[sNr].insert(Icon_Back,                      QColor("#334455"));
+    mColorSchemes[sNr].insert(Icon_Paper,                     QColor("#FFFFFF"));
     mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Disable_Back,                   QColor("#aaaaaa"));
     mColorSchemes[sNr].insert(Active_Line,                    QColor("#2266AA"));
