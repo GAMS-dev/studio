@@ -172,8 +172,6 @@ private:
     bool mOpenLst;
     bool mForegroundOnDemand;
     bool mJumpToError;
-    QList<QHash<QString, QColor>> mColorSchemes;
-    int mColorSchemeIndex = 0;
 
     // editor settings page
     QString mFontFamily;
