@@ -117,7 +117,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Select_Back,                    QColor("#2266AA"));
     mColorSchemes[sNr].insert(Normal_Red,                     QColor("#bb0000"));
     mColorSchemes[sNr].insert(Normal_Green,                   QColor("#348619"));
-    mColorSchemes[sNr].insert(Normal_Blue,                    QColor("#80e0ff"));
+    mColorSchemes[sNr].insert(Normal_Blue,                    QColor("#2266AA"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120), fBold));
@@ -168,7 +168,6 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
     mColorSchemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter(), fBold));
     mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
-
 
     mColorSchemes[sNr].insert(Icon_Line,                      QColor(dark_neutral));
     mColorSchemes[sNr].insert(Icon_Back,                      QColor(dark_neutral));
