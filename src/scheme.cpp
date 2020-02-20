@@ -120,18 +120,18 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Normal_Blue,                    QColor("#2266AA"));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
-    mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120), fBold));
+    mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
     mColorSchemes[sNr].insert(Syntax_assign,                  Color());
     mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
     mColorSchemes[sNr].insert(Syntax_comment,                 Color(QColor(80, 145, 75), fItalic));
     mColorSchemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_keyword,                 Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorSchemes[sNr].insert(Syntax_declaration,             Color(QColor(Qt::darkBlue).lighter(140), fBold));
-    mColorSchemes[sNr].insert(Syntax_identifier,              Color(QColor(Qt::black), fBold));
+    mColorSchemes[sNr].insert(Syntax_identifier,              Color(QColor(Qt::black)));
     mColorSchemes[sNr].insert(Syntax_description,             Color(QColor(Qt::darkBlue).lighter(170)));
     mColorSchemes[sNr].insert(Syntax_identifierAssign,        Color(QColor(Qt::darkGreen).darker(140)));
     mColorSchemes[sNr].insert(Syntax_assignLabel,             Color(QColor(Qt::darkGreen).darker(110)));
-    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(QColor(0, 80, 120), fBold));
+    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(QColor(0, 80, 120)));
     mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(QColor(Qt::darkGreen).darker(140), fBold));
     mColorSchemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
 
@@ -155,18 +155,17 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
 
     mColorSchemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
-    mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment, fBold));
+    mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
     mColorSchemes[sNr].insert(Syntax_keyword,                 Color(dark_neutral, fBold));
     mColorSchemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
     mColorSchemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
-    mColorSchemes[sNr].insert(Syntax_identifier,              Color(dark_id, fBold));
+    mColorSchemes[sNr].insert(Syntax_identifier,              Color(dark_id));
     mColorSchemes[sNr].insert(Syntax_assign,                  Color(dark_id));
     mColorSchemes[sNr].insert(Syntax_identifierAssign,        Color(dark_assignment));
     mColorSchemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
     mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
-    mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
-    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter(), fBold));
+    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
     mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
 
     mColorSchemes[sNr].insert(Icon_Line,                      QColor(dark_neutral));
