@@ -19,6 +19,7 @@
  */
 #include <QIcon>
 #include <QMessageBox>
+#include <QApplication>
 
 #include "option.h"
 #include "scheme.h"
@@ -183,14 +184,14 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
                 return QVariant::fromValue(QColor(Qt::red));
             else
-                 return QVariant::fromValue(QColor(Qt::black));
+                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
         if (mOption->isValid(mOptionItem.at(row).key) || mOption->isASynonym(mOptionItem.at(row).key)) { // valid option
             if (col==GamsParameterTableModel::COLUMN_OPTION_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
                 } else {
-                    return  QVariant::fromValue(QColor(Qt::black));
+                    return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
             } else { // value
                   switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
@@ -199,16 +200,16 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
                       case Value_Out_Of_Range:
                             return QVariant::fromValue(QColor(Qt::red));
                       case No_Error:
-                            return QVariant::fromValue(QColor(Qt::black));
+                            return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                       default:
-                           return QVariant::fromValue(QColor(Qt::black));
+                           return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                   }
             }
         } else { // invalid option
             if (col == GamsParameterTableModel::COLUMN_OPTION_KEY)
                return QVariant::fromValue(QColor(Qt::red));
             else
-                return QVariant::fromValue(QColor(Qt::black));
+                return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
 
      }

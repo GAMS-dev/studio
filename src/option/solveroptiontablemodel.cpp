@@ -19,6 +19,7 @@
  */
 
 #include <QMessageBox>
+#include <QApplication>
 
 #include "solveroptiontablemodel.h"
 #include "settingslocator.h"
@@ -201,6 +202,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::TextColorRole: {
         if (mOptionItem.at(row)->disabled) {
+            // TODO(RG): This and all following colors need to be changed to qpalette something
             return QVariant::fromValue(QColor(Qt::gray));
         } else {
             switch(mOptionItem.at(row)->error) {
@@ -219,12 +221,12 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
                 else if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
                     return QVariant::fromValue(QColor(Qt::gray));
                 else
-                    return QVariant::fromValue(QColor(Qt::black));
+                    return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             default:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
                     return QVariant::fromValue(QColor(Qt::darkYellow));
                 else
-                    return QVariant::fromValue(QColor(Qt::black));
+                    return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             }
         }
      }

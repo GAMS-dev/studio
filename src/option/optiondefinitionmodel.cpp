@@ -18,7 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QColor>
+#include <QApplication>
+#include <QPalette>
 #include "optiondefinitionmodel.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -119,20 +122,20 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem &&  item->modified())
-            return  QVariant::fromValue(QColor(Qt::darkGreen));
+            return  QVariant::fromValue(Scheme::color(Scheme::Normal_Green));
         else
-            return  QVariant::fromValue(QColor(Qt::black));
+            return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
     }
     case Qt::BackgroundColorRole: {
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem) {
             if (index.row() % 2 == 0)
-               return QVariant::fromValue(QColor(Qt::white));
+               return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
             else
-                return QVariant::fromValue(QColor(245, 245, 245));
+                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Background));
         } else {
-            return QVariant::fromValue(QColor(Qt::white));
+            return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         }
     }
     default:

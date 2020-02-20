@@ -52,6 +52,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+//    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
+//    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
+    ui->label_11->setVisible(false);
+    ui->combo_editorTheme->setVisible(false);
+
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
 
@@ -63,6 +68,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -110,6 +117,7 @@ void SettingsDialog::loadSettings()
     ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
+    ui->combo_editorTheme->setCurrentIndex(mSettings->colorSchemeIndex());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->codecComboBox->setCurrentText(getValidCodecName(mSettings->defaultCodecMib()));
@@ -140,9 +148,6 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->addCommentDescriptionAboveOption());
     ui->addEOLCommentCheckBox->setChecked(mSettings->addEOLCommentDescriptionOption());
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
-
-    // scheme data
-    reloadColors();
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -191,6 +196,7 @@ void SettingsDialog::saveSettings()
     mSettings->setForegroundOnDemand(ui->cb_bringontop->isChecked());
 
     // editor page
+    mSettings->setColorSchemeIndex(ui->combo_editorTheme->currentIndex());
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
@@ -377,9 +383,6 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 void SettingsDialog::initColorPage()
 {
     if (!mColorWidgets.isEmpty()) return;
-    ui->cbSchemes->clear();
-    ui->cbSchemes->addItems(Scheme::instance()->schemes());
-    ui->cbSchemes->setCurrentIndex(Scheme::instance()->activeScheme());
 
     QWidget *box = nullptr;
     QGridLayout *grid = nullptr;
