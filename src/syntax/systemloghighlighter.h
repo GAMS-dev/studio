@@ -20,6 +20,7 @@
 
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -74,7 +75,7 @@ public:
     ErrorHighlightingRule()
     {
         mPattern = QRegularExpression(HighlightingData::ErrorKeyword + timestampRegex);
-        mFormat.setForeground(Qt::red);
+        mFormat.setForeground(Scheme::color(Scheme::Normal_Red));
         mFormat.setFontWeight(QFont::Bold);
     }
 };
@@ -86,7 +87,7 @@ public:
     InfoHighlightingRule()
     {
         mPattern = QRegularExpression(HighlightingData::InfoKeyword + timestampRegex);
-        mFormat.setForeground(Qt::darkBlue);
+        mFormat.setForeground(Scheme::color(Scheme::Normal_Green));
         mFormat.setFontWeight(QFont::Bold);
     }
 };

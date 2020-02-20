@@ -61,6 +61,10 @@ private:
     QIcon mIcon;
     QSize mIconSize;
     Qt::Alignment mAlignment = Qt::AlignCenter;
+    QColor GAMS_ORANGE = QColor(243,150,25);
+
+private:
+    void updateMouseOverColor(bool hovered);
 };
 
 }

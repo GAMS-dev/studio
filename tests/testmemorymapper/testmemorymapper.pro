@@ -30,6 +30,8 @@ HEADERS += \
     $$SRCPATH/editors/logparser.h \
     $$SRCPATH/editors/memorymapper.h \
     $$SRCPATH/file/dynamicfile.h \
+    $$SRCPATH/svgengine.h \
+    $$SRCPATH/scheme.h \
     testmemorymapper.h
 
 SOURCES += \
@@ -39,4 +41,6 @@ SOURCES += \
     $$SRCPATH/file/dynamicfile.cpp \
     $$SRCPATH/exception.cpp \
     $$SRCPATH/logger.cpp \
+    $$SRCPATH/svgengine.cpp \
+    $$SRCPATH/scheme.cpp \
     testmemorymapper.cpp

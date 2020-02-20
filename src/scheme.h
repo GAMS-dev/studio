@@ -43,6 +43,7 @@ public:
 
         Icon_Back,
         Icon_Line,
+        Icon_Paper,
         Disable_Line,
         Disable_Back,
         Active_Line,
@@ -51,6 +52,7 @@ public:
         Select_Back,
         Normal_Red,
         Normal_Green,
+        Normal_Blue,
 
         Syntax_undefined,
         Syntax_neutral,

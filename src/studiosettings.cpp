@@ -221,6 +221,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
+//    mUserSettings->setValue("colorScheme", colorSchemeIndex());
     mUserSettings->setValue("fontFamily", fontFamily());
     mUserSettings->setValue("fontSize", fontSize());
     mUserSettings->setValue("showLineNr", showLineNr());
@@ -254,7 +255,6 @@ void StudioSettings::saveSettings(MainWindow *main)
 
     mUserSettings->sync();
 
-    // TODO(JM) temporarily deactivated
 //    writeScheme();
 }
 
@@ -403,7 +403,7 @@ void StudioSettings::loadUserSettings()
             DEB() << "No fixed font found on system. Using " << font.family();
         }
     }
-
+//    setColorSchemeIndex(mUserSettings->value("colorScheme", 0).toInt());
     setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
@@ -562,6 +562,17 @@ int StudioSettings::editableMaxSizeMB() const
 void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
 {
     mEditableMaxSizeMB = editableMaxSizeMB;
+}
+
+int StudioSettings::colorSchemeIndex() const
+{
+    return mColorSchemeIndex;
+}
+
+void StudioSettings::setColorSchemeIndex(int colorSchemeIndex)
+{
+    mColorSchemeIndex = colorSchemeIndex;
+    Scheme::instance()->setActiveScheme(mColorSchemeIndex);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

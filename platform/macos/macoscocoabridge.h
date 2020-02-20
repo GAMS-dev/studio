@@ -30,6 +30,7 @@ public:
     static void disableCharacterPaletteMenuItem(bool flag);
     static void setAllowsAutomaticWindowTabbing(bool flag);
     static void setFullScreenMenuItemEverywhere(bool flag);
+    static bool isDarkMode();
 };
 
 #endif // MACOSCOCOABRIDGE_H

@@ -57,7 +57,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
 
     QList<OptionItem> optionItem = mOptionTokenizer->tokenize(ui->gamsParameterCommandLine->lineEdit()->text());
     QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    mParameterTableModel = new GamsParameterTableModel(normalizedText, mOptionTokenizer,  this);
+    mParameterTableModel = new GamsParameterTableModel(normalizedText, mOptionTokenizer, this);
     ui->gamsParameterTableView->setModel( mParameterTableModel );
     connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, static_cast<void(ParameterEditor::*)(const QList<OptionItem> &)> (&ParameterEditor::updateCommandLineStr),  Qt::UniqueConnection);
     connect(this, static_cast<void(ParameterEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&ParameterEditor::commandLineChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);

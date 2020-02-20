@@ -157,6 +157,9 @@ public:
     int editableMaxSizeMB() const;
     void setEditableMaxSizeMB(int editableMaxSizeMB);
 
+    int colorSchemeIndex() const;
+    void setColorSchemeIndex(int colorSchemeIndex);
+
 private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
