@@ -51,6 +51,7 @@
 #include "autosavehandler.h"
 #include "support/distributionvalidator.h"
 #include "tabdialog.h"
+#include "colors/palettemanager.h"
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
@@ -90,6 +91,11 @@ MainWindow::MainWindow(QWidget *parent)
     mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
+
+    // Theming
+    PaletteManager::init(this);
+    PaletteManager::instance()->setPalette(1); // TODO(RG): hardcoded set dark mode
+    Scheme::instance()->setActiveScheme(1);
 
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
