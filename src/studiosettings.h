@@ -168,6 +168,7 @@ private:
     bool mResetSettings = false;
 
     // general settings page
+    int mColorSchemeIndex;
     QString mDefaultWorkspace;
     bool mSkipWelcomePage;
     bool mRestoreTabs;
