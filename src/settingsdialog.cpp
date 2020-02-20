@@ -95,12 +95,14 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 
 QString getValidCodecName(int codecMib) {
     QTextCodec *codec = QTextCodec::codecForMib(codecMib);
+    if (!codec) codec = QTextCodec::codecForMib(SettingsLocator::settings()->defaultCodecMib());
     if (!codec) codec = QTextCodec::codecForLocale();
     return codec->name();
 }
 
 int getValidCodecMib(QString codecName) {
     QTextCodec *codec = QTextCodec::codecForName(codecName.toLatin1());
+    if (!codec) codec = QTextCodec::codecForMib(SettingsLocator::settings()->defaultCodecMib());
     if (!codec) codec = QTextCodec::codecForLocale();
     return codec->mibEnum();
 }
