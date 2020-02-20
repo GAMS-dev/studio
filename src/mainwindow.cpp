@@ -561,6 +561,19 @@ search::SearchDialog* MainWindow::searchDialog() const
     return mSearchDialog;
 }
 
+QStringList MainWindow::encodingNames()
+{
+    QStringList res;
+    for (QAction *act: ui->menuconvert_to->actions()) {
+        if (!act->data().isNull()) {
+            QTextCodec *codec = QTextCodec::codecForMib(act->data().toInt());
+            if (!codec) continue;
+            res << codec->name();
+        }
+    }
+    return res;
+}
+
 QString MainWindow::encodingMIBsString()
 {
     QStringList res;

@@ -222,11 +222,13 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->beginGroup("Editor");
 
     mUserSettings->setValue("fontFamily", fontFamily());
+    mUserSettings->setValue("fontFamily", fontFamily());
     mUserSettings->setValue("fontSize", fontSize());
     mUserSettings->setValue("showLineNr", showLineNr());
     mUserSettings->setValue("tabSize", tabSize());
     mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
     mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
+    mUserSettings->setValue("defaultCodec", defaultCodecMib());
     mUserSettings->setValue("clearLog", clearLog());
     mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
     mUserSettings->setValue("highlightCurrentLine", highlightCurrentLine());
@@ -410,6 +412,7 @@ void StudioSettings::loadUserSettings()
     setTabSize(mUserSettings->value("tabSize", 4).toInt());
     setLineWrapEditor(mUserSettings->value("lineWrapEditor", false).toBool());
     setLineWrapProcess(mUserSettings->value("lineWrapProcess", false).toBool());
+    setDefaultCodecMib(mUserSettings->value("defaultCodec", 106).toInt());
     setClearLog(mUserSettings->value("clearLog", false).toBool());
     setWordUnderCursor(mUserSettings->value("wordUnderCursor", false).toBool());
     setHighlightCurrentLine(mUserSettings->value("highlightCurrentLine", false).toBool());
@@ -757,6 +760,16 @@ QString StudioSettings::fontFamily() const
 void StudioSettings::setFontFamily(const QString &value)
 {
     mFontFamily = value;
+}
+
+int StudioSettings::defaultCodecMib() const
+{
+    return mDefaultCodecMib;
+}
+
+void StudioSettings::setDefaultCodecMib(int codecMib)
+{
+    mDefaultCodecMib = codecMib;
 }
 
 bool StudioSettings::clearLog() const

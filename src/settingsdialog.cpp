@@ -46,6 +46,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 //    initColorPage();
     ui->tabWidget->removeTab(3);
 
+    initCodecs(mMain->encodingNames());
     loadSettings();
 
     setModifiedStatus(false);
@@ -65,6 +66,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    connect(ui->codecComboBox, &QComboBox::currentTextChanged, this, &SettingsDialog::setModified);
     connect(ui->cb_showlinenr, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_editor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_process, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -84,6 +86,18 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     adjustSize();
 }
 
+QString getValidCodecName(int codecMib) {
+    QTextCodec *codec = QTextCodec::codecForMib(codecMib);
+    if (!codec) codec = QTextCodec::codecForLocale();
+    return codec->name();
+}
+
+int getValidCodecMib(QString codecName) {
+    QTextCodec *codec = QTextCodec::codecForName(codecName.toLatin1());
+    if (!codec) codec = QTextCodec::codecForLocale();
+    return codec->mibEnum();
+}
+
 void SettingsDialog::loadSettings()
 {
     // general tab page
@@ -98,6 +112,7 @@ void SettingsDialog::loadSettings()
     // editor tab page
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
+    ui->codecComboBox->setCurrentText(getValidCodecName(mSettings->defaultCodecMib()));
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
     ui->sb_tabsize->setValue(mSettings->tabSize());
     ui->cb_linewrap_editor->setChecked(mSettings->lineWrapEditor());
@@ -189,6 +204,7 @@ void SettingsDialog::saveSettings()
     mSettings->setWriteLog(ui->cb_writeLog->isChecked());
     mSettings->setNrLogBackups(ui->sb_nrLogBackups->value());
     mSettings->setAutoCloseBraces(ui->cb_autoclose->isChecked());
+    mSettings->setDefaultCodecMib(getValidCodecMib(ui->codecComboBox->currentText()));
 
     // MIRO page
     mSettings->setMiroInstallationLocation(ui->miroEdit->text());
@@ -232,14 +248,19 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     emit editorLineWrappingChanged();
 }
 
-void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
+void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
 {
-    emit editorFontChanged(arg1, ui->sb_fontsize->value());
+    emit editorFontChanged(value, ui->sb_fontsize->value());
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
 {
     emit editorFontChanged(ui->fontComboBox->currentFont().family(), arg1);
+}
+
+void SettingsDialog::on_codecComboBox_currentIndexChanged(const QString &value)
+{
+    emit defaultCodecChanged(value);
 }
 
 void SettingsDialog::schemeModified()
@@ -278,6 +299,12 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
+}
+
+void SettingsDialog::initCodecs(const QStringList &codecs)
+{
+    ui->codecComboBox->clear();
+    ui->codecComboBox->addItems(codecs);
 }
 
 void SettingsDialog::on_btn_export_clicked()
