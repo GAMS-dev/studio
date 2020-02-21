@@ -30,6 +30,7 @@
 #include "version.h"
 #include "commandlineparser.h"
 #include "scheme.h"
+#include "colors/palettemanager.h"
 
 namespace gams {
 namespace studio {
@@ -221,7 +222,8 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-//    mUserSettings->setValue("colorScheme", colorSchemeIndex());
+    mUserSettings->setValue("syntaxScheme", syntaxSchemeIndex());
+    mUserSettings->setValue("studioScheme", studioSchemeIndex());
     mUserSettings->setValue("fontFamily", fontFamily());
     mUserSettings->setValue("fontSize", fontSize());
     mUserSettings->setValue("showLineNr", showLineNr());
@@ -403,7 +405,8 @@ void StudioSettings::loadUserSettings()
             DEB() << "No fixed font found on system. Using " << font.family();
         }
     }
-//    setColorSchemeIndex(mUserSettings->value("colorScheme", 0).toInt());
+    setSyntaxSchemeIndex(mUserSettings->value("syntaxScheme", 0).toInt());
+    setStudioSchemeIndex(mUserSettings->value("studioScheme", 0).toInt());
     setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
@@ -564,15 +567,26 @@ void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
     mEditableMaxSizeMB = editableMaxSizeMB;
 }
 
-int StudioSettings::colorSchemeIndex() const
+int StudioSettings::syntaxSchemeIndex() const
 {
-    return mColorSchemeIndex;
+    return mSyntaxSchemeIndex;
 }
 
-void StudioSettings::setColorSchemeIndex(int colorSchemeIndex)
+void StudioSettings::setSyntaxSchemeIndex(int syntaxSchemeIndex)
 {
-    mColorSchemeIndex = colorSchemeIndex;
-    Scheme::instance()->setActiveScheme(mColorSchemeIndex);
+    mSyntaxSchemeIndex = syntaxSchemeIndex;
+    Scheme::instance()->setActiveScheme(mSyntaxSchemeIndex);
+}
+
+int StudioSettings::studioSchemeIndex() const
+{
+    return mEditorSchemeIndex;
+}
+
+void StudioSettings::setStudioSchemeIndex(int editorSchemeIndex)
+{
+    mEditorSchemeIndex = editorSchemeIndex;
+    PaletteManager::instance()->setPalette(mEditorSchemeIndex);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

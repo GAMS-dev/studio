@@ -157,8 +157,12 @@ public:
     int editableMaxSizeMB() const;
     void setEditableMaxSizeMB(int editableMaxSizeMB);
 
-    int colorSchemeIndex() const;
-    void setColorSchemeIndex(int colorSchemeIndex);
+    int syntaxSchemeIndex() const;
+    void setSyntaxSchemeIndex(int syntaxSchemeIndex);
+
+    int studioSchemeIndex() const;
+    void setStudioSchemeIndex(int studioSchemeIndex);
+
 
 private:
     QSettings *mAppSettings = nullptr;
@@ -168,7 +172,8 @@ private:
     bool mResetSettings = false;
 
     // general settings page
-    int mColorSchemeIndex;
+    int mSyntaxSchemeIndex;
+    int mEditorSchemeIndex;
     QString mDefaultWorkspace;
     bool mSkipWelcomePage;
     bool mRestoreTabs;

@@ -92,10 +92,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     setAcceptDrops(true);
 
-    // Theming
-    PaletteManager::instance()->setPalette(0); // TODO(RG): hardcoded set dark mode
-    Scheme::instance()->setActiveScheme(0);
-
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 #ifdef __APPLE__

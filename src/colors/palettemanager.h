@@ -8,7 +8,7 @@
 namespace gams {
 namespace studio {
 
-class PaletteManager : QObject
+class PaletteManager : public QObject
 {
     Q_OBJECT
 public:
@@ -18,14 +18,14 @@ public:
     static PaletteManager* instance();
 
     void setPalette(int i);
-    int getNrPalettes();
-    int getActivePalette();
+    int nrPalettes();
+    int activePalette();
 
 private:
-    int activePalette;
     QList<QPalette> mStyles;
     static PaletteManager* mInstance;
     int mActivePalette = -1;
+    QString mDefaultSyle;
 
     void applyPalette(int i);
 };

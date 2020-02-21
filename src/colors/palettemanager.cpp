@@ -10,6 +10,9 @@ PaletteManager* PaletteManager::mInstance = nullptr;
 
 PaletteManager::PaletteManager()
 {
+    // save original style for light theme (windows)
+    mDefaultSyle = QApplication::style()->objectName();
+
     // Nr1: default style
     mStyles.append(QApplication::palette());
 
@@ -30,7 +33,6 @@ PaletteManager::PaletteManager()
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledColor);
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
-
     darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
     darkPalette.setColor(QPalette::HighlightedText, Qt::black);
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledColor);
@@ -46,25 +48,23 @@ PaletteManager::~PaletteManager()
 
 PaletteManager *PaletteManager::instance()
 {
-    if (!mInstance) {
-        mInstance = new PaletteManager();
-    }
+    if (!mInstance) mInstance = new PaletteManager();
 
     return mInstance;
 }
 
 void PaletteManager::setPalette(int i)
 {
-    if (i >= 0 && i < getNrPalettes())
+    if (i >= 0 && i < nrPalettes())
         applyPalette(i);
 }
 
-int PaletteManager::getNrPalettes()
+int PaletteManager::nrPalettes()
 {
     return mStyles.size();
 }
 
-int PaletteManager::getActivePalette()
+int PaletteManager::activePalette()
 {
     return mActivePalette;
 }
@@ -72,10 +72,11 @@ int PaletteManager::getActivePalette()
 void PaletteManager::applyPalette(int i)
 {
     QPalette p = mStyles.at(i);
-    QApplication::setPalette(p);
-    if (i == 1) {
+    if (i == 1)
         QApplication::setStyle(QStyleFactory::create("Fusion")); // this needs to be set so everything turns dark
-    }
+    else
+        QApplication::setStyle(QStyleFactory::create(mDefaultSyle));
+    QApplication::setPalette(p);
 }
 
 }

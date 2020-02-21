@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include "mainwindow.h"
 #include "scheme.h"
+#include "colors/palettemanager.h"
 #include "settingsdialog.h"
 #include "studiosettings.h"
 #include "settingslocator.h"
@@ -51,10 +52,12 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-//    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
-//    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
-    ui->label_11->setVisible(false);
-    ui->combo_editorTheme->setVisible(false);
+    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
+    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
+    ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
+
+    qDebug() << QTime::currentTime() << "Scheme::instance()->activeScheme()" << Scheme::instance()->activeScheme(); // rogo: delete
+    qDebug() << QTime::currentTime() << "PaletteManager::instance()->activePalette()" << PaletteManager::instance()->activePalette(); // rogo: delete
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
@@ -69,6 +72,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
+    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), PaletteManager::instance(), &PaletteManager::setPalette);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -103,7 +108,7 @@ void SettingsDialog::loadSettings()
     ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
-    ui->combo_editorTheme->setCurrentIndex(mSettings->colorSchemeIndex());
+    ui->combo_editorTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
@@ -181,7 +186,8 @@ void SettingsDialog::saveSettings()
     mSettings->setForegroundOnDemand(ui->cb_bringontop->isChecked());
 
     // editor page
-    mSettings->setColorSchemeIndex(ui->combo_editorTheme->currentIndex());
+    mSettings->setSyntaxSchemeIndex(ui->combo_editorTheme->currentIndex());
+    mSettings->setStudioSchemeIndex(ui->combo_editorTheme->currentIndex());
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
@@ -204,6 +210,7 @@ void SettingsDialog::saveSettings()
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());
+
     // solver option editor
     mSettings->setOverrideExistingOption(ui->overrideExistingOptionCheckBox->isChecked());
     mSettings->setAddCommentDescriptionAboveOption(ui->addCommentAboveCheckBox->isChecked());
