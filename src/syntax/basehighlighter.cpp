@@ -126,7 +126,6 @@ void BaseHighlighter::reformatBlocks(int from, int charsRemoved, int charsAdded)
     setDirty(fromBlock, lastBlock);
 //    DEB() << "dirty: " << QString::number(fromBlock.blockNumber()).rightJustified(2,'0')
 //          << "-" << QString::number(lastBlock.blockNumber()).rightJustified(2,'0');
-    QString preHighlight = debugDirty();
     rehighlightBlock(fromBlock);
 }
 

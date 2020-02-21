@@ -177,23 +177,34 @@ void CodeEdit::convertToLower()
 {
     if (isReadOnly()) return;
 
-    textCursor().insertText(textCursor().selectedText().toLower());
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toLower()
                                  .split("\n", QString::SplitBehavior::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
+    } else {
+        QTextCursor cursor = textCursor();
+        QPair<int,int> sel(cursor.anchor(), cursor.position());
+        textCursor().insertText(cursor.selectedText().toLower());
+        cursor.setPosition(sel.first);
+        cursor.setPosition(sel.second, QTextCursor::KeepAnchor);
+        setTextCursor(cursor);
     }
 }
 
 void CodeEdit::convertToUpper()
 {
     if (isReadOnly()) return;
-
-    textCursor().insertText(textCursor().selectedText().toUpper());
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toUpper()
                                  .split("\n", QString::SplitBehavior::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
+    } else {
+        QTextCursor cursor = textCursor();
+        QPair<int,int> sel(cursor.anchor(), cursor.position());
+        textCursor().insertText(cursor.selectedText().toUpper());
+        cursor.setPosition(sel.first);
+        cursor.setPosition(sel.second, QTextCursor::KeepAnchor);
+        setTextCursor(cursor);
     }
 }
 
@@ -1573,9 +1584,11 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         replaceBlockText("");
     } else if (e == Hotkey::Indent) {
         mEdit->indent(mEdit->mSettings->tabSize());
+        e->accept();
         return;
     } else if (e == Hotkey::Outdent) {
         mEdit->indent(-mEdit->mSettings->tabSize());
+        e->accept();
         return;
     } else if (e->text().length()) {
         mEdit->mBlockEditRealPos = mEdit->textCursor().position();
@@ -1619,12 +1632,12 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
     bool editable = !mEdit->isReadOnly();
     painter.setClipRect(evRect);
     int cursorColumn = mColumn+mSize;
-    QFontMetrics metric(mEdit->font());
-    double spaceWidth = metric.width(QString(100,' ')) / 100.0;
+    QFontMetricsF metric(mEdit->font());
+    double spaceWidth = metric.averageCharWidth();
     QTextBlock block = mEdit->firstVisibleBlock();
     QTextCursor cursor(block);
     cursor.setPosition(block.position()+block.length()-1);
-//    qreal cursorOffset = 0; //mEdit->cursorRect(cursor).left()-block.layout()->minimumWidth();
+    double left = block.layout()->lineAt(0).rect().left();
 
     while (block.isValid()) {
         QRectF blockRect = mEdit->blockBoundingRect(block).translated(offset);
@@ -1633,18 +1646,20 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
             block = block.next();
             continue;
         }
+
         // draw extended extra-selection for lines past line-end
         int beyondEnd = qMax(mColumn, mColumn+mSize);
+        QString str = block.text();
         if (beyondEnd >= block.length()) {
+            str += QString(beyondEnd - str.length()+1, ' ');
             cursor.setPosition(block.position()+block.length()-1);
             // we have to draw selection beyond the line-end
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRectF selRect = mEdit->cursorRect(cursor);
-//            qreal x = block.layout()->minimumWidth()+cursorOffset;
-//            selRect.setLeft(x);
-            if (block.length() <= beyondStart)
-                selRect.translate(((beyondStart-block.length()+1) * spaceWidth), 0);
-            selRect.setWidth((beyondEnd-beyondStart) * spaceWidth);
+            if (block.length() <= beyondStart) {
+                selRect.moveLeft(left + metric.width(str.left(beyondStart)));
+            }
+            selRect.setRight(left + metric.width(str.left(beyondEnd)));
             painter.fillRect(selRect, toColor(Scheme::Edit_blockSelectBg));
         }
 
@@ -1657,7 +1672,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
         QRectF cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
-            cursorRect.translate((cursorColumn-block.length()+1) * spaceWidth, 0);
+            cursorRect.setX(left + metric.width(str.left(cursorColumn)));
         }
         cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
 
@@ -1675,7 +1690,6 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
                 painter.setCompositionMode(origCompositionMode);
                 if (toggleAntialiasing)
                     painter.setRenderHint(QPainter::Antialiasing, false);
-
             }
         }
 

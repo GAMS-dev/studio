@@ -33,7 +33,7 @@ bool HelpPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::Navigati
 {
     if (url.path().toLower().endsWith(".pdf")) {
         QDesktopServices::openUrl(url);
-        return false;
+        return true;
     }
     return QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
 }

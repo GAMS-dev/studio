@@ -346,7 +346,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
 
     // get delimiters
     QString delim("\"\'");
-    QString special("/, .:*)");
+    QString special("/, .:*()\"\'");
     int end = start;
     int pos = start;
     while (pos < line.length()) {
@@ -359,13 +359,16 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
                 return SyntaxBlock(this, start, pos+1, SyntaxShift::in, true);
             pos = end+1;
         } else {
-            while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
+            while (++pos < line.length()) {
+                if (special.contains(line.at(pos)))
+                    break;
+            }
         }
-        ++end;
+        end = pos;
         // if no dot or colon follows, finish
         while (isWhitechar(line,pos)) ++pos;
         if (pos < line.length() && special.indexOf(line.at(pos)) < 3) break;
-        if (pos < line.length() && line.at(pos) != ')') ++pos;
+        if (pos < line.length() && special.indexOf(line.at(pos)) < 7) ++pos;
         while (isWhitechar(line,pos)) ++pos;
         end = pos;
     }

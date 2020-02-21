@@ -20,6 +20,7 @@
 #include "memorymapper.h"
 #include "file/dynamicfile.h"
 #include "logger.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -53,20 +54,20 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     // error
     fmt = QTextCharFormat();
     fmt.setAnchor(true);
-    fmt.setForeground(Qt::darkRed);
-    fmt.setUnderlineColor(Qt::darkRed);
+    fmt.setForeground(Scheme::color(Scheme::Normal_Red));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
     fmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     mBaseFormat << fmt;
     // lstLink
     fmt = QTextCharFormat();
-    fmt.setForeground(Qt::blue);
-    fmt.setUnderlineColor(Qt::blue);
+    fmt.setForeground(Scheme::color(Scheme::Normal_Blue));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Blue));
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
     // fileLink
     fmt = QTextCharFormat();
-    fmt.setForeground(Qt::darkGreen);
-    fmt.setUnderlineColor(Qt::darkGreen);
+    fmt.setForeground(Scheme::color(Scheme::Normal_Green));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Green));
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
     addChunk(true);
@@ -84,6 +85,11 @@ void MemoryMapper::setLogParser(LogParser *parser)
 {
     if (mLogParser) delete mLogParser;
     mLogParser = parser;
+}
+
+LogParser *MemoryMapper::logParser()
+{
+    return mLogParser;
 }
 
 qint64 MemoryMapper::size() const
@@ -462,8 +468,9 @@ void MemoryMapper::parseNewLine()
     }
 
     // update log-file cache
-    if (!mLastLineIsOpen || mLastLineLen != line.length())
+    if (!mLastLineIsOpen || mLastLineLen != line.length()) {
         mNewLogLines << line;
+    }
 
     if (mLastLineIsOpen && mLastLineLen > line.length()) {
         ensureSpace(1);
@@ -512,6 +519,12 @@ void MemoryMapper::clearLastLine()
         chunk->lineBytes.last() = start+1;
         chunk->bArray[start] = '\n';
     }
+    if (mNewLogLines.size()) {
+        mNewLogLines.removeLast();
+    } else {
+        mWeakLastLogLine = true;
+    }
+
     if (mNewLines)
         newPending(PendingContentChange);
     mInstantRefresh = true;
@@ -520,8 +533,9 @@ void MemoryMapper::clearLastLine()
 
 void MemoryMapper::fetchLog()
 {
-    emit appendLines(mNewLogLines);
+    emit appendLines(mNewLogLines, mWeakLastLogLine);
     mNewLogLines.clear();
+    mWeakLastLogLine = false;
 }
 
 void MemoryMapper::fetchDisplay()
@@ -578,6 +592,8 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                     cleaned = ensureSpace(midData.size()+1);
                     chunk = mChunks.last();
                     appendLineData(midData, chunk);
+                } else if (!mLastLineIsOpen) {
+                    mNewLogLines << QString(delimiter());
                 }
                 start = i + 1;
                 cleaned = ensureSpace(1);

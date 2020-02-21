@@ -18,12 +18,14 @@ public:
     ~SvgEngine() override;
     QString iconName() const override;
     void replaceNormalMode(QIcon::Mode mode);
+    void forceSquare(bool force);
     void unbind();
     void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) override;
     QIconEngine * clone() const override;
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
 private:
     Scheme *mController = nullptr;
+    bool mForceSquare = true;
     QString mName;
     QIcon::Mode mNormalMode = QIcon::Normal;
 

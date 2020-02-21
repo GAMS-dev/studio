@@ -70,7 +70,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 
 GdxViewer::~GdxViewer()
 {
-    free();
+    freeSymbols();
     delete mGdxMutex;
     delete ui;
 }
@@ -128,7 +128,7 @@ bool GdxViewer::reload(QTextCodec* codec)
         mCodec = codec;
         if (ui->splitter->widget(1) != ui->widget)
             ui->splitter->replaceWidget(1, ui->widget);
-        free();
+        freeSymbols();
         bool initSuccess = init();
         if (initSuccess) {
             mHasChanged = false;
@@ -180,7 +180,7 @@ void GdxViewer::releaseFile()
 {
     if (ui->splitter->widget(1) != ui->widget)
         ui->splitter->replaceWidget(1, ui->widget);
-    free();
+    freeSymbols();
 }
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
@@ -262,7 +262,7 @@ bool GdxViewer::init()
     return true;
 }
 
-void GdxViewer::free()
+void GdxViewer::freeSymbols()
 {
     if (!mIsInitialized)
         return;

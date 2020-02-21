@@ -41,9 +41,20 @@ void DynamicFile::appendLine(QString line)
     if (!mFile.isOpen())
         openFile();
     QMutexLocker locker(&mMutex);
+    mEnd = mFile.size();
     if (mFile.isOpen()) {
         mFile.write(line.toUtf8());
         mFile.write("\n");
+    }
+}
+
+void DynamicFile::confirmLastLine()
+{
+    if (!mFile.isOpen())
+        openFile();
+    QMutexLocker locker(&mMutex);
+    if (mFile.isOpen()) {
+        mEnd = mFile.size();
     }
 }
 
@@ -51,7 +62,6 @@ void DynamicFile::closeFile()
 {
     QMutexLocker locker(&mMutex);
     if (mFile.isOpen()) {
-        mFile.write("\n");
         mFile.flush();
         mFile.close();
         runBackupCircle();
@@ -62,7 +72,8 @@ void DynamicFile::openFile()
 {
     QMutexLocker locker(&mMutex);
     if (!mFile.isOpen()) {
-        mFile.open(QFile::Append);
+        mFile.open(QFile::ReadWrite);
+        mFile.seek(mEnd);
     }
 }
 

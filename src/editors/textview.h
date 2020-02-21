@@ -65,6 +65,7 @@ public:
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
     TextKind textKind() const;
     void setLogParser(LogParser *logParser);
+    LogParser *logParser() const;
     void reset();
     void setDebugMode(bool debug);
     void invalidate();
@@ -81,7 +82,7 @@ signals:
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
-    void appendLines(const QStringList &lines);
+    void appendLines(const QStringList &lines, bool overwritePreviousLine);
 
 public slots:
     void updateExtraSelections();

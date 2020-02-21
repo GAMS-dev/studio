@@ -43,6 +43,7 @@ class WelcomePage : public QWidget
 public:
     explicit WelcomePage(MainWindow *parent = nullptr);
     ~WelcomePage();
+    bool event(QEvent *event);
 
 signals:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEdit = false);

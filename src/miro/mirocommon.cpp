@@ -51,6 +51,13 @@ QString MiroCommon::assemblyFileName(const QString &modelLocation, const QString
     return QDir(modelLocation).filePath(miro::MiroCommon::assemblyFileName(modelName));
 }
 
+QString MiroCommon::deployFileName(const QString &modelName)
+{
+    if (modelName.isEmpty())
+        return modelName;
+    return modelName+".miroapp";
+}
+
 QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile, const QString &mainFile)
 {
     QStringList directories;

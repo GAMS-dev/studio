@@ -34,8 +34,10 @@ namespace studio {
 
 #if defined(__APPLE__)
     const QString CommonPaths::DocumentationDir = "../../../Resources/docs";
+    const QString CommonPaths::ModlibsPrefixPath = "../../../Resources/";
 #else
     const QString CommonPaths::DocumentationDir = "docs";
+    const QString CommonPaths::ModlibsPrefixPath = "";
 #endif
 
 QString CommonPaths::SystemDir = QString();
@@ -56,6 +58,11 @@ CommonPaths::CommonPaths()
 const QString& CommonPaths::documentationDir()
 {
     return DocumentationDir;
+}
+
+QString CommonPaths::modelLibraryDir(const QString &libname)
+{
+    return (ModlibsPrefixPath.isEmpty() ? libname : ModlibsPrefixPath+libname);
 }
 
 const QString& CommonPaths::systemDir()

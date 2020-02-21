@@ -41,7 +41,7 @@ class SettingsDialog : public QDialog
 
 public:
     explicit SettingsDialog(MainWindow *parent = nullptr);
-    ~SettingsDialog();
+    ~SettingsDialog() override;
 
     bool miroSettingsEnabled() const;
     void setMiroSettingsEnabled(bool enabled);

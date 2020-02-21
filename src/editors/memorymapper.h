@@ -90,6 +90,7 @@ public:
     AbstractTextMapper::Kind kind() const override { return AbstractTextMapper::memoryMapper; }
 
     void setLogParser(LogParser *parser);
+    LogParser *logParser();
     qint64 size() const override;
     void startRun() override;
     void endRun() override;
@@ -103,7 +104,7 @@ public:
 
 signals:
     void createMarks(const LogParser::MarkData &marks);
-    void appendLines(const QStringList &lines);
+    void appendLines(const QStringList &lines, bool overwritePreviousLine);
     void updateView();
 
 public slots:
@@ -164,6 +165,7 @@ private: // members
     QString mCurrentErrText;
     Pendings mPending;
 
+    bool mWeakLastLogLine = false;
     bool mLastLineIsOpen = false;
     int mLastLineLen = 0;
     QStringList mNewLogLines;

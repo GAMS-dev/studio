@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>740</width>
-    <height>659</height>
+    <width>878</width>
+    <height>677</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -212,49 +212,7 @@
           <string>Editor Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_tabsize">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Tab stop size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Font Size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="cb_linewrap_editor">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Enable line wrapping in editor</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <widget class="QFontComboBox" name="fontComboBox">
             <property name="fontFilters">
              <set>QFontComboBox::MonospacedFonts</set>
@@ -267,42 +225,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QSpinBox" name="sb_fontsize">
-            <property name="minimum">
-             <number>5</number>
-            </property>
-            <property name="maximum">
-             <number>50</number>
-            </property>
-            <property name="value">
-             <number>12</number>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="2">
-           <widget class="QCheckBox" name="cb_highlightUnderCursor">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>When activated all occurrences of the word that is currently under the text cursor will be highlighted. When deactivated a selection of the word is needed.</string>
-            </property>
-            <property name="text">
-             <string>Highlight word under cursor without selection</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2">
            <widget class="QCheckBox" name="cb_highlightcurrent">
             <property name="enabled">
              <bool>true</bool>
@@ -321,7 +244,20 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="3" column="2">
+           <widget class="QSpinBox" name="sb_fontsize">
+            <property name="minimum">
+             <number>5</number>
+            </property>
+            <property name="maximum">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>12</number>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
            <widget class="QSpinBox" name="sb_tabsize">
             <property name="enabled">
              <bool>true</bool>
@@ -338,13 +274,43 @@
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="label_11">
             <property name="text">
-             <string>Font</string>
+             <string>Editor Theme</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="2" column="2">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Font Size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QCheckBox" name="cb_autoclose">
+            <property name="text">
+             <string>Auto close opening brackets and quotes</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_tabsize">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Tab stop size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
            <widget class="QCheckBox" name="cb_autoindent">
             <property name="enabled">
              <bool>true</bool>
@@ -366,7 +332,58 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Font</string>
+            </property>
+           </widget>
+          </item>
           <item row="5" column="0">
+           <widget class="QCheckBox" name="cb_linewrap_editor">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Enable line wrapping in editor</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QCheckBox" name="cb_highlightUnderCursor">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>When activated all occurrences of the word that is currently under the text cursor will be highlighted. When deactivated a selection of the word is needed.</string>
+            </property>
+            <property name="text">
+             <string>Highlight word under cursor without selection</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
            <widget class="QCheckBox" name="cb_showlinenr">
             <property name="enabled">
              <bool>true</bool>
@@ -388,15 +405,8 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
-           <widget class="QCheckBox" name="cb_autoclose">
-            <property name="text">
-             <string>Auto close opening brackets and quotes</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
+          <item row="1" column="0">
+           <widget class="QComboBox" name="combo_editorTheme"/>
           </item>
          </layout>
         </widget>
@@ -499,7 +509,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="label_mirolocation">
          <property name="text">
           <string>MIRO installation location</string>
          </property>
@@ -549,7 +559,7 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="label_currentscheme">
             <property name="text">
              <string>Current Scheme</string>
             </property>
@@ -819,6 +829,39 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QToolBox" name="toolBox">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="page">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>838</width>
+            <height>102</height>
+           </rect>
+          </property>
+          <attribute name="label">
+           <string>Page 1</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="page_2">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>98</width>
+            <height>28</height>
+           </rect>
+          </property>
+          <attribute name="label">
+           <string>Page 2</string>
+          </attribute>
+         </widget>
+        </widget>
        </item>
       </layout>
      </widget>

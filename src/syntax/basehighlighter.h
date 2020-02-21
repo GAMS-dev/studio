@@ -77,13 +77,6 @@ private:
         }
         return mDirtyBlocks.size();
     }
-    inline QString debugDirty() {
-        QString s;
-        for (int i = 0; i < mDirtyBlocks.size() ; ++i) {
-            s.append(QString::number(mDirtyBlocks.at(i).first)+"-"+QString::number(mDirtyBlocks.at(i).second)+" ");
-        }
-        return s;
-    }
 
 private:
     class Interval : public QPair<int,int>  {

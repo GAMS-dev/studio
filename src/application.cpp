@@ -52,6 +52,12 @@ Application::Application(int& argc, char** argv)
     connect(&mDistribValidator, &support::DistributionValidator::newError, this, &Application::logError);
 }
 
+Application::~Application()
+{
+    delete SettingsLocator::settings();
+    SettingsLocator::provide(nullptr);
+}
+
 void Application::init()
 {
     CommonPaths::setSystemDir(mCmdParser.gamsDir());
