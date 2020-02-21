@@ -93,9 +93,8 @@ MainWindow::MainWindow(QWidget *parent)
     setAcceptDrops(true);
 
     // Theming
-    PaletteManager::init(this);
-    PaletteManager::instance()->setPalette(1); // TODO(RG): hardcoded set dark mode
-    Scheme::instance()->setActiveScheme(1);
+    PaletteManager::instance()->setPalette(0); // TODO(RG): hardcoded set dark mode
+    Scheme::instance()->setActiveScheme(0);
 
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));

@@ -12,11 +12,10 @@ class PaletteManager : QObject
 {
     Q_OBJECT
 public:
-    PaletteManager(MainWindow *mw);
+    PaletteManager();
     ~PaletteManager();
 
     static PaletteManager* instance();
-    static void init(MainWindow* mw);
 
     void setPalette(int i);
     int getNrPalettes();
@@ -25,7 +24,6 @@ public:
 private:
     int activePalette;
     QList<QPalette> mStyles;
-    MainWindow* mMw;
     static PaletteManager* mInstance;
     int mActivePalette = -1;
 

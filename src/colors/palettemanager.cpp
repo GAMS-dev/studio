@@ -8,7 +8,7 @@ namespace studio {
 
 PaletteManager* PaletteManager::mInstance = nullptr;
 
-PaletteManager::PaletteManager(MainWindow* mw) : mMw(mw)
+PaletteManager::PaletteManager()
 {
     // Nr1: default style
     mStyles.append(QApplication::palette());
@@ -47,16 +47,10 @@ PaletteManager::~PaletteManager()
 PaletteManager *PaletteManager::instance()
 {
     if (!mInstance) {
-        qDebug() << "PaletteManager::instance(): Please call init-function before using";
-        return nullptr;
+        mInstance = new PaletteManager();
     }
 
     return mInstance;
-}
-
-void PaletteManager::init(MainWindow *mw)
-{
-    mInstance = new PaletteManager(mw);
 }
 
 void PaletteManager::setPalette(int i)
@@ -78,7 +72,7 @@ int PaletteManager::getActivePalette()
 void PaletteManager::applyPalette(int i)
 {
     QPalette p = mStyles.at(i);
-    mMw->setPalette(p);
+    QApplication::setPalette(p);
     if (i == 1) {
         QApplication::setStyle(QStyleFactory::create("Fusion")); // this needs to be set so everything turns dark
     }
