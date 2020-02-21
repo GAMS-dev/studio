@@ -11,7 +11,7 @@ Version 0.14.4
 
 ## Code Editor
 - "Selection to Uppercase/Lowercase" action now keeps selection
-- fixed syntax in assignment statement
+- fixed syntax coloring in declarations
 - fixed behavior of Tab key when in block edit mode
 
 Version 0.14.3
