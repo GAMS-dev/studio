@@ -46,7 +46,6 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
-    mSlotText.insert(Edit_blockSelectBg,        "Block selection");
 
     mSlotText.insert(Icon_Line,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
@@ -100,7 +99,6 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
     mColorSchemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
-    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(palette().color(QPalette::Highlight))); // use OS specific color for selection, even if block
 
     mColorSchemes[sNr].insert(Mark_errorFg,                   QColor(Qt::darkRed));
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
@@ -174,8 +172,6 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
     mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66AA66"));
     mColorSchemes[sNr].insert(Normal_Blue,                    QColor("#4499ee"));
-
-    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(60,60,60));
 
     invalidate();
 }
