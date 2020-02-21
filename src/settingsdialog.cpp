@@ -40,27 +40,22 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->setupUi(this);
 
     mSettings = SettingsLocator::settings();
-
-    // load from settings to UI
+    loadSettings();
 
     // TODO(JM) temporarily removed
 //    initColorPage();
     ui->tabWidget->removeTab(3);
 
-    loadSettings();
-
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+    // TODO(JM) Disabled until feature #1145 is implemented
+    ui->cb_linewrap_process->setVisible(false);
+
+    // Themes
     ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
     ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
     ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
-
-    qDebug() << QTime::currentTime() << "Scheme::instance()->activeScheme()" << Scheme::instance()->activeScheme(); // rogo: delete
-    qDebug() << QTime::currentTime() << "PaletteManager::instance()->activePalette()" << PaletteManager::instance()->activePalette(); // rogo: delete
-
-    // TODO(JM) Disabled until feature #1145 is implemented
-    ui->cb_linewrap_process->setVisible(false);
 
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
@@ -109,6 +104,7 @@ void SettingsDialog::loadSettings()
 
     // editor tab page
     ui->combo_editorTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
+    ui->combo_studioTheme->setCurrentIndex(mSettings->studioSchemeIndex());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
@@ -187,7 +183,7 @@ void SettingsDialog::saveSettings()
 
     // editor page
     mSettings->setSyntaxSchemeIndex(ui->combo_editorTheme->currentIndex());
-    mSettings->setStudioSchemeIndex(ui->combo_editorTheme->currentIndex());
+    mSettings->setStudioSchemeIndex(ui->combo_studioTheme->currentIndex());
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());

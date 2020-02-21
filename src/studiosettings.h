@@ -173,7 +173,7 @@ private:
 
     // general settings page
     int mSyntaxSchemeIndex;
-    int mEditorSchemeIndex;
+    int mStudioSchemeIndex;
     QString mDefaultWorkspace;
     bool mSkipWelcomePage;
     bool mRestoreTabs;

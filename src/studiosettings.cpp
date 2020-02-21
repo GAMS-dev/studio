@@ -580,13 +580,13 @@ void StudioSettings::setSyntaxSchemeIndex(int syntaxSchemeIndex)
 
 int StudioSettings::studioSchemeIndex() const
 {
-    return mEditorSchemeIndex;
+    return mStudioSchemeIndex;
 }
 
-void StudioSettings::setStudioSchemeIndex(int editorSchemeIndex)
+void StudioSettings::setStudioSchemeIndex(int studioSchemeIndex)
 {
-    mEditorSchemeIndex = editorSchemeIndex;
-    PaletteManager::instance()->setPalette(mEditorSchemeIndex);
+    mStudioSchemeIndex = studioSchemeIndex;
+    PaletteManager::instance()->setPalette(mStudioSchemeIndex);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

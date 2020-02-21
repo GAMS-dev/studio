@@ -55,8 +55,10 @@ PaletteManager *PaletteManager::instance()
 
 void PaletteManager::setPalette(int i)
 {
-    if (i >= 0 && i < nrPalettes())
+    if (i >= 0 && i < nrPalettes()) {
+        mActivePalette = i;
         applyPalette(i);
+    }
 }
 
 int PaletteManager::nrPalettes()
