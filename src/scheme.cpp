@@ -86,8 +86,6 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_background,                QColor(Qt::white));
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
     mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
-    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255,247,235));
-    mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(Qt::lightGray));
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
