@@ -1,3 +1,19 @@
+Version 0.14.4
+==================
+## General
+- **introduced macOS Dark Theme support!**
+- fixed behavior of "View this page online" in Help View
+- fixed crash when using focus log shortcut but all logs were closed
+- focus log shotcut now opens system log if no logs open
+- fixed aspect ratio of Project Explorer icons on Windows
+- improved codec handling in Log View
+- fixed log persisted to disk containing overwritten lines (e.g. progress reports)
+
+## Code Editor
+- "Selection to Uppercase/Lowercase" action now keeps selection
+- fixed syntax in assignment statement
+- fixed behavior of Tab key when in block edit mode
+
 Version 0.14.3
 ==================
 
