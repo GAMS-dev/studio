@@ -53,8 +53,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->cb_linewrap_process->setVisible(false);
 
     // Themes
-    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
-    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
+    ui->combo_syntaxTheme->addItems(Scheme::instance()->schemes());
+    ui->combo_syntaxTheme->setCurrentIndex(Scheme::instance()->activeScheme());
     ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
 
     // connections to track modified status
@@ -65,8 +65,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
+    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
     connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), PaletteManager::instance(), &PaletteManager::setPalette);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -103,7 +103,7 @@ void SettingsDialog::loadSettings()
     ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
-    ui->combo_editorTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
+    ui->combo_syntaxTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
     ui->combo_studioTheme->setCurrentIndex(mSettings->studioSchemeIndex());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
@@ -182,7 +182,7 @@ void SettingsDialog::saveSettings()
     mSettings->setForegroundOnDemand(ui->cb_bringontop->isChecked());
 
     // editor page
-    mSettings->setSyntaxSchemeIndex(ui->combo_editorTheme->currentIndex());
+    mSettings->setSyntaxSchemeIndex(ui->combo_syntaxTheme->currentIndex());
     mSettings->setStudioSchemeIndex(ui->combo_studioTheme->currentIndex());
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());

@@ -406,7 +406,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QComboBox" name="combo_editorTheme"/>
+           <widget class="QComboBox" name="combo_syntaxTheme"/>
           </item>
           <item row="0" column="2">
            <widget class="QLabel" name="label_4">
