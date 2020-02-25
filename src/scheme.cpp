@@ -151,6 +151,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
+    mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(60,60,60));
 
     mColorSchemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
