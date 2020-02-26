@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1210,6 +1210,9 @@
    </property>
    <property name="text">
     <string>Terminal</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="actionGDX_Diff">
