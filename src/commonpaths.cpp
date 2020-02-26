@@ -133,6 +133,11 @@ QString CommonPaths::defaultWorkingDir()
     return defWorkingDir.path();
 }
 
+QString CommonPaths::settingsDir()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+}
+
 QString CommonPaths::absolutFilePath(const QString &filePath)
 {
     QFileInfo fi(filePath);

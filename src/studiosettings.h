@@ -23,6 +23,7 @@
 #include <QString>
 #include <QColor>
 #include <QHash>
+#include <QSettings>
 
 class QSettings;
 class QFile;
@@ -31,6 +32,57 @@ namespace gams {
 namespace studio {
 
 class MainWindow;
+
+struct SettingsData {
+    bool mIgnoreSettings = false;
+    bool mResetSettings = false;
+
+    // general settings page
+    QString defaultWorkspace;
+    bool skipWelcomePage;
+    bool restoreTabs;
+    bool autosaveOnRun;
+    bool openLst;
+    bool foregroundOnDemand;
+    bool jumpToError;
+
+    // editor settings page
+    QString fontFamily;
+    int fontSize;
+    bool showLineNr;
+    int tabSize;
+    bool lineWrapEditor;
+    bool lineWrapProcess;
+    bool clearLog;
+    bool wordUnderCursor;
+    bool highlightCurrentLine;
+    bool autoIndent;
+    bool writeLog;
+    int nrLogBackups;
+    bool autoCloseBraces;
+    int editableMaxSizeMB;
+
+    // MIRO settings page
+    QString miroInstallationLocation;
+
+    // misc settings page
+    int historySize;
+
+    // solver option editor settings
+    bool overrideExistingOption = true;
+    bool addCommentAboveOption = false;
+    bool addEOLCommentOption = false;
+    bool deleteCommentsAboveOption = false;
+
+    // search widget
+    bool searchUseRegex;
+    bool searchCaseSens;
+    bool searchWholeWords;
+    int selectedScopeIndex;
+
+    // user model library directory
+    QString userModelLibraryDir;
+};
 
 class StudioSettings
 {
@@ -161,54 +213,17 @@ private:
     QSettings *mAppSettings = nullptr;
     QSettings *mUserSettings = nullptr;
     QFile *mColorSettings = nullptr;
+    SettingsData mData;
+    int mJsonFormat;
+
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
+    QStringList mVersions;
 
-    // general settings page
-    QString mDefaultWorkspace;
-    bool mSkipWelcomePage;
-    bool mRestoreTabs;
-    bool mAutosaveOnRun;
-    bool mOpenLst;
-    bool mForegroundOnDemand;
-    bool mJumpToError;
+private:
+    void init();
+    void initFromPrevious();
 
-    // editor settings page
-    QString mFontFamily;
-    int mFontSize;
-    bool mShowLineNr;
-    int mTabSize;
-    bool mLineWrapEditor;
-    bool mLineWrapProcess;
-    bool mClearLog;
-    bool mWordUnderCursor;
-    bool mHighlightCurrentLine;
-    bool mAutoIndent;
-    bool mWriteLog;
-    int mNrLogBackups;
-    bool mAutoCloseBraces;
-    int mEditableMaxSizeMB;
-
-    // MIRO settings page
-    QString mMiroInstallationLocation;
-
-    // misc settings page
-    int mHistorySize;
-
-    // solver option editor settings
-    bool mOverrideExistingOption = true;
-    bool mAddCommentAboveOption = false;
-    bool mAddEOLCommentOption = false;
-    bool mDeleteCommentsAboveOption = false;
-
-    // search widget
-    bool mSearchUseRegex;
-    bool mSearchCaseSens;
-    bool mSearchWholeWords;
-    int mSelectedScopeIndex;
-
-    // user model library directory
-    QString mUserModelLibraryDir;
     void checkAndUpdateSettings();
     void initSettingsFiles();
     void loadViewStates(MainWindow *main);

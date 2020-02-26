@@ -34,10 +34,29 @@
 namespace gams {
 namespace studio {
 
+bool readJsonFile(QIODevice &device, QSettings::SettingsMap &map)
+{
+    QJsonDocument json = QJsonDocument::fromJson( device.readAll() );
+    map = json.object().toVariantMap();
+    return true;
+}
+
+bool writeJsonFile(QIODevice &device, const QSettings::SettingsMap &map)
+{
+    device.write( QJsonDocument( QJsonObject::fromVariantMap( map ) ).toJson() );
+    return true;
+}
+
 StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool resetViews)
     : mIgnoreSettings(ignoreSettings),
       mResetSettings(resetSettings)
 {
+    mJsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
+    init();
+
+    mData.mIgnoreSettings = ignoreSettings;
+    mData.mResetSettings = resetSettings;
+
     if (ignoreSettings && !mResetSettings) {
         mAppSettings = new QSettings();
         mUserSettings = new QSettings();
@@ -57,6 +76,32 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
         f.remove();
     }
 }
+
+void StudioSettings::init()
+{
+    mVersions << "Beta";
+    mVersions << "0.14.3";
+
+    QDir dir = CommonPaths::settingsDir();
+    if (!dir.exists()) {
+        dir.mkpath(dir.path());
+        initFromPrevious();
+    }
+
+}
+
+void StudioSettings::initFromPrevious()
+{
+    QDir dir = CommonPaths::settingsDir();
+    int currentVersion = mVersions.size()-1;
+    int recentVersion = currentVersion;
+    QStringList files = dir.entryList();
+    while (!files.contains(dir.filePath(QString("uistates%1.json").arg(recentVersion)))) {
+        --recentVersion;
+        if (!recentVersion) break;
+    }
+}
+
 
 StudioSettings::~StudioSettings()
 {
@@ -453,62 +498,62 @@ void StudioSettings::readScheme()
 
 QString StudioSettings::miroInstallationLocation() const
 {
-    return mMiroInstallationLocation;
+    return mData.miroInstallationLocation;
 }
 
 void StudioSettings::setMiroInstallationLocation(const QString &location)
 {
-    mMiroInstallationLocation = location;
+    mData.miroInstallationLocation = location;
 }
 
 int StudioSettings::historySize() const
 {
-    return mHistorySize;
+    return mData.historySize;
 }
 
 void StudioSettings::setHistorySize(int historySize)
 {
-    mHistorySize = historySize;
+    mData.historySize = historySize;
 }
 
 bool StudioSettings::overridExistingOption() const
 {
-    return mOverrideExistingOption;
+    return mData.overrideExistingOption;
 }
 
 void StudioSettings::setOverrideExistingOption(bool value)
 {
-    mOverrideExistingOption = value;
+    mData.overrideExistingOption = value;
 }
 
 bool StudioSettings::addCommentDescriptionAboveOption() const
 {
-    return mAddCommentAboveOption;
+    return mData.addCommentAboveOption;
 }
 
 void StudioSettings::setAddCommentDescriptionAboveOption(bool value)
 {
-    mAddCommentAboveOption = value;
+    mData.addCommentAboveOption = value;
 }
 
 bool StudioSettings::addEOLCommentDescriptionOption() const
 {
-    return mAddEOLCommentOption;
+    return mData.addEOLCommentOption;
 }
 
 void StudioSettings::setAddEOLCommentDescriptionOption(bool value)
 {
-    mAddEOLCommentOption = value;
+    mData.addEOLCommentOption = value;
 }
 
 bool StudioSettings::deleteAllCommentsAboveOption() const
 {
-    return mDeleteCommentsAboveOption;
+    return mData.deleteCommentsAboveOption;
 }
 
 void StudioSettings::setDeleteAllCommentsAboveOption(bool value)
 {
-    mDeleteCommentsAboveOption = value;
+    mData.deleteCommentsAboveOption = value;
 }
 
 void StudioSettings::restoreLastFilesUsed(MainWindow *main)
@@ -526,42 +571,42 @@ void StudioSettings::restoreLastFilesUsed(MainWindow *main)
 
 bool StudioSettings::writeLog() const
 {
-    return mWriteLog;
+    return mData.writeLog;
 }
 
 void StudioSettings::setWriteLog(bool writeLog)
 {
-    mWriteLog = writeLog;
+    mData.writeLog = writeLog;
 }
 
 int StudioSettings::nrLogBackups() const
 {
-    return mNrLogBackups;
+    return mData.nrLogBackups;
 }
 
 void StudioSettings::setNrLogBackups(int nrLogBackups)
 {
-    mNrLogBackups = nrLogBackups;
+    mData.nrLogBackups = nrLogBackups;
 }
 
 bool StudioSettings::autoCloseBraces() const
 {
-    return mAutoCloseBraces;
+    return mData.autoCloseBraces;
 }
 
 void StudioSettings::setAutoCloseBraces(bool autoCloseBraces)
 {
-    mAutoCloseBraces = autoCloseBraces;
+    mData.autoCloseBraces = autoCloseBraces;
 }
 
 int StudioSettings::editableMaxSizeMB() const
 {
-    return mEditableMaxSizeMB;
+    return mData.editableMaxSizeMB;
 }
 
 void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
 {
-    mEditableMaxSizeMB = editableMaxSizeMB;
+    mData.editableMaxSizeMB = editableMaxSizeMB;
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)
@@ -595,7 +640,7 @@ void StudioSettings::loadSettings(MainWindow *main)
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    mUserModelLibraryDir = CommonPaths::userModelLibraryDir();
+    mData.userModelLibraryDir = CommonPaths::userModelLibraryDir();
 }
 
 void StudioSettings::checkAndUpdateSettings()
@@ -626,7 +671,7 @@ void StudioSettings::importSettings(const QString &path, MainWindow *main)
 
 QString StudioSettings::defaultWorkspace() const
 {
-    return mDefaultWorkspace;
+    return mData.defaultWorkspace;
 }
 
 void StudioSettings::setDefaultWorkspace(const QString &value)
@@ -636,212 +681,212 @@ void StudioSettings::setDefaultWorkspace(const QString &value)
     if (!workspace.exists())
         workspace.mkpath(".");
 
-    mDefaultWorkspace = value;
+    mData.defaultWorkspace = value;
 }
 
 bool StudioSettings::skipWelcomePage() const
 {
-    return mSkipWelcomePage;
+    return mData.skipWelcomePage;
 }
 
 void StudioSettings::setSkipWelcomePage(bool value)
 {
-    mSkipWelcomePage = value;
+    mData.skipWelcomePage = value;
 }
 
 bool StudioSettings::restoreTabs() const
 {
-    return mRestoreTabs;
+    return mData.restoreTabs;
 }
 
 void StudioSettings::setRestoreTabs(bool value)
 {
-    mRestoreTabs = value;
+    mData.restoreTabs = value;
 }
 
 bool StudioSettings::autosaveOnRun() const
 {
-    return mAutosaveOnRun;
+    return mData.autosaveOnRun;
 }
 
 void StudioSettings::setAutosaveOnRun(bool value)
 {
-    mAutosaveOnRun = value;
+    mData.autosaveOnRun = value;
 }
 
 bool StudioSettings::foregroundOnDemand() const
 {
-    return mForegroundOnDemand;
+    return mData.foregroundOnDemand;
 }
 
 void StudioSettings::setForegroundOnDemand(bool value)
 {
-    mForegroundOnDemand = value;
+    mData.foregroundOnDemand = value;
 }
 
 bool StudioSettings::openLst() const
 {
-    return mOpenLst;
+    return mData.openLst;
 }
 
 void StudioSettings::setOpenLst(bool value)
 {
-    mOpenLst = value;
+    mData.openLst = value;
 }
 
 bool StudioSettings::jumpToError() const
 {
-    return mJumpToError;
+    return mData.jumpToError;
 }
 
 void StudioSettings::setJumpToError(bool value)
 {
-    mJumpToError = value;
+    mData.jumpToError = value;
 }
 
 int StudioSettings::fontSize() const
 {
-    return mFontSize;
+    return mData.fontSize;
 }
 
 void StudioSettings::setFontSize(int value)
 {
-    mFontSize = value;
+    mData.fontSize = value;
 }
 
 bool StudioSettings::showLineNr() const
 {
-    return mShowLineNr;
+    return mData.showLineNr;
 }
 
 void StudioSettings::setShowLineNr(bool value)
 {
-    mShowLineNr = value;
+    mData.showLineNr = value;
 }
 
 int StudioSettings::tabSize() const
 {
-    return mTabSize;
+    return mData.tabSize;
 }
 
 void StudioSettings::setTabSize(int value)
 {
-    mTabSize = value;
+    mData.tabSize = value;
 }
 
 bool StudioSettings::lineWrapEditor() const
 {
-    return mLineWrapEditor;
+    return mData.lineWrapEditor;
 }
 
 void StudioSettings::setLineWrapEditor(bool value)
 {
-    mLineWrapEditor = value;
+    mData.lineWrapEditor = value;
 }
 
 bool StudioSettings::lineWrapProcess() const
 {
-    return mLineWrapProcess;
+    return mData.lineWrapProcess;
 }
 
 void StudioSettings::setLineWrapProcess(bool value)
 {
-    mLineWrapProcess = value;
+    mData.lineWrapProcess = value;
 }
 
 QString StudioSettings::fontFamily() const
 {
-    return mFontFamily;
+    return mData.fontFamily;
 }
 
 void StudioSettings::setFontFamily(const QString &value)
 {
-    mFontFamily = value;
+    mData.fontFamily = value;
 }
 
 bool StudioSettings::clearLog() const
 {
-    return mClearLog;
+    return mData.clearLog;
 }
 
 void StudioSettings::setClearLog(bool value)
 {
-    mClearLog = value;
+    mData.clearLog = value;
 }
 
 bool StudioSettings::searchUseRegex() const
 {
-    return mSearchUseRegex;
+    return mData.searchUseRegex;
 }
 
 void StudioSettings::setSearchUseRegex(bool searchUseRegex)
 {
-    mSearchUseRegex = searchUseRegex;
+    mData.searchUseRegex = searchUseRegex;
 }
 
 bool StudioSettings::searchCaseSens() const
 {
-    return mSearchCaseSens;
+    return mData.searchCaseSens;
 }
 
 void StudioSettings::setSearchCaseSens(bool searchCaseSens)
 {
-    mSearchCaseSens = searchCaseSens;
+    mData.searchCaseSens = searchCaseSens;
 }
 
 bool StudioSettings::searchWholeWords() const
 {
-    return mSearchWholeWords;
+    return mData.searchWholeWords;
 }
 
 void StudioSettings::setSearchWholeWords(bool searchWholeWords)
 {
-    mSearchWholeWords = searchWholeWords;
+    mData.searchWholeWords = searchWholeWords;
 }
 
 int StudioSettings::selectedScopeIndex() const
 {
-    return mSelectedScopeIndex;
+    return mData.selectedScopeIndex;
 }
 
 void StudioSettings::setSelectedScopeIndex(int selectedScopeIndex)
 {
-    mSelectedScopeIndex = selectedScopeIndex;
+    mData.selectedScopeIndex = selectedScopeIndex;
 }
 
 bool StudioSettings::wordUnderCursor() const
 {
-    return mWordUnderCursor;
+    return mData.wordUnderCursor;
 }
 
 void StudioSettings::setWordUnderCursor(bool wordUnderCursor)
 {
-    mWordUnderCursor = wordUnderCursor;
+    mData.wordUnderCursor = wordUnderCursor;
 }
 
 QString StudioSettings::userModelLibraryDir() const
 {
-    return mUserModelLibraryDir;
+    return mData.userModelLibraryDir;
 }
 
 bool StudioSettings::highlightCurrentLine() const
 {
-    return mHighlightCurrentLine;
+    return mData.highlightCurrentLine;
 }
 
 void StudioSettings::setHighlightCurrentLine(bool highlightCurrentLine)
 {
-    mHighlightCurrentLine = highlightCurrentLine;
+    mData.highlightCurrentLine = highlightCurrentLine;
 }
 
 bool StudioSettings::autoIndent() const
 {
-    return mAutoIndent;
+    return mData.autoIndent;
 }
 
 void StudioSettings::setAutoIndent(bool autoIndent)
 {
-    mAutoIndent = autoIndent;
+    mData.autoIndent = autoIndent;
 }
 
 void StudioSettings::exportSettings(const QString &path)
