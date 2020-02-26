@@ -665,7 +665,7 @@
     <string>&amp;Model Library Explorer</string>
    </property>
    <property name="shortcut">
-    <string>F6</string>
+    <string>F2</string>
    </property>
   </action>
   <action name="actionRun">
@@ -719,7 +719,7 @@
     <string>Settings</string>
    </property>
    <property name="shortcut">
-    <string>F7</string>
+    <string>F3</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
@@ -1237,6 +1237,9 @@
    <property name="text">
     <string>Run base mode</string>
    </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
   </action>
   <action name="actionHypercube_mode">
    <property name="icon">
@@ -1246,6 +1249,9 @@
    <property name="text">
     <string>Run hypercube mode</string>
    </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
   </action>
   <action name="actionConfiguration_mode">
    <property name="icon">
@@ -1254,6 +1260,9 @@
    </property>
    <property name="text">
     <string>Run configuration mode</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="actionStop_MIRO">
