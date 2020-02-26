@@ -373,7 +373,6 @@ void SettingsDialog::initColorPage()
         {},
 
         {Scheme::invalid, Scheme::Edit_currentLineBg},
-        {Scheme::invalid, Scheme::Edit_blockSelectBg},
         {},
 
         {Scheme::invalid, Scheme::Edit_currentWordBg},

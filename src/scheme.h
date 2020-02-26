@@ -35,7 +35,6 @@ public:
         Edit_linenrAreaMarkBg,
         Edit_linenrAreaFg,
         Edit_linenrAreaMarkFg,
-        Edit_blockSelectBg,
 
         Mark_errorFg,
         Mark_listingFg,
