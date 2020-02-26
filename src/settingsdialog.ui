@@ -517,7 +517,7 @@
       <attribute name="title">
        <string>MIRO</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_miro">
        <item>
         <widget class="QLabel" name="label_mirolocation">
          <property name="text">
@@ -526,7 +526,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizontalLayout_miro">
          <item>
           <widget class="QLineEdit" name="miroEdit"/>
          </item>
@@ -540,7 +540,7 @@
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_4">
+        <spacer name="verticalSpacer_miro">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -850,8 +850,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>514</width>
-            <height>69</height>
+            <width>808</width>
+            <height>72</height>
            </rect>
           </property>
           <attribute name="label">

@@ -86,8 +86,6 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_background,                QColor(Qt::white));
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
     mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
-    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255,247,235));
-    mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(Qt::lightGray));
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
@@ -153,6 +151,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
+    mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(60,60,60));
 
     mColorSchemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
