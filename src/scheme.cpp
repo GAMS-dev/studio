@@ -139,7 +139,7 @@ void Scheme::initDefault()
     QColor dark_highlight(243,150,25);      //QColor(243,150,25);
     QColor dark_id(153,240,255);            //QColor(153,240,255);
     QColor dark_assignment(144,226,149);    //QColor(144,226,149);
-    QColor dark_unobstrusive(191, 195, 186);//QColor(191,195,186);
+    QColor dark_unobstrusive(191,195,186);  //QColor(191,195,186);
     QColor dark_neutral(223,224,223);       //QColor(223,224,223);
 
     mColorSchemes[sNr].insert(Edit_text,                      Color(dark_neutral));

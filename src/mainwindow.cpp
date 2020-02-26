@@ -240,6 +240,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     updateMiroMenu();
     invalidateScheme();
+
+    // this needs to be re-called for studio startup, as the call when loading settings is too early
+    PaletteManager::instance()->setPalette(PaletteManager::instance()->activePalette());
 }
 
 

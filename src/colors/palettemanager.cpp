@@ -17,13 +17,13 @@ PaletteManager::PaletteManager()
     mStyles.append(QApplication::palette());
 
     // Nr2: dark theme
-    QPalette darkPalette;
-    QColor darkColor = QColor(45,45,45);
+    QPalette darkPalette(QApplication::palette());
+    QColor darkColor = QColor(42,42,42);
     QColor disabledColor = QColor(127,127,127);
     darkPalette.setColor(QPalette::Window, darkColor);
     darkPalette.setColor(QPalette::WindowText, Qt::white);
-    darkPalette.setColor(QPalette::Base, QColor(18,18,18));
-    darkPalette.setColor(QPalette::AlternateBase, darkColor);
+    darkPalette.setColor(QPalette::Base, QColor(30,30,30));
+    darkPalette.setColor(QPalette::AlternateBase, QColor(66,66,66));
     darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
     darkPalette.setColor(QPalette::ToolTipText, Qt::white);
     darkPalette.setColor(QPalette::Text, Qt::white);
@@ -32,8 +32,8 @@ PaletteManager::PaletteManager()
     darkPalette.setColor(QPalette::ButtonText, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledColor);
     darkPalette.setColor(QPalette::BrightText, Qt::red);
-    darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
-    darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+    darkPalette.setColor(QPalette::Link, QColor(42,130,218));
+    darkPalette.setColor(QPalette::Highlight, QColor(243,150,25));
     darkPalette.setColor(QPalette::HighlightedText, Qt::black);
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledColor);
     mStyles.append(darkPalette);
