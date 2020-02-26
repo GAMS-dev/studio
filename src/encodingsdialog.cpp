@@ -22,15 +22,19 @@
 
 #include <QCheckBox>
 #include <QTextCodec>
+#include <QRadioButton>
 
 namespace gams {
 namespace studio {
 
-SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
+SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectEncodings)
 {
     ui->setupUi(this);
+    mSelectedMibs = selectedMibs;
+    mDefaultMib = defaultMib;
+
     QList<int> mibs = QTextCodec::availableMibs();
     std::sort(mibs.begin(), mibs.end());
     ui->tableWidget->setRowCount(mibs.count());
@@ -40,21 +44,27 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, QWidget *parent) :
     QFont boldFont = font();
     boldFont.setBold(true);
     for (int mib: mibs) {
+        QRadioButton *rad = new QRadioButton("");
+        rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
+        rad->setChecked(mib == defaultMib);
+        ui->tableWidget->setCellWidget(row, 0, rad);
+        connect(rad, &QRadioButton::clicked, this, &SelectEncodings::defaultChanged);
+
         QCheckBox *box = new QCheckBox("");
         box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         if (selectedMibs.contains(mib) || mib == 0) box->setChecked(true);
         if (mib == 0) box->setEnabled(false);
-        ui->tableWidget->setCellWidget(row, 0, box);
+        ui->tableWidget->setCellWidget(row, 1, box);
 
-        ui->tableWidget->setItem(row, 1, new QTableWidgetItem(mib));
-        ui->tableWidget->item(row, 1)->setTextAlignment(Qt::AlignRight);
-        ui->tableWidget->item(row, 1)->setData(Qt::EditRole, mib);
+        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(mib));
+        ui->tableWidget->item(row, 2)->setTextAlignment(Qt::AlignRight);
+        ui->tableWidget->item(row, 2)->setData(Qt::EditRole, mib);
 
         QTextCodec *codec = QTextCodec::codecForMib(mib);
-        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(" "+QString(codec->name())+" "));
-        ui->tableWidget->item(row, 2)->setFont(boldFont);
+        ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" "+QString(codec->name())+" "));
+        ui->tableWidget->item(row, 3)->setFont(boldFont);
 
-        ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" "+QString(codec->aliases().join(", "))+" "));
+        ui->tableWidget->setItem(row, 4, new QTableWidgetItem(" "+QString(codec->aliases().join(", "))+" "));
         ui->tableWidget->setVerticalHeaderItem(row, new QTableWidgetItem());
         ui->tableWidget->setRowHeight(row, int(ui->tableWidget->fontMetrics().height()*1.4));
         row++;
@@ -71,13 +81,22 @@ QList<int> SelectEncodings::selectedMibs()
 {
     QList<int> res;
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
-        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 0));
-        if (box->isChecked()) res << ui->tableWidget->item(row, 1)->data(Qt::EditRole).toInt();
+        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
+        if (box->isChecked()) res << ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
     }
     // ensure to have UTF-8 on top and System at the 2nd place
     if (res.contains(0)) res.move(res.indexOf(0), 0);
     if (res.contains(106)) res.move(res.indexOf(106), 0);
     return res;
+}
+
+int SelectEncodings::defaultCodec()
+{
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 0));
+        if (box->isChecked()) return ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
+    }
+    return 104;
 }
 
 
@@ -93,11 +112,25 @@ void SelectEncodings::on_pbSave_clicked()
 
 void SelectEncodings::on_pbReset_clicked()
 {
-    QList<int> defaultEncodings {106, 0, 4, 17, 2025};
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
-        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 0));
-        int mib = ui->tableWidget->item(row, 1)->data(Qt::EditRole).toInt();
-        box->setChecked(mib == 0 || defaultEncodings.contains(mib));
+        int mib = ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
+        QRadioButton *rad = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
+        rad->setChecked(mib == mDefaultMib);
+        QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
+        box->setChecked(mib == 0 || mSelectedMibs.contains(mib));
+    }
+}
+
+void SelectEncodings::defaultChanged()
+{
+    if (sender()) {
+        for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+            QRadioButton *rad = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
+            rad->setDown(rad == sender());
+            if (rad->isDown()) {
+                static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1))->setChecked(true);
+            }
+        }
     }
 }
 

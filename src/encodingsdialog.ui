@@ -23,6 +23,9 @@
    </item>
    <item>
     <widget class="QTableWidget" name="tableWidget">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
      <property name="showDropIndicator" stdset="0">
       <bool>false</bool>
      </property>
@@ -55,7 +58,12 @@
      </attribute>
      <column>
       <property name="text">
-       <string>Active</string>
+       <string>Default</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Menu</string>
       </property>
      </column>
      <column>

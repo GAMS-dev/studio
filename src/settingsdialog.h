@@ -51,7 +51,6 @@ protected:
 
 signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
-    void defaultCodecChanged(const QString &codec);
     void editorLineWrappingChanged();
 
 private slots:
@@ -59,7 +58,6 @@ private slots:
     void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &value);
     void on_sb_fontsize_valueChanged(int arg1);
-    void on_codecComboBox_currentIndexChanged(const QString &value);
     void schemeModified();
     void setModified();
 
@@ -88,7 +86,6 @@ private:
     void setModifiedStatus(bool status);
     void initColorPage();
     void reloadColors();
-    void initCodecs(const QStringList &codecs);
     bool mMiroSettingsEnabled = true;
 
 };
