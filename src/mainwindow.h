@@ -51,7 +51,7 @@ class AbstractProcess;
 class GamsProcess;
 class GamsLibProcess;
 class WelcomePage;
-class StudioSettings;
+class Settings;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
@@ -395,7 +395,7 @@ private:
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData mHistory;
-    StudioSettings* mSettings;
+    Settings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;

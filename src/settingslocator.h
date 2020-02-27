@@ -23,16 +23,16 @@
 namespace gams {
 namespace studio {
 
-class StudioSettings;
+class Settings;
 
 class SettingsLocator
 {
 public:
-    static StudioSettings* settings();
-    static void provide(StudioSettings* s);
+    static Settings* settings();
+    static void provide(Settings* s);
 
 private:
-    static StudioSettings* mSettings;
+    static Settings* mSettings;
 };
 
 }

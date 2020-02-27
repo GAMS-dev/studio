@@ -184,10 +184,10 @@ SOURCES += \
     search/searchlocator.cpp \
     search/searchresultlist.cpp \
     search/searchworker.cpp \
+    settings.cpp \
     settingsdialog.cpp \
     settingslocator.cpp \
     statuswidgets.cpp \
-    studiosettings.cpp \
     support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
     support/distributionvalidator.cpp \
@@ -320,10 +320,10 @@ HEADERS += \
     search/searchlocator.h \
     search/searchresultlist.h \
     search/searchworker.h \
+    settings.h \
     settingsdialog.h \
     settingslocator.h \
     statuswidgets.h \
-    studiosettings.h \
     support/aboutgamsdialog.h       \
     support/checkforupdatewrapper.h \
     support/distributionvalidator.h \

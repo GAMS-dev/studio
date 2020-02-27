@@ -39,7 +39,7 @@
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
 #include "search/searchlocator.h"
@@ -197,7 +197,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
-    mSettings->loadSettings(this);
+    mSettings->load(this);
     mRecent.path = mSettings->defaultWorkspace();
     mSearchDialog = new search::SearchDialog(this);
 
@@ -305,7 +305,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
     mAutosaveHandler->saveChangedFiles();
-    mSettings->saveSettings(this);
+    mSettings->save(this);
 }
 
 bool MainWindow::event(QEvent *event)
@@ -1062,7 +1062,7 @@ void MainWindow::on_actionSave_As_triggered()
                 }
                 mStatusWidgets->setFileName(filePath);
 
-                mSettings->saveSettings(this);
+                mSettings->save(this);
             }
         }
         if (choice == 1) {
@@ -2134,7 +2134,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
-    mSettings->saveSettings(this);
+    mSettings->save(this);
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
     if (!terminateProcessesConditionally(mProjectRepo.runGroups())) {
         event->setAccepted(false);
@@ -2612,7 +2612,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
 
 void MainWindow::storeTree()
 {
-    mSettings->saveSettings(this);
+    mSettings->save(this);
 }
 
 void MainWindow::cloneBookmarkMenu(QMenu *menu)
@@ -3025,7 +3025,7 @@ void MainWindow::on_actionSettings_triggered()
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
-    mSettings->saveSettings(this);
+    mSettings->save(this);
     if (sd.miroSettingsEnabled())
         updateMiroMenu();
 }
@@ -3545,7 +3545,7 @@ void MainWindow::on_actionSelect_encodings_triggered()
     SelectEncodings se(encodingMIBs(), this);
     se.exec();
     setEncodingMIBs(se.selectedMibs());
-    mSettings->saveSettings(this);
+    mSettings->save(this);
 }
 
 void MainWindow::setExtendedEditorVisibility(bool visible)
@@ -3641,7 +3641,7 @@ void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
     mSettings->resetViewSettings();
-    mSettings->loadSettings(this);
+    mSettings->load(this);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {

@@ -32,7 +32,7 @@
 #include "option/option.h"
 #include "editors/sysloglocator.h"
 #include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include <QFileInfo>
 #include <QDir>
 

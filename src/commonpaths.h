@@ -65,12 +65,6 @@ public:
 
     static QString defaultWorkingDir();
 
-    ///
-    /// \brief The directory for the settings. Using \p QSettings may use a different directory.
-    /// \return Returns the directory for the settings.
-    ///
-    static QString settingsDir();
-
     static QString userDocumentsDir();
 
     static QString userModelLibraryDir();

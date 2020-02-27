@@ -19,7 +19,7 @@
  */
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "syntax.h"
 #include "file.h"
 #include "exception.h"
@@ -45,7 +45,7 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    StudioSettings *mSettings = SettingsLocator::settings();
+    Settings *mSettings = SettingsLocator::settings();
 
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->searchUseRegex());

@@ -22,7 +22,7 @@
 
 #include "solveroptiontablemodel.h"
 #include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "scheme.h"
 
 namespace gams {
@@ -432,7 +432,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     else
         beginRow = rowCount(QModelIndex());
 
-    StudioSettings* settings = SettingsLocator::settings();
+    Settings* settings = SettingsLocator::settings();
     if (action ==  Qt::CopyAction) {
 
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);

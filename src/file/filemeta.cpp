@@ -25,7 +25,7 @@
 #include "exception.h"
 #include "logger.h"
 #include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
 #include "editors/sysloglocator.h"

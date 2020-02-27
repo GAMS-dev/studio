@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef STUDIOSETTINGS_H
-#define STUDIOSETTINGS_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 #include <QString>
 #include <QColor>
@@ -34,9 +34,6 @@ namespace studio {
 class MainWindow;
 
 struct SettingsData {
-    bool mIgnoreSettings = false;
-    bool mResetSettings = false;
-
     // general settings page
     QString defaultWorkspace;
     bool skipWelcomePage;
@@ -84,17 +81,15 @@ struct SettingsData {
     QString userModelLibraryDir;
 };
 
-class StudioSettings
+class Settings
 {
 
 public:
-    StudioSettings(bool ignoreSettings, bool resetSettings, bool resetViewSettings);
-    ~StudioSettings();
+    Settings(bool ignore, bool reset, bool resetView);
+    ~Settings();
 
-    void loadSettings(MainWindow *main);
-    void saveSettings(MainWindow *main);
-    bool writeScheme();
-    void readScheme();
+    void load(MainWindow *main);
+    void save(MainWindow *main);
 
     QString defaultWorkspace() const;
     void setDefaultWorkspace(const QString &value);
@@ -166,10 +161,9 @@ public:
     bool autoIndent() const;
     void setAutoIndent(bool autoIndent);
 
-    void exportSettings(const QString &path);
-    void importSettings(const QString &path, MainWindow *main);
+    void exportSettings(const QString &settingsPath);
+    void importSettings(const QString &settingsPath, MainWindow *main);
 
-    void loadUserSettings();
     void updateSettingsFiles();
 
     QString miroInstallationLocation() const;
@@ -210,23 +204,27 @@ public:
     void setEditableMaxSizeMB(int editableMaxSizeMB);
 
 private:
-    QSettings *mAppSettings = nullptr;
+    static const int mVersion;
+    QSettings *mUiSettings = nullptr;
+    QSettings *mSystemSettings = nullptr;
     QSettings *mUserSettings = nullptr;
-    QFile *mColorSettings = nullptr;
-    SettingsData mData;
-    int mJsonFormat;
+    QMap<QString, QVariant> mData;
 
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
-    QStringList mVersions;
 
 private:
-    void init();
-    void initFromPrevious();
+    QString settingsPath();
+    int checkVersion();
+    bool upgradeFromVersion(int startVersion);
+    void initDefaults();
 
     void checkAndUpdateSettings();
     void initSettingsFiles();
+
     void loadViewStates(MainWindow *main);
+    void loadUserIniSettings();
+
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);
 };
@@ -234,4 +232,4 @@ private:
 }
 }
 
-#endif // STUDIOSETTINGS_H
+#endif // SETTINGS_H

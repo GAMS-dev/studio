@@ -34,7 +34,7 @@
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
 #include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "exception.h"
 
 namespace gams {
@@ -362,7 +362,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QVariant optionIdData = ui->solverOptionTreeView->model()->data(optionIdIndex);
 
     int rowToBeAdded = ui->solverOptionTableView->model()->rowCount();
-    StudioSettings* settings = SettingsLocator::settings();
+    Settings* settings = SettingsLocator::settings();
     if (settings && settings->overridExistingOption()) {
         QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                             Qt::DisplayRole,
@@ -1099,7 +1099,7 @@ void SolverOptionWidget::deleteOption()
             rows.append( index.row() );
         }
 
-        StudioSettings* settings = SettingsLocator::settings();
+        Settings* settings = SettingsLocator::settings();
         if (settings && settings->deleteAllCommentsAboveOption()) {
             for(const QModelIndex & index : ui->solverOptionTableView->selectionModel()->selectedRows()) {
                 if (mOptionTableModel->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt()!=Qt::PartiallyChecked) {

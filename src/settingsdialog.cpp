@@ -23,7 +23,7 @@
 #include "mainwindow.h"
 #include "scheme.h"
 #include "settingsdialog.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "settingslocator.h"
 #include "ui_settingsdialog.h"
 #include "miro/mirocommon.h"
@@ -125,9 +125,6 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->addCommentDescriptionAboveOption());
     ui->addEOLCommentCheckBox->setChecked(mSettings->addEOLCommentDescriptionOption());
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
-
-    // scheme data
-    reloadColors();
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -194,7 +191,7 @@ void SettingsDialog::saveSettings()
     mSettings->setMiroInstallationLocation(ui->miroEdit->text());
 
     // colors page
-    mSettings->writeScheme();
+//    mSettings->saveScheme();
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());
@@ -467,11 +464,6 @@ void SettingsDialog::initColorPage()
         connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
         mColorWidgets.insert(slot1.at(i), wid);
     }
-}
-
-void SettingsDialog::reloadColors()
-{
-    mSettings->readScheme();
 }
 
 void SettingsDialog::on_cbSchemes_currentIndexChanged(int index)

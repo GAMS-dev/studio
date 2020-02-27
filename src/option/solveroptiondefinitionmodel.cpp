@@ -19,7 +19,7 @@
  */
 #include "solveroptiondefinitionmodel.h"
 #include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 
 namespace gams {
 namespace studio {
@@ -52,7 +52,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
     QByteArray encodedData;
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    StudioSettings* settings = SettingsLocator::settings();
+    Settings* settings = SettingsLocator::settings();
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
             if (index.column()>0) {

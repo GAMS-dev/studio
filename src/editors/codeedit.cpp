@@ -19,7 +19,7 @@
  */
 #include <QtWidgets>
 #include "editors/codeedit.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "search/searchdialog.h"
 #include "exception.h"
 #include "logger.h"

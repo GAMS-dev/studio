@@ -21,7 +21,7 @@
 #include "filemeta.h"
 #include "projectrepo.h"
 #include "syntax/textmarkrepo.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "exception.h"
 #include "logger.h"
 #include "settingslocator.h"

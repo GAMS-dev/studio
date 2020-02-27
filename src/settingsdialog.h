@@ -32,7 +32,7 @@ namespace gams {
 namespace studio {
 
 class MainWindow;
-class StudioSettings;
+class Settings;
 class SchemeWidget;
 
 class SettingsDialog : public QDialog
@@ -75,7 +75,7 @@ private slots:
 
 private:
     Ui::SettingsDialog *ui;
-    StudioSettings *mSettings;
+    Settings *mSettings;
     MainWindow *mMain;
     bool isModified = false;
     bool mInitializing = true;
@@ -85,7 +85,6 @@ private:
     void loadSettings();
     void setModifiedStatus(bool status);
     void initColorPage();
-    void reloadColors();
     bool mMiroSettingsEnabled = true;
 
 };

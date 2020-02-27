@@ -19,7 +19,8 @@
  */
 #include "application.h"
 #include "exception.h"
-#include "studiosettings.h"
+#include "version.h"
+#include "settings.h"
 #include "commonpaths.h"
 #include "settingslocator.h"
 #include "editors/sysloglocator.h"
@@ -61,7 +62,10 @@ Application::~Application()
 void Application::init()
 {
     CommonPaths::setSystemDir(mCmdParser.gamsDir());
-    auto* settings = new StudioSettings(mCmdParser.ignoreSettings(),
+    setOrganizationName(GAMS_ORGANIZATION_STR);
+    setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
+    setApplicationName(GAMS_PRODUCTNAME_STR);
+    auto* settings = new Settings(mCmdParser.ignoreSettings(),
                                         mCmdParser.resetSettings(),
                                         mCmdParser.resetView());
     SettingsLocator::provide(settings);
