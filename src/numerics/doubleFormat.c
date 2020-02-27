@@ -31,7 +31,7 @@
 /* patch up zero case
  * if 0 == *nDigits, we have a zero
  */
-static void zeroPatch(char digBuf[0], int *nDigits, int *decPt)
+static void zeroPatch(char digBuf[], int *nDigits, int *decPt)
 {
   if (0 == *nDigits) {
     digBuf[0] = '0';
