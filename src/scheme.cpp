@@ -146,6 +146,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_neutral,                 Color(dark_neutral));
     mColorSchemes[sNr].insert(Edit_background,                QColor(30,30,30));
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(0,146,122));
+    mColorSchemes[sNr].insert(Edit_errorBg,                   QColor("#BB2233"));
+    mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor("#336633"));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
