@@ -10,12 +10,13 @@ namespace numerics {
 class DoubleFormatter
 {
 public:
-
-    static QString formatF (double v, int nDecimals, int squeeze);
-
-    static QString formatE (double v, int nSigFigs, int squeeze);
-
-    static QString formatG (double v, int nSigFigs, int squeeze);
+    enum Format {
+        g = 0,
+        f = 1,
+        e = 2
+    };
+    static int gFormatFull;
+    static QString format(double v, Format format, int precision, int squeeze);
 
 private:
     DoubleFormatter() {};

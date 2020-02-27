@@ -30,6 +30,9 @@
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QLabel>
+#include <QComboBox>
+
+#include <numerics/doubleformatter.h>
 
 namespace gams {
 namespace studio {
@@ -84,18 +87,28 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mSqZeroes->setChecked(true);
     vLayout->addWidget(mSqZeroes);
 
-    QHBoxLayout* hLayout = new QHBoxLayout();
+    QHBoxLayout* hLayout1 = new QHBoxLayout();
+    QLabel* lblValFormat = new QLabel("Format:", this);
+    hLayout1->addWidget(lblValFormat);
+    mValFormat = new QComboBox(this);
+    mValFormat->addItem("g-format", numerics::DoubleFormatter::g);
+    mValFormat->addItem("f-format", numerics::DoubleFormatter::f);
+    mValFormat->addItem("e-format", numerics::DoubleFormatter::e);
+    resetValFormat();
+    hLayout1->addWidget(mValFormat);
+    vLayout->addItem(hLayout1);
 
-    QLabel* lblDecimals = new QLabel("Show Decimals", this);
-    hLayout->addWidget(lblDecimals);
-    mNrDecimals = new QSpinBox(this);
-    mNrDecimals->setRange(-1, 6);
-    mNrDecimals->setSpecialValueText("MAX");
-    mNrDecimals->setValue(6);
-    mNrDecimals->setWrapping(true);
-    hLayout->addWidget(mNrDecimals);
+    QHBoxLayout* hLayout2 = new QHBoxLayout();
 
-    vLayout->addItem(hLayout);
+    QLabel* lblPrecision = new QLabel("Precision:", this);
+    hLayout2->addWidget(lblPrecision);
+    mPrecision = new QSpinBox(this);
+    mPrecision->setRange(1, 14);
+    mPrecision->setValue(6);
+    mPrecision->setWrapping(true);
+    hLayout2->addWidget(mPrecision);
+
+    vLayout->addItem(hLayout2);
     widget->setLayout(vLayout);
     preferences->setDefaultWidget(widget);
     ui->tbPreferences->addAction(preferences);
@@ -120,7 +133,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
-    connect(mNrDecimals, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
+    connect(mPrecision, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
+    connect(mValFormat, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &GdxSymbolView::updateNumericalPrecision);
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -202,7 +216,8 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
-        mNrDecimals->setValue(mNrDecimals->maximum()); // this is not to be confused with "MAX". The value will be 6
+        mPrecision->setValue(mDefaultPrecision); // this is not to be confused with "MAX". The value will be 6
+        resetValFormat();
         mSqZeroes->setChecked(true);
         if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
             for (int i=0; i<GMS_VAL_MAX; i++)
@@ -339,7 +354,23 @@ void GdxSymbolView::updateNumericalPrecision()
 {
     if (!mSym)
         return;
-    this->mSym->setNumericalPrecision(mNrDecimals->value(), mSqZeroes->isChecked());
+    this->mSym->setNumericalPrecision(mPrecision->value(), mSqZeroes->isChecked());
+    numerics::DoubleFormatter::Format format = static_cast<numerics::DoubleFormatter::Format>(mValFormat->currentData().toInt());
+    this->mSym->setNumericalFormat(format);
+    if (format == numerics::DoubleFormatter::g) {
+        mPrecision->setRange(numerics::DoubleFormatter::gFormatFull, 17);
+        mPrecision->setSpecialValueText("Full");
+    }
+    else if (format == numerics::DoubleFormatter::f) {
+        mPrecision->setRange(0, 14);
+        mPrecision->setSpecialValueText("");
+    }
+    else if (format == numerics::DoubleFormatter::e) {
+        mPrecision->setRange(1, 17);
+        mPrecision->setSpecialValueText("");
+    }
+
+
     if (mTvModel)
         ui->tvTableView->reset();
 }
@@ -405,6 +436,13 @@ void GdxSymbolView::selectAll()
         ui->tvTableView->selectAll();
     else
         ui->tvListView->selectAll();
+}
+
+void GdxSymbolView::resetValFormat()
+{
+    int index = mValFormat->findData(mDefaultValFormat);
+    if (index != -1)
+       mValFormat->setCurrentIndex(index);
 }
 
 void GdxSymbolView::enableControls()

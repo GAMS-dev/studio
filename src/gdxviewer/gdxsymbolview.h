@@ -76,17 +76,22 @@ private:
     void toggleView();
 
     void selectAll();
+    void resetValFormat();
 
     QVector<QCheckBox *> mShowValColActions;
     QCheckBox* mSqDefaults = nullptr;
     QCheckBox* mSqZeroes = nullptr;
-    QSpinBox* mNrDecimals = nullptr;
+    QSpinBox* mPrecision = nullptr;
+    QComboBox* mValFormat = nullptr;
 
     GdxSymbolTable* mGdxSymbolTable = nullptr;
     bool mTableView = false;
 
     int mTVResizePrecision = 500;
     int mTVResizeColNr = 100;
+
+    int mDefaultPrecision = 6;
+    numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
 };
 
 
