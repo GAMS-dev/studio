@@ -30,7 +30,6 @@
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QLabel>
-#include <QComboBox>
 
 #include <numerics/doubleformatter.h>
 

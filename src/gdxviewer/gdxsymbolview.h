@@ -26,6 +26,7 @@
 #include <QAction>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QComboBox>
 #include "gdxsymboltable.h"
 #include "tableviewmodel.h"
 
