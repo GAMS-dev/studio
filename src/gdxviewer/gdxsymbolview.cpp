@@ -87,28 +87,26 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mSqZeroes->setChecked(true);
     vLayout->addWidget(mSqZeroes);
 
-    QHBoxLayout* hLayout1 = new QHBoxLayout();
+    QGridLayout* gridLayout = new QGridLayout(this);
+
     QLabel* lblValFormat = new QLabel("Format:", this);
-    hLayout1->addWidget(lblValFormat);
+    gridLayout->addWidget(lblValFormat,0,0);
     mValFormat = new QComboBox(this);
     mValFormat->addItem("g-format", numerics::DoubleFormatter::g);
     mValFormat->addItem("f-format", numerics::DoubleFormatter::f);
     mValFormat->addItem("e-format", numerics::DoubleFormatter::e);
     resetValFormat();
-    hLayout1->addWidget(mValFormat);
-    vLayout->addItem(hLayout1);
-
-    QHBoxLayout* hLayout2 = new QHBoxLayout();
+    gridLayout->addWidget(mValFormat,0,1);
 
     QLabel* lblPrecision = new QLabel("Precision:", this);
-    hLayout2->addWidget(lblPrecision);
+    gridLayout->addWidget(lblPrecision,1,0);
     mPrecision = new QSpinBox(this);
     mPrecision->setRange(1, 14);
     mPrecision->setValue(6);
     mPrecision->setWrapping(true);
-    hLayout2->addWidget(mPrecision);
+    gridLayout->addWidget(mPrecision,1,1);
 
-    vLayout->addItem(hLayout2);
+    vLayout->addItem(gridLayout);
     widget->setLayout(vLayout);
     preferences->setDefaultWidget(widget);
     ui->tbPreferences->addAction(preferences);
