@@ -96,7 +96,6 @@ public:
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
-    QPalette palette() const { return mPalette; }
 
     QByteArray exportJsonColorSchemes();
     void importJsonColorSchemes(const QByteArray &jsonData);
@@ -133,7 +132,6 @@ private:
     QHash<QString, QByteArray> mDataCache;
     int mActiveScheme = 0;
     QVector<SvgEngine*> mEngines;
-    QPalette mPalette;
 };
 
 inline QColor toColor(Scheme::ColorSlot code) { return Scheme::color(code); }

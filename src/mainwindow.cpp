@@ -239,6 +239,9 @@ MainWindow::MainWindow(QWidget *parent)
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
     updateMiroMenu();
+
+    // Themes
+    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
 
     // this needs to be re-called for studio startup, as the call when loading settings is too early
@@ -2671,20 +2674,11 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
 
 void MainWindow::invalidateScheme()
 {
-    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme, Qt::UniqueConnection);
-
-    assignColors();
-    for (FileMeta *fm: mFileMetaRepo.fileMetas()) {
+    for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateScheme();
-    }
+
     assignIcons();
     repaint();
-}
-
-void MainWindow::assignColors()
-{
-    QPalette pal = Scheme::instance()->palette();
-    qApp->setPalette(pal);
 }
 
 void MainWindow::assignIcons()

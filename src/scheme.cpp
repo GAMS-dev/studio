@@ -312,32 +312,12 @@ QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
                             (c1.blueF()*weight + c2.blueF()*(1-weight)));
 }
 
-void generatePalette(QPalette &pal, const QColor &line, const QColor &back)
-{
-    int h, s, v;
-    back.getHsv(&h, &s, &v);
-    // inactive and active are the same..
-    const QColor buttonBrushDark = QColor(back.darker());
-    const QColor buttonBrushDark150 = QColor(back.darker(150));
-    const QColor buttonBrushLight150 = QColor(back.lighter(150));
-    pal.setColorGroup(QPalette::Active, line, back, buttonBrushLight150,
-                      buttonBrushDark, buttonBrushDark150, line, line,
-                      back, back);
-    pal.setColorGroup(QPalette::Inactive, line, back, buttonBrushLight150,
-                      buttonBrushDark, buttonBrushDark150, line, line,
-                      back, back);
-    pal.setColorGroup(QPalette::Disabled, buttonBrushDark, back, buttonBrushLight150,
-                      buttonBrushDark, buttonBrushDark150, buttonBrushDark, line,
-                      back, back);
-}
-
 void Scheme::invalidate()
 {
     mIconCode = iconCodes();
     mIconCache.clear();
     mDataCache.clear();
-    mPalette = qApp->palette();
-//    generatePalette(mPalette, color(Icon_Line), color(Icon_Back));
+
     emit changed();
 }
 
