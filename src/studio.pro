@@ -291,7 +291,6 @@ HEADERS += \
     modeldialog/modeldialog.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
-    numerics/dtoaLib.h \
     numerics/dtoaLoc.h \
     option/addoptionheaderview.h \
     option/commandline.h \
