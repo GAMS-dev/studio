@@ -150,6 +150,8 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    numerics/doubleFormat.c \
+    numerics/dtoaLoc.c \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/definitionitemdelegate.cpp \
@@ -286,6 +288,9 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    numerics/doubleFormat.h \
+    numerics/dtoaLib.h \
+    numerics/dtoaLoc.h \
     option/addoptionheaderview.h \
     option/commandline.h \
     option/definitionitemdelegate.h \
