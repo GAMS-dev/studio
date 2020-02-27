@@ -19,9 +19,9 @@ QString DoubleFormatter::format(double v, DoubleFormatter::Format format, int pr
     else if (format == Format::e)
         p = x2efmt(v, precision, squeeze, outBuf, &outLen);
     if (!p)
-        return "ERROR";
+        return "FORMAT_ERROR";
     else
-        return QString(outBuf);
+        return QString(p);
 }
 
 } // namespace numerics

@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <math.h>
 
 #include "dtoaLoc.h"
@@ -45,7 +44,7 @@ static void zeroPatch(char digBuf[], int *nDigits, int *decPt)
  * we assume outBuf is long enough: a size of 32 is plenty
  * if zeroPad, we zero-pad on the right as necessary to show nDigits total
  */
-static void dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
+static char* dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
                     int nSigFigs, int zeroPad,
                     char outBuf[], int *bufLen)
 {
@@ -53,10 +52,8 @@ static void dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
   const char *s;
   int e, k;
 
-  assert(decPt <= 308);
-  assert(decPt >= -307);
-  assert(nDigits >= 1);
-  assert(nDigits <= 20);
+  if (nDigits < 1 || nDigits > 20)
+    return NULL;
 
   k = nSigFigs - nDigits;
   d = outBuf;
@@ -91,7 +88,7 @@ static void dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
     sprintf (d, "%d", e);
     *bufLen += 3;
   }
-  return;
+  return outBuf;
 } /* dig2Exp */
 
 /* convert base-10 digits and implied decimal position into f-format string
@@ -99,17 +96,18 @@ static void dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
  * if zeroPad, we zero-pad on the right as necessary to show nDecimals digits
  * to the right of the decimal point
  */
-static void dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
+static char* dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
                        int nDecimals, int zeroPad,
                        char outBuf[], int *bufLen)
 {
   char *p;
   int k;
 
-  assert(nDigits >= 1);
-  assert(nDigits <= 21);
-  assert(decPt <= 22);          /* at some point we shift to e-format */
-  assert(decPt >= -18);         /* ditto */
+  if (nDigits < 1 || nDigits > 21)
+    return NULL;
+
+  if (decPt > 22 || decPt < -18)          /* at some point we shift to e-format */
+    return NULL;
   p = outBuf;
   *bufLen = 0;
   if (isNeg)
@@ -183,7 +181,7 @@ static void dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
     *p = '\0';
     *bufLen = (int)(p-outBuf);
   }
-  return;
+  return outBuf;
 }
 
 #define DTOA_MODE_RT   0   /* shortest string that gives round-trip behavior */
@@ -215,7 +213,8 @@ char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen)
     nDecimals = 17;
   if (nDecimals < 0)
     nDecimals = 0;
-  assert(isfinite(v));
+  if (!isfinite(v))
+    return NULL;
 
   /* compute vMax := 10^21 / 10^(nDecimals) = 10^(21-nDecimals) */
   /* vMax = 1e21 / pow10[nDecimals]; */
@@ -223,25 +222,25 @@ char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen)
   if (fabs(v) > vMax) {
     p = dtoaLoc (v, DTOA_MODE_RT, 1,
                  digBuf, sizeof(digBuf), &decPt, &isNeg, &pEnd);
-    if (NULL == p) {
-      assert(p);
-    }
+    if (NULL == p)
+      return NULL;
     else {
       nDigits = (int) (pEnd - p);
-      dig2Exp (digBuf, nDigits, decPt, isNeg, 17, !squeeze, outBuf, outLen);
+      if (!dig2Exp(digBuf, nDigits, decPt, isNeg, 17, !squeeze, outBuf, outLen))
+        return NULL;
     }
     return outBuf;
   }
   decPt = -10;
   p = dtoaLoc (v, DTOA_MODE_FFMT, nDecimals,
                digBuf, sizeof(digBuf), &decPt, &isNeg, &pEnd);
-  if (NULL == p) {
-    assert(p);
-  }
+  if (NULL == p)
+    return NULL;
   else {
     nDigits = (int)(pEnd - p);
     zeroPatch(digBuf, &nDigits, &decPt);
-    dig2Fixed (digBuf, nDigits, decPt, isNeg, nDecimals, !squeeze, outBuf, outLen);
+    if (!dig2Fixed (digBuf, nDigits, decPt, isNeg, nDecimals, !squeeze, outBuf, outLen))
+      return NULL;
   }
   return outBuf;
 } /* x2fixed */
@@ -266,13 +265,16 @@ char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen)
     nSigFigs = 0;
     mode = DTOA_MODE_RT;
   }
-  assert(isfinite(v));
+  if (!isfinite(v))
+    return NULL;
   p = dtoaLoc (v, mode, nSigFigs,
                digBuf, sizeof(digBuf), &decPt, &isNeg, &pEnd);
-  assert(p);
+  if (!p)
+    return NULL;
   nDigits = (int) (pEnd - p);
   zeroPatch(digBuf, &nDigits, &decPt);
-  dig2Exp (digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen);
+  if (!dig2Exp(digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen))
+    return NULL;
 
   return outBuf;
 } /* x2efmt */
@@ -298,20 +300,26 @@ char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen)
     nSigFigs = 0;
     mode = DTOA_MODE_RT;
   }
-  assert(isfinite(v));
+  if (!isfinite(v))
+    return NULL;
   p = dtoaLoc (v, mode, nSigFigs,
                digBuf, sizeof(digBuf), &decPt, &isNeg, &pEnd);
-  assert(p);
+  if (!p)
+    return NULL;
   nDigits = (int) (pEnd - p);
   zeroPatch(digBuf, &nDigits, &decPt);
   sigFigs = nDigits;
   if (sigFigs < nSigFigs)
     sigFigs = nSigFigs;
   // if ((decPt < -3) || ((decPt-nDigits) >= 1) )
-  if ((decPt < -3) || ((decPt-sigFigs) >= 1) )
-    dig2Exp (digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen);
-  else
-    dig2Fixed (digBuf, nDigits, decPt, isNeg, nSigFigs-decPt, !squeeze, outBuf, outLen);
+  if ((decPt < -3) || ((decPt-sigFigs) >= 1) ) {
+    if (!dig2Exp (digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen))
+      return NULL;
+  }
+  else {
+    if (!dig2Fixed (digBuf, nDigits, decPt, isNeg, nSigFigs-decPt, !squeeze, outBuf, outLen))
+      return NULL;
+  }
 
   return outBuf;
 } /* x2gfmt */
