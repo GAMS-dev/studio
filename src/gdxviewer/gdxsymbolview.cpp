@@ -86,7 +86,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mSqZeroes->setChecked(true);
     vLayout->addWidget(mSqZeroes);
 
-    QGridLayout* gridLayout = new QGridLayout(this);
+    QGridLayout* gridLayout = new QGridLayout();
 
     QLabel* lblValFormat = new QLabel("Format:", this);
     gridLayout->addWidget(lblValFormat,0,0);
