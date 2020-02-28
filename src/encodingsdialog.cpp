@@ -32,6 +32,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     ui(new Ui::SelectEncodings)
 {
     ui->setupUi(this);
+    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     mSelectedMibs = selectedMibs;
     mDefaultMib = defaultMib;
 
@@ -70,6 +71,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
         row++;
     }
     ui->tableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    ui->tableWidget->hideColumn(2);
 }
 
 SelectEncodings::~SelectEncodings()
