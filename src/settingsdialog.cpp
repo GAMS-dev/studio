@@ -39,6 +39,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->setupUi(this);
 
     mSettings = SettingsLocator::settings();
+    ui->tabWidget->setCurrentIndex(0);
 
     // load from settings to UI
 
@@ -238,9 +239,9 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     emit editorLineWrappingChanged();
 }
 
-void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
+void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
 {
-    emit editorFontChanged(arg1, ui->sb_fontsize->value());
+    emit editorFontChanged(value, ui->sb_fontsize->value());
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)

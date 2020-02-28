@@ -20,7 +20,6 @@
 #include <QScrollBar>
 #include <QDir>
 #include <QByteArray>
-#include <QTextCodec>
 #include <QApplication>
 #include "abstractprocess.h"
 #include "editors/processlogedit.h"

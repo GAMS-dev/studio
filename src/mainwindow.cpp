@@ -569,6 +569,19 @@ search::SearchDialog* MainWindow::searchDialog() const
     return mSearchDialog;
 }
 
+QStringList MainWindow::encodingNames()
+{
+    QStringList res;
+    for (QAction *act: ui->menuconvert_to->actions()) {
+        if (!act->data().isNull()) {
+            QTextCodec *codec = QTextCodec::codecForMib(act->data().toInt());
+            if (!codec) continue;
+            res << codec->name();
+        }
+    }
+    return res;
+}
+
 QString MainWindow::encodingMIBsString()
 {
     QStringList res;
@@ -3550,10 +3563,13 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 
 void MainWindow::on_actionSelect_encodings_triggered()
 {
-    SelectEncodings se(encodingMIBs(), this);
-    se.exec();
-    setEncodingMIBs(se.selectedMibs());
-    mSettings->saveSettings(this);
+    int defCodec = mSettings->defaultCodecMib();
+    SelectEncodings se(encodingMIBs(), defCodec, this);
+    if (se.exec() == QDialog::Accepted) {
+        mSettings->setDefaultCodecMib(se.defaultCodec());
+        setEncodingMIBs(se.selectedMibs());
+        mSettings->saveSettings(this);
+    }
 }
 
 void MainWindow::setExtendedEditorVisibility(bool visible)

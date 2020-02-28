@@ -29,7 +29,6 @@
 #include "logger.h"
 #include <QScrollBar>
 #include <QToolTip>
-#include <QTextCodec>
 #include <QDir>
 
 namespace gams {
