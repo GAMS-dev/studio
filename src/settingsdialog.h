@@ -60,6 +60,8 @@ private slots:
     void on_sb_fontsize_valueChanged(int arg1);
     void schemeModified();
     void setModified();
+    void setSyntaxTheme(int theme);
+    void setStudioTheme(int theme);
 
     void on_btn_openUserLibLocation_clicked();
     void on_btn_browse_clicked();
@@ -69,9 +71,6 @@ private slots:
     void on_cb_writeLog_toggled(bool checked);
     void on_sb_nrLogBackups_valueChanged(int arg1);
     void on_miroBrowseButton_clicked();
-
-    void on_cbSchemes_currentIndexChanged(int index);
-
 
 private:
     Ui::SettingsDialog *ui;

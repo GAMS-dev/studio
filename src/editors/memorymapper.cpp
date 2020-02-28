@@ -34,6 +34,7 @@ static int CKeptRunCount = 5;
 
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
+    // TODO(JM) Currently the colors are assigned in constructor. Should be reassignable though.
     mRunFinishedTimer.setInterval(10);
     mRunFinishedTimer.setSingleShot(true);
     mNewLogLines.reserve(CParseLinesMax+1);

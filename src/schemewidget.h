@@ -23,6 +23,8 @@ public:
     explicit SchemeWidget(Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg,
                           Scheme::ColorSlot slotBg2, QWidget *parent = nullptr);
     ~SchemeWidget() override;
+    Scheme::Scope scope() const;
+    void setScope(const Scheme::Scope &scope);
     void setText(const QString &text);
     QString text() const;
     void setTextVisible(bool visible);
@@ -32,6 +34,7 @@ public:
     void saveToScheme();
     void refresh();
     void setAlignment(Qt::Alignment align);
+
 
 signals:
     void changed();
@@ -43,6 +46,7 @@ private:
     Scheme::ColorSlot mSlotBg2 = Scheme::invalid;
     bool mChanged = false;
     SvgEngine *mIconEng = nullptr;
+    Scheme::Scope mScope;
 
     void initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot &slotVal, QFrame *frame);
     void setColor(QFrame *frame, const QColor &color, int examplePart = 0);
