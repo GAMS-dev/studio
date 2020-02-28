@@ -78,13 +78,13 @@ void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot 
     frame->setEnabled(active);
     frame->setAutoFillBackground(active);
     if (active) {
-        setColor(frame, toColor(slot, Scheme::EditorScope), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
+        setColor(frame, toColor(slot, mScope), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
         if (Scheme::hasFontProps(slot)) {
-            ui->btBold->setDown(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fBold));
-            ui->btItalic->setDown(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fItalic));
+            ui->btBold->setDown(Scheme::hasFlag(slot, Scheme::fBold));
+            ui->btItalic->setDown(Scheme::hasFlag(slot, Scheme::fItalic));
             QFont font = ui->textEx->font();
-            font.setBold(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fBold));
-            font.setItalic(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fItalic));
+            font.setBold(Scheme::hasFlag(slot, Scheme::fBold));
+            font.setItalic(Scheme::hasFlag(slot, Scheme::fItalic));
             ui->textEx->setFont(font);
         }
         frame->installEventFilter(this);
@@ -128,16 +128,16 @@ void SchemeWidget::selectColor(QFrame *frame, Scheme::ColorSlot slot)
     diag.setCurrentColor(frame->palette().window().color());
     if (diag.exec()) {
         setColor(frame, diag.currentColor(), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
-        Scheme::setColor(slot, diag.currentColor());
+        Scheme::setColor(slot, mScope, diag.currentColor());
         emit changed();
     }
 }
 
 void SchemeWidget::refresh()
 {
-    if (mSlotFg) setColor(ui->colorFG, toColor(mSlotFg, Scheme::EditorScope), 1);
-    if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg, Scheme::EditorScope), 2);
-    if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2, Scheme::EditorScope));
+    if (mSlotFg) setColor(ui->colorFG, toColor(mSlotFg, mScope), 1);
+    if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg, mScope), 2);
+    if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2, mScope));
 }
 
 void SchemeWidget::setAlignment(Qt::Alignment align)
@@ -152,6 +152,16 @@ void SchemeWidget::setAlignment(Qt::Alignment align)
     } else {
         ui->spRight->changeSize(10, 10, QSizePolicy::MinimumExpanding);
     }
+}
+
+Scheme::Scope SchemeWidget::scope() const
+{
+    return mScope;
+}
+
+void SchemeWidget::setScope(const Scheme::Scope &scope)
+{
+    mScope = scope;
 }
 
 void SchemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)

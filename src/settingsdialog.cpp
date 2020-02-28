@@ -54,7 +54,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 
     // Themes
     ui->combo_syntaxTheme->addItems(Scheme::instance()->schemes());
-    ui->combo_syntaxTheme->setCurrentIndex(Scheme::instance()->activeScheme());
+    ui->combo_syntaxTheme->setCurrentIndex(Scheme::instance()->activeScheme(Scheme::EditorScope));
     ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
 
     // connections to track modified status
@@ -68,7 +68,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setSyntaxTheme);
     connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), PaletteManager::instance(), &PaletteManager::setPalette);
+    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setStudioTheme);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -154,6 +154,12 @@ void SettingsDialog::setModified()
 void SettingsDialog::setSyntaxTheme(int theme)
 {
     Scheme::instance()->setActiveScheme(theme, Scheme::EditorScope);
+}
+
+void SettingsDialog::setStudioTheme(int theme)
+{
+    PaletteManager::instance()->setPalette(theme);
+    Scheme::instance()->setActiveScheme(theme, Scheme::StudioScope);
 }
 
 void SettingsDialog::setModifiedStatus(bool status)

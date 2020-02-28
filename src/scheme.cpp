@@ -204,11 +204,6 @@ int Scheme::activeScheme(Scope scope) const
     return mScopeScheme.value(scope);
 }
 
-int Scheme::activeScheme() const
-{
-    return mScopeScheme.value(mActiveScope);
-}
-
 void Scheme::setIconSet(Scheme::IconSet iconSet)
 {
     switch (iconSet) {
@@ -317,16 +312,6 @@ QByteArray Scheme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
     return data;
 }
 
-Scheme::Scope Scheme::activeScope() const
-{
-    return mActiveScope;
-}
-
-void Scheme::setActiveScope(const Scope &activeScope)
-{
-    mActiveScope = activeScope;
-}
-
 QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
 {
     return QColor::fromRgbF((c1.redF()*weight + c2.redF()*(1-weight)),
@@ -364,11 +349,12 @@ QColor Scheme::color(Scheme::ColorSlot slot, Scope scope)
     return instance()->mColorSchemes.at(scheme).value(slot, CUndefined).color;
 }
 
-void Scheme::setColor(Scheme::ColorSlot slot, QColor color)
+void Scheme::setColor(Scheme::ColorSlot slot, Scheme::Scope scope, QColor color)
 {
-    Color dat = instance()->mColorSchemes.at(instance()->activeScheme()).value(slot);
+    int scheme = instance()->mScopeScheme.value(scope);
+    Color dat = instance()->mColorSchemes.at(scheme).value(slot);
     dat.color = color;
-    instance()->mColorSchemes[instance()->activeScheme()].insert(slot, dat);
+    instance()->mColorSchemes[scheme].insert(slot, dat);
 }
 
 QIcon Scheme::icon(QString name, Scope scope, bool forceSquare)
@@ -400,7 +386,7 @@ QByteArray &Scheme::data(QString name, Scope scope, QIcon::Mode mode)
     return instance()->mDataCache[nameKey];
 }
 
-bool Scheme::hasFlag(Scheme::ColorSlot slot, Scope scope, Scheme::FontFlag flag)
+bool Scheme::hasFlag(Scheme::ColorSlot slot, Scheme::FontFlag flag, Scope scope)
 {
     int scheme = instance()->mScopeScheme.value(scope);
     Color cl = instance()->mColorSchemes.at(scheme).value(slot);
@@ -408,7 +394,7 @@ bool Scheme::hasFlag(Scheme::ColorSlot slot, Scope scope, Scheme::FontFlag flag)
     return (FontFlag(flag & cl.fontFlag) == flag);
 }
 
-void Scheme::setFlags(Scheme::ColorSlot slot, Scope scope, Scheme::FontFlag flag)
+void Scheme::setFlags(Scheme::ColorSlot slot, Scheme::FontFlag flag, Scope scope)
 {
     int scheme = instance()->mScopeScheme.value(scope);
     Color dat = instance()->mColorSchemes.at(scheme).value(slot);

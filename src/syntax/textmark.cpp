@@ -108,13 +108,13 @@ QColor TextMark::color() const
 {
     if (mReference) {
         if (mReference->type() == TextMark::error)
-            return toColor(Scheme::Mark_errorFg, Scheme::EditorScope);
+            return toColor(Scheme::Mark_errorFg);
         if (mReference->fileKind() == FileKind::Lst)
-            return toColor(Scheme::Mark_listingFg, Scheme::EditorScope);
+            return toColor(Scheme::Mark_listingFg);
     } else {
-        return toColor(Scheme::Mark_errorFg, Scheme::EditorScope);
+        return toColor(Scheme::Mark_errorFg);
     }
-    return toColor(Scheme::Mark_fileFg, Scheme::EditorScope);
+    return toColor(Scheme::Mark_fileFg);
 }
 
 FileKind TextMark::fileKind()

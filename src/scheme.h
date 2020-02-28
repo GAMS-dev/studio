@@ -92,12 +92,9 @@ public:
     void initDefault();
     int schemeCount() { return mSchemeNames.size(); }
     QStringList schemes();
-    Scope activeScope() const;
-    void setActiveScope(const Scope &activeScope);
     int setActiveScheme(QString schemeName, Scope scope);
     int setActiveScheme(int scheme, Scope scope);
     int activeScheme(Scope scope) const;
-    int activeScheme() const;
     void setIconSet(IconSet iconSet = ThinIcons);
     ColorSlot slot(QString name);
     void invalidate();
@@ -110,13 +107,13 @@ public:
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
     static bool hasFontProps(ColorSlot slot);
-    static QColor color(ColorSlot slot, gams::studio::Scheme::Scope scope);
-    static void setColor(ColorSlot slot, QColor color);
+    static QColor color(ColorSlot slot, Scheme::Scope scope = Scheme::EditorScope);
+    static void setColor(ColorSlot slot, gams::studio::Scheme::Scope scope, QColor color);
     static QIcon icon(QString name, Scope scope, bool forceSquare = false);
     static QIcon icon(QString name, bool forceSquare = false);
     static QByteArray &data(QString name, Scope scope, QIcon::Mode mode);
-    static bool hasFlag(ColorSlot slot, gams::studio::Scheme::Scope scope, FontFlag flag);
-    static void setFlags(ColorSlot slot, gams::studio::Scheme::Scope scope, FontFlag flag);
+    static bool hasFlag(ColorSlot slot, FontFlag flag, Scheme::Scope scope = Scheme::EditorScope);
+    static void setFlags(ColorSlot slot, FontFlag flag, Scheme::Scope scope = Scheme::EditorScope);
 
 
 signals:
@@ -136,7 +133,6 @@ private:
     QStringList mSchemeNames;
     QString mIconSet;
     QHash<Scope, int> mScopeScheme;
-    Scope mActiveScope = StudioScope;
     QHash<QString, QStringList> mIconCode;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
@@ -144,7 +140,7 @@ private:
 };
 
 inline QString makeKey(Scheme::Scope scope, QString text) { return QString("%1@%2").arg(scope).arg(text); }
-inline QColor toColor(Scheme::ColorSlot code, Scheme::Scope scope) {
+inline QColor toColor(Scheme::ColorSlot code, Scheme::Scope scope = Scheme::EditorScope) {
     return Scheme::color(code, scope); }
 inline QString name(Scheme::ColorSlot col) { return Scheme::instance()->name(col); }
 
