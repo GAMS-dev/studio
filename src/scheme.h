@@ -76,6 +76,9 @@ public:
 
     enum IconSet {ThinIcons, SolidIcons};
 
+    enum Scope {StudioScope, EditorScope};
+    Q_ENUM(Scope)
+
 private:
     struct Color {
         Color(QColor _color = QColor(), FontFlag _fontFlag = fNormal) : color(_color), fontFlag(_fontFlag) {}
@@ -89,27 +92,32 @@ public:
     void initDefault();
     int schemeCount() { return mSchemeNames.size(); }
     QStringList schemes();
-    int setActiveScheme(QString schemeName);
-    int setActiveScheme(int scheme);
+    Scope activeScope() const;
+    void setActiveScope(const Scope &activeScope);
+    int setActiveScheme(QString schemeName, Scope scope);
+    int setActiveScheme(int scheme, Scope scope);
+    int activeScheme(Scope scope) const;
     int activeScheme() const;
     void setIconSet(IconSet iconSet = ThinIcons);
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
+    bool isValidScope(int scopeValue);
 
     QByteArray exportJsonColorSchemes();
     void importJsonColorSchemes(const QByteArray &jsonData);
 
-    static void next();
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
     static bool hasFontProps(ColorSlot slot);
-    static QColor color(ColorSlot slot);
+    static QColor color(ColorSlot slot, gams::studio::Scheme::Scope scope);
     static void setColor(ColorSlot slot, QColor color);
+    static QIcon icon(QString name, Scope scope, bool forceSquare = false);
     static QIcon icon(QString name, bool forceSquare = false);
-    static QByteArray &data(QString name, QIcon::Mode mode);
-    static bool hasFlag(ColorSlot slot, FontFlag flag);
-    static void setFlags(ColorSlot slot, FontFlag flag);
+    static QByteArray &data(QString name, Scope scope, QIcon::Mode mode);
+    static bool hasFlag(ColorSlot slot, gams::studio::Scheme::Scope scope, FontFlag flag);
+    static void setFlags(ColorSlot slot, gams::studio::Scheme::Scope scope, FontFlag flag);
+
 
 signals:
     void changed();
@@ -118,7 +126,7 @@ private:
     explicit Scheme(QObject *parent = nullptr);
     void initSlotTexts();
     QHash<QString, QStringList> iconCodes() const;
-    QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
+    QByteArray colorizedContent(QString name, Scope scope, QIcon::Mode mode = QIcon::Normal);
 
 private:
     static Scheme *mInstance;
@@ -127,14 +135,17 @@ private:
     QHash<ColorSlot, QString> mSlotText;
     QStringList mSchemeNames;
     QString mIconSet;
+    QHash<Scope, int> mScopeScheme;
+    Scope mActiveScope = StudioScope;
     QHash<QString, QStringList> mIconCode;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
-    int mActiveScheme = 0;
     QVector<SvgEngine*> mEngines;
 };
 
-inline QColor toColor(Scheme::ColorSlot code) { return Scheme::color(code); }
+inline QString makeKey(Scheme::Scope scope, QString text) { return QString("%1@%2").arg(scope).arg(text); }
+inline QColor toColor(Scheme::ColorSlot code, Scheme::Scope scope) {
+    return Scheme::color(code, scope); }
 inline QString name(Scheme::ColorSlot col) { return Scheme::instance()->name(col); }
 
 } // namespace studio

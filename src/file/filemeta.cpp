@@ -306,21 +306,22 @@ void FileMeta::updateSyntaxColors()
 
 void FileMeta::initEditorColors()
 {
+    Scheme::Scope scope = Scheme::EditorScope;
     for (QWidget *w: mEditors) {
         AbstractEdit *ed = ViewHelper::toAbstractEdit(w);
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(w))
             ed = lxi->textView()->edit();
         if (!ed) continue;
-        if (Scheme::color(Scheme::Edit_text) == Qt::transparent &&
-                Scheme::color(Scheme::Edit_background) == Qt::transparent) {
+        if (Scheme::color(Scheme::Edit_text, scope) == Qt::transparent &&
+                Scheme::color(Scheme::Edit_background, scope) == Qt::transparent) {
             ed->setAutoFillBackground(false);
             ed->setPalette(QPalette());
-        } else if (ed->palette().windowText().color() != Scheme::color(Scheme::Edit_text) ||
-                ed->palette().window().color() != Scheme::color(Scheme::Edit_background)) {
+        } else if (ed->palette().windowText().color() != Scheme::color(Scheme::Edit_text, scope) ||
+                ed->palette().window().color() != Scheme::color(Scheme::Edit_background, scope)) {
             ed->setAutoFillBackground(true);
             QPalette pal = ed->palette();
-            pal.setColor(QPalette::Text, Scheme::color(Scheme::Edit_text));
-            pal.setColor(QPalette::Base, Scheme::color(Scheme::Edit_background));
+            pal.setColor(QPalette::Text, Scheme::color(Scheme::Edit_text, scope));
+            pal.setColor(QPalette::Base, Scheme::color(Scheme::Edit_background, scope));
             ed->setPalette(pal);
         }
     }

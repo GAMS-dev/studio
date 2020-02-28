@@ -16,6 +16,7 @@ public:
     SvgEngine(const QString &name);
     SvgEngine(const SvgEngine &other);
     ~SvgEngine() override;
+    void setScope(int scope);
     QString iconName() const override;
     void replaceNormalMode(QIcon::Mode mode);
     void forceSquare(bool force);
@@ -26,6 +27,7 @@ public:
 private:
     Scheme *mController = nullptr;
     bool mForceSquare = true;
+    int mScope = 0;
     QString mName;
     QIcon::Mode mNormalMode = QIcon::Normal;
 

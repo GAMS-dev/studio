@@ -1292,7 +1292,7 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
                 selection.cursor = textCursor();
                 selection.cursor.setPosition(block.position()+match.capturedStart(2));
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
-                selection.format.setBackground(toColor(Scheme::Edit_currentWordBg));
+                selection.format.setBackground(toColor(Scheme::Edit_currentWordBg, Scheme::EditorScope));
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
             }
@@ -1310,12 +1310,12 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
     if (!mParenthesesMatch.isValid()) return false;
 
     if (mParenthesesMatch.pos == mParenthesesMatch.match) mParenthesesMatch.valid = false;
-    QColor fgColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidFg)
-                                             : toColor(Scheme::Edit_parenthesesInvalidFg);
-    QColor bgColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidBg)
-                                             : toColor(Scheme::Edit_parenthesesInvalidBg);
-    QColor bgBlinkColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidBgBlink)
-                                                  : toColor(Scheme::Edit_parenthesesInvalidBgBlink);
+    QColor fgColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidFg, Scheme::EditorScope)
+                                             : toColor(Scheme::Edit_parenthesesInvalidFg, Scheme::EditorScope);
+    QColor bgColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidBg, Scheme::EditorScope)
+                                             : toColor(Scheme::Edit_parenthesesInvalidBg, Scheme::EditorScope);
+    QColor bgBlinkColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidBgBlink, Scheme::EditorScope)
+                                                  : toColor(Scheme::Edit_parenthesesInvalidBgBlink, Scheme::EditorScope);
     QTextEdit::ExtraSelection selection;
     selection.cursor = textCursor();
     selection.cursor.setPosition(mParenthesesMatch.pos);
@@ -1359,7 +1359,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
             selection.cursor = tc;
-            selection.format.setBackground(toColor(Scheme::Edit_matchesBg));
+            selection.format.setBackground(toColor(Scheme::Edit_matchesBg, Scheme::EditorScope));
             selections << selection;
         }
 
@@ -1408,7 +1408,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
     if (markFrom > markTo) qSwap(markFrom, markTo);
 
     QRect paintRect(event->rect());
-    painter.fillRect(paintRect, toColor(Scheme::Edit_linenrAreaBg));
+    painter.fillRect(paintRect, toColor(Scheme::Edit_linenrAreaBg, Scheme::EditorScope));
 
     QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(fRect.height())+1);
     while (block.isValid() && top <= paintRect.bottom()) {
@@ -1418,7 +1418,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
             if (mark) {
                 markRect.moveTop(top);
                 markRect.setHeight(bottom-top);
-                painter.fillRect(markRect, toColor(Scheme::Edit_linenrAreaMarkBg));
+                painter.fillRect(markRect, toColor(Scheme::Edit_linenrAreaMarkBg, Scheme::EditorScope));
             }
 
             if(showLineNr()) {
@@ -1426,7 +1426,8 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 QFont f = font();
                 f.setBold(mark);
                 painter.setFont(f);
-                painter.setPen(mark ? toColor(Scheme::Edit_linenrAreaMarkFg) : toColor(Scheme::Edit_linenrAreaFg));
+                painter.setPen(mark ? toColor(Scheme::Edit_linenrAreaMarkFg, Scheme::EditorScope)
+                                    : toColor(Scheme::Edit_linenrAreaFg, Scheme::EditorScope));
                 painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 

@@ -34,6 +34,8 @@ static int CKeptRunCount = 5;
 
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
+    // TODO(JM) Currently the colors are assigned in constructor. Should be reassignable though.
+    Scheme::Scope scope = Scheme::EditorScope;
     mRunFinishedTimer.setInterval(10);
     mRunFinishedTimer.setSingleShot(true);
     mNewLogLines.reserve(CParseLinesMax+1);
@@ -54,20 +56,20 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     // error
     fmt = QTextCharFormat();
     fmt.setAnchor(true);
-    fmt.setForeground(Scheme::color(Scheme::Normal_Red));
-    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
+    fmt.setForeground(Scheme::color(Scheme::Normal_Red, scope));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Red, scope));
     fmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     mBaseFormat << fmt;
     // lstLink
     fmt = QTextCharFormat();
-    fmt.setForeground(Scheme::color(Scheme::Normal_Blue));
-    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Blue));
+    fmt.setForeground(Scheme::color(Scheme::Normal_Blue, scope));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Blue, scope));
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
     // fileLink
     fmt = QTextCharFormat();
-    fmt.setForeground(Scheme::color(Scheme::Normal_Green));
-    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Green));
+    fmt.setForeground(Scheme::color(Scheme::Normal_Green, scope));
+    fmt.setUnderlineColor(Scheme::color(Scheme::Normal_Green, scope));
     fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     mBaseFormat << fmt;
     addChunk(true);

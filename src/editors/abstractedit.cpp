@@ -141,7 +141,7 @@ void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
     if (!SettingsLocator::settings()->highlightCurrentLine()) return;
 
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(toColor(Scheme::Edit_currentLineBg));
+    selection.format.setBackground(toColor(Scheme::Edit_currentLineBg, Scheme::EditorScope));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.movePosition(QTextCursor::StartOfBlock);
@@ -170,7 +170,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                     selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(Qt::red);
                 if (m->size() == 1)
-                    selection.format.setBackground(toColor(Scheme::Edit_errorBg));
+                    selection.format.setBackground(toColor(Scheme::Edit_errorBg, Scheme::EditorScope));
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorName(QString::number(m->line()));
             } else if (m->type() == TextMark::link) {

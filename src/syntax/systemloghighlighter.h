@@ -75,7 +75,7 @@ public:
     ErrorHighlightingRule()
     {
         mPattern = QRegularExpression(HighlightingData::ErrorKeyword + timestampRegex);
-        mFormat.setForeground(Scheme::color(Scheme::Normal_Red));
+        mFormat.setForeground(Scheme::color(Scheme::Normal_Red, Scheme::EditorScope));
         mFormat.setFontWeight(QFont::Bold);
     }
 };
@@ -87,7 +87,7 @@ public:
     InfoHighlightingRule()
     {
         mPattern = QRegularExpression(HighlightingData::InfoKeyword + timestampRegex);
-        mFormat.setForeground(Scheme::color(Scheme::Normal_Green));
+        mFormat.setForeground(Scheme::color(Scheme::Normal_Green, Scheme::EditorScope));
         mFormat.setFontWeight(QFont::Bold);
     }
 };

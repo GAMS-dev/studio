@@ -78,13 +78,13 @@ void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot 
     frame->setEnabled(active);
     frame->setAutoFillBackground(active);
     if (active) {
-        setColor(frame, toColor(slot), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
+        setColor(frame, toColor(slot, Scheme::EditorScope), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
         if (Scheme::hasFontProps(slot)) {
-            ui->btBold->setDown(Scheme::hasFlag(slot, Scheme::fBold));
-            ui->btItalic->setDown(Scheme::hasFlag(slot, Scheme::fItalic));
+            ui->btBold->setDown(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fBold));
+            ui->btItalic->setDown(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fItalic));
             QFont font = ui->textEx->font();
-            font.setBold(Scheme::hasFlag(slot, Scheme::fBold));
-            font.setItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+            font.setBold(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fBold));
+            font.setItalic(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fItalic));
             ui->textEx->setFont(font);
         }
         frame->installEventFilter(this);
@@ -135,9 +135,9 @@ void SchemeWidget::selectColor(QFrame *frame, Scheme::ColorSlot slot)
 
 void SchemeWidget::refresh()
 {
-    if (mSlotFg) setColor(ui->colorFG, toColor(mSlotFg), 1);
-    if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg), 2);
-    if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2));
+    if (mSlotFg) setColor(ui->colorFG, toColor(mSlotFg, Scheme::EditorScope), 1);
+    if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg, Scheme::EditorScope), 2);
+    if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2, Scheme::EditorScope));
 }
 
 void SchemeWidget::setAlignment(Qt::Alignment align)

@@ -72,8 +72,11 @@ void Scheme::initDefault()
     mColorSchemes.clear();
     mSchemeNames.clear();
 
-    // Add and switch to first color scheme
-    mActiveScheme = 0;
+    // default to first color scheme
+    mScopeScheme.insert(StudioScope, 0);
+    mScopeScheme.insert(EditorScope, 0);
+
+    // Add first color scheme
     int sNr = 0;
     mColorSchemes << ColorScheme();
     mSchemeNames << "Light";
@@ -182,23 +185,28 @@ QStringList Scheme::schemes()
     return mSchemeNames;
 }
 
-int Scheme::setActiveScheme(QString schemeName)
+int Scheme::setActiveScheme(QString schemeName, Scope scope)
 {
     int scheme = mSchemeNames.indexOf(schemeName);
-    return setActiveScheme(scheme);
+    return setActiveScheme(scheme, scope);
 }
 
-int Scheme::setActiveScheme(int scheme)
+int Scheme::setActiveScheme(int scheme, Scope scope)
 {
     if (scheme < 0 || scheme >= mSchemeNames.size()) return -1;
-    mActiveScheme = scheme;
+    mScopeScheme.insert(scope, scheme);
     invalidate();
-    return mActiveScheme;
+    return mScopeScheme.value(scope);
+}
+
+int Scheme::activeScheme(Scope scope) const
+{
+    return mScopeScheme.value(scope);
 }
 
 int Scheme::activeScheme() const
 {
-    return mActiveScheme;
+    return mScopeScheme.value(mActiveScope);
 }
 
 void Scheme::setIconSet(Scheme::IconSet iconSet)
@@ -236,41 +244,43 @@ Scheme::ColorSlot Scheme::slot(QString name)
 QHash<QString, QStringList> Scheme::iconCodes() const
 {
     QHash<QString, QStringList> res;
-    const ColorScheme &scheme = mColorSchemes.at(mActiveScheme);
-    for (ColorSlot &slot: scheme.keys()) {
-        QString slotName = name(slot);
-        if (slotName.startsWith("Icon_")) {
-            QString key = slotName.mid(5, slotName.length()-5);
-            res.insert(key, QStringList());
-            for (int i = 0 ; i < 4 ; ++i)
-                res[key] << scheme.value(slot).color.name();
-            res[key] << scheme.value(Normal_Red).color.name();
-            res[key] << scheme.value(Normal_Green).color.name();
-            res[key] << scheme.value(Normal_Blue).color.name();
+    for (const Scope &scope: mScopeScheme.keys()) {
+        const ColorScheme &scheme = mColorSchemes.at(mScopeScheme.value(scope));
+        for (ColorSlot &slot: scheme.keys()) {
+            QString slotName = name(slot);
+            if (slotName.startsWith("Icon_")) {
+                QString key = makeKey(scope, slotName.mid(5, slotName.length()-5));
+                res.insert(key, QStringList());
+                for (int i = 0 ; i < 4 ; ++i)
+                    res[key] << scheme.value(slot).color.name();
+                res[key] << scheme.value(Normal_Red).color.name();
+                res[key] << scheme.value(Normal_Green).color.name();
+                res[key] << scheme.value(Normal_Blue).color.name();
+            }
         }
-    }
-    for (ColorSlot &slot: scheme.keys()) {
-        QString slotName = name(slot);
-        if (slotName.startsWith("Disable_")) {
-            QString key = slotName.mid(8, slotName.length()-8);
-            if (res.contains(key))
-                res[key].replace(1, scheme.value(slot).color.name());
-        }
-        if (slotName.startsWith("Active_")) {
-            QString key = slotName.mid(7, slotName.length()-7);
-            if (res.contains(key))
-                res[key].replace(2, scheme.value(slot).color.name());
-        }
-        if (slotName.startsWith("Select_")) {
-            QString key = slotName.mid(7, slotName.length()-7);
-            if (res.contains(key))
-                res[key].replace(3, scheme.value(slot).color.name());
+        for (ColorSlot &slot: scheme.keys()) {
+            QString slotName = name(slot);
+            if (slotName.startsWith("Disable_")) {
+                QString key = makeKey(scope, slotName.mid(8, slotName.length()-8));
+                if (res.contains(key))
+                    res[key].replace(1, scheme.value(slot).color.name());
+            }
+            if (slotName.startsWith("Active_")) {
+                QString key = makeKey(scope, slotName.mid(7, slotName.length()-7));
+                if (res.contains(key))
+                    res[key].replace(2, scheme.value(slot).color.name());
+            }
+            if (slotName.startsWith("Select_")) {
+                QString key = makeKey(scope, slotName.mid(7, slotName.length()-7));
+                if (res.contains(key))
+                    res[key].replace(3, scheme.value(slot).color.name());
+            }
         }
     }
     return res;
 }
 
-QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
+QByteArray Scheme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
 {
     QFile file(name);
     if (!file.open(QFile::ReadOnly)) return QByteArray();
@@ -285,7 +295,7 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
     for ( ; it != mIconCode.constEnd() ; ++it) {
         int start = data.indexOf("<style");
         while (start >= 0 && start < end) {
-            QString key = QString(".%1").arg(it.key());
+            QString key = makeKey(scope, QString(".%1").arg(it.key()));
             int from = data.indexOf('.'+it.key(), start+1);
             if (from < 0 || from+10 > end) break;
             start = from;
@@ -305,6 +315,16 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
         }
     }
     return data;
+}
+
+Scheme::Scope Scheme::activeScope() const
+{
+    return mActiveScope;
+}
+
+void Scheme::setActiveScope(const Scope &activeScope)
+{
+    mActiveScope = activeScope;
 }
 
 QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
@@ -328,29 +348,35 @@ void Scheme::unbind(SvgEngine *engine)
     mEngines.removeAll(engine);
 }
 
-void Scheme::next()
+bool Scheme::isValidScope(int scopeValue)
 {
-    int index = (instance()->mActiveScheme + 1) % instance()->mSchemeNames.size();
-    instance()->setActiveScheme(index);
+    if (scopeValue < 0) return false;
+    for (int i = 0; i < QMetaEnum::fromType<Scope>().keyCount(); ++i) {
+        if (QMetaEnum::fromType<Scope>().value(i) == scopeValue)
+            return true;
+    }
+    return false;
 }
 
-QColor Scheme::color(Scheme::ColorSlot slot)
+QColor Scheme::color(Scheme::ColorSlot slot, Scope scope)
 {
-    return instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot, CUndefined).color;
+    int scheme = instance()->mScopeScheme.value(scope);
+    return instance()->mColorSchemes.at(scheme).value(slot, CUndefined).color;
 }
 
 void Scheme::setColor(Scheme::ColorSlot slot, QColor color)
 {
-    Color dat = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    Color dat = instance()->mColorSchemes.at(instance()->activeScheme()).value(slot);
     dat.color = color;
-    instance()->mColorSchemes[instance()->mActiveScheme].insert(slot, dat);
+    instance()->mColorSchemes[instance()->activeScheme()].insert(slot, dat);
 }
 
-QIcon Scheme::icon(QString name, bool forceSquare)
+QIcon Scheme::icon(QString name, Scope scope, bool forceSquare)
 {
     if (name.contains("%")) name = name.arg(instance()->mIconSet);
     if (!instance()->mIconCache.contains(name)) {
         SvgEngine *eng = new SvgEngine(name);
+        eng->setScope(scope);
         if (forceSquare) eng->forceSquare(true);
         instance()->mEngines << eng;
         instance()->mIconCache.insert(name, QIcon(eng));
@@ -358,29 +384,36 @@ QIcon Scheme::icon(QString name, bool forceSquare)
     return instance()->mIconCache.value(name);
 }
 
-QByteArray &Scheme::data(QString name, QIcon::Mode mode)
+QIcon Scheme::icon(QString name, bool forceSquare)
+{
+    return icon(name, StudioScope, forceSquare);
+}
+
+QByteArray &Scheme::data(QString name, Scope scope, QIcon::Mode mode)
 {
     QStringList ext {"_N","_D","_A","_S"};
-    QString nameKey = name + ext.at(int(mode));
+    QString nameKey = makeKey(scope, name + ext.at(int(mode)));
     if (!instance()->mDataCache.contains(nameKey)) {
-        QByteArray data(instance()->colorizedContent(name, mode));
+        QByteArray data(instance()->colorizedContent(name, scope, mode));
         instance()->mDataCache.insert(nameKey, data);
     }
     return instance()->mDataCache[nameKey];
 }
 
-bool Scheme::hasFlag(Scheme::ColorSlot slot, Scheme::FontFlag flag)
+bool Scheme::hasFlag(Scheme::ColorSlot slot, Scope scope, Scheme::FontFlag flag)
 {
-    Color cl = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    int scheme = instance()->mScopeScheme.value(scope);
+    Color cl = instance()->mColorSchemes.at(scheme).value(slot);
     if (flag == fNormal) return (cl.fontFlag == fNormal);
     return (FontFlag(flag & cl.fontFlag) == flag);
 }
 
-void Scheme::setFlags(Scheme::ColorSlot slot, Scheme::FontFlag flag)
+void Scheme::setFlags(Scheme::ColorSlot slot, Scope scope, Scheme::FontFlag flag)
 {
-    Color dat = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    int scheme = instance()->mScopeScheme.value(scope);
+    Color dat = instance()->mColorSchemes.at(scheme).value(slot);
     dat.fontFlag = flag;
-    instance()->mColorSchemes[instance()->mActiveScheme].insert(slot, dat);
+    instance()->mColorSchemes[scheme].insert(slot, dat);
 }
 
 QByteArray Scheme::exportJsonColorSchemes()
@@ -398,7 +431,10 @@ QByteArray Scheme::exportJsonColorSchemes()
                 dataObject["type"] = int(scheme.value(key).fontFlag);
             slotObject[name(key)] = dataObject;
         }
-        if (mActiveScheme == i) jsonScheme["Active"] = 1;
+        for (Scope scope : mScopeScheme.keys()) {
+            if (mScopeScheme.value(scope) == i)
+                jsonScheme[QString("Active%1").arg(scope)] = 1;
+        }
         jsonScheme["Name"] = mSchemeNames.at(i);
         jsonScheme["Scheme"] = slotObject;
         jsonSchemes.append(jsonScheme);
@@ -421,7 +457,10 @@ void Scheme::importJsonColorSchemes(const QByteArray &jsonData)
             mSchemeNames << schemeName;
             mColorSchemes << mColorSchemes.at(0);
         }
-        if (jsonScheme["Active"].toInt(0)) mActiveScheme = index;
+        for (Scope scope : mScopeScheme.keys()) {
+            if (jsonScheme[QString("Active%1").arg(scope)].toInt(0))
+                mScopeScheme.insert(scope, index);
+        }
         if (jsonScheme.contains("Scheme") && jsonScheme["Scheme"].isObject()) {
             QJsonObject slotObject = jsonScheme["Scheme"].toObject();
             for (QString key: slotObject.keys()) {

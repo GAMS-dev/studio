@@ -66,7 +66,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
+    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setSyntaxTheme);
     connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), PaletteManager::instance(), &PaletteManager::setPalette);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -149,6 +149,11 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 void SettingsDialog::setModified()
 {
     setModifiedStatus(true);
+}
+
+void SettingsDialog::setSyntaxTheme(int theme)
+{
+    Scheme::instance()->setActiveScheme(theme, Scheme::EditorScope);
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
@@ -478,15 +483,6 @@ void SettingsDialog::reloadColors()
 {
     mSettings->readScheme();
 }
-
-void SettingsDialog::on_cbSchemes_currentIndexChanged(int index)
-{
-    if (!mInitializing) {
-        Scheme::instance()->setActiveScheme(index);
-        schemeModified();
-    }
-}
-
 
 }
 }

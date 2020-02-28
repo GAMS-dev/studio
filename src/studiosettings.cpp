@@ -575,7 +575,7 @@ int StudioSettings::syntaxSchemeIndex() const
 void StudioSettings::setSyntaxSchemeIndex(int syntaxSchemeIndex)
 {
     mSyntaxSchemeIndex = syntaxSchemeIndex;
-    Scheme::instance()->setActiveScheme(mSyntaxSchemeIndex);
+    Scheme::instance()->setActiveScheme(mSyntaxSchemeIndex, Scheme::EditorScope);
 }
 
 int StudioSettings::studioSchemeIndex() const
@@ -587,6 +587,7 @@ void StudioSettings::setStudioSchemeIndex(int studioSchemeIndex)
 {
     mStudioSchemeIndex = studioSchemeIndex;
     PaletteManager::instance()->setPalette(mStudioSchemeIndex);
+    Scheme::instance()->setActiveScheme(mSyntaxSchemeIndex, Scheme::StudioScope);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

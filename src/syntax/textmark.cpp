@@ -107,12 +107,14 @@ void TextMark::clearBackRefs()
 QColor TextMark::color() const
 {
     if (mReference) {
-        if (mReference->type() == TextMark::error) return toColor(Scheme::Mark_errorFg);
-        if (mReference->fileKind() == FileKind::Lst) return toColor(Scheme::Mark_listingFg);
+        if (mReference->type() == TextMark::error)
+            return toColor(Scheme::Mark_errorFg, Scheme::EditorScope);
+        if (mReference->fileKind() == FileKind::Lst)
+            return toColor(Scheme::Mark_listingFg, Scheme::EditorScope);
     } else {
-        return toColor(Scheme::Mark_errorFg);
+        return toColor(Scheme::Mark_errorFg, Scheme::EditorScope);
     }
-    return toColor(Scheme::Mark_fileFg);
+    return toColor(Scheme::Mark_fileFg, Scheme::EditorScope);
 }
 
 FileKind TextMark::fileKind()
@@ -129,11 +131,12 @@ QIcon TextMark::icon()
 {
     switch (mType) {
     case error:
-        return Scheme::icon(":/img/exclam-circle-r");
+        return Scheme::icon(":/img/exclam-circle-r", Scheme::EditorScope);
     case link:
-        return mReference ? Scheme::icon(":/img/err-ref") : Scheme::icon(":/img/err-ref-missing");
+        return mReference ? Scheme::icon(":/img/err-ref", Scheme::EditorScope)
+                          : Scheme::icon(":/img/err-ref-missing", Scheme::EditorScope);
     case bookmark: {
-        QIcon ico = Scheme::icon(":/img/bookmark");
+        QIcon ico = Scheme::icon(":/img/bookmark", Scheme::EditorScope);
         return ico;
     }
     default:

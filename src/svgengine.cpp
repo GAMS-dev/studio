@@ -26,6 +26,12 @@ SvgEngine::~SvgEngine()
         mController->unbind(this);
 }
 
+void SvgEngine::setScope(int scope)
+{
+    if (mController->isValidScope(scope))
+        mScope = scope;
+}
+
 QString SvgEngine::iconName() const
 {
     //QIconEngine::IconNameHook
@@ -52,7 +58,7 @@ void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QI
     Q_UNUSED(mode)
     Q_UNUSED(state)
     if (mode == QIcon::Normal) mode = mNormalMode;
-    QByteArray &data = mController->data(mName, mode);
+    QByteArray &data = mController->data(mName, Scheme::Scope(mScope), mode);
     QSvgRenderer renderer(data);
     QRect pRect = rect;
     if (mForceSquare) pRect.setWidth(pRect.height());

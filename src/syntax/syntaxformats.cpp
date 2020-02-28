@@ -37,12 +37,13 @@ void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
 {
     mColorSlot = slot;
     charFormat().setProperty(QTextFormat::UserProperty, intSyntaxType());
-    if (toColor(slot).isValid())
-        charFormat().setForeground(toColor(slot));
+    if (toColor(slot, Scheme::EditorScope).isValid())
+        charFormat().setForeground(toColor(slot, Scheme::EditorScope));
     else
         charFormat().setForeground(Qt::black);
-    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::fBold) ? QFont::Bold : QFont::Normal);
-    charFormat().setFontItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fBold) ? QFont::Bold
+                                                                                         : QFont::Normal);
+    charFormat().setFontItalic(Scheme::hasFlag(slot, Scheme::EditorScope, Scheme::fItalic));
 }
 
 SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
