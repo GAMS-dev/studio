@@ -41,8 +41,7 @@ void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
         charFormat().setForeground(toColor(slot));
     else
         charFormat().setForeground(Qt::black);
-    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::fBold) ? QFont::Bold
-                                                                                         : QFont::Normal);
+    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::fBold) ? QFont::Bold : QFont::Normal);
     charFormat().setFontItalic(Scheme::hasFlag(slot, Scheme::fItalic));
 }
 
