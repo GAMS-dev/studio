@@ -24,7 +24,7 @@ PaletteManager::PaletteManager()
     darkPalette.setColor(QPalette::WindowText, Qt::white);
     darkPalette.setColor(QPalette::Base, QColor(30,30,30));
     darkPalette.setColor(QPalette::AlternateBase, QColor(66,66,66));
-    darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
+    darkPalette.setColor(QPalette::ToolTipBase, QColor(42,42,42));
     darkPalette.setColor(QPalette::ToolTipText, Qt::white);
     darkPalette.setColor(QPalette::Text, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::Text, disabledColor);
