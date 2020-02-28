@@ -213,6 +213,16 @@ void Scheme::setIconSet(Scheme::IconSet iconSet)
     invalidate();
 }
 
+QList<Scheme::Scope> Scheme::scopes()
+{
+    QList<Scheme::Scope> res;
+    QMetaEnum meta = QMetaEnum::fromType<Scheme::Scope>();
+    for (int i = 0; i < meta.keyCount(); ++i) {
+        res << Scheme::Scope(meta.value(i));
+    }
+    return res;
+}
+
 QString Scheme::name(Scheme::ColorSlot slot)
 {
     return QMetaEnum::fromType<ColorSlot>().valueToKey(slot);
@@ -236,41 +246,43 @@ Scheme::ColorSlot Scheme::slot(QString name)
     return ColorSlot(value);
 }
 
-QHash<QString, QStringList> Scheme::iconCodes() const
+QList<QHash<QString, QStringList>> Scheme::iconCodes() const
 {
-    QHash<QString, QStringList> res;
-    for (const Scope &scope: mScopeScheme.keys()) {
+    QList<QHash<QString, QStringList>> res;
+    for (const Scope &scope: scopes()) {
+        QHash<QString, QStringList> set;
         const ColorScheme &scheme = mColorSchemes.at(mScopeScheme.value(scope));
         for (ColorSlot &slot: scheme.keys()) {
             QString slotName = name(slot);
             if (slotName.startsWith("Icon_")) {
-                QString key = makeKey(scope, slotName.mid(5, slotName.length()-5));
-                res.insert(key, QStringList());
+                QString key = slotName.mid(5, slotName.length()-5);
+                set.insert(key, QStringList());
                 for (int i = 0 ; i < 4 ; ++i)
-                    res[key] << scheme.value(slot).color.name();
-                res[key] << scheme.value(Normal_Red).color.name();
-                res[key] << scheme.value(Normal_Green).color.name();
-                res[key] << scheme.value(Normal_Blue).color.name();
+                    set[key] << scheme.value(slot).color.name();
+                set[key] << scheme.value(Normal_Red).color.name();
+                set[key] << scheme.value(Normal_Green).color.name();
+                set[key] << scheme.value(Normal_Blue).color.name();
             }
         }
         for (ColorSlot &slot: scheme.keys()) {
             QString slotName = name(slot);
             if (slotName.startsWith("Disable_")) {
-                QString key = makeKey(scope, slotName.mid(8, slotName.length()-8));
-                if (res.contains(key))
-                    res[key].replace(1, scheme.value(slot).color.name());
+                QString key = slotName.mid(8, slotName.length()-8);
+                if (set.contains(key))
+                    set[key].replace(1, scheme.value(slot).color.name());
             }
             if (slotName.startsWith("Active_")) {
-                QString key = makeKey(scope, slotName.mid(7, slotName.length()-7));
-                if (res.contains(key))
-                    res[key].replace(2, scheme.value(slot).color.name());
+                QString key = slotName.mid(7, slotName.length()-7);
+                if (set.contains(key))
+                    set[key].replace(2, scheme.value(slot).color.name());
             }
             if (slotName.startsWith("Select_")) {
-                QString key = makeKey(scope, slotName.mid(7, slotName.length()-7));
-                if (res.contains(key))
-                    res[key].replace(3, scheme.value(slot).color.name());
+                QString key = slotName.mid(7, slotName.length()-7);
+                if (set.contains(key))
+                    set[key].replace(3, scheme.value(slot).color.name());
             }
         }
+        res << set;
     }
     return res;
 }
@@ -286,11 +298,13 @@ QByteArray Scheme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
     if (end < 0) return data;
     int iMode = int(mode);
 
-    QHash<QString, QStringList>::const_iterator it = mIconCode.constBegin(); // Icon_Line + Icon_Back
-    for ( ; it != mIconCode.constEnd() ; ++it) {
+
+    QHash<QString, QStringList> iconCode = mIconCodes.at(scope);
+    QHash<QString, QStringList>::const_iterator it = iconCode.constBegin(); // Icon_Line + Icon_Back
+    for ( ; it != iconCode.constEnd() ; ++it) {
         int start = data.indexOf("<style");
         while (start >= 0 && start < end) {
-            QString key = makeKey(scope, QString(".%1").arg(it.key()));
+            QString key = QString(".%1").arg(it.key());
             int from = data.indexOf('.'+it.key(), start+1);
             if (from < 0 || from+10 > end) break;
             start = from;
@@ -321,7 +335,7 @@ QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
 
 void Scheme::invalidate()
 {
-    mIconCode = iconCodes();
+    mIconCodes = iconCodes();
     mIconCache.clear();
     mDataCache.clear();
 
@@ -378,7 +392,7 @@ QIcon Scheme::icon(QString name, bool forceSquare)
 QByteArray &Scheme::data(QString name, Scope scope, QIcon::Mode mode)
 {
     QStringList ext {"_N","_D","_A","_S"};
-    QString nameKey = makeKey(scope, name + ext.at(int(mode)));
+    QString nameKey = QString("%1@%2").arg(scope).arg(name + ext.at(int(mode)));
     if (!instance()->mDataCache.contains(nameKey)) {
         QByteArray data(instance()->colorizedContent(name, scope, mode));
         instance()->mDataCache.insert(nameKey, data);

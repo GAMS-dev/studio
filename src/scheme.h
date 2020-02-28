@@ -104,6 +104,7 @@ public:
     QByteArray exportJsonColorSchemes();
     void importJsonColorSchemes(const QByteArray &jsonData);
 
+    static QList<Scope> scopes();
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
     static bool hasFontProps(ColorSlot slot);
@@ -122,7 +123,7 @@ signals:
 private:
     explicit Scheme(QObject *parent = nullptr);
     void initSlotTexts();
-    QHash<QString, QStringList> iconCodes() const;
+    QList<QHash<QString, QStringList>> iconCodes() const;
     QByteArray colorizedContent(QString name, Scope scope, QIcon::Mode mode = QIcon::Normal);
 
 private:
@@ -133,13 +134,12 @@ private:
     QStringList mSchemeNames;
     QString mIconSet;
     QHash<Scope, int> mScopeScheme;
-    QHash<QString, QStringList> mIconCode;
+    QList<QHash<QString, QStringList>> mIconCodes;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
     QVector<SvgEngine*> mEngines;
 };
 
-inline QString makeKey(Scheme::Scope scope, QString text) { return QString("%1@%2").arg(scope).arg(text); }
 inline QColor toColor(Scheme::ColorSlot code, Scheme::Scope scope = Scheme::EditorScope) {
     return Scheme::color(code, scope); }
 inline QString name(Scheme::ColorSlot col) { return Scheme::instance()->name(col); }

@@ -17,7 +17,10 @@ SvgEngine::SvgEngine(const QString &name) : QIconEngine(), mName(name)
 SvgEngine::SvgEngine(const SvgEngine &other) : QIconEngine()
 {
     mController = other.mController;
+    mForceSquare = other.mForceSquare;
+    mScope = other.mScope;
     mName = other.mName;
+    mNormalMode = other.mNormalMode;
 }
 
 SvgEngine::~SvgEngine()
