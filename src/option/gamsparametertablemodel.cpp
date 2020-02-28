@@ -182,7 +182,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
 
         if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
-                return QVariant::fromValue(QColor(Qt::red));
+                return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
             else
                  return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
@@ -196,9 +196,9 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             } else { // value
                   switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
                       case Incorrect_Value_Type:
-                            return QVariant::fromValue(QColor(Qt::red));
+                            return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
                       case Value_Out_Of_Range:
-                            return QVariant::fromValue(QColor(Qt::red));
+                            return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
                       case No_Error:
                             return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                       default:
@@ -207,7 +207,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             }
         } else { // invalid option
             if (col == GamsParameterTableModel::COLUMN_OPTION_KEY)
-               return QVariant::fromValue(QColor(Qt::red));
+               return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
             else
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }

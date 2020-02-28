@@ -168,7 +168,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
-                selection.format.setUnderlineColor(Qt::red);
+                selection.format.setUnderlineColor(toColor(Scheme::Normal_Red));
                 if (m->size() == 1)
                     selection.format.setBackground(toColor(Scheme::Edit_errorBg));
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);

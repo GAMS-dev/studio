@@ -210,7 +210,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             case Invalid_Key:
             case Incorrect_Value_Type:
             case Value_Out_Of_Range:
-                 return QVariant::fromValue(QColor(Qt::red));
+                 return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
             case Deprecated_Option:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
                     return QVariant::fromValue(QColor(Qt::darkYellow));

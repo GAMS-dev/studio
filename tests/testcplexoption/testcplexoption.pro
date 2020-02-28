@@ -26,12 +26,16 @@ INCLUDEPATH += $$SRCPATH \
 
 HEADERS += \
     testcplexoption.h \
+    $$SRCPATH/scheme.h \
     $$SRCPATH/option/option.h \
+    $$SRCPATH/svgengine.h \
     $$SRCPATH/option/optiontokenizer.h
 
 SOURCES += \
     testcplexoption.cpp \
+    $$SRCPATH/scheme.cpp \
     $$SRCPATH/option/option.cpp \
+    $$SRCPATH/svgengine.cpp \
     $$SRCPATH/option/optiontokenizer.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp \
