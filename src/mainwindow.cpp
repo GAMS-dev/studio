@@ -2674,13 +2674,7 @@ void MainWindow::invalidateScheme()
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateScheme();
 
-    assignIcons();
     repaint();
-}
-
-void MainWindow::assignIcons()
-{
-    setWindowIcon(windowIcon());
 }
 
 void MainWindow::initIcons()
