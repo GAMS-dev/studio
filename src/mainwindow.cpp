@@ -204,10 +204,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (mSettings->resetSettingsSwitch()) mSettings->resetSettings();
 
-#ifdef __APPLE__
-    Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
-#endif
-
     // stack help under output
     tabifyDockWidget(ui->dockHelpView, ui->dockProcessLog);
 
@@ -325,7 +321,7 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
-        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
+        Scheme::instance()->setActiveScheme(mSettings->studioSchemeIndex());
 #endif
     }
     return QMainWindow::event(event);

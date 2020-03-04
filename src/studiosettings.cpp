@@ -51,6 +51,7 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
     }
     if (resetViews) resetViewSettings();
 
+    // clean up remaining .lock files to mitigate deadlocks
     QFileInfo file(mAppSettings->fileName());
     QDir location(file.path());
     for (const QString &fileName: location.entryList({"*.lock"})) {
