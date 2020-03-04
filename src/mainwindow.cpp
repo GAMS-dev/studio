@@ -229,7 +229,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
@@ -2193,11 +2192,11 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             ui->logTabs->currentWidget()->setFocus();
             e->accept(); return;
         } else if (focusWidget() == ui->projectView) {
-                  setProjectViewVisibility(false);
+            setProjectViewVisibility(false);
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
-                   mGamsParameterEditor->deSelectParameters();
+            mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-                  ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
+            ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
         }
 
         // search widget
@@ -2208,18 +2207,21 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     }
 
     // focus shortcuts
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_E)) {
-        activateWindow();
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {
+        setProjectViewVisibility(true);
+        ui->projectView->setFocus();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_2)) {
         if (mRecent.editor()) mRecent.editor()->setFocus();
-
         e->accept(); return;
-    }
-
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
-        focusProjectExplorer();
-        e->accept(); return;
-    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_3)) {
         focusCmdLine();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_4)) {
+        showTabsMenu();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_5)) {
+        focusProcessLogs();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F11)) {
         Scheme::next();
@@ -2227,11 +2229,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
         toggleDebugMode();
         e->accept(); return;
-    } else if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
-        focusProcessLogs();
-        e->accept(); return;
     }
-
     QMainWindow::keyPressEvent(e);
 }
 
