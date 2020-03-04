@@ -25,7 +25,6 @@
 #include "abstractprocess.h"
 #include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
-#include "settingslocator.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/viewhelper.h"
@@ -86,7 +85,7 @@ void ProjectLogNode::clearLog()
 
 void ProjectLogNode::prepareRun()
 {
-    Settings *settings = SettingsLocator::settings();
+    Settings *settings = Settings::settings();
     if (!mLogFile && settings->writeLog()) {
         mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
     }

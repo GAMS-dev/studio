@@ -24,7 +24,6 @@
 #include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
-#include "settingslocator.h"
 #include "settings.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
@@ -844,7 +843,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         codeEdit  = new CodeEdit(tabWidget);
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);
-        edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
+        edit->setLineWrapMode(Settings::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
         res = edit;

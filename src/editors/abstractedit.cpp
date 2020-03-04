@@ -23,7 +23,6 @@
 #include <QToolTip>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
-#include "settingslocator.h"
 #include "logger.h"
 #include "keys.h"
 #include "scheme.h"
@@ -138,7 +137,7 @@ int AbstractEdit::topVisibleLine()
 
 void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!SettingsLocator::settings()->highlightCurrentLine()) return;
+    if (!Settings::settings()->highlightCurrentLine()) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Scheme::Edit_currentLineBg));
@@ -255,7 +254,7 @@ bool AbstractEdit::event(QEvent *e)
     }
     if (e->type() == QEvent::FontChange) {
         QFontMetrics metric(font());
-        setTabStopDistance(SettingsLocator::settings()->tabSize() * metric.width(' '));
+        setTabStopDistance(Settings::settings()->tabSize() * metric.width(' '));
     }
     return QPlainTextEdit::event(e);
 }

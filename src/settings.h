@@ -85,11 +85,14 @@ class Settings
 {
 
 public:
-    Settings(bool ignore, bool reset, bool resetView);
-    ~Settings();
+    static void createSettings(bool ignore, bool reset, bool resetView);
+    static Settings *settings();
+    static void releaseSettings();
 
-    void load(MainWindow *main);
-    void save(MainWindow *main);
+    void bind(MainWindow *main);
+
+    void load();
+    void save();
 
     QString defaultWorkspace() const;
     void setDefaultWorkspace(const QString &value);
@@ -162,7 +165,7 @@ public:
     void setAutoIndent(bool autoIndent);
 
     void exportSettings(const QString &settingsPath);
-    void importSettings(const QString &settingsPath, MainWindow *main);
+    void importSettings(const QString &settingsPath);
 
     void updateSettingsFiles();
 
@@ -184,12 +187,12 @@ public:
     bool deleteAllCommentsAboveOption() const;
     void setDeleteAllCommentsAboveOption(bool value);
 
-    void resetSettings();
+    void reloadSettings();
     bool resetSettingsSwitch();
     void resetViewSettings();
 
-    bool restoreTabsAndProjects(MainWindow *main);
-    void restoreLastFilesUsed(MainWindow *main);
+    bool restoreTabsAndProjects();
+    void restoreLastFilesUsed();
 
     bool writeLog() const;
     void setWriteLog(bool writeLog);
@@ -204,7 +207,9 @@ public:
     void setEditableMaxSizeMB(int editableMaxSizeMB);
 
 private:
+    static Settings *mInstance;
     static const int mVersion;
+    MainWindow *mMain = nullptr;
     QSettings *mUiSettings = nullptr;
     QSettings *mSystemSettings = nullptr;
     QSettings *mUserSettings = nullptr;
@@ -214,15 +219,17 @@ private:
     bool mResetSettings = false;
 
 private:
+    Settings(bool ignore, bool reset, bool resetView);
+    ~Settings();
     QString settingsPath();
     int checkVersion();
-    bool upgradeFromVersion(int startVersion);
+    bool createSettingFiles();
     void initDefaults();
 
     void checkAndUpdateSettings();
-    void initSettingsFiles();
+    void initSettingsFiles(int version);
 
-    void loadViewStates(MainWindow *main);
+    void loadViewStates();
     void loadUserIniSettings();
 
     bool isValidVersion(QString currentVersion);

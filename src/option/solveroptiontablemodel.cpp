@@ -21,7 +21,6 @@
 #include <QMessageBox>
 
 #include "solveroptiontablemodel.h"
-#include "settingslocator.h"
 #include "settings.h"
 #include "scheme.h"
 
@@ -432,7 +431,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     else
         beginRow = rowCount(QModelIndex());
 
-    Settings* settings = SettingsLocator::settings();
+    Settings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
 
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);

@@ -38,6 +38,7 @@ namespace studio {
 
 // Increase this only on major changes (change or remove of existing field)
 const int Settings::mVersion = 1;
+Settings *Settings::mInstance = nullptr;
 
 bool readJsonFile(QIODevice &device, QSettings::SettingsMap &map)
 {
@@ -66,38 +67,23 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     QSettings::setDefaultFormat(jsonFormat);
 
     // basic non versionized application settings
-    mUiSettings = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, "uistates");
+    mUiSettings = new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
+                                GAMS_ORGANIZATION_STR, "uistates");
     if (mUiSettings->status()) {
-        // create a backup and mark to reset this settings file
+        // On Error -> create a backup and mark to reset this settings file
         DynamicFile file(mUiSettings->fileName(), 2);
     }
 
     initDefaults();
     if (!ignore) {
-        int foundVersion = checkVersion();
-
-        initSettingsFiles();
-
+        createSettingFiles();
     }
-
-
-
-
-
-
-    if (mIgnoreSettings && !mResetSettings) {
-        mSystemSettings = new QSettings();
-        mUserSettings = new QSettings();
-        // TODO(JM) Add interface.json
-        Scheme::instance()->initDefault();
-    } else {
-        initSettingsFiles();
-        Scheme::instance()->initDefault();
+    if (reset) {
+        initDefaults();
     }
     if (resetView) resetViewSettings();
 
-    QFileInfo file(mSystemSettings->fileName());
-    QDir location(file.path());
+    QDir location(settingsPath());
     for (const QString &fileName: location.entryList({"*.lock"})) {
         QFile f(location.path() +  "/" + fileName);
         f.remove();
@@ -123,58 +109,89 @@ int Settings::checkVersion()
     return res;
 }
 
-bool Settings::upgradeFromVersion(int version)
+bool Settings::createSettingFiles()
 {
-    while (version < mVersion) {
+    int version = checkVersion();
 
+    // create setting files of found version to read from
+    initSettingsFiles(version);
+    load();
+    if (version == mVersion) return true;
+
+    // Need to upgrade from older version
+    while (version < mVersion) {
         switch (version) {
         case 1:
-            // On increasing version from 1 to 2 -> implement data conversion HERE
+            // On increasing version from 1 to 2 -> implement mData conversion HERE
             break;
         case 2:
-            // On increasing version from 2 to 3 -> implement data conversion HERE
+            // On increasing version from 2 to 3 -> implement mData conversion HERE
             break;
         default:
             break;
         }
         ++version;
     }
+
+    // write setting files in current version
+    initSettingsFiles(version);
+    save();
     return true;
 }
 
 void Settings::initDefaults()
 {
     // create default values for current mVersion
+    Scheme::instance()->initDefault();
 
 }
 
 
 Settings::~Settings()
 {
-    if (mSystemSettings) {
-        delete mSystemSettings;
-        mSystemSettings = nullptr;
-    }
-
-    if (mUserSettings) {
-        delete mUserSettings;
-        mUserSettings = nullptr;
-    }
+    delete mSystemSettings;
+    mSystemSettings = nullptr;
+    delete mUserSettings;
+    mUserSettings = nullptr;
     // TODO(JM) Handle interface.json
 }
 
-void Settings::initSettingsFiles()
+void Settings::createSettings(bool ignore, bool reset, bool resetView)
+{
+    if (mInstance) {
+        DEB() << "Tried to create multiple settings, suppressed.";
+    } else
+        mInstance = new Settings(ignore, reset, resetView);
+}
+
+Settings *Settings::settings()
+{
+    return mInstance;
+}
+
+void Settings::releaseSettings()
+{
+    delete mInstance;
+    mInstance = nullptr;
+}
+
+void Settings::bind(MainWindow* main)
+{
+    mMain = main;
+}
+
+void Settings::initSettingsFiles(int version)
 {
     mSystemSettings = new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
-                                 GAMS_ORGANIZATION_STR, QString("systemsettings%1").arg(mVersion));
+                                 GAMS_ORGANIZATION_STR, QString("systemsettings%1").arg(version));
     mUserSettings = new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
-                                  GAMS_ORGANIZATION_STR, QString("usersettings%1").arg(mVersion));
+                                  GAMS_ORGANIZATION_STR, QString("usersettings%1").arg(version));
     // TODO(JM) Handle studioscheme.json and syntaxscheme.json
 }
 
-void Settings::resetSettings()
+void Settings::reloadSettings()
 {
-    initSettingsFiles();
+    // TODO(JM)
     Scheme::instance()->initDefault();
     mSystemSettings->sync();
     mUserSettings->sync();
@@ -204,7 +221,7 @@ bool Settings::resetSettingsSwitch()
     return mResetSettings;
 }
 
-void Settings::save(MainWindow *main)
+void Settings::save()
 {
     // return directly only if settings are ignored and not resettet
     if (mIgnoreSettings && !mResetSettings)
@@ -221,33 +238,33 @@ void Settings::save(MainWindow *main)
     // Main Application Settings
     // main window
     mSystemSettings->beginGroup("mainWindow");
-    mSystemSettings->setValue("size", main->size());
-    mSystemSettings->setValue("pos", main->pos());
-    mSystemSettings->setValue("maximized", main->isMaximized());
-    mSystemSettings->setValue("windowState", main->saveState());
+    mSystemSettings->setValue("size", mMain->size());
+    mSystemSettings->setValue("pos", mMain->pos());
+    mSystemSettings->setValue("maximized", mMain->isMaximized());
+    mSystemSettings->setValue("windowState", mMain->saveState());
 
     // search window
-    mSystemSettings->setValue("searchRegex", main->searchDialog()->regex());
-    mSystemSettings->setValue("searchCaseSens", main->searchDialog()->caseSens());
-    mSystemSettings->setValue("searchWholeWords", main->searchDialog()->wholeWords());
-    mSystemSettings->setValue("selectedScope", main->searchDialog()->selectedScope());
+    mSystemSettings->setValue("searchRegex", mMain->searchDialog()->regex());
+    mSystemSettings->setValue("searchCaseSens", mMain->searchDialog()->caseSens());
+    mSystemSettings->setValue("searchWholeWords", mMain->searchDialog()->wholeWords());
+    mSystemSettings->setValue("selectedScope", mMain->searchDialog()->selectedScope());
 
     mSystemSettings->endGroup();
 
     // tool-/menubar
     mSystemSettings->beginGroup("viewMenu");
-    mSystemSettings->setValue("projectView", main->projectViewVisibility());
-    mSystemSettings->setValue("outputView", main->outputViewVisibility());
-    mSystemSettings->setValue("gamsArguments", main->gamsParameterEditor()->isEditorExtended());
-    mSystemSettings->setValue("helpView", main->helpViewVisibility());
-    mSystemSettings->setValue("encodingMIBs", main->encodingMIBsString());
+    mSystemSettings->setValue("projectView", mMain->projectViewVisibility());
+    mSystemSettings->setValue("outputView", mMain->outputViewVisibility());
+    mSystemSettings->setValue("gamsArguments", mMain->gamsParameterEditor()->isEditorExtended());
+    mSystemSettings->setValue("helpView", mMain->helpViewVisibility());
+    mSystemSettings->setValue("encodingMIBs", mMain->encodingMIBsString());
 
     mSystemSettings->endGroup();
 
     // help
     mSystemSettings->beginGroup("helpView");
 #ifdef QWEBENGINE
-    QMultiMap<QString, QString> bookmarkMap(main->helpWidget()->getBookmarkMap());
+    QMultiMap<QString, QString> bookmarkMap(mMain->helpWidget()->getBookmarkMap());
     // remove all keys in the helpView group before begin writing them
     mSystemSettings->remove("");
     mSystemSettings->beginWriteArray("bookmarks");
@@ -257,7 +274,7 @@ void Settings::save(MainWindow *main)
         mSystemSettings->setValue("name", bookmarkMap.values().at(i));
     }
     mSystemSettings->endArray();
-    mSystemSettings->setValue("zoomFactor", main->helpWidget()->getZoomFactor());
+    mSystemSettings->setValue("zoomFactor", mMain->helpWidget()->getZoomFactor());
 #endif
     mSystemSettings->endGroup();
 
@@ -265,23 +282,23 @@ void Settings::save(MainWindow *main)
     mSystemSettings->beginGroup("fileHistory");
     mSystemSettings->remove("lastOpenedFiles");
     mSystemSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < main->history()->mLastOpenedFiles.length(); i++) {
+    for (int i = 0; i < mMain->history()->mLastOpenedFiles.length(); i++) {
 
-        if (main->history()->mLastOpenedFiles.at(i) == "") break;
+        if (mMain->history()->mLastOpenedFiles.at(i) == "") break;
         mSystemSettings->setArrayIndex(i);
-        mSystemSettings->setValue("file", main->history()->mLastOpenedFiles.at(i));
+        mSystemSettings->setValue("file", mMain->history()->mLastOpenedFiles.at(i));
     }
     mSystemSettings->endArray();
     mSystemSettings->endGroup();
 
     mSystemSettings->beginGroup("json");
     QJsonObject jsonProject;
-    main->projectRepo()->write(jsonProject);
+    mMain->projectRepo()->write(jsonProject);
     QJsonDocument saveDoc(jsonProject);
     mSystemSettings->setValue("projects", saveDoc.toJson(QJsonDocument::Compact));
 
     QJsonObject jsonTabs;
-    main->writeTabs(jsonTabs);
+    mMain->writeTabs(jsonTabs);
     saveDoc = QJsonDocument(jsonTabs);
     mSystemSettings->setValue("openTabs", saveDoc.toJson(QJsonDocument::Compact));
     mSystemSettings->endGroup();
@@ -339,7 +356,7 @@ void Settings::save(MainWindow *main)
 //    writeScheme();
 }
 
-void Settings::loadViewStates(MainWindow *main)
+void Settings::loadViewStates()
 {
     mSystemSettings->beginGroup("settings");
     mSystemSettings->value("version").toString();
@@ -349,13 +366,13 @@ void Settings::loadViewStates(MainWindow *main)
     mSystemSettings->beginGroup("mainWindow");
     bool maximized = mSystemSettings->value("maximized", false).toBool();
     if (maximized) {
-        main->setWindowState(Qt::WindowMaximized);
+        mMain->setWindowState(Qt::WindowMaximized);
     } else {
-        main->resize(mSystemSettings->value("size", QSize(1024, 768)).toSize());
-        main->move(mSystemSettings->value("pos", QPoint(100, 100)).toPoint());
+        mMain->resize(mSystemSettings->value("size", QSize(1024, 768)).toSize());
+        mMain->move(mSystemSettings->value("pos", QPoint(100, 100)).toPoint());
     }
-    main->restoreState(mSystemSettings->value("windowState").toByteArray());
-    main->ensureInScreen();
+    mMain->restoreState(mSystemSettings->value("windowState").toByteArray());
+    mMain->ensureInScreen();
 
     setSearchUseRegex(mSystemSettings->value("searchRegex", false).toBool());
     setSearchCaseSens(mSystemSettings->value("searchCaseSens", false).toBool());
@@ -366,11 +383,11 @@ void Settings::loadViewStates(MainWindow *main)
 
     // tool-/menubar
     mSystemSettings->beginGroup("viewMenu");
-    main->setProjectViewVisibility(mSystemSettings->value("projectView", true).toBool());
-    main->setOutputViewVisibility(mSystemSettings->value("outputView", false).toBool());
-    main->setExtendedEditorVisibility(mSystemSettings->value("gamsArguments", false).toBool());
-    main->setHelpViewVisibility(mSystemSettings->value("helpView", false).toBool());
-    main->setEncodingMIBs(mSystemSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
+    mMain->setProjectViewVisibility(mSystemSettings->value("projectView", true).toBool());
+    mMain->setOutputViewVisibility(mSystemSettings->value("outputView", false).toBool());
+    mMain->setExtendedEditorVisibility(mSystemSettings->value("gamsArguments", false).toBool());
+    mMain->setHelpViewVisibility(mSystemSettings->value("helpView", false).toBool());
+    mMain->setEncodingMIBs(mSystemSettings->value("encodingMIBs", "106,0,4,17,2025").toString());
 
     mSystemSettings->endGroup();
 
@@ -386,11 +403,11 @@ void Settings::loadViewStates(MainWindow *main)
     }
     mSystemSettings->endArray();
 
-    main->helpWidget()->setBookmarkMap(bookmarkMap);
+    mMain->helpWidget()->setBookmarkMap(bookmarkMap);
     if (mSystemSettings->value("zoomFactor") > 0.0)
-        main->helpWidget()->setZoomFactor(mSystemSettings->value("zoomFactor").toReal());
+        mMain->helpWidget()->setZoomFactor(mSystemSettings->value("zoomFactor").toReal());
     else
-        main->helpWidget()->setZoomFactor(1.0);
+        mMain->helpWidget()->setZoomFactor(1.0);
 #endif
     mSystemSettings->endGroup();
 }
@@ -566,14 +583,14 @@ void Settings::setDeleteAllCommentsAboveOption(bool value)
     mData.insert("deleteCommentsAboveOption", value);
 }
 
-void Settings::restoreLastFilesUsed(MainWindow *main)
+void Settings::restoreLastFilesUsed()
 {
     mSystemSettings->beginGroup("fileHistory");
     mSystemSettings->beginReadArray("lastOpenedFiles");
-    main->history()->mLastOpenedFiles.clear();
+    mMain->history()->mLastOpenedFiles.clear();
     for (int i = 0; i < historySize(); i++) {
         mSystemSettings->setArrayIndex(i);
-        main->history()->mLastOpenedFiles.append(mSystemSettings->value("file").toString());
+        mMain->history()->mLastOpenedFiles.append(mSystemSettings->value("file").toString());
     }
     mSystemSettings->endArray();
     mSystemSettings->endGroup();
@@ -628,24 +645,24 @@ QString Settings::settingsPath()
     return QFileInfo(mUiSettings->fileName()).path();
 }
 
-bool Settings::restoreTabsAndProjects(MainWindow *main)
+bool Settings::restoreTabsAndProjects()
 {
     bool res = true;
     mSystemSettings->beginGroup("json");
     QByteArray saveData = mSystemSettings->value("projects", "").toByteArray();
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    main->projectRepo()->read(loadDoc.object());
+    mMain->projectRepo()->read(loadDoc.object());
 
     if (restoreTabs()) {
         saveData = mSystemSettings->value("openTabs", "").toByteArray();
         loadDoc = QJsonDocument::fromJson(saveData);
-        res = main->readTabs(loadDoc.object());
+        res = mMain->readTabs(loadDoc.object());
     }
     mSystemSettings->endGroup();
     return res;
 }
 
-void Settings::load(MainWindow *main)
+void Settings::load()
 {
     if (mResetSettings) {
         mSystemSettings->clear();
@@ -655,7 +672,7 @@ void Settings::load(MainWindow *main)
     }
 
     loadUserIniSettings();
-    loadViewStates(main);
+    loadViewStates();
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
@@ -677,15 +694,15 @@ void Settings::checkAndUpdateSettings()
     }
 }
 
-void Settings::importSettings(const QString &path, MainWindow *main)
+void Settings::importSettings(const QString &path)
 {
     QFile backupFile(path);
     QFile settingsFile(mUserSettings->fileName());
 
     settingsFile.remove(); // remove old file
     backupFile.copy(settingsFile.fileName()); // import new file
-    resetSettings();
-    load(main);
+    reloadSettings();
+    load();
 }
 
 QString Settings::defaultWorkspace() const

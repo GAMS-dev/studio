@@ -29,7 +29,6 @@
 #include "editorhelper.h"
 #include "viewhelper.h"
 #include "search/searchlocator.h"
-#include "settingslocator.h"
 
 namespace gams {
 namespace studio {
@@ -44,7 +43,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     mBlinkBlockEdit.setInterval(500);
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
-    mSettings = SettingsLocator::settings();
+    mSettings = Settings::settings();
 
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEdit::blockEditBlink);
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
@@ -427,7 +426,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         emit searchFindNextPressed();
 
     // smart typing:
-    if (SettingsLocator::settings()->autoCloseBraces() && !isReadOnly())  {
+    if (Settings::settings()->autoCloseBraces() && !isReadOnly())  {
         QSet<int> moveKeys;
         moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                  << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;

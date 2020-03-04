@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "solveroptiondefinitionmodel.h"
-#include "settingslocator.h"
 #include "settings.h"
 
 namespace gams {
@@ -52,7 +51,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
     QByteArray encodedData;
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    Settings* settings = SettingsLocator::settings();
+    Settings* settings = Settings::settings();
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
             if (index.column()>0) {

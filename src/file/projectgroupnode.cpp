@@ -31,7 +31,6 @@
 #include "syntax.h"
 #include "option/option.h"
 #include "editors/sysloglocator.h"
-#include "settingslocator.h"
 #include "settings.h"
 #include <QFileInfo>
 #include <QDir>
@@ -634,7 +633,7 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     TextMark* textMark = textMarkRepo()->marks(runnableGms()->id())->firstError(id());
 
     if (textMark) {
-        if (SettingsLocator::settings()->openLst()) {
+        if (Settings::settings()->openLst()) {
             textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);
         } else {

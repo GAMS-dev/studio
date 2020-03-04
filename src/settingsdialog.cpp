@@ -24,7 +24,6 @@
 #include "scheme.h"
 #include "settingsdialog.h"
 #include "settings.h"
-#include "settingslocator.h"
 #include "ui_settingsdialog.h"
 #include "miro/mirocommon.h"
 #include "schemewidget.h"
@@ -38,7 +37,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 {
     ui->setupUi(this);
 
-    mSettings = SettingsLocator::settings();
+    mSettings = Settings::settings();
 
     // load from settings to UI
 
@@ -305,7 +304,7 @@ void SettingsDialog::on_btn_import_clicked()
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
-        mSettings->importSettings(filePath, mMain);
+        mSettings->importSettings(filePath);
     }
 
     emit editorLineWrappingChanged();

@@ -394,7 +394,7 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
         beginRow = rowCount(QModelIndex());
     }
 
-//    StudioSettings* settings = SettingsLocator::settings();
+//    StudioSettings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
 
         QList<OptionItem> itemList;

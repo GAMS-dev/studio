@@ -33,7 +33,7 @@ namespace studio {
 static const int CAnyModifier = Qt::ShiftModifier|Qt::AltModifier|Qt::ControlModifier|Qt::MetaModifier;
 
 TextViewEdit::TextViewEdit(AbstractTextMapper &mapper, QWidget *parent)
-    : CodeEdit(parent), mMapper(mapper), mSettings(SettingsLocator::settings())
+    : CodeEdit(parent), mMapper(mapper), mSettings(Settings::settings())
 {
     setMarks(nullptr);
     setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);

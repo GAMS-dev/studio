@@ -45,7 +45,7 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    Settings *mSettings = SettingsLocator::settings();
+    Settings *mSettings = Settings::settings();
 
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->searchUseRegex());

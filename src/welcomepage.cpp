@@ -19,7 +19,6 @@
  */
 #include "welcomepage.h"
 #include "commonpaths.h"
-#include "settingslocator.h"
 #include "settings.h"
 #include "ui_welcomepage.h"
 #include "mainwindow.h"
@@ -63,7 +62,7 @@ void WelcomePage::historyChanged()
     WpLabel *tmpLabel;
     HistoryData *history = mMain->history();
     int j = 0;
-    for (int i = 0; i < SettingsLocator::settings()->historySize(); i++) {
+    for (int i = 0; i < Settings::settings()->historySize(); i++) {
         if (i >= history->mLastOpenedFiles.size()) break;
 
         QFileInfo file(history->mLastOpenedFiles.at(i));

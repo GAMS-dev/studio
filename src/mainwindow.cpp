@@ -35,7 +35,6 @@
 #include "gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
-#include "settingslocator.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
@@ -79,7 +78,8 @@ MainWindow::MainWindow(QWidget *parent)
       mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
-    mSettings = SettingsLocator::settings();
+    mSettings = Settings::settings();
+    mSettings->bind(this);
 
     ui->setupUi(this);
 
@@ -197,11 +197,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
-    mSettings->load(this);
+    mSettings->load();
     mRecent.path = mSettings->defaultWorkspace();
     mSearchDialog = new search::SearchDialog(this);
 
-    if (mSettings->resetSettingsSwitch()) mSettings->resetSettings();
+    if (mSettings->resetSettingsSwitch()) mSettings->reloadSettings();
 
     // stack help under output
     tabifyDockWidget(ui->dockHelpView, ui->dockProcessLog);
@@ -229,7 +229,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
-    SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
@@ -305,7 +304,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
     mAutosaveHandler->saveChangedFiles();
-    mSettings->save(this);
+    mSettings->save();
 }
 
 bool MainWindow::event(QEvent *event)
@@ -1062,7 +1061,7 @@ void MainWindow::on_actionSave_As_triggered()
                 }
                 mStatusWidgets->setFileName(filePath);
 
-                mSettings->save(this);
+                mSettings->save();
             }
         }
         if (choice == 1) {
@@ -2134,7 +2133,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
-    mSettings->save(this);
+    mSettings->save();
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
     if (!terminateProcessesConditionally(mProjectRepo.runGroups())) {
         event->setAccepted(false);
@@ -2523,8 +2522,8 @@ void MainWindow::parameterRunChanged()
 
 void MainWindow::openInitialFiles()
 {
-    if (mSettings->restoreTabsAndProjects(this)) {
-        mSettings->restoreLastFilesUsed(this);
+    if (mSettings->restoreTabsAndProjects()) {
+        mSettings->restoreLastFilesUsed();
         openFiles(mInitialFiles);
         mInitialFiles.clear();
         watchProjectTree();
@@ -2612,7 +2611,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
 
 void MainWindow::storeTree()
 {
-    mSettings->save(this);
+    mSettings->save();
 }
 
 void MainWindow::cloneBookmarkMenu(QMenu *menu)
@@ -2622,7 +2621,7 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
 
 void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
 {
-    qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
+    qint64 maxSize = Settings::settings()->editableMaxSizeMB() *1024*1024;
     int factor = (sizeof (void*) == 2) ? 16 : 23;
     if (mFileMetaRepo.askBigFileEdit() && file.exists() && file.size() > maxSize) {
         QString text = ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
@@ -3025,7 +3024,7 @@ void MainWindow::on_actionSettings_triggered()
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
-    mSettings->save(this);
+    mSettings->save();
     if (sd.miroSettingsEnabled())
         updateMiroMenu();
 }
@@ -3545,7 +3544,7 @@ void MainWindow::on_actionSelect_encodings_triggered()
     SelectEncodings se(encodingMIBs(), this);
     se.exec();
     setEncodingMIBs(se.selectedMibs());
-    mSettings->save(this);
+    mSettings->save();
 }
 
 void MainWindow::setExtendedEditorVisibility(bool visible)
@@ -3641,7 +3640,7 @@ void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
     mSettings->resetViewSettings();
-    mSettings->load(this);
+    mSettings->load();
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
