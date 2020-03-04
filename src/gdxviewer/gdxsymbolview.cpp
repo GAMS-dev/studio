@@ -91,9 +91,13 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     QLabel* lblValFormat = new QLabel("Format:", this);
     gridLayout->addWidget(lblValFormat,0,0);
     mValFormat = new QComboBox(this);
-    mValFormat->addItem("g-format", numerics::DoubleFormatter::g);
-    mValFormat->addItem("f-format", numerics::DoubleFormatter::f);
-    mValFormat->addItem("e-format", numerics::DoubleFormatter::e);
+    mValFormat->addItem("G-format", numerics::DoubleFormatter::g);
+    mValFormat->addItem("F-format", numerics::DoubleFormatter::f);
+    mValFormat->addItem("E-format", numerics::DoubleFormatter::e);
+    mValFormat->setToolTip(QString("<html><head/><body><p>Display format for numerical values:</p><p><span style=' font-weight:600;'>")
+                          +QString("G-format:</span> Numerical values are displayed either in scientific format or fixed format, whichever is more appropriate. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the total number of significant digits. When precision is set to <span style=' font-style:italic;'>Full</span>, the value is displayed in the shortest format that represents the numerical value most exactly.</p><p><span style=' font-weight:600;'>")
+                          +QString("E-format:</span> Numerical values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the total number of significant digits.</p><p><span style=' font-weight:600;'>")
+                          +QString("F-format:</span> Numerical values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p></body></html>"));
     resetValFormat();
     gridLayout->addWidget(mValFormat,0,1);
 
