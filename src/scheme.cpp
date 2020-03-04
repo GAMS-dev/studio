@@ -88,7 +88,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
-    mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black));
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black)); // TODO: is this unused?
     mColorSchemes[sNr].insert(Edit_parenthesesValidBg,        QColor(Qt::green).lighter(170));
     mColorSchemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).lighter(150));
     mColorSchemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(Qt::green).lighter(130));
@@ -145,13 +145,14 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_text,                Color(dark_neutral));
     mColorSchemes[sNr].insert(Syntax_neutral,           Color(dark_neutral));
     mColorSchemes[sNr].insert(Edit_background,          QColor(30,30,30));
-    mColorSchemes[sNr].insert(Edit_currentLineBg,       QColor(0,146,122));
+    mColorSchemes[sNr].insert(Edit_currentLineBg,       QColor(0,73,61));
     mColorSchemes[sNr].insert(Edit_errorBg,             QColor(187,34,51));
     mColorSchemes[sNr].insert(Edit_matchesBg,           QColor(51,102,51));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,        QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,    QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,    QColor(Qt::white));
     mColorSchemes[sNr].insert(Edit_currentWordBg,       QColor(60,60,60));
+    mColorSchemes[sNr].insert(Edit_parenthesesValidFg,  QColor(Qt::black));
 
     mColorSchemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_directive,         Color(dark_assignment));
