@@ -94,10 +94,10 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mValFormat->addItem("G-format", numerics::DoubleFormatter::g);
     mValFormat->addItem("F-format", numerics::DoubleFormatter::f);
     mValFormat->addItem("E-format", numerics::DoubleFormatter::e);
-    mValFormat->setToolTip(QString("<html><head/><body><p>Display format for numerical values:</p><p><span style=' font-weight:600;'>")
-                          +QString("G-format:</span> Numerical values are displayed either in scientific format or fixed format, whichever is more appropriate. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the total number of significant digits. When precision is set to <span style=' font-style:italic;'>Full</span>, the value is displayed in the shortest format that represents the numerical value most exactly.</p><p><span style=' font-weight:600;'>")
-                          +QString("E-format:</span> Numerical values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the total number of significant digits.</p><p><span style=' font-weight:600;'>")
-                          +QString("F-format:</span> Numerical values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p></body></html>"));
+    mValFormat->setToolTip("<html><head/><body><p>Display format for numerical values:</p><p><span style=' font-weight:600;'>"
+                          "G-format:</span> Numerical values are displayed either in scientific format or fixed format, whichever is more appropriate. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the total number of significant digits. When precision is set to <span style=' font-style:italic;'>Full</span>, the value is displayed in the shortest format that represents the numerical value most exactly. Trailing zeroes are always truncated regardless of <span style=' font-style:italic;'>Squeeze Trailing Zeroes</span>. </p><p><span style=' font-weight:600;'>"
+                          "F-format:</span> Numerical values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p></body></html>"
+                          "E-format:</span> Numerical values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the total number of significant digits.</p><p><span style=' font-weight:600;'>");
     resetValFormat();
     gridLayout->addWidget(mValFormat,0,1);
 
@@ -107,6 +107,10 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mPrecision->setRange(1, 14);
     mPrecision->setValue(6);
     mPrecision->setWrapping(true);
+    mPrecision->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
+                           "G-Format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
+                           "F-Format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
+                           "E-Format:</span> Significat digits [1..17]</p></body></html>");
     gridLayout->addWidget(mPrecision,1,1);
 
     vLayout->addItem(gridLayout);
