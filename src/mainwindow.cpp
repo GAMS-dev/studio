@@ -237,7 +237,11 @@ MainWindow::MainWindow(QWidget *parent)
     updateMiroMenu();
 
     // Themes
+#ifdef __APPLE__
+    Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
+#else
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
+#endif
     invalidateScheme();
 
     // this needs to be re-called for studio startup, as the call when loading settings is too early
@@ -321,7 +325,7 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
-        Scheme::instance()->setActiveScheme(mSettings->studioSchemeIndex());
+        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
 #endif
     }
     return QMainWindow::event(event);
