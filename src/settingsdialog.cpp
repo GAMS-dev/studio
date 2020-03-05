@@ -75,7 +75,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
 //    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-//    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setSyntaxTheme);
+    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setSyntaxTheme);
     connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setStudioTheme);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -112,7 +112,7 @@ void SettingsDialog::loadSettings()
     ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
-//    ui->combo_syntaxTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
+    ui->combo_studioTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
     ui->combo_studioTheme->setCurrentIndex(mSettings->studioSchemeIndex());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());

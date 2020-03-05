@@ -406,7 +406,7 @@ void StudioSettings::loadUserSettings()
             DEB() << "No fixed font found on system. Using " << font.family();
         }
     }
-    setSyntaxSchemeIndex(mUserSettings->value("syntaxScheme", 0).toInt());
+//    setSyntaxSchemeIndex(mUserSettings->value("syntaxScheme", 0).toInt());
     setStudioSchemeIndex(mUserSettings->value("studioScheme", 0).toInt());
     setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
@@ -587,8 +587,8 @@ int StudioSettings::studioSchemeIndex() const
 void StudioSettings::setStudioSchemeIndex(int studioSchemeIndex)
 {
     mStudioSchemeIndex = studioSchemeIndex;
-    PaletteManager::instance()->setPalette(mStudioSchemeIndex);
-    Scheme::instance()->setActiveScheme(mSyntaxSchemeIndex, Scheme::StudioScope);
+    PaletteManager::instance()->setPalette(studioSchemeIndex);
+    Scheme::instance()->setActiveScheme(studioSchemeIndex, Scheme::StudioScope);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)
