@@ -30,6 +30,10 @@
 #include "miro/mirocommon.h"
 #include "schemewidget.h"
 
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
+
 namespace gams {
 namespace studio {
 
@@ -58,7 +62,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
 #ifdef __unix__
     // nothing
-#elif
+#else
     ui->combo_studioTheme->addItem("Follow Operating System");
 #endif
 
