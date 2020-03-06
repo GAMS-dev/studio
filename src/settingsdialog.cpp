@@ -39,7 +39,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->setupUi(this);
 
     mSettings = SettingsLocator::settings();
-    ui->tabWidget->setCurrentIndex(0);
 
     // load from settings to UI
 
