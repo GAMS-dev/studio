@@ -20,6 +20,7 @@
 #ifndef STUDIOSETTINGS_H
 #define STUDIOSETTINGS_H
 
+#include <QObject>
 #include <QString>
 #include <QColor>
 #include <QHash>
@@ -32,9 +33,9 @@ namespace studio {
 
 class MainWindow;
 
-class StudioSettings
+class StudioSettings : public QObject
 {
-
+Q_OBJECT
 public:
     StudioSettings(bool ignoreSettings, bool resetSettings, bool resetViewSettings);
     ~StudioSettings();
@@ -59,14 +60,11 @@ public:
     bool openLst() const;
     void setOpenLst(bool value);
 
-
     bool jumpToError() const;
     void setJumpToError(bool value);
 
-
     bool foregroundOnDemand() const;
     void setForegroundOnDemand(bool value);
-
 
     int fontSize() const;
     void setFontSize(int value);
@@ -163,6 +161,8 @@ public:
     int studioSchemeIndex() const;
     void setStudioSchemeIndex(int studioSchemeIndex);
 
+    int appearance() const;
+    void setAppearance(int appearance);
 
 private:
     QSettings *mAppSettings = nullptr;
@@ -183,6 +183,7 @@ private:
     bool mJumpToError;
 
     // editor settings page
+    int mAppearance;
     QString mFontFamily;
     int mFontSize;
     bool mShowLineNr;

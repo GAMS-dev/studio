@@ -59,12 +59,13 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     // Themes
 //    ui->combo_syntaxTheme->addItems(Scheme::instance()->schemes());
 //    ui->combo_syntaxTheme->setCurrentIndex(Scheme::instance()->activeScheme(Scheme::EditorScope));
-    ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
+//    ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
 #ifdef __unix__
     // nothing
 #else
-    ui->combo_studioTheme->addItem("Follow Operating System");
+    ui->combo_appearance->insertItem(0, "Follow Operating System");
 #endif
+    ui->combo_appearance->setCurrentIndex(mSettings->appearance());
 
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
@@ -74,10 +75,12 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), mSettings, &StudioSettings::setAppearance);
 //    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setSyntaxTheme);
-    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setStudioTheme);
+//    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setSyntaxTheme);
+//    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+//    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setStudioTheme);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -112,8 +115,9 @@ void SettingsDialog::loadSettings()
     ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
-    ui->combo_studioTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
-    ui->combo_studioTheme->setCurrentIndex(mSettings->studioSchemeIndex());
+//    ui->combo_studioTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
+//    ui->combo_studioTheme->setCurrentIndex(mSettings->studioSchemeIndex());
+    ui->combo_appearance->setCurrentIndex(mSettings->appearance());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
@@ -160,26 +164,6 @@ void SettingsDialog::setModified()
     setModifiedStatus(true);
 }
 
-void SettingsDialog::setSyntaxTheme(int theme)
-{
-    Scheme::instance()->setActiveScheme(theme, Scheme::EditorScope);
-}
-
-void SettingsDialog::setStudioTheme(int theme)
-{
-    int pickedTheme = theme;
-    // until we have support for themes from files, this sets both Studio- and Editor theme
-    if (pickedTheme == 2) { // set to follow OS
-#ifdef __APPLE__
-        pickedTheme = MacOSCocoaBridge::isDarkMode() ? 1 : 0;
-#elif _WIN32
-        // TODO(RG)
-#endif
-    }
-    PaletteManager::instance()->setPalette(pickedTheme);
-    setSyntaxTheme(pickedTheme);
-}
-
 void SettingsDialog::setModifiedStatus(bool status)
 {
     isModified = status;
@@ -212,7 +196,8 @@ void SettingsDialog::saveSettings()
 
     // editor page
 //    mSettings->setSyntaxSchemeIndex(ui->combo_syntaxTheme->currentIndex());
-    mSettings->setStudioSchemeIndex(ui->combo_studioTheme->currentIndex());
+//    mSettings->setStudioSchemeIndex(ui->combo_studioTheme->currentIndex());
+    mSettings->setAppearance(ui->combo_appearance->currentIndex());
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
@@ -510,5 +495,3 @@ void SettingsDialog::reloadColors()
 
 }
 }
-
-

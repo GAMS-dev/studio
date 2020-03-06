@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>878</width>
-    <height>676</height>
+    <width>563</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -406,7 +406,7 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QComboBox" name="combo_studioTheme">
+           <widget class="QComboBox" name="combo_appearance">
             <item>
              <property name="text">
               <string>Light</string>
@@ -851,8 +851,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>838</width>
-            <height>102</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">
@@ -864,8 +864,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">

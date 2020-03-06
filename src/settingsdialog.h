@@ -60,8 +60,6 @@ private slots:
     void on_sb_fontsize_valueChanged(int arg1);
     void schemeModified();
     void setModified();
-    void setSyntaxTheme(int theme);
-    void setStudioTheme(int theme);
 
     void on_btn_openUserLibLocation_clicked();
     void on_btn_browse_clicked();

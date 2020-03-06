@@ -245,7 +245,7 @@ MainWindow::MainWindow(QWidget *parent)
     invalidateScheme();
 
     // this needs to be re-called for studio startup, as the call when loading settings is too early
-    PaletteManager::instance()->setPalette(PaletteManager::instance()->activePalette());
+    mSettings->setAppearance(mSettings->appearance());
 }
 
 
@@ -325,7 +325,8 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
-        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
+        // TOGO(RG): check if follow OS or not
+//        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
 #endif
     }
     return QMainWindow::event(event);

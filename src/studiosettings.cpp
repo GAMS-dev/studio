@@ -223,6 +223,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
+    mUserSettings->setValue("appearance", appearance());
     mUserSettings->setValue("syntaxScheme", syntaxSchemeIndex());
     mUserSettings->setValue("studioScheme", studioSchemeIndex());
     mUserSettings->setValue("fontFamily", fontFamily());
@@ -407,7 +408,8 @@ void StudioSettings::loadUserSettings()
         }
     }
 //    setSyntaxSchemeIndex(mUserSettings->value("syntaxScheme", 0).toInt());
-    setStudioSchemeIndex(mUserSettings->value("studioScheme", 0).toInt());
+//    setStudioSchemeIndex(mUserSettings->value("studioScheme", 0).toInt());
+    setAppearance(mUserSettings->value("appearance", 0).toInt());
     setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
@@ -589,6 +591,36 @@ void StudioSettings::setStudioSchemeIndex(int studioSchemeIndex)
     mStudioSchemeIndex = studioSchemeIndex;
     PaletteManager::instance()->setPalette(studioSchemeIndex);
     Scheme::instance()->setActiveScheme(studioSchemeIndex, Scheme::StudioScope);
+}
+
+int StudioSettings::appearance() const
+{
+    return mAppearance;
+}
+
+void StudioSettings::setAppearance(int appearance)
+{
+    mAppearance = appearance;
+    int pickedTheme = -1;
+
+    bool canFollowOS = true;
+#ifdef __UNIX__
+    canFollowOS = false; // deactivate follow OS option for linux
+#endif
+
+    if (canFollowOS && appearance == 0) { // do OS specific things
+#ifdef __APPLE__
+        pickedTheme = MacOSCocoaBridge::isDarkMode() ? 2 : 1;
+#elif _WIN32
+        // TODO(RG) add windows
+#endif
+        pickedTheme = appearance--;
+    } else {
+        pickedTheme = appearance;
+    }
+
+    PaletteManager::instance()->setPalette(pickedTheme);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)
