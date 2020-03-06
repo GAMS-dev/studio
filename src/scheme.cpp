@@ -46,7 +46,6 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
-    mSlotText.insert(Edit_blockSelectBg,        "Block selection");
 
     mSlotText.insert(Icon_Line,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
@@ -89,7 +88,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
-    mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black));
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black)); // TODO: is this unused?
     mColorSchemes[sNr].insert(Edit_parenthesesValidBg,        QColor(Qt::green).lighter(170));
     mColorSchemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).lighter(150));
     mColorSchemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(Qt::green).lighter(130));
@@ -98,24 +97,23 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
     mColorSchemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
-    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(palette().color(QPalette::Highlight))); // use OS specific color for selection, even if block
 
     mColorSchemes[sNr].insert(Mark_errorFg,                   QColor(Qt::darkRed));
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Line,                      QColor("#334455"));
-    mColorSchemes[sNr].insert(Icon_Back,                      QColor("#334455"));
-    mColorSchemes[sNr].insert(Icon_Paper,                     QColor("#FFFFFF"));
-    mColorSchemes[sNr].insert(Disable_Line,                   QColor("#aaaaaa"));
-    mColorSchemes[sNr].insert(Disable_Back,                   QColor("#aaaaaa"));
-    mColorSchemes[sNr].insert(Active_Line,                    QColor("#2266AA"));
-    mColorSchemes[sNr].insert(Active_Back,                    QColor("#2266AA"));
-    mColorSchemes[sNr].insert(Select_Line,                    QColor("#2266AA"));
-    mColorSchemes[sNr].insert(Select_Back,                    QColor("#2266AA"));
-    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#bb0000"));
-    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#348619"));
-    mColorSchemes[sNr].insert(Normal_Blue,                    QColor("#2266AA"));
+    mColorSchemes[sNr].insert(Icon_Line,                      QColor(51,68,85));
+    mColorSchemes[sNr].insert(Icon_Back,                      QColor(51,68,85));
+    mColorSchemes[sNr].insert(Icon_Paper,                     QColor(Qt::white));
+    mColorSchemes[sNr].insert(Disable_Line,                   QColor(170,170,170));
+    mColorSchemes[sNr].insert(Disable_Back,                   QColor(170,170,170));
+    mColorSchemes[sNr].insert(Active_Line,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Active_Back,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Select_Line,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Select_Back,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Normal_Red,                     QColor(187,0,0));
+    mColorSchemes[sNr].insert(Normal_Green,                   QColor(52,134,25));
+    mColorSchemes[sNr].insert(Normal_Blue,                    QColor(34,102,170));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
@@ -144,36 +142,37 @@ void Scheme::initDefault()
     QColor dark_unobstrusive(191, 195, 186);//QColor(191,195,186);
     QColor dark_neutral(223,224,223);       //QColor(223,224,223);
 
-    mColorSchemes[sNr].insert(Edit_text,                      Color(dark_neutral));
-    mColorSchemes[sNr].insert(Syntax_neutral,                 Color(dark_neutral));
-    mColorSchemes[sNr].insert(Edit_background,                QColor(30,30,30));
-    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(0,146,122));
-    mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
-    mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
-    mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
+    mColorSchemes[sNr].insert(Edit_text,                Color(dark_neutral));
+    mColorSchemes[sNr].insert(Syntax_neutral,           Color(dark_neutral));
+    mColorSchemes[sNr].insert(Edit_background,          QColor(30,30,30));
+    mColorSchemes[sNr].insert(Edit_currentLineBg,       QColor(0,73,61));
+    mColorSchemes[sNr].insert(Edit_errorBg,             QColor(187,34,51));
+    mColorSchemes[sNr].insert(Edit_matchesBg,           QColor(51,102,51));
+    mColorSchemes[sNr].insert(Edit_linenrAreaBg,        QColor(16,16,16));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,    QColor(40,40,40));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,    QColor(Qt::white));
+    mColorSchemes[sNr].insert(Edit_currentWordBg,       QColor(60,60,60));
+    mColorSchemes[sNr].insert(Edit_parenthesesValidFg,  QColor(Qt::black));
 
-    mColorSchemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
-    mColorSchemes[sNr].insert(Syntax_directive,               Color(dark_assignment));
-    mColorSchemes[sNr].insert(Syntax_keyword,                 Color(dark_neutral, fBold));
-    mColorSchemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
-    mColorSchemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
-    mColorSchemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
-    mColorSchemes[sNr].insert(Syntax_identifier,              Color(dark_id));
-    mColorSchemes[sNr].insert(Syntax_assign,                  Color(dark_id));
-    mColorSchemes[sNr].insert(Syntax_identifierAssign,        Color(dark_assignment));
-    mColorSchemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
-    mColorSchemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
-    mColorSchemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
-    mColorSchemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
+    mColorSchemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
+    mColorSchemes[sNr].insert(Syntax_directive,         Color(dark_assignment));
+    mColorSchemes[sNr].insert(Syntax_keyword,           Color(dark_neutral, fBold));
+    mColorSchemes[sNr].insert(Syntax_declaration,       Color(dark_highlight, fBold));
+    mColorSchemes[sNr].insert(Syntax_description,       Color(dark_unobstrusive));
+    mColorSchemes[sNr].insert(Syntax_comment,           Color(dark_unobstrusive, fItalic));
+    mColorSchemes[sNr].insert(Syntax_identifier,        Color(dark_id));
+    mColorSchemes[sNr].insert(Syntax_assign,            Color(dark_id));
+    mColorSchemes[sNr].insert(Syntax_identifierAssign,  Color(dark_assignment));
+    mColorSchemes[sNr].insert(Syntax_assignLabel,       Color(dark_assignment));
+    mColorSchemes[sNr].insert(Syntax_tableHeader,       Color(dark_assignment, fBold));
+    mColorSchemes[sNr].insert(Syntax_assignValue,       Color(dark_assignment.lighter()));
+    mColorSchemes[sNr].insert(Syntax_directiveBody,     Color(dark_highlight, fItalic));
 
-    mColorSchemes[sNr].insert(Icon_Line,                      QColor(dark_neutral));
-    mColorSchemes[sNr].insert(Icon_Back,                      QColor(dark_neutral));
-    mColorSchemes[sNr].insert(Disable_Back,                   QColor("#334455"));
-    mColorSchemes[sNr].insert(Normal_Red,                     QColor("#BB2233"));
-    mColorSchemes[sNr].insert(Normal_Green,                   QColor("#66AA66"));
-    mColorSchemes[sNr].insert(Normal_Blue,                    QColor("#4499ee"));
-
-    mColorSchemes[sNr].insert(Edit_blockSelectBg,             QColor(60,60,60));
+    mColorSchemes[sNr].insert(Icon_Back,                QColor(dark_neutral));
+    mColorSchemes[sNr].insert(Disable_Back,             QColor(51,68,85));
+    mColorSchemes[sNr].insert(Normal_Red,               QColor(187,34,51));
+    mColorSchemes[sNr].insert(Normal_Green,             QColor(102,170,102));
+    mColorSchemes[sNr].insert(Normal_Blue,              QColor(68,153,238));
 
     invalidate();
 }
