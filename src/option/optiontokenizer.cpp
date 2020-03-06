@@ -26,6 +26,7 @@
 #include "optiontokenizer.h"
 #include "gclgms.h"
 #include "option.h"
+#include "scheme.h"
 #include "commonpaths.h"
 #include "editors/defaultsystemlogger.h"
 #include "editors/sysloglocator.h"
@@ -76,16 +77,13 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
 
     // option Format
     mInvalidKeyFormat.setFontItalic(true);
-    mInvalidKeyFormat.setBackground(Qt::lightGray);
-    mInvalidKeyFormat.setForeground(Qt::red);
+    mInvalidKeyFormat.setForeground(Scheme::color(Scheme::Normal_Red));
 
     mInvalidValueFormat.setFontItalic(true);
-    mInvalidValueFormat.setBackground(Qt::lightGray);
-    mInvalidValueFormat.setForeground(Qt::red/*Qt::blue*/);
+    mInvalidValueFormat.setForeground(Scheme::color(Scheme::Normal_Red));
 
     mDuplicateOptionFormat.setFontItalic(true);
-    mDuplicateOptionFormat.setBackground(Qt::lightGray);
-    mDuplicateOptionFormat.setForeground(Qt::yellow);
+    mDuplicateOptionFormat.setForeground(Scheme::color(Scheme::Normal_Blue));
 
     mDeprecateOptionFormat.setFontItalic(true);
     mDeprecateOptionFormat.setBackground(Qt::lightGray);
