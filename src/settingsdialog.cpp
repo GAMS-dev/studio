@@ -67,7 +67,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -101,7 +101,7 @@ void SettingsDialog::loadSettings()
     ui->cb_autosave->setChecked(mSettings->autosaveOnRun());
     ui->cb_openlst->setChecked(mSettings->openLst());
     ui->cb_jumptoerror->setChecked(mSettings->jumpToError());
-    ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
+    ui->cb_foregroundOnDemand->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
     ui->combo_editorTheme->setCurrentIndex(mSettings->colorSchemeIndex());
@@ -179,7 +179,7 @@ void SettingsDialog::saveSettings()
     mSettings->setAutosaveOnRun(ui->cb_autosave->isChecked());
     mSettings->setOpenLst(ui->cb_openlst->isChecked());
     mSettings->setJumpToError(ui->cb_jumptoerror->isChecked());
-    mSettings->setForegroundOnDemand(ui->cb_bringontop->isChecked());
+    mSettings->setForegroundOnDemand(ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
     mSettings->setColorSchemeIndex(ui->combo_editorTheme->currentIndex());

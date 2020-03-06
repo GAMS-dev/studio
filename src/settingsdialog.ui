@@ -66,7 +66,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="cb_bringontop">
+           <widget class="QCheckBox" name="cb_foregroundOnDemand">
             <property name="text">
              <string>Raise GAMS Studio when opening a file</string>
             </property>

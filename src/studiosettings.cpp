@@ -216,7 +216,7 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
     mUserSettings->setValue("openLst", openLst());
     mUserSettings->setValue("jumpToError", jumpToError());
-    mUserSettings->setValue("setStudioOnTop",foregroundOnDemand());
+    mUserSettings->setValue("foregroundOnDemand",foregroundOnDemand());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
@@ -392,7 +392,7 @@ void StudioSettings::loadUserSettings()
     setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
     setOpenLst(mUserSettings->value("openLst", false).toBool());
     setJumpToError(mUserSettings->value("jumpToError", true).toBool());
-    setForegroundOnDemand(mUserSettings->value("bringOnTop",true).toBool());
+    setForegroundOnDemand(mUserSettings->value("foregroundOnDemand",true).toBool());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
