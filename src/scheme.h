@@ -52,6 +52,7 @@ public:
         Normal_Red,
         Normal_Green,
         Normal_Blue,
+        Normal_Yellow,
 
         Syntax_undefined,
         Syntax_neutral,

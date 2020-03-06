@@ -117,6 +117,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Normal_Red,                     QColor(187,0,0));
     mColorSchemes[sNr].insert(Normal_Green,                   QColor(52,134,25));
     mColorSchemes[sNr].insert(Normal_Blue,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Normal_Yellow,                  QColor(Qt::darkYellow)); // TODO(RG): check for dark theme
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
