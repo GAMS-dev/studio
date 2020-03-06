@@ -1,3 +1,19 @@
+Version 0.14.5
+==================
+- **overhauled shortcuts to use modifier keys more consistently** (more to come later):
+    - open Terminal: *Ctrl+T*
+    - Model Library Explorer: *F2*
+    - Settings: *F4*
+    - Run MIRO base mode: *F5*
+    - Run MIRO hypercube mode: *F6*
+    - Run MIRO configuration mode: *F7*
+- fixed bug where certain labels did not appear in the vertical header of the table view of the GDX Viewer
+- improved word under cursor highlighting color for dark theme
+- block selection now uses operating system default selection color
+- added option to set default text codec to Edit > Encoding > Select encodings
+- fixed broken link to help document on macOS when pressing F1 in certain views
+- removed unnecessary highlighting of current line in logs
+
 Version 0.14.4
 ==================
 ## General
