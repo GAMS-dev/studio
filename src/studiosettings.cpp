@@ -32,6 +32,10 @@
 #include "scheme.h"
 #include "colors/palettemanager.h"
 
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
+
 namespace gams {
 namespace studio {
 
@@ -601,27 +605,25 @@ int StudioSettings::appearance() const
 void StudioSettings::setAppearance(int appearance)
 {
     mAppearance = appearance;
-    int pickedTheme = -1;
+    int pickedTheme = appearance;
 
-    bool canFollowOS = true;
-#ifdef __UNIX__
-    canFollowOS = false; // deactivate follow OS option for linux
+    bool canFollowOS = false;
+#ifdef _WIN32
+    canFollowOS = true; // deactivate follow OS option for linux
 #endif
 
     if (canFollowOS && appearance == 0) { // do OS specific things
-#ifdef __APPLE__
-        pickedTheme = MacOSCocoaBridge::isDarkMode() ? 2 : 1;
-#elif _WIN32
-        QSettings readTheme("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", QSettings::NativeFormat);
-        bool useLight = readTheme.value("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\AppsUseLightTheme").toBool() ? 1 : 2;
+#ifdef _WIN32
+        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
 #endif
-        pickedTheme = appearance--;
-    } else {
-        pickedTheme = appearance;
+    } else if (canFollowOS) {
+        pickedTheme--; // deduct "Follow OS" option
     }
 
     PaletteManager::instance()->setPalette(pickedTheme);
     Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

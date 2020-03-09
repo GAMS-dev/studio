@@ -238,7 +238,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Themes
 #ifdef __APPLE__
-    Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
+    mSettings->setAppearance((MacOSCocoaBridge::isDarkMode() ? 1 : 0));
 #else
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
 #endif
@@ -325,8 +325,8 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
-        // TOGO(RG): check if follow OS or not
-//        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
+        // reload theme when switching OS theme
+        mSettings->setAppearance(mSettings->appearance());
 #endif
     }
     return QMainWindow::event(event);

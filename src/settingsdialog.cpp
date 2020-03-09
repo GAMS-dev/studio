@@ -57,13 +57,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->cb_linewrap_process->setVisible(false);
 
     // Themes
-//    ui->combo_syntaxTheme->addItems(Scheme::instance()->schemes());
-//    ui->combo_syntaxTheme->setCurrentIndex(Scheme::instance()->activeScheme(Scheme::EditorScope));
-//    ui->combo_studioTheme->setCurrentIndex(PaletteManager::instance()->activePalette());
-#ifdef __unix__
-    // nothing
-#else
+#ifdef __WIN32
     ui->combo_appearance->insertItem(0, "Follow Operating System");
+#elif __APPLE__
+    ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
+    ui->combo_appearance->setVisible(false);
 #endif
     ui->combo_appearance->setCurrentIndex(mSettings->appearance());
 
