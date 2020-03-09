@@ -612,7 +612,8 @@ void StudioSettings::setAppearance(int appearance)
 #ifdef __APPLE__
         pickedTheme = MacOSCocoaBridge::isDarkMode() ? 2 : 1;
 #elif _WIN32
-        // TODO(RG) add windows
+        QSettings readTheme("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", QSettings::NativeFormat);
+        bool useLight = readTheme.value("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\AppsUseLightTheme").toBool() ? 1 : 2;
 #endif
         pickedTheme = appearance--;
     } else {
