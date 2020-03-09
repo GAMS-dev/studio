@@ -426,7 +426,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         emit searchFindNextPressed();
 
     // smart typing:
-    if (Settings::settings()->autoCloseBraces() && !isReadOnly())  {
+    if (Settings::settings()->toBool(_edAutoCloseBraces) && !isReadOnly())  {
         QSet<int> moveKeys;
         moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                  << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;

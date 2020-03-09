@@ -701,7 +701,7 @@ void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
         else if (kind == "ref")
             fullPath += ".ref";
         else
-            qDebug() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
+            DEB() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
     }
 
     mParameterHash.insert(kind, fullPath);

@@ -1549,7 +1549,7 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    qDebug() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
+    DEB() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
@@ -1867,11 +1867,11 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
     if (filePath.startsWith("[")) return; // invalid
 
-    while (history()->mLastOpenedFiles.size() > mSettings->historySize()
+    while (history()->mLastOpenedFiles.size() > mSettings->toInt(_historySize)
            && !history()->mLastOpenedFiles.isEmpty())
         history()->mLastOpenedFiles.removeLast();
 
-    if (mSettings->historySize() == 0) return;
+    if (mSettings->toInt(_historySize) == 0) return;
 
     if (!history()->mLastOpenedFiles.contains(filePath))
         history()->mLastOpenedFiles.insert(0, filePath);
@@ -1961,7 +1961,7 @@ void MainWindow::on_actionBase_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.mainModelName());
-    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->toString(_miroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
@@ -1976,7 +1976,7 @@ void MainWindow::on_actionHypercube_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.mainModelName());
-    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->toString(_miroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
@@ -1991,7 +1991,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.mainModelName());
-    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->toString(_miroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
@@ -2038,7 +2038,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
         return;
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
-    process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    process->setMiroPath(miro::MiroCommon::path( mSettings->toString(_miroInstallPath)));
     process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     process->setModelName(mRecent.mainModelName());
     process->setTestDeployment(testDeploy);
@@ -2523,7 +2523,7 @@ void MainWindow::parameterRunChanged()
 void MainWindow::openInitialFiles()
 {
     if (mSettings->restoreTabsAndProjects()) {
-        mSettings->restoreLastFilesUsed();
+        history()->mLastOpenedFiles = mSettings->fileHistory();
         openFiles(mInitialFiles);
         mInitialFiles.clear();
         watchProjectTree();
@@ -2621,7 +2621,7 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
 
 void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
 {
-    qint64 maxSize = Settings::settings()->editableMaxSizeMB() *1024*1024;
+    qint64 maxSize = Settings::settings()->toInt(_edEditableMaxSizeMB) *1024*1024;
     int factor = (sizeof (void*) == 2) ? 16 : 23;
     if (mFileMetaRepo.askBigFileEdit() && file.exists() && file.size() > maxSize) {
         QString text = ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
@@ -2642,9 +2642,9 @@ void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
 
 void MainWindow::updateMiroMenu()
 {
-    if (mSettings->miroInstallationLocation().isEmpty())
-        mSettings->setMiroInstallationLocation(miro::MiroCommon::path(""));
-    QFileInfo fileInfo(mSettings->miroInstallationLocation());
+    if (mSettings->toString(_miroInstallPath).isEmpty())
+        mSettings->setValue(_miroInstallPath, miro::MiroCommon::path(""));
+    QFileInfo fileInfo(mSettings->toString(_miroInstallPath));
     if (fileInfo.exists())
         ui->menuMIRO->setEnabled(true);
     else

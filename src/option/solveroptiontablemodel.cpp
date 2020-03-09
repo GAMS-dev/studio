@@ -452,7 +452,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                                                      false));
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
-                if (settings && settings->overridExistingOption()) {
+                if (settings && settings->toBool(_soOverrideExisting)) {
                     for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
                 }
             }
@@ -546,7 +546,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
                 setData(idx, item->key, Qt::EditRole);
                 setData( index(beginRow, COLUMN_OPTION_VALUE), item->value, Qt::EditRole);
-                if (settings && settings->addEOLCommentDescriptionOption()) { //addEOLComment) {
+                if (settings && settings->toBool(_soAddEOLComment)) { //addEOLComment) {
                     setData(index(beginRow, COLUMN_EOL_COMMENT), item->text, Qt::EditRole);
                 }
                 setData(index(beginRow, columnEntryNumber), item->optionId, Qt::EditRole);

@@ -36,9 +36,53 @@
 namespace gams {
 namespace studio {
 
-// Increase this only on major changes (change or remove of existing field)
+// Increase mVersion only on MAJOR changes (change/remove existing field or add to array-element)
 const int Settings::mVersion = 1;
 Settings *Settings::mInstance = nullptr;
+
+// ====== Some helper functions for string conversion ======
+
+QString pointToString(QPoint p) {
+    return QString("%1,%2").arg(p.x()).arg(p.y());
+}
+QString sizeToString(QSize s) {
+    return QString("%1,%2").arg(s.width()).arg(s.height());
+}
+QList<int> toIntArray(QString s) {
+    QList<int> res;
+    for (QString v : s.split(',')) res << v.toInt();
+    return res;
+}
+QPoint toPoint(QString s) {
+    QList<int> a = toIntArray(s);
+    if (a.size() == 2) return QPoint(a.at(0), a.at(1));
+    return QPoint();
+}
+QSize toSize(QString s) {
+    QList<int> a = toIntArray(s);
+    if (a.size() == 2) return QSize(a.at(0), a.at(1));
+    return QSize();
+}
+
+QString findFixedFont()
+{
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    if (font.fixedPitch())
+        return font.family();
+    QFontDatabase fdb;
+    QStringList list = fdb.families();
+    for (int i = 0; i < list.size(); ++i) {
+        if (fdb.isPrivateFamily(list.at(i)))
+            continue;
+        if (fdb.isFixedPitch(list.at(i))) {
+            return list.at(i);
+        }
+    }
+    DEB() << "No fixed font found on system. Using " << font.family();
+    return font.family();
+}
+
+// ====== reader and writer for JSON files ======
 
 bool readJsonFile(QIODevice &device, QSettings::SettingsMap &map)
 {
@@ -58,6 +102,27 @@ bool writeJsonFile(QIODevice &device, const QSettings::SettingsMap &map)
     return true;
 }
 
+// ====== Start of Settings methods ======
+
+void Settings::createSettings(bool ignore, bool reset, bool resetView)
+{
+    if (mInstance) {
+        DEB() << "Tried to create multiple settings, suppressed.";
+    } else
+        mInstance = new Settings(ignore, reset, resetView);
+}
+
+Settings *Settings::settings()
+{
+    return mInstance;
+}
+
+void Settings::releaseSettings()
+{
+    delete mInstance;
+    mInstance = nullptr;
+}
+
 Settings::Settings(bool ignore, bool reset, bool resetView)
     : mIgnoreSettings(ignore),
       mResetSettings(reset)
@@ -66,16 +131,22 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
     QSettings::setDefaultFormat(jsonFormat);
 
-    // basic non versionized application settings
-    mUiSettings = new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
-                                GAMS_ORGANIZATION_STR, "uistates");
-    if (mUiSettings->status()) {
-        // On Error -> create a backup and mark to reset this settings file
-        DynamicFile file(mUiSettings->fileName(), 2);
-    }
+    // prepare storage
+    mData.insert(KUi, Data());
+    mData.insert(KSys, Data());
+    mData.insert(KUser, Data());
+    initKeys();
 
     initDefaults();
     if (!ignore) {
+        // create basic non versionized application settings
+        mSettings.insert(KUi, new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
+                                    GAMS_ORGANIZATION_STR, "uistates"));
+        if (mSettings[KUi]->status()) {
+            // On Error -> create a backup and mark to reset this settings file
+            DynamicFile file(mSettings[KUi]->fileName(), 2);
+        }
+        // create versionized settings (may init from older version)
         createSettingFiles();
     }
     if (reset) {
@@ -90,6 +161,87 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     }
 }
 
+Settings::~Settings()
+{
+    delete mSettings.take(KUi);
+    delete mSettings.take(KSys);
+    delete mSettings.take(KUser);
+    // TODO(JM) Handle interface.json
+}
+
+void Settings::initKeys()
+{
+    // versions are kept synchronous in the different settings files
+    mKeys.insert(_sVersionSettings, KeyData(KSys, {"version","settings"}, mVersion));
+    mKeys.insert(_sVersionStudio, KeyData(KSys, {"version","studio"}, QString(GAMS_VERSION_STR)));
+
+    mKeys.insert(_uVersionSettings, KeyData(KUser, {"version","settings"}, mVersion));
+    mKeys.insert(_uVersionStudio, KeyData(KUser, {"version","studio"}, QString(GAMS_VERSION_STR)));
+
+    // window settings
+    mKeys.insert(_winSize, KeyData(KUi, {"window","size"}, QString("1024,768")));
+    mKeys.insert(_winPos, KeyData(KUi, {"window","pos"}, QString("0,0")));
+    mKeys.insert(_winState, KeyData(KUi, {"window","state"}, QString("")));
+    mKeys.insert(_winMaximized, KeyData(KUi, {"window","maximized"}, false));
+
+    // view menu settings
+    mKeys.insert(_viewProject, KeyData(KUi, {"viewMenu","project"}, true));
+    mKeys.insert(_viewOutput, KeyData(KUi, {"viewMenu","output"}, true));
+    mKeys.insert(_viewHelp, KeyData(KUi, {"viewMenu","help"}, false));
+    mKeys.insert(_viewOption, KeyData(KUi, {"viewMenu","optionEdit"}, false));
+
+    // general system settings
+    mKeys.insert(_encodingMib, KeyData(KSys, {"encodingMIBs"}, QString("106,0,4,17,2025")));
+
+    // settings of help page
+    mKeys.insert(_hBookmarks, KeyData(KSys, {"help","bookmarks"}, QJsonArray()));
+    mKeys.insert(_hZoomFactor, KeyData(KSys, {"help","bookmarks"}, 1.0));
+
+    // search widget
+    mKeys.insert(_searchUseRegex, KeyData(KSys, {"search", "regex"}, false));
+    mKeys.insert(_searchCaseSens, KeyData(KSys, {"search", "caseSens"}, false));
+    mKeys.insert(_searchWholeWords, KeyData(KSys, {"search", "wholeWords"}, false));
+    mKeys.insert(_searchScope, KeyData(KSys, {"search", "scope"}, 0));
+
+    // general settings page
+    mKeys.insert(_defaultWorkspace, KeyData(KUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir()));
+    mKeys.insert(_skipWelcomePage, KeyData(KUser, {"skipWelcome"}, false));
+    mKeys.insert(_restoreTabs, KeyData(KUser, {"restoreTabs"}, true));
+    mKeys.insert(_autosaveOnRun, KeyData(KUser, {"autosaveOnRun"}, true));
+    mKeys.insert(_openLst, KeyData(KUser, {"openLst"}, false));
+    mKeys.insert(_jumpToError, KeyData(KUser, {"jumpToError"}, true));
+    mKeys.insert(_foregroundOnDemand, KeyData(KUser, {"foregroundOnDemand"}, true));
+    mKeys.insert(_historySize, KeyData(KUser, {"historySize"}, 12));
+
+    // editor settings page
+    mKeys.insert(_edFontFamily, KeyData(KUser, {"editor","fontFamily"}, findFixedFont()));
+    mKeys.insert(_edFontSize, KeyData(KUser, {"editor","fontSize"}, 10));
+    mKeys.insert(_edShowLineNr, KeyData(KUser, {"editor","showLineNr"}, true));
+    mKeys.insert(_edTabSize, KeyData(KUser, {"editor","TabSize"}, 4));
+    mKeys.insert(_edLineWrapEditor, KeyData(KUser, {"editor","lineWrapEditor"}, false));
+    mKeys.insert(_edLineWrapProcess, KeyData(KUser, {"editor","lineWrapProcess"}, false));
+    mKeys.insert(_edClearLog, KeyData(KUser, {"editor","clearLog"}, false));
+    mKeys.insert(_edWordUnderCursor, KeyData(KUser, {"editor","wordUnderCursor"}, false));
+    mKeys.insert(_edHighlightCurrentLine, KeyData(KUser, {"editor","highlightCurrentLine"}, false));
+    mKeys.insert(_edAutoIndent, KeyData(KUser, {"editor","autoIndent"}, true));
+    mKeys.insert(_edWriteLog, KeyData(KUser, {"editor","writeLog"}, true));
+    mKeys.insert(_edLogBackupCount, KeyData(KUser, {"editor","logBackupCount"}, 3));
+    mKeys.insert(_edAutoCloseBraces, KeyData(KUser, {"editor","autoCloseBraces"}, true));
+    mKeys.insert(_edEditableMaxSizeMB, KeyData(KUser, {"editor","editableMaxSizeMB"}, 50));
+
+    // MIRO settings page
+    mKeys.insert(_miroInstallPath, KeyData(KUser, {"miro","installationLocation"}, QString()));
+
+    // solver option editor settings
+    mKeys.insert(_soOverrideExisting, KeyData(KUser, {"solverOption","overrideExisting"}, true));
+    mKeys.insert(_soAddCommentAbove, KeyData(KUser, {"solverOption","addCommentAbove"}, false));
+    mKeys.insert(_soAddEOLComment, KeyData(KUser, {"solverOption","addEOLComment"}, false));
+    mKeys.insert(_soDeleteCommentsAbove, KeyData(KUser, {"solverOption","deleteCommentsAbove"}, false));
+
+    // user model library directory
+    mKeys.insert(_userModelLibraryDir, KeyData(KSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
+
+}
 
 int Settings::checkVersion()
 {
@@ -111,6 +263,7 @@ int Settings::checkVersion()
 
 bool Settings::createSettingFiles()
 {
+    // look for latest setting files
     int version = checkVersion();
 
     // create setting files of found version to read from
@@ -139,81 +292,141 @@ bool Settings::createSettingFiles()
     return true;
 }
 
+void Settings::initSettingsFiles(int version)
+{
+    // initializes versionized setting files
+    mSettings.insert(KSys, new QSettings(QSettings::defaultFormat(),  QSettings::UserScope,
+                                         GAMS_ORGANIZATION_STR, QString("systemsettings%1").arg(version)));
+    mSettings.insert(KUser, new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
+                                          GAMS_ORGANIZATION_STR, QString("usersettings%1").arg(version)));
+    // TODO(JM) Handle studioscheme.json and syntaxscheme.json
+}
+
+void Settings::initDefaultsUi()
+{
+    Data data;
+    // UI settings ---------------------
+    QJsonObject joMainWin;
+    joMainWin["size"] = "1024,768";
+    joMainWin["pos"] = "0,0";
+    joMainWin["windowState"] = "";
+    joMainWin["maximized"] = false;
+    data["mainWindow"] = joMainWin;
+
+    QJsonObject joViewMenu;
+    joViewMenu["projectView"] = true;
+    joViewMenu["outputView"] = true;
+    joViewMenu["helpView"] = false;
+    joViewMenu["optionEditor"] = false;
+    data["viewMenu"] = joViewMenu;
+
+    mData.insert(KUi, data);
+}
+
+void Settings::save(Kind kind)
+{
+    if (!mSettings.contains(kind)) return;
+    Data::const_iterator it = mData[kind].constBegin();
+    while (it != mData[kind].constEnd()) {
+        mSettings[kind]->setValue(it.key(), it.value());
+    }
+    mSettings[kind]->sync();
+}
+
 void Settings::initDefaults()
 {
+    // UI settings ---------------------
+    initDefaultsUi();
+
+    QHash<SettingsKey, KeyData>::const_iterator it = mKeys.constBegin();
+    while (it != mKeys.constEnd()) {
+        KeyData dat = it.value();
+
+        ++it;
+    }
+
+    // System settings -----------------
+
+    QJsonObject joVersion;
+    joVersion["settings"] = mVersion;
+    joVersion["studio"] = GAMS_VERSION;
+    mData[KSys].insert("version", joVersion);
+
+    QJsonObject joSearch;
+    joSearch["regex"] = false;
+    joSearch["caseSens"] = false;
+    joSearch["wholeWords"] = false;
+    joSearch["scope"] = 0;
+    mData[KSys].insert("search", joSearch);
+
+    mData[KSys].insert("encodingMIBs", "106,0,4,17,2025");
+
+    QJsonObject joHelp; // "helpView" empty as default
+
+    // User settings -------------------
+
+    mData[KUser].insert("version", joVersion);
+    mData[KUser].insert("defaultWorkspace", CommonPaths::defaultWorkingDir());
+    mData[KUser].insert("skipWelcome", false);
+    mData[KUser].insert("restoreTabs", true);
+    mData[KUser].insert("autosaveOnRun", true);
+    mData[KUser].insert("openLst", false);
+    mData[KUser].insert("jumpToError", true);
+    mData[KUser].insert("bringOnTop", true);
+    mData[KUser].insert("historySize", 12);
+
+
+    QJsonObject joEditor;
+    joEditor["fontFamily"] = findFixedFont();
+    joEditor["fontSize"] = 10;
+    joEditor["showLineNr"] = true;
+    joEditor["tabSize"] = 4;
+    joEditor["lineWrapEditor"] = false;
+    joEditor["lineWrapProcess"] = false;
+    joEditor["clearLog"] = false;
+    joEditor["wordUnderCursor"] = false;
+    joEditor["highlightCurrentLine"] = false;
+    joEditor["autoIndent"] = true;
+    joEditor["writeLog"] = true;
+    joEditor["nrLogBackups"] = 3;
+    joEditor["autoCloseBraces"] = true;
+    joEditor["editableMaxSizeMB"] = 50;
+    mData[KUser].insert("editor", joEditor);
+
+    QJsonObject joSolverOption;
+    joSolverOption["overrideExisting"] = true;
+    joSolverOption["addCommentAbove"] = false;
+    joSolverOption["addEOLComment"] = false;
+    joSolverOption["deleteCommentsAbove"] = false;
+    mData[KUser].insert("solverOption", joSolverOption);
+
+    QJsonObject joMiro;
+    joMiro["installationLocation"] = "";
+    mData[KUser].insert("miro", joMiro);
+
     // create default values for current mVersion
     Scheme::instance()->initDefault();
-
 }
 
-
-Settings::~Settings()
-{
-    delete mSystemSettings;
-    mSystemSettings = nullptr;
-    delete mUserSettings;
-    mUserSettings = nullptr;
-    // TODO(JM) Handle interface.json
-}
-
-void Settings::createSettings(bool ignore, bool reset, bool resetView)
-{
-    if (mInstance) {
-        DEB() << "Tried to create multiple settings, suppressed.";
-    } else
-        mInstance = new Settings(ignore, reset, resetView);
-}
-
-Settings *Settings::settings()
-{
-    return mInstance;
-}
-
-void Settings::releaseSettings()
-{
-    delete mInstance;
-    mInstance = nullptr;
-}
 
 void Settings::bind(MainWindow* main)
 {
     mMain = main;
 }
 
-void Settings::initSettingsFiles(int version)
-{
-    mSystemSettings = new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
-                                 GAMS_ORGANIZATION_STR, QString("systemsettings%1").arg(version));
-    mUserSettings = new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
-                                  GAMS_ORGANIZATION_STR, QString("usersettings%1").arg(version));
-    // TODO(JM) Handle studioscheme.json and syntaxscheme.json
-}
-
 void Settings::reloadSettings()
 {
-    // TODO(JM)
-    Scheme::instance()->initDefault();
+    mUiSettings->sync();
     mSystemSettings->sync();
     mUserSettings->sync();
     // TODO(JM) Handle interface.json
+    Scheme::instance()->initDefault();
 }
 
 void Settings::resetViewSettings()
 {
-    mSystemSettings->beginGroup("mainWindow");
-    mSystemSettings->setValue("size", QSize(1024, 768));
-    mSystemSettings->setValue("pos", QPoint());
-    mSystemSettings->setValue("windowState", QByteArray());
-    mSystemSettings->endGroup();
-
-    mSystemSettings->beginGroup("viewMenu");
-    mSystemSettings->setValue("projectView", true);
-    mSystemSettings->setValue("outputView", true);
-    mSystemSettings->setValue("helpView", false);
-    mSystemSettings->setValue("optionEditor", false);
-    mSystemSettings->endGroup();
-
-    mSystemSettings->sync();
+    initDefaultsUi();
+    mUiSettings->sync();
 }
 
 bool Settings::resetSettingsSwitch()
@@ -221,136 +434,82 @@ bool Settings::resetSettingsSwitch()
     return mResetSettings;
 }
 
+void Settings::fetchData()
+{
+    // Updates mData from values in MainWindow
+
+    // UI data ---------------------
+
+    QJsonObject joMainWin = mData.value(KUi).value("MainWindow").toJsonObject();
+    joMainWin["size"] = sizeToString(mMain->size());
+    joMainWin["pos"] = pointToString(mMain->pos());
+    joMainWin["windowState"] = mMain->saveState().data();
+    joMainWin["maximized"] = mMain->isMaximized();
+    mData[KUi].insert("mainWindow", joMainWin);
+
+    QJsonObject joViewMenu = mData.value(KUi).value("viewMenu").toJsonObject();
+    joViewMenu["projectView"] = mMain->projectViewVisibility();
+    joViewMenu["outputView"] = mMain->outputViewVisibility();
+    joViewMenu["helpView"] = mMain->helpViewVisibility();
+    joViewMenu["optionEditor"] = mMain->optionEditorVisibility();
+     mData[KUi].insert("viewMenu", joViewMenu);
+
+     // system data --------------------
+
+     mData[KSys].insert("encodingMIBs", mMain->encodingMIBsString());
+
+     QJsonObject joSearch = mData.value(KSys).value("search").toJsonObject();
+     joSearch["regex"] = mMain->searchDialog()->regex();
+     joSearch["caseSens"] = mMain->searchDialog()->caseSens();
+     joSearch["wholeWords"] = mMain->searchDialog()->wholeWords();
+     joSearch["scope"] = mMain->searchDialog()->selectedScope();
+     mData[KSys].insert("search", joSearch);
+
+#ifdef QWEBENGINE
+     QJsonObject joHelp = mData.value(KSys).value("help").toJsonObject();
+     QJsonArray joBookmarks;
+     // TODO(JM) Check with Jeed if this can be moved from multimap to map
+     QMultiMap<QString, QString> bookmarkMap(mMain->helpWidget()->getBookmarkMap());
+     for (int i = 0; i < bookmarkMap.size(); i++) {
+         QJsonObject joBookmark;
+         joBookmark["location"] = bookmarkMap.keys().at(i);
+         joBookmark["name"] = bookmarkMap.values().at(i);
+         joBookmarks << joBookmark;
+     }
+     joHelp["bookmarks"] = joBookmarks;
+     joHelp["zoomFactor"] = mMain->helpWidget()->getZoomFactor();
+     mData[KSys].insert("help", joHelp);
+#endif
+
+     QJsonArray joOpenFiles;
+     for (const QString &file : mMain->history()->mLastOpenedFiles) {
+         if (file.isEmpty()) break;
+         QJsonObject joOpenFile;
+         joOpenFile["file"] = file;
+         joOpenFiles << joOpenFile;
+     }
+     mData[KSys].insert("lastOpenedFiles", joOpenFiles);
+
+     QJsonObject joProjects;
+     mMain->projectRepo()->write(joProjects);
+     mData[KSys].insert("projects", joProjects);
+
+     QJsonObject joTabs;
+     mMain->writeTabs(joTabs);
+     mData[KSys].insert("openTabs", joTabs);
+}
+
 void Settings::save()
 {
-    // return directly only if settings are ignored and not resettet
-    if (mIgnoreSettings && !mResetSettings)
+    fetchData();
+
+    // ignore-settings argument -> no settings assigned
+    if (mSettings.isEmpty())
         return;
 
-    if (mSystemSettings == nullptr) {
-        qDebug() << "ERROR: settings file missing.";
-        return;
-    }
-    mSystemSettings->beginGroup("settings");
-    mSystemSettings->setValue("version", QString(STUDIO_VERSION));
-    mSystemSettings->endGroup();
-
-    // Main Application Settings
-    // main window
-    mSystemSettings->beginGroup("mainWindow");
-    mSystemSettings->setValue("size", mMain->size());
-    mSystemSettings->setValue("pos", mMain->pos());
-    mSystemSettings->setValue("maximized", mMain->isMaximized());
-    mSystemSettings->setValue("windowState", mMain->saveState());
-
-    // search window
-    mSystemSettings->setValue("searchRegex", mMain->searchDialog()->regex());
-    mSystemSettings->setValue("searchCaseSens", mMain->searchDialog()->caseSens());
-    mSystemSettings->setValue("searchWholeWords", mMain->searchDialog()->wholeWords());
-    mSystemSettings->setValue("selectedScope", mMain->searchDialog()->selectedScope());
-
-    mSystemSettings->endGroup();
-
-    // tool-/menubar
-    mSystemSettings->beginGroup("viewMenu");
-    mSystemSettings->setValue("projectView", mMain->projectViewVisibility());
-    mSystemSettings->setValue("outputView", mMain->outputViewVisibility());
-    mSystemSettings->setValue("gamsArguments", mMain->gamsParameterEditor()->isEditorExtended());
-    mSystemSettings->setValue("helpView", mMain->helpViewVisibility());
-    mSystemSettings->setValue("encodingMIBs", mMain->encodingMIBsString());
-
-    mSystemSettings->endGroup();
-
-    // help
-    mSystemSettings->beginGroup("helpView");
-#ifdef QWEBENGINE
-    QMultiMap<QString, QString> bookmarkMap(mMain->helpWidget()->getBookmarkMap());
-    // remove all keys in the helpView group before begin writing them
-    mSystemSettings->remove("");
-    mSystemSettings->beginWriteArray("bookmarks");
-    for (int i = 0; i < bookmarkMap.size(); i++) {
-        mSystemSettings->setArrayIndex(i);
-        mSystemSettings->setValue("location", bookmarkMap.keys().at(i));
-        mSystemSettings->setValue("name", bookmarkMap.values().at(i));
-    }
-    mSystemSettings->endArray();
-    mSystemSettings->setValue("zoomFactor", mMain->helpWidget()->getZoomFactor());
-#endif
-    mSystemSettings->endGroup();
-
-    // history
-    mSystemSettings->beginGroup("fileHistory");
-    mSystemSettings->remove("lastOpenedFiles");
-    mSystemSettings->beginWriteArray("lastOpenedFiles");
-    for (int i = 0; i < mMain->history()->mLastOpenedFiles.length(); i++) {
-
-        if (mMain->history()->mLastOpenedFiles.at(i) == "") break;
-        mSystemSettings->setArrayIndex(i);
-        mSystemSettings->setValue("file", mMain->history()->mLastOpenedFiles.at(i));
-    }
-    mSystemSettings->endArray();
-    mSystemSettings->endGroup();
-
-    mSystemSettings->beginGroup("json");
-    QJsonObject jsonProject;
-    mMain->projectRepo()->write(jsonProject);
-    QJsonDocument saveDoc(jsonProject);
-    mSystemSettings->setValue("projects", saveDoc.toJson(QJsonDocument::Compact));
-
-    QJsonObject jsonTabs;
-    mMain->writeTabs(jsonTabs);
-    saveDoc = QJsonDocument(jsonTabs);
-    mSystemSettings->setValue("openTabs", saveDoc.toJson(QJsonDocument::Compact));
-    mSystemSettings->endGroup();
-    mSystemSettings->sync();
-
-
-    // User Settings
-    mUserSettings->beginGroup("General");
-
-    mUserSettings->setValue("defaultWorkspace", defaultWorkspace());
-    mUserSettings->setValue("skipWelcome", skipWelcomePage());
-    mUserSettings->setValue("restoreTabs", restoreTabs());
-    mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
-    mUserSettings->setValue("openLst", openLst());
-    mUserSettings->setValue("jumpToError", jumpToError());
-    mUserSettings->setValue("setStudioOnTop",foregroundOnDemand());
-
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Editor");
-
-    mUserSettings->setValue("fontFamily", fontFamily());
-    mUserSettings->setValue("fontSize", fontSize());
-    mUserSettings->setValue("showLineNr", showLineNr());
-    mUserSettings->setValue("tabSize", tabSize());
-    mUserSettings->setValue("lineWrapEditor", lineWrapEditor());
-    mUserSettings->setValue("lineWrapProcess", lineWrapProcess());
-    mUserSettings->setValue("clearLog", clearLog());
-    mUserSettings->setValue("wordUnderCursor", wordUnderCursor());
-    mUserSettings->setValue("highlightCurrentLine", highlightCurrentLine());
-    mUserSettings->setValue("autoIndent", autoIndent());
-    mUserSettings->setValue("writeLog", writeLog());
-    mUserSettings->setValue("nrLogBackups", nrLogBackups());
-    mUserSettings->setValue("autoCloseBraces", autoCloseBraces());
-
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("Misc");
-
-    mUserSettings->setValue("historySize", historySize());
-
-    mUserSettings->setValue("solverOptionOverrideExisting", overridExistingOption());
-    mUserSettings->setValue("solverOptionAddCommentAbove", addCommentDescriptionAboveOption());
-    mUserSettings->setValue("solverOptionAddEOLComment", addEOLCommentDescriptionOption());
-    mUserSettings->setValue("solverOptionDeleteCommentAbove", deleteAllCommentsAboveOption());
-
-    mUserSettings->endGroup();
-    mUserSettings->beginGroup("MIRO");
-
-    mUserSettings->setValue("miroInstallationLocation", miroInstallationLocation());
-
-    mUserSettings->endGroup();
-
-    mUserSettings->sync();
+    save(KUi);
+    save(KSys);
+    save(KUser);
 
     // TODO(JM) temporarily deactivated
 //    writeScheme();
@@ -453,19 +612,6 @@ int Settings::compareVersion(QString currentVersion, QString otherVersion)
 //    }
 //}
 
-QString findFixedFont()
-{
-    QFontDatabase fdb;
-    QStringList list = fdb.families();
-    for (int i = 0; i < list.size(); ++i) {
-        if (fdb.isPrivateFamily(list.at(i)))
-            continue;
-        if (fdb.isFixedPitch(list.at(i)))
-            return  list.at(i);
-    }
-    return QString();
-}
-
 void Settings::loadUserIniSettings()
 {
     mUserSettings->beginGroup("General");
@@ -523,117 +669,84 @@ void Settings::loadUserIniSettings()
     mUserSettings->endGroup();
 }
 
-QString Settings::miroInstallationLocation() const
+QVariant Settings::value(SettingsKey key) const
 {
-    return mData.value("miroInstallationLocation").toString();
-}
-
-void Settings::setMiroInstallationLocation(const QString &location)
-{
-    mData.insert("miroInstallationLocation", location);
-}
-
-int Settings::historySize() const
-{
-    return mData.value("historySize").toInt();
-}
-
-void Settings::setHistorySize(int historySize)
-{
-    mData.insert("historySize", historySize);
-}
-
-bool Settings::overridExistingOption() const
-{
-    return mData.value("overrideExistingOption").toBool();
-}
-
-void Settings::setOverrideExistingOption(bool value)
-{
-    mData.insert("overrideExistingOption", value);
-}
-
-bool Settings::addCommentDescriptionAboveOption() const
-{
-    return mData.value("addCommentAboveOption").toBool();
-}
-
-void Settings::setAddCommentDescriptionAboveOption(bool value)
-{
-    mData.insert("addCommentAboveOption", value);
-}
-
-bool Settings::addEOLCommentDescriptionOption() const
-{
-    return mData.value("addEOLCommentOption").toBool();
-}
-
-void Settings::setAddEOLCommentDescriptionOption(bool value)
-{
-    mData.insert("addEOLCommentOption", value);
-}
-
-bool Settings::deleteAllCommentsAboveOption() const
-{
-    return mData.value("deleteCommentsAboveOption").toBool();
-}
-
-void Settings::setDeleteAllCommentsAboveOption(bool value)
-{
-    mData.insert("deleteCommentsAboveOption", value);
-}
-
-void Settings::restoreLastFilesUsed()
-{
-    mSystemSettings->beginGroup("fileHistory");
-    mSystemSettings->beginReadArray("lastOpenedFiles");
-    mMain->history()->mLastOpenedFiles.clear();
-    for (int i = 0; i < historySize(); i++) {
-        mSystemSettings->setArrayIndex(i);
-        mMain->history()->mLastOpenedFiles.append(mSystemSettings->value("file").toString());
+    KeyData dat = mKeys.value(key);
+    if (dat.keys.length() == 1)
+        return mData[dat.kind].value(dat.keys.at(0));
+    if (dat.keys.length() == 2) {
+        QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
+        return jo.value(dat.keys.at(1));
     }
-    mSystemSettings->endArray();
-    mSystemSettings->endGroup();
+    return QVariant();
 }
 
-bool Settings::writeLog() const
+bool Settings::toBool(SettingsKey key) const
 {
-    return mData.value("writeLog").toBool();
+    return value(key).toBool();
 }
 
-void Settings::setWriteLog(bool writeLog)
+int Settings::toInt(SettingsKey key) const
 {
-    mData.insert("writeLog", writeLog);
+    return value(key).toInt();
 }
 
-int Settings::nrLogBackups() const
+QString Settings::toString(SettingsKey key) const
 {
-    return mData.value("nrLogBackups").toInt();
+    return value(key).toString();
 }
 
-void Settings::setNrLogBackups(int nrLogBackups)
+bool Settings::setValue(SettingsKey key, QVariant value)
 {
-    mData.insert("nrLogBackups", nrLogBackups);
+    KeyData dat = mKeys.value(key);
+    if (dat.keys.length() == 1) {
+        mData[dat.kind].insert(dat.keys.at(0), value);
+        return true;
+    }
+    if (dat.keys.length() == 2) {
+        QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
+        switch (value.type()) {
+        case QVariant::Double: jo[dat.keys.at(1)] = value.toDouble(); break;
+        case QVariant::ULongLong:
+        case QVariant::LongLong: jo[dat.keys.at(1)] = value.toLongLong(); break;
+        case QVariant::UInt:
+        case QVariant::Int: jo[dat.keys.at(1)] = value.toInt(); break;
+        case QVariant::Bool: jo[dat.keys.at(1)] = value.toBool(); break;
+        case QVariant::ByteArray:
+        case QVariant::String: jo[dat.keys.at(1)] = value.toString(); break;
+        default: return false;
+        }
+        mData[dat.kind].insert(dat.keys.at(0), jo);
+        return true;
+    }
+    return false;
 }
 
-bool Settings::autoCloseBraces() const
+bool Settings::setValue(SettingsKey key, QJsonObject value)
 {
-    return mData.value("autoCloseBraces").toBool();
+    KeyData dat = mKeys.value(key);
+    if (dat.keys.length() == 1) {
+        mData[dat.kind].insert(dat.keys.at(0), value);
+        return true;
+    }
+    if (dat.keys.length() == 2) {
+        QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
+        jo[dat.keys.at(1)] = value;
+        mData[dat.kind].insert(dat.keys.at(0), jo);
+        return true;
+    }
+    return false;
 }
 
-void Settings::setAutoCloseBraces(bool autoCloseBraces)
-{
-    mData.insert("autoCloseBraces", autoCloseBraces);
-}
 
-int Settings::editableMaxSizeMB() const
+QStringList Settings::fileHistory()
 {
-    return mData.value("editableMaxSizeMB").toInt();
-}
-
-void Settings::setEditableMaxSizeMB(int editableMaxSizeMB)
-{
-    mData.insert("editableMaxSizeMB", editableMaxSizeMB);
+    QStringList res;
+    QJsonArray joLastOpenedFiles = mData[KSys].value("lastOpenedFiles").toJsonArray();
+    for (QJsonValue jRef: joLastOpenedFiles) {
+        res << jRef["name"].toString();
+    }
+    return res;
 }
 
 QString Settings::settingsPath()
@@ -665,10 +778,9 @@ bool Settings::restoreTabsAndProjects()
 void Settings::load()
 {
     if (mResetSettings) {
+        mUiSettings->clear();
         mSystemSettings->clear();
         mUserSettings->clear();
-    } else {
-        checkAndUpdateSettings();
     }
 
     loadUserIniSettings();
@@ -676,22 +788,7 @@ void Settings::load()
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    mData.insert("userModelLibraryDir", CommonPaths::userModelLibraryDir());
-}
-
-void Settings::checkAndUpdateSettings()
-{
-    if (!mSystemSettings->contains("settings/version")) return;
-    QString settingsVersion = mSystemSettings->value("settings/version").toString();
-    if (!isValidVersion(settingsVersion)) {
-        DEB() << "Invalid version in settings: " << settingsVersion;
-        return;
-    }
-    if (compareVersion(settingsVersion, "0.10.6") <= 0) {
-        mUserSettings->beginGroup("Editor");
-        mUserSettings->remove("editableMaxSizeMB");
-        mUserSettings->endGroup();
-    }
+    mData[KUser].insert("userModelLibraryDir", CommonPaths::userModelLibraryDir());
 }
 
 void Settings::importSettings(const QString &path)
@@ -710,25 +807,9 @@ QString Settings::defaultWorkspace() const
     return mData.value("defaultWorkspace").toString();
 }
 
-void Settings::setDefaultWorkspace(const QString &value)
-{
-    QDir workspace(value);
-
-    if (!workspace.exists())
-        workspace.mkpath(".");
-
-
-    mData.insert("defaultWorkspace", value);
-}
-
 bool Settings::skipWelcomePage() const
 {
     return mData.value("skipWelcomePage").toBool();
-}
-
-void Settings::setSkipWelcomePage(bool value)
-{
-    mData.insert("skipWelcomePage", value);
 }
 
 bool Settings::restoreTabs() const
@@ -736,19 +817,9 @@ bool Settings::restoreTabs() const
     return mData.value("restoreTabs").toBool();
 }
 
-void Settings::setRestoreTabs(bool value)
-{
-    mData.insert("restoreTabs", value);
-}
-
 bool Settings::autosaveOnRun() const
 {
     return mData.value("autosaveOnRun").toBool();
-}
-
-void Settings::setAutosaveOnRun(bool value)
-{
-    mData.insert("autosaveOnRun", value);
 }
 
 bool Settings::foregroundOnDemand() const

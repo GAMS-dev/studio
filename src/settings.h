@@ -20,6 +20,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <QObject>
 #include <QString>
 #include <QColor>
 #include <QHash>
@@ -33,56 +34,81 @@ namespace studio {
 
 class MainWindow;
 
-struct SettingsData {
-    // general settings page
-    QString defaultWorkspace;
-    bool skipWelcomePage;
-    bool restoreTabs;
-    bool autosaveOnRun;
-    bool openLst;
-    bool foregroundOnDemand;
-    bool jumpToError;
+enum SettingsKey {
+    // REMARK: version is treated differently as it is passed to ALL versionized setting files
+    _sVersionSettings,
+    _sVersionStudio,
+    _uVersionSettings,
+    _uVersionStudio,
 
-    // editor settings page
-    QString fontFamily;
-    int fontSize;
-    bool showLineNr;
-    int tabSize;
-    bool lineWrapEditor;
-    bool lineWrapProcess;
-    bool clearLog;
-    bool wordUnderCursor;
-    bool highlightCurrentLine;
-    bool autoIndent;
-    bool writeLog;
-    int nrLogBackups;
-    bool autoCloseBraces;
-    int editableMaxSizeMB;
+    // window settings
+    _winSize,
+    _winPos,
+    _winState,
+    _winMaximized,
 
-    // MIRO settings page
-    QString miroInstallationLocation;
+    // view menu settings
+    _viewProject,
+    _viewOutput,
+    _viewHelp,
+    _viewOption,
 
-    // misc settings page
-    int historySize;
+    // general system settings
+    _encodingMib,
 
-    // solver option editor settings
-    bool overrideExistingOption = true;
-    bool addCommentAboveOption = false;
-    bool addEOLCommentOption = false;
-    bool deleteCommentsAboveOption = false;
+    // settings of help page
+    _hBookmarks,
+    _hZoomFactor,
 
     // search widget
-    bool searchUseRegex;
-    bool searchCaseSens;
-    bool searchWholeWords;
-    int selectedScopeIndex;
+    _searchUseRegex,
+    _searchCaseSens,
+    _searchWholeWords,
+    _searchScope,
+
+    // general settings page
+    _defaultWorkspace,
+    _skipWelcomePage,
+    _restoreTabs,
+    _autosaveOnRun,
+    _openLst,
+    _jumpToError,
+    _foregroundOnDemand,
+    _historySize,
+
+    // editor settings page
+    _edFontFamily,
+    _edFontSize,
+    _edShowLineNr,
+    _edTabSize,
+    _edLineWrapEditor,
+    _edLineWrapProcess,
+    _edClearLog,
+    _edWordUnderCursor,
+    _edHighlightCurrentLine,
+    _edAutoIndent,
+    _edWriteLog,
+    _edLogBackupCount,
+    _edAutoCloseBraces,
+    _edEditableMaxSizeMB,
+
+    // MIRO settings page
+    _miroInstallPath,
+
+    // solver option editor settings
+    _soOverrideExisting,
+    _soAddCommentAbove,
+    _soAddEOLComment,
+    _soDeleteCommentsAbove,
 
     // user model library directory
-    QString userModelLibraryDir;
+    _userModelLibraryDir,
 };
 
 class Settings
 {
+public:
+    enum Kind {KUi, KSys, KUser};
 
 public:
     static void createSettings(bool ignore, bool reset, bool resetView);
@@ -94,17 +120,20 @@ public:
     void load();
     void save();
 
+    QVariant value(SettingsKey key) const;
+    bool toBool(SettingsKey key) const;
+    int toInt(SettingsKey key) const;
+    QString toString(SettingsKey key) const;
+    bool setValue(SettingsKey key, QVariant value);
+    bool setValue(SettingsKey key, QJsonObject value);
+
     QString defaultWorkspace() const;
-    void setDefaultWorkspace(const QString &value);
 
     bool skipWelcomePage() const;
-    void setSkipWelcomePage(bool value);
 
     bool restoreTabs() const;
-    void setRestoreTabs(bool value);
 
     bool autosaveOnRun() const;
-    void setAutosaveOnRun(bool value);
 
     bool openLst() const;
     void setOpenLst(bool value);
@@ -169,51 +198,34 @@ public:
 
     void updateSettingsFiles();
 
-    QString miroInstallationLocation() const;
-    void setMiroInstallationLocation(const QString &location);
-
-    int historySize() const;
-    void setHistorySize(int historySize);
-
-    bool overridExistingOption() const;
-    void setOverrideExistingOption(bool value);
-
-    bool addCommentDescriptionAboveOption() const;
-    void setAddCommentDescriptionAboveOption(bool value);
-
-    bool addEOLCommentDescriptionOption() const;
-    void setAddEOLCommentDescriptionOption(bool value);
-
-    bool deleteAllCommentsAboveOption() const;
-    void setDeleteAllCommentsAboveOption(bool value);
-
     void reloadSettings();
     bool resetSettingsSwitch();
     void resetViewSettings();
 
     bool restoreTabsAndProjects();
-    void restoreLastFilesUsed();
 
-    bool writeLog() const;
-    void setWriteLog(bool writeLog);
-
-    int nrLogBackups() const;
-    void setNrLogBackups(int nrLogBackups);
-
-    bool autoCloseBraces() const;
-    void setAutoCloseBraces(bool autoCloseBraces);
-
-    int editableMaxSizeMB() const;
-    void setEditableMaxSizeMB(int editableMaxSizeMB);
+    QStringList fileHistory();
 
 private:
+    typedef QMap<QString, QVariant> Data;
+    struct KeyData {
+        KeyData(Settings::Kind _kind, QStringList _keys, QVariant _initial)
+            : kind(_kind), keys(_keys), initial(_initial) {}
+        Settings::Kind kind;
+        QStringList keys;
+        QVariant initial;
+    };
+
     static Settings *mInstance;
     static const int mVersion;
+
+    QHash<SettingsKey, KeyData> mKeys;
     MainWindow *mMain = nullptr;
     QSettings *mUiSettings = nullptr;
     QSettings *mSystemSettings = nullptr;
     QSettings *mUserSettings = nullptr;
-    QMap<QString, QVariant> mData;
+    QMap<Kind, QSettings*> mSettings;
+    QMap<Kind, Data> mData;
 
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
@@ -221,12 +233,17 @@ private:
 private:
     Settings(bool ignore, bool reset, bool resetView);
     ~Settings();
+    void initKeys();
+    KeyData keyData(SettingsKey key) { return mKeys.value(key); }
+
     QString settingsPath();
     int checkVersion();
     bool createSettingFiles();
     void initDefaults();
+    void initDefaultsUi();
+    void fetchData();
+    void save(Kind kind);
 
-    void checkAndUpdateSettings();
     void initSettingsFiles(int version);
 
     void loadViewStates();

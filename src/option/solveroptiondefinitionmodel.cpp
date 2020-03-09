@@ -63,7 +63,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
             if (parentItem == rootItem) {
-                if (settings && settings->addCommentDescriptionAboveOption()) {
+                if (settings && settings->value(_soAddCommentAbove).toBool()) {
                     stream << QString("%1 %2").arg(lineComment).arg(data(descriptionIndex, Qt::DisplayRole).toString());
                 }
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
@@ -73,7 +73,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
                                                 .arg(data(descriptionIndex, Qt::DisplayRole).toString())
                                                 .arg(data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
-                if (settings && settings->addCommentDescriptionAboveOption()) {
+                if (settings && settings->value(_soAddCommentAbove).toBool()) {
                     stream << QString("%1 %2").arg(lineComment).arg(parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
                     stream << QString("%1 %2 - %3").arg(lineComment)
                                                    .arg(data(index, Qt::DisplayRole).toString())
