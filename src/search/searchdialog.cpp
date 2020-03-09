@@ -48,10 +48,10 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     Settings *mSettings = Settings::settings();
 
     ui->setupUi(this);
-    ui->cb_regex->setChecked(mSettings->searchUseRegex());
-    ui->cb_caseSens->setChecked(mSettings->searchCaseSens());
-    ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
-    ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
+    ui->cb_regex->setChecked(mSettings->toBool(_searchUseRegex));
+    ui->cb_caseSens->setChecked(mSettings->toBool(_searchCaseSens));
+    ui->cb_wholeWords->setChecked(mSettings->toBool(_searchWholeWords));
+    ui->combo_scope->setCurrentIndex(mSettings->toInt(_searchScope));
     ui->lbl_nrResults->setText("");
     ui->combo_search->setAutoCompletion(false);
     adjustSize();

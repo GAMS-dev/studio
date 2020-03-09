@@ -633,7 +633,7 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     TextMark* textMark = textMarkRepo()->marks(runnableGms()->id())->firstError(id());
 
     if (textMark) {
-        if (Settings::settings()->openLst()) {
+        if (Settings::settings()->toBool(_openLst)) {
             textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);
         } else {

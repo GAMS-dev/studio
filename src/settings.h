@@ -120,86 +120,19 @@ public:
     void load();
     void save();
 
-    QVariant value(SettingsKey key) const;
-    bool toBool(SettingsKey key) const;
-    int toInt(SettingsKey key) const;
-    QString toString(SettingsKey key) const;
-    bool setValue(SettingsKey key, QVariant value);
-    bool setValue(SettingsKey key, QJsonObject value);
-
-    QString defaultWorkspace() const;
-
-    bool skipWelcomePage() const;
-
-    bool restoreTabs() const;
-
-    bool autosaveOnRun() const;
-
-    bool openLst() const;
-    void setOpenLst(bool value);
-
-
-    bool jumpToError() const;
-    void setJumpToError(bool value);
-
-
-    bool foregroundOnDemand() const;
-    void setForegroundOnDemand(bool value);
-
-
-    int fontSize() const;
-    void setFontSize(int value);
-
-    bool showLineNr() const;
-    void setShowLineNr(bool value);
-
-    bool replaceTabsWithSpaces() const;
-    void setReplaceTabsWithSpaces(bool value);
-
-    int tabSize() const;
-    void setTabSize(int value);
-
-    bool lineWrapEditor() const;
-    void setLineWrapEditor(bool value);
-
-    bool lineWrapProcess() const;
-    void setLineWrapProcess(bool value);
-
-    QString fontFamily() const;
-    void setFontFamily(const QString &value);
-
-    bool clearLog() const;
-    void setClearLog(bool value);
-
-    bool searchUseRegex() const;
-    void setSearchUseRegex(bool searchUseRegex);
-
-    bool searchCaseSens() const;
-    void setSearchCaseSens(bool searchCaseSens);
-
-    bool searchWholeWords() const;
-    void setSearchWholeWords(bool searchWholeWords);
-
-    int selectedScopeIndex() const;
-    void setSelectedScopeIndex(int selectedScopeIndex);
-
-    bool wordUnderCursor() const;
-    void setWordUnderCursor(bool wordUnderCursor);
-    QString userModelLibraryDir() const;
-
-    bool highlightCurrentLine() const;
-    void setHighlightCurrentLine(bool highlightCurrentLine);
-
-    bool autoIndent() const;
-    void setAutoIndent(bool autoIndent);
+    bool toBool(SettingsKey key) const { return value(key).toBool(); }
+    int toInt(SettingsKey key) const { return value(key).toInt(); }
+    QString toString(SettingsKey key) const { return value(key).toString(); }
+    void setBool(SettingsKey key, bool value) { setValue(key, value);}
+    void setInt(SettingsKey key, int value) { setValue(key, value);}
+    void setString(SettingsKey key, QString value) { setValue(key, value);}
 
     void exportSettings(const QString &settingsPath);
     void importSettings(const QString &settingsPath);
 
     void updateSettingsFiles();
 
-    void reloadSettings();
-    bool resetSettingsSwitch();
+    void reload();
     void resetViewSettings();
 
     bool restoreTabsAndProjects();
@@ -218,6 +151,8 @@ private:
 
     static Settings *mInstance;
     static const int mVersion;
+    bool mCanWrite = false;
+    bool mCanRead = false;
 
     QHash<SettingsKey, KeyData> mKeys;
     MainWindow *mMain = nullptr;
@@ -227,8 +162,6 @@ private:
     QMap<Kind, QSettings*> mSettings;
     QMap<Kind, Data> mData;
 
-    bool mIgnoreSettings = false;
-    bool mResetSettings = false;
 
 private:
     Settings(bool ignore, bool reset, bool resetView);
@@ -248,6 +181,10 @@ private:
 
     void loadViewStates();
     void loadUserIniSettings();
+
+    QVariant value(SettingsKey key) const;
+    bool setValue(SettingsKey key, QVariant value);
+    bool setValue(SettingsKey key, QJsonObject value);
 
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

@@ -395,16 +395,16 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
         }
         if (e == Hotkey::Indent) {
-            indent(mSettings->tabSize());
+            indent(mSettings->toInt(_edTabSize));
             e->accept();
             return;
         }
         if (e == Hotkey::Outdent) {
-            indent(-mSettings->tabSize());
+            indent(-mSettings->toInt(_edTabSize));
             e->accept();
             return;
         }
-        if (mSettings->autoIndent() && e->key() == Qt::Key_Backspace) {
+        if (mSettings->toBool(_edAutoIndent) && e->key() == Qt::Key_Backspace) {
             int pos = textCursor().positionInBlock();
 
             QString line = textCursor().block().text();
@@ -413,7 +413,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             bool allWhitespace = match.hasMatch();
 
             if (allWhitespace && !textCursor().hasSelection() && match.capturedLength() == pos) {
-                indent(-mSettings->tabSize());
+                indent(-mSettings->toInt(_edTabSize));
                 e->accept();
                 return;
             }
@@ -526,7 +526,7 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 
 void CodeEdit::adjustIndent(QTextCursor cursor)
 {
-    if (!mSettings->autoIndent()) return;
+    if (!mSettings->toBool(_edAutoIndent)) return;
 
     QRegularExpression rex("^(\\s*).*$");
     QRegularExpressionMatch match = rex.match(cursor.block().text());
@@ -1038,7 +1038,7 @@ CodeEdit::CharType CodeEdit::charType(QChar c)
 void CodeEdit::updateTabSize()
 {
     QFontMetrics metric(font());
-    setTabStopDistance(mSettings->tabSize() * metric.width(' '));
+    setTabStopDistance(mSettings->toInt(_edTabSize) * metric.width(' '));
 }
 
 int CodeEdit::findAlphaNum(const QString &text, int start, bool back)
@@ -1221,7 +1221,7 @@ void CodeEdit::recalcExtraSelections()
         recalcWordUnderCursor();
         mParenthesesDelay.start(100);
         int wordDelay = 10;
-        if (mSettings->wordUnderCursor()) wordDelay = 500;
+        if (mSettings->toBool(_edWordUnderCursor)) wordDelay = 500;
         mWordDelay.start(wordDelay);
     }
     extraSelBlockEdit(selections);
@@ -1253,9 +1253,9 @@ void CodeEdit::updateExtraSelections()
         //    (  not caused by parenthiesis matching                               ) OR has selection
         if ( (( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || hasSelection())
                // ( depending on settings: no selection necessary OR has selection )
-               && (mSettings->wordUnderCursor() || hasSelection())
+               && (mSettings->toBool(_edWordUnderCursor) || hasSelection())
                // (  depending on settings: no selection necessary skip word-timer )
-               && (mSettings->wordUnderCursor() || skipWordTimer))
+               && (mSettings->toBool(_edWordUnderCursor) || skipWordTimer))
              // AND deactivate when navigating search results
              && match.captured(0).isEmpty()) {
             extraSelCurrentWord(selections);
@@ -1382,7 +1382,7 @@ QString CodeEdit::lineNrText(int blockNr)
 
 bool CodeEdit::showLineNr() const
 {
-    return mSettings->showLineNr();
+    return mSettings->toBool(_edShowLineNr);
 }
 
 void CodeEdit::setAllowBlockEdit(bool allow)
@@ -1582,11 +1582,11 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         }
         replaceBlockText("");
     } else if (e == Hotkey::Indent) {
-        mEdit->indent(mEdit->mSettings->tabSize());
+        mEdit->indent(mEdit->mSettings->toInt(_edTabSize));
         e->accept();
         return;
     } else if (e == Hotkey::Outdent) {
-        mEdit->indent(-mEdit->mSettings->tabSize());
+        mEdit->indent(-mEdit->mSettings->toInt(_edTabSize));
         e->accept();
         return;
     } else if (e->text().length()) {

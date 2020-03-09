@@ -86,45 +86,44 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 void SettingsDialog::loadSettings()
 {
     // general tab page
-    ui->txt_workspace->setText(mSettings->value(_defaultWorkspace).toString());
-    ui->cb_skipwelcome->setChecked(mSettings->value(_skipWelcomePage).toBool());
-    ui->cb_restoretabs->setChecked(mSettings->value(_restoreTabs).toBool());
-    ui->cb_autosave->setChecked(mSettings->value(_autosaveOnRun).toBool());
-    ui->cb_openlst->setChecked(mSettings->value(_openLst).toBool());
-    ui->cb_jumptoerror->setChecked(mSettings->value(_jumpToError).toBool());
-    ui->cb_bringontop->setChecked(mSettings->value(_foregroundOnDemand).toBool());
+    ui->txt_workspace->setText(mSettings->toString(_defaultWorkspace));
+    ui->cb_skipwelcome->setChecked(mSettings->toBool(_skipWelcomePage));
+    ui->cb_restoretabs->setChecked(mSettings->toBool(_restoreTabs));
+    ui->cb_autosave->setChecked(mSettings->toBool(_autosaveOnRun));
+    ui->cb_openlst->setChecked(mSettings->toBool(_openLst));
+    ui->cb_jumptoerror->setChecked(mSettings->toBool(_jumpToError));
+    ui->cb_bringontop->setChecked(mSettings->toBool(_foregroundOnDemand));
 
     // editor tab page
-    ui->fontComboBox->setCurrentFont(QFont(mSettings->value(_edFontFamily).toString()));
-    ui->sb_fontsize->setValue(mSettings->value(_edFontSize).toInt());
-    ui->cb_showlinenr->setChecked(mSettings->value(_edShowLineNr).toBool());
-    ui->sb_tabsize->setValue(mSettings->value(_edTabSize).toInt());
-    ui->cb_linewrap_editor->setChecked(mSettings->value(_edLineWrapEditor).toBool());
-    ui->cb_linewrap_process->setChecked(mSettings->value(_edLineWrapProcess).toBool());
-    ui->cb_clearlog->setChecked(mSettings->value(_edClearLog).toBool());
-    ui->cb_highlightUnderCursor->setChecked(mSettings->value(_edWordUnderCursor).toBool());
-    ui->cb_highlightcurrent->setChecked(mSettings->value(_edHighlightCurrentLine).toBool());
-    ui->cb_autoindent->setChecked(mSettings->value(_edAutoIndent).toBool());
-    ui->cb_writeLog->setChecked(mSettings->value(_edWriteLog).toBool());
-    ui->sb_nrLogBackups->setValue(mSettings->value(_edLogBackupCount).toInt());
-    ui->cb_autoclose->setChecked(mSettings->value(_edAutoCloseBraces).toBool());
+    ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(_edFontFamily)));
+    ui->sb_fontsize->setValue(mSettings->toInt(_edFontSize));
+    ui->cb_showlinenr->setChecked(mSettings->toBool(_edShowLineNr));
+    ui->sb_tabsize->setValue(mSettings->toInt(_edTabSize));
+    ui->cb_linewrap_editor->setChecked(mSettings->toBool(_edLineWrapEditor));
+    ui->cb_linewrap_process->setChecked(mSettings->toBool(_edLineWrapProcess));
+    ui->cb_clearlog->setChecked(mSettings->toBool(_edClearLog));
+    ui->cb_highlightUnderCursor->setChecked(mSettings->toBool(_edWordUnderCursor));
+    ui->cb_highlightcurrent->setChecked(mSettings->toBool(_edHighlightCurrentLine));
+    ui->cb_autoindent->setChecked(mSettings->toBool(_edAutoIndent));
+    ui->cb_writeLog->setChecked(mSettings->toBool(_edWriteLog));
+    ui->sb_nrLogBackups->setValue(mSettings->toInt(_edLogBackupCount));
+    ui->cb_autoclose->setChecked(mSettings->toBool(_edAutoCloseBraces));
 
     // MIRO page
-    ui->miroEdit->setText(QDir::toNativeSeparators(
-                              mSettings->value(_miroInstallPath).toString()));
+    ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(_miroInstallPath)));
     if (ui->miroEdit->text().isEmpty()) {
         auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
         ui->miroEdit->setText(path);
-        mSettings->setValue(_miroInstallPath, path);
+        mSettings->setString(_miroInstallPath, path);
     }
 
     // misc tab page
-    ui->sb_historySize->setValue(mSettings->value(_historySize).toInt());
+    ui->sb_historySize->setValue(mSettings->toInt(_historySize));
     // solver option editor
-    ui->overrideExistingOptionCheckBox->setChecked(mSettings->value(_soOverrideExisting).toBool());
-    ui->addCommentAboveCheckBox->setChecked(mSettings->value(_soAddCommentAbove).toBool());
-    ui->addEOLCommentCheckBox->setChecked(mSettings->value(_soAddEOLComment).toBool());
-    ui->deleteCommentAboveCheckbox->setChecked(mSettings->value(_soDeleteCommentsAbove).toBool());
+    ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(_soOverrideExisting));
+    ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(_soAddCommentAbove));
+    ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(_soAddEOLComment));
+    ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(_soDeleteCommentsAbove));
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -164,42 +163,42 @@ void SettingsDialog::setMiroSettingsEnabled(bool enabled)
 void SettingsDialog::saveSettings()
 {
     // general page
-    mSettings->setValue(_defaultWorkspace, ui->txt_workspace->text());
-    mSettings->setValue(_skipWelcomePage, ui->cb_skipwelcome->isChecked());
-    mSettings->setValue(_restoreTabs, ui->cb_restoretabs->isChecked());
-    mSettings->setValue(_autosaveOnRun, ui->cb_autosave->isChecked());
-    mSettings->setValue(_openLst, ui->cb_openlst->isChecked());
-    mSettings->setValue(_jumpToError, ui->cb_jumptoerror->isChecked());
-    mSettings->setValue(_foregroundOnDemand, ui->cb_bringontop->isChecked());
+    mSettings->setString(_defaultWorkspace, ui->txt_workspace->text());
+    mSettings->setBool(_skipWelcomePage, ui->cb_skipwelcome->isChecked());
+    mSettings->setBool(_restoreTabs, ui->cb_restoretabs->isChecked());
+    mSettings->setBool(_autosaveOnRun, ui->cb_autosave->isChecked());
+    mSettings->setBool(_openLst, ui->cb_openlst->isChecked());
+    mSettings->setBool(_jumpToError, ui->cb_jumptoerror->isChecked());
+    mSettings->setBool(_foregroundOnDemand, ui->cb_bringontop->isChecked());
 
     // editor page
-    mSettings->setValue(_edFontFamily, ui->fontComboBox->currentFont().family());
-    mSettings->setValue(_edFontSize, ui->sb_fontsize->value());
-    mSettings->setValue(_edShowLineNr, ui->cb_showlinenr->isChecked());
-    mSettings->setValue(_edTabSize, ui->sb_tabsize->value());
-    mSettings->setValue(_edLineWrapEditor, ui->cb_linewrap_editor->isChecked());
-    mSettings->setValue(_edLineWrapProcess, ui->cb_linewrap_process->isChecked());
-    mSettings->setValue(_edClearLog, ui->cb_clearlog->isChecked());
-    mSettings->setValue(_edWordUnderCursor, ui->cb_highlightUnderCursor->isChecked());
-    mSettings->setValue(_edHighlightCurrentLine, ui->cb_highlightcurrent->isChecked());
-    mSettings->setValue(_edAutoIndent, ui->cb_autoindent->isChecked());
-    mSettings->setValue(_edWriteLog, ui->cb_writeLog->isChecked());
-    mSettings->setValue(_edLogBackupCount, ui->sb_nrLogBackups->value());
-    mSettings->setValue(_edAutoCloseBraces, ui->cb_autoclose->isChecked());
+    mSettings->setString(_edFontFamily, ui->fontComboBox->currentFont().family());
+    mSettings->setInt(_edFontSize, ui->sb_fontsize->value());
+    mSettings->setBool(_edShowLineNr, ui->cb_showlinenr->isChecked());
+    mSettings->setInt(_edTabSize, ui->sb_tabsize->value());
+    mSettings->setBool(_edLineWrapEditor, ui->cb_linewrap_editor->isChecked());
+    mSettings->setBool(_edLineWrapProcess, ui->cb_linewrap_process->isChecked());
+    mSettings->setBool(_edClearLog, ui->cb_clearlog->isChecked());
+    mSettings->setBool(_edWordUnderCursor, ui->cb_highlightUnderCursor->isChecked());
+    mSettings->setBool(_edHighlightCurrentLine, ui->cb_highlightcurrent->isChecked());
+    mSettings->setBool(_edAutoIndent, ui->cb_autoindent->isChecked());
+    mSettings->setBool(_edWriteLog, ui->cb_writeLog->isChecked());
+    mSettings->setInt(_edLogBackupCount, ui->sb_nrLogBackups->value());
+    mSettings->setBool(_edAutoCloseBraces, ui->cb_autoclose->isChecked());
 
     // MIRO page
-    mSettings->setValue(_miroInstallPath, ui->miroEdit->text());
+    mSettings->setString(_miroInstallPath, ui->miroEdit->text());
 
     // colors page
 //    mSettings->saveScheme();
 
     // misc page
-    mSettings->setValue(_historySize, ui->sb_historySize->value());
+    mSettings->setInt(_historySize, ui->sb_historySize->value());
     // solver option editor
-    mSettings->setValue(_soOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
-    mSettings->setValue(_soAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
-    mSettings->setValue(_soAddEOLComment, ui->addEOLCommentCheckBox->isChecked());
-    mSettings->setValue(_soDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
+    mSettings->setBool(_soOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
+    mSettings->setBool(_soAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
+    mSettings->setBool(_soAddEOLComment, ui->addEOLCommentCheckBox->isChecked());
+    mSettings->setBool(_soDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
 
     // done
     setModifiedStatus(false);
@@ -323,12 +322,12 @@ void SettingsDialog::on_cb_writeLog_toggled(bool checked)
 {
     ui->lbl_nrBackups->setEnabled(checked);
     ui->sb_nrLogBackups->setEnabled(checked);
-    mSettings->setValue(_edWriteLog, checked);
+    mSettings->setBool(_edWriteLog, checked);
 }
 
-void SettingsDialog::on_sb_nrLogBackups_valueChanged(int arg1)
+void SettingsDialog::on_sb_nrLogBackups_valueChanged(int value)
 {
-    mSettings->setValue(_edLogBackupCount, arg1);
+    mSettings->setInt(_edLogBackupCount, value);
 }
 
 void SettingsDialog::on_miroBrowseButton_clicked()

@@ -124,8 +124,8 @@ void Settings::releaseSettings()
 }
 
 Settings::Settings(bool ignore, bool reset, bool resetView)
-    : mIgnoreSettings(ignore),
-      mResetSettings(reset)
+    : mCanWrite(!ignore),
+      mCanRead(!ignore && !reset)
 {
     // initialize json format and make it the default
     QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
@@ -138,21 +138,38 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     initKeys();
 
     initDefaults();
-    if (!ignore) {
+    // QSettings only needed if we want to write
+    if (mCanWrite || mCanRead) {
+        QSettings *sUi = nullptr;
         // create basic non versionized application settings
-        mSettings.insert(KUi, new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
-                                    GAMS_ORGANIZATION_STR, "uistates"));
-        if (mSettings[KUi]->status()) {
+        sUi = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, "uistates");
+        if (sUi->status()) {
             // On Error -> create a backup and mark to reset this settings file
-            DynamicFile file(mSettings[KUi]->fileName(), 2);
+            QString uiFile = sUi->fileName();
+            delete sUi;
+            {
+                DynamicFile file(uiFile, 2);
+            }
+            sUi = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, "uistates");
+            if (sUi->status()) {
+                mCanWrite = false;
+                mCanRead = false;
+                delete sUi;
+                sUi = nullptr;
+                DEB() << "Could not create settings files, switched to --ignore-settings";
+            } else {
+                DEB() << "Problems with reading uistates.json at first attempt. Created backup file.";
+            }
         }
-        // create versionized settings (may init from older version)
-        createSettingFiles();
+        if (sUi) {
+            // if the basic settings file has been created
+            mSettings.insert(KUi, sUi);
+            // create versionized settings (may init from older version)
+            createSettingFiles();
+        }
     }
-    if (reset) {
-        initDefaults();
-    }
-    if (resetView) resetViewSettings();
+    if (resetView)
+        resetViewSettings();
 
     QDir location(settingsPath());
     for (const QString &fileName: location.entryList({"*.lock"})) {
@@ -414,12 +431,14 @@ void Settings::bind(MainWindow* main)
     mMain = main;
 }
 
-void Settings::reloadSettings()
+void Settings::reload()
 {
-    mUiSettings->sync();
-    mSystemSettings->sync();
-    mUserSettings->sync();
-    // TODO(JM) Handle interface.json
+    if (mCanRead) {
+        QMap<Kind, QSettings*>::const_iterator it = mSettings.constBegin();
+        while (it != mSettings.constEnd()) {
+            if (it.value()) it.value()->sync();
+        }
+    }
     Scheme::instance()->initDefault();
 }
 
@@ -427,11 +446,6 @@ void Settings::resetViewSettings()
 {
     initDefaultsUi();
     mUiSettings->sync();
-}
-
-bool Settings::resetSettingsSwitch()
-{
-    return mResetSettings;
 }
 
 void Settings::fetchData()
@@ -681,21 +695,6 @@ QVariant Settings::value(SettingsKey key) const
     return QVariant();
 }
 
-bool Settings::toBool(SettingsKey key) const
-{
-    return value(key).toBool();
-}
-
-int Settings::toInt(SettingsKey key) const
-{
-    return value(key).toInt();
-}
-
-QString Settings::toString(SettingsKey key) const
-{
-    return value(key).toString();
-}
-
 bool Settings::setValue(SettingsKey key, QVariant value)
 {
     KeyData dat = mKeys.value(key);
@@ -751,11 +750,11 @@ QStringList Settings::fileHistory()
 
 QString Settings::settingsPath()
 {
-    if (!mUiSettings) {
-        DEB() << "ERROR: Settings file must be initialized before using settingsPath()";
-        return QString();
+    if (QSettings *settings = mSettings[KUi]) {
+        return QFileInfo(settings->fileName()).path();
     }
-    return QFileInfo(mUiSettings->fileName()).path();
+    DEB() << "ERROR: Settings file must be initialized before using settingsPath()";
+    return QString();
 }
 
 bool Settings::restoreTabsAndProjects()
@@ -766,7 +765,7 @@ bool Settings::restoreTabsAndProjects()
     QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
     mMain->projectRepo()->read(loadDoc.object());
 
-    if (restoreTabs()) {
+    if (toBool(_restoreTabs)) {
         saveData = mSystemSettings->value("openTabs", "").toByteArray();
         loadDoc = QJsonDocument::fromJson(saveData);
         res = mMain->readTabs(loadDoc.object());
@@ -777,14 +776,14 @@ bool Settings::restoreTabsAndProjects()
 
 void Settings::load()
 {
-    if (mResetSettings) {
+    if (mCanWrite) {
         mUiSettings->clear();
         mSystemSettings->clear();
         mUserSettings->clear();
     }
 
-    loadUserIniSettings();
     loadViewStates();
+    loadUserIniSettings();
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
@@ -798,203 +797,8 @@ void Settings::importSettings(const QString &path)
 
     settingsFile.remove(); // remove old file
     backupFile.copy(settingsFile.fileName()); // import new file
-    reloadSettings();
+    reload();
     load();
-}
-
-QString Settings::defaultWorkspace() const
-{
-    return mData.value("defaultWorkspace").toString();
-}
-
-bool Settings::skipWelcomePage() const
-{
-    return mData.value("skipWelcomePage").toBool();
-}
-
-bool Settings::restoreTabs() const
-{
-    return mData.value("restoreTabs").toBool();
-}
-
-bool Settings::autosaveOnRun() const
-{
-    return mData.value("autosaveOnRun").toBool();
-}
-
-bool Settings::foregroundOnDemand() const
-{
-    return mData.value("foregroundOnDemand").toBool();
-}
-
-void Settings::setForegroundOnDemand(bool value)
-{
-    mData.insert("foregroundOnDemand", value);
-}
-
-bool Settings::openLst() const
-{
-    return mData.value("openLst").toBool();
-}
-
-void Settings::setOpenLst(bool value)
-{
-    mData.insert("openLst", value);
-}
-
-bool Settings::jumpToError() const
-{
-    return mData.value("jumpToError").toBool();
-}
-
-void Settings::setJumpToError(bool value)
-{
-    mData.insert("jumpToError", value);
-}
-
-int Settings::fontSize() const
-{
-    return mData.value("fontSize").toInt();
-}
-
-void Settings::setFontSize(int value)
-{
-    mData.insert("fontSize", value);
-}
-
-bool Settings::showLineNr() const
-{
-    return mData.value("showLineNr").toBool();
-}
-
-void Settings::setShowLineNr(bool value)
-{
-    mData.insert("showLineNr", value);
-}
-
-int Settings::tabSize() const
-{
-    return mData.value("tabSize").toInt();
-}
-
-void Settings::setTabSize(int value)
-{
-    mData.insert("tabSize", value);
-}
-
-bool Settings::lineWrapEditor() const
-{
-    return mData.value("lineWrapEditor").toBool();
-}
-
-void Settings::setLineWrapEditor(bool value)
-{
-    mData.insert("lineWrapEditor", value);
-}
-
-bool Settings::lineWrapProcess() const
-{
-    return mData.value("lineWrapProcess").toBool();
-}
-
-void Settings::setLineWrapProcess(bool value)
-{
-    mData.insert("lineWrapProcess", value);
-}
-
-QString Settings::fontFamily() const
-{
-    return mData.value("fontFamily").toString();
-}
-
-void Settings::setFontFamily(const QString &value)
-{
-    mData.insert("fontFamily", value);
-}
-
-bool Settings::clearLog() const
-{
-    return mData.value("clearLog").toBool();
-}
-
-void Settings::setClearLog(bool value)
-{
-    mData.insert("clearLog", value);
-}
-
-bool Settings::searchUseRegex() const
-{
-    return mData.value("searchUseRegex").toBool();
-}
-
-void Settings::setSearchUseRegex(bool searchUseRegex)
-{
-    mData.insert("searchUseRegex", searchUseRegex);
-}
-
-bool Settings::searchCaseSens() const
-{
-    return mData.value("searchCaseSens").toBool();
-}
-
-void Settings::setSearchCaseSens(bool searchCaseSens)
-{
-    mData.insert("searchCaseSens", searchCaseSens);
-}
-
-bool Settings::searchWholeWords() const
-{
-    return mData.value("searchWholeWords").toBool();
-}
-
-void Settings::setSearchWholeWords(bool searchWholeWords)
-{
-    mData.insert("searchWholeWords", searchWholeWords);
-}
-
-int Settings::selectedScopeIndex() const
-{
-    return mData.value("selectedScopeIndex").toInt();
-}
-
-void Settings::setSelectedScopeIndex(int selectedScopeIndex)
-{
-    mData.insert("selectedScopeIndex", selectedScopeIndex);
-}
-
-bool Settings::wordUnderCursor() const
-{
-    return mData.value("wordUnderCursor").toBool();
-}
-
-void Settings::setWordUnderCursor(bool wordUnderCursor)
-{
-    mData.insert("wordUnderCursor", wordUnderCursor);
-}
-
-QString Settings::userModelLibraryDir() const
-{
-    return mData.value("userModelLibraryDir").toString();
-}
-
-bool Settings::highlightCurrentLine() const
-{
-    return mData.value("highlightCurrentLine").toBool();
-}
-
-void Settings::setHighlightCurrentLine(bool highlightCurrentLine)
-{
-    mData.insert("highlightCurrentLine", highlightCurrentLine);
-}
-
-bool Settings::autoIndent() const
-{
-    return mData.value("autoIndent").toBool();
-}
-
-void Settings::setAutoIndent(bool autoIndent)
-{
-    mData.insert("autoIndent", autoIndent);
 }
 
 void Settings::exportSettings(const QString &path)
