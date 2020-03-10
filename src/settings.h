@@ -55,6 +55,9 @@ enum SettingsKey {
 
     // general system settings
     _encodingMib,
+    _projects,
+    _tabs,
+    _history,
 
     // settings of help page
     _hBookmarks,
@@ -117,16 +120,19 @@ public:
 
     void bind(MainWindow *main);
 
-    void load();
+    void load(Kind kind);
     void save();
-
 
     bool toBool(SettingsKey key) const { return value(key).toBool(); }
     int toInt(SettingsKey key) const { return value(key).toInt(); }
+    double toDouble(SettingsKey key) const { return value(key).toDouble(); }
     QString toString(SettingsKey key) const { return value(key).toString(); }
+    QByteArray toByteArray(SettingsKey key) const { return value(key).toByteArray(); }
     void setBool(SettingsKey key, bool value) { setValue(key, value);}
     void setInt(SettingsKey key, int value) { setValue(key, value);}
+    void setDouble(SettingsKey key, double value) { setValue(key, value);}
     void setString(SettingsKey key, QString value) { setValue(key, value);}
+    void setByteArray(SettingsKey key, QByteArray value) { setValue(key, value);}
 
     void exportSettings(const QString &settingsPath);
     void importSettings(const QString &settingsPath);
@@ -143,9 +149,10 @@ public:
 private:
     typedef QMap<QString, QVariant> Data;
     struct KeyData {
+        KeyData() {}
         KeyData(Settings::Kind _kind, QStringList _keys, QVariant _initial)
             : kind(_kind), keys(_keys), initial(_initial) {}
-        Settings::Kind kind;
+        Settings::Kind kind = KAll;
         QStringList keys;
         QVariant initial;
     };
@@ -173,14 +180,14 @@ private:
     int checkVersion();
     QString settingsPath();
     bool createSettingFiles();
-    void initDefaults(Kind kind);
-    void fetchData();
+    void reset(Kind kind);
+    void initData(Kind kind);
+    void updateFromMainWin();
     void save(Kind kind);
 
     void initSettingsFiles(int version);
 
-    void loadViewStates();
-    void loadUserIniSettings();
+    void loadFiles();
 
     QVariant value(SettingsKey key) const;
     bool setValue(SettingsKey key, QVariant value);

@@ -197,7 +197,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
-    mSettings->load();
+    mSettings->load(Settings::KAll);
     mRecent.path = mSettings->toString(_defaultWorkspace);
     mSearchDialog = new search::SearchDialog(this);
 
@@ -3633,7 +3633,7 @@ void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
     mSettings->resetViewSettings();
-    mSettings->load();
+    mSettings->load(Settings::KUi);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
