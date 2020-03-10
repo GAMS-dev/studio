@@ -108,7 +108,7 @@ enum SettingsKey {
 class Settings
 {
 public:
-    enum Kind {KUi, KSys, KUser};
+    enum Kind {KAll, KUi, KSys, KUser};
 
 public:
     static void createSettings(bool ignore, bool reset, bool resetView);
@@ -119,6 +119,7 @@ public:
 
     void load();
     void save();
+
 
     bool toBool(SettingsKey key) const { return value(key).toBool(); }
     int toInt(SettingsKey key) const { return value(key).toInt(); }
@@ -169,11 +170,10 @@ private:
     void initKeys();
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
 
-    QString settingsPath();
     int checkVersion();
+    QString settingsPath();
     bool createSettingFiles();
-    void initDefaults();
-    void initDefaultsUi();
+    void initDefaults(Kind kind);
     void fetchData();
     void save(Kind kind);
 

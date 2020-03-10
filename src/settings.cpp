@@ -131,13 +131,9 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
     QSettings::setDefaultFormat(jsonFormat);
 
-    // prepare storage
-    mData.insert(KUi, Data());
-    mData.insert(KSys, Data());
-    mData.insert(KUser, Data());
     initKeys();
 
-    initDefaults();
+    initDefaults(KAll);
     // QSettings only needed if we want to write
     if (mCanWrite || mCanRead) {
         QSettings *sUi = nullptr;
@@ -162,9 +158,9 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             }
         }
         if (sUi) {
-            // if the basic settings file has been created
+            // only if the basic settings file has been created ...
             mSettings.insert(KUi, sUi);
-            // create versionized settings (may init from older version)
+            // ... create versionized settings (may init from older version)
             createSettingFiles();
         }
     }
@@ -188,6 +184,11 @@ Settings::~Settings()
 
 void Settings::initKeys()
 {
+    // prepare storage
+    mData.insert(KUi, Data());
+    mData.insert(KSys, Data());
+    mData.insert(KUser, Data());
+
     // versions are kept synchronous in the different settings files
     mKeys.insert(_sVersionSettings, KeyData(KSys, {"version","settings"}, mVersion));
     mKeys.insert(_sVersionStudio, KeyData(KSys, {"version","studio"}, QString(GAMS_VERSION_STR)));
@@ -319,27 +320,6 @@ void Settings::initSettingsFiles(int version)
     // TODO(JM) Handle studioscheme.json and syntaxscheme.json
 }
 
-void Settings::initDefaultsUi()
-{
-    Data data;
-    // UI settings ---------------------
-    QJsonObject joMainWin;
-    joMainWin["size"] = "1024,768";
-    joMainWin["pos"] = "0,0";
-    joMainWin["windowState"] = "";
-    joMainWin["maximized"] = false;
-    data["mainWindow"] = joMainWin;
-
-    QJsonObject joViewMenu;
-    joViewMenu["projectView"] = true;
-    joViewMenu["outputView"] = true;
-    joViewMenu["helpView"] = false;
-    joViewMenu["optionEditor"] = false;
-    data["viewMenu"] = joViewMenu;
-
-    mData.insert(KUi, data);
-}
-
 void Settings::save(Kind kind)
 {
     if (!mSettings.contains(kind)) return;
@@ -350,77 +330,15 @@ void Settings::save(Kind kind)
     mSettings[kind]->sync();
 }
 
-void Settings::initDefaults()
+void Settings::initDefaults(Settings::Kind kind)
 {
-    // UI settings ---------------------
-    initDefaultsUi();
-
     QHash<SettingsKey, KeyData>::const_iterator it = mKeys.constBegin();
     while (it != mKeys.constEnd()) {
         KeyData dat = it.value();
-
+        if (kind == KAll || kind == dat.kind)
+            setValue(it.key(), dat.initial);
         ++it;
     }
-
-    // System settings -----------------
-
-    QJsonObject joVersion;
-    joVersion["settings"] = mVersion;
-    joVersion["studio"] = GAMS_VERSION;
-    mData[KSys].insert("version", joVersion);
-
-    QJsonObject joSearch;
-    joSearch["regex"] = false;
-    joSearch["caseSens"] = false;
-    joSearch["wholeWords"] = false;
-    joSearch["scope"] = 0;
-    mData[KSys].insert("search", joSearch);
-
-    mData[KSys].insert("encodingMIBs", "106,0,4,17,2025");
-
-    QJsonObject joHelp; // "helpView" empty as default
-
-    // User settings -------------------
-
-    mData[KUser].insert("version", joVersion);
-    mData[KUser].insert("defaultWorkspace", CommonPaths::defaultWorkingDir());
-    mData[KUser].insert("skipWelcome", false);
-    mData[KUser].insert("restoreTabs", true);
-    mData[KUser].insert("autosaveOnRun", true);
-    mData[KUser].insert("openLst", false);
-    mData[KUser].insert("jumpToError", true);
-    mData[KUser].insert("bringOnTop", true);
-    mData[KUser].insert("historySize", 12);
-
-
-    QJsonObject joEditor;
-    joEditor["fontFamily"] = findFixedFont();
-    joEditor["fontSize"] = 10;
-    joEditor["showLineNr"] = true;
-    joEditor["tabSize"] = 4;
-    joEditor["lineWrapEditor"] = false;
-    joEditor["lineWrapProcess"] = false;
-    joEditor["clearLog"] = false;
-    joEditor["wordUnderCursor"] = false;
-    joEditor["highlightCurrentLine"] = false;
-    joEditor["autoIndent"] = true;
-    joEditor["writeLog"] = true;
-    joEditor["nrLogBackups"] = 3;
-    joEditor["autoCloseBraces"] = true;
-    joEditor["editableMaxSizeMB"] = 50;
-    mData[KUser].insert("editor", joEditor);
-
-    QJsonObject joSolverOption;
-    joSolverOption["overrideExisting"] = true;
-    joSolverOption["addCommentAbove"] = false;
-    joSolverOption["addEOLComment"] = false;
-    joSolverOption["deleteCommentsAbove"] = false;
-    mData[KUser].insert("solverOption", joSolverOption);
-
-    QJsonObject joMiro;
-    joMiro["installationLocation"] = "";
-    mData[KUser].insert("miro", joMiro);
-
     // create default values for current mVersion
     Scheme::instance()->initDefault();
 }
@@ -444,7 +362,7 @@ void Settings::reload()
 
 void Settings::resetViewSettings()
 {
-    initDefaultsUi();
+    initDefaults();
     mUiSettings->sync();
 }
 
@@ -698,11 +616,16 @@ QVariant Settings::value(SettingsKey key) const
 bool Settings::setValue(SettingsKey key, QVariant value)
 {
     KeyData dat = mKeys.value(key);
+    if (!mData.contains(dat.kind)) // ensure that entry for kind exists
+        mData.insert(dat.kind, Data());
     if (dat.keys.length() == 1) {
         mData[dat.kind].insert(dat.keys.at(0), value);
         return true;
     }
     if (dat.keys.length() == 2) {
+        // ensure that Data entry for group-key exists
+        if (!mData[dat.kind].contains(dat.keys.at(0)))
+            mData[dat.kind].insert(dat.keys.at(0), Data());
         QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
         switch (value.type()) {
         case QVariant::Double: jo[dat.keys.at(1)] = value.toDouble(); break;
@@ -776,7 +699,7 @@ bool Settings::restoreTabsAndProjects()
 
 void Settings::load()
 {
-    if (mCanWrite) {
+    if (mCanRead) {
         mUiSettings->clear();
         mSystemSettings->clear();
         mUserSettings->clear();
