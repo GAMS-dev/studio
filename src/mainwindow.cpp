@@ -239,9 +239,8 @@ MainWindow::MainWindow(QWidget *parent)
     // Themes
 #ifdef __APPLE__
     mSettings->setAppearance((MacOSCocoaBridge::isDarkMode() ? 1 : 0));
-#else
-    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
 #endif
+    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
 
     // this needs to be re-called for studio startup, as the call when loading settings is too early
@@ -326,7 +325,8 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
         // reload theme when switching OS theme
-        mSettings->setAppearance(mSettings->appearance());
+        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Scheme::StudioScope);
+        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Scheme::EditorScope);
 #endif
     }
     return QMainWindow::event(event);
