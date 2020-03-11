@@ -18,7 +18,7 @@ PaletteManager::PaletteManager()
 
     // Nr2: dark theme
     QPalette darkPalette(QApplication::palette());
-    QColor darkColor = QColor(42,42,42);
+    QColor darkColor = QColor(55,55,55);
     QColor disabledColor = QColor(127,127,127);
     darkPalette.setColor(QPalette::Window, darkColor);
     darkPalette.setColor(QPalette::WindowText, Qt::white);
