@@ -42,7 +42,8 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
 {
     ui->setupUi(this);
 
-    ui->tabWidget->tabBar()->setStyle( new ReferenceTabStyle );
+    auto style =  new ReferenceTabStyle(QApplication::style());
+    ui->tabWidget->tabBar()->setStyle(style);
 
     SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(mReference, SymbolDataType::Unknown, this);
     ui->tabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg(mReference->size()));
