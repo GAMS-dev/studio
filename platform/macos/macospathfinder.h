@@ -27,7 +27,6 @@ private:
 
 public:
     static QString systemDir();
-    static QString bundlePath();
 
 private:
     static QString searchApplications();

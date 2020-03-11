@@ -20,6 +20,7 @@
 #include "macoscocoabridge.h"
 
 #include <Cocoa/Cocoa.h>
+#include <QUrl>
 
 void MacOSCocoaBridge::disableDictationMenuItem(bool flag)
 {
@@ -45,4 +46,12 @@ bool MacOSCocoaBridge::isDarkMode()
 {
     NSString *interfaceStyle = [NSUserDefaults.standardUserDefaults valueForKey:@"AppleInterfaceStyle"];
     return [interfaceStyle isEqualToString:@"Dark"];
+}
+
+QString MacOSCocoaBridge::bundlePath()
+{
+    auto mainBundle = [NSBundle mainBundle];
+    if (!mainBundle)
+        return QString();
+    return QUrl::fromNSURL([mainBundle bundleURL]).toLocalFile();
 }

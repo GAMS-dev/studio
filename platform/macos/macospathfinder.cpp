@@ -16,9 +16,7 @@
  *
  */
 #include "macospathfinder.h"
-
-#include <CoreFoundation/CFBundle.h>
-#include <CoreFoundation/CFURL.h>
+#include "macoscocoabridge.h"
 
 #include <QDir>
 #include <QStandardPaths>
@@ -33,25 +31,13 @@ MacOSPathFinder::MacOSPathFinder()
 
 QString MacOSPathFinder::systemDir()
 {
-    auto path = bundlePath() + SubPath;
+    auto path = MacOSCocoaBridge::bundlePath() + SubPath;
     if (QStandardPaths::findExecutable("gams", {path}).isEmpty()) {
         path = searchApplications();
         if (QStandardPaths::findExecutable("gams", {path}).isEmpty())
             path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     }
     return QDir::cleanPath(path);
-}
-
-QString MacOSPathFinder::bundlePath()
-{
-    CFURLRef appUrlRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-    CFStringRef macPath = CFURLCopyFileSystemPath(appUrlRef,
-                                                  kCFURLPOSIXPathStyle);
-    const char *pathPtr = CFStringGetCStringPtr(macPath,
-                                                CFStringGetSystemEncoding());
-    CFRelease(appUrlRef);
-    CFRelease(macPath);
-    return QString(pathPtr);
 }
 
 QString MacOSPathFinder::searchApplications()
