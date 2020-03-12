@@ -91,13 +91,13 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     QLabel* lblValFormat = new QLabel("Format:", this);
     gridLayout->addWidget(lblValFormat,0,0);
     mValFormat = new QComboBox(this);
-    mValFormat->addItem("G-format", numerics::DoubleFormatter::g);
-    mValFormat->addItem("F-format", numerics::DoubleFormatter::f);
-    mValFormat->addItem("E-format", numerics::DoubleFormatter::e);
+    mValFormat->addItem("g-format", numerics::DoubleFormatter::g);
+    mValFormat->addItem("f-format", numerics::DoubleFormatter::f);
+    mValFormat->addItem("e-format", numerics::DoubleFormatter::e);
     mValFormat->setToolTip("<html><head/><body><p>Display format for numerical values:</p>"
-                          "<p><span style=' font-weight:600;'>G-format:</span> Numerical values are displayed either in scientific format or fixed format, whichever is more appropriate. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits.<br/>When precision is set to <span style=' font-style:italic;'>Full</span>, the value is displayed in the shortest format that represents the numerical value as accurately as possible. Trailing zeroes are always truncated regardless of <span style=' font-style:italic;'>Squeeze Trailing Zeroes</span>. </p>"
-                          "<p><span style=' font-weight:600;'>F-format:</span> Numerical values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
-                          "<p><span style=' font-weight:600;'>E-format:</span> Numerical values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits.</p></body></html>");
+                          "<p><span style=' font-weight:600;'>g-format:</span> Numerical values are displayed either in scientific format or fixed format, whichever is more appropriate. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits.<br/>When precision is set to <span style=' font-style:italic;'>Full</span>, the value is displayed in the shortest format that represents the numerical value as accurately as possible. Trailing zeroes are always truncated regardless of <span style=' font-style:italic;'>Squeeze Trailing Zeroes</span>. </p>"
+                          "<p><span style=' font-weight:600;'>f-format:</span> Numerical values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
+                          "<p><span style=' font-weight:600;'>e-format:</span> Numerical values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits.</p></body></html>");
     resetValFormat();
     gridLayout->addWidget(mValFormat,0,1);
 
@@ -108,9 +108,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mPrecision->setValue(6);
     mPrecision->setWrapping(true);
     mPrecision->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
-                           "G-Format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
-                           "F-Format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
-                           "E-Format:</span> Significat digits [1..17]</p></body></html>");
+                           "g-Format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
+                           "f-Format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
+                           "e-Format:</span> Significat digits [1..17]</p></body></html>");
     gridLayout->addWidget(mPrecision,1,1);
 
     vLayout->addItem(gridLayout);
