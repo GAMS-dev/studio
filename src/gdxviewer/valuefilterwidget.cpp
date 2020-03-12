@@ -62,6 +62,16 @@ ValueFilterWidget::~ValueFilterWidget()
     delete ui;
 }
 
+void ValueFilterWidget::mousePressEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event)
+}
+
+void ValueFilterWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event)
+}
+
 void ValueFilterWidget::keyPressEvent(QKeyEvent *e)
 {
     if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
