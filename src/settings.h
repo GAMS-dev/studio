@@ -36,10 +36,8 @@ class MainWindow;
 
 enum SettingsKey {
     // REMARK: version is treated differently as it is passed to ALL versionized setting files
-    _sVersionSettings,
-    _sVersionStudio,
-    _uVersionSettings,
-    _uVersionStudio,
+    _VersionSettings,
+    _VersionStudio,
 
     // window settings
     _winSize,
@@ -118,21 +116,27 @@ public:
     static Settings *settings();
     static void releaseSettings();
 
-    void bind(MainWindow *main);
-
     void load(Kind kind);
     void save();
 
     bool toBool(SettingsKey key) const { return value(key).toBool(); }
     int toInt(SettingsKey key) const { return value(key).toInt(); }
     double toDouble(SettingsKey key) const { return value(key).toDouble(); }
+    QSize toSize(SettingsKey key) const;
+    QPoint toPoint(SettingsKey key) const;
     QString toString(SettingsKey key) const { return value(key).toString(); }
     QByteArray toByteArray(SettingsKey key) const { return value(key).toByteArray(); }
+    QJsonObject toJsonObject(SettingsKey key) const;
+    QJsonArray toJsonArray(SettingsKey key) const;
     void setBool(SettingsKey key, bool value) { setValue(key, value);}
     void setInt(SettingsKey key, int value) { setValue(key, value);}
     void setDouble(SettingsKey key, double value) { setValue(key, value);}
+    void setSize(SettingsKey key, const QSize &value);
+    void setPoint(SettingsKey key, const QPoint &value);
     void setString(SettingsKey key, QString value) { setValue(key, value);}
     void setByteArray(SettingsKey key, QByteArray value) { setValue(key, value);}
+    bool setJsonObject(SettingsKey key, QJsonObject value);
+    bool setJsonArray(SettingsKey key, QJsonArray value);
 
     void exportSettings(const QString &settingsPath);
     void importSettings(const QString &settingsPath);
@@ -141,8 +145,6 @@ public:
 
     void reload();
     void resetViewSettings();
-
-    bool restoreTabsAndProjects();
 
     QStringList fileHistory();
 
@@ -163,10 +165,6 @@ private:
     bool mCanRead = false;
 
     QHash<SettingsKey, KeyData> mKeys;
-    MainWindow *mMain = nullptr;
-    QSettings *mUiSettings = nullptr;
-    QSettings *mSystemSettings = nullptr;
-    QSettings *mUserSettings = nullptr;
     QMap<Kind, QSettings*> mSettings;
     QMap<Kind, Data> mData;
 
@@ -182,16 +180,13 @@ private:
     bool createSettingFiles();
     void reset(Kind kind);
     void initData(Kind kind);
-    void updateFromMainWin();
-    void save(Kind kind);
+    void saveFile(Kind kind);
+    QVariant read(SettingsKey key, Kind kind = KAll);
 
     void initSettingsFiles(int version);
 
-    void loadFiles();
-
     QVariant value(SettingsKey key) const;
     bool setValue(SettingsKey key, QVariant value);
-    bool setValue(SettingsKey key, QJsonObject value);
 
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

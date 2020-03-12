@@ -23,13 +23,13 @@
 #include <QDir>
 #include <QSettings>
 #include <QFile>
+#include <QSize>
+#include <QPoint>
+#include <QFontDatabase>
+#include "logger.h"
 #include "settings.h"
-#include "mainwindow.h"
 #include "commonpaths.h"
-#include "search/searchdialog.h"
 #include "version.h"
-#include "commandlineparser.h"
-#include "scheme.h"
 #include "exception.h"
 #include "file/dynamicfile.h"
 
@@ -53,12 +53,12 @@ QList<int> toIntArray(QString s) {
     for (QString v : s.split(',')) res << v.toInt();
     return res;
 }
-QPoint toPoint(QString s) {
+QPoint stringToPoint(QString s) {
     QList<int> a = toIntArray(s);
     if (a.size() == 2) return QPoint(a.at(0), a.at(1));
     return QPoint();
 }
-QSize toSize(QString s) {
+QSize stringToSize(QString s) {
     QList<int> a = toIntArray(s);
     if (a.size() == 2) return QSize(a.at(0), a.at(1));
     return QSize();
@@ -159,6 +159,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
         }
         if (sUi) {
             // only if the basic settings file has been created ...
+            sUi->sync();
             mSettings.insert(KUi, sUi);
             // ... create versionized settings (may init from older version)
             createSettingFiles();
@@ -176,10 +177,12 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
 
 Settings::~Settings()
 {
-    delete mSettings.take(KUi);
-    delete mSettings.take(KSys);
-    delete mSettings.take(KUser);
-    // TODO(JM) Handle interface.json
+    QMap<Kind, QSettings*>::iterator si = mSettings.begin();
+    while (si != mSettings.end()) {
+        QSettings *set = si.value();
+        si = mSettings.erase(si);
+        delete set;
+    }
 }
 
 void Settings::initKeys()
@@ -189,12 +192,9 @@ void Settings::initKeys()
     mData.insert(KSys, Data());
     mData.insert(KUser, Data());
 
-    // versions are kept synchronous in the different settings files
-    mKeys.insert(_sVersionSettings, KeyData(KSys, {"version","settings"}, mVersion));
-    mKeys.insert(_sVersionStudio, KeyData(KSys, {"version","studio"}, QString(GAMS_VERSION_STR)));
-
-    mKeys.insert(_uVersionSettings, KeyData(KUser, {"version","settings"}, mVersion));
-    mKeys.insert(_uVersionStudio, KeyData(KUser, {"version","studio"}, QString(GAMS_VERSION_STR)));
+    // versions for all settings files (KAll)
+    mKeys.insert(_VersionSettings, KeyData(KAll, {"version","settings"}, mVersion));
+    mKeys.insert(_VersionStudio, KeyData(KAll, {"version","studio"}, QString(GAMS_VERSION_STR)));
 
     // window settings
     mKeys.insert(_winSize, KeyData(KUi, {"window","size"}, QString("1024,768")));
@@ -326,17 +326,8 @@ void Settings::initSettingsFiles(int version)
 
 void Settings::reset(Kind kind)
 {
-    if (kind == KAll) {
-        mKeys.clear();
-    } else {
-        QHash<SettingsKey, KeyData>::iterator di = mKeys.begin();
-        while (di != mKeys.constEnd()) {
-            KeyData dat = di.value();
-            if (kind == dat.kind)
-                di = mKeys.erase(di);
-            else
-                ++di;
-        }
+    for (Kind &k : mData.keys()) {
+        if (kind == KAll || k == kind) mData[k].clear();
     }
     initData(kind);
 }
@@ -350,24 +341,8 @@ void Settings::initData(Kind kind)
             setValue(di.key(), dat.initial);
     }
     // create default values for current mVersion
-    if (kind == KAll)
-        Scheme::instance()->initDefault();
-}
-
-void Settings::save(Kind kind)
-{
-    if (!mSettings.contains(kind)) return;
-    Data::const_iterator it = mData[kind].constBegin();
-    while (it != mData[kind].constEnd()) {
-        mSettings[kind]->setValue(it.key(), it.value());
-    }
-    mSettings[kind]->sync();
-}
-
-
-void Settings::bind(MainWindow* main)
-{
-    mMain = main;
+//    if (kind == KAll)
+//        Scheme::instance()->initDefault();
 }
 
 void Settings::reload()
@@ -378,117 +353,47 @@ void Settings::reload()
 void Settings::resetViewSettings()
 {
     initData(KUi);
-    mUiSettings->sync();
-}
-
-void Settings::updateFromMainWin()
-{
-    // Updates mData from values in Studio (reads from MainWindow)
-    // This only effects UI and System data. Other data is set directly with user interaction.
-
-    // UI data ---------------------
-
-    setString(_winSize, sizeToString(mMain->size()));
-    setString(_winPos, pointToString(mMain->pos()));
-    setString(_winState, mMain->saveState().data());
-    setBool(_winMaximized, mMain->isMaximized());
-
-    setBool(_viewProject, mMain->projectViewVisibility());
-    setBool(_viewOutput, mMain->outputViewVisibility());
-    setBool(_viewHelp, mMain->helpViewVisibility());
-    setBool(_viewOption, mMain->optionEditorVisibility());
-
-     // system data --------------------
-
-     setString(_encodingMib, mMain->encodingMIBsString());
-
-     setBool(_searchUseRegex, mMain->searchDialog()->regex());
-     setBool(_searchCaseSens, mMain->searchDialog()->caseSens());
-     setBool(_searchWholeWords, mMain->searchDialog()->wholeWords());
-     setInt(_searchScope, mMain->searchDialog()->selectedScope());
-
-#ifdef QWEBENGINE
-     QJsonArray joBookmarks;
-     // TODO(JM) Check with Jeed if this can be moved from multimap to map
-     QMultiMap<QString, QString> bookmarkMap(mMain->helpWidget()->getBookmarkMap());
-     for (int i = 0; i < bookmarkMap.size(); i++) {
-         QJsonObject joBookmark;
-         joBookmark["location"] = bookmarkMap.keys().at(i);
-         joBookmark["name"] = bookmarkMap.values().at(i);
-         joBookmarks << joBookmark;
-     }
-     setValue(_hBookmarks, joBookmarks);
-     setDouble(_hZoomFactor, mMain->helpWidget()->getZoomFactor());
-#endif
-
-     QJsonObject joProjects;
-     mMain->projectRepo()->write(joProjects);
-     setValue(_projects, joProjects);
-
-     QJsonObject joTabs;
-     mMain->writeTabs(joTabs);
-     setValue(_tabs, joTabs);
-
-     QJsonArray joOpenFiles;
-     for (const QString &file : mMain->history()->mLastOpenedFiles) {
-         if (file.isEmpty()) break;
-         QJsonObject joOpenFile;
-         joOpenFile["file"] = file;
-         joOpenFiles << joOpenFile;
-     }
-     setValue(_history, joOpenFiles);
+    QSettings *set = mSettings.value(KUi);
+    if (set) set->sync();
 }
 
 void Settings::save()
 {
-    updateFromMainWin(); // TODO: Update data directly instead of this block-update
-
     // ignore-settings argument -> no settings assigned
     if (!mCanWrite) return;
-
-    save(KUi);
-    save(KSys);
-    save(KUser);
-
-    // TODO(JM) temporarily deactivated
-//    writeScheme();
+    for (const Kind &kind : mSettings.keys()) {
+        saveFile(kind);
+    }
 }
 
-void Settings::loadFiles()
+QSize Settings::toSize(SettingsKey key) const
 {
+    return stringToSize(toString(key));
+}
 
-    load(KAll);
+QPoint Settings::toPoint(SettingsKey key) const
+{
+    return stringToPoint(toString(key));
+}
 
-    // main window
-    mSystemSettings->beginGroup("mainWindow");
-    if (toBool(_winMaximized)) {
-        mMain->setWindowState(Qt::WindowMaximized);
-    } else {
-        mMain->resize(toSize(toString(_winSize)));
-        mMain->move(toPoint(toString(_winPos)));
-    }
-    mMain->restoreState(value(_winState).toByteArray());
-    mMain->ensureInScreen();
+QJsonObject Settings::toJsonObject(SettingsKey key) const
+{
+    return value(key).toJsonObject();
+}
 
+QJsonArray Settings::toJsonArray(SettingsKey key) const
+{
+    return value(key).toJsonArray();
+}
 
-    // tool-/menubar
-    mMain->setProjectViewVisibility(toBool(_viewProject));
-    mMain->setOutputViewVisibility(toBool(_viewOutput));
-    mMain->setExtendedEditorVisibility(toBool(_viewOption));
-    mMain->setHelpViewVisibility(toBool(_viewHelp));
-    mMain->setEncodingMIBs(toString(_encodingMib));
+void Settings::setSize(SettingsKey key, const QSize &value)
+{
+    setValue(key, sizeToString(value));
+}
 
-    // help
-#ifdef QWEBENGINE
-    QJsonArray joHelp = value(_hBookmarks).toJsonArray();
-    QMultiMap<QString, QString> bookmarkMap;
-    for (QJsonValue joVal: joHelp) {
-        bookmarkMap.insert(joVal["location"].toString(), joVal["name"].toString());
-    }
-    mMain->helpWidget()->setBookmarkMap(bookmarkMap);
-    double hZoom = toDouble(_hZoomFactor);
-    mMain->helpWidget()->setZoomFactor(hZoom > 0.0 ? hZoom : 1.0);
-#endif
+void Settings::setPoint(SettingsKey key, const QPoint &value)
+{
+    setValue(key, pointToString(value));
 }
 
 bool Settings::isValidVersion(QString currentVersion)
@@ -521,6 +426,8 @@ int Settings::compareVersion(QString currentVersion, QString otherVersion)
 QVariant Settings::value(SettingsKey key) const
 {
     KeyData dat = mKeys.value(key);
+    if (!mData.contains(dat.kind))
+        return QVariant();
     if (dat.keys.length() == 1)
         return mData[dat.kind].value(dat.keys.at(0));
     if (dat.keys.length() == 2) {
@@ -544,15 +451,17 @@ bool Settings::setValue(SettingsKey key, QVariant value)
         if (!mData[dat.kind].contains(dat.keys.at(0)))
             mData[dat.kind].insert(dat.keys.at(0), Data());
         QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
-        switch (value.type()) {
-        case QVariant::Double: jo[dat.keys.at(1)] = value.toDouble(); break;
-        case QVariant::ULongLong:
-        case QVariant::LongLong: jo[dat.keys.at(1)] = value.toLongLong(); break;
-        case QVariant::UInt:
-        case QVariant::Int: jo[dat.keys.at(1)] = value.toInt(); break;
-        case QVariant::Bool: jo[dat.keys.at(1)] = value.toBool(); break;
-        case QVariant::ByteArray:
-        case QVariant::String: jo[dat.keys.at(1)] = value.toString(); break;
+        switch (QMetaType::Type(value.type())) {
+        case QMetaType::Double: jo[dat.keys.at(1)] = value.toDouble(); break;
+        case QMetaType::ULongLong:
+        case QMetaType::LongLong: jo[dat.keys.at(1)] = value.toLongLong(); break;
+        case QMetaType::UInt:
+        case QMetaType::Int: jo[dat.keys.at(1)] = value.toInt(); break;
+        case QMetaType::Bool: jo[dat.keys.at(1)] = value.toBool(); break;
+        case QMetaType::QByteArray:
+        case QMetaType::QString: jo[dat.keys.at(1)] = value.toString(); break;
+        case QMetaType::QJsonObject: jo[dat.keys.at(1)] = value.toJsonObject(); break;
+        case QMetaType::QJsonArray: jo[dat.keys.at(1)] = value.toJsonArray(); break;
         default: return false;
         }
         mData[dat.kind].insert(dat.keys.at(0), jo);
@@ -561,20 +470,14 @@ bool Settings::setValue(SettingsKey key, QVariant value)
     return false;
 }
 
-bool Settings::setValue(SettingsKey key, QJsonObject value)
+bool Settings::setJsonObject(SettingsKey key, QJsonObject value)
 {
-    KeyData dat = mKeys.value(key);
-    if (dat.keys.length() == 1) {
-        mData[dat.kind].insert(dat.keys.at(0), value);
-        return true;
-    }
-    if (dat.keys.length() == 2) {
-        QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
-        jo[dat.keys.at(1)] = value;
-        mData[dat.kind].insert(dat.keys.at(0), jo);
-        return true;
-    }
-    return false;
+    return setValue(key, value);
+}
+
+bool Settings::setJsonArray(SettingsKey key, QJsonArray value)
+{
+    return setValue(key, value);
 }
 
 
@@ -591,27 +494,43 @@ QStringList Settings::fileHistory()
 QString Settings::settingsPath()
 {
     if (QSettings *settings = mSettings[KUi]) {
+        DEB() << "UiSettings: " << settings->fileName();
         return QFileInfo(settings->fileName()).path();
     }
     DEB() << "ERROR: Settings file must be initialized before using settingsPath()";
     return QString();
 }
 
-bool Settings::restoreTabsAndProjects()
+void Settings::saveFile(Kind kind)
 {
-    bool res = true;
-    mSystemSettings->beginGroup("json");
-    QByteArray saveData = mSystemSettings->value("projects", "").toByteArray();
-    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
-    mMain->projectRepo()->read(loadDoc.object());
+    if (!mSettings.contains(kind)) return;
 
-    if (toBool(_restoreTabs)) {
-        saveData = mSystemSettings->value("openTabs", "").toByteArray();
-        loadDoc = QJsonDocument::fromJson(saveData);
-        res = mMain->readTabs(loadDoc.object());
+    // Store values that are repeated in ALL settings, like the versions
+    Data::const_iterator it = mData[KAll].constBegin();
+    for ( ; it != mData[kind].constEnd() ; ++it) {
+        mSettings[kind]->setValue(it.key(), it.value());
     }
-    mSystemSettings->endGroup();
-    return res;
+
+    // store individual settings
+    it = mData[kind].constBegin();
+    for ( ; it != mData[kind].constEnd() ; ++it) {
+        mSettings[kind]->setValue(it.key(), it.value());
+    }
+    mSettings[kind]->sync();
+}
+
+QVariant Settings::read(SettingsKey key, Settings::Kind kind)
+{
+    KeyData dat = keyData(key);
+    if (kind == KAll) kind = dat.kind;
+    QSettings *qs = mSettings.value(kind, nullptr);
+    if (!qs) return QVariant();
+    if (dat.keys.size() == 1) return  qs->value(dat.keys[0]);
+    if (dat.keys.size() == 2) {
+        QJsonObject jo = qs->value(dat.keys[0]).toJsonObject();
+        return jo[dat.keys[1]].toVariant();
+    }
+    return QVariant();
 }
 
 void Settings::load(Kind kind)
@@ -619,21 +538,37 @@ void Settings::load(Kind kind)
     if (mCanRead) {
         // sync all settings
         QMap<Kind, QSettings*>::const_iterator si = mSettings.constBegin();
-        while (si != mSettings.constEnd()) {
+        for ( ; si != mSettings.constEnd() ; ++si) {
             if (si.value()) si.value()->sync();
         }
         // write settings content into mData
         QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
         for ( ; di != mKeys.constEnd() ; ++di) {
             KeyData dat = di.value();
-            if (kind == KAll || kind == dat.kind) {
-                QSettings *qs = mSettings.value(dat.kind, nullptr);
-                if (!qs) continue;
-                setValue(di.key(), dat.initial);
+
+            if (dat.kind == KAll) {
+                // --- special handling of entries for all files (like version)
+                if (kind == KAll) {
+                    // Update shared entry over all files
+                    for (const Kind &k : mData.keys()) {
+                        if (k == KAll) continue;
+                        QVariant var = read(di.key(), k);
+                        if (var.isValid()) setValue(di.key(), var);
+                    }
+                } else {
+                    // Only update given kind
+                    QVariant var = read(di.key());
+                    if (var.isValid()) setValue(di.key(), var);
+                }
+
+            } else if (kind == KAll || kind == dat.kind) {
+                // --- common update of entry
+                QVariant var = read(di.key());
+                if (var.isValid()) setValue(di.key(), var);
             }
         }
     }
-    Scheme::instance()->initDefault();
+//    Scheme::instance()->initDefault();
 
 
     // the location for user model libraries is not modifyable right now
@@ -654,7 +589,8 @@ void Settings::importSettings(const QString &path)
 
 void Settings::exportSettings(const QString &path)
 {
-    QFile originFile(mUserSettings->fileName());
+    if (!mSettings.value(KUser)) return;
+    QFile originFile(mSettings.value(KUser)->fileName());
     originFile.copy(path);
 }
 

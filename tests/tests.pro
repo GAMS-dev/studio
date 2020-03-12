@@ -37,6 +37,7 @@ SUBDIRS +=                              \
            testminosoption              \
            testmiro                     \
            testoptionapi                \
+           testsettings                 \
            testservicelocators          \
            testsolverconfiginfo
 #           testfilemapper               \

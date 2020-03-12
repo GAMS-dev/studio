@@ -353,6 +353,8 @@ private:
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
+    void updateAndSaveSettings();
+    void restoreFromSettings();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
@@ -395,7 +397,6 @@ private:
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData mHistory;
-    Settings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;
