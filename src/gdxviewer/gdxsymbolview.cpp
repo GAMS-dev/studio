@@ -108,9 +108,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mPrecision->setValue(6);
     mPrecision->setWrapping(true);
     mPrecision->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
-                           "g-Format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
-                           "f-Format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
-                           "e-Format:</span> Significat digits [1..17]</p></body></html>");
+                           "g-format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
+                           "f-format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
+                           "e-format:</span> Significat digits [1..17]</p></body></html>");
     gridLayout->addWidget(mPrecision,1,1);
 
     vLayout->addItem(gridLayout);
