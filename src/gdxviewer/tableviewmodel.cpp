@@ -79,8 +79,11 @@ int TableViewModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    if (mNeedDummyRow)
+    if (mNeedDummyRow) {
+        if (mNeedDummyColumn) //table is empty
+            return 0;
         return 1;
+    }
     return mTvRowHeaders.size();
 }
 
