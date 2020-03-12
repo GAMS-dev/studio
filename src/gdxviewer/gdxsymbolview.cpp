@@ -95,9 +95,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mValFormat->addItem("f-format", numerics::DoubleFormatter::f);
     mValFormat->addItem("e-format", numerics::DoubleFormatter::e);
     mValFormat->setToolTip("<html><head/><body><p>Display format for numerical values:</p>"
-                          "<p><span style=' font-weight:600;'>g-format:</span> Numerical values are displayed either in scientific format or fixed format, whichever is more appropriate. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits.<br/>When precision is set to <span style=' font-style:italic;'>Full</span>, the value is displayed in the shortest format that represents the numerical value as accurately as possible. Trailing zeroes are always truncated regardless of <span style=' font-style:italic;'>Squeeze Trailing Zeroes</span>. </p>"
-                          "<p><span style=' font-weight:600;'>f-format:</span> Numerical values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
-                          "<p><span style=' font-weight:600;'>e-format:</span> Numerical values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits.</p></body></html>");
+                          "<p><span style=' font-weight:600;'>g-format:</span> The display format is chosen automatically:  <span style=' font-style:italic;'>f-format</span> for numbers closer to one and  <span style=' font-style:italic;'>e-format</span> otherwise. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the double stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p>"
+                          "<p><span style=' font-weight:600;'>f-format:</span> Values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
+                          "<p><span style=' font-weight:600;'>e-format:</span> Values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the double stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p></body></html>");
     resetValFormat();
     gridLayout->addWidget(mValFormat,0,1);
 
@@ -110,7 +110,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mPrecision->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
                            "g-format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
                            "f-format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
-                           "e-format:</span> Significat digits [1..17]</p></body></html>");
+                           "e-format:</span> Significat digits [1..17, Full]</p></body></html>");
     gridLayout->addWidget(mPrecision,1,1);
 
     vLayout->addItem(gridLayout);
@@ -362,7 +362,7 @@ void GdxSymbolView::updateNumericalPrecision()
     this->mSym->setNumericalPrecision(mPrecision->value(), mSqZeroes->isChecked());
     numerics::DoubleFormatter::Format format = static_cast<numerics::DoubleFormatter::Format>(mValFormat->currentData().toInt());
     this->mSym->setNumericalFormat(format);
-    if (format == numerics::DoubleFormatter::g) {
+    if (format == numerics::DoubleFormatter::g || format == numerics::DoubleFormatter::e) {
         mPrecision->setRange(numerics::DoubleFormatter::gFormatFull, 17);
         mPrecision->setSpecialValueText("Full");
     }
@@ -370,12 +370,6 @@ void GdxSymbolView::updateNumericalPrecision()
         mPrecision->setRange(0, 14);
         mPrecision->setSpecialValueText("");
     }
-    else if (format == numerics::DoubleFormatter::e) {
-        mPrecision->setRange(1, 17);
-        mPrecision->setSpecialValueText("");
-    }
-
-
     if (mTvModel)
         ui->tvTableView->reset();
 }
