@@ -39,6 +39,7 @@ namespace studio {
 // Increase mVersion only on MAJOR changes (change/remove existing field or add to array-element)
 const int Settings::mVersion = 1;
 Settings *Settings::mInstance = nullptr;
+bool Settings::mUseRelocatedTestDir = false;
 
 // ====== Some helper functions for string conversion ======
 
@@ -123,6 +124,15 @@ void Settings::releaseSettings()
     mInstance = nullptr;
 }
 
+void Settings::useRelocatedPathForTests()
+{
+    if (mInstance) {
+        DEB() << "Can't relocate after instance has been created";
+    } else {
+        mUseRelocatedTestDir = true;
+    }
+}
+
 Settings::Settings(bool ignore, bool reset, bool resetView)
     : mCanWrite(!ignore),
       mCanRead(!ignore && !reset)
@@ -130,39 +140,45 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     // initialize json format and make it the default
     QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
     QSettings::setDefaultFormat(jsonFormat);
+    if (mUseRelocatedTestDir)
+        QSettings::setPath(jsonFormat, QSettings::UserScope, ".");
 
     initKeys();
 
-    initData(KAll);
+    initDefault(KAll);
     // QSettings only needed if we want to write
     if (mCanWrite || mCanRead) {
         QSettings *sUi = nullptr;
         // create basic non versionized application settings
-        sUi = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, "uistates");
+        sUi = newQSettings("uistates");
+        QString uiFile = sUi->fileName();
         if (sUi->status()) {
-            // On Error -> create a backup and mark to reset this settings file
-            QString uiFile = sUi->fileName();
             delete sUi;
-            {
-                DynamicFile file(uiFile, 2);
-            }
-            sUi = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, "uistates");
-            if (sUi->status()) {
-                mCanWrite = false;
-                mCanRead = false;
-                delete sUi;
-                sUi = nullptr;
-                DEB() << "Could not create settings files, switched to --ignore-settings";
-            } else {
+            // On Error -> create a backup and mark to reset this settings file
+            if (QFile(uiFile).exists()) {
+                DynamicFile(uiFile, 2); // creates backup
                 DEB() << "Problems with reading uistates.json at first attempt. Created backup file.";
+                sUi = newQSettings("uistates");
+                if (sUi->status()) {
+                    delete sUi;
+                    sUi = nullptr;
+                }
             }
         }
         if (sUi) {
             // only if the basic settings file has been created ...
             sUi->sync();
             mSettings.insert(KUi, sUi);
+            load(KUi);
+//            saveFile(KUi);
             // ... create versionized settings (may init from older version)
             createSettingFiles();
+        } else {
+            mCanWrite = false;
+            mCanRead = false;
+            delete sUi;
+            sUi = nullptr;
+            DEB() << "Could not create settings files, switched to --ignore-settings";
         }
     }
     if (resetView)
@@ -183,6 +199,11 @@ Settings::~Settings()
         si = mSettings.erase(si);
         delete set;
     }
+}
+
+QSettings *Settings::newQSettings(QString name)
+{
+    return new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
 }
 
 void Settings::initKeys()
@@ -267,7 +288,7 @@ void Settings::initKeys()
 int Settings::checkVersion()
 {
     int res = mVersion;
-    QDir dir = settingsPath();
+    QDir dir(settingsPath());
 
     // Find setting files of the highest version up to mVersion
     QStringList files = dir.entryList(QDir::Files);
@@ -310,17 +331,15 @@ bool Settings::createSettingFiles()
 
     // write setting files in current version
     initSettingsFiles(version);
-    save();
+//    save();
     return true;
 }
 
 void Settings::initSettingsFiles(int version)
 {
     // initializes versionized setting files
-    mSettings.insert(KSys, new QSettings(QSettings::defaultFormat(),  QSettings::UserScope,
-                                         GAMS_ORGANIZATION_STR, QString("systemsettings%1").arg(version)));
-    mSettings.insert(KUser, new QSettings(QSettings::defaultFormat(), QSettings::UserScope,
-                                          GAMS_ORGANIZATION_STR, QString("usersettings%1").arg(version)));
+    mSettings.insert(KSys, newQSettings(QString("systemsettings%1").arg(version)));
+    mSettings.insert(KUser, newQSettings(QString("usersettings%1").arg(version)));
     // TODO(JM) Handle studioscheme.json and syntaxscheme.json
 }
 
@@ -329,10 +348,10 @@ void Settings::reset(Kind kind)
     for (Kind &k : mData.keys()) {
         if (kind == KAll || k == kind) mData[k].clear();
     }
-    initData(kind);
+    initDefault(kind);
 }
 
-void Settings::initData(Kind kind)
+void Settings::initDefault(Kind kind)
 {
     QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
     for ( ; di != mKeys.constEnd() ; ++di) {
@@ -352,7 +371,7 @@ void Settings::reload()
 
 void Settings::resetViewSettings()
 {
-    initData(KUi);
+    initDefault(KUi);
     QSettings *set = mSettings.value(KUi);
     if (set) set->sync();
 }
@@ -495,6 +514,7 @@ QString Settings::settingsPath()
 {
     if (QSettings *settings = mSettings[KUi]) {
         DEB() << "UiSettings: " << settings->fileName();
+        DEB() << "    - path: " << QFileInfo(settings->fileName()).path();
         return QFileInfo(settings->fileName()).path();
     }
     DEB() << "ERROR: Settings file must be initialized before using settingsPath()";
@@ -503,11 +523,12 @@ QString Settings::settingsPath()
 
 void Settings::saveFile(Kind kind)
 {
+    if (!mCanWrite) return;
     if (!mSettings.contains(kind)) return;
 
     // Store values that are repeated in ALL settings, like the versions
     Data::const_iterator it = mData[KAll].constBegin();
-    for ( ; it != mData[kind].constEnd() ; ++it) {
+    for ( ; it != mData[KAll].constEnd() ; ++it) {
         mSettings[kind]->setValue(it.key(), it.value());
     }
 

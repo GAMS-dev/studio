@@ -25,6 +25,7 @@ using namespace gams::studio;
 
 void TestSettings::testWriteDefault()
 {
+    Settings::useRelocatedPathForTests();
     DEB() << "create:";
     Settings::createSettings(false, false, false);
     DEB() << "load:";
@@ -32,7 +33,24 @@ void TestSettings::testWriteDefault()
     DEB() << "save:";
     Settings::settings()->save();
     DEB() << "release:";
-    Settings::settings()->releaseSettings();
+    Settings::releaseSettings();
+}
+
+void TestSettings::testChangeValue()
+{
+    Settings::useRelocatedPathForTests();
+
+    Settings::createSettings(false, true, false);
+    bool viewHelp = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !viewHelp);
+    Q_ASSERT(viewHelp != Settings::settings()->toBool(_viewHelp));
+    Settings::settings()->save();
+    Settings::releaseSettings();
+
+    Settings::createSettings(false, false, false);
+    bool viewHelp2 = Settings::settings()->toBool(_viewHelp);
+    Q_ASSERT(viewHelp != viewHelp2);
+    Settings::releaseSettings();
 }
 
 QTEST_MAIN(TestSettings)

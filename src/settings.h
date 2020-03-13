@@ -115,6 +115,7 @@ public:
     static void createSettings(bool ignore, bool reset, bool resetView);
     static Settings *settings();
     static void releaseSettings();
+    static void useRelocatedPathForTests();
 
     void load(Kind kind);
     void save();
@@ -161,6 +162,7 @@ private:
 
     static Settings *mInstance;
     static const int mVersion;
+    static bool mUseRelocatedTestDir;
     bool mCanWrite = false;
     bool mCanRead = false;
 
@@ -172,6 +174,7 @@ private:
 private:
     Settings(bool ignore, bool reset, bool resetView);
     ~Settings();
+    QSettings *newQSettings(QString name);
     void initKeys();
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
 
@@ -179,7 +182,7 @@ private:
     QString settingsPath();
     bool createSettingFiles();
     void reset(Kind kind);
-    void initData(Kind kind);
+    void initDefault(Kind kind);
     void saveFile(Kind kind);
     QVariant read(SettingsKey key, Kind kind = KAll);
 

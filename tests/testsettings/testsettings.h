@@ -28,6 +28,7 @@ class TestSettings : public QObject
 
 private slots:
     void testWriteDefault();
+    void testChangeValue();
 };
 
 #endif // TESTSETTINGS_H

@@ -64,8 +64,8 @@ void Application::init()
     setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
     setApplicationName(GAMS_PRODUCTNAME_STR);
     Settings::createSettings(mCmdParser.ignoreSettings(),
-                                        mCmdParser.resetSettings(),
-                                        mCmdParser.resetView());
+                             mCmdParser.resetSettings(),
+                             mCmdParser.resetView());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
     mMainWindow->setInitialFiles(mCmdParser.files());
 
