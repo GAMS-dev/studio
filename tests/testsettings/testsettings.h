@@ -27,8 +27,18 @@ class TestSettings : public QObject
     Q_OBJECT
 
 private slots:
-    void testWriteDefault();
-    void testChangeValue();
+    void initTestCase();
+
+    void testChangeValueAtRoot();
+    void testChangeValueInGroup();
+    void testReadSettingsIgnore();
+    void testReadSettingsIgnoreReset();
+    void testReadSettingsReset();
+    void testWriteSettingsIgnore();
+    void testWriteSettingsIgnoreReset();
+    void testWriteSettingsReset();
+
+    void testIgnoreIfNoFilesExist();
 };
 
 #endif // TESTSETTINGS_H

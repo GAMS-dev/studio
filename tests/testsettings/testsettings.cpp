@@ -23,34 +23,196 @@
 
 using namespace gams::studio;
 
-void TestSettings::testWriteDefault()
+static const int mSleepMs = 1500;
+
+void TestSettings::initTestCase()
 {
     Settings::useRelocatedPathForTests();
-    DEB() << "create:";
-    Settings::createSettings(false, false, false);
-    DEB() << "load:";
-    Settings::settings()->load(Settings::KAll);
-    DEB() << "save:";
+}
+
+void removeSettingFiles() {
+    QFile f1("./GAMS/uistates.json");
+    if (f1.exists()) {
+        Q_ASSERT(f1.remove());
+    }
+    QFile f2("./GAMS/systemsettings1.json");
+    if (f2.exists()) {
+        Q_ASSERT(f2.remove());
+    }
+    QFile f3("./GAMS/usersettings1.json");
+    if (f3.exists()) {
+        Q_ASSERT(f3.remove());
+    }
+}
+
+void TestSettings::testChangeValueAtRoot()
+{
+    removeSettingFiles();
+    Settings::createSettings(false, true, false);
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_skipWelcomePage);
+    Settings::settings()->setBool(_skipWelcomePage, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_skipWelcomePage));
     Settings::settings()->save();
-    DEB() << "release:";
+    Settings::releaseSettings();
+
+    // create and read settings, compare value
+    Settings::createSettings(false, false, false);
+    // check stored value
+    Q_ASSERT(value != Settings::settings()->toBool(_skipWelcomePage));
     Settings::releaseSettings();
 }
 
-void TestSettings::testChangeValue()
+void TestSettings::testChangeValueInGroup()
 {
-    Settings::useRelocatedPathForTests();
-
+    removeSettingFiles();
     Settings::createSettings(false, true, false);
-    bool viewHelp = Settings::settings()->toBool(_viewHelp);
-    Settings::settings()->setBool(_viewHelp, !viewHelp);
-    Q_ASSERT(viewHelp != Settings::settings()->toBool(_viewHelp));
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
     Settings::settings()->save();
     Settings::releaseSettings();
 
+    // create and read settings, compare value
     Settings::createSettings(false, false, false);
-    bool viewHelp2 = Settings::settings()->toBool(_viewHelp);
-    Q_ASSERT(viewHelp != viewHelp2);
+    // check stored value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
     Settings::releaseSettings();
+}
+
+void TestSettings::testReadSettingsIgnore()
+{
+    removeSettingFiles();
+    Settings::createSettings(false, true, false);
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
+    Settings::settings()->save();
+    Settings::releaseSettings();
+
+    // create settings with "ignore" flag, compare value
+    Settings::createSettings(true, false, false);
+    // check stored value
+    Q_ASSERT(value == Settings::settings()->toBool(_viewHelp));
+    Settings::releaseSettings();
+}
+
+void TestSettings::testReadSettingsIgnoreReset()
+{
+    removeSettingFiles();
+    Settings::createSettings(false, true, false);
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
+    Settings::settings()->save();
+    Settings::releaseSettings();
+
+    // create settings with "ignore,reset" flag, compare value
+    Settings::createSettings(true, true, false);
+    // check stored value
+    Q_ASSERT(value == Settings::settings()->toBool(_viewHelp));
+    Settings::releaseSettings();
+}
+
+void TestSettings::testReadSettingsReset()
+{
+    removeSettingFiles();
+    Settings::createSettings(false, true, false);
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
+    Settings::settings()->save();
+    Settings::releaseSettings();
+
+    // create settings with "reset" flag, compare value
+    Settings::createSettings(false, true, false);
+    // check stored value
+    Q_ASSERT(value == Settings::settings()->toBool(_viewHelp));
+    Settings::releaseSettings();
+}
+
+void TestSettings::testWriteSettingsIgnore()
+{
+    removeSettingFiles();
+
+    // open settings with ignore flag
+    Settings::createSettings(true, false, false);
+
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
+    Settings::settings()->save(); // With "ignore" flag this shouldn't write the file
+    Settings::releaseSettings();
+
+    // create common settings to compare value
+    Settings::createSettings(false, false, false);
+    // check stored value
+    Q_ASSERT(value == Settings::settings()->toBool(_viewHelp));
+    Settings::releaseSettings();
+}
+
+void TestSettings::testWriteSettingsIgnoreReset()
+{
+    removeSettingFiles();
+
+    Settings::createSettings(true, true, false);
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
+    Settings::settings()->save(); // With "ignore,reset" flags this shouldn't write the file
+
+    Settings::releaseSettings();
+
+    // create common settings to compare value
+    Settings::createSettings(false, false, false);
+    // check stored value
+    Q_ASSERT(value == Settings::settings()->toBool(_viewHelp));
+    Settings::releaseSettings();
+}
+
+void TestSettings::testWriteSettingsReset()
+{
+    removeSettingFiles();
+
+    Settings::createSettings(false, true, false);
+
+    // change value, save and release settings
+    bool value = Settings::settings()->toBool(_viewHelp);
+    Settings::settings()->setBool(_viewHelp, !value);
+    // check in-memory value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
+    Settings::settings()->save(); // With "reset" flag this should write the file
+    Settings::releaseSettings();
+    QTest::qSleep(mSleepMs);
+    // create common settings to compare value
+    Settings::createSettings(false, false, false);
+    // check stored value
+    Q_ASSERT(value != Settings::settings()->toBool(_viewHelp));
+    Settings::releaseSettings();
+}
+
+void TestSettings::testIgnoreIfNoFilesExist()
+{
+    removeSettingFiles();
+    QFile file("./GAMS/uistates.json");
+    // try creating settings files with ignore flag
+    Settings::createSettings(true, false, false);
+    Settings::settings()->save();
+    Settings::releaseSettings();
+    Q_ASSERT(!file.exists());
 }
 
 QTEST_MAIN(TestSettings)

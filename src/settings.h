@@ -119,6 +119,7 @@ public:
 
     void load(Kind kind);
     void save();
+    int fileCount() const {return mSettings.count();}
 
     bool toBool(SettingsKey key) const { return value(key).toBool(); }
     int toInt(SettingsKey key) const { return value(key).toInt(); }

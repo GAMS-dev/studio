@@ -151,18 +151,19 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
         QSettings *sUi = nullptr;
         // create basic non versionized application settings
         sUi = newQSettings("uistates");
-        QString uiFile = sUi->fileName();
-        if (sUi->status()) {
-            delete sUi;
-            // On Error -> create a backup and mark to reset this settings file
-            if (QFile(uiFile).exists()) {
-                DynamicFile(uiFile, 2); // creates backup
-                DEB() << "Problems with reading uistates.json at first attempt. Created backup file.";
-                sUi = newQSettings("uistates");
-                if (sUi->status()) {
-                    delete sUi;
-                    sUi = nullptr;
+        if (sUi->status() != QSettings::NoError) {
+            if (sUi->status() == QSettings::FormatError) {
+                QString uiFile = sUi->fileName();
+                delete sUi;
+                if (QFile(uiFile).exists()) {
+                    DynamicFile(uiFile, 2); // creates backup
+                    DEB() << " - created backup file.";
                 }
+                sUi = newQSettings("uistates");
+            }
+            if (sUi->status()) {
+                delete sUi;
+                sUi = nullptr;
             }
         }
         if (sUi) {
@@ -173,22 +174,20 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
 //            saveFile(KUi);
             // ... create versionized settings (may init from older version)
             createSettingFiles();
+            QDir location(settingsPath());
+            for (const QString &fileName: location.entryList({"*.lock"})) {
+                QFile f(location.path() +  "/" + fileName);
+                f.remove();
+            }
         } else {
             mCanWrite = false;
             mCanRead = false;
-            delete sUi;
-            sUi = nullptr;
             DEB() << "Could not create settings files, switched to --ignore-settings";
         }
     }
     if (resetView)
         resetViewSettings();
 
-    QDir location(settingsPath());
-    for (const QString &fileName: location.entryList({"*.lock"})) {
-        QFile f(location.path() +  "/" + fileName);
-        f.remove();
-    }
 }
 
 Settings::~Settings()
@@ -196,6 +195,7 @@ Settings::~Settings()
     QMap<Kind, QSettings*>::iterator si = mSettings.begin();
     while (si != mSettings.end()) {
         QSettings *set = si.value();
+        set->sync();
         si = mSettings.erase(si);
         delete set;
     }
@@ -203,7 +203,11 @@ Settings::~Settings()
 
 QSettings *Settings::newQSettings(QString name)
 {
-    return new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
+    QSettings *res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
+    if (res->status()) {
+        DEB() << (res->status()==1 ? "Access-" : "Format-") << "error in file: " << res->fileName();
+    }
+    return res;
 }
 
 void Settings::initKeys()
@@ -513,8 +517,8 @@ QStringList Settings::fileHistory()
 QString Settings::settingsPath()
 {
     if (QSettings *settings = mSettings[KUi]) {
-        DEB() << "UiSettings: " << settings->fileName();
-        DEB() << "    - path: " << QFileInfo(settings->fileName()).path();
+//        DEB() << "UiSettings: " << settings->fileName();
+//        DEB() << "    - path: " << QFileInfo(settings->fileName()).path();
         return QFileInfo(settings->fileName()).path();
     }
     DEB() << "ERROR: Settings file must be initialized before using settingsPath()";
