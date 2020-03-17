@@ -371,13 +371,13 @@ void GdxSymbolView::updateNumericalPrecision()
         mPrecision->setRange(0, 14);
         mPrecision->setSpecialValueText("");
     }
-    if (mPrecision->text() == svFull) {
-        if (mSqZeroes->isEnabled() && mSqZeroes->isChecked())
+    if (mPrecision->text() == svFull && mSqZeroes->isEnabled()) {
+        if (mSqZeroes->isChecked())
             mRestoreSqZeros = true;
         mSqZeroes->setChecked(false);
         mSqZeroes->setEnabled(false);
     }
-    else {
+    else if (mPrecision->text() != svFull && !mSqZeroes->isEnabled()) {
         mSqZeroes->setEnabled(true);
         if (mRestoreSqZeros) {
             mSqZeroes->setChecked(true);
