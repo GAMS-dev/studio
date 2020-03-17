@@ -92,6 +92,7 @@ private:
     int mTVResizeColNr = 100;
 
     int mDefaultPrecision = 6;
+    bool mRestoreSqZeros = true;
     numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
 };
 

@@ -357,6 +357,7 @@ void GdxSymbolView::toggleColumnHidden()
 
 void GdxSymbolView::updateNumericalPrecision()
 {
+    QString svFull = "Full";
     if (!mSym)
         return;
     this->mSym->setNumericalPrecision(mPrecision->value(), mSqZeroes->isChecked());
@@ -364,11 +365,24 @@ void GdxSymbolView::updateNumericalPrecision()
     this->mSym->setNumericalFormat(format);
     if (format == numerics::DoubleFormatter::g || format == numerics::DoubleFormatter::e) {
         mPrecision->setRange(numerics::DoubleFormatter::gFormatFull, 17);
-        mPrecision->setSpecialValueText("Full");
+        mPrecision->setSpecialValueText(svFull);
     }
     else if (format == numerics::DoubleFormatter::f) {
         mPrecision->setRange(0, 14);
         mPrecision->setSpecialValueText("");
+    }
+    if (mPrecision->text() == svFull) {
+        if (mSqZeroes->isEnabled() && mSqZeroes->isChecked())
+            mRestoreSqZeros = true;
+        mSqZeroes->setChecked(false);
+        mSqZeroes->setEnabled(false);
+    }
+    else {
+        mSqZeroes->setEnabled(true);
+        if (mRestoreSqZeros) {
+            mSqZeroes->setChecked(true);
+            mRestoreSqZeros = false;
+        }
     }
     if (mTvModel)
         ui->tvTableView->reset();
