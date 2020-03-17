@@ -43,8 +43,8 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
         ui->leMax->setEnabled(false);
         ui->cbExclude->setEnabled(false);
     } else {
-        ui->leMin->setText(GdxSymbol::formatNumericalValue(mValueFilter->currentMin(), GdxSymbol::maxPrecision, true));
-        ui->leMax->setText(GdxSymbol::formatNumericalValue(mValueFilter->currentMax(), GdxSymbol::maxPrecision, true));
+        ui->leMin->setText(numerics::DoubleFormatter::format(mValueFilter->currentMin(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true));
+        ui->leMax->setText(numerics::DoubleFormatter::format(mValueFilter->currentMax(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true));
     }
 
     ui->cbExclude->setChecked(mValueFilter->exclude());
@@ -60,6 +60,16 @@ ValueFilterWidget::ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent) 
 ValueFilterWidget::~ValueFilterWidget()
 {
     delete ui;
+}
+
+void ValueFilterWidget::mousePressEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event)
+}
+
+void ValueFilterWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event)
 }
 
 void ValueFilterWidget::keyPressEvent(QKeyEvent *e)
