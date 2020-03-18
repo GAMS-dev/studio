@@ -112,6 +112,7 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
+    QStringList encodingNames();
     QString encodingMIBsString();
     QList<int> encodingMIBs();
     void setEncodingMIBs(QString mibList, int active = -1);

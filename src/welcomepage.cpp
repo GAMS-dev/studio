@@ -46,6 +46,11 @@ WelcomePage::WelcomePage(MainWindow *parent)
 
     setupIcons();
 
+    auto p = palette();
+    p.setColor(QPalette::Window, p.color(QPalette::BrightText));
+    ui->welcometext->setPalette(p);
+    ui->welcometext->setAutoFillBackground(true);
+
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
     connect(this, &WelcomePage::relayDocOpen, parent, &MainWindow::receiveOpenDoc);
@@ -89,6 +94,20 @@ void WelcomePage::historyChanged()
 WelcomePage::~WelcomePage()
 {
     delete ui;
+}
+
+bool WelcomePage::event(QEvent *event)
+{
+    if (event->type() == QEvent::PaletteChange) {
+        auto p = palette();
+        p.setColor(QPalette::Window, p.color(QPalette::BrightText));
+
+        ui->welcometext->setPalette(p);
+        for (WpLabel* w : findChildren<WpLabel*>())
+            w->setPalette(p);
+
+    }
+    return QWidget::event(event);
 }
 
 void WelcomePage::on_relayAction(QString action)

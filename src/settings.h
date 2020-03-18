@@ -52,6 +52,7 @@ enum SettingsKey {
     skViewOption,
 
     // general system settings
+    skDefaultCodecMib,
     skEncodingMib,
     skProjects,
     skTabs,
@@ -78,6 +79,7 @@ enum SettingsKey {
     skHistorySize,
 
     // editor settings page
+    skEdColorSchemeIndex,
     skEdFontFamily,
     skEdFontSize,
     skEdShowLineNr,

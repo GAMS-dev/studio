@@ -20,7 +20,6 @@
 #include <QScrollBar>
 #include <QDir>
 #include <QByteArray>
-#include <QTextCodec>
 #include <QApplication>
 #include "abstractprocess.h"
 #include "editors/processlogedit.h"
@@ -47,7 +46,7 @@ ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup
     runGroup->setLogNode(this);
     QTextCharFormat errFmt;
     errFmt.setForeground(QColor(180,0,0));
-    errFmt.setUnderlineColor(Qt::red);
+    errFmt.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
     errFmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     mFormat << errFmt;
     QTextCharFormat lnkFmt;

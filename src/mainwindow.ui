@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -548,7 +548,7 @@
     <string>&amp;Process Log</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Process Log (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+Shift+G&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Process Log (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+5&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionProject_View">
@@ -566,7 +566,7 @@
     <string>Project &amp;Explorer</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Project Explorer (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+J&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Project Explorer (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+1&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionNew">
@@ -665,7 +665,7 @@
     <string>&amp;Model Library Explorer</string>
    </property>
    <property name="shortcut">
-    <string>F6</string>
+    <string>F2</string>
    </property>
   </action>
   <action name="actionRun">
@@ -719,7 +719,7 @@
     <string>Settings</string>
    </property>
    <property name="shortcut">
-    <string>F7</string>
+    <string>F4</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
@@ -1211,6 +1211,9 @@
    <property name="text">
     <string>Terminal</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
   </action>
   <action name="actionGDX_Diff">
    <property name="icon">
@@ -1237,6 +1240,9 @@
    <property name="text">
     <string>Run base mode</string>
    </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
   </action>
   <action name="actionHypercube_mode">
    <property name="icon">
@@ -1246,6 +1252,9 @@
    <property name="text">
     <string>Run hypercube mode</string>
    </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
   </action>
   <action name="actionConfiguration_mode">
    <property name="icon">
@@ -1254,6 +1263,9 @@
    </property>
    <property name="text">
     <string>Run configuration mode</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="actionStop_MIRO">

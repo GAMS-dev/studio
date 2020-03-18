@@ -674,7 +674,13 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
 
         if (QFileInfo::exists(loc)) {
             ProjectFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
-            if (runFile) node->file()->setCodec(runFile->codec());
+            if (runFile)
+                node->file()->setCodec(runFile->codec());
+            else {
+                int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
+                QTextCodec *codec = QTextCodec::codecForMib(codecMib);
+                if (codec) node->file()->setCodec(codec);
+            }
         } else {
             SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
         }

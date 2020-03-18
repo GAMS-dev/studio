@@ -242,6 +242,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skViewOption, KeyData(scUi, {"viewMenu","optionEdit"}, false));
 
     // general system settings
+    res.insert(skDefaultCodecMib, KeyData(scSys, {"defaultCodecMib"}, 106));
     res.insert(skEncodingMib, KeyData(scSys, {"encodingMIBs"}, QString("106,0,4,17,2025")));
     res.insert(skProjects, KeyData(scSys, {"projects"}, QJsonObject()));
     res.insert(skTabs, KeyData(scSys, {"tabs"}, QJsonObject()));
@@ -268,6 +269,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 12));
 
     // editor settings page
+    res.insert(skEdColorSchemeIndex, KeyData(scUser, {"editor","colorSchemeIndex"}, 0));
     res.insert(skEdFontFamily, KeyData(scUser, {"editor","fontFamily"}, findFixedFont()));
     res.insert(skEdFontSize, KeyData(scUser, {"editor","fontSize"}, 10));
     res.insert(skEdShowLineNr, KeyData(scUser, {"editor","showLineNr"}, true));

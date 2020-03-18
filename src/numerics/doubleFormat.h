@@ -17,42 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ENCODINGSDIALOG_H
-#define ENCODINGSDIALOG_H
 
-#include <QDialog>
+/* doubleFormat.h
+ * Feb 2020: Formatting routines for displaying doubles
+ */
 
-namespace Ui {
-class SelectEncodings;
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-namespace gams {
-namespace studio {
+char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen);
 
-class SelectEncodings : public QDialog
-{
-    Q_OBJECT
+char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen);
 
-public:
-    explicit SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidget *parent = nullptr);
-    ~SelectEncodings();
-    QList<int> selectedMibs();
-    int defaultCodec();
+char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen);
 
-private slots:
-
-    void on_pbCancel_clicked();
-    void on_pbSave_clicked();
-    void on_pbReset_clicked();
-    void defaultChanged();
-
-private:
-    Ui::SelectEncodings *ui;
-    QList<int> mSelectedMibs;
-    int mDefaultMib;
+#ifdef __cplusplus
 };
-
-}
-}
-
-#endif // ENCODINGSDIALOG_H
+#endif

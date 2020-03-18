@@ -33,44 +33,9 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-enum ColorEnum {
-    SyntaxDirex,
-    SyntaxDiBdy,
-    SyntaxComnt,
-    SyntaxTitle,
-    SyntaxDeclr,
-    SyntaxAssgn,
-    SyntaxStrin,
-    SyntaxIdent,
-    SyntaxKeywd,
-    SyntaxDescr,
-    SyntaxAsLab,
-    SyntaxAsVal,
-    SyntaxIdAsn,
-    SyntaxTabHd,
-    SyntaxEmbed,
-};
-
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     : BaseHighlighter(doc)
 {
-    QHash<ColorEnum, QColor> cl {
-        {SyntaxDirex, QColor(Qt::darkMagenta).darker(120)},
-        {SyntaxAssgn, QColor()},
-        {SyntaxDiBdy, QColor(Qt::darkBlue).lighter(170)},
-        {SyntaxComnt, QColor(80, 145, 75)},
-        {SyntaxTitle, QColor(Qt::darkBlue).lighter(140)},
-        {SyntaxKeywd, QColor(Qt::darkBlue).lighter(140)},
-        {SyntaxDeclr, QColor(Qt::darkBlue).lighter(140)},
-        {SyntaxIdent, QColor(Qt::black)},
-        {SyntaxDescr, QColor(Qt::darkBlue).lighter(170)},
-        {SyntaxIdAsn, QColor(Qt::darkGreen).darker(140)},
-        {SyntaxAsLab, QColor(Qt::darkGreen).darker(110)},
-//        {SyntaxAsVal, QColor(Qt::darkCyan).darker(150)},
-        {SyntaxAsVal, QColor(0, 80, 120)},
-        {SyntaxTabHd, QColor(Qt::darkGreen).darker(140)},
-        {SyntaxEmbed, QColor(200, 70, 0)},
-    };
     // TODO(JM) Check what additional kinds belong here too (kinds that won't be passed to the next line)
     mSingleLineKinds << SyntaxKind::Directive << SyntaxKind::DirectiveBody << SyntaxKind::CommentEndline
                      << SyntaxKind::CommentLine << SyntaxKind::Title;
@@ -108,6 +73,10 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
     initKind(new SyntaxDelimiter(SyntaxKind::CommaIdent));
     initKind(new SyntaxDelimiter(SyntaxKind::CommaTable));
+// TODO(RG): check if this is necessary:
+//    initKind(new SyntaxDelimiter(SyntaxKind::Semicolon), Scheme::Syntax_neutral);
+//    initKind(new SyntaxDelimiter(SyntaxKind::Comma), Scheme::Syntax_neutral);
+
     initKind(new SyntaxReserved(SyntaxKind::Reserved), Scheme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Solve), Scheme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Option), Scheme::Syntax_keyword);

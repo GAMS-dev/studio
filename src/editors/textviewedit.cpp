@@ -216,15 +216,8 @@ int TextViewEdit::localBlockNr(const int &absoluteBlockNr) const
 
 void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!mSettings->toBool(skEdHighlightCurrentLine)) return;
-    int line = mMapper.position(true).y();
-    if (line <= AbstractTextMapper::cursorInvalid) return;
-
-    QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(toColor(Scheme::Edit_currentLineBg));
-    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = QTextCursor(document()->findBlockByNumber(line));
-    selections.append(selection);
+    Q_UNUSED(selections)
+    return;
 }
 
 void TextViewEdit::mousePressEvent(QMouseEvent *e)

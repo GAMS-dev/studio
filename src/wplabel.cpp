@@ -25,35 +25,47 @@
 namespace gams {
 namespace studio {
 
+
 WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
 {
-    setStyleSheet("QLabel { background-color : white; }");
+    setAutoFillBackground(true);
+    updateMouseOverColor(false);
 }
 
 WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     : QLabel(parent), mContent(content), mLink(link)
 {
-    QLabel::setText(mContent);
-    setStyleSheet("QLabel { background-color : white; }");
     setFrameShape(QFrame::StyledPanel);
     setMargin(4);
     setWordWrap(true);
+    setAutoFillBackground(true);
+    updateMouseOverColor(false);
+
+    QLabel::setText(mContent);
 }
 
 void WpLabel::enterEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
+
     setFrameShape(QFrame::Box);
-    setStyleSheet("QLabel { background-color : #f39619; }");
+    updateMouseOverColor(true);
 }
 
 void WpLabel::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
+
     setFrameShape(QFrame::StyledPanel);
-    setStyleSheet("QLabel { background-color : white; }");
+    updateMouseOverColor(false);
+}
+
+void WpLabel::updateMouseOverColor(bool hovered) {
+    auto p = palette();
+    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::BrightText));
+    setPalette(p);
 }
 
 void WpLabel::paintEvent(QPaintEvent *event)

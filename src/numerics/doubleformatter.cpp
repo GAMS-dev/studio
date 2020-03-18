@@ -17,42 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ENCODINGSDIALOG_H
-#define ENCODINGSDIALOG_H
-
-#include <QDialog>
-
-namespace Ui {
-class SelectEncodings;
-}
+#include "doubleformatter.h"
+#include "doubleFormat.h"
 
 namespace gams {
 namespace studio {
+namespace numerics {
 
-class SelectEncodings : public QDialog
+int DoubleFormatter::gFormatFull = 0;
+
+QString DoubleFormatter::format(double v, DoubleFormatter::Format format, int precision, int squeeze)
 {
-    Q_OBJECT
-
-public:
-    explicit SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidget *parent = nullptr);
-    ~SelectEncodings();
-    QList<int> selectedMibs();
-    int defaultCodec();
-
-private slots:
-
-    void on_pbCancel_clicked();
-    void on_pbSave_clicked();
-    void on_pbReset_clicked();
-    void defaultChanged();
-
-private:
-    Ui::SelectEncodings *ui;
-    QList<int> mSelectedMibs;
-    int mDefaultMib;
-};
-
-}
+    char outBuf[32];
+    int outLen;
+    char* p = nullptr;
+    if (format == Format::g)
+        p = x2gfmt(v, precision, squeeze, outBuf, &outLen);
+    else if (format == Format::f)
+        p = x2fixed(v, precision, squeeze, outBuf, &outLen);
+    else if (format == Format::e)
+        p = x2efmt(v, precision, squeeze, outBuf, &outLen);
+    if (!p)
+        return "FORMAT_ERROR";
+    else
+        return QString(p);
 }
 
-#endif // ENCODINGSDIALOG_H
+} // namespace numerics
+} // namespace studio
+} // namespace gams

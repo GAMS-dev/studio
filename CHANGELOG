@@ -1,3 +1,40 @@
+Version 0.14.5
+==================
+## General
+- **improved shortcut layout** (more to come later):
+    - changed open Terminal to: *Ctrl+T*
+    - changed Model Library Explorer to: *F2*
+    - changed Settings to: *F4*
+    - new: Run MIRO base mode: *F5*
+    - new: Run MIRO hypercube mode: *F6*
+    - new: Run MIRO configuration mode: *F7*
+- fixed bug where certain labels did not appear in the vertical header of the table view of the GDX Viewer
+- block selection now uses operating system default selection color
+- added option to set default text codec to Edit > Encoding > Select encodings
+- fixed broken link to help document on macOS when pressing F1 in certain views
+- removed unnecessary highlighting of current line in logs
+- improved dark theme colors on macOS for:
+    - word under cursor highlighting
+    - current line highlighting
+    - warning/error colors in parameter editor
+    - errors and search matches
+
+Version 0.14.4
+==================
+## General
+- **introduced macOS Dark Theme support!**
+- fixed behavior of "View this page online" in Help View
+- fixed crash when using focus log shortcut but all logs were closed
+- focus log shotcut now opens system log if no logs open
+- fixed aspect ratio of Project Explorer icons on Windows
+- improved codec handling in Log View
+- fixed log persisted to disk containing overwritten lines (e.g. progress reports)
+
+## Code Editor
+- "Selection to Uppercase/Lowercase" action now keeps selection
+- fixed syntax coloring in declarations
+- fixed behavior of Tab key when in block edit mode
+
 Version 0.14.3
 ==================
 

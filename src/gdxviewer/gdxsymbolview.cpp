@@ -31,6 +31,8 @@
 #include <QWidgetAction>
 #include <QLabel>
 
+#include <numerics/doubleformatter.h>
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -84,18 +86,34 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mSqZeroes->setChecked(true);
     vLayout->addWidget(mSqZeroes);
 
-    QHBoxLayout* hLayout = new QHBoxLayout();
+    QGridLayout* gridLayout = new QGridLayout();
 
-    QLabel* lblDecimals = new QLabel("Show Decimals", this);
-    hLayout->addWidget(lblDecimals);
-    mNrDecimals = new QSpinBox(this);
-    mNrDecimals->setRange(-1, 6);
-    mNrDecimals->setSpecialValueText("MAX");
-    mNrDecimals->setValue(6);
-    mNrDecimals->setWrapping(true);
-    hLayout->addWidget(mNrDecimals);
+    QLabel* lblValFormat = new QLabel("Format:", this);
+    gridLayout->addWidget(lblValFormat,0,0);
+    mValFormat = new QComboBox(this);
+    mValFormat->addItem("g-format", numerics::DoubleFormatter::g);
+    mValFormat->addItem("f-format", numerics::DoubleFormatter::f);
+    mValFormat->addItem("e-format", numerics::DoubleFormatter::e);
+    mValFormat->setToolTip("<html><head/><body><p>Display format for numerical values:</p>"
+                          "<p><span style=' font-weight:600;'>g-format:</span> The display format is chosen automatically:  <span style=' font-style:italic;'>f-format</span> for numbers closer to one and  <span style=' font-style:italic;'>e-format</span> otherwise. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the double stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p>"
+                          "<p><span style=' font-weight:600;'>f-format:</span> Values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
+                          "<p><span style=' font-weight:600;'>e-format:</span> Values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the double stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p></body></html>");
+    resetValFormat();
+    gridLayout->addWidget(mValFormat,0,1);
 
-    vLayout->addItem(hLayout);
+    QLabel* lblPrecision = new QLabel("Precision:", this);
+    gridLayout->addWidget(lblPrecision,1,0);
+    mPrecision = new QSpinBox(this);
+    mPrecision->setRange(1, 14);
+    mPrecision->setValue(6);
+    mPrecision->setWrapping(true);
+    mPrecision->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
+                           "g-format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
+                           "f-format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
+                           "e-format:</span> Significat digits [1..17, Full]</p></body></html>");
+    gridLayout->addWidget(mPrecision,1,1);
+
+    vLayout->addItem(gridLayout);
     widget->setLayout(vLayout);
     preferences->setDefaultWidget(widget);
     ui->tbPreferences->addAction(preferences);
@@ -120,7 +138,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
-    connect(mNrDecimals, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
+    connect(mPrecision, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
+    connect(mValFormat, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &GdxSymbolView::updateNumericalPrecision);
 
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -202,7 +221,8 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
-        mNrDecimals->setValue(mNrDecimals->maximum()); // this is not to be confused with "MAX". The value will be 6
+        mPrecision->setValue(mDefaultPrecision); // this is not to be confused with "MAX". The value will be 6
+        resetValFormat();
         mSqZeroes->setChecked(true);
         if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
             for (int i=0; i<GMS_VAL_MAX; i++)
@@ -337,9 +357,33 @@ void GdxSymbolView::toggleColumnHidden()
 
 void GdxSymbolView::updateNumericalPrecision()
 {
+    QString svFull = "Full";
     if (!mSym)
         return;
-    this->mSym->setNumericalPrecision(mNrDecimals->value(), mSqZeroes->isChecked());
+    this->mSym->setNumericalPrecision(mPrecision->value(), mSqZeroes->isChecked());
+    numerics::DoubleFormatter::Format format = static_cast<numerics::DoubleFormatter::Format>(mValFormat->currentData().toInt());
+    this->mSym->setNumericalFormat(format);
+    if (format == numerics::DoubleFormatter::g || format == numerics::DoubleFormatter::e) {
+        mPrecision->setRange(numerics::DoubleFormatter::gFormatFull, 17);
+        mPrecision->setSpecialValueText(svFull);
+    }
+    else if (format == numerics::DoubleFormatter::f) {
+        mPrecision->setRange(0, 14);
+        mPrecision->setSpecialValueText("");
+    }
+    if (mPrecision->text() == svFull && mSqZeroes->isEnabled()) {
+        if (mSqZeroes->isChecked())
+            mRestoreSqZeros = true;
+        mSqZeroes->setChecked(false);
+        mSqZeroes->setEnabled(false);
+    }
+    else if (mPrecision->text() != svFull && !mSqZeroes->isEnabled()) {
+        mSqZeroes->setEnabled(true);
+        if (mRestoreSqZeros) {
+            mSqZeroes->setChecked(true);
+            mRestoreSqZeros = false;
+        }
+    }
     if (mTvModel)
         ui->tvTableView->reset();
 }
@@ -405,6 +449,13 @@ void GdxSymbolView::selectAll()
         ui->tvTableView->selectAll();
     else
         ui->tvListView->selectAll();
+}
+
+void GdxSymbolView::resetValFormat()
+{
+    int index = mValFormat->findData(mDefaultValFormat);
+    if (index != -1)
+       mValFormat->setCurrentIndex(index);
 }
 
 void GdxSymbolView::enableControls()

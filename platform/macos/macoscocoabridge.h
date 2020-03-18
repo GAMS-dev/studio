@@ -20,6 +20,8 @@
 #ifndef MACOSCOCOABRIDGE_H
 #define MACOSCOCOABRIDGE_H
 
+#include <QString>
+
 class MacOSCocoaBridge
 {
 private:
@@ -30,6 +32,9 @@ public:
     static void disableCharacterPaletteMenuItem(bool flag);
     static void setAllowsAutomaticWindowTabbing(bool flag);
     static void setFullScreenMenuItemEverywhere(bool flag);
+    static bool isDarkMode();
+
+    static QString bundlePath();
 };
 
 #endif // MACOSCOCOABRIDGE_H

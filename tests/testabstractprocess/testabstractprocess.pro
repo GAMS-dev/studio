@@ -21,8 +21,6 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-#INCLUDEPATH += $$SRCPATH
-
 HEADERS +=                          \
     testabstractprocess.h           \
     $$SRCPATH/abstractprocess.h     \
@@ -34,5 +32,3 @@ SOURCES +=                          \
     $$SRCPATH/abstractprocess.cpp   \
     $$SRCPATH/commonpaths.cpp       \
     $$SRCPATH/exception.cpp
-
-message($$SRCPATH)

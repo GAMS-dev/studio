@@ -45,7 +45,8 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
-    mCodec = QTextCodec::codecForLocale();
+    mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
+    if (!mCodec) mCodec = QTextCodec::codecForLocale();
     if (location.contains('\\'))
         location = QDir::fromNativeSeparators(location);
     setLocation(location);
@@ -446,13 +447,15 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
 
 void FileMeta::load(int codecMib, bool init)
 {
-    if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
+    if (codecMib == -1) {
+        codecMib = Settings::settings()->toInt(skDefaultCodecMib);
+    }
+    mCodec = QTextCodec::codecForMib(codecMib);
     mData = Data(location(), mData.type);
 
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
-                mCodec = QTextCodec::codecForMib(codecMib);
                 gdxViewer->reload(mCodec);
             }
         }
@@ -460,8 +463,9 @@ void FileMeta::load(int codecMib, bool init)
     }
     if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         for (QWidget *wid: mEditors) {
-            if (TextView *tView = ViewHelper::toTextView(wid))
+            if (TextView *tView = ViewHelper::toTextView(wid)) {
                 tView->loadFile(location(), codecMib, init);
+            }
             if (kind() == FileKind::Lst) {
                 lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid);
                 if (lxi) lxi->loadLxi();
@@ -472,7 +476,6 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::Ref) {
         for (QWidget *wid: mEditors) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
-            mCodec = QTextCodec::codecForMib(codecMib);
             if (refViewer) refViewer->on_referenceFileChanged(mCodec);
         }
         return;
@@ -483,7 +486,6 @@ void FileMeta::load(int codecMib, bool init)
             option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
             if (so) {
                 textOptEditor = false;
-                mCodec = QTextCodec::codecForMib(codecMib);
                 so->on_reloadSolverOptionFile(mCodec);
             }
         }
@@ -506,10 +508,9 @@ void FileMeta::load(int codecMib, bool init)
             EXCEPT() << "Error opening file " << location();
 
         const QByteArray data(file.readAll());
-        QTextCodec *codec = nullptr;
         QString invalidCodecs;
         QTextCodec::ConverterState state;
-        codec = QTextCodec::codecForMib(codecMib);
+        QTextCodec *codec = QTextCodec::codecForMib(codecMib);
         if (codec) {
             QString text = codec->toUnicode(data.constData(), data.size(), &state);
             if (state.invalidChars != 0) {
@@ -525,7 +526,8 @@ void FileMeta::load(int codecMib, bool init)
                 DEB() << " can't be encoded to " + invalidCodecs + ". Encoding used: " + codec->name();
             }
         } else {
-            SysLogLocator::systemLog()->append("System doesn't contain codec for MIB " + QString::number(codecMib), LogMsgType::Info);
+            SysLogLocator::systemLog()->append("System doesn't contain codec for MIB "
+                                               + QString::number(codecMib), LogMsgType::Info);
         }
         file.close();
         setModified(false);
@@ -737,7 +739,7 @@ QTextDocument *FileMeta::document() const
 
 int FileMeta::codecMib() const
 {
-    return mCodec ? mCodec->mibEnum() : QTextCodec::codecForLocale()->mibEnum();
+    return mCodec ? mCodec->mibEnum() : Settings::settings()->toInt(skDefaultCodecMib);
 }
 
 void FileMeta::setCodecMib(int mib)
@@ -762,7 +764,7 @@ void FileMeta::setCodec(QTextCodec *codec)
 {
     if (!codec) {
         if (!mCodec) {
-            mCodec = QTextCodec::codecForLocale();
+            mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
             DEB() << "Encoding parameter invalid, initialized to " << mCodec->name();
         } else {
             DEB() << "Encoding parameter invalid, left unchanged at " << mCodec->name();
@@ -793,7 +795,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
-    if (codecMib == -1) codecMib = QTextCodec::codecForLocale()->mibEnum();
+    if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gdx) {
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));

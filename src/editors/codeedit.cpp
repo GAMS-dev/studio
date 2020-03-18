@@ -29,6 +29,7 @@
 #include "editorhelper.h"
 #include "viewhelper.h"
 #include "search/searchlocator.h"
+#include <QPalette>
 
 namespace gams {
 namespace studio {
@@ -1659,7 +1660,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
                 selRect.moveLeft(left + metric.width(str.left(beyondStart)));
             }
             selRect.setRight(left + metric.width(str.left(beyondEnd)));
-            painter.fillRect(selRect, toColor(Scheme::Edit_blockSelectBg));
+            painter.fillRect(selRect, mEdit->palette().highlight());
         }
 
         if (mBlinkStateHidden) {
@@ -1707,7 +1708,8 @@ void CodeEdit::BlockEdit::updateExtraSelections()
     for (int lineNr = qMin(mStartLine, mCurrentLine); lineNr <= qMax(mStartLine, mCurrentLine); ++lineNr) {
         QTextBlock block = mEdit->document()->findBlockByNumber(lineNr);
         QTextEdit::ExtraSelection select;
-        select.format.setBackground(toColor(Scheme::Edit_blockSelectBg));
+        select.format.setBackground(mEdit->palette().highlight());
+        select.format.setForeground(mEdit->palette().highlightedText());
 
         int start = qMin(block.length()-1, qMin(mColumn, mColumn+mSize));
         int end = qMin(block.length()-1, qMax(mColumn, mColumn+mSize));

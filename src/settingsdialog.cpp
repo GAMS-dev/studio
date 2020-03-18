@@ -50,6 +50,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     setModifiedStatus(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+//    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
+//    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
+    ui->label_11->setVisible(false);
+    ui->combo_editorTheme->setVisible(false);
+
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
 
@@ -60,7 +65,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -92,9 +99,10 @@ void SettingsDialog::loadSettings()
     ui->cb_autosave->setChecked(mSettings->toBool(skAutosaveOnRun));
     ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
-    ui->cb_bringontop->setChecked(mSettings->toBool(skForegroundOnDemand));
+    ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
 
     // editor tab page
+    ui->combo_editorTheme->setCurrentIndex(mSettings->toInt(skEdColorSchemeIndex));
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
     ui->sb_fontsize->setValue(mSettings->toInt(skEdFontSize));
     ui->cb_showlinenr->setChecked(mSettings->toBool(skEdShowLineNr));
@@ -169,9 +177,10 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skAutosaveOnRun, ui->cb_autosave->isChecked());
     mSettings->setBool(skOpenLst, ui->cb_openlst->isChecked());
     mSettings->setBool(skJumpToError, ui->cb_jumptoerror->isChecked());
-    mSettings->setBool(skForegroundOnDemand, ui->cb_bringontop->isChecked());
+    mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
+    mSettings->setInt(skEdColorSchemeIndex, ui->combo_editorTheme->currentIndex());
     mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());
     mSettings->setInt(skEdFontSize, ui->sb_fontsize->value());
     mSettings->setBool(skEdShowLineNr, ui->cb_showlinenr->isChecked());
@@ -228,9 +237,9 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     emit editorLineWrappingChanged();
 }
 
-void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
+void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
 {
-    emit editorFontChanged(arg1, ui->sb_fontsize->value());
+    emit editorFontChanged(value, ui->sb_fontsize->value());
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
@@ -347,9 +356,6 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 void SettingsDialog::initColorPage()
 {
     if (!mColorWidgets.isEmpty()) return;
-    ui->cbSchemes->clear();
-    ui->cbSchemes->addItems(Scheme::instance()->schemes());
-    ui->cbSchemes->setCurrentIndex(Scheme::instance()->activeScheme());
 
     QWidget *box = nullptr;
     QGridLayout *grid = nullptr;
@@ -367,7 +373,6 @@ void SettingsDialog::initColorPage()
         {},
 
         {Scheme::invalid, Scheme::Edit_currentLineBg},
-        {Scheme::invalid, Scheme::Edit_blockSelectBg},
         {},
 
         {Scheme::invalid, Scheme::Edit_currentWordBg},

@@ -167,7 +167,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
-                selection.format.setUnderlineColor(Qt::red);
+                selection.format.setUnderlineColor(toColor(Scheme::Normal_Red));
                 if (m->size() == 1)
                     selection.format.setBackground(toColor(Scheme::Edit_errorBg));
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
@@ -290,7 +290,7 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         e->accept();
     } else {
         QPlainTextEdit::keyPressEvent(e);
-        if ((e->key() & 0x11111110) == 0x01000010)
+        if ((e->key() & 0x11111110) == Qt::Key_Home)
             emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
     }
     Qt::CursorShape shape = Qt::IBeamCursor;
