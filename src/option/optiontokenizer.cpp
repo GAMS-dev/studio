@@ -77,13 +77,13 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
 
     // option Format
     mInvalidKeyFormat.setFontItalic(true);
-    mInvalidKeyFormat.setBackground(Scheme::color(Scheme::Normal_Red));
+    mInvalidKeyFormat.setForeground(Scheme::color(Scheme::Normal_Red));
 
     mInvalidValueFormat.setFontItalic(true);
-    mInvalidValueFormat.setBackground(Scheme::color(Scheme::Normal_Red));
+    mInvalidValueFormat.setForeground(Scheme::color(Scheme::Normal_Red));
 
     mDuplicateOptionFormat.setFontItalic(true);
-    mDuplicateOptionFormat.setBackground(Scheme::color(Scheme::Normal_Yellow));
+    mDuplicateOptionFormat.setForeground(Scheme::color(Scheme::Normal_Yellow));
 
     mDeprecateOptionFormat.setFontItalic(true);
     mDeprecateOptionFormat.setBackground(Qt::lightGray);

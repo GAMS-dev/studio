@@ -87,6 +87,9 @@ public:
     QString fontFamily() const;
     void setFontFamily(const QString &value);
 
+    int defaultCodecMib() const;
+    void setDefaultCodecMib(int codecMib);
+
     bool clearLog() const;
     void setClearLog(bool value);
 
@@ -184,6 +187,7 @@ private:
 
     // editor settings page
     int mAppearance;
+    int mDefaultCodecMib;
     QString mFontFamily;
     int mFontSize;
     bool mShowLineNr;

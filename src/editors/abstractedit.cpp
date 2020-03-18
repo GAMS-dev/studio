@@ -291,7 +291,7 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         e->accept();
     } else {
         QPlainTextEdit::keyPressEvent(e);
-        if ((e->key() & 0x11111110) == 0x01000010)
+        if ((e->key() & 0x11111110) == Qt::Key_Home)
             emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
     }
     Qt::CursorShape shape = Qt::IBeamCursor;

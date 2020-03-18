@@ -72,13 +72,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), mSettings, &StudioSettings::setAppearance);
-//    connect(ui->combo_syntaxTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-//    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setSyntaxTheme);
-//    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-//    connect(ui->combo_studioTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setStudioTheme);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -110,7 +106,7 @@ void SettingsDialog::loadSettings()
     ui->cb_autosave->setChecked(mSettings->autosaveOnRun());
     ui->cb_openlst->setChecked(mSettings->openLst());
     ui->cb_jumptoerror->setChecked(mSettings->jumpToError());
-    ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
+    ui->cb_foregroundOnDemand->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
 //    ui->combo_studioTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
@@ -190,7 +186,7 @@ void SettingsDialog::saveSettings()
     mSettings->setAutosaveOnRun(ui->cb_autosave->isChecked());
     mSettings->setOpenLst(ui->cb_openlst->isChecked());
     mSettings->setJumpToError(ui->cb_jumptoerror->isChecked());
-    mSettings->setForegroundOnDemand(ui->cb_bringontop->isChecked());
+    mSettings->setForegroundOnDemand(ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
 //    mSettings->setSyntaxSchemeIndex(ui->combo_syntaxTheme->currentIndex());
@@ -253,9 +249,9 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     emit editorLineWrappingChanged();
 }
 
-void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &arg1)
+void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
 {
-    emit editorFontChanged(arg1, ui->sb_fontsize->value());
+    emit editorFontChanged(value, ui->sb_fontsize->value());
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)

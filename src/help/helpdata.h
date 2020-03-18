@@ -79,7 +79,7 @@ public:
             {DocumentType::APIsMain, docs + "/API_MAIN.html"},
             {DocumentType::ToolsMain, docs + "/T_MAIN.html"},
             {DocumentType::Index, docs + "/keyword.html"},
-            {DocumentType::StudioMain, "docs/T_STUDIO.html"}
+            {DocumentType::StudioMain, docs + "/T_STUDIO.html"}
         };
         return list;
     }

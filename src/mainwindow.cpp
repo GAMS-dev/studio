@@ -226,7 +226,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // shortcuts
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this, SLOT(showTabsMenu()));
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
@@ -575,6 +574,19 @@ void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 search::SearchDialog* MainWindow::searchDialog() const
 {
     return mSearchDialog;
+}
+
+QStringList MainWindow::encodingNames()
+{
+    QStringList res;
+    for (QAction *act: ui->menuconvert_to->actions()) {
+        if (!act->data().isNull()) {
+            QTextCodec *codec = QTextCodec::codecForMib(act->data().toInt());
+            if (!codec) continue;
+            res << codec->name();
+        }
+    }
+    return res;
 }
 
 QString MainWindow::encodingMIBsString()
@@ -2188,11 +2200,11 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             ui->logTabs->currentWidget()->setFocus();
             e->accept(); return;
         } else if (focusWidget() == ui->projectView) {
-                  setProjectViewVisibility(false);
+            setProjectViewVisibility(false);
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
-                   mGamsParameterEditor->deSelectParameters();
+            mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-                  ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
+            ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
         }
 
         // search widget
@@ -2203,27 +2215,26 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     }
 
     // focus shortcuts
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_E)) {
-        activateWindow();
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {
+        setProjectViewVisibility(true);
+        ui->projectView->setFocus();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_2)) {
         if (mRecent.editor()) mRecent.editor()->setFocus();
-
         e->accept(); return;
-    }
-
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_J)) {
-        focusProjectExplorer();
-        e->accept(); return;
-    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_L)) {
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_3)) {
         focusCmdLine();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_4)) {
+        showTabsMenu();
+        e->accept(); return;
+    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_5)) {
+        focusProcessLogs();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
         toggleDebugMode();
         e->accept(); return;
-    } else if (((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier)) && (e->key() == Qt::Key_G)) {
-        focusProcessLogs();
-        e->accept(); return;
     }
-
     QMainWindow::keyPressEvent(e);
 }
 
@@ -3540,10 +3551,13 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 
 void MainWindow::on_actionSelect_encodings_triggered()
 {
-    SelectEncodings se(encodingMIBs(), this);
-    se.exec();
-    setEncodingMIBs(se.selectedMibs());
-    mSettings->saveSettings(this);
+    int defCodec = mSettings->defaultCodecMib();
+    SelectEncodings se(encodingMIBs(), defCodec, this);
+    if (se.exec() == QDialog::Accepted) {
+        mSettings->setDefaultCodecMib(se.defaultCodec());
+        setEncodingMIBs(se.selectedMibs());
+        mSettings->saveSettings(this);
+    }
 }
 
 void MainWindow::setExtendedEditorVisibility(bool visible)

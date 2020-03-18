@@ -548,7 +548,7 @@
     <string>&amp;Process Log</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Process Log (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+Shift+G&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Process Log (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+5&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionProject_View">
@@ -566,7 +566,7 @@
     <string>Project &amp;Explorer</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Project Explorer (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+J&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open Project Explorer (&lt;span style=&quot; font-weight:600;&quot;&gt;Ctrl+1&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionNew">
@@ -719,7 +719,7 @@
     <string>Settings</string>
    </property>
    <property name="shortcut">
-    <string>F3</string>
+    <string>F4</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
