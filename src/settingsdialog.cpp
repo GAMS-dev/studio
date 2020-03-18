@@ -45,7 +45,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     // Themes
-#ifdef __WIN32
+#ifdef _WIN32
     ui->combo_appearance->blockSignals(true);
     ui->combo_appearance->insertItem(0, "Follow Operating System");
     ui->combo_appearance->blockSignals(false);
