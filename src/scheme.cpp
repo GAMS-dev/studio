@@ -173,7 +173,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_directiveBody,     Color(dark_highlight, fItalic));
 
     mColorSchemes[sNr].insert(Icon_Back,                QColor(dark_neutral));
-    mColorSchemes[sNr].insert(Disable_Back,             QColor(51,68,85));
+    mColorSchemes[sNr].insert(Disable_Back,             QColor(10,10,10));
     mColorSchemes[sNr].insert(Normal_Red,               QColor(187,34,51));
     mColorSchemes[sNr].insert(Normal_Green,             QColor(102,170,102));
     mColorSchemes[sNr].insert(Normal_Blue,              QColor(68,153,238));
