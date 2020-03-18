@@ -86,8 +86,8 @@ void ProjectLogNode::clearLog()
 void ProjectLogNode::prepareRun()
 {
     Settings *settings = Settings::settings();
-    if (!mLogFile && settings->toBool(_edWriteLog)) {
-        mLogFile = new DynamicFile(location(), settings->toInt(_edLogBackupCount), this);
+    if (!mLogFile && settings->toBool(skEdWriteLog)) {
+        mLogFile = new DynamicFile(location(), settings->toInt(skEdLogBackupCount), this);
     }
     mLogFinished = false;
 

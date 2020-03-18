@@ -29,11 +29,15 @@ class TestSettings : public QObject
 private slots:
     void initTestCase();
 
+//    void testUpgradeFromVersion1();
+
     void testChangeValueAtRoot();
     void testChangeValueInGroup();
+
     void testReadSettingsIgnore();
     void testReadSettingsIgnoreReset();
     void testReadSettingsReset();
+
     void testWriteSettingsIgnore();
     void testWriteSettingsIgnoreReset();
     void testWriteSettingsReset();

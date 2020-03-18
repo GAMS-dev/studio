@@ -41,7 +41,7 @@ const int Settings::mVersion = 1;
 Settings *Settings::mInstance = nullptr;
 bool Settings::mUseRelocatedTestDir = false;
 
-// ====== Some helper functions for string conversion ======
+// ====== Some helper functions ======
 
 QString pointToString(QPoint p) {
     return QString("%1,%2").arg(p.x()).arg(p.y());
@@ -124,6 +124,11 @@ void Settings::releaseSettings()
     mInstance = nullptr;
 }
 
+int Settings::version()
+{
+    return mVersion;
+}
+
 void Settings::useRelocatedPathForTests()
 {
     if (mInstance) {
@@ -135,17 +140,23 @@ void Settings::useRelocatedPathForTests()
 
 Settings::Settings(bool ignore, bool reset, bool resetView)
     : mCanWrite(!ignore),
-      mCanRead(!ignore && !reset)
+      mCanRead(!ignore && !reset),
+      mKeys(generateKeys())
 {
+    // initialize storage
+    mData.insert(scUi, Data());
+    mData.insert(scSys, Data());
+    mData.insert(scUser, Data());
+
     // initialize json format and make it the default
     QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
     QSettings::setDefaultFormat(jsonFormat);
     if (mUseRelocatedTestDir)
         QSettings::setPath(jsonFormat, QSettings::UserScope, ".");
 
-    initKeys();
 
-    initDefault(KAll);
+    initDefault(scAll);
+
     // QSettings only needed if we want to write
     if (mCanWrite || mCanRead) {
         QSettings *sUi = nullptr;
@@ -169,8 +180,8 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
         if (sUi) {
             // only if the basic settings file has been created ...
             sUi->sync();
-            mSettings.insert(KUi, sUi);
-            load(KUi);
+            mSettings.insert(scUi, sUi);
+            load(scUi);
 //            saveFile(KUi);
             // ... create versionized settings (may init from older version)
             createSettingFiles();
@@ -192,7 +203,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
 
 Settings::~Settings()
 {
-    QMap<Kind, QSettings*>::iterator si = mSettings.begin();
+    QMap<Scope, QSettings*>::iterator si = mSettings.begin();
     while (si != mSettings.end()) {
         QSettings *set = si.value();
         set->sync();
@@ -210,84 +221,91 @@ QSettings *Settings::newQSettings(QString name)
     return res;
 }
 
-void Settings::initKeys()
+QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 {
-    // prepare storage
-    mData.insert(KUi, Data());
-    mData.insert(KSys, Data());
-    mData.insert(KUser, Data());
+    QHash<SettingsKey, Settings::KeyData> res;
 
     // versions for all settings files (KAll)
-    mKeys.insert(_VersionSettings, KeyData(KAll, {"version","settings"}, mVersion));
-    mKeys.insert(_VersionStudio, KeyData(KAll, {"version","studio"}, QString(GAMS_VERSION_STR)));
+    res.insert(skVersionSettings, KeyData(scAll, {"version","settings"}, mVersion));
+    res.insert(skVersionStudio, KeyData(scAll, {"version","studio"}, QString(GAMS_VERSION_STR)));
 
     // window settings
-    mKeys.insert(_winSize, KeyData(KUi, {"window","size"}, QString("1024,768")));
-    mKeys.insert(_winPos, KeyData(KUi, {"window","pos"}, QString("0,0")));
-    mKeys.insert(_winState, KeyData(KUi, {"window","state"}, QByteArray("")));
-    mKeys.insert(_winMaximized, KeyData(KUi, {"window","maximized"}, false));
+    res.insert(skWinSize, KeyData(scUi, {"window","size"}, QString("1024,768")));
+    res.insert(skWinPos, KeyData(scUi, {"window","pos"}, QString("0,0")));
+    res.insert(skWinState, KeyData(scUi, {"window","state"}, QByteArray("")));
+    res.insert(skWinMaximized, KeyData(scUi, {"window","maximized"}, false));
 
     // view menu settings
-    mKeys.insert(_viewProject, KeyData(KUi, {"viewMenu","project"}, true));
-    mKeys.insert(_viewOutput, KeyData(KUi, {"viewMenu","output"}, true));
-    mKeys.insert(_viewHelp, KeyData(KUi, {"viewMenu","help"}, false));
-    mKeys.insert(_viewOption, KeyData(KUi, {"viewMenu","optionEdit"}, false));
+    res.insert(skViewProject, KeyData(scUi, {"viewMenu","project"}, true));
+    res.insert(skViewOutput, KeyData(scUi, {"viewMenu","output"}, true));
+    res.insert(skViewHelp, KeyData(scUi, {"viewMenu","help"}, false));
+    res.insert(skViewOption, KeyData(scUi, {"viewMenu","optionEdit"}, false));
 
     // general system settings
-    mKeys.insert(_encodingMib, KeyData(KSys, {"encodingMIBs"}, QString("106,0,4,17,2025")));
-    mKeys.insert(_projects, KeyData(KSys, {"projects"}, QJsonObject()));
-    mKeys.insert(_tabs, KeyData(KSys, {"tabs"}, QJsonObject()));
-    mKeys.insert(_history, KeyData(KSys, {"history"}, QJsonArray()));
+    res.insert(skEncodingMib, KeyData(scSys, {"encodingMIBs"}, QString("106,0,4,17,2025")));
+    res.insert(skProjects, KeyData(scSys, {"projects"}, QJsonObject()));
+    res.insert(skTabs, KeyData(scSys, {"tabs"}, QJsonObject()));
+    res.insert(skHistory, KeyData(scSys, {"history"}, QJsonArray()));
 
     // settings of help page
-    mKeys.insert(_hBookmarks, KeyData(KSys, {"help","bookmarks"}, QJsonArray()));
-    mKeys.insert(_hZoomFactor, KeyData(KSys, {"help","bookmarks"}, 1.0));
+    res.insert(skHelpBookmarks, KeyData(scSys, {"help","bookmarks"}, QJsonArray()));
+    res.insert(skHelpZoomFactor, KeyData(scSys, {"help","zoom"}, 1.0));
 
     // search widget
-    mKeys.insert(_searchUseRegex, KeyData(KSys, {"search", "regex"}, false));
-    mKeys.insert(_searchCaseSens, KeyData(KSys, {"search", "caseSens"}, false));
-    mKeys.insert(_searchWholeWords, KeyData(KSys, {"search", "wholeWords"}, false));
-    mKeys.insert(_searchScope, KeyData(KSys, {"search", "scope"}, 0));
+    res.insert(skSearchUseRegex, KeyData(scSys, {"search", "regex"}, false));
+    res.insert(skSearchCaseSens, KeyData(scSys, {"search", "caseSens"}, false));
+    res.insert(skSearchWholeWords, KeyData(scSys, {"search", "wholeWords"}, false));
+    res.insert(skSearchScope, KeyData(scSys, {"search", "scope"}, 0));
 
     // general settings page
-    mKeys.insert(_defaultWorkspace, KeyData(KUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir()));
-    mKeys.insert(_skipWelcomePage, KeyData(KUser, {"skipWelcome"}, false));
-    mKeys.insert(_restoreTabs, KeyData(KUser, {"restoreTabs"}, true));
-    mKeys.insert(_autosaveOnRun, KeyData(KUser, {"autosaveOnRun"}, true));
-    mKeys.insert(_openLst, KeyData(KUser, {"openLst"}, false));
-    mKeys.insert(_jumpToError, KeyData(KUser, {"jumpToError"}, true));
-    mKeys.insert(_foregroundOnDemand, KeyData(KUser, {"foregroundOnDemand"}, true));
-    mKeys.insert(_historySize, KeyData(KUser, {"historySize"}, 12));
+    res.insert(skDefaultWorkspace, KeyData(scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir()));
+    res.insert(skSkipWelcomePage, KeyData(scUser, {"skipWelcome"}, false));
+    res.insert(skRestoreTabs, KeyData(scUser, {"restoreTabs"}, true));
+    res.insert(skAutosaveOnRun, KeyData(scUser, {"autosaveOnRun"}, true));
+    res.insert(skOpenLst, KeyData(scUser, {"openLst"}, false));
+    res.insert(skJumpToError, KeyData(scUser, {"jumpToErrors"}, true));
+    res.insert(skForegroundOnDemand, KeyData(scUser, {"foregroundOnDemand"}, true));
+    res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 12));
 
     // editor settings page
-    mKeys.insert(_edFontFamily, KeyData(KUser, {"editor","fontFamily"}, findFixedFont()));
-    mKeys.insert(_edFontSize, KeyData(KUser, {"editor","fontSize"}, 10));
-    mKeys.insert(_edShowLineNr, KeyData(KUser, {"editor","showLineNr"}, true));
-    mKeys.insert(_edTabSize, KeyData(KUser, {"editor","TabSize"}, 4));
-    mKeys.insert(_edLineWrapEditor, KeyData(KUser, {"editor","lineWrapEditor"}, false));
-    mKeys.insert(_edLineWrapProcess, KeyData(KUser, {"editor","lineWrapProcess"}, false));
-    mKeys.insert(_edClearLog, KeyData(KUser, {"editor","clearLog"}, false));
-    mKeys.insert(_edWordUnderCursor, KeyData(KUser, {"editor","wordUnderCursor"}, false));
-    mKeys.insert(_edHighlightCurrentLine, KeyData(KUser, {"editor","highlightCurrentLine"}, false));
-    mKeys.insert(_edAutoIndent, KeyData(KUser, {"editor","autoIndent"}, true));
-    mKeys.insert(_edWriteLog, KeyData(KUser, {"editor","writeLog"}, true));
-    mKeys.insert(_edLogBackupCount, KeyData(KUser, {"editor","logBackupCount"}, 3));
-    mKeys.insert(_edAutoCloseBraces, KeyData(KUser, {"editor","autoCloseBraces"}, true));
-    mKeys.insert(_edEditableMaxSizeMB, KeyData(KUser, {"editor","editableMaxSizeMB"}, 50));
+    res.insert(skEdFontFamily, KeyData(scUser, {"editor","fontFamily"}, findFixedFont()));
+    res.insert(skEdFontSize, KeyData(scUser, {"editor","fontSize"}, 10));
+    res.insert(skEdShowLineNr, KeyData(scUser, {"editor","showLineNr"}, true));
+    res.insert(skEdTabSize, KeyData(scUser, {"editor","TabSize"}, 4));
+    res.insert(skEdLineWrapEditor, KeyData(scUser, {"editor","lineWrapEditor"}, false));
+    res.insert(skEdLineWrapProcess, KeyData(scUser, {"editor","lineWrapProcess"}, false));
+    res.insert(skEdClearLog, KeyData(scUser, {"editor","clearLog"}, false));
+    res.insert(skEdWordUnderCursor, KeyData(scUser, {"editor","wordUnderCursor"}, false));
+    res.insert(skEdHighlightCurrentLine, KeyData(scUser, {"editor","highlightCurrentLine"}, false));
+    res.insert(skEdAutoIndent, KeyData(scUser, {"editor","autoIndent"}, true));
+    res.insert(skEdWriteLog, KeyData(scUser, {"editor","writeLog"}, true));
+    res.insert(skEdLogBackupCount, KeyData(scUser, {"editor","logBackupCount"}, 3));
+    res.insert(skEdAutoCloseBraces, KeyData(scUser, {"editor","autoCloseBraces"}, true));
+    res.insert(skEdEditableMaxSizeMB, KeyData(scUser, {"editor","editableMaxSizeMB"}, 50));
 
     // MIRO settings page
-    mKeys.insert(_miroInstallPath, KeyData(KUser, {"miro","installationLocation"}, QString()));
+    res.insert(skMiroInstallPath, KeyData(scUser, {"miro","installationLocation"}, QString()));
 
     // solver option editor settings
-    mKeys.insert(_soOverrideExisting, KeyData(KUser, {"solverOption","overrideExisting"}, true));
-    mKeys.insert(_soAddCommentAbove, KeyData(KUser, {"solverOption","addCommentAbove"}, false));
-    mKeys.insert(_soAddEOLComment, KeyData(KUser, {"solverOption","addEOLComment"}, false));
-    mKeys.insert(_soDeleteCommentsAbove, KeyData(KUser, {"solverOption","deleteCommentsAbove"}, false));
+    res.insert(skSoOverrideExisting, KeyData(scUser, {"solverOption","overrideExisting"}, true));
+    res.insert(skSoAddCommentAbove, KeyData(scUser, {"solverOption","addCommentAbove"}, false));
+    res.insert(skSoAddEOLComment, KeyData(scUser, {"solverOption","addEOLComment"}, false));
+    res.insert(skSoDeleteCommentsAbove, KeyData(scUser, {"solverOption","deleteCommentsAbove"}, false));
 
     // user model library directory
-    mKeys.insert(_userModelLibraryDir, KeyData(KSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
-
+    res.insert(skUserModelLibraryDir, KeyData(scSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
+    return res;
 }
+
+//void Settings::initGroups()
+//{
+//    for (QHash<SettingsKey, KeyData>::const_iterator it = mKeys.constBegin(); it == mKeys.constEnd(); ++it) {
+//        if (it.value().keys.size() != 2) continue;
+//        if (!mGroups.contains(it.value().keys.first()))
+//            mGroups.insert(it.value().keys.first(), QList<SettingsKey>());
+//        mGroups[it.value().keys.first()] << it.key();
+//    }
+//}
 
 int Settings::checkVersion()
 {
@@ -314,8 +332,8 @@ bool Settings::createSettingFiles()
 
     // create setting files of found version to read from
     initSettingsFiles(version);
-    load(KSys);
-    load(KUser);
+    load(scSys);
+    load(scUser);
     if (version == mVersion) return true;
 
     // Need to upgrade from older version
@@ -342,41 +360,38 @@ bool Settings::createSettingFiles()
 void Settings::initSettingsFiles(int version)
 {
     // initializes versionized setting files
-    mSettings.insert(KSys, newQSettings(QString("systemsettings%1").arg(version)));
-    mSettings.insert(KUser, newQSettings(QString("usersettings%1").arg(version)));
+    mSettings.insert(scSys, newQSettings(QString("systemsettings%1").arg(version)));
+    mSettings.insert(scUser, newQSettings(QString("usersettings%1").arg(version)));
     // TODO(JM) Handle studioscheme.json and syntaxscheme.json
 }
 
-void Settings::reset(Kind kind)
+void Settings::reset(Scope scope)
 {
-    for (Kind &k : mData.keys()) {
-        if (kind == KAll || k == kind) mData[k].clear();
+    for (Scope &sc : mData.keys()) {
+        if (scope == scAll || sc == scope) mData[sc].clear();
     }
-    initDefault(kind);
+    initDefault(scope);
 }
 
-void Settings::initDefault(Kind kind)
+void Settings::initDefault(Scope scope)
 {
     QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
     for ( ; di != mKeys.constEnd() ; ++di) {
         KeyData dat = di.value();
-        if (kind == KAll || kind == dat.kind)
+        if (scope == scAll || scope == dat.scope)
             setValue(di.key(), dat.initial);
     }
-    // create default values for current mVersion
-//    if (kind == KAll)
-//        Scheme::instance()->initDefault();
 }
 
 void Settings::reload()
 {
-    load(KAll);
+    load(scAll);
 }
 
 void Settings::resetViewSettings()
 {
-    initDefault(KUi);
-    QSettings *set = mSettings.value(KUi);
+    initDefault(scUi);
+    QSettings *set = mSettings.value(scUi);
     if (set) set->sync();
 }
 
@@ -384,8 +399,8 @@ void Settings::save()
 {
     // ignore-settings argument -> no settings assigned
     if (!mCanWrite) return;
-    for (const Kind &kind : mSettings.keys()) {
-        saveFile(kind);
+    for (const Scope &scope : mSettings.keys()) {
+        saveFile(scope);
     }
 }
 
@@ -449,12 +464,12 @@ int Settings::compareVersion(QString currentVersion, QString otherVersion)
 QVariant Settings::value(SettingsKey key) const
 {
     KeyData dat = mKeys.value(key);
-    if (!mData.contains(dat.kind))
+    if (!mData.contains(dat.scope))
         return QVariant();
     if (dat.keys.length() == 1)
-        return mData[dat.kind].value(dat.keys.at(0));
+        return mData[dat.scope].value(dat.keys.at(0));
     if (dat.keys.length() == 2) {
-        QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
+        QJsonObject jo = mData[dat.scope].value(dat.keys.at(0)).toJsonObject();
         return jo.value(dat.keys.at(1));
     }
     return QVariant();
@@ -463,34 +478,69 @@ QVariant Settings::value(SettingsKey key) const
 bool Settings::setValue(SettingsKey key, QVariant value)
 {
     KeyData dat = mKeys.value(key);
-    if (!mData.contains(dat.kind)) // ensure that entry for kind exists
-        mData.insert(dat.kind, Data());
-    if (dat.keys.length() == 1) {
-        mData[dat.kind].insert(dat.keys.at(0), value);
-        return true;
-    }
-    if (dat.keys.length() == 2) {
-        // ensure that Data entry for group-key exists
-        if (!mData[dat.kind].contains(dat.keys.at(0)))
-            mData[dat.kind].insert(dat.keys.at(0), Data());
-        QJsonObject jo = mData[dat.kind].value(dat.keys.at(0)).toJsonObject();
-        switch (QMetaType::Type(value.type())) {
-        case QMetaType::Double: jo[dat.keys.at(1)] = value.toDouble(); break;
-        case QMetaType::ULongLong:
-        case QMetaType::LongLong: jo[dat.keys.at(1)] = value.toLongLong(); break;
-        case QMetaType::UInt:
-        case QMetaType::Int: jo[dat.keys.at(1)] = value.toInt(); break;
-        case QMetaType::Bool: jo[dat.keys.at(1)] = value.toBool(); break;
-        case QMetaType::QByteArray:
-        case QMetaType::QString: jo[dat.keys.at(1)] = value.toString(); break;
-        case QMetaType::QJsonObject: jo[dat.keys.at(1)] = value.toJsonObject(); break;
-        case QMetaType::QJsonArray: jo[dat.keys.at(1)] = value.toJsonArray(); break;
-        default: return false;
-        }
-        mData[dat.kind].insert(dat.keys.at(0), jo);
-        return true;
-    }
+    if (dat.keys.length() == 1)
+        return setDirectValue(dat.scope, dat.keys.at(0), value);
+    if (dat.keys.length() == 2)
+        return setDirectValue(dat.scope, dat.keys.at(0), dat.keys.at(1), value);
     return false;
+}
+
+QVariant Settings::directValue(const Scope &scope, const QString &key) const
+{
+    if (!mData.contains(scope)) return QVariant();
+    return mData[scope].value(key);
+}
+
+QVariant Settings::directValue(const Settings::Scope &scope, const QString &group, const QString &key) const
+{
+    if (!mData.contains(scope)) return QVariant();
+    QJsonObject jo = mData[scope].value(group).toJsonObject();
+    return jo.value(key);
+}
+
+QVariant Settings::directValue(const QJsonObject &group, const QString &key) const
+{
+    return group.value(key);
+}
+
+bool Settings::setDirectValue(const Settings::Scope &scope, const QString &key, QVariant value)
+{
+    if (!mData.contains(scope)) // ensure that entry for the scope exists
+        mData.insert(scope, Data());
+    mData[scope].insert(key, value);
+    return true;
+}
+
+bool Settings::setDirectValue(const Settings::Scope &scope, const QString &group, const QString &key, QVariant value)
+{
+    if (!mData.contains(scope)) // ensure that entry for the scope exists
+        mData.insert(scope, Data());
+    if (!mData[scope].contains(group))
+        mData[scope].insert(group, QJsonObject());
+    QVariant varGroup = mData[scope].value(group);
+    if (!varGroup.canConvert<QJsonObject>()) return false;
+    QJsonObject jo = varGroup.toJsonObject();
+    if (!addToJsonObject(jo, key, value)) return false;
+    mData[scope].insert(group, jo);
+    return true;
+}
+
+bool Settings::addToJsonObject(QJsonObject &group, const QString &key, QVariant value)
+{
+    switch (QMetaType::Type(value.type())) {
+    case QMetaType::Double: group[key] = value.toDouble(); break;
+    case QMetaType::ULongLong:
+    case QMetaType::LongLong: group[key] = value.toLongLong(); break;
+    case QMetaType::UInt:
+    case QMetaType::Int: group[key] = value.toInt(); break;
+    case QMetaType::Bool: group[key] = value.toBool(); break;
+    case QMetaType::QByteArray:
+    case QMetaType::QString: group[key] = value.toString(); break;
+    case QMetaType::QJsonObject: group[key] = value.toJsonObject(); break;
+    case QMetaType::QJsonArray: group[key] = value.toJsonArray(); break;
+    default: return false;
+    }
+    return true;
 }
 
 bool Settings::setJsonObject(SettingsKey key, QJsonObject value)
@@ -507,7 +557,7 @@ bool Settings::setJsonArray(SettingsKey key, QJsonArray value)
 QStringList Settings::fileHistory()
 {
     QStringList res;
-    QJsonArray joLastOpenedFiles = mData[KSys].value("lastOpenedFiles").toJsonArray();
+    QJsonArray joLastOpenedFiles = mData[scSys].value("lastOpenedFiles").toJsonArray();
     for (QJsonValue jRef: joLastOpenedFiles) {
         res << jRef["name"].toString();
     }
@@ -516,7 +566,7 @@ QStringList Settings::fileHistory()
 
 QString Settings::settingsPath()
 {
-    if (QSettings *settings = mSettings[KUi]) {
+    if (QSettings *settings = mSettings[scUi]) {
 //        DEB() << "UiSettings: " << settings->fileName();
 //        DEB() << "    - path: " << QFileInfo(settings->fileName()).path();
         return QFileInfo(settings->fileName()).path();
@@ -525,30 +575,30 @@ QString Settings::settingsPath()
     return QString();
 }
 
-void Settings::saveFile(Kind kind)
+void Settings::saveFile(Scope scope)
 {
     if (!mCanWrite) return;
-    if (!mSettings.contains(kind)) return;
+    if (!mSettings.contains(scope)) return;
 
     // Store values that are repeated in ALL settings, like the versions
-    Data::const_iterator it = mData[KAll].constBegin();
-    for ( ; it != mData[KAll].constEnd() ; ++it) {
-        mSettings[kind]->setValue(it.key(), it.value());
+    Data::const_iterator it = mData[scAll].constBegin();
+    for ( ; it != mData[scAll].constEnd() ; ++it) {
+        mSettings[scope]->setValue(it.key(), it.value());
     }
 
     // store individual settings
-    it = mData[kind].constBegin();
-    for ( ; it != mData[kind].constEnd() ; ++it) {
-        mSettings[kind]->setValue(it.key(), it.value());
+    it = mData[scope].constBegin();
+    for ( ; it != mData[scope].constEnd() ; ++it) {
+        mSettings[scope]->setValue(it.key(), it.value());
     }
-    mSettings[kind]->sync();
+    mSettings[scope]->sync();
 }
 
-QVariant Settings::read(SettingsKey key, Settings::Kind kind)
+QVariant Settings::read(SettingsKey key, Settings::Scope scope)
 {
     KeyData dat = keyData(key);
-    if (kind == KAll) kind = dat.kind;
-    QSettings *qs = mSettings.value(kind, nullptr);
+    if (scope == scAll) scope = dat.scope;
+    QSettings *qs = mSettings.value(scope, nullptr);
     if (!qs) return QVariant();
     if (dat.keys.size() == 1) return  qs->value(dat.keys[0]);
     if (dat.keys.size() == 2) {
@@ -558,35 +608,58 @@ QVariant Settings::read(SettingsKey key, Settings::Kind kind)
     return QVariant();
 }
 
-void Settings::load(Kind kind)
+void Settings::load(Scope scope)
 {
     if (mCanRead) {
-        // sync all settings
-        QMap<Kind, QSettings*>::const_iterator si = mSettings.constBegin();
-        for ( ; si != mSettings.constEnd() ; ++si) {
-            if (si.value()) si.value()->sync();
+
+        // load settings content into mData
+        for (QMap<Scope, QSettings*>::const_iterator si = mSettings.constBegin() ; si != mSettings.constEnd() ; ++si) {
+            if (!si.value() || (scope != scAll && scope != si.key())) continue;
+
+            // sync settings of this scope
+            si.value()->sync();
+
+            // iterate over the settings content
+            for (const QString &key : si.value()->allKeys()) {
+                QVariant var = si.value()->value(key);
+                if (var.isNull()) continue;
+                if (var.canConvert<QJsonObject>()) {
+                    // copy all elements
+                    QJsonObject joSrc = var.toJsonObject();
+                    QJsonObject joDest = mData.value(si.key()).value(key).toJsonObject();
+                    for (const QString &joKey : joSrc.keys()) {
+                        joDest[joKey] = joSrc[joKey];
+                    }
+                    var = joDest;
+                }
+                setDirectValue(si.key(), key, var);
+            }
         }
-        // write settings content into mData
+
+
+
         QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
+
+
         for ( ; di != mKeys.constEnd() ; ++di) {
             KeyData dat = di.value();
 
-            if (dat.kind == KAll) {
+            if (dat.scope == scAll) {
                 // --- special handling of entries for all files (like version)
-                if (kind == KAll) {
+                if (scope == scAll) {
                     // Update shared entry over all files
-                    for (const Kind &k : mData.keys()) {
-                        if (k == KAll) continue;
+                    for (const Scope &k : mData.keys()) {
+                        if (k == scAll) continue;
                         QVariant var = read(di.key(), k);
                         if (var.isValid()) setValue(di.key(), var);
                     }
                 } else {
-                    // Only update given kind
+                    // Only update given scope
                     QVariant var = read(di.key());
                     if (var.isValid()) setValue(di.key(), var);
                 }
 
-            } else if (kind == KAll || kind == dat.kind) {
+            } else if (scope == scAll || scope == dat.scope) {
                 // --- common update of entry
                 QVariant var = read(di.key());
                 if (var.isValid()) setValue(di.key(), var);
@@ -598,24 +671,24 @@ void Settings::load(Kind kind)
 
     // the location for user model libraries is not modifyable right now
     // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    setString(_userModelLibraryDir, CommonPaths::userModelLibraryDir());
+    setString(skUserModelLibraryDir, CommonPaths::userModelLibraryDir());
 }
 
 void Settings::importSettings(const QString &path)
 {
-    if (!mSettings.value(KUser)) return;
+    if (!mSettings.value(scUser)) return;
     QFile backupFile(path);
-    QFile settingsFile(mSettings.value(KUser)->fileName());
+    QFile settingsFile(mSettings.value(scUser)->fileName());
     settingsFile.remove(); // remove old file
     backupFile.copy(settingsFile.fileName()); // import new file
     reload();
-    load(KUser);
+    load(scUser);
 }
 
 void Settings::exportSettings(const QString &path)
 {
-    if (!mSettings.value(KUser)) return;
-    QFile originFile(mSettings.value(KUser)->fileName());
+    if (!mSettings.value(scUser)) return;
+    QFile originFile(mSettings.value(scUser)->fileName());
     originFile.copy(path);
 }
 

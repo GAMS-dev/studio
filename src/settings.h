@@ -36,88 +36,89 @@ class MainWindow;
 
 enum SettingsKey {
     // REMARK: version is treated differently as it is passed to ALL versionized setting files
-    _VersionSettings,
-    _VersionStudio,
+    skVersionSettings,
+    skVersionStudio,
 
     // window settings
-    _winSize,
-    _winPos,
-    _winState,
-    _winMaximized,
+    skWinSize,
+    skWinPos,
+    skWinState,
+    skWinMaximized,
 
     // view menu settings
-    _viewProject,
-    _viewOutput,
-    _viewHelp,
-    _viewOption,
+    skViewProject,
+    skViewOutput,
+    skViewHelp,
+    skViewOption,
 
     // general system settings
-    _encodingMib,
-    _projects,
-    _tabs,
-    _history,
+    skEncodingMib,
+    skProjects,
+    skTabs,
+    skHistory,
 
     // settings of help page
-    _hBookmarks,
-    _hZoomFactor,
+    skHelpBookmarks,
+    skHelpZoomFactor,
 
     // search widget
-    _searchUseRegex,
-    _searchCaseSens,
-    _searchWholeWords,
-    _searchScope,
+    skSearchUseRegex,
+    skSearchCaseSens,
+    skSearchWholeWords,
+    skSearchScope,
 
     // general settings page
-    _defaultWorkspace,
-    _skipWelcomePage,
-    _restoreTabs,
-    _autosaveOnRun,
-    _openLst,
-    _jumpToError,
-    _foregroundOnDemand,
-    _historySize,
+    skDefaultWorkspace,
+    skSkipWelcomePage,
+    skRestoreTabs,
+    skAutosaveOnRun,
+    skOpenLst,
+    skJumpToError,
+    skForegroundOnDemand,
+    skHistorySize,
 
     // editor settings page
-    _edFontFamily,
-    _edFontSize,
-    _edShowLineNr,
-    _edTabSize,
-    _edLineWrapEditor,
-    _edLineWrapProcess,
-    _edClearLog,
-    _edWordUnderCursor,
-    _edHighlightCurrentLine,
-    _edAutoIndent,
-    _edWriteLog,
-    _edLogBackupCount,
-    _edAutoCloseBraces,
-    _edEditableMaxSizeMB,
+    skEdFontFamily,
+    skEdFontSize,
+    skEdShowLineNr,
+    skEdTabSize,
+    skEdLineWrapEditor,
+    skEdLineWrapProcess,
+    skEdClearLog,
+    skEdWordUnderCursor,
+    skEdHighlightCurrentLine,
+    skEdAutoIndent,
+    skEdWriteLog,
+    skEdLogBackupCount,
+    skEdAutoCloseBraces,
+    skEdEditableMaxSizeMB,
 
     // MIRO settings page
-    _miroInstallPath,
+    skMiroInstallPath,
 
     // solver option editor settings
-    _soOverrideExisting,
-    _soAddCommentAbove,
-    _soAddEOLComment,
-    _soDeleteCommentsAbove,
+    skSoOverrideExisting,
+    skSoAddCommentAbove,
+    skSoAddEOLComment,
+    skSoDeleteCommentsAbove,
 
     // user model library directory
-    _userModelLibraryDir,
+    skUserModelLibraryDir,
 };
 
 class Settings
 {
 public:
-    enum Kind {KAll, KUi, KSys, KUser};
+    enum Scope {scAll, scUi, scSys, scUser};
 
 public:
     static void createSettings(bool ignore, bool reset, bool resetView);
     static Settings *settings();
     static void releaseSettings();
+    static int version();
     static void useRelocatedPathForTests();
 
-    void load(Kind kind);
+    void load(Scope kind);
     void save();
     int fileCount() const {return mSettings.count();}
 
@@ -154,9 +155,9 @@ private:
     typedef QMap<QString, QVariant> Data;
     struct KeyData {
         KeyData() {}
-        KeyData(Settings::Kind _kind, QStringList _keys, QVariant _initial)
-            : kind(_kind), keys(_keys), initial(_initial) {}
-        Settings::Kind kind = KAll;
+        KeyData(Settings::Scope _scope, QStringList _keys, QVariant _initial)
+            : scope(_scope), keys(_keys), initial(_initial) {}
+        Settings::Scope scope = scAll;
         QStringList keys;
         QVariant initial;
     };
@@ -167,30 +168,36 @@ private:
     bool mCanWrite = false;
     bool mCanRead = false;
 
-    QHash<SettingsKey, KeyData> mKeys;
-    QMap<Kind, QSettings*> mSettings;
-    QMap<Kind, Data> mData;
-
+    const QHash<SettingsKey, KeyData> mKeys;
+    QMap<Scope, QSettings*> mSettings;
+    QMap<Scope, Data> mData;
 
 private:
     Settings(bool ignore, bool reset, bool resetView);
     ~Settings();
     QSettings *newQSettings(QString name);
-    void initKeys();
+    QHash<SettingsKey, KeyData> generateKeys();
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
 
     int checkVersion();
     QString settingsPath();
     bool createSettingFiles();
-    void reset(Kind kind);
-    void initDefault(Kind kind);
-    void saveFile(Kind kind);
-    QVariant read(SettingsKey key, Kind kind = KAll);
+    void reset(Scope scope);
+    void initDefault(Scope scope);
+    void saveFile(Scope scope);
+    QVariant read(SettingsKey key, Scope scope = scAll);
 
     void initSettingsFiles(int version);
 
     QVariant value(SettingsKey key) const;
     bool setValue(SettingsKey key, QVariant value);
+
+    QVariant directValue(const Scope &scope, const QString &key) const;
+    QVariant directValue(const Scope &scope, const QString &group, const QString &key) const;
+    QVariant directValue(const QJsonObject &group, const QString &key) const;
+    bool setDirectValue(const Scope &scope, const QString &key, QVariant value);
+    bool setDirectValue(const Scope &scope, const QString &group, const QString &key, QVariant value);
+    bool addToJsonObject(QJsonObject &group, const QString &key, QVariant value);
 
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

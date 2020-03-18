@@ -62,7 +62,7 @@ void WelcomePage::historyChanged()
     WpLabel *tmpLabel;
     HistoryData *history = mMain->history();
     int j = 0;
-    for (int i = 0; i < Settings::settings()->toInt(_historySize); i++) {
+    for (int i = 0; i < Settings::settings()->toInt(skHistorySize); i++) {
         if (i >= history->mLastOpenedFiles.size()) break;
 
         QFileInfo file(history->mLastOpenedFiles.at(i));

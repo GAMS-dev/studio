@@ -395,16 +395,16 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
         }
         if (e == Hotkey::Indent) {
-            indent(mSettings->toInt(_edTabSize));
+            indent(mSettings->toInt(skEdTabSize));
             e->accept();
             return;
         }
         if (e == Hotkey::Outdent) {
-            indent(-mSettings->toInt(_edTabSize));
+            indent(-mSettings->toInt(skEdTabSize));
             e->accept();
             return;
         }
-        if (mSettings->toBool(_edAutoIndent) && e->key() == Qt::Key_Backspace) {
+        if (mSettings->toBool(skEdAutoIndent) && e->key() == Qt::Key_Backspace) {
             int pos = textCursor().positionInBlock();
 
             QString line = textCursor().block().text();
@@ -413,7 +413,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             bool allWhitespace = match.hasMatch();
 
             if (allWhitespace && !textCursor().hasSelection() && match.capturedLength() == pos) {
-                indent(-mSettings->toInt(_edTabSize));
+                indent(-mSettings->toInt(skEdTabSize));
                 e->accept();
                 return;
             }
@@ -426,7 +426,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         emit searchFindNextPressed();
 
     // smart typing:
-    if (Settings::settings()->toBool(_edAutoCloseBraces) && !isReadOnly())  {
+    if (Settings::settings()->toBool(skEdAutoCloseBraces) && !isReadOnly())  {
         QSet<int> moveKeys;
         moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
                  << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
@@ -526,7 +526,7 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 
 void CodeEdit::adjustIndent(QTextCursor cursor)
 {
-    if (!mSettings->toBool(_edAutoIndent)) return;
+    if (!mSettings->toBool(skEdAutoIndent)) return;
 
     QRegularExpression rex("^(\\s*).*$");
     QRegularExpressionMatch match = rex.match(cursor.block().text());
@@ -1038,7 +1038,7 @@ CodeEdit::CharType CodeEdit::charType(QChar c)
 void CodeEdit::updateTabSize()
 {
     QFontMetrics metric(font());
-    setTabStopDistance(mSettings->toInt(_edTabSize) * metric.width(' '));
+    setTabStopDistance(mSettings->toInt(skEdTabSize) * metric.width(' '));
 }
 
 int CodeEdit::findAlphaNum(const QString &text, int start, bool back)
@@ -1221,7 +1221,7 @@ void CodeEdit::recalcExtraSelections()
         recalcWordUnderCursor();
         mParenthesesDelay.start(100);
         int wordDelay = 10;
-        if (mSettings->toBool(_edWordUnderCursor)) wordDelay = 500;
+        if (mSettings->toBool(skEdWordUnderCursor)) wordDelay = 500;
         mWordDelay.start(wordDelay);
     }
     extraSelBlockEdit(selections);
@@ -1253,9 +1253,9 @@ void CodeEdit::updateExtraSelections()
         //    (  not caused by parenthiesis matching                               ) OR has selection
         if ( (( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || hasSelection())
                // ( depending on settings: no selection necessary OR has selection )
-               && (mSettings->toBool(_edWordUnderCursor) || hasSelection())
+               && (mSettings->toBool(skEdWordUnderCursor) || hasSelection())
                // (  depending on settings: no selection necessary skip word-timer )
-               && (mSettings->toBool(_edWordUnderCursor) || skipWordTimer))
+               && (mSettings->toBool(skEdWordUnderCursor) || skipWordTimer))
              // AND deactivate when navigating search results
              && match.captured(0).isEmpty()) {
             extraSelCurrentWord(selections);
@@ -1382,7 +1382,7 @@ QString CodeEdit::lineNrText(int blockNr)
 
 bool CodeEdit::showLineNr() const
 {
-    return mSettings->toBool(_edShowLineNr);
+    return mSettings->toBool(skEdShowLineNr);
 }
 
 void CodeEdit::setAllowBlockEdit(bool allow)
@@ -1582,11 +1582,11 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         }
         replaceBlockText("");
     } else if (e == Hotkey::Indent) {
-        mEdit->indent(mEdit->mSettings->toInt(_edTabSize));
+        mEdit->indent(mEdit->mSettings->toInt(skEdTabSize));
         e->accept();
         return;
     } else if (e == Hotkey::Outdent) {
-        mEdit->indent(-mEdit->mSettings->toInt(_edTabSize));
+        mEdit->indent(-mEdit->mSettings->toInt(skEdTabSize));
         e->accept();
         return;
     } else if (e->text().length()) {

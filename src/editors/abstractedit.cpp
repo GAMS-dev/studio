@@ -137,7 +137,7 @@ int AbstractEdit::topVisibleLine()
 
 void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!Settings::settings()->toBool(_edHighlightCurrentLine)) return;
+    if (!Settings::settings()->toBool(skEdHighlightCurrentLine)) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Scheme::Edit_currentLineBg));
@@ -254,7 +254,7 @@ bool AbstractEdit::event(QEvent *e)
     }
     if (e->type() == QEvent::FontChange) {
         QFontMetrics metric(font());
-        setTabStopDistance(Settings::settings()->toInt(_edTabSize) * metric.width(' '));
+        setTabStopDistance(Settings::settings()->toInt(skEdTabSize) * metric.width(' '));
     }
     return QPlainTextEdit::event(e);
 }

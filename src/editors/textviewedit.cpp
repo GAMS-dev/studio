@@ -216,7 +216,7 @@ int TextViewEdit::localBlockNr(const int &absoluteBlockNr) const
 
 void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!mSettings->toBool(_edHighlightCurrentLine)) return;
+    if (!mSettings->toBool(skEdHighlightCurrentLine)) return;
     int line = mMapper.position(true).y();
     if (line <= AbstractTextMapper::cursorInvalid) return;
 

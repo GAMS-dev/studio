@@ -843,7 +843,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         codeEdit  = new CodeEdit(tabWidget);
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);
-        edit->setLineWrapMode(Settings::settings()->toInt(_edLineWrapEditor) ? QPlainTextEdit::WidgetWidth
+        edit->setLineWrapMode(Settings::settings()->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
                                                                              : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
         res = edit;

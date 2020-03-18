@@ -362,7 +362,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
     int rowToBeAdded = ui->solverOptionTableView->model()->rowCount();
     Settings* settings = Settings::settings();
-    if (settings && settings->toBool(_soOverrideExisting)) {
+    if (settings && settings->toBool(skSoOverrideExisting)) {
         QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                             Qt::DisplayRole,
                                                                             optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
@@ -392,7 +392,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
 
             switch(msgBox.exec()) {
             case 0: // replace
-                if (settings && settings->toBool(_soDeleteCommentsAbove) && indices.size()>0) {
+                if (settings && settings->toBool(skSoDeleteCommentsAbove) && indices.size()>0) {
                     disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                     deleteCommentsBeforeOption(indices.at(0).row());
                     connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem, Qt::UniqueConnection);
@@ -456,7 +456,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     mOptionTokenizer->getOption()->setModified(optionNameData, true);
     ui->solverOptionTreeView->model()->setData(optionNameIndex, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
 
-    if (settings && settings->toBool(_soAddCommentAbove)) { // insert comment description row
+    if (settings && settings->toBool(skSoAddCommentAbove)) { // insert comment description row
         int indexRow = index.row();
         int parentIndexRow = parentIndex.row();
         QModelIndex descriptionIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(indexRow, OptionDefinitionModel::COLUMN_DESCIPTION):
@@ -508,7 +508,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     QModelIndex insertNumberIndex = ui->solverOptionTableView->model()->index(rowToBeAdded, mOptionTableModel->getColumnEntryNumber());
     ui->solverOptionTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
     ui->solverOptionTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
-    if (settings && settings->toBool(_soAddEOLComment)) {
+    if (settings && settings->toBool(skSoAddEOLComment)) {
         QModelIndex commentIndex = (parentIndex.row()<0) ? ui->solverOptionTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION)
                                                          : ui->solverOptionTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
         QString commentData = ui->solverOptionTreeView->model()->data(commentIndex).toString();
@@ -530,7 +530,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
     int lastColumn = ui->solverOptionTableView->model()->columnCount()-1;
     int lastRow = rowToBeAdded;
     int firstRow = lastRow;
-    if (settings && settings->toBool(_soAddCommentAbove)) {
+    if (settings && settings->toBool(skSoAddCommentAbove)) {
         firstRow--;
         if (parentIndex.row() >=0)
             firstRow--;
@@ -1099,7 +1099,7 @@ void SolverOptionWidget::deleteOption()
         }
 
         Settings* settings = Settings::settings();
-        if (settings && settings->toBool(_soDeleteCommentsAbove)) {
+        if (settings && settings->toBool(skSoDeleteCommentsAbove)) {
             for(const QModelIndex & index : ui->solverOptionTableView->selectionModel()->selectedRows()) {
                 if (mOptionTableModel->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toUInt()!=Qt::PartiallyChecked) {
                    for(int row=index.row()-1; row>=0; row--) {
