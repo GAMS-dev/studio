@@ -1551,14 +1551,34 @@ int CodeEdit::BlockEdit::startLine() const
 void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
 {
     QSet<int> moveKeys;
-    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up << Qt::Key_Left << Qt::Key_Right
-             << Qt::Key_PageUp << Qt::Key_PageDown;
+    moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
+             << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) {
         if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
         if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
         if (e->key() == Qt::Key_Home) setSize(-mColumn);
         if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
+#ifdef __APPLE__
+        if ((e->modifiers() & Qt::MetaModifier) &&
+                (e->modifiers() & Qt::Key_Shift) &&
+                e->key() == Qt::Key_Right) {
+            int size = mSize;
+            EditorHelper::nextWord(mColumn, size, block.text());
+            setSize(size);
+        } else if (e->key() == Qt::Key_Right) {
+            setSize(mSize+1);
+        }
+        if ((e->modifiers() & Qt::MetaModifier) &&
+                (e->modifiers() & Qt::Key_Shift) &&
+                e->key() == Qt::Key_Left && mColumn+mSize > 0) {
+            int size = mSize;
+            EditorHelper::prevWord(mColumn, size, block.text());
+            setSize(size);
+        } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) {
+            setSize(mSize-1);
+        }
+#else
         if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Right) {
             int size = mSize;
             EditorHelper::nextWord(mColumn, size, block.text());
@@ -1569,6 +1589,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             EditorHelper::prevWord(mColumn, size, block.text());
             setSize(size);
         } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) setSize(mSize-1);
+#endif
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)
             cursor.setPosition(block.position()+mColumn+mSize);
