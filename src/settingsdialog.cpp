@@ -42,6 +42,17 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SettingsDialog), mMain(parent)
 {
     ui->setupUi(this);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    // Themes
+#ifdef __WIN32
+    ui->combo_appearance->blockSignals(true);
+    ui->combo_appearance->insertItem(0, "Follow Operating System");
+    ui->combo_appearance->blockSignals(false);
+#elif __APPLE__
+    ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
+    ui->combo_appearance->setVisible(false);
+#endif
 
     mSettings = SettingsLocator::settings();
     loadSettings();
@@ -50,20 +61,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 //    initColorPage();
     ui->tabWidget->removeTab(3);
 
-    setModifiedStatus(false);
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
-
-    // Themes
-#ifdef __WIN32
-    ui->combo_appearance->insertItem(0, "Follow Operating System");
-#elif __APPLE__
-    ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
-    ui->combo_appearance->setVisible(false);
-#endif
-    ui->combo_appearance->setCurrentIndex(mSettings->appearance());
 
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
@@ -73,8 +72,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), mSettings, &StudioSettings::setAppearance);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -95,6 +92,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
+
+    setModifiedStatus(false);
 }
 
 void SettingsDialog::loadSettings()
@@ -109,8 +108,6 @@ void SettingsDialog::loadSettings()
     ui->cb_foregroundOnDemand->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
-//    ui->combo_studioTheme->setCurrentIndex(mSettings->syntaxSchemeIndex());
-//    ui->combo_studioTheme->setCurrentIndex(mSettings->studioSchemeIndex());
     ui->combo_appearance->setCurrentIndex(mSettings->appearance());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
@@ -189,8 +186,6 @@ void SettingsDialog::saveSettings()
     mSettings->setForegroundOnDemand(ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
-//    mSettings->setSyntaxSchemeIndex(ui->combo_syntaxTheme->currentIndex());
-//    mSettings->setStudioSchemeIndex(ui->combo_studioTheme->currentIndex());
     mSettings->setAppearance(ui->combo_appearance->currentIndex());
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
@@ -259,11 +254,15 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
     emit editorFontChanged(ui->fontComboBox->currentFont().family(), arg1);
 }
 
+void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
+{
+    mSettings->changeAppearance(index);
+}
+
 void SettingsDialog::schemeModified()
 {
     emit setModified();
     Scheme::instance()->invalidate();
-//    reloadColors();
     for (QWidget *wid: mColorWidgets) {
         static_cast<SchemeWidget*>(wid)->refresh();
     }
@@ -480,11 +479,6 @@ void SettingsDialog::initColorPage()
         connect(wid, &SchemeWidget::changed, this, &SettingsDialog::schemeModified);
         mColorWidgets.insert(slot1.at(i), wid);
     }
-}
-
-void SettingsDialog::reloadColors()
-{
-    mSettings->readScheme();
 }
 
 }

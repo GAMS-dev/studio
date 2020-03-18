@@ -164,6 +164,7 @@ public:
     int studioSchemeIndex() const;
     void setStudioSchemeIndex(int studioSchemeIndex);
 
+    void changeAppearance(int appearance);
     int appearance() const;
     void setAppearance(int appearance);
 

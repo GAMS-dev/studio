@@ -70,6 +70,8 @@ private slots:
     void on_sb_nrLogBackups_valueChanged(int arg1);
     void on_miroBrowseButton_clicked();
 
+    void on_combo_appearance_currentIndexChanged(int index);
+
 private:
     Ui::SettingsDialog *ui;
     StudioSettings *mSettings;
@@ -82,7 +84,6 @@ private:
     void loadSettings();
     void setModifiedStatus(bool status);
     void initColorPage();
-    void reloadColors();
     bool mMiroSettingsEnabled = true;
 
 };

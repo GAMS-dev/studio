@@ -605,9 +605,24 @@ int StudioSettings::appearance() const
     return mAppearance;
 }
 
+///
+/// \brief StudioSettings::setAppearance sets and saves the appearance
+/// \param appearance
+///
 void StudioSettings::setAppearance(int appearance)
 {
     mAppearance = appearance;
+    changeAppearance(appearance);
+}
+
+///
+/// \brief StudioSettings::changeAppearance sets the appearance without saving it into settings.
+/// Useful for previews
+/// \param appearance
+/// \return
+///
+void StudioSettings::changeAppearance(int appearance)
+{
     int pickedTheme = appearance;
 
     bool canFollowOS = false;
