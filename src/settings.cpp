@@ -621,7 +621,7 @@ void Settings::load(Scope scope)
             for (const QString &key : si.value()->allKeys()) {
                 QVariant var = si.value()->value(key);
                 if (var.isNull()) continue;
-                if (var.canConvert<QJsonObject>()) {
+                if (var.canConvert<QJsonObject>() || var.canConvert<QVariantMap>()) {
                     // copy all elements
                     QJsonObject joSrc = var.toJsonObject();
                     QJsonObject joDest = mData.value(si.key()).value(key).toJsonObject();
