@@ -174,7 +174,8 @@ void Scheme::initDefault()
 
     mColorSchemes[sNr].insert(Icon_Gray,                QColor(65,55,50));
     mColorSchemes[sNr].insert(Icon_Back,                QColor(dark_neutral));
-    mColorSchemes[sNr].insert(Disable_Back,             QColor(10,10,10));
+    mColorSchemes[sNr].insert(Disable_Back,             QColor(96,99,96));
+    mColorSchemes[sNr].insert(Active_Back,              QColor(205,245,255));
     mColorSchemes[sNr].insert(Normal_Red,               QColor(187,34,51));
     mColorSchemes[sNr].insert(Normal_Green,             QColor(102,170,102));
     mColorSchemes[sNr].insert(Normal_Blue,              QColor(68,153,238));
