@@ -130,7 +130,7 @@ public:
     QSize toSize(SettingsKey key) const;
     QPoint toPoint(SettingsKey key) const;
     QString toString(SettingsKey key) const { return value(key).toString(); }
-    QByteArray toByteArray(SettingsKey key) const { return value(key).toByteArray(); }
+    QByteArray toByteArray(SettingsKey key) const;
     QJsonObject toJsonObject(SettingsKey key) const;
     QJsonArray toJsonArray(SettingsKey key) const;
     void setBool(SettingsKey key, bool value) { setValue(key, value);}

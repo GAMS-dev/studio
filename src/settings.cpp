@@ -416,6 +416,12 @@ QPoint Settings::toPoint(SettingsKey key) const
     return stringToPoint(toString(key));
 }
 
+QByteArray Settings::toByteArray(SettingsKey key) const
+{
+    QString str = value(key).toString();
+    return QByteArray::fromHex(str.toLatin1());
+}
+
 QJsonObject Settings::toJsonObject(SettingsKey key) const
 {
     return value(key).toJsonObject();
@@ -532,7 +538,7 @@ bool Settings::addToJsonObject(QJsonObject &group, const QString &key, QVariant 
     case QMetaType::UInt:
     case QMetaType::Int: group[key] = value.toInt(); break;
     case QMetaType::Bool: group[key] = value.toBool(); break;
-    case QMetaType::QByteArray:
+    case QMetaType::QByteArray: group[key] = QString(value.toByteArray().toHex()); break;
     case QMetaType::QString: group[key] = value.toString(); break;
     case QMetaType::QJsonObject: group[key] = value.toJsonObject(); break;
     case QMetaType::QJsonArray: group[key] = value.toJsonArray(); break;
