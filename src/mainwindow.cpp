@@ -2027,12 +2027,16 @@ void MainWindow::on_actionStop_MIRO_triggered()
 
 void MainWindow::on_actionCreate_model_assembly_triggered()
 {
-    if (!mRecent.validRunGroup())
-        return;
+    QString location;
+    QString assemblyFile;
+    QStringList checkedFiles;
+    if (mRecent.validRunGroup()) {
+        location = mRecent.group->toRunGroup()->location();
+        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.mainModelName());
+        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.mainModelName(false));
+    }
 
-    auto assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.mainModelName());
-    auto checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.mainModelName(false));
-    miro::MiroModelAssemblyDialog dlg(mRecent.group->toRunGroup()->location(), this);
+    miro::MiroModelAssemblyDialog dlg(location, this);
     dlg.setSelectedFiles(checkedFiles);
     if (dlg.exec() == QDialog::Rejected)
         return;
