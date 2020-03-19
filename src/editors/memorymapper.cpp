@@ -46,7 +46,7 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     mMarksTail.resize(CErrorBound);
     // old
     QTextCharFormat fmt;
-    fmt.setForeground(QColor(165,165,165));
+    fmt.setForeground(QColor(125,125,125));
     mBaseFormat << fmt;
     // debug
     fmt = QTextCharFormat();
