@@ -2376,7 +2376,6 @@ void MainWindow::execute(QString commandLineStr,
                          std::unique_ptr<AbstractProcess> process,
                          ProjectFileNode* gmsFileNode)
 {
-    mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (!runGroup) {
@@ -2495,11 +2494,7 @@ void MainWindow::execute(QString commandLineStr,
 
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
-    if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
-        for (QWidget *wid: lstNode->file()->editors()) {
-            if (TextView *tv = ViewHelper::toTextView(wid)) tv->prepareRun();
-        }
-    }
+
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
 
