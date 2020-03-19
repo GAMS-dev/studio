@@ -1933,7 +1933,7 @@ void MainWindow::updateAndSaveSettings()
 
     settings->setSize(skWinSize, size());
     settings->setPoint(skWinPos, pos());
-    settings->setByteArray(skWinState, saveState().data());
+    settings->setByteArray(skWinState, saveState());
     settings->setBool(skWinMaximized, isMaximized());
 
     settings->setBool(skViewProject, projectViewVisibility());
