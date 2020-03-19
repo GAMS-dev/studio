@@ -21,6 +21,9 @@
 #include "settingslocator.h"
 #include "studiosettings.h"
 
+#include <QDataStream>
+#include <QIODevice>
+
 namespace gams {
 namespace studio {
 namespace option {

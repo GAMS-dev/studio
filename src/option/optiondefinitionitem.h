@@ -20,6 +20,7 @@
 #ifndef OPTIONDEFINITIONITEM_H
 #define OPTIONDEFINITIONITEM_H
 
+#include <QVariant>
 #include <QList>
 #include <QVector>
 
