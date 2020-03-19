@@ -47,7 +47,7 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
 
-    mSlotText.insert(Icon_Line,                 "Icon pen");
+    mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
     mSlotText.insert(Icon_Paper,                "Icon paper");
 
@@ -105,14 +105,14 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Line,                      QColor(51,68,85));
+    mColorSchemes[sNr].insert(Icon_Gray,                      QColor(170,150,130));
     mColorSchemes[sNr].insert(Icon_Back,                      QColor(51,68,85));
     mColorSchemes[sNr].insert(Icon_Paper,                     QColor(Qt::white));
-    mColorSchemes[sNr].insert(Disable_Line,                   QColor(170,170,170));
+    mColorSchemes[sNr].insert(Disable_Gray,                   QColor(180,180,175));
     mColorSchemes[sNr].insert(Disable_Back,                   QColor(170,170,170));
-    mColorSchemes[sNr].insert(Active_Line,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Active_Gray,                    QColor(54,122,195));
     mColorSchemes[sNr].insert(Active_Back,                    QColor(34,102,170));
-    mColorSchemes[sNr].insert(Select_Line,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Select_Gray,                    QColor(54,122,195));
     mColorSchemes[sNr].insert(Select_Back,                    QColor(34,102,170));
     mColorSchemes[sNr].insert(Normal_Red,                     QColor(187,0,0));
     mColorSchemes[sNr].insert(Normal_Green,                   QColor(52,134,25));
@@ -172,6 +172,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_assignValue,       Color(dark_assignment.lighter()));
     mColorSchemes[sNr].insert(Syntax_directiveBody,     Color(dark_highlight, fItalic));
 
+    mColorSchemes[sNr].insert(Icon_Gray,                QColor(65,55,50));
     mColorSchemes[sNr].insert(Icon_Back,                QColor(dark_neutral));
     mColorSchemes[sNr].insert(Disable_Back,             QColor(10,10,10));
     mColorSchemes[sNr].insert(Normal_Red,               QColor(187,34,51));
@@ -301,7 +302,7 @@ QByteArray Scheme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
 
 
     QHash<QString, QStringList> iconCode = mIconCodes.at(scope);
-    QHash<QString, QStringList>::const_iterator it = iconCode.constBegin(); // Icon_Line + Icon_Back
+    QHash<QString, QStringList>::const_iterator it = iconCode.constBegin(); // Icon_Gray + Icon_Back
     for ( ; it != iconCode.constEnd() ; ++it) {
         int start = data.indexOf("<style");
         while (start >= 0 && start < end) {
