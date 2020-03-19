@@ -64,7 +64,7 @@ void WpLabel::leaveEvent(QEvent *event)
 
 void WpLabel::updateMouseOverColor(bool hovered) {
     auto p = palette();
-    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::BrightText));
+    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::Base).lighter());
     setPalette(p);
 }
 

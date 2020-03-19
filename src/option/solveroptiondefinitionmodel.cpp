@@ -20,6 +20,7 @@
 #include "solveroptiondefinitionmodel.h"
 #include "settingslocator.h"
 #include "studiosettings.h"
+#include <QDataStream>
 
 #include <QDataStream>
 #include <QIODevice>

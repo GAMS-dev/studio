@@ -78,6 +78,7 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
+    colors/palettemanager.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
     editors/abstractedit.cpp \
@@ -215,6 +216,7 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
+    colors/palettemanager.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \
