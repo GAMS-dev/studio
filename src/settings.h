@@ -196,7 +196,6 @@ private:
 
     QVariant directValue(const Scope &scope, const QString &key) const;
     QVariant directValue(const Scope &scope, const QString &group, const QString &key) const;
-    QVariant directValue(const QJsonObject &group, const QString &key) const;
     bool setDirectValue(const Scope &scope, const QString &key, QVariant value);
     bool setDirectValue(const Scope &scope, const QString &group, const QString &key, QVariant value);
     bool addToJsonObject(QJsonObject &group, const QString &key, QVariant value);

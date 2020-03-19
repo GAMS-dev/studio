@@ -500,11 +500,6 @@ QVariant Settings::directValue(const Settings::Scope &scope, const QString &grou
     return jo.value(key);
 }
 
-QVariant Settings::directValue(const QJsonObject &group, const QString &key) const
-{
-    return group.value(key);
-}
-
 bool Settings::setDirectValue(const Settings::Scope &scope, const QString &key, QVariant value)
 {
     if (!mData.contains(scope)) // ensure that entry for the scope exists
@@ -520,7 +515,8 @@ bool Settings::setDirectValue(const Settings::Scope &scope, const QString &group
     if (!mData[scope].contains(group))
         mData[scope].insert(group, QJsonObject());
     QVariant varGroup = mData[scope].value(group);
-    if (!varGroup.canConvert<QJsonObject>()) return false;
+    if (!varGroup.canConvert<QJsonObject>() && !varGroup.canConvert<QVariantMap>())
+        return false;
     QJsonObject jo = varGroup.toJsonObject();
     if (!addToJsonObject(jo, key, value)) return false;
     mData[scope].insert(group, jo);
