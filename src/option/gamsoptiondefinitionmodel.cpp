@@ -19,7 +19,6 @@
  */
 #include "gamsoptiondefinitionmodel.h"
 #include <QDataStream>
-#include <QIODevice>
 
 namespace gams {
 namespace studio {

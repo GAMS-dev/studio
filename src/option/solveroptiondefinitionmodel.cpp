@@ -22,6 +22,9 @@
 #include <QDataStream>
 #include <QIODevice>
 
+#include <QDataStream>
+#include <QIODevice>
+
 namespace gams {
 namespace studio {
 namespace option {

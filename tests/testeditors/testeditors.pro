@@ -26,8 +26,8 @@ INCLUDEPATH += $$SRCPATH
 
 HEADERS += \
     testcodeedit.h \
-    $$SRCPATH\editors\editorhelper.h
+    $$SRCPATH/editors/editorhelper.h
 
 SOURCES += \
     testcodeedit.cpp \
-    $$SRCPATH\editors\editorhelper.cpp
+    $$SRCPATH/editors/editorhelper.cpp
