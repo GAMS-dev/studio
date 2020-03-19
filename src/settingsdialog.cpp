@@ -470,7 +470,7 @@ void SettingsDialog::initColorPage()
     box = ui->groupIconColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
     QVector<Scheme::ColorSlot> slot1;
-    slot1 = {Scheme::Icon_Gray, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
+    slot1 = {Scheme::Icon_Gray, Scheme::Disable_Gray, Scheme::Active_Gray, Scheme::Select_Gray,
             Scheme::Icon_Back, Scheme::Disable_Back, Scheme::Active_Back, Scheme::Select_Back};
     for (int i = 0; i < slot1.size(); ++i) {
         SchemeWidget *wid = new SchemeWidget(slot1.at(i), box, true);
