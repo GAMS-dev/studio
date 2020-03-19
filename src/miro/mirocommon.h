@@ -42,17 +42,22 @@ public:
     static QString path(const QString &configMiroPath);
 
     static QString assemblyFileName(const QString &modelName);
-    static QString assemblyFileName(const QString &modelLocation, const QString &modelName);
+
+    static QString assemblyFileName(const QString &modelLocation,
+                                    const QString &modelName);
+
     static QString deployFileName(const QString &modelName);
 
-    static QStringList unifiedAssemblyFileContent(const QString &assemblyFile, const QString &mainFile);
-    static bool writeAssemblyFile(const QString &assemblyFile, const QStringList &selectedFiles);
+    static QStringList unifiedAssemblyFileContent(const QString &assemblyFile,
+                                                  const QString &mainFile);
+
+    static bool writeAssemblyFile(const QString &assemblyFile,
+                                  const QStringList &selectedFiles);
 
 private:
     static bool exists(const QString &miro);
     static QString searchLocations(const QStringList &locations);
     static QStringList standardLocations();
-    static QStringList removeReduntantFiles(const QStringList dirs, const QStringList &files);
 };
 
 }

@@ -17,44 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTMIROCOMMON_H
-#define TESTMIROCOMMON_H
+#ifndef GAMS_STUDIO_NUMERICS_DOUBLEFORMATTER_H
+#define GAMS_STUDIO_NUMERICS_DOUBLEFORMATTER_H
 
-#include <QtTest/QTest>
+#include <QString>
 
-class TestMiroCommon : public QObject
+namespace gams {
+namespace studio {
+namespace numerics {
+
+class DoubleFormatter
 {
-    Q_OBJECT
 public:
-    TestMiroCommon(QObject *parent = nullptr);
-    ~TestMiroCommon();
-
-private slots:
-    void testPath_data();
-    void testPath();
-
-    void testAssemblyFileName_data();
-    void testAssemblyFileName();
-
-    void testAssemblyFileName2_data();
-    void testAssemblyFileName2();
-
-    void testDeployFileName_data();
-    void testDeployFileName();
-
-    void testUnifiedAssemblyFileContent_data();
-    void testUnifiedAssemblyFileContent();
-
-    void testWriteAssemblyFile_data();
-    void testWriteAssemblyFile();
+    enum Format {
+        g = 0,
+        f = 1,
+        e = 2
+    };
+    static int gFormatFull;
+    static QString format(double v, Format format, int precision, int squeeze);
 
 private:
-    QDir mCurDir;
-    QFile mFile1;
-    QFile mFile2;
-    QFile mUnifiedAssemblyFileContentFile;
-    QFile mUnifiedAssemblyFileContentFileData;
-
+    DoubleFormatter() {};
 };
 
-#endif // TESTMIROCOMMON_H
+} // namespace numerics
+} // namespace studio
+} // namespace gams
+
+#endif // GAMS_STUDIO_NUMERICS_DOUBLEFORMATTER_H

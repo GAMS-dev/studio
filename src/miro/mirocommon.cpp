@@ -21,6 +21,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QSet>
 #include <QTextStream>
 
 namespace gams {
@@ -46,7 +47,8 @@ QString MiroCommon::assemblyFileName(const QString &modelName)
     return modelName + "_files.txt";
 }
 
-QString MiroCommon::assemblyFileName(const QString &modelLocation, const QString &modelName)
+QString MiroCommon::assemblyFileName(const QString &modelLocation,
+                                     const QString &modelName)
 {
     return QDir(modelLocation).filePath(miro::MiroCommon::assemblyFileName(modelName));
 }
@@ -58,10 +60,10 @@ QString MiroCommon::deployFileName(const QString &modelName)
     return modelName+".miroapp";
 }
 
-QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile, const QString &mainFile)
+QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile,
+                                                   const QString &mainFile)
 {
-    QStringList directories;
-    QStringList selectedFiles;
+    QSet<QString> selectedFiles;
     QFileInfo fileInfo(assemblyFile);
     if (fileInfo.exists(assemblyFile)) {
         QFile file(assemblyFile);
@@ -70,21 +72,22 @@ QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile, 
                 auto line = file.readLine().trimmed();
                 if (line.isEmpty())
                     continue;
-                auto filePath = QDir(fileInfo.path()).absoluteFilePath(line);
-                if (QFileInfo(filePath).isDir())
-                    directories << line;
                 selectedFiles << line;
             }
             file.close();
         }
     } else {
-        selectedFiles << mainFile;
+        if (!mainFile.isEmpty())
+            selectedFiles << mainFile;
     }
-    return removeReduntantFiles(directories, selectedFiles);
+    return selectedFiles.toList();
 }
 
-bool MiroCommon::writeAssemblyFile(const QString &assemblyFile, const QStringList &selectedFiles)
+bool MiroCommon::writeAssemblyFile(const QString &assemblyFile,
+                                   const QStringList &selectedFiles)
 {
+    if (assemblyFile.isEmpty())
+        return false;
     QFile file(assemblyFile);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&file);
@@ -122,18 +125,6 @@ QStringList MiroCommon::standardLocations()
     return { R"(C:\Program Files\GAMS MIRO\GAMS MIRO.exe)",
              QDir::homePath() + R"(\AppData\Local\Programs\GAMS MIRO\GAMS MIRO.exe)" };
 #endif
-}
-
-QStringList MiroCommon::removeReduntantFiles(const QStringList dirs, const QStringList &files)
-{
-    auto validFiles = files;
-    for (auto dir: dirs) {
-        for (auto file: files) {
-            if (file.startsWith(dir))
-                validFiles.removeAll(file);
-        }
-    }
-    return validFiles << dirs;
 }
 
 }

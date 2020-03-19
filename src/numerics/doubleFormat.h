@@ -17,44 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTMIROCOMMON_H
-#define TESTMIROCOMMON_H
 
-#include <QtTest/QTest>
+/* doubleFormat.h
+ * Feb 2020: Formatting routines for displaying doubles
+ */
 
-class TestMiroCommon : public QObject
-{
-    Q_OBJECT
-public:
-    TestMiroCommon(QObject *parent = nullptr);
-    ~TestMiroCommon();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-private slots:
-    void testPath_data();
-    void testPath();
+char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen);
 
-    void testAssemblyFileName_data();
-    void testAssemblyFileName();
+char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen);
 
-    void testAssemblyFileName2_data();
-    void testAssemblyFileName2();
+char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen);
 
-    void testDeployFileName_data();
-    void testDeployFileName();
-
-    void testUnifiedAssemblyFileContent_data();
-    void testUnifiedAssemblyFileContent();
-
-    void testWriteAssemblyFile_data();
-    void testWriteAssemblyFile();
-
-private:
-    QDir mCurDir;
-    QFile mFile1;
-    QFile mFile2;
-    QFile mUnifiedAssemblyFileContentFile;
-    QFile mUnifiedAssemblyFileContentFileData;
-
+#ifdef __cplusplus
 };
-
-#endif // TESTMIROCOMMON_H
+#endif

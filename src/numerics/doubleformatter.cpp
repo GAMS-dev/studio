@@ -17,44 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTMIROCOMMON_H
-#define TESTMIROCOMMON_H
+#include "doubleformatter.h"
+#include "doubleFormat.h"
 
-#include <QtTest/QTest>
+namespace gams {
+namespace studio {
+namespace numerics {
 
-class TestMiroCommon : public QObject
+int DoubleFormatter::gFormatFull = 0;
+
+QString DoubleFormatter::format(double v, DoubleFormatter::Format format, int precision, int squeeze)
 {
-    Q_OBJECT
-public:
-    TestMiroCommon(QObject *parent = nullptr);
-    ~TestMiroCommon();
+    char outBuf[32];
+    int outLen;
+    char* p = nullptr;
+    if (format == Format::g)
+        p = x2gfmt(v, precision, squeeze, outBuf, &outLen);
+    else if (format == Format::f)
+        p = x2fixed(v, precision, squeeze, outBuf, &outLen);
+    else if (format == Format::e)
+        p = x2efmt(v, precision, squeeze, outBuf, &outLen);
+    if (!p)
+        return "FORMAT_ERROR";
+    else
+        return QString(p);
+}
 
-private slots:
-    void testPath_data();
-    void testPath();
-
-    void testAssemblyFileName_data();
-    void testAssemblyFileName();
-
-    void testAssemblyFileName2_data();
-    void testAssemblyFileName2();
-
-    void testDeployFileName_data();
-    void testDeployFileName();
-
-    void testUnifiedAssemblyFileContent_data();
-    void testUnifiedAssemblyFileContent();
-
-    void testWriteAssemblyFile_data();
-    void testWriteAssemblyFile();
-
-private:
-    QDir mCurDir;
-    QFile mFile1;
-    QFile mFile2;
-    QFile mUnifiedAssemblyFileContentFile;
-    QFile mUnifiedAssemblyFileContentFileData;
-
-};
-
-#endif // TESTMIROCOMMON_H
+} // namespace numerics
+} // namespace studio
+} // namespace gams
