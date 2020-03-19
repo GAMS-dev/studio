@@ -2696,6 +2696,7 @@ void MainWindow::initIcons()
     ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
     ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
     ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
+    ui->actionClose->setIcon(Scheme::icon(":/%1/remove"));
     ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
     ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
     ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
@@ -2723,6 +2724,9 @@ void MainWindow::initIcons()
     ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
     ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
     ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
+    ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
+    ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
+    ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
 }
 
 void MainWindow::ensureInScreen()

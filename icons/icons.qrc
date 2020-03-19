@@ -2,7 +2,6 @@
     <qresource prefix="/img">
         <file alias="bookmark">bookmark.svg</file>
         <file alias="database">database.svg</file>
-        <file alias="delete">remove.svg</file>
         <file alias="delete-all">trash.svg</file>
         <file alias="err-ref">err-ref.svg</file>
         <file alias="err-ref-missing">err-ref-missing.svg</file>
