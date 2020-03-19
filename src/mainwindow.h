@@ -372,7 +372,6 @@ private:
     QFont createEditorFont(const QString &fontFamily, int pointSize);
 
 private:
-    QTime mTestTimer;
     Ui::MainWindow *ui;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;

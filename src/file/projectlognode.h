@@ -95,7 +95,6 @@ private:
     QTimer mLogCloser;
     bool mLogFinished = false;
     int mRepaintCount = -1;
-    QVector<QTextCharFormat> mFormat;
     int mErrorCount = 0;
 
     LogParser::MarksBlockState *mbState;
