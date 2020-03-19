@@ -172,6 +172,10 @@ void SettingsDialog::saveSettings()
 {
     // general page
     mSettings->setString(skDefaultWorkspace, ui->txt_workspace->text());
+    QDir workspace(ui->txt_workspace->text());
+    if (!workspace.exists())
+        workspace.mkpath(".");
+
     mSettings->setBool(skSkipWelcomePage, ui->cb_skipwelcome->isChecked());
     mSettings->setBool(skRestoreTabs, ui->cb_restoretabs->isChecked());
     mSettings->setBool(skAutosaveOnRun, ui->cb_autosave->isChecked());
