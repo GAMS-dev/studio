@@ -59,8 +59,8 @@ private:
 
     QTextCodec *mCodec;
 
-    QSharedPointer<Reference> mReference = nullptr;
-    QSharedPointer<ReferenceTabStyle> mRefTabStyle = nullptr;
+    QScopedPointer<Reference> mReference;
+    QScopedPointer<ReferenceTabStyle> mRefTabStyle;
 };
 
 } // namespace reference

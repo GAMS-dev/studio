@@ -25,7 +25,7 @@ private:
     QList<QPalette> mStyles;
     static PaletteManager* mInstance;
     int mActivePalette = -1;
-    QString mDefaultSyle;
+    QString mDefaultStyle;
 
     void applyPalette(int i);
 };

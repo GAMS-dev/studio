@@ -29,7 +29,7 @@ namespace reference {
 class ReferenceTabStyle : public QProxyStyle
 {
 public:
-    ReferenceTabStyle(QStyle *style = nullptr);
+    ReferenceTabStyle(const QString &style);
 
     virtual QSize sizeFromContents(ContentsType type, const QStyleOption *option,
                            const QSize &size, const QWidget *widget) const override;

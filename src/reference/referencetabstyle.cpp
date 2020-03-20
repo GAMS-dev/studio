@@ -25,11 +25,9 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-ReferenceTabStyle::ReferenceTabStyle(QStyle *style)
+ReferenceTabStyle::ReferenceTabStyle(const QString &style)
     : QProxyStyle(style)
-{
-
-}
+{ }
 
 QSize ReferenceTabStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
 {
