@@ -48,6 +48,7 @@ void WpLabel::enterEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
+    mActive = true;
 
     setFrameShape(QFrame::Box);
     updateMouseOverColor(true);
@@ -57,6 +58,7 @@ void WpLabel::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
+    mActive = false;
 
     setFrameShape(QFrame::StyledPanel);
     updateMouseOverColor(false);
@@ -80,7 +82,7 @@ void WpLabel::paintEvent(QPaintEvent *event)
             rect.moveLeft(mAlignment.testFlag(Qt::AlignRight) ? indent()-rect.width() : (indent()-rect.width())/2);
     if (!mAlignment.testFlag(Qt::AlignTop))
             rect.moveTop(mAlignment.testFlag(Qt::AlignBottom) ? cHei-rect.height() : (cHei-rect.height())/2);
-    mIcon.paint(&painter, rect, mAlignment);
+    mIcon.paint(&painter, rect, mAlignment, mActive ? QIcon::Active : QIcon::Mode::Normal);
 }
 
 void WpLabel::setInactive(bool inactive)
