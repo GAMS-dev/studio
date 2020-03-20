@@ -11,7 +11,7 @@ PaletteManager* PaletteManager::mInstance = nullptr;
 PaletteManager::PaletteManager()
 {
     // save original style for light theme (windows)
-    mDefaultSyle = QApplication::style()->objectName();
+    mDefaultStyle = QApplication::style()->objectName();
 
     // Nr1: default style
     mStyles.append(QApplication::palette());
@@ -79,7 +79,7 @@ void PaletteManager::applyPalette(int i)
     if (i == 1)
         QApplication::setStyle(QStyleFactory::create("Fusion")); // this needs to be set so everything turns dark
     else
-        QApplication::setStyle(QStyleFactory::create(mDefaultSyle));
+        QApplication::setStyle(QStyleFactory::create(mDefaultStyle));
 #endif
     QApplication::setPalette(p);
 }

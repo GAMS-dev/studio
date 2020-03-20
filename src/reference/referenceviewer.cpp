@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QTabBar>
@@ -39,10 +38,9 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     ui(new Ui::ReferenceViewer),
     mCodec(codec),
     mReference(new Reference(referenceFile, codec)),
-    mRefTabStyle(QSharedPointer<ReferenceTabStyle>(new ReferenceTabStyle(QApplication::style()), &QObject::deleteLater))
+    mRefTabStyle(new ReferenceTabStyle(QApplication::style()->objectName()))
 {
     ui->setupUi(this);
-
     ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
 
     SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unknown, this);
