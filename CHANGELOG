@@ -1,3 +1,25 @@
+Version 0.14.6
+==================
+## General
+- **introduced Dark Theme for Windows and Linux** in Settings > Editor
+- **changed shortcut layout**:
+    - changed focus Project Explorer to: *Ctrl+1*
+    - changed focus Editor to: *Ctrl+2*
+    - changed focus Parameter Editor to: *Ctrl+3*
+    - changed focus Tab Browser to: *Ctrl+4*
+    - changed focus Process Log to: *Ctrl+5*
+    - reverted Model Library Explorer back to: *F6*
+    - reverted Settings back to: *F7*
+    - changed: Run MIRO base mode to: *F8*
+    - changed: Run MIRO hypercube mode to: *Shift+F8*
+    - changed: Run MIRO configuration mode to: *Shift+F7*
+- fixed rendering blurry MIRO icon
+- improved strategy to find GAMS installation on macOS
+- fixed crash in GDX table view when table contained no data
+- improved numerical formatting in GDX Viewer
+- improved GDX value filter widget
+- improved behavior of MIRO Assembly File dialog
+
 Version 0.14.5
 ==================
 ## General
