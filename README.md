@@ -42,3 +42,11 @@ GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api
 ```
 
 Then perform a 'Build All' operation (Build->Build All) to build the project. Finally, the GAMS Studio can be executed by triggering Run button or pressing 'Ctrl+R'.
+
+# Dependencies and Licenses
+
+| Dependency | License |
+| ------ | ------ |
+| [Qt 5](qt.io) | [GNU Lesser General Public License (LGPL)](https://doc.qt.io/qt-5/lgpl.html) |
+| dtoaLoc | [License](src/numerics/README.md) |
+

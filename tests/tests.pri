@@ -29,9 +29,14 @@ DESTDIR = ../bin
 include(../gamsdependency.pri)
 
 macx {
-    HEADERS += ../../platform/macos/macospathfinder.h
+    HEADERS += ../../platform/macos/macospathfinder.h   \
+               ../../platform/macos/macoscocoabridge.h
 
     SOURCES += ../../platform/macos/macospathfinder.cpp
+
+    OBJECTIVE_SOURCES += ../../platform/macos/macoscocoabridge.mm
+
+    LIBS += -framework AppKit
 }
 unix {
     LIBS += -ldl

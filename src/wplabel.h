@@ -58,6 +58,7 @@ private:
     QString mContent;
     QString mLink;
     bool mInactive = false;
+    bool mActive = false;
     QIcon mIcon;
     QSize mIconSize;
     Qt::Alignment mAlignment = Qt::AlignCenter;

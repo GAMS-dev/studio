@@ -17,24 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MACOSCOCOABRIDGE_H
-#define MACOSCOCOABRIDGE_H
 
-#include <QString>
+/* doubleFormat.h
+ * Feb 2020: Formatting routines for displaying doubles
+ */
 
-class MacOSCocoaBridge
-{
-private:
-    MacOSCocoaBridge() {}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-public:
-    static void disableDictationMenuItem(bool flag);
-    static void disableCharacterPaletteMenuItem(bool flag);
-    static void setAllowsAutomaticWindowTabbing(bool flag);
-    static void setFullScreenMenuItemEverywhere(bool flag);
-    static bool isDarkMode();
+char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen);
 
-    static QString bundlePath();
+char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen);
+
+char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen);
+
+#ifdef __cplusplus
 };
-
-#endif // MACOSCOCOABRIDGE_H
+#endif

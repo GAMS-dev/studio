@@ -22,12 +22,17 @@
 #include <QMessageBox>
 #include "mainwindow.h"
 #include "scheme.h"
+#include "colors/palettemanager.h"
 #include "settingsdialog.h"
 #include "studiosettings.h"
 #include "settingslocator.h"
 #include "ui_settingsdialog.h"
 #include "miro/mirocommon.h"
 #include "schemewidget.h"
+
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
 
 namespace gams {
 namespace studio {
@@ -37,25 +42,24 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SettingsDialog), mMain(parent)
 {
     ui->setupUi(this);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    // Themes
+#ifdef _WIN32
+    ui->combo_appearance->blockSignals(true);
+    ui->combo_appearance->insertItem(0, "Follow Operating System");
+    ui->combo_appearance->blockSignals(false);
+#elif __APPLE__
+    ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
+    ui->combo_appearance->setVisible(false);
+#endif
 
     mSettings = SettingsLocator::settings();
-    ui->tabWidget->setCurrentIndex(0);
-
-    // load from settings to UI
+    loadSettings();
 
     // TODO(JM) temporarily removed
 //    initColorPage();
     ui->tabWidget->removeTab(3);
-
-    loadSettings();
-
-    setModifiedStatus(false);
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-
-//    ui->combo_editorTheme->addItems(Scheme::instance()->schemes());
-//    ui->combo_editorTheme->setCurrentIndex(Scheme::instance()->activeScheme());
-    ui->label_11->setVisible(false);
-    ui->combo_editorTheme->setVisible(false);
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
@@ -67,9 +71,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->cb_bringontop, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_editorTheme, QOverload<int>::of(&QComboBox::currentIndexChanged), Scheme::instance(), QOverload<int>::of(&Scheme::setActiveScheme));
+    connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -90,6 +93,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
+
+    setModifiedStatus(false);
 }
 
 void SettingsDialog::loadSettings()
@@ -101,10 +106,10 @@ void SettingsDialog::loadSettings()
     ui->cb_autosave->setChecked(mSettings->autosaveOnRun());
     ui->cb_openlst->setChecked(mSettings->openLst());
     ui->cb_jumptoerror->setChecked(mSettings->jumpToError());
-    ui->cb_bringontop->setChecked(mSettings->foregroundOnDemand());
+    ui->cb_foregroundOnDemand->setChecked(mSettings->foregroundOnDemand());
 
     // editor tab page
-    ui->combo_editorTheme->setCurrentIndex(mSettings->colorSchemeIndex());
+    ui->combo_appearance->setCurrentIndex(mSettings->appearance());
     ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
     ui->sb_fontsize->setValue(mSettings->fontSize());
     ui->cb_showlinenr->setChecked(mSettings->showLineNr());
@@ -179,10 +184,10 @@ void SettingsDialog::saveSettings()
     mSettings->setAutosaveOnRun(ui->cb_autosave->isChecked());
     mSettings->setOpenLst(ui->cb_openlst->isChecked());
     mSettings->setJumpToError(ui->cb_jumptoerror->isChecked());
-    mSettings->setForegroundOnDemand(ui->cb_bringontop->isChecked());
+    mSettings->setForegroundOnDemand(ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
-    mSettings->setColorSchemeIndex(ui->combo_editorTheme->currentIndex());
+    mSettings->setAppearance(ui->combo_appearance->currentIndex());
     mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
     mSettings->setFontSize(ui->sb_fontsize->value());
     mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
@@ -205,6 +210,7 @@ void SettingsDialog::saveSettings()
 
     // misc page
     mSettings->setHistorySize(ui->sb_historySize->value());
+
     // solver option editor
     mSettings->setOverrideExistingOption(ui->overrideExistingOptionCheckBox->isChecked());
     mSettings->setAddCommentDescriptionAboveOption(ui->addCommentAboveCheckBox->isChecked());
@@ -249,11 +255,15 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
     emit editorFontChanged(ui->fontComboBox->currentFont().family(), arg1);
 }
 
+void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
+{
+    mSettings->changeAppearance(index);
+}
+
 void SettingsDialog::schemeModified()
 {
     emit setModified();
     Scheme::instance()->invalidate();
-//    reloadColors();
     for (QWidget *wid: mColorWidgets) {
         static_cast<SchemeWidget*>(wid)->refresh();
     }
@@ -461,7 +471,7 @@ void SettingsDialog::initColorPage()
     box = ui->groupIconColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
     QVector<Scheme::ColorSlot> slot1;
-    slot1 = {Scheme::Icon_Line, Scheme::Disable_Line, Scheme::Active_Line, Scheme::Select_Line,
+    slot1 = {Scheme::Icon_Gray, Scheme::Disable_Gray, Scheme::Active_Gray, Scheme::Select_Gray,
             Scheme::Icon_Back, Scheme::Disable_Back, Scheme::Active_Back, Scheme::Select_Back};
     for (int i = 0; i < slot1.size(); ++i) {
         SchemeWidget *wid = new SchemeWidget(slot1.at(i), box, true);
@@ -472,21 +482,5 @@ void SettingsDialog::initColorPage()
     }
 }
 
-void SettingsDialog::reloadColors()
-{
-    mSettings->readScheme();
-}
-
-void SettingsDialog::on_cbSchemes_currentIndexChanged(int index)
-{
-    if (!mInitializing) {
-        Scheme::instance()->setActiveScheme(index);
-        schemeModified();
-    }
-}
-
-
 }
 }
-
-

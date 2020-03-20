@@ -122,7 +122,7 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem &&  item->modified())
-            return  QVariant::fromValue(Scheme::color(Scheme::Normal_Green));
+            return  QVariant::fromValue(Scheme::color(Scheme::Normal_Green, Scheme::StudioScope));
         else
             return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
     }

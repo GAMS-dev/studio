@@ -17,24 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MACOSCOCOABRIDGE_H
-#define MACOSCOCOABRIDGE_H
+#include "doubleformatter.h"
+#include "doubleFormat.h"
 
-#include <QString>
+namespace gams {
+namespace studio {
+namespace numerics {
 
-class MacOSCocoaBridge
+int DoubleFormatter::gFormatFull = 0;
+
+QString DoubleFormatter::format(double v, DoubleFormatter::Format format, int precision, int squeeze)
 {
-private:
-    MacOSCocoaBridge() {}
+    char outBuf[32];
+    int outLen;
+    char* p = nullptr;
+    if (format == Format::g)
+        p = x2gfmt(v, precision, squeeze, outBuf, &outLen);
+    else if (format == Format::f)
+        p = x2fixed(v, precision, squeeze, outBuf, &outLen);
+    else if (format == Format::e)
+        p = x2efmt(v, precision, squeeze, outBuf, &outLen);
+    if (!p)
+        return "FORMAT_ERROR";
+    else
+        return QString(p);
+}
 
-public:
-    static void disableDictationMenuItem(bool flag);
-    static void disableCharacterPaletteMenuItem(bool flag);
-    static void setAllowsAutomaticWindowTabbing(bool flag);
-    static void setFullScreenMenuItemEverywhere(bool flag);
-    static bool isDarkMode();
-
-    static QString bundlePath();
-};
-
-#endif // MACOSCOCOABRIDGE_H
+} // namespace numerics
+} // namespace studio
+} // namespace gams

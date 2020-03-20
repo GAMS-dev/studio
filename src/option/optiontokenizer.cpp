@@ -83,7 +83,7 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
     mInvalidValueFormat.setForeground(Scheme::color(Scheme::Normal_Red));
 
     mDuplicateOptionFormat.setFontItalic(true);
-    mDuplicateOptionFormat.setForeground(Scheme::color(Scheme::Normal_Blue));
+    mDuplicateOptionFormat.setForeground(Scheme::color(Scheme::Normal_Yellow));
 
     mDeprecateOptionFormat.setFontItalic(true);
     mDeprecateOptionFormat.setBackground(Qt::lightGray);

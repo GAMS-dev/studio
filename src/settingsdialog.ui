@@ -6,14 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>532</width>
-    <height>466</height>
+    <width>563</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_10">
+   <item row="1" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -26,7 +39,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -66,7 +79,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="cb_bringontop">
+           <widget class="QCheckBox" name="cb_foregroundOnDemand">
             <property name="text">
              <string>Raise GAMS Studio when opening a file</string>
             </property>
@@ -213,28 +226,55 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="5" column="2">
-           <widget class="QCheckBox" name="cb_highlightcurrent">
-            <property name="enabled">
-             <bool>true</bool>
+           <widget class="QSpinBox" name="sb_fontsize">
+            <property name="minimum">
+             <number>5</number>
             </property>
+            <property name="maximum">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>12</number>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel" name="label_tabsize">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Highlight current line</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
+             <string>Tab stop size</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QComboBox" name="combo_editorTheme"/>
-          </item>
           <item row="4" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Font</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="2">
+           <widget class="QSpinBox" name="sb_tabsize">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
            <widget class="QCheckBox" name="cb_autoindent">
             <property name="enabled">
              <bool>true</bool>
@@ -256,56 +296,17 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
-           <widget class="QLabel" name="label_3">
+          <item row="6" column="2">
+           <widget class="QCheckBox" name="cb_autoclose">
             <property name="text">
-             <string>Font Size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_tabsize">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Tab stop size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>Editor Theme</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QCheckBox" name="cb_linewrap_editor">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Enable line wrapping in editor</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
+             <string>Auto close opening brackets and quotes</string>
             </property>
             <property name="checked">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="6" column="2">
+          <item row="9" column="2">
            <widget class="QCheckBox" name="cb_highlightUnderCursor">
             <property name="enabled">
              <bool>true</bool>
@@ -327,53 +328,43 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QFontComboBox" name="fontComboBox">
-            <property name="fontFilters">
-             <set>QFontComboBox::MonospacedFonts</set>
-            </property>
-            <property name="currentFont">
-             <font>
-              <family>Source Code Pro</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QSpinBox" name="sb_tabsize">
+          <item row="7" column="0">
+           <widget class="QCheckBox" name="cb_linewrap_editor">
             <property name="enabled">
              <bool>true</bool>
             </property>
-            <property name="minimum">
-             <number>1</number>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-            <property name="maximum">
-             <number>50</number>
+            <property name="text">
+             <string>Enable line wrapping in editor</string>
             </property>
-            <property name="value">
-             <number>4</number>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
           <item row="4" column="2">
-           <widget class="QCheckBox" name="cb_autoclose">
+           <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Auto close opening brackets and quotes</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
+             <string>Font Size</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_2">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Font</string>
+             <string>Studio Appearance</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="9" column="0">
            <widget class="QCheckBox" name="cb_showlinenr">
             <property name="enabled">
              <bool>true</bool>
@@ -395,17 +386,50 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
-           <widget class="QSpinBox" name="sb_fontsize">
-            <property name="minimum">
-             <number>5</number>
+          <item row="7" column="2">
+           <widget class="QCheckBox" name="cb_highlightcurrent">
+            <property name="enabled">
+             <bool>true</bool>
             </property>
-            <property name="maximum">
-             <number>50</number>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-            <property name="value">
-             <number>12</number>
+            <property name="text">
+             <string>Highlight current line</string>
             </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QFontComboBox" name="fontComboBox">
+            <property name="fontFilters">
+             <set>QFontComboBox::MonospacedFonts</set>
+            </property>
+            <property name="currentFont">
+             <font>
+              <family>Source Code Pro</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QComboBox" name="combo_appearance">
+            <item>
+             <property name="text">
+              <string>Light</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Dark</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -840,8 +864,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>490</width>
-            <height>69</height>
+            <width>523</width>
+            <height>68</height>
            </rect>
           </property>
           <attribute name="label">
@@ -853,8 +877,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">
@@ -911,7 +935,7 @@
             <property name="sizeHint" stdset="0">
              <size>
               <width>40</width>
-              <height>20</height>
+              <height>1</height>
              </size>
             </property>
            </spacer>
@@ -1021,19 +1045,6 @@
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-     <property name="centerButtons">
-      <bool>false</bool>
-     </property>
     </widget>
    </item>
   </layout>

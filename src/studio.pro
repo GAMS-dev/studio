@@ -78,6 +78,7 @@ SOURCES += \
     abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
+    colors/palettemanager.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
     editors/abstractedit.cpp \
@@ -150,6 +151,9 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    numerics/doubleFormat.c \
+    numerics/doubleformatter.cpp \
+    numerics/dtoaLoc.c \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/definitionitemdelegate.cpp \
@@ -212,6 +216,7 @@ HEADERS += \
     abstractprocess.h \
     application.h \
     autosavehandler.h \
+    colors/palettemanager.h \
     commandlineparser.h \
     common.h \
     commonpaths.h \
@@ -286,6 +291,9 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    numerics/doubleFormat.h \
+    numerics/doubleformatter.h \
+    numerics/dtoaLoc.h \
     option/addoptionheaderview.h \
     option/commandline.h \
     option/definitionitemdelegate.h \

@@ -25,6 +25,7 @@
 #include <QTableView>
 
 #include "gdxcc.h"
+#include "numerics/doubleformatter.h"
 
 class QMutex;
 
@@ -46,7 +47,6 @@ public:
     explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr,
                        GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
     ~GdxSymbol() override;
-    static int maxPrecision;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -92,7 +92,7 @@ public:
 
     int filterColumnCount();
 
-    static QString formatNumericalValue(double val, int precision, bool squeezeTrailingZeroes);
+    void setNumericalFormat(const numerics::DoubleFormatter::Format &numericalFormat);
 
 signals:
     void loadFinished();
@@ -152,6 +152,7 @@ private:
     bool mFilterHasChanged = false;
 
     int mNumericalPrecision = 6;
+    numerics::DoubleFormatter::Format mNumericalFormat = numerics::DoubleFormatter::g;
     bool mSqueezeTrailingZeroes = true;
 
     std::vector<ValueFilter*> mValueFilters;

@@ -32,8 +32,6 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-int GdxSymbol::maxPrecision = 15;
-
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
 {
@@ -369,33 +367,10 @@ double GdxSymbol::specVal2SortVal(double val)
         return val; // should be an acronym
 }
 
-QString GdxSymbol::formatNumericalValue(double val, int precision, bool squeezeTrailingZeroes)
-{
-    QString strFullPrec = QString::number(val, 'g', maxPrecision);
-    QString str = QString::number(val, 'f', precision);
-
-    if (strFullPrec.contains('e'))
-        str = QString::number(str.toDouble(), 'g', precision);
-
-    if (squeezeTrailingZeroes) {
-        if (str.contains(QLocale::c().decimalPoint())) {
-            while (str.back() == '0') // remove trailing zeroes
-                str.chop(1);
-            if (str.back() == QLocale::c().decimalPoint()) // additionally remove the decimal separator
-                str.chop(1);
-        }
-    }
-    return str;
-}
-
 QVariant GdxSymbol::formatValue(double val) const
 {
-    if (val<GMS_SV_UNDEF) {
-        int prec = mNumericalPrecision;
-        if (prec == -1) // Max
-            prec = maxPrecision;
-        return formatNumericalValue(val, prec, mSqueezeTrailingZeroes);
-    }
+    if (val<GMS_SV_UNDEF)
+        return numerics::DoubleFormatter::format(val, mNumericalFormat, mNumericalPrecision, mSqueezeTrailingZeroes);
     if (val == GMS_SV_UNDEF)
         return "UNDF";
     if (val == GMS_SV_NA)
@@ -429,6 +404,11 @@ void GdxSymbol::initNumericalBounds()
             mMaxDouble[i] = INT_MIN;
         }
     }
+}
+
+void GdxSymbol::setNumericalFormat(const numerics::DoubleFormatter::Format &numericalFormat)
+{
+    mNumericalFormat = numericalFormat;
 }
 
 int GdxSymbol::filterColumnCount()

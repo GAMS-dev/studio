@@ -35,6 +35,8 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
         QStringList header;
         if (orientation == Qt::Horizontal) {
             if (mNeedDummyColumn) {
+                if (mNeedDummyRow)
+                    return "No Data";
                 if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_PAR)
                     header << "Value";
                 else
@@ -79,8 +81,11 @@ int TableViewModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    if (mNeedDummyRow)
+    if (mNeedDummyRow) {
+        if (mNeedDummyColumn) //table is empty
+            return 0;
         return 1;
+    }
     return mTvRowHeaders.size();
 }
 

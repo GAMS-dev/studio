@@ -47,7 +47,7 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
 
-    mSlotText.insert(Icon_Line,                 "Icon pen");
+    mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
     mSlotText.insert(Icon_Paper,                "Icon paper");
 
@@ -72,8 +72,11 @@ void Scheme::initDefault()
     mColorSchemes.clear();
     mSchemeNames.clear();
 
-    // Add and switch to first color scheme
-    mActiveScheme = 0;
+    // default to first color scheme
+    mScopeScheme.insert(StudioScope, 0);
+    mScopeScheme.insert(EditorScope, 0);
+
+    // Add first color scheme
     int sNr = 0;
     mColorSchemes << ColorScheme();
     mSchemeNames << "Light";
@@ -102,18 +105,19 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
     mColorSchemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
-    mColorSchemes[sNr].insert(Icon_Line,                      QColor(51,68,85));
+    mColorSchemes[sNr].insert(Icon_Gray,                      QColor(170,150,130));
     mColorSchemes[sNr].insert(Icon_Back,                      QColor(51,68,85));
     mColorSchemes[sNr].insert(Icon_Paper,                     QColor(Qt::white));
-    mColorSchemes[sNr].insert(Disable_Line,                   QColor(170,170,170));
+    mColorSchemes[sNr].insert(Disable_Gray,                   QColor(180,180,175));
     mColorSchemes[sNr].insert(Disable_Back,                   QColor(170,170,170));
-    mColorSchemes[sNr].insert(Active_Line,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Active_Gray,                    QColor(54,122,195));
     mColorSchemes[sNr].insert(Active_Back,                    QColor(34,102,170));
-    mColorSchemes[sNr].insert(Select_Line,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Select_Gray,                    QColor(54,122,195));
     mColorSchemes[sNr].insert(Select_Back,                    QColor(34,102,170));
     mColorSchemes[sNr].insert(Normal_Red,                     QColor(187,0,0));
     mColorSchemes[sNr].insert(Normal_Green,                   QColor(52,134,25));
     mColorSchemes[sNr].insert(Normal_Blue,                    QColor(34,102,170));
+    mColorSchemes[sNr].insert(Normal_Yellow,                  QColor(Qt::darkYellow));
 
     mColorSchemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorSchemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
@@ -139,7 +143,7 @@ void Scheme::initDefault()
     QColor dark_highlight(243,150,25);      //QColor(243,150,25);
     QColor dark_id(153,240,255);            //QColor(153,240,255);
     QColor dark_assignment(144,226,149);    //QColor(144,226,149);
-    QColor dark_unobstrusive(191, 195, 186);//QColor(191,195,186);
+    QColor dark_unobstrusive(125,125,125);  //QColor(125,125,125)
     QColor dark_neutral(223,224,223);       //QColor(223,224,223);
 
     mColorSchemes[sNr].insert(Edit_text,                Color(dark_neutral));
@@ -168,8 +172,10 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Syntax_assignValue,       Color(dark_assignment.lighter()));
     mColorSchemes[sNr].insert(Syntax_directiveBody,     Color(dark_highlight, fItalic));
 
-    mColorSchemes[sNr].insert(Icon_Back,                QColor(dark_neutral));
-    mColorSchemes[sNr].insert(Disable_Back,             QColor(51,68,85));
+    mColorSchemes[sNr].insert(Icon_Gray,                QColor(65,55,50));
+    mColorSchemes[sNr].insert(Icon_Back,                QColor(220,220,220));
+    mColorSchemes[sNr].insert(Active_Back,              QColor(Qt::white));
+    mColorSchemes[sNr].insert(Disable_Back,             QColor(96,99,96));
     mColorSchemes[sNr].insert(Normal_Red,               QColor(187,34,51));
     mColorSchemes[sNr].insert(Normal_Green,             QColor(102,170,102));
     mColorSchemes[sNr].insert(Normal_Blue,              QColor(68,153,238));
@@ -182,23 +188,23 @@ QStringList Scheme::schemes()
     return mSchemeNames;
 }
 
-int Scheme::setActiveScheme(QString schemeName)
+int Scheme::setActiveScheme(QString schemeName, Scope scope)
 {
     int scheme = mSchemeNames.indexOf(schemeName);
-    return setActiveScheme(scheme);
+    return setActiveScheme(scheme, scope);
 }
 
-int Scheme::setActiveScheme(int scheme)
+int Scheme::setActiveScheme(int scheme, Scope scope)
 {
     if (scheme < 0 || scheme >= mSchemeNames.size()) return -1;
-    mActiveScheme = scheme;
+    mScopeScheme.insert(scope, scheme);
     invalidate();
-    return mActiveScheme;
+    return mScopeScheme.value(scope);
 }
 
-int Scheme::activeScheme() const
+int Scheme::activeScheme(Scope scope) const
 {
-    return mActiveScheme;
+    return mScopeScheme.value(scope);
 }
 
 void Scheme::setIconSet(Scheme::IconSet iconSet)
@@ -208,6 +214,16 @@ void Scheme::setIconSet(Scheme::IconSet iconSet)
     case SolidIcons: mIconSet = "solid"; break;
     }
     invalidate();
+}
+
+QList<Scheme::Scope> Scheme::scopes()
+{
+    QList<Scheme::Scope> res;
+    QMetaEnum meta = QMetaEnum::fromType<Scheme::Scope>();
+    for (int i = 0; i < meta.keyCount(); ++i) {
+        res << Scheme::Scope(meta.value(i));
+    }
+    return res;
 }
 
 QString Scheme::name(Scheme::ColorSlot slot)
@@ -233,44 +249,48 @@ Scheme::ColorSlot Scheme::slot(QString name)
     return ColorSlot(value);
 }
 
-QHash<QString, QStringList> Scheme::iconCodes() const
+QList<QHash<QString, QStringList>> Scheme::iconCodes() const
 {
-    QHash<QString, QStringList> res;
-    const ColorScheme &scheme = mColorSchemes.at(mActiveScheme);
-    for (ColorSlot &slot: scheme.keys()) {
-        QString slotName = name(slot);
-        if (slotName.startsWith("Icon_")) {
-            QString key = slotName.mid(5, slotName.length()-5);
-            res.insert(key, QStringList());
-            for (int i = 0 ; i < 4 ; ++i)
-                res[key] << scheme.value(slot).color.name();
-            res[key] << scheme.value(Normal_Red).color.name();
-            res[key] << scheme.value(Normal_Green).color.name();
-            res[key] << scheme.value(Normal_Blue).color.name();
+    QList<QHash<QString, QStringList>> res;
+    for (const Scope &scope: scopes()) {
+        QHash<QString, QStringList> set;
+        const ColorScheme &scheme = mColorSchemes.at(mScopeScheme.value(scope));
+        for (ColorSlot &slot: scheme.keys()) {
+            QString slotName = name(slot);
+            if (slotName.startsWith("Icon_")) {
+                QString key = slotName.mid(5, slotName.length()-5);
+                set.insert(key, QStringList());
+                for (int i = 0 ; i < 4 ; ++i)
+                    set[key] << scheme.value(slot).color.name();
+                set[key] << scheme.value(Normal_Red).color.name();
+                set[key] << scheme.value(Normal_Green).color.name();
+                set[key] << scheme.value(Normal_Blue).color.name();
+            }
         }
-    }
-    for (ColorSlot &slot: scheme.keys()) {
-        QString slotName = name(slot);
-        if (slotName.startsWith("Disable_")) {
-            QString key = slotName.mid(8, slotName.length()-8);
-            if (res.contains(key))
-                res[key].replace(1, scheme.value(slot).color.name());
+        for (ColorSlot &slot: scheme.keys()) {
+            QString slotName = name(slot);
+            if (slotName.startsWith("Disable_")) {
+                QString key = slotName.mid(8, slotName.length()-8);
+                if (set.contains(key))
+                    set[key].replace(1, scheme.value(slot).color.name());
+            }
+            if (slotName.startsWith("Active_")) {
+                QString key = slotName.mid(7, slotName.length()-7);
+                if (set.contains(key))
+                    set[key].replace(2, scheme.value(slot).color.name());
+            }
+            if (slotName.startsWith("Select_")) {
+                QString key = slotName.mid(7, slotName.length()-7);
+                if (set.contains(key))
+                    set[key].replace(3, scheme.value(slot).color.name());
+            }
         }
-        if (slotName.startsWith("Active_")) {
-            QString key = slotName.mid(7, slotName.length()-7);
-            if (res.contains(key))
-                res[key].replace(2, scheme.value(slot).color.name());
-        }
-        if (slotName.startsWith("Select_")) {
-            QString key = slotName.mid(7, slotName.length()-7);
-            if (res.contains(key))
-                res[key].replace(3, scheme.value(slot).color.name());
-        }
+        res << set;
     }
     return res;
 }
 
-QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
+QByteArray Scheme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
 {
     QFile file(name);
     if (!file.open(QFile::ReadOnly)) return QByteArray();
@@ -281,8 +301,10 @@ QByteArray Scheme::colorizedContent(QString name, QIcon::Mode mode)
     if (end < 0) return data;
     int iMode = int(mode);
 
-    QHash<QString, QStringList>::const_iterator it = mIconCode.constBegin(); // Icon_Line + Icon_Back
-    for ( ; it != mIconCode.constEnd() ; ++it) {
+
+    QHash<QString, QStringList> iconCode = mIconCodes.at(scope);
+    QHash<QString, QStringList>::const_iterator it = iconCode.constBegin(); // Icon_Gray + Icon_Back
+    for ( ; it != iconCode.constEnd() ; ++it) {
         int start = data.indexOf("<style");
         while (start >= 0 && start < end) {
             QString key = QString(".%1").arg(it.key());
@@ -314,32 +336,12 @@ QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
                             (c1.blueF()*weight + c2.blueF()*(1-weight)));
 }
 
-void generatePalette(QPalette &pal, const QColor &line, const QColor &back)
-{
-    int h, s, v;
-    back.getHsv(&h, &s, &v);
-    // inactive and active are the same..
-    const QColor buttonBrushDark = QColor(back.darker());
-    const QColor buttonBrushDark150 = QColor(back.darker(150));
-    const QColor buttonBrushLight150 = QColor(back.lighter(150));
-    pal.setColorGroup(QPalette::Active, line, back, buttonBrushLight150,
-                      buttonBrushDark, buttonBrushDark150, line, line,
-                      back, back);
-    pal.setColorGroup(QPalette::Inactive, line, back, buttonBrushLight150,
-                      buttonBrushDark, buttonBrushDark150, line, line,
-                      back, back);
-    pal.setColorGroup(QPalette::Disabled, buttonBrushDark, back, buttonBrushLight150,
-                      buttonBrushDark, buttonBrushDark150, buttonBrushDark, line,
-                      back, back);
-}
-
 void Scheme::invalidate()
 {
-    mIconCode = iconCodes();
+    mIconCodes = iconCodes();
     mIconCache.clear();
     mDataCache.clear();
-    mPalette = qApp->palette();
-//    generatePalette(mPalette, color(Icon_Line), color(Icon_Back));
+
     emit changed();
 }
 
@@ -348,29 +350,36 @@ void Scheme::unbind(SvgEngine *engine)
     mEngines.removeAll(engine);
 }
 
-void Scheme::next()
+bool Scheme::isValidScope(int scopeValue)
 {
-    int index = (instance()->mActiveScheme + 1) % instance()->mSchemeNames.size();
-    instance()->setActiveScheme(index);
+    if (scopeValue < 0) return false;
+    for (int i = 0; i < QMetaEnum::fromType<Scope>().keyCount(); ++i) {
+        if (QMetaEnum::fromType<Scope>().value(i) == scopeValue)
+            return true;
+    }
+    return false;
 }
 
-QColor Scheme::color(Scheme::ColorSlot slot)
+QColor Scheme::color(Scheme::ColorSlot slot, Scope scope)
 {
-    return instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot, CUndefined).color;
+    int scheme = instance()->mScopeScheme.value(scope);
+    return instance()->mColorSchemes.at(scheme).value(slot, CUndefined).color;
 }
 
-void Scheme::setColor(Scheme::ColorSlot slot, QColor color)
+void Scheme::setColor(Scheme::ColorSlot slot, Scheme::Scope scope, QColor color)
 {
-    Color dat = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    int scheme = instance()->mScopeScheme.value(scope);
+    Color dat = instance()->mColorSchemes.at(scheme).value(slot);
     dat.color = color;
-    instance()->mColorSchemes[instance()->mActiveScheme].insert(slot, dat);
+    instance()->mColorSchemes[scheme].insert(slot, dat);
 }
 
-QIcon Scheme::icon(QString name, bool forceSquare)
+QIcon Scheme::icon(QString name, Scope scope, bool forceSquare)
 {
     if (name.contains("%")) name = name.arg(instance()->mIconSet);
     if (!instance()->mIconCache.contains(name)) {
         SvgEngine *eng = new SvgEngine(name);
+        eng->setScope(scope);
         if (forceSquare) eng->forceSquare(true);
         instance()->mEngines << eng;
         instance()->mIconCache.insert(name, QIcon(eng));
@@ -378,29 +387,36 @@ QIcon Scheme::icon(QString name, bool forceSquare)
     return instance()->mIconCache.value(name);
 }
 
-QByteArray &Scheme::data(QString name, QIcon::Mode mode)
+QIcon Scheme::icon(QString name, bool forceSquare)
+{
+    return icon(name, StudioScope, forceSquare);
+}
+
+QByteArray &Scheme::data(QString name, Scope scope, QIcon::Mode mode)
 {
     QStringList ext {"_N","_D","_A","_S"};
-    QString nameKey = name + ext.at(int(mode));
+    QString nameKey = QString("%1@%2").arg(scope).arg(name + ext.at(int(mode)));
     if (!instance()->mDataCache.contains(nameKey)) {
-        QByteArray data(instance()->colorizedContent(name, mode));
+        QByteArray data(instance()->colorizedContent(name, scope, mode));
         instance()->mDataCache.insert(nameKey, data);
     }
     return instance()->mDataCache[nameKey];
 }
 
-bool Scheme::hasFlag(Scheme::ColorSlot slot, Scheme::FontFlag flag)
+bool Scheme::hasFlag(Scheme::ColorSlot slot, Scheme::FontFlag flag, Scope scope)
 {
-    Color cl = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    int scheme = instance()->mScopeScheme.value(scope);
+    Color cl = instance()->mColorSchemes.at(scheme).value(slot);
     if (flag == fNormal) return (cl.fontFlag == fNormal);
     return (FontFlag(flag & cl.fontFlag) == flag);
 }
 
-void Scheme::setFlags(Scheme::ColorSlot slot, Scheme::FontFlag flag)
+void Scheme::setFlags(Scheme::ColorSlot slot, Scheme::FontFlag flag, Scope scope)
 {
-    Color dat = instance()->mColorSchemes.at(instance()->mActiveScheme).value(slot);
+    int scheme = instance()->mScopeScheme.value(scope);
+    Color dat = instance()->mColorSchemes.at(scheme).value(slot);
     dat.fontFlag = flag;
-    instance()->mColorSchemes[instance()->mActiveScheme].insert(slot, dat);
+    instance()->mColorSchemes[scheme].insert(slot, dat);
 }
 
 QByteArray Scheme::exportJsonColorSchemes()
@@ -418,7 +434,10 @@ QByteArray Scheme::exportJsonColorSchemes()
                 dataObject["type"] = int(scheme.value(key).fontFlag);
             slotObject[name(key)] = dataObject;
         }
-        if (mActiveScheme == i) jsonScheme["Active"] = 1;
+        for (Scope scope : mScopeScheme.keys()) {
+            if (mScopeScheme.value(scope) == i)
+                jsonScheme[QString("Active%1").arg(scope)] = 1;
+        }
         jsonScheme["Name"] = mSchemeNames.at(i);
         jsonScheme["Scheme"] = slotObject;
         jsonSchemes.append(jsonScheme);
@@ -441,7 +460,10 @@ void Scheme::importJsonColorSchemes(const QByteArray &jsonData)
             mSchemeNames << schemeName;
             mColorSchemes << mColorSchemes.at(0);
         }
-        if (jsonScheme["Active"].toInt(0)) mActiveScheme = index;
+        for (Scope scope : mScopeScheme.keys()) {
+            if (jsonScheme[QString("Active%1").arg(scope)].toInt(0))
+                mScopeScheme.insert(scope, index);
+        }
         if (jsonScheme.contains("Scheme") && jsonScheme["Scheme"].isObject()) {
             QJsonObject slotObject = jsonScheme["Scheme"].toObject();
             for (QString key: slotObject.keys()) {

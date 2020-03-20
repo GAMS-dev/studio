@@ -63,8 +63,10 @@ void WpLabel::leaveEvent(QEvent *event)
 }
 
 void WpLabel::updateMouseOverColor(bool hovered) {
+    mActive = hovered;
+
     auto p = palette();
-    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::BrightText));
+    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::Base).lighter());
     setPalette(p);
 }
 
@@ -80,7 +82,7 @@ void WpLabel::paintEvent(QPaintEvent *event)
             rect.moveLeft(mAlignment.testFlag(Qt::AlignRight) ? indent()-rect.width() : (indent()-rect.width())/2);
     if (!mAlignment.testFlag(Qt::AlignTop))
             rect.moveTop(mAlignment.testFlag(Qt::AlignBottom) ? cHei-rect.height() : (cHei-rect.height())/2);
-    mIcon.paint(&painter, rect, mAlignment);
+    mIcon.paint(&painter, rect, mAlignment, mActive ? QIcon::Active : QIcon::Mode::Normal);
 }
 
 void WpLabel::setInactive(bool inactive)

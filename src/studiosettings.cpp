@@ -30,6 +30,11 @@
 #include "version.h"
 #include "commandlineparser.h"
 #include "scheme.h"
+#include "colors/palettemanager.h"
+
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
 
 namespace gams {
 namespace studio {
@@ -50,6 +55,7 @@ StudioSettings::StudioSettings(bool ignoreSettings, bool resetSettings, bool res
     }
     if (resetViews) resetViewSettings();
 
+    // clean up remaining .lock files to mitigate deadlocks
     QFileInfo file(mAppSettings->fileName());
     QDir location(file.path());
     for (const QString &fileName: location.entryList({"*.lock"})) {
@@ -216,12 +222,14 @@ void StudioSettings::saveSettings(MainWindow *main)
     mUserSettings->setValue("autosaveOnRun", autosaveOnRun());
     mUserSettings->setValue("openLst", openLst());
     mUserSettings->setValue("jumpToError", jumpToError());
-    mUserSettings->setValue("setStudioOnTop",foregroundOnDemand());
+    mUserSettings->setValue("foregroundOnDemand",foregroundOnDemand());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
 
-//    mUserSettings->setValue("colorScheme", colorSchemeIndex());
+    mUserSettings->setValue("appearance", appearance());
+    mUserSettings->setValue("syntaxScheme", syntaxSchemeIndex());
+    mUserSettings->setValue("studioScheme", studioSchemeIndex());
     mUserSettings->setValue("fontFamily", fontFamily());
     mUserSettings->setValue("fontFamily", fontFamily());
     mUserSettings->setValue("fontSize", fontSize());
@@ -392,7 +400,7 @@ void StudioSettings::loadUserSettings()
     setAutosaveOnRun(mUserSettings->value("autosaveOnRun", true).toBool());
     setOpenLst(mUserSettings->value("openLst", false).toBool());
     setJumpToError(mUserSettings->value("jumpToError", true).toBool());
-    setForegroundOnDemand(mUserSettings->value("bringOnTop",true).toBool());
+    setForegroundOnDemand(mUserSettings->value("foregroundOnDemand",true).toBool());
 
     mUserSettings->endGroup();
     mUserSettings->beginGroup("Editor");
@@ -405,7 +413,9 @@ void StudioSettings::loadUserSettings()
             DEB() << "No fixed font found on system. Using " << font.family();
         }
     }
-//    setColorSchemeIndex(mUserSettings->value("colorScheme", 0).toInt());
+//    setSyntaxSchemeIndex(mUserSettings->value("syntaxScheme", 0).toInt());
+//    setStudioSchemeIndex(mUserSettings->value("studioScheme", 0).toInt());
+    setAppearance(mUserSettings->value("appearance", 0).toInt());
     setFontFamily(mUserSettings->value("fontFamily", font.family()).toString());
     setFontSize(mUserSettings->value("fontSize", 10).toInt());
     setShowLineNr(mUserSettings->value("showLineNr", true).toBool());
@@ -567,15 +577,71 @@ void StudioSettings::setEditableMaxSizeMB(int editableMaxSizeMB)
     mEditableMaxSizeMB = editableMaxSizeMB;
 }
 
-int StudioSettings::colorSchemeIndex() const
+int StudioSettings::syntaxSchemeIndex() const
 {
-    return mColorSchemeIndex;
+    return mSyntaxSchemeIndex;
 }
 
-void StudioSettings::setColorSchemeIndex(int colorSchemeIndex)
+void StudioSettings::setSyntaxSchemeIndex(int syntaxSchemeIndex)
 {
-    mColorSchemeIndex = colorSchemeIndex;
-    Scheme::instance()->setActiveScheme(mColorSchemeIndex);
+    mSyntaxSchemeIndex = syntaxSchemeIndex;
+    Scheme::instance()->setActiveScheme(mSyntaxSchemeIndex, Scheme::EditorScope);
+}
+
+int StudioSettings::studioSchemeIndex() const
+{
+    return mStudioSchemeIndex;
+}
+
+void StudioSettings::setStudioSchemeIndex(int studioSchemeIndex)
+{
+    mStudioSchemeIndex = studioSchemeIndex;
+    PaletteManager::instance()->setPalette(studioSchemeIndex);
+    Scheme::instance()->setActiveScheme(studioSchemeIndex, Scheme::StudioScope);
+}
+
+int StudioSettings::appearance() const
+{
+    return mAppearance;
+}
+
+///
+/// \brief StudioSettings::setAppearance sets and saves the appearance
+/// \param appearance
+///
+void StudioSettings::setAppearance(int appearance)
+{
+    mAppearance = appearance;
+    changeAppearance(appearance);
+}
+
+///
+/// \brief StudioSettings::changeAppearance sets the appearance without saving it into settings.
+/// Useful for previews
+/// \param appearance
+/// \return
+///
+void StudioSettings::changeAppearance(int appearance)
+{
+    int pickedTheme = appearance;
+
+    bool canFollowOS = false;
+#ifdef _WIN32
+    canFollowOS = true; // deactivate follow OS option for linux
+#endif
+
+    if (canFollowOS && appearance == 0) { // do OS specific things
+#ifdef _WIN32
+        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#endif
+    } else if (canFollowOS) {
+        pickedTheme--; // deduct "Follow OS" option
+    }
+
+    PaletteManager::instance()->setPalette(pickedTheme);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 }
 
 bool StudioSettings::restoreTabsAndProjects(MainWindow *main)

@@ -60,7 +60,23 @@ public:
     QStringList selectedFiles();
     void setSelectedFiles(const QStringList &files);
 
+private slots:
+    void newDirectoryData(const QString &path);
+
 private:
+    int checkedChilds(const QString &path) const;
+    int directroyCheckState(const QString &path) const;
+    int subdirectoryCheckState(const QString &path) const;
+    void updateChildDirInfo(const QModelIndex &idx);
+    void updateParentDirInfo(const QModelIndex &parent);
+    void updateChildSelection(const QModelIndex &idx, bool remove = false);
+    void addParentSelection(const QModelIndex &idx);
+    void removeParentSelection(const QModelIndex &idx);
+    QString subPath(const QModelIndex &idx) const;
+    QString subPath(const QString &path) const;
+
+private:
+    QMap<QString,int> mDirChilds;
     QSet<QString> mCheckedFiles;
 };
 
@@ -83,11 +99,14 @@ private slots:
     void on_clearButton_clicked();
 
 private:
+    void setupViewModel();
     void showMessageBox();
 
 private:
     Ui::MiroModelAssemblyDialog *ui;
-    FileSystemModel *mFileSystemModel;
+    QString mWorkingDirectory;
+    FileSystemModel *mFileSystemModel = nullptr;
+    FilteredFileSystemModel *mFilterModel = nullptr;
 };
 
 }

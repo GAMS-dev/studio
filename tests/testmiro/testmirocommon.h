@@ -25,14 +25,36 @@
 class TestMiroCommon : public QObject
 {
     Q_OBJECT
+public:
+    TestMiroCommon(QObject *parent = nullptr);
+    ~TestMiroCommon();
 
 private slots:
+    void testPath_data();
     void testPath();
-    void testPathWithRealFile();
-    void testPathWithSpaces();
 
+    void testAssemblyFileName_data();
     void testAssemblyFileName();
+
+    void testAssemblyFileName2_data();
+    void testAssemblyFileName2();
+
+    void testDeployFileName_data();
     void testDeployFileName();
+
+    void testUnifiedAssemblyFileContent_data();
+    void testUnifiedAssemblyFileContent();
+
+    void testWriteAssemblyFile_data();
+    void testWriteAssemblyFile();
+
+private:
+    QDir mCurDir;
+    QFile mFile1;
+    QFile mFile2;
+    QFile mUnifiedAssemblyFileContentFile;
+    QFile mUnifiedAssemblyFileContentFileData;
+
 };
 
 #endif // TESTMIROCOMMON_H
