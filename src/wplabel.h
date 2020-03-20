@@ -65,7 +65,7 @@ private:
     QColor GAMS_ORANGE = QColor(243,150,25);
 
 private:
-    void updateBackgroundColor();
+    void updateMouseOverColor(bool hovered);
 };
 
 }

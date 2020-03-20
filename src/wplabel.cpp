@@ -29,7 +29,7 @@ namespace studio {
 WpLabel::WpLabel(QWidget *parent) : QLabel(parent)
 {
     setAutoFillBackground(true);
-    updateBackgroundColor();
+    updateMouseOverColor(false);
 }
 
 WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
@@ -39,7 +39,7 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     setMargin(4);
     setWordWrap(true);
     setAutoFillBackground(true);
-    updateBackgroundColor();
+    updateMouseOverColor(false);
 
     QLabel::setText(mContent);
 }
@@ -48,23 +48,25 @@ void WpLabel::enterEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
-    mActive = true;
 
     setFrameShape(QFrame::Box);
+    updateMouseOverColor(true);
 }
 
 void WpLabel::leaveEvent(QEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;
-    mActive = false;
 
     setFrameShape(QFrame::StyledPanel);
+    updateMouseOverColor(false);
 }
 
-void WpLabel::updateBackgroundColor() {
+void WpLabel::updateMouseOverColor(bool hovered) {
+    mActive = hovered;
+
     auto p = palette();
-    p.setColor(QPalette::Window, palette().color(QPalette::Base).lighter());
+    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::Base).lighter());
     setPalette(p);
 }
 
