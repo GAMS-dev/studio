@@ -20,6 +20,7 @@
 #ifndef STUDIOSETTINGS_H
 #define STUDIOSETTINGS_H
 
+#include <QObject>
 #include <QString>
 #include <QColor>
 #include <QHash>
@@ -32,9 +33,9 @@ namespace studio {
 
 class MainWindow;
 
-class StudioSettings
+class StudioSettings : public QObject
 {
-
+Q_OBJECT
 public:
     StudioSettings(bool ignoreSettings, bool resetSettings, bool resetViewSettings);
     ~StudioSettings();
@@ -59,14 +60,11 @@ public:
     bool openLst() const;
     void setOpenLst(bool value);
 
-
     bool jumpToError() const;
     void setJumpToError(bool value);
 
-
     bool foregroundOnDemand() const;
     void setForegroundOnDemand(bool value);
-
 
     int fontSize() const;
     void setFontSize(int value);
@@ -160,8 +158,15 @@ public:
     int editableMaxSizeMB() const;
     void setEditableMaxSizeMB(int editableMaxSizeMB);
 
-    int colorSchemeIndex() const;
-    void setColorSchemeIndex(int colorSchemeIndex);
+    int syntaxSchemeIndex() const;
+    void setSyntaxSchemeIndex(int syntaxSchemeIndex);
+
+    int studioSchemeIndex() const;
+    void setStudioSchemeIndex(int studioSchemeIndex);
+
+    void changeAppearance(int appearance);
+    int appearance() const;
+    void setAppearance(int appearance);
 
 private:
     QSettings *mAppSettings = nullptr;
@@ -171,7 +176,8 @@ private:
     bool mResetSettings = false;
 
     // general settings page
-    int mColorSchemeIndex;
+    int mSyntaxSchemeIndex;
+    int mStudioSchemeIndex;
     QString mDefaultWorkspace;
     bool mSkipWelcomePage;
     bool mRestoreTabs;
@@ -181,6 +187,7 @@ private:
     bool mJumpToError;
 
     // editor settings page
+    int mAppearance;
     int mDefaultCodecMib;
     QString mFontFamily;
     int mFontSize;

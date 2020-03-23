@@ -36,6 +36,7 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+class ReferenceTabStyle;
 class ReferenceViewer : public QWidget
 {
     Q_OBJECT
@@ -58,7 +59,8 @@ private:
 
     QTextCodec *mCodec;
 
-    Reference* mReference;
+    QScopedPointer<Reference> mReference;
+    QScopedPointer<ReferenceTabStyle> mRefTabStyle;
 };
 
 } // namespace reference

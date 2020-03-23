@@ -47,7 +47,7 @@ WelcomePage::WelcomePage(MainWindow *parent)
     setupIcons();
 
     auto p = palette();
-    p.setColor(QPalette::Window, p.color(QPalette::BrightText));
+    p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
     ui->welcometext->setPalette(p);
     ui->welcometext->setAutoFillBackground(true);
 
@@ -100,7 +100,7 @@ bool WelcomePage::event(QEvent *event)
 {
     if (event->type() == QEvent::PaletteChange) {
         auto p = palette();
-        p.setColor(QPalette::Window, p.color(QPalette::BrightText));
+        p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
 
         ui->welcometext->setPalette(p);
         for (WpLabel* w : findChildren<WpLabel*>())

@@ -57,7 +57,7 @@ private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &value);
-    void on_sb_fontsize_valueChanged(int arg1);
+    void on_sb_fontsize_valueChanged(int size);
     void schemeModified();
     void setModified();
 
@@ -70,8 +70,7 @@ private slots:
     void on_sb_nrLogBackups_valueChanged(int value);
     void on_miroBrowseButton_clicked();
 
-    void on_cbSchemes_currentIndexChanged(int index);
-
+    void on_combo_appearance_currentIndexChanged(int index);
 
 private:
     Ui::SettingsDialog *ui;

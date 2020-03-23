@@ -20,10 +20,7 @@
 #include "solveroptiondefinitionmodel.h"
 #include "settings.h"
 #include <QDataStream>
-#include <QIODevice>
-
 #include <QDataStream>
-#include <QIODevice>
 
 namespace gams {
 namespace studio {

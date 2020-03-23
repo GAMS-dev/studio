@@ -1425,7 +1425,8 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 QFont f = font();
                 f.setBold(mark);
                 painter.setFont(f);
-                painter.setPen(mark ? toColor(Scheme::Edit_linenrAreaMarkFg) : toColor(Scheme::Edit_linenrAreaFg));
+                painter.setPen(mark ? toColor(Scheme::Edit_linenrAreaMarkFg)
+                                    : toColor(Scheme::Edit_linenrAreaFg));
                 painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
             }
 

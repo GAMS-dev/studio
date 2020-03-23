@@ -115,6 +115,7 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
+    void changeAppearance();
     QStringList encodingNames();
     QString encodingMIBsString();
     QList<int> encodingMIBs();
@@ -342,8 +343,6 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
-    void assignColors();
-    void assignIcons();
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();
@@ -380,7 +379,6 @@ private:
     QFont createEditorFont(const QString &fontFamily, int pointSize);
 
 private:
-    QTime mTestTimer;
     Ui::MainWindow *ui;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;

@@ -34,6 +34,7 @@ static int CKeptRunCount = 5;
 
 MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
 {
+    // TODO(JM) Currently the colors are assigned in constructor. Should be reassignable though.
     mRunFinishedTimer.setInterval(10);
     mRunFinishedTimer.setSingleShot(true);
     mNewLogLines.reserve(CParseLinesMax+1);
@@ -45,7 +46,7 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     mMarksTail.resize(CErrorBound);
     // old
     QTextCharFormat fmt;
-    fmt.setForeground(QColor(165,165,165));
+    fmt.setForeground(QColor(125,125,125));
     mBaseFormat << fmt;
     // debug
     fmt = QTextCharFormat();

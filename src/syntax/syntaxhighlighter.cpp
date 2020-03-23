@@ -73,9 +73,6 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
     initKind(new SyntaxDelimiter(SyntaxKind::CommaIdent));
     initKind(new SyntaxDelimiter(SyntaxKind::CommaTable));
-// TODO(RG): check if this is necessary:
-//    initKind(new SyntaxDelimiter(SyntaxKind::Semicolon), Scheme::Syntax_neutral);
-//    initKind(new SyntaxDelimiter(SyntaxKind::Comma), Scheme::Syntax_neutral);
 
     initKind(new SyntaxReserved(SyntaxKind::Reserved), Scheme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Solve), Scheme::Syntax_keyword);

@@ -50,6 +50,7 @@
 #include "autosavehandler.h"
 #include "support/distributionvalidator.h"
 #include "tabdialog.h"
+#include "colors/palettemanager.h"
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
 #include "editors/viewhelper.h"
@@ -201,10 +202,6 @@ MainWindow::MainWindow(QWidget *parent)
     mRecent.path = settings->toString(skDefaultWorkspace);
     mSearchDialog = new search::SearchDialog(this);
 
-#ifdef __APPLE__
-    Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
-#endif
-
     // stack help under output
     tabifyDockWidget(ui->dockHelpView, ui->dockProcessLog);
 
@@ -234,7 +231,16 @@ MainWindow::MainWindow(QWidget *parent)
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
     updateMiroMenu();
+
+    // Themes
+#ifdef __APPLE__
+    Settings::settings()->setInt(skEdColorSchemeIndex, (MacOSCocoaBridge::isDarkMode() ? 1 : 0));
+#endif
+    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
+
+    // this needs to be re-called for studio startup, as the call when loading settings is too early
+    changeAppearance();
 }
 
 
@@ -314,7 +320,9 @@ bool MainWindow::event(QEvent *event)
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
-        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? "Dark" : "Light");
+        // reload theme when switching OS theme
+        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Scheme::StudioScope);
+        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Scheme::EditorScope);
 #endif
     }
     return QMainWindow::event(event);
@@ -1914,6 +1922,29 @@ void MainWindow::historyChanged()
     Settings::settings()->setJsonArray(skHistory, joHistory);
 }
 
+void MainWindow::changeAppearance()
+{
+    int pickedTheme = Settings::settings()->toInt(skEdColorSchemeIndex);
+
+    bool canFollowOS = false;
+#ifdef _WIN32
+    canFollowOS = true; // deactivate follow OS option for linux
+#endif
+
+    if (canFollowOS && pickedTheme == 0) { // do OS specific things
+#ifdef _WIN32
+        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#endif
+    } else if (canFollowOS) {
+        pickedTheme--; // deduct "Follow OS" option
+    }
+
+    PaletteManager::instance()->setPalette(pickedTheme);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
+}
+
 bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
 {
     if (runGroups.isEmpty()) return true;
@@ -2324,9 +2355,6 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_5)) {
         focusProcessLogs();
         e->accept(); return;
-    } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F11)) {
-        Scheme::next();
-        e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
         toggleDebugMode();
         e->accept(); return;
@@ -2473,7 +2501,6 @@ void MainWindow::execute(QString commandLineStr,
                          ProjectFileNode* gmsFileNode)
 {
     Settings *settings = Settings::settings();
-    mTestTimer = QTime::currentTime();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (!runGroup) {
@@ -2592,11 +2619,7 @@ void MainWindow::execute(QString commandLineStr,
 
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
-    if (ProjectFileNode *lstNode = mProjectRepo.findFile(runGroup->parameter("lst"))) {
-        for (QWidget *wid: lstNode->file()->editors()) {
-            if (TextView *tv = ViewHelper::toTextView(wid)) tv->prepareRun();
-        }
-    }
+
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
 
@@ -2793,25 +2816,10 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
 
 void MainWindow::invalidateScheme()
 {
-    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme, Qt::UniqueConnection);
-
-    assignColors();
-    for (FileMeta *fm: mFileMetaRepo.fileMetas()) {
+    for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateScheme();
-    }
-    assignIcons();
+
     repaint();
-}
-
-void MainWindow::assignColors()
-{
-    QPalette pal = Scheme::instance()->palette();
-    qApp->setPalette(pal);
-}
-
-void MainWindow::assignIcons()
-{
-    setWindowIcon(windowIcon());
 }
 
 void MainWindow::initIcons()
@@ -2821,6 +2829,7 @@ void MainWindow::initIcons()
     ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
     ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
     ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
+    ui->actionClose->setIcon(Scheme::icon(":/%1/remove"));
     ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
     ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
     ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
@@ -2848,6 +2857,9 @@ void MainWindow::initIcons()
     ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
     ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
     ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
+    ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
+    ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
+    ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
 }
 
 void MainWindow::ensureInScreen()
