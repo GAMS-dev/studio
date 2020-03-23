@@ -122,7 +122,8 @@ public:
 
     void load(Scope kind);
     void save();
-    int fileCount() const {return mSettings.count();}
+    void block() { mBlock = true; }
+    void unblock() { mBlock = false; }
 
     bool toBool(SettingsKey key) const { return value(key).toBool(); }
     int toInt(SettingsKey key) const { return value(key).toInt(); }
@@ -167,6 +168,7 @@ private:
     static bool mUseRelocatedTestDir;
     bool mCanWrite = false;
     bool mCanRead = false;
+    bool mBlock = false;
 
     const QHash<SettingsKey, KeyData> mKeys;
     QMap<Scope, QSettings*> mSettings;
@@ -178,6 +180,7 @@ private:
     QSettings *newQSettings(QString name);
     QHash<SettingsKey, KeyData> generateKeys();
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
+    bool canWrite() {return mCanWrite && !mBlock; }
 
     int checkVersion();
     QString settingsPath();

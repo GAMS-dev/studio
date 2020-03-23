@@ -54,6 +54,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 #endif
 
     mSettings = Settings::settings();
+    mSettings->block(); // prevent changes from outside this dialog
     loadSettings();
 
     // TODO(JM) temporarily removed
@@ -225,7 +226,9 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skSoDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
 
     // done
+    mSettings->unblock();
     mSettings->save();
+    mSettings->block();
     setModifiedStatus(false);
 }
 
@@ -303,6 +306,7 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
 
 SettingsDialog::~SettingsDialog()
 {
+    mSettings->unblock();
     delete ui;
 }
 

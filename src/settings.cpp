@@ -400,7 +400,7 @@ void Settings::resetViewSettings()
 void Settings::save()
 {
     // ignore-settings argument -> no settings assigned
-    if (!mCanWrite) return;
+    if (!canWrite()) return;
     for (const Scope &scope : mSettings.keys()) {
         saveFile(scope);
     }
@@ -568,7 +568,7 @@ QString Settings::settingsPath()
 
 void Settings::saveFile(Scope scope)
 {
-    if (!mCanWrite) return;
+    if (!canWrite()) return;
     if (!mSettings.contains(scope)) return;
 
     // Store values that are repeated in ALL settings, like the versions
