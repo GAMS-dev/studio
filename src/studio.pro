@@ -156,6 +156,7 @@ SOURCES += \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/definitionitemdelegate.cpp \
+    option/gamsconfigeditor.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsparametertablemodel.cpp \
     option/lineeditcompleteevent.cpp \
@@ -165,6 +166,7 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
     option/optiontokenizer.cpp \
+    option/paramconfigeditor.cpp \
     option/parametereditor.cpp \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
@@ -295,6 +297,7 @@ HEADERS += \
     option/addoptionheaderview.h \
     option/commandline.h \
     option/definitionitemdelegate.h \
+    option/gamsconfigeditor.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsparametertablemodel.h \
     option/lineeditcompleteevent.h \
@@ -304,6 +307,7 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
     option/optiontokenizer.h \
+    option/paramconfigeditor.h \
     option/parametereditor.h \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
@@ -366,6 +370,8 @@ FORMS += \
     miro/mirodeploydialog.ui \
     miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
+    option/gamsconfigeditor.ui \
+    option/paramconfigeditor.ui \
     option/parametereditor.ui \
     option/solveroptionwidget.ui \
     reference/referenceviewer.ui \
