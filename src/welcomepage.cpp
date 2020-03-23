@@ -65,13 +65,13 @@ void WelcomePage::historyChanged()
     }
 
     WpLabel *tmpLabel;
-    HistoryData *history = mMain->history();
+    const QStringList &history = mMain->history().files();
     int j = 0;
     for (int i = 0; i < Settings::settings()->toInt(skHistorySize); i++) {
-        if (i >= history->mLastOpenedFiles.size()) break;
+        if (i >= history.size()) break;
 
-        QFileInfo file(history->mLastOpenedFiles.at(i));
-        if (history->mLastOpenedFiles.at(i) == "") continue;
+        QFileInfo file(history.at(i));
+        if (history.at(i) == "") continue;
 
         if (file.exists()) {
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"

@@ -1373,8 +1373,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
             if (group->childCount() == 0)
                 closeGroup(group);
         }
-        history()->mLastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged();
+        mHistory.files().removeAll(file->location());
+        historyChanged();
         return 0;
     }
 
@@ -1386,8 +1386,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     if (choice == 0) {
         if (file->exists(true)) return 0;
         closeFileEditors(fileId);
-        history()->mLastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged();
+        mHistory.files().removeAll(file->location());
+        historyChanged();
     } else if (!file->isReadOnly()) {
         if (file->exists(true)) return 0;
         file->setModified();
@@ -1874,9 +1874,9 @@ void MainWindow::triggerGamsLibFileCreation(modeldialog::LibraryItem *item)
     openModelFromLib(item->library()->glbFile(), item);
 }
 
-HistoryData *MainWindow::history()
+const HistoryData &MainWindow::history()
 {
-    return &mHistory;
+    return mHistory;
 }
 
 void MainWindow::addToOpenedFiles(QString filePath)
@@ -1885,18 +1885,33 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
     if (filePath.startsWith("[")) return; // invalid
 
-    while (history()->mLastOpenedFiles.size() > Settings::settings()->toInt(skHistorySize)
-           && !history()->mLastOpenedFiles.isEmpty())
-        history()->mLastOpenedFiles.removeLast();
+    while (mHistory.files().size() > Settings::settings()->toInt(skHistorySize) && !mHistory.files().isEmpty())
+        mHistory.files().removeLast();
 
-    if (Settings::settings()->toInt(skHistorySize) == 0) return;
+    if (Settings::settings()->toInt(skHistorySize) == 0) {
+        historyChanged();
+        return;
+    }
 
-    if (!history()->mLastOpenedFiles.contains(filePath))
-        history()->mLastOpenedFiles.insert(0, filePath);
-    else
-        history()->mLastOpenedFiles.move(history()->mLastOpenedFiles.indexOf(filePath), 0);
+    if (!mHistory.files().contains(filePath)) {
+        mHistory.files().insert(0, filePath);
+    } else {
+        mHistory.files().move(mHistory.files().indexOf(filePath), 0);
+    }
+    historyChanged();
+}
 
+void MainWindow::historyChanged()
+{
     if (mWp) mWp->historyChanged();
+    QJsonArray joHistory;
+    for (const QString &file : mHistory.files()) {
+        if (file.isEmpty()) break;
+        QJsonObject joOpenFile;
+        joOpenFile["file"] = file;
+        joHistory << joOpenFile;
+    }
+    Settings::settings()->setJsonArray(skHistory, joHistory);
 }
 
 bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
@@ -1970,14 +1985,7 @@ void MainWindow::updateAndSaveSettings()
     writeTabs(joTabs);
     settings->setJsonObject(skTabs, joTabs);
 
-    QJsonArray joOpenFiles;
-    for (const QString &file : history()->mLastOpenedFiles) {
-        if (file.isEmpty()) break;
-        QJsonObject joOpenFile;
-        joOpenFile["file"] = file;
-        joOpenFiles << joOpenFile;
-    }
-    settings->setJsonArray(skHistory, joOpenFiles);
+    historyChanged();
 
     // at last, save the settings
     settings->save();
@@ -2644,7 +2652,12 @@ void MainWindow::openInitialFiles()
         QJsonObject joTabs = settings->toJsonObject(skTabs);
         if (!readTabs(joTabs)) return;
     }
-    history()->mLastOpenedFiles = settings->fileHistory();
+    mHistory.files().clear();
+    QJsonArray joHistory = settings->toJsonArray(skHistory);
+    for (QJsonValue jRef: joHistory) {
+        mHistory.files() << jRef["file"].toString();
+    }
+
     openFiles(mInitialFiles);
     mInitialFiles.clear();
     watchProjectTree();
@@ -3987,6 +4000,10 @@ void MainWindow::on_actionShowToolbar_triggered(bool checked)
 {
     ui->toolBar->setVisible(checked);
 }
+
+
+
+
 
 }
 }

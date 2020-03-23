@@ -557,22 +557,9 @@ bool Settings::setJsonArray(SettingsKey key, QJsonArray value)
     return setValue(key, value);
 }
 
-
-QStringList Settings::fileHistory()
-{
-    QStringList res;
-    QJsonArray joLastOpenedFiles = mData[scSys].value("lastOpenedFiles").toJsonArray();
-    for (QJsonValue jRef: joLastOpenedFiles) {
-        res << jRef["name"].toString();
-    }
-    return res;
-}
-
 QString Settings::settingsPath()
 {
     if (QSettings *settings = mSettings[scUi]) {
-//        DEB() << "UiSettings: " << settings->fileName();
-//        DEB() << "    - path: " << QFileInfo(settings->fileName()).path();
         return QFileInfo(settings->fileName()).path();
     }
     DEB() << "ERROR: Settings file must be initialized before using settingsPath()";

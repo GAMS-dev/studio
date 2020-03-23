@@ -151,8 +151,6 @@ public:
     void reload();
     void resetViewSettings();
 
-    QStringList fileHistory();
-
 private:
     typedef QMap<QString, QVariant> Data;
     struct KeyData {
