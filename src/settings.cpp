@@ -422,14 +422,14 @@ QByteArray Settings::toByteArray(SettingsKey key) const
     return QByteArray::fromHex(str.toLatin1());
 }
 
-QJsonObject Settings::toJsonObject(SettingsKey key) const
+QVariantMap Settings::toVariantMap(SettingsKey key) const
 {
-    return value(key).toJsonObject();
+    return value(key).toMap();
 }
 
-QJsonArray Settings::toJsonArray(SettingsKey key) const
+QVariantList Settings::toList(SettingsKey key) const
 {
-    return value(key).toJsonArray();
+    return value(key).toList();
 }
 
 void Settings::setSize(SettingsKey key, const QSize &value)
@@ -440,6 +440,16 @@ void Settings::setSize(SettingsKey key, const QSize &value)
 void Settings::setPoint(SettingsKey key, const QPoint &value)
 {
     setValue(key, pointToString(value));
+}
+
+bool Settings::setMap(SettingsKey key, QVariantMap value)
+{
+    return setValue(key, value);
+}
+
+bool Settings::setList(SettingsKey key, QVariantList value)
+{
+    return setValue(key, value);
 }
 
 bool Settings::isValidVersion(QString currentVersion)
@@ -523,13 +533,13 @@ bool Settings::setDirectValue(const Settings::Scope &scope, const QString &group
     QVariant varGroup = mData[scope].value(group);
     if (!varGroup.canConvert<QJsonObject>() && !varGroup.canConvert<QVariantMap>())
         return false;
-    QJsonObject jo = varGroup.toJsonObject();
-    if (!addToJsonObject(jo, key, value)) return false;
+    QVariantMap jo = varGroup.toMap();
+    if (!addToMap(jo, key, value)) return false;
     mData[scope].insert(group, jo);
     return true;
 }
 
-bool Settings::addToJsonObject(QJsonObject &group, const QString &key, QVariant value)
+bool Settings::addToMap(QVariantMap &group, const QString &key, QVariant value)
 {
     switch (QMetaType::Type(value.type())) {
     case QMetaType::Double: group[key] = value.toDouble(); break;
@@ -540,21 +550,13 @@ bool Settings::addToJsonObject(QJsonObject &group, const QString &key, QVariant 
     case QMetaType::Bool: group[key] = value.toBool(); break;
     case QMetaType::QByteArray: group[key] = QString(value.toByteArray().toHex()); break;
     case QMetaType::QString: group[key] = value.toString(); break;
+    case QMetaType::QVariantMap: group[key] = value.toJsonObject(); break;
+    case QMetaType::QVariantList: group[key] = value.toJsonArray(); break;
     case QMetaType::QJsonObject: group[key] = value.toJsonObject(); break;
     case QMetaType::QJsonArray: group[key] = value.toJsonArray(); break;
     default: return false;
     }
     return true;
-}
-
-bool Settings::setJsonObject(SettingsKey key, QJsonObject value)
-{
-    return setValue(key, value);
-}
-
-bool Settings::setJsonArray(SettingsKey key, QJsonArray value)
-{
-    return setValue(key, value);
 }
 
 QString Settings::settingsPath()

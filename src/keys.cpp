@@ -206,14 +206,14 @@ void Keys::reset()
     setHotkey(Hotkey::SelectParentheses, seq);
 }
 
-void Keys::read(const QJsonObject& json)
+void Keys::read(const QVariantMap& keys)
 {
-    Q_UNUSED(json)
+    Q_UNUSED(keys)
 }
 
-void Keys::write(QJsonObject& json) const
+void Keys::write(QVariantMap& keys) const
 {
-    Q_UNUSED(json)
+    Q_UNUSED(keys)
 }
 
 void Keys::setHotkey(Hotkey key, KeySeqList* keySeqList)

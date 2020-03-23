@@ -132,8 +132,8 @@ public:
     QPoint toPoint(SettingsKey key) const;
     QString toString(SettingsKey key) const { return value(key).toString(); }
     QByteArray toByteArray(SettingsKey key) const;
-    QJsonObject toJsonObject(SettingsKey key) const;
-    QJsonArray toJsonArray(SettingsKey key) const;
+    QVariantMap toVariantMap(SettingsKey key) const;
+    QVariantList toList(SettingsKey key) const;
     void setBool(SettingsKey key, bool value) { setValue(key, value);}
     void setInt(SettingsKey key, int value) { setValue(key, value);}
     void setDouble(SettingsKey key, double value) { setValue(key, value);}
@@ -141,8 +141,8 @@ public:
     void setPoint(SettingsKey key, const QPoint &value);
     void setString(SettingsKey key, QString value) { setValue(key, value);}
     void setByteArray(SettingsKey key, QByteArray value) { setValue(key, value);}
-    bool setJsonObject(SettingsKey key, QJsonObject value);
-    bool setJsonArray(SettingsKey key, QJsonArray value);
+    bool setMap(SettingsKey key, QVariantMap value);
+    bool setList(SettingsKey key, QVariantList value);
 
     void exportSettings(const QString &settingsPath);
     void importSettings(const QString &settingsPath);
@@ -199,7 +199,7 @@ private:
     QVariant directValue(const Scope &scope, const QString &group, const QString &key) const;
     bool setDirectValue(const Scope &scope, const QString &key, QVariant value);
     bool setDirectValue(const Scope &scope, const QString &group, const QString &key, QVariant value);
-    bool addToJsonObject(QJsonObject &group, const QString &key, QVariant value);
+    bool addToMap(QVariantMap &group, const QString &key, QVariant value);
 
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

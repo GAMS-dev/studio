@@ -109,8 +109,8 @@ public:
     }
 
     void reset();
-    void read(const QJsonObject& json);
-    void write(QJsonObject& json) const;
+    void read(const QVariantMap &json);
+    void write(QVariantMap &keys) const;
     void setHotkey(Hotkey key, KeySeqList* keySeqList);
     inline const KeySeqList &keySequence(Hotkey hotkey) const {
         return *mHotkeyDefs.value(hotkey, mDefault);

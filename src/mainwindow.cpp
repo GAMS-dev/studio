@@ -1912,14 +1912,14 @@ void MainWindow::addToOpenedFiles(QString filePath)
 void MainWindow::historyChanged()
 {
     if (mWp) mWp->historyChanged();
-    QJsonArray joHistory;
+    QVariantList joHistory;
     for (const QString &file : mHistory.files()) {
         if (file.isEmpty()) break;
-        QJsonObject joOpenFile;
+        QVariantMap joOpenFile;
         joOpenFile["file"] = file;
         joHistory << joOpenFile;
     }
-    Settings::settings()->setJsonArray(skHistory, joHistory);
+    Settings::settings()->setList(skHistory, joHistory);
 }
 
 void MainWindow::changeAppearance()
@@ -1995,26 +1995,28 @@ void MainWindow::updateAndSaveSettings()
     settings->setInt(skSearchScope, searchDialog()->selectedScope());
 
 #ifdef QWEBENGINE
-    QJsonArray joBookmarks;
+    QVariantList joBookmarks;
     // TODO(JM) Check with Jeed if this can be moved from multimap to map
     QMultiMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
-    for (int i = 0; i < bookmarkMap.size(); i++) {
-        QJsonObject joBookmark;
-        joBookmark["location"] = bookmarkMap.keys().at(i);
-        joBookmark["name"] = bookmarkMap.values().at(i);
+    QMultiMap<QString, QString>::const_iterator it = bookmarkMap.constBegin();
+    while (it != bookmarkMap.constEnd()) {
+        QVariantMap joBookmark;
+        joBookmark.insert("location", it.key());
+        joBookmark.insert("name", it.value());
         joBookmarks << joBookmark;
+        ++it;
     }
-    settings->setJsonArray(skHelpBookmarks, joBookmarks);
+    settings->setList(skHelpBookmarks, joBookmarks);
     settings->setDouble(skHelpZoomFactor, helpWidget()->getZoomFactor());
 #endif
 
-    QJsonObject joProjects;
-    projectRepo()->write(joProjects);
-    settings->setJsonObject(skProjects, joProjects);
+    QVariantMap projects;
+    projectRepo()->write(projects);
+    settings->setMap(skProjects, projects);
 
-    QJsonObject joTabs;
-    writeTabs(joTabs);
-    settings->setJsonObject(skTabs, joTabs);
+    QVariantMap tabData;
+    writeTabs(tabData);
+    settings->setMap(skTabs, tabData);
 
     historyChanged();
 
@@ -2045,10 +2047,12 @@ void MainWindow::restoreFromSettings()
 
     // help
 #ifdef QWEBENGINE
-    QJsonArray joHelp = settings->toJsonArray(skHelpBookmarks);
+    QVariantList joHelp = settings->toList(skHelpBookmarks);
     QMultiMap<QString, QString> bookmarkMap;
-    for (QJsonValue joVal: joHelp) {
-        bookmarkMap.insert(joVal["location"].toString(), joVal["name"].toString());
+    for (QVariant joVal: joHelp) {
+        if (!joVal.canConvert(QVariant::Map)) continue;
+        QVariantMap entry = joVal.toMap();
+        bookmarkMap.insert(entry.value("location").toString(), entry.value("name").toString());
     }
     helpWidget()->setBookmarkMap(bookmarkMap);
     double hZoom = settings->toDouble(skHelpZoomFactor);
@@ -2668,17 +2672,19 @@ void MainWindow::parameterRunChanged()
 void MainWindow::openInitialFiles()
 {
     Settings *settings = Settings::settings();
-    QJsonObject joProject = settings->toJsonObject(skProjects);
-    projectRepo()->read(joProject);
+    projectRepo()->read(settings->toVariantMap(skProjects));
 
     if (settings->toBool(skRestoreTabs)) {
-        QJsonObject joTabs = settings->toJsonObject(skTabs);
+        QVariantMap joTabs = settings->toVariantMap(skTabs);
         if (!readTabs(joTabs)) return;
     }
     mHistory.files().clear();
-    QJsonArray joHistory = settings->toJsonArray(skHistory);
-    for (QJsonValue jRef: joHistory) {
-        mHistory.files() << jRef["file"].toString();
+    QVariantList joHistory = settings->toList(skHistory);
+    for (QVariant jRef: joHistory) {
+        if (!jRef.canConvert(QVariant::Map)) continue;
+        QVariantMap map = jRef.toMap();
+        if (map.contains("file"))
+            mHistory.files() << map.value("file").toString();
     }
 
     openFiles(mInitialFiles);
@@ -3321,10 +3327,10 @@ void MainWindow::updateEditorLineWrapping()
     }
 }
 
-bool MainWindow::readTabs(const QJsonObject &json)
+bool MainWindow::readTabs(const QVariantMap &tabData)
 {
-    if (json.contains("mainTabRecent")) {
-        QString location = json["mainTabRecent"].toString();
+    if (tabData.contains("mainTabRecent")) {
+        QString location = tabData.value("mainTabRecent").toString();
         if (QFileInfo(location).exists()) {
             openFilePath(location, true);
             mOpenTabsList << location;
@@ -3333,12 +3339,12 @@ bool MainWindow::readTabs(const QJsonObject &json)
         }
     }
     QApplication::processEvents(QEventLoop::AllEvents, 10);
-    if (json.contains("mainTabs") && json["mainTabs"].isArray()) {
-        QJsonArray tabArray = json["mainTabs"].toArray();
+    if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QVariant::List)) {
+        QVariantList tabArray = tabData.value("mainTabs").toList();
         for (int i = 0; i < tabArray.size(); ++i) {
-            QJsonObject tabObject = tabArray[i].toObject();
+            QVariantMap tabObject = tabArray.at(i).toMap();
             if (tabObject.contains("location")) {
-                QString location = tabObject["location"].toString();
+                QString location = tabObject.value("location").toString();
                 if (QFileInfo(location).exists()) {
                     openFilePath(location, false);
                     mOpenTabsList << location;
@@ -3353,25 +3359,25 @@ bool MainWindow::readTabs(const QJsonObject &json)
     return true;
 }
 
-void MainWindow::writeTabs(QJsonObject &json) const
+void MainWindow::writeTabs(QVariantMap &tabData) const
 {
-    QJsonArray tabArray;
+    QVariantList tabArray;
     for (int i = 0; i < ui->mainTabs->count(); ++i) {
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
         FileMeta *fm = mFileMetaRepo.fileMeta(wid);
         if (!fm) continue;
-        QJsonObject tabObject;
-        tabObject["location"] = fm->location();
-        tabArray.append(tabObject);
+        QVariantMap tabObject;
+        tabObject.insert("location", fm->location());
+        tabArray << tabObject;
     }
-    json["mainTabs"] = tabArray;
+    tabData.insert("mainTabs", tabArray);
 
     FileMeta *fm = mRecent.editor() ? mFileMetaRepo.fileMeta(mRecent.editor()) : nullptr;
     if (fm)
-        json["mainTabRecent"] = fm->location();
+        tabData.insert("mainTabRecent", fm->location());
     else if (ui->mainTabs->currentWidget() == mWp)
-        json["mainTabRecent"] = "WELCOME_PAGE";
+        tabData.insert("mainTabRecent", "WELCOME_PAGE");
 }
 
 void MainWindow::on_actionGo_To_triggered()
