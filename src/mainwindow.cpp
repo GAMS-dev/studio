@@ -1208,7 +1208,7 @@ void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 void MainWindow::activeTabChanged(int index)
 {
     ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
-    mRecent.setEditor(nullptr, this);
+    mRecent.reset();
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
 
@@ -2945,7 +2945,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
-        if (mRecent.editor() == edit) mRecent.setEditor(nullptr, this);
+        if (mRecent.editor() == edit) mRecent.reset();
         ui->mainTabs->removeTab(ui->mainTabs->indexOf(edit));
         fm->removeEditor(edit);
         edit->deleteLater();
@@ -3581,11 +3581,6 @@ void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
     mGamsParameterEditor->setEditorExtended(checked);
 }
 
-QWidget *RecentData::editor() const
-{
-    return mEditor;
-}
-
 void RecentData::setEditor(QWidget *editor, MainWindow* window)
 {
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditor);
@@ -3622,6 +3617,14 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
     }
     window->updateEditorMode();
     window->updateEditorPos();
+}
+
+void RecentData::reset()
+{
+    editFileId = -1;
+    path = ".";
+    group = nullptr;
+    mEditor = nullptr;
 }
 
 bool RecentData::validRunGroup()

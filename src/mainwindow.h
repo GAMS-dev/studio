@@ -70,8 +70,13 @@ class MiroDeployDialog;
 
 struct RecentData {
 
-    QWidget *editor() const;
-    void setEditor(QWidget *editor, MainWindow* window);
+    QWidget* editor() const {
+        return mEditor;
+    }
+
+    void setEditor(QWidget* editor, MainWindow* window);
+
+    void reset();
 
     bool validRunGroup();
 
