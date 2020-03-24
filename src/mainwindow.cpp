@@ -238,7 +238,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Themes
 #ifdef __APPLE__
-    Settings::settings()->setInt(skEdColorSchemeIndex, (MacOSCocoaBridge::isDarkMode() ? 1 : 0));
+    Settings::settings()->setInt(skEdAppearance, (MacOSCocoaBridge::isDarkMode() ? 1 : 0));
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
