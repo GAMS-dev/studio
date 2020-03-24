@@ -58,6 +58,18 @@ struct OptionItem {
     OptionErrorType error = No_Error;
 };
 
+struct ParamConfigItem {
+    ParamConfigItem() { }
+
+    int optionId = -1;
+    QString key = "";
+    QString value = "";
+    int minVersion = 0;
+    int maxVersion = 0;
+    bool disabled = false;
+    bool recurrent = false;
+    OptionErrorType error = No_Error;
+};
 
 struct SolverOptionItem {
     SolverOptionItem() { }
@@ -119,7 +131,6 @@ struct OptionDefinition {
     int groupNumber;
     bool modified = false;
 };
-
 
 class Option
 {
@@ -213,6 +224,7 @@ const double OPTION_VALUE_MINDOUBLE = -1e+299;
 const int OPTION_VALUE_MAXINT = INT_MAX;
 const int OPTION_VALUE_MININT = INT_MIN;
 const int OPTION_VALUE_DECIMALS = 20;
+const QString GamsOptDefFile = "optgams.def";
 
 } // namespace option
 } // namespace studio

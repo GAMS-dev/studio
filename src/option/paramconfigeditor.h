@@ -20,6 +20,10 @@
 #ifndef PARAMCONFIGEDITOR_H
 #define PARAMCONFIGEDITOR_H
 
+#include "optiontokenizer.h"
+#include "gamsconfigparamtablemodel.h"
+#include "optioncompleterdelegate.h"
+
 #include <QWidget>
 
 namespace gams {
@@ -45,6 +49,9 @@ public:
 
 private:
     Ui::ParamConfigEditor *ui;
+
+    OptionTokenizer* mOptionTokenizer;
+    GamsConfigParamTableModel * mParameterTableModel;
 };
 
 }

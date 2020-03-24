@@ -78,6 +78,7 @@ public:
 
     void validateOption(QList<OptionItem> &items);
     void validateOption(QList<SolverOptionItem *> &items);
+    void validateOption(QList<ParamConfigItem *> &items);
 
     Option *getOption() const;
 

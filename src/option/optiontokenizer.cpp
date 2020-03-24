@@ -1323,6 +1323,20 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
     }
 }
 
+void OptionTokenizer::validateOption(QList<ParamConfigItem *> &items)
+{
+    for(ParamConfigItem* item : items) {
+        if (item->disabled)
+            continue;
+
+        QString key = item->key;
+        QString value = item->value;
+
+        // TODO (JP)
+    }
+    return;
+}
+
 Option *OptionTokenizer::getOption() const
 {
     return mOption;
