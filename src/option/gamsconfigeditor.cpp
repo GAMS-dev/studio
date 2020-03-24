@@ -31,6 +31,9 @@ GamsConfigEditor::GamsConfigEditor(QWidget *parent) :
     ui(new Ui::GamsConfigEditor)
 {
     ui->setupUi(this);
+
+    ui->GamsCfgTabWidget->setCurrentIndex(0);
+    setFocusProxy(ui->GamsCfgTabWidget);
 }
 
 GamsConfigEditor::~GamsConfigEditor()

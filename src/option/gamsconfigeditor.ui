@@ -32,9 +32,9 @@
       <enum>QTabWidget::South</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
-     <widget class="QWidget" name="gamsParamTab">
+     <widget class="gams::studio::option::ParamConfigEditor" name="gamsParamTab">
       <attribute name="title">
        <string>Gams Parameters</string>
       </attribute>
@@ -53,6 +53,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>gams::studio::option::ParamConfigEditor</class>
+   <extends>QWidget</extends>
+   <header>option/paramconfigeditor.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
