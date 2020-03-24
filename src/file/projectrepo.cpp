@@ -31,8 +31,7 @@
 #include "abstractprocess.h"
 #include "projecttreeview.h"
 #include "editors/viewhelper.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 
 namespace gams {
 namespace studio {
@@ -287,7 +286,7 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
                 if (QFileInfo(file).exists()) {
                     ProjectFileNode * node = findOrCreateFileNode(file, group, ft, name);
                     if (nodeObject.contains("codecMib")) {
-                        int codecMib = SettingsLocator::settings()->defaultCodecMib();
+                        int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
                         node->file()->setCodecMib(nodeObject["codecMib"].toInt(codecMib));
                     }
                 }

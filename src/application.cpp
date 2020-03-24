@@ -19,9 +19,9 @@
  */
 #include "application.h"
 #include "exception.h"
-#include "studiosettings.h"
+#include "version.h"
+#include "settings.h"
 #include "commonpaths.h"
-#include "settingslocator.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 
@@ -54,17 +54,18 @@ Application::Application(int& argc, char** argv)
 
 Application::~Application()
 {
-    delete SettingsLocator::settings();
-    SettingsLocator::provide(nullptr);
+    Settings::releaseSettings();
 }
 
 void Application::init()
 {
     CommonPaths::setSystemDir(mCmdParser.gamsDir());
-    auto* settings = new StudioSettings(mCmdParser.ignoreSettings(),
-                                        mCmdParser.resetSettings(),
-                                        mCmdParser.resetView());
-    SettingsLocator::provide(settings);
+    setOrganizationName(GAMS_ORGANIZATION_STR);
+    setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
+    setApplicationName(GAMS_PRODUCTNAME_STR);
+    Settings::createSettings(mCmdParser.ignoreSettings(),
+                             mCmdParser.resetSettings(),
+                             mCmdParser.resetView());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
     mMainWindow->setInitialFiles(mCmdParser.files());
 

@@ -78,7 +78,7 @@ private:
 
 private:
     AbstractTextMapper &mMapper;
-    StudioSettings *mSettings;
+    Settings *mSettings;
     qint64 mTopByte = 0;
     QPoint mClickPos;
     bool mClickStart = false;

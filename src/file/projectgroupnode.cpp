@@ -31,8 +31,7 @@
 #include "syntax.h"
 #include "option/option.h"
 #include "editors/sysloglocator.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include <QFileInfo>
 #include <QDir>
 
@@ -634,7 +633,7 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     TextMark* textMark = textMarkRepo()->marks(runnableGms()->id())->firstError(id());
 
     if (textMark) {
-        if (SettingsLocator::settings()->openLst()) {
+        if (Settings::settings()->toBool(skOpenLst)) {
             textMark->jumpToMark(false);
             textMark->jumpToRefMark(focus);
         } else {
@@ -678,7 +677,7 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
             if (runFile)
                 node->file()->setCodec(runFile->codec());
             else {
-                int codecMib = SettingsLocator::settings()->defaultCodecMib();
+                int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
                 QTextCodec *codec = QTextCodec::codecForMib(codecMib);
                 if (codec) node->file()->setCodec(codec);
             }
@@ -708,7 +707,7 @@ void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
         else if (kind == "ref")
             fullPath += ".ref";
         else
-            qDebug() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
+            DEB() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
     }
 
     mParameterHash.insert(kind, fullPath);

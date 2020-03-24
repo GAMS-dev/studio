@@ -32,7 +32,7 @@ namespace gams {
 namespace studio {
 
 class MainWindow;
-class StudioSettings;
+class Settings;
 class SchemeWidget;
 
 class SettingsDialog : public QDialog
@@ -57,7 +57,7 @@ private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &value);
-    void on_sb_fontsize_valueChanged(int arg1);
+    void on_sb_fontsize_valueChanged(int size);
     void schemeModified();
     void setModified();
 
@@ -67,14 +67,14 @@ private slots:
     void on_btn_import_clicked();
     void on_btn_resetView_clicked();
     void on_cb_writeLog_toggled(bool checked);
-    void on_sb_nrLogBackups_valueChanged(int arg1);
+    void on_sb_nrLogBackups_valueChanged(int value);
     void on_miroBrowseButton_clicked();
 
     void on_combo_appearance_currentIndexChanged(int index);
 
 private:
     Ui::SettingsDialog *ui;
-    StudioSettings *mSettings;
+    Settings *mSettings;
     MainWindow *mMain;
     bool isModified = false;
     bool mInitializing = true;

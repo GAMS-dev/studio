@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "solveroptiondefinitionmodel.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
+#include <QDataStream>
 #include <QDataStream>
 
 namespace gams {
@@ -53,7 +53,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
     QByteArray encodedData;
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    StudioSettings* settings = SettingsLocator::settings();
+    Settings* settings = Settings::settings();
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
             if (index.column()>0) {
@@ -65,7 +65,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
             if (parentItem == rootItem) {
-                if (settings && settings->addCommentDescriptionAboveOption()) {
+                if (settings && settings->toBool(skSoAddCommentAbove)) {
                     stream << QString("%1 %2").arg(lineComment).arg(data(descriptionIndex, Qt::DisplayRole).toString());
                 }
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
@@ -75,7 +75,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
                                                 .arg(data(descriptionIndex, Qt::DisplayRole).toString())
                                                 .arg(data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
-                if (settings && settings->addCommentDescriptionAboveOption()) {
+                if (settings && settings->toBool(skSoAddCommentAbove)) {
                     stream << QString("%1 %2").arg(lineComment).arg(parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
                     stream << QString("%1 %2 - %3").arg(lineComment)
                                                    .arg(data(index, Qt::DisplayRole).toString())

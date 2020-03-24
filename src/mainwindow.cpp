@@ -35,11 +35,10 @@
 #include "gamslibprocess.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
-#include "settingslocator.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
 #include "search/searchlocator.h"
@@ -80,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
       mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
-    mSettings = SettingsLocator::settings();
+    Settings *settings = Settings::settings();
 
     ui->setupUi(this);
 
@@ -198,11 +197,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
-    mSettings->loadSettings(this);
-    mRecent.path = mSettings->defaultWorkspace();
-    mSearchDialog = new search::SearchDialog(this);
 
-    if (mSettings->resetSettingsSwitch()) mSettings->resetSettings();
+    restoreFromSettings();
+    mRecent.path = settings->toString(skDefaultWorkspace);
+    mSearchDialog = new search::SearchDialog(this);
 
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
@@ -213,7 +211,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
-    mSyslog->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
+    mSyslog->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
     on_actionShow_System_Log_triggered();
 
     initTabs();
@@ -233,7 +231,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
-    SettingsLocator::provide(mSettings);
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
@@ -241,13 +238,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Themes
 #ifdef __APPLE__
-    mSettings->setAppearance((MacOSCocoaBridge::isDarkMode() ? 1 : 0));
+    Settings::settings()->setInt(skEdColorSchemeIndex, (MacOSCocoaBridge::isDarkMode() ? 1 : 0));
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
 
     // this needs to be re-called for studio startup, as the call when loading settings is too early
-    mSettings->setAppearance(mSettings->appearance());
+    changeAppearance();
 }
 
 
@@ -278,7 +275,7 @@ void MainWindow::initTabs()
 
     mWp = new WelcomePage(this);
     connect(mWp, &WelcomePage::openFilePath, this, &MainWindow::openFilePath);
-    if (mSettings->skipWelcomePage())
+    if (Settings::settings()->toBool(skSkipWelcomePage))
         mWp->hide();
     else
         showWelcomePage();
@@ -318,7 +315,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
     mAutosaveHandler->saveChangedFiles();
-    mSettings->saveSettings(this);
+    updateAndSaveSettings();
 }
 
 bool MainWindow::event(QEvent *event)
@@ -501,7 +498,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryIt
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
-    QString gmsFilePath = mSettings->defaultWorkspace() + "/" + inputFile;
+    QString gmsFilePath = Settings::settings()->toString(skDefaultWorkspace) + "/" + inputFile;
     QFile gmsFile(gmsFilePath);
 
     mFileMetaRepo.unwatch(gmsFilePath);
@@ -538,13 +535,13 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GamsLibProcess(this);
     mLibProcess->setInputFile(inputFile);
-    mLibProcess->setWorkingDirectory(mSettings->defaultWorkspace());
+    mLibProcess->setWorkingDirectory(Settings::settings()->toString(skDefaultWorkspace));
 
     QStringList args {
         "-lib",
         QDir::toNativeSeparators(gamsSysDir.filePath(glbFile)),
         (modelName.isEmpty() ? QString::number(-1) : modelName),
-        QDir::toNativeSeparators(mSettings->defaultWorkspace())
+        QDir::toNativeSeparators(Settings::settings()->toString(skDefaultWorkspace))
     };
     mLibProcess->setParameters(args);
 
@@ -1094,7 +1091,7 @@ void MainWindow::on_actionSave_As_triggered()
                 }
                 mStatusWidgets->setFileName(filePath);
 
-                mSettings->saveSettings(this);
+                updateAndSaveSettings();
             }
         }
         if (choice == 1) {
@@ -1388,8 +1385,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
             if (group->childCount() == 0)
                 closeGroup(group);
         }
-        history()->mLastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged();
+        mHistory.files().removeAll(file->location());
+        historyChanged();
         return 0;
     }
 
@@ -1401,8 +1398,8 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
     if (choice == 0) {
         if (file->exists(true)) return 0;
         closeFileEditors(fileId);
-        history()->mLastOpenedFiles.removeAll(file->location());
-        mWp->historyChanged();
+        mHistory.files().removeAll(file->location());
+        historyChanged();
     } else if (!file->isReadOnly()) {
         if (file->exists(true)) return 0;
         file->setModified();
@@ -1545,7 +1542,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         logNode->logDone();
         if (logNode->file()->editors().size()) {
             if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
-                if (mSettings->jumpToError()) {
+                if (Settings::settings()->toBool(skJumpToError)) {
                     int errLine = tv->firstErrorLine();
                     if (errLine >= 0) tv->jumpTo(errLine, 0);
                 }
@@ -1564,10 +1561,10 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
             if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 
         bool alreadyJumped = false;
-        if (mSettings->jumpToError())
+        if (Settings::settings()->toBool(skJumpToError))
             alreadyJumped = groupNode->jumpToFirstError(doFocus, lstNode);
 
-        if (!alreadyJumped && mSettings->openLst())
+        if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
     }
 }
@@ -1582,7 +1579,7 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    qDebug() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
+    DEB() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
@@ -1889,9 +1886,9 @@ void MainWindow::triggerGamsLibFileCreation(modeldialog::LibraryItem *item)
     openModelFromLib(item->library()->glbFile(), item);
 }
 
-HistoryData *MainWindow::history()
+const HistoryData &MainWindow::history()
 {
-    return &mHistory;
+    return mHistory;
 }
 
 void MainWindow::addToOpenedFiles(QString filePath)
@@ -1900,18 +1897,56 @@ void MainWindow::addToOpenedFiles(QString filePath)
 
     if (filePath.startsWith("[")) return; // invalid
 
-    while (history()->mLastOpenedFiles.size() > mSettings->historySize()
-           && !history()->mLastOpenedFiles.isEmpty())
-        history()->mLastOpenedFiles.removeLast();
+    while (mHistory.files().size() > Settings::settings()->toInt(skHistorySize) && !mHistory.files().isEmpty())
+        mHistory.files().removeLast();
 
-    if (mSettings->historySize() == 0) return;
+    if (Settings::settings()->toInt(skHistorySize) == 0) {
+        historyChanged();
+        return;
+    }
 
-    if (!history()->mLastOpenedFiles.contains(filePath))
-        history()->mLastOpenedFiles.insert(0, filePath);
-    else
-        history()->mLastOpenedFiles.move(history()->mLastOpenedFiles.indexOf(filePath), 0);
+    if (!mHistory.files().contains(filePath)) {
+        mHistory.files().insert(0, filePath);
+    } else {
+        mHistory.files().move(mHistory.files().indexOf(filePath), 0);
+    }
+    historyChanged();
+}
 
+void MainWindow::historyChanged()
+{
     if (mWp) mWp->historyChanged();
+    QJsonArray joHistory;
+    for (const QString &file : mHistory.files()) {
+        if (file.isEmpty()) break;
+        QJsonObject joOpenFile;
+        joOpenFile["file"] = file;
+        joHistory << joOpenFile;
+    }
+    Settings::settings()->setJsonArray(skHistory, joHistory);
+}
+
+void MainWindow::changeAppearance()
+{
+    int pickedTheme = Settings::settings()->toInt(skEdColorSchemeIndex);
+
+    bool canFollowOS = false;
+#ifdef _WIN32
+    canFollowOS = true; // deactivate follow OS option for linux
+#endif
+
+    if (canFollowOS && pickedTheme == 0) { // do OS specific things
+#ifdef _WIN32
+        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#endif
+    } else if (canFollowOS) {
+        pickedTheme--; // deduct "Follow OS" option
+    }
+
+    PaletteManager::instance()->setPalette(pickedTheme);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 }
 
 bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
@@ -1942,9 +1977,93 @@ bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> 
     return true;
 }
 
+void MainWindow::updateAndSaveSettings()
+{
+    Settings *settings = Settings::settings();
+
+    settings->setSize(skWinSize, size());
+    settings->setPoint(skWinPos, pos());
+    settings->setByteArray(skWinState, saveState());
+    settings->setBool(skWinMaximized, isMaximized());
+
+    settings->setBool(skViewProject, projectViewVisibility());
+    settings->setBool(skViewOutput, outputViewVisibility());
+    settings->setBool(skViewHelp, helpViewVisibility());
+    settings->setBool(skViewOption, optionEditorVisibility());
+
+    settings->setString(skEncodingMib, encodingMIBsString());
+
+    settings->setBool(skSearchUseRegex, searchDialog()->regex());
+    settings->setBool(skSearchCaseSens, searchDialog()->caseSens());
+    settings->setBool(skSearchWholeWords, searchDialog()->wholeWords());
+    settings->setInt(skSearchScope, searchDialog()->selectedScope());
+
+#ifdef QWEBENGINE
+    QJsonArray joBookmarks;
+    // TODO(JM) Check with Jeed if this can be moved from multimap to map
+    QMultiMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
+    for (int i = 0; i < bookmarkMap.size(); i++) {
+        QJsonObject joBookmark;
+        joBookmark["location"] = bookmarkMap.keys().at(i);
+        joBookmark["name"] = bookmarkMap.values().at(i);
+        joBookmarks << joBookmark;
+    }
+    settings->setJsonArray(skHelpBookmarks, joBookmarks);
+    settings->setDouble(skHelpZoomFactor, helpWidget()->getZoomFactor());
+#endif
+
+    QJsonObject joProjects;
+    projectRepo()->write(joProjects);
+    settings->setJsonObject(skProjects, joProjects);
+
+    QJsonObject joTabs;
+    writeTabs(joTabs);
+    settings->setJsonObject(skTabs, joTabs);
+
+    historyChanged();
+
+    // at last, save the settings
+    settings->save();
+}
+
+void MainWindow::restoreFromSettings()
+{
+    Settings *settings = Settings::settings();
+
+    // main window
+    if (settings->toBool(skWinMaximized)) {
+        setWindowState(Qt::WindowMaximized);
+    } else {
+        resize(settings->toSize(skWinSize));
+        move(settings->toPoint(skWinPos));
+    }
+    restoreState(settings->toByteArray(skWinState));
+    ensureInScreen();
+
+    // tool-/menubar
+    setProjectViewVisibility(settings->toBool(skViewProject));
+    setOutputViewVisibility(settings->toBool(skViewOutput));
+    setExtendedEditorVisibility(settings->toBool(skViewOption));
+    setHelpViewVisibility(settings->toBool(skViewHelp));
+    setEncodingMIBs(settings->toString(skEncodingMib));
+
+    // help
+#ifdef QWEBENGINE
+    QJsonArray joHelp = settings->toJsonArray(skHelpBookmarks);
+    QMultiMap<QString, QString> bookmarkMap;
+    for (QJsonValue joVal: joHelp) {
+        bookmarkMap.insert(joVal["location"].toString(), joVal["name"].toString());
+    }
+    helpWidget()->setBookmarkMap(bookmarkMap);
+    double hZoom = settings->toDouble(skHelpZoomFactor);
+    helpWidget()->setZoomFactor(hZoom > 0.0 ? hZoom : 1.0);
+#endif
+
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    modeldialog::ModelDialog dialog(mSettings->userModelLibraryDir(), this);
+    modeldialog::ModelDialog dialog(Settings::settings()->toString(skUserModelLibraryDir), this);
     if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
         modeldialog::LibraryItem *item = dialog.selectedLibraryItem();
@@ -1994,7 +2113,7 @@ void MainWindow::on_actionBase_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.mainModelName());
-    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
@@ -2009,7 +2128,7 @@ void MainWindow::on_actionHypercube_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.mainModelName());
-    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
@@ -2024,7 +2143,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     miroProcess->setModelName(mRecent.mainModelName());
-    miroProcess->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
@@ -2075,7 +2194,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
         return;
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
-    process->setMiroPath(miro::MiroCommon::path(mSettings->miroInstallationLocation()));
+    process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
     process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
     process->setModelName(mRecent.mainModelName());
     process->setTestDeployment(testDeploy);
@@ -2170,7 +2289,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
-    mSettings->saveSettings(this);
+    updateAndSaveSettings();
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
     if (!terminateProcessesConditionally(mProjectRepo.runGroups())) {
         event->setAccepted(false);
@@ -2186,7 +2305,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::keyPressEvent(QKeyEvent* e)
 {
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0))
-        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize());
+        updateFixedFonts(Settings::settings()->toString(skEdFontFamily),
+                         Settings::settings()->toInt(skEdFontSize));
 
     // escape is the close button for focussed widgets
     if (e->key() == Qt::Key_Escape) {
@@ -2384,6 +2504,7 @@ void MainWindow::execute(QString commandLineStr,
                          std::unique_ptr<AbstractProcess> process,
                          ProjectFileNode* gmsFileNode)
 {
+    Settings *settings = Settings::settings();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (!runGroup) {
@@ -2401,7 +2522,7 @@ void MainWindow::execute(QString commandLineStr,
             modifiedFiles << node->file();
     }
     bool doSave = !modifiedFiles.isEmpty();
-    if (doSave && !mSettings->autosaveOnRun()) {
+    if (doSave && !settings->toBool(skAutosaveOnRun)) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         if (modifiedFiles.size() > 1)
@@ -2446,10 +2567,10 @@ void MainWindow::execute(QString commandLineStr,
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-        wid->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
+        wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
         if (ViewHelper::toTextView(wid))
-            ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-                                                                                      : AbstractEdit::NoWrap);
+            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toInt(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                                              : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -2467,7 +2588,7 @@ void MainWindow::execute(QString commandLineStr,
         }
     }
 
-    if (mSettings->clearLog()) logNode->clearLog();
+    if (settings->toBool(skEdClearLog)) logNode->clearLog();
 
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
@@ -2550,14 +2671,25 @@ void MainWindow::parameterRunChanged()
 
 void MainWindow::openInitialFiles()
 {
-    if (mSettings->restoreTabsAndProjects(this)) {
-        mSettings->restoreLastFilesUsed(this);
-        openFiles(mInitialFiles);
-        mInitialFiles.clear();
-        watchProjectTree();
-        ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
-        if (node) openFileNode(node, true);
+    Settings *settings = Settings::settings();
+    QJsonObject joProject = settings->toJsonObject(skProjects);
+    projectRepo()->read(joProject);
+
+    if (settings->toBool(skRestoreTabs)) {
+        QJsonObject joTabs = settings->toJsonObject(skTabs);
+        if (!readTabs(joTabs)) return;
     }
+    mHistory.files().clear();
+    QJsonArray joHistory = settings->toJsonArray(skHistory);
+    for (QJsonValue jRef: joHistory) {
+        mHistory.files() << jRef["file"].toString();
+    }
+
+    openFiles(mInitialFiles);
+    mInitialFiles.clear();
+    watchProjectTree();
+    ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
+    if (node) openFileNode(node, true);
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -2604,6 +2736,7 @@ void MainWindow::on_actionStop_triggered()
 
 void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool createMissing)
 {
+    Settings *settings = Settings::settings();
     bool moveToEnd = false;
     ProjectLogNode* logNode = mProjectRepo.logNode(node);
     if (!logNode) return;
@@ -2612,10 +2745,10 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
-            wid->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
-            if (ViewHelper::toTextView(wid))
-                ViewHelper::toTextView(wid)->setLineWrapMode(mSettings->lineWrapProcess() ? AbstractEdit::WidgetWidth
-                                                                                          : AbstractEdit::NoWrap);
+            wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
+            if (TextView * tv = ViewHelper::toTextView(wid))
+                tv->setLineWrapMode(settings->toInt(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                        : AbstractEdit::NoWrap);
         }
         if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
             MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -2639,7 +2772,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
 
 void MainWindow::storeTree()
 {
-    mSettings->saveSettings(this);
+    updateAndSaveSettings();
 }
 
 void MainWindow::cloneBookmarkMenu(QMenu *menu)
@@ -2649,7 +2782,7 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
 
 void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
 {
-    qint64 maxSize = SettingsLocator::settings()->editableMaxSizeMB() *1024*1024;
+    qint64 maxSize = Settings::settings()->toInt(skEdEditableMaxSizeMB) *1024*1024;
     int factor = (sizeof (void*) == 2) ? 16 : 23;
     if (mFileMetaRepo.askBigFileEdit() && file.exists() && file.size() > maxSize) {
         QString text = ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
@@ -2670,9 +2803,10 @@ void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
 
 void MainWindow::updateMiroMenu()
 {
-    if (mSettings->miroInstallationLocation().isEmpty())
-        mSettings->setMiroInstallationLocation(miro::MiroCommon::path(""));
-    QFileInfo fileInfo(mSettings->miroInstallationLocation());
+    Settings *settings = Settings::settings();
+    if (settings->toString(skMiroInstallPath).isEmpty())
+        settings->setString(skMiroInstallPath, miro::MiroCommon::path(""));
+    QFileInfo fileInfo(settings->toString(skMiroInstallPath));
     if (fileInfo.exists())
         ui->menuMIRO->setEnabled(true);
     else
@@ -2755,6 +2889,7 @@ void MainWindow::raiseEdit(QWidget *widget)
 
 void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEditor)
 {
+    Settings *settings = Settings::settings();
     if (!fileMeta) return;
     QWidget* edit = nullptr;
     QTabWidget* tabWidget = fileMeta->kind() == FileKind::Log ? ui->logTabs : ui->mainTabs;
@@ -2807,14 +2942,14 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
-            tv->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
+            tv->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
             connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
         }
         if (ViewHelper::toCodeEdit(edit)) {
             AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-            ae->setFont(createEditorFont(mSettings->fontFamily(), mSettings->fontSize()));
+            ae->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         } else if (ViewHelper::toSolverOptionEdit(edit)) {
@@ -3041,7 +3176,7 @@ void MainWindow::on_actionSettings_triggered()
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
     sd.disconnect();
-    mSettings->saveSettings(this);
+    updateAndSaveSettings();
     if (sd.miroSettingsEnabled())
         updateMiroMenu();
 }
@@ -3170,10 +3305,11 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 
 void MainWindow::updateEditorLineWrapping()
 {
-    QPlainTextEdit::LineWrapMode wrapModeEditor = mSettings->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
-                                                                              : QPlainTextEdit::NoWrap;
-    QPlainTextEdit::LineWrapMode wrapModeProcess = mSettings->lineWrapProcess() ? QPlainTextEdit::WidgetWidth
-                                                                                : QPlainTextEdit::NoWrap;
+    Settings *settings = Settings::settings();
+    QPlainTextEdit::LineWrapMode wrapModeEditor = settings->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
+                                                                                     : QPlainTextEdit::NoWrap;
+    QPlainTextEdit::LineWrapMode wrapModeProcess = settings->toInt(skEdLineWrapProcess) ? QPlainTextEdit::WidgetWidth
+                                                                                       : QPlainTextEdit::NoWrap;
     QWidgetList editList = mFileMetaRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
@@ -3364,13 +3500,12 @@ void MainWindow::on_actionReset_Zoom_triggered()
     if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
         helpWidget()->isAncestorOf(QApplication::activeWindow())) {
         helpWidget()->resetZoom(); // reset help view
-    } else {
+    } else
 #endif
-        updateFixedFonts(mSettings->fontFamily(), mSettings->fontSize()); // reset all editors
-#ifdef QWEBENGINE
+    {
+        Settings *settings = Settings::settings();
+        updateFixedFonts(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)); // reset all editors
     }
-#endif
-
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
@@ -3379,10 +3514,10 @@ void MainWindow::on_actionZoom_Out_triggered()
     if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
         helpWidget()->isAncestorOf(QApplication::activeWindow())) {
         helpWidget()->zoomOut();
-    } else {
+    } else
 #endif
-        AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget());
-        if (ae) {
+    {
+        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
             int pix = ae->fontInfo().pixelSize();
             if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
         }
@@ -3390,10 +3525,7 @@ void MainWindow::on_actionZoom_Out_triggered()
             int pix = tv->fontInfo().pixelSize();
             if (pix == tv->fontInfo().pixelSize()) tv->zoomOut();
         }
-
-#ifdef QWEBENGINE
     }
-#endif
 }
 
 void MainWindow::on_actionZoom_In_triggered()
@@ -3402,10 +3534,10 @@ void MainWindow::on_actionZoom_In_triggered()
     if (helpWidget()->isAncestorOf(QApplication::focusWidget()) ||
         helpWidget()->isAncestorOf(QApplication::activeWindow())) {
         helpWidget()->zoomIn();
-    } else {
+    } else
 #endif
-        AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget());
-        if (ae) {
+    {
+        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
             int pix = ae->fontInfo().pixelSize();
             ae->zoomIn();
             if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
@@ -3415,9 +3547,7 @@ void MainWindow::on_actionZoom_In_triggered()
             tv->zoomIn();
             if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn();
         }
-#ifdef QWEBENGINE
     }
-#endif
 }
 
 void MainWindow::convertLowerUpper(bool toUpper)
@@ -3485,7 +3615,7 @@ void MainWindow::on_actionIndent_triggered()
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
-    ce->indent(mSettings->tabSize(), pos.y()-1, anc.y()-1);
+    ce->indent(Settings::settings()->toInt(skEdTabSize), pos.y()-1, anc.y()-1);
 }
 
 void MainWindow::on_actionOutdent_triggered()
@@ -3497,7 +3627,7 @@ void MainWindow::on_actionOutdent_triggered()
     if (!ce || ce->isReadOnly()) return;
     QPoint pos(-1,-1); QPoint anc(-1,-1);
     ce->getPositionAndAnchor(pos, anc);
-    ce->indent(-mSettings->tabSize(), pos.y()-1, anc.y()-1);
+    ce->indent(-Settings::settings()->toInt(skEdTabSize), pos.y()-1, anc.y()-1);
 }
 
 void MainWindow::on_actionDuplicate_Line_triggered()
@@ -3558,12 +3688,12 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
 
 void MainWindow::on_actionSelect_encodings_triggered()
 {
-    int defCodec = mSettings->defaultCodecMib();
+    int defCodec = Settings::settings()->toInt(skDefaultCodecMib);
     SelectEncodings se(encodingMIBs(), defCodec, this);
     if (se.exec() == QDialog::Accepted) {
-        mSettings->setDefaultCodecMib(se.defaultCodec());
+        Settings::settings()->setInt(skDefaultCodecMib, se.defaultCodec());
         setEncodingMIBs(se.selectedMibs());
-        mSettings->saveSettings(this);
+        Settings::settings()->save();
     }
 }
 
@@ -3662,8 +3792,8 @@ void MainWindow::on_actionReset_Views_triggered()
 void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
-    mSettings->resetViewSettings();
-    mSettings->loadSettings(this);
+    Settings::settings()->resetViewSettings();
+    Settings::settings()->load(Settings::scUi);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
@@ -3717,7 +3847,7 @@ void MainWindow::setForeground()
 
 void MainWindow::setForegroundOSCheck()
 {
-    if (mSettings->foregroundOnDemand())
+    if (Settings::settings()->toBool(skForegroundOnDemand))
         setForeground();
 }
 
@@ -3889,6 +4019,10 @@ void MainWindow::on_actionShowToolbar_triggered(bool checked)
 {
     ui->toolBar->setVisible(checked);
 }
+
+
+
+
 
 }
 }

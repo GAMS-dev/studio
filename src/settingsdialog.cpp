@@ -24,8 +24,7 @@
 #include "scheme.h"
 #include "colors/palettemanager.h"
 #include "settingsdialog.h"
-#include "studiosettings.h"
-#include "settingslocator.h"
+#include "settings.h"
 #include "ui_settingsdialog.h"
 #include "miro/mirocommon.h"
 #include "schemewidget.h"
@@ -54,7 +53,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->combo_appearance->setVisible(false);
 #endif
 
-    mSettings = SettingsLocator::settings();
+    mSettings = Settings::settings();
+    mSettings->block(); // prevent changes from outside this dialog
     loadSettings();
 
     // TODO(JM) temporarily removed
@@ -99,46 +99,50 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 
 void SettingsDialog::loadSettings()
 {
+    mSettings->load(Settings::scUser);
+
     // general tab page
-    ui->txt_workspace->setText(mSettings->defaultWorkspace());
-    ui->cb_skipwelcome->setChecked(mSettings->skipWelcomePage());
-    ui->cb_restoretabs->setChecked(mSettings->restoreTabs());
-    ui->cb_autosave->setChecked(mSettings->autosaveOnRun());
-    ui->cb_openlst->setChecked(mSettings->openLst());
-    ui->cb_jumptoerror->setChecked(mSettings->jumpToError());
-    ui->cb_foregroundOnDemand->setChecked(mSettings->foregroundOnDemand());
+    ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
+    ui->cb_skipwelcome->setChecked(mSettings->toBool(skSkipWelcomePage));
+    ui->cb_restoretabs->setChecked(mSettings->toBool(skRestoreTabs));
+    ui->cb_autosave->setChecked(mSettings->toBool(skAutosaveOnRun));
+    ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
+    ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
+    ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
 
     // editor tab page
-    ui->combo_appearance->setCurrentIndex(mSettings->appearance());
-    ui->fontComboBox->setCurrentFont(QFont(mSettings->fontFamily()));
-    ui->sb_fontsize->setValue(mSettings->fontSize());
-    ui->cb_showlinenr->setChecked(mSettings->showLineNr());
-    ui->sb_tabsize->setValue(mSettings->tabSize());
-    ui->cb_linewrap_editor->setChecked(mSettings->lineWrapEditor());
-    ui->cb_linewrap_process->setChecked(mSettings->lineWrapProcess());
-    ui->cb_clearlog->setChecked(mSettings->clearLog());
-    ui->cb_highlightUnderCursor->setChecked(mSettings->wordUnderCursor());
-    ui->cb_highlightcurrent->setChecked(mSettings->highlightCurrentLine());
-    ui->cb_autoindent->setChecked(mSettings->autoIndent());
-    ui->cb_writeLog->setChecked(mSettings->writeLog());
-    ui->sb_nrLogBackups->setValue(mSettings->nrLogBackups());
-    ui->cb_autoclose->setChecked(mSettings->autoCloseBraces());
+    ui->combo_appearance->setCurrentIndex(mSettings->toInt(skEdColorSchemeIndex));
+    ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
+    ui->sb_fontsize->setValue(mSettings->toInt(skEdFontSize));
+    ui->cb_showlinenr->setChecked(mSettings->toBool(skEdShowLineNr));
+    ui->sb_tabsize->setValue(mSettings->toInt(skEdTabSize));
+    ui->cb_linewrap_editor->setChecked(mSettings->toBool(skEdLineWrapEditor));
+    ui->cb_linewrap_process->setChecked(mSettings->toBool(skEdLineWrapProcess));
+    ui->cb_clearlog->setChecked(mSettings->toBool(skEdClearLog));
+    ui->cb_highlightUnderCursor->setChecked(mSettings->toBool(skEdWordUnderCursor));
+    ui->cb_highlightcurrent->setChecked(mSettings->toBool(skEdHighlightCurrentLine));
+    ui->cb_autoindent->setChecked(mSettings->toBool(skEdAutoIndent));
+    ui->cb_writeLog->setChecked(mSettings->toBool(skEdWriteLog));
+    ui->sb_nrLogBackups->setValue(mSettings->toInt(skEdLogBackupCount));
+    ui->cb_autoclose->setChecked(mSettings->toBool(skEdAutoCloseBraces));
 
     // MIRO page
-    ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->miroInstallationLocation()));
+    ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(skMiroInstallPath)));
     if (ui->miroEdit->text().isEmpty()) {
         auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
         ui->miroEdit->setText(path);
-        mSettings->setMiroInstallationLocation(path);
+        mSettings->setString(skMiroInstallPath, path);
     }
 
     // misc tab page
-    ui->sb_historySize->setValue(mSettings->historySize());
+    ui->sb_historySize->setValue(mSettings->toInt(skHistorySize));
     // solver option editor
-    ui->overrideExistingOptionCheckBox->setChecked(mSettings->overridExistingOption());
-    ui->addCommentAboveCheckBox->setChecked(mSettings->addCommentDescriptionAboveOption());
-    ui->addEOLCommentCheckBox->setChecked(mSettings->addEOLCommentDescriptionOption());
-    ui->deleteCommentAboveCheckbox->setChecked(mSettings->deleteAllCommentsAboveOption());
+    ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
+    ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(skSoAddCommentAbove));
+    ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(skSoAddEOLComment));
+    ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
+
+    mMain->changeAppearance();
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -178,46 +182,53 @@ void SettingsDialog::setMiroSettingsEnabled(bool enabled)
 void SettingsDialog::saveSettings()
 {
     // general page
-    mSettings->setDefaultWorkspace(ui->txt_workspace->text());
-    mSettings->setSkipWelcomePage(ui->cb_skipwelcome->isChecked());
-    mSettings->setRestoreTabs(ui->cb_restoretabs->isChecked());
-    mSettings->setAutosaveOnRun(ui->cb_autosave->isChecked());
-    mSettings->setOpenLst(ui->cb_openlst->isChecked());
-    mSettings->setJumpToError(ui->cb_jumptoerror->isChecked());
-    mSettings->setForegroundOnDemand(ui->cb_foregroundOnDemand->isChecked());
+    mSettings->setString(skDefaultWorkspace, ui->txt_workspace->text());
+    QDir workspace(ui->txt_workspace->text());
+    if (!workspace.exists())
+        workspace.mkpath(".");
+
+    mSettings->setBool(skSkipWelcomePage, ui->cb_skipwelcome->isChecked());
+    mSettings->setBool(skRestoreTabs, ui->cb_restoretabs->isChecked());
+    mSettings->setBool(skAutosaveOnRun, ui->cb_autosave->isChecked());
+    mSettings->setBool(skOpenLst, ui->cb_openlst->isChecked());
+    mSettings->setBool(skJumpToError, ui->cb_jumptoerror->isChecked());
+    mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
-    mSettings->setAppearance(ui->combo_appearance->currentIndex());
-    mSettings->setFontFamily(ui->fontComboBox->currentFont().family());
-    mSettings->setFontSize(ui->sb_fontsize->value());
-    mSettings->setShowLineNr(ui->cb_showlinenr->isChecked());
-    mSettings->setTabSize(ui->sb_tabsize->value());
-    mSettings->setLineWrapEditor(ui->cb_linewrap_editor->isChecked());
-    mSettings->setLineWrapProcess(ui->cb_linewrap_process->isChecked());
-    mSettings->setClearLog(ui->cb_clearlog->isChecked());
-    mSettings->setWordUnderCursor(ui->cb_highlightUnderCursor->isChecked());
-    mSettings->setHighlightCurrentLine(ui->cb_highlightcurrent->isChecked());
-    mSettings->setAutoIndent(ui->cb_autoindent->isChecked());
-    mSettings->setWriteLog(ui->cb_writeLog->isChecked());
-    mSettings->setNrLogBackups(ui->sb_nrLogBackups->value());
-    mSettings->setAutoCloseBraces(ui->cb_autoclose->isChecked());
+    mSettings->setInt(skEdColorSchemeIndex, ui->combo_appearance->currentIndex());
+    mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());
+    mSettings->setInt(skEdFontSize, ui->sb_fontsize->value());
+    mSettings->setBool(skEdShowLineNr, ui->cb_showlinenr->isChecked());
+    mSettings->setInt(skEdTabSize, ui->sb_tabsize->value());
+    mSettings->setBool(skEdLineWrapEditor, ui->cb_linewrap_editor->isChecked());
+    mSettings->setBool(skEdLineWrapProcess, ui->cb_linewrap_process->isChecked());
+    mSettings->setBool(skEdClearLog, ui->cb_clearlog->isChecked());
+    mSettings->setBool(skEdWordUnderCursor, ui->cb_highlightUnderCursor->isChecked());
+    mSettings->setBool(skEdHighlightCurrentLine, ui->cb_highlightcurrent->isChecked());
+    mSettings->setBool(skEdAutoIndent, ui->cb_autoindent->isChecked());
+    mSettings->setBool(skEdWriteLog, ui->cb_writeLog->isChecked());
+    mSettings->setInt(skEdLogBackupCount, ui->sb_nrLogBackups->value());
+    mSettings->setBool(skEdAutoCloseBraces, ui->cb_autoclose->isChecked());
 
     // MIRO page
-    mSettings->setMiroInstallationLocation(ui->miroEdit->text());
+    mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
 
     // colors page
-    mSettings->writeScheme();
+//    mSettings->saveScheme();
 
     // misc page
-    mSettings->setHistorySize(ui->sb_historySize->value());
+    mSettings->setInt(skHistorySize, ui->sb_historySize->value());
 
     // solver option editor
-    mSettings->setOverrideExistingOption(ui->overrideExistingOptionCheckBox->isChecked());
-    mSettings->setAddCommentDescriptionAboveOption(ui->addCommentAboveCheckBox->isChecked());
-    mSettings->setAddEOLCommentDescriptionOption(ui->addEOLCommentCheckBox->isChecked());
-    mSettings->setDeleteAllCommentsAboveOption(ui->deleteCommentAboveCheckbox->isChecked());
+    mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
+    mSettings->setBool(skSoAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
+    mSettings->setBool(skSoAddEOLComment, ui->addEOLCommentCheckBox->isChecked());
+    mSettings->setBool(skSoDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
 
     // done
+    mSettings->unblock();
+    mSettings->save();
+    mSettings->block();
     setModifiedStatus(false);
 }
 
@@ -250,14 +261,15 @@ void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
     emit editorFontChanged(value, ui->sb_fontsize->value());
 }
 
-void SettingsDialog::on_sb_fontsize_valueChanged(int arg1)
+void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 {
-    emit editorFontChanged(ui->fontComboBox->currentFont().family(), arg1);
+    emit editorFontChanged(ui->fontComboBox->currentFont().family(), size);
 }
 
 void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
-    mSettings->changeAppearance(index);
+    mSettings->setInt(skEdColorSchemeIndex, index);
+    mMain->changeAppearance();
 }
 
 void SettingsDialog::schemeModified()
@@ -271,7 +283,7 @@ void SettingsDialog::schemeModified()
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
 {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->userModelLibraryDir()));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->toString(skUserModelLibraryDir)));
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -294,13 +306,14 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
 
 SettingsDialog::~SettingsDialog()
 {
+    mSettings->unblock();
     delete ui;
 }
 
 void SettingsDialog::on_btn_export_clicked()
 {
     QString filePath = QFileDialog::getSaveFileName(this, "Export Settings",
-                                                    mSettings->defaultWorkspace()
+                                                    mSettings->toString(skDefaultWorkspace)
                                                     + "/studiosettings.gus",
                                                     tr("GAMS user settings (*.gus);;"
                                                        "All files (*.*)"));
@@ -313,7 +326,7 @@ void SettingsDialog::on_btn_export_clicked()
 void SettingsDialog::on_btn_import_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Import Settings",
-                                                    mSettings->defaultWorkspace(),
+                                                    mSettings->toString(skDefaultWorkspace),
                                                     tr("GAMS user settings (*.gus);;"
                                                        "All files (*.*)"));
     if (filePath == "") return;
@@ -325,11 +338,12 @@ void SettingsDialog::on_btn_import_clicked()
     int answer = msgBox.exec();
 
     if (answer == QMessageBox::Ok) {
-        mSettings->importSettings(filePath, mMain);
+        mSettings->importSettings(filePath);
     }
 
     emit editorLineWrappingChanged();
-    emit editorFontChanged(mSettings->fontFamily(), mSettings->fontSize());
+    emit editorFontChanged(mSettings->toString(skEdFontFamily),
+                           mSettings->toInt(skEdFontSize));
     close();
 }
 
@@ -342,21 +356,21 @@ void SettingsDialog::on_cb_writeLog_toggled(bool checked)
 {
     ui->lbl_nrBackups->setEnabled(checked);
     ui->sb_nrLogBackups->setEnabled(checked);
-    mSettings->setWriteLog(checked);
+    mSettings->setBool(skEdWriteLog, checked);
 }
 
-void SettingsDialog::on_sb_nrLogBackups_valueChanged(int arg1)
+void SettingsDialog::on_sb_nrLogBackups_valueChanged(int value)
 {
-    mSettings->setNrLogBackups(arg1);
+    mSettings->setInt(skEdLogBackupCount, value);
 }
 
 void SettingsDialog::on_miroBrowseButton_clicked()
 {
     QString dir;
-    if (mSettings->miroInstallationLocation().isEmpty())
-        dir = mSettings->defaultWorkspace();
+    if (mSettings->toString(skMiroInstallPath).isEmpty())
+        dir = mSettings->toString(skDefaultWorkspace);
     else
-        dir = mSettings->miroInstallationLocation();
+        dir = mSettings->toString(skMiroInstallPath);
     auto miro = QFileDialog::getOpenFileName(this, tr("MIRO location"), dir);
 
     if (miro.isEmpty()) return;
@@ -481,6 +495,7 @@ void SettingsDialog::initColorPage()
         mColorWidgets.insert(slot1.at(i), wid);
     }
 }
+
 
 }
 }

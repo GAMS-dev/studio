@@ -80,7 +80,7 @@ private:
 
 private:
     FileId mNextFileId = 0;
-    StudioSettings *mSettings = nullptr;
+    Settings *mSettings = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMeta*> mFiles;

@@ -47,9 +47,6 @@ int main(int argc, char *argv[])
     }
     app.init();
     sem.release();
-    app.setOrganizationName(GAMS_ORGANIZATION_STR);
-    app.setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
-    app.setApplicationName(GAMS_PRODUCTNAME_STR);
 
     try {
         app.mainWindow()->show();

@@ -24,8 +24,7 @@
 #include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "commonpaths.h"
 #include "editors/viewhelper.h"
 #include "editors/sysloglocator.h"
@@ -46,7 +45,7 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
-    mCodec = QTextCodec::codecForMib(SettingsLocator::settings()->defaultCodecMib());
+    mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
     if (!mCodec) mCodec = QTextCodec::codecForLocale();
     if (location.contains('\\'))
         location = QDir::fromNativeSeparators(location);
@@ -449,7 +448,7 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
 void FileMeta::load(int codecMib, bool init)
 {
     if (codecMib == -1) {
-        codecMib = SettingsLocator::settings()->defaultCodecMib();
+        codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     }
     mCodec = QTextCodec::codecForMib(codecMib);
     mData = Data(location(), mData.type);
@@ -740,7 +739,7 @@ QTextDocument *FileMeta::document() const
 
 int FileMeta::codecMib() const
 {
-    return mCodec ? mCodec->mibEnum() : SettingsLocator::settings()->defaultCodecMib();
+    return mCodec ? mCodec->mibEnum() : Settings::settings()->toInt(skDefaultCodecMib);
 }
 
 void FileMeta::setCodecMib(int mib)
@@ -765,7 +764,7 @@ void FileMeta::setCodec(QTextCodec *codec)
 {
     if (!codec) {
         if (!mCodec) {
-            mCodec = QTextCodec::codecForMib(SettingsLocator::settings()->defaultCodecMib());
+            mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
             DEB() << "Encoding parameter invalid, initialized to " << mCodec->name();
         } else {
             DEB() << "Encoding parameter invalid, left unchanged at " << mCodec->name();
@@ -796,7 +795,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
-    if (codecMib == -1) codecMib = SettingsLocator::settings()->defaultCodecMib();
+    if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gdx) {
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
@@ -846,8 +845,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         codeEdit  = new CodeEdit(tabWidget);
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);
-        edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
-                                                                            : QPlainTextEdit::NoWrap);
+        edit->setLineWrapMode(Settings::settings()->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
+                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
         res = edit;
         if (kind() == FileKind::Log) {

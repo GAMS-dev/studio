@@ -51,7 +51,7 @@ class AbstractProcess;
 class GamsProcess;
 class GamsLibProcess;
 class WelcomePage;
-class StudioSettings;
+class Settings;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
@@ -95,6 +95,9 @@ private:
 };
 
 struct HistoryData {
+    QStringList &files() { return mLastOpenedFiles; }
+    const QStringList &files() const { return mLastOpenedFiles; }
+private:
     QStringList mLastOpenedFiles;
 };
 
@@ -117,13 +120,14 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
+    void changeAppearance();
     QStringList encodingNames();
     QString encodingMIBsString();
     QList<int> encodingMIBs();
     void setEncodingMIBs(QString mibList, int active = -1);
     void setEncodingMIBs(QList<int> mibs, int active = -1);
     void setActiveMIB(int active = -1);
-    HistoryData* history();
+    const HistoryData &history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
@@ -356,7 +360,10 @@ private:
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
+    void historyChanged();
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
+    void updateAndSaveSettings();
+    void restoreFromSettings();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
@@ -398,7 +405,6 @@ private:
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData mHistory;
-    StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;

@@ -24,7 +24,6 @@
 #include "abstractprocess.h"
 #include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
-#include "settingslocator.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/viewhelper.h"
@@ -33,7 +32,7 @@
 #include "logger.h"
 #include "projectgroupnode.h"
 #include "projectlognode.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "syntax/textmarkrepo.h"
 
 namespace gams {
@@ -75,9 +74,9 @@ void ProjectLogNode::clearLog()
 
 void ProjectLogNode::prepareRun()
 {
-    StudioSettings *settings = SettingsLocator::settings();
-    if (!mLogFile && settings->writeLog()) {
-        mLogFile = new DynamicFile(location(), settings->nrLogBackups(), this);
+    Settings *settings = Settings::settings();
+    if (!mLogFile && settings->toBool(skEdWriteLog)) {
+        mLogFile = new DynamicFile(location(), settings->toInt(skEdLogBackupCount), this);
     }
     mLogFinished = false;
 

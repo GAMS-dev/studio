@@ -18,19 +18,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 
 namespace gams {
 namespace studio {
 
-StudioSettings* SettingsLocator::mSettings = nullptr;
+Settings* SettingsLocator::mSettings = nullptr;
 
-StudioSettings *SettingsLocator::settings()
+Settings *SettingsLocator::settings()
 {
     return mSettings;
 }
 
-void SettingsLocator::provide(StudioSettings *s)
+void SettingsLocator::provide(Settings *s)
 {
     mSettings = s;
 }

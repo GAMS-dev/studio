@@ -22,8 +22,7 @@
 #include <QApplication>
 
 #include "solveroptiontablemodel.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "scheme.h"
 
 namespace gams {
@@ -434,7 +433,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     else
         beginRow = rowCount(QModelIndex());
 
-    StudioSettings* settings = SettingsLocator::settings();
+    Settings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
 
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
@@ -455,7 +454,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                                                      false));
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
-                if (settings && settings->overridExistingOption()) {
+                if (settings && settings->toBool(skSoOverrideExisting)) {
                     for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
                 }
             }
@@ -549,7 +548,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
                 setData(idx, item->key, Qt::EditRole);
                 setData( index(beginRow, COLUMN_OPTION_VALUE), item->value, Qt::EditRole);
-                if (settings && settings->addEOLCommentDescriptionOption()) { //addEOLComment) {
+                if (settings && settings->toBool(skSoAddEOLComment)) { //addEOLComment) {
                     setData(index(beginRow, COLUMN_EOL_COMMENT), item->text, Qt::EditRole);
                 }
                 setData(index(beginRow, columnEntryNumber), item->optionId, Qt::EditRole);

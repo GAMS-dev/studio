@@ -20,7 +20,7 @@
 #ifndef KEYS_H
 #define KEYS_H
 
-#include "studiosettings.h"
+#include "settings.h"
 
 #include <QKeyEvent>
 #include <QKeySequence>
