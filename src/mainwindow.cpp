@@ -203,7 +203,11 @@ MainWindow::MainWindow(QWidget *parent)
     mSearchDialog = new search::SearchDialog(this);
 
     // stack help under output
-    tabifyDockWidget(ui->dockHelpView, ui->dockProcessLog);
+    if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
+        ui->dockHelpView->setFloating(true);
+        tabifyDockWidget(ui->dockProcessLog, ui->dockHelpView);
+        ui->dockHelpView->setFloating(false);
+    }
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
