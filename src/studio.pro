@@ -190,7 +190,6 @@ SOURCES += \
     search/searchworker.cpp \
     settings.cpp \
     settingsdialog.cpp \
-    settingslocator.cpp \
     statuswidgets.cpp \
     support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
@@ -330,7 +329,6 @@ HEADERS += \
     search/searchworker.h \
     settings.h \
     settingsdialog.h \
-    settingslocator.h \
     statuswidgets.h \
     support/aboutgamsdialog.h       \
     support/checkforupdatewrapper.h \

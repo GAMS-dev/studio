@@ -24,8 +24,7 @@
 #include "exception.h"
 #include "textviewedit.h"
 #include "keys.h"
-#include "studiosettings.h"
-#include "settingslocator.h"
+#include "settings.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -110,7 +109,7 @@ int TextView::lineCount() const
 bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
 {
     if (mTextKind != FileText) return false;
-    if (codecMib == -1) codecMib = SettingsLocator::settings()->toInt(skDefaultCodecMib);
+    if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mMapper->setCodec(codecMib == -1 ? QTextCodec::codecForLocale() : QTextCodec::codecForMib(codecMib));
 
     if (!static_cast<FileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;

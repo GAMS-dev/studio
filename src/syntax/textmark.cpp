@@ -24,7 +24,6 @@
 #include "exception.h"
 #include "scheme.h"
 #include "settings.h"
-#include "settingslocator.h"
 
 namespace gams {
 namespace studio {
