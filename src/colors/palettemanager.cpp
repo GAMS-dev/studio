@@ -14,7 +14,10 @@ PaletteManager::PaletteManager()
     mDefaultStyle = QApplication::style()->objectName();
 
     // Nr1: default style
-    mStyles.append(QApplication::palette());
+    auto p = QApplication::palette();
+    p.setColor(QPalette::Inactive, QPalette::Highlight, p.color(QPalette::Highlight));
+    p.setColor(QPalette::Inactive, QPalette::HighlightedText, p.color(QPalette::HighlightedText));
+    mStyles.append(p);
 
     // Nr2: dark theme
     QPalette darkPalette(QApplication::palette());
