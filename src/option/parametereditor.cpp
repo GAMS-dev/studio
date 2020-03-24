@@ -153,7 +153,10 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
 ParameterEditor::~ParameterEditor()
 {
     delete ui;
-    delete mOptionTokenizer;
+    if (mOptionTokenizer)
+       delete mOptionTokenizer;
+    if (mParameterTableModel)
+       delete mParameterTableModel;
 }
 
 void ParameterEditor::runDefaultAction()
