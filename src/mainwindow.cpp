@@ -234,7 +234,7 @@ MainWindow::MainWindow(QWidget *parent)
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
-    updateMiroMenu();
+    ui->menuMIRO->setEnabled(isMiroAvailable());
 
     // Themes
 #ifdef __APPLE__
@@ -2106,7 +2106,7 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
 
 void MainWindow::on_actionBase_mode_triggered()
 {
-    if (!mRecent.validRunGroup())
+    if (!validMiroPrerequisites())
         return;
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
@@ -2121,7 +2121,7 @@ void MainWindow::on_actionBase_mode_triggered()
 
 void MainWindow::on_actionHypercube_mode_triggered()
 {
-    if (!mRecent.validRunGroup())
+    if (!validMiroPrerequisites())
         return;
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
@@ -2136,7 +2136,7 @@ void MainWindow::on_actionHypercube_mode_triggered()
 
 void MainWindow::on_actionConfiguration_mode_triggered()
 {
-    if (!mRecent.validRunGroup())
+    if (!validMiroPrerequisites())
         return;
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
@@ -2178,7 +2178,7 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
 
 void MainWindow::on_actionDeploy_triggered()
 {
-    if (!mRecent.validRunGroup())
+    if (!validMiroPrerequisites())
         return;
 
     auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
@@ -2186,6 +2186,11 @@ void MainWindow::on_actionDeploy_triggered()
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
     mMiroDeployDialog->exec();
+}
+
+void MainWindow::on_menuMIRO_aboutToShow()
+{
+    ui->menuMIRO->setEnabled(isMiroAvailable());
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
@@ -2801,18 +2806,6 @@ void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
     canOpen = true;
 }
 
-void MainWindow::updateMiroMenu()
-{
-    Settings *settings = Settings::settings();
-    if (settings->toString(skMiroInstallPath).isEmpty())
-        settings->setString(skMiroInstallPath, miro::MiroCommon::path(""));
-    QFileInfo fileInfo(settings->toString(skMiroInstallPath));
-    if (fileInfo.exists())
-        ui->menuMIRO->setEnabled(true);
-    else
-        ui->menuMIRO->setEnabled(false);
-}
-
 void MainWindow::newProcessCall(const QString &text, const QString &call)
 {
     SysLogLocator::systemLog()->append(text + " " + call, LogMsgType::Info);
@@ -3178,7 +3171,7 @@ void MainWindow::on_actionSettings_triggered()
     sd.disconnect();
     updateAndSaveSettings();
     if (sd.miroSettingsEnabled())
-        updateMiroMenu();
+        ui->menuMIRO->setEnabled(isMiroAvailable());
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -3959,6 +3952,26 @@ QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
     QFont font(fontFamily, pointSize);
     font.setHintingPreference(QFont::PreferNoHinting);
     return font;
+}
+
+bool MainWindow::isMiroAvailable()
+{        
+    if (Settings::settings()->toString(skMiroInstallPath).isEmpty())
+        return false;
+    QFileInfo fileInfo(Settings::settings()->toString(skMiroInstallPath));
+    return fileInfo.exists();
+}
+
+bool MainWindow::validMiroPrerequisites()
+{
+    if (!isMiroAvailable()) {
+        auto msg = QString("Could not find MIRO at %1. Please check your MIRO settings.")
+                .arg(Settings::settings()->toString(skMiroInstallPath));
+        SysLogLocator::systemLog()->append(msg, LogMsgType::Error);
+        return false;
+    }
+
+    return mRecent.validRunGroup();
 }
 
 void MainWindow::openGdxDiffFile()
