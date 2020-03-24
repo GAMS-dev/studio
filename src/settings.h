@@ -79,7 +79,7 @@ enum SettingsKey {
     skHistorySize,
 
     // editor settings page
-    skEdColorSchemeIndex,
+    skEdAppearance,
     skEdFontFamily,
     skEdFontSize,
     skEdShowLineNr,
@@ -200,6 +200,7 @@ private:
     bool setDirectValue(const Scope &scope, const QString &key, QVariant value);
     bool setDirectValue(const Scope &scope, const QString &group, const QString &key, QVariant value);
     bool addToMap(QVariantMap &group, const QString &key, QVariant value);
+    QString keyText(SettingsKey key);
 
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

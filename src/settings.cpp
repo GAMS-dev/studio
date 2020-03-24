@@ -37,7 +37,7 @@ namespace gams {
 namespace studio {
 
 // Increase mVersion only on MAJOR changes (change/remove existing field or add to array-element)
-const int Settings::mVersion = 1;
+const int Settings::mVersion = 2;
 Settings *Settings::mInstance = nullptr;
 bool Settings::mUseRelocatedTestDir = false;
 
@@ -269,7 +269,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 12));
 
     // editor settings page
-    res.insert(skEdColorSchemeIndex, KeyData(scUser, {"editor","colorSchemeIndex"}, 0));
+    res.insert(skEdAppearance, KeyData(scUser, {"editor","appearance"}, 0));
     res.insert(skEdFontFamily, KeyData(scUser, {"editor","fontFamily"}, findFixedFont()));
     res.insert(skEdFontSize, KeyData(scUser, {"editor","fontSize"}, 10));
     res.insert(skEdShowLineNr, KeyData(scUser, {"editor","showLineNr"}, true));
@@ -329,24 +329,32 @@ int Settings::checkVersion()
 
 bool Settings::createSettingFiles()
 {
-    // look for latest setting files
+    // =========================== Version Upgrade Definition ===========================
+
     int version = checkVersion();
 
     // create setting files of found version to read from
     initSettingsFiles(version);
     load(scSys);
     load(scUser);
-    if (version == mVersion) return true;
+    if (version == mVersion) {
+        setValue(skVersionStudio, mKeys.value(skVersionStudio).initial);
+        return true;
+    }
 
     // Need to upgrade from older version
     while (version < mVersion) {
         switch (version) {
-        case 1:
+        case 1: {
             // On increasing version from 1 to 2 -> implement mData conversion HERE
+            if (!setValue(skEdAppearance, directValue(scUser, "editor", "colorSchemeIndex").toInt()))
+                DEB() << "Error on upgrading value to version " << (version+1) << " for " << keyText(skEdAppearance);
             break;
-        case 2:
+        }
+        case 2: {
             // On increasing version from 2 to 3 -> implement mData conversion HERE
             break;
+        }
         default:
             break;
         }
@@ -355,7 +363,11 @@ bool Settings::createSettingFiles()
 
     // write setting files in current version
     initSettingsFiles(version);
-//    save();
+
+    setValue(skVersionSettings, mKeys.value(skVersionSettings).initial);
+    setValue(skVersionStudio, mKeys.value(skVersionStudio).initial);
+
+    save();
     return true;
 }
 
@@ -559,6 +571,12 @@ bool Settings::addToMap(QVariantMap &group, const QString &key, QVariant value)
     return true;
 }
 
+QString Settings::keyText(SettingsKey key)
+{
+    KeyData dat = mKeys.value(key);
+    return QString("%1").arg(dat.keys.join("/"));
+}
+
 QString Settings::settingsPath()
 {
     if (QSettings *settings = mSettings[scUi]) {
@@ -573,17 +591,20 @@ void Settings::saveFile(Scope scope)
     if (!canWrite()) return;
     if (!mSettings.contains(scope)) return;
 
-    // Store values that are repeated in ALL settings, like the versions
-    Data::const_iterator it = mData[scAll].constBegin();
-    for ( ; it != mData[scAll].constEnd() ; ++it) {
-        mSettings[scope]->setValue(it.key(), it.value());
-    }
+    Data::const_iterator it;
 
     // store individual settings
     it = mData[scope].constBegin();
     for ( ; it != mData[scope].constEnd() ; ++it) {
         mSettings[scope]->setValue(it.key(), it.value());
     }
+
+    // Store values that are repeated in ALL settings, like the versions
+    it = mData[scAll].constBegin();
+    for ( ; it != mData[scAll].constEnd() ; ++it) {
+        mSettings[scope]->setValue(it.key(), it.value());
+    }
+
     mSettings[scope]->sync();
 }
 
@@ -603,62 +624,57 @@ QVariant Settings::read(SettingsKey key, Settings::Scope scope)
 
 void Settings::load(Scope scope)
 {
-    if (mCanRead) {
+    if (!mCanRead) return;
+    // load settings content into mData
+    for (QMap<Scope, QSettings*>::const_iterator si = mSettings.constBegin() ; si != mSettings.constEnd() ; ++si) {
+        if (!si.value() || (scope != scAll && scope != si.key())) continue;
 
-        // load settings content into mData
-        for (QMap<Scope, QSettings*>::const_iterator si = mSettings.constBegin() ; si != mSettings.constEnd() ; ++si) {
-            if (!si.value() || (scope != scAll && scope != si.key())) continue;
+        // sync settings of this scope
+        si.value()->sync();
 
-            // sync settings of this scope
-            si.value()->sync();
-
-            // iterate over the settings content
-            for (const QString &key : si.value()->allKeys()) {
-                QVariant var = si.value()->value(key);
-                if (var.isNull()) continue;
-                if (var.canConvert<QJsonObject>() || var.canConvert<QVariantMap>()) {
-                    // copy all elements
-                    QJsonObject joSrc = var.toJsonObject();
-                    QJsonObject joDest = mData.value(si.key()).value(key).toJsonObject();
-                    for (const QString &joKey : joSrc.keys()) {
-                        joDest[joKey] = joSrc[joKey];
-                    }
-                    var = joDest;
+        // iterate over the settings content
+        for (const QString &key : si.value()->allKeys()) {
+            QVariant var = si.value()->value(key);
+            if (var.isNull()) continue;
+            if (var.canConvert<QJsonObject>() || var.canConvert<QVariantMap>()) {
+                // copy all elements
+                QJsonObject joSrc = var.toJsonObject();
+                QJsonObject joDest = mData.value(si.key()).value(key).toJsonObject();
+                for (const QString &joKey : joSrc.keys()) {
+                    joDest[joKey] = joSrc[joKey];
                 }
-                setDirectValue(si.key(), key, var);
+                var = joDest;
             }
-        }
-
-
-
-        QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
-
-
-        for ( ; di != mKeys.constEnd() ; ++di) {
-            KeyData dat = di.value();
-
-            if (dat.scope == scAll) {
-                // --- special handling of entries for all files (like version)
-                if (scope == scAll) {
-                    // Update shared entry over all files
-                    for (const Scope &k : mData.keys()) {
-                        if (k == scAll) continue;
-                        QVariant var = read(di.key(), k);
-                        if (var.isValid()) setValue(di.key(), var);
-                    }
-                } else {
-                    // Only update given scope
-                    QVariant var = read(di.key());
-                    if (var.isValid()) setValue(di.key(), var);
-                }
-
-            } else if (scope == scAll || scope == dat.scope) {
-                // --- common update of entry
-                QVariant var = read(di.key());
-                if (var.isValid()) setValue(di.key(), var);
-            }
+            setDirectValue(si.key(), key, var);
         }
     }
+//    if (mCanRead) {
+//        QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
+//        for ( ; di != mKeys.constEnd() ; ++di) {
+//            KeyData dat = di.value();
+
+//            if (dat.scope == scAll) {
+//                // --- special handling of entries for all files (like version)
+//                if (scope == scAll) {
+//                    // Update shared entry over all files
+//                    for (const Scope &k : mData.keys()) {
+//                        if (k == scAll) continue;
+//                        QVariant var = read(di.key(), k);
+//                        if (var.isValid()) setValue(di.key(), var);
+//                    }
+//                } else {
+//                    // Only update given scope
+//                    QVariant var = read(di.key());
+//                    if (var.isValid()) setValue(di.key(), var);
+//                }
+
+//            } else if (scope == scAll || scope == dat.scope) {
+//                // --- common update of entry
+//                QVariant var = read(di.key());
+//                if (var.isValid()) setValue(di.key(), var);
+//            }
+//        }
+//    }
 //    Scheme::instance()->initDefault();
 
 

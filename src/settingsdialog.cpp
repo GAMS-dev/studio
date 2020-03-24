@@ -111,7 +111,7 @@ void SettingsDialog::loadSettings()
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
 
     // editor tab page
-    ui->combo_appearance->setCurrentIndex(mSettings->toInt(skEdColorSchemeIndex));
+    ui->combo_appearance->setCurrentIndex(mSettings->toInt(skEdAppearance));
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
     ui->sb_fontsize->setValue(mSettings->toInt(skEdFontSize));
     ui->cb_showlinenr->setChecked(mSettings->toBool(skEdShowLineNr));
@@ -195,7 +195,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
-    mSettings->setInt(skEdColorSchemeIndex, ui->combo_appearance->currentIndex());
+    mSettings->setInt(skEdAppearance, ui->combo_appearance->currentIndex());
     mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());
     mSettings->setInt(skEdFontSize, ui->sb_fontsize->value());
     mSettings->setBool(skEdShowLineNr, ui->cb_showlinenr->isChecked());
@@ -268,7 +268,7 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 
 void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
-    mSettings->setInt(skEdColorSchemeIndex, index);
+    mSettings->setInt(skEdAppearance, index);
     mMain->changeAppearance();
 }
 

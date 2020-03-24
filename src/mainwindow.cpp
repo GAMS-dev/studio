@@ -1928,7 +1928,7 @@ void MainWindow::historyChanged()
 
 void MainWindow::changeAppearance()
 {
-    int pickedTheme = Settings::settings()->toInt(skEdColorSchemeIndex);
+    int pickedTheme = Settings::settings()->toInt(skEdAppearance);
 
     bool canFollowOS = false;
 #ifdef _WIN32
