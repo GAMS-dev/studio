@@ -24,6 +24,7 @@
 #include "editors/textview.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
+#include "option/gamsconfigeditor.h"
 #include "option/solveroptionwidget.h"
 #include "reference/referenceviewer.h"
 #include <QWidget>
@@ -73,6 +74,10 @@ public:
         if(w) w->setProperty("EditorType", int(EditorType::opt));
         return w;
     }
+    inline static option::GamsConfigEditor* initEditorType(option::GamsConfigEditor * w) {
+        if(w) w->setProperty("EditorType", int(EditorType::gcfg));
+        return w;
+    }
 
     inline static EditorType editorType(QWidget* w) {
         QVariant v = w ? w->property("EditorType") : QVariant();
@@ -112,11 +117,15 @@ public:
     inline static option::SolverOptionWidget* toSolverOptionEdit(QWidget* w) {
         return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
     }
+    inline static option::GamsConfigEditor* toGamsConfigEditor(QWidget* w) {
+        return (editorType(w) == EditorType::gcfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
+    }
 
     inline static QStringList dialogFileFilterUserCreated() {
         return QStringList("GAMS source (*.gms)")
                << "Text files (*.txt)"
                << "Option files (*.opt *.op* *.o*)"
+               << "Gams Config file (*.yaml)"
                << "All files (*.*)";
     }
 
@@ -124,6 +133,7 @@ public:
         return QStringList("GAMS Source (*.gms)")
                << "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
                << "Option files (*.opt *.op* *.o*)"
+               << "Gams Config file (*.yaml)"
                << "Reference files (*.ref)"
                << "Text files (*.txt)"
                << "All files (*.*)";

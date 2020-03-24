@@ -820,6 +820,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
+    } else if (kind() == FileKind::GCfg) {
+              res = ViewHelper::initEditorType(new option::GamsConfigEditor( tabWidget ));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
             QFileInfo fileInfo(name());
             support::SolverConfigInfo solverConfigInfo;
