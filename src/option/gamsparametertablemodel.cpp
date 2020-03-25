@@ -249,14 +249,16 @@ bool GamsParameterTableModel::setData(const QModelIndex &index, const QVariant &
         if (index.row() > mOptionItem.size())
             return false;
 
-        if (index.column() == 0) { // key
+        if (index.column() == COLUMN_OPTION_KEY) { // key
             QString from = data(index, Qt::DisplayRole).toString();
             mOptionItem[index.row()].key = dataValue;
             if (QString::compare(from, dataValue, Qt::CaseInsensitive)!=0)
                 emit optionNameChanged(from, dataValue);
-        } else if (index.column() == 1) { // value
+        } else if (index.column() == COLUMN_OPTION_VALUE) { // value
                   mOptionItem[index.row()].value = dataValue;
                   emit optionValueChanged(index);
+        } else if (index.column() == COLUMN_ENTRY_NUMBER) {
+                  mOptionItem[index.row()].optionId = dataValue.toInt();
         }
        emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
