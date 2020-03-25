@@ -50,6 +50,14 @@ public:
 public slots:
     void parameterItemCommitted(QWidget *editor);
 
+private slots:
+    void findAndSelectionParameterFromDefinition();
+
+//    void on_newTableRowDropped(const QModelIndex &index);
+//    void on_parameterTableNameChanged(const QString &from, const QString &to);
+//    void on_parameterValueChanged(const QModelIndex &index);
+//    void on_parameterTableModelChanged(const QString &commandLineStr);
+
 private:
     Ui::ParamConfigEditor *ui;
 

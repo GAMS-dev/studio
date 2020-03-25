@@ -39,6 +39,21 @@ enum class OptionErrorType {
     UserDefined_Error     // 6
 };
 
+enum class OptionDefinitionType {
+    GamsOptionDefinition = 0,
+    SolverOptionDefinition,  // 1
+    ConfigOptionDefinition   // 2
+};
+
+inline const QString optionMimeType(OptionDefinitionType type) {
+    switch (type) {
+      case OptionDefinitionType::GamsOptionDefinition:  return "application/vnd.gams-pf.text";
+      case OptionDefinitionType::SolverOptionDefinition:  return "application/vnd.solver-opt.text";
+      case OptionDefinitionType::ConfigOptionDefinition:  return "application/vnd.gams-cfg.text";
+   }
+   return "";
+}
+
 struct OptionItem {
     OptionItem() { }
     OptionItem(int id, QString k, QString v) :

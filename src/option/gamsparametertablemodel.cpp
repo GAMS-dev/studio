@@ -330,7 +330,7 @@ bool GamsParameterTableModel::moveRows(const QModelIndex &sourceParent, int sour
 QStringList GamsParameterTableModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/vnd.gams-pf.text";
+    types << optionMimeType(OptionDefinitionType::GamsOptionDefinition);
     return types;
 }
 
@@ -353,7 +353,7 @@ QMimeData *GamsParameterTableModel::mimeData(const QModelIndexList &indexes) con
         }
     }
 
-    mimeData->setData("application/vnd.gams-pf.text", encodedData);
+    mimeData->setData(optionMimeType(OptionDefinitionType::GamsOptionDefinition), encodedData);
     return mimeData;
 }
 
@@ -372,10 +372,10 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
     Q_UNUSED(column)
     if (action == Qt::IgnoreAction)
         return true;
-    if (!mimedata->hasFormat("application/vnd.gams-pf.text"))
+    if (!mimedata->hasFormat(optionMimeType(OptionDefinitionType::GamsOptionDefinition)))
         return false;
 
-    QByteArray encodedData = mimedata->data("application/vnd.gams-pf.text");
+    QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::GamsOptionDefinition));
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
     QStringList newItems;
     int rows = 0;

@@ -392,7 +392,7 @@ bool SolverOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourc
 QStringList SolverOptionTableModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/vnd.solver-opt.text";
+    types << optionMimeType(OptionDefinitionType::SolverOptionDefinition);
     return types;
 }
 
@@ -408,10 +408,10 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     if (action == Qt::IgnoreAction)
         return true;
 
-    if (!mimedata->hasFormat("application/vnd.solver-opt.text"))
+    if (!mimedata->hasFormat(optionMimeType(OptionDefinitionType::SolverOptionDefinition)))
         return false;
 
-    QByteArray encodedData = mimedata->data("application/vnd.solver-opt.text");
+    QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::SolverOptionDefinition));
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
     QStringList newItems;
     int rows = 0;

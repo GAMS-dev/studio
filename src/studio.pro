@@ -155,6 +155,7 @@ SOURCES += \
     numerics/dtoaLoc.c \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
+    option/configoptiondefinitionmodel.cpp \
     option/definitionitemdelegate.cpp \
     option/gamsconfigeditor.cpp \
     option/gamsconfigparamtablemodel.cpp \
@@ -297,6 +298,7 @@ HEADERS += \
     numerics/dtoaLoc.h \
     option/addoptionheaderview.h \
     option/commandline.h \
+    option/configoptiondefinitionmodel.h \
     option/definitionitemdelegate.h \
     option/gamsconfigeditor.h \
     option/gamsconfigparamtablemodel.h \
