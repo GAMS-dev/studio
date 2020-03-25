@@ -47,11 +47,15 @@ public:
     explicit ParamConfigEditor(QWidget *parent = nullptr);
     ~ParamConfigEditor();
 
+public slots:
+    void parameterItemCommitted(QWidget *editor);
+
 private:
     Ui::ParamConfigEditor *ui;
 
     OptionTokenizer* mOptionTokenizer;
     GamsConfigParamTableModel * mParameterTableModel;
+    OptionCompleterDelegate* mOptionCompleter;
 };
 
 }

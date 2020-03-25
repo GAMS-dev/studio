@@ -28,7 +28,8 @@ namespace gams {
 namespace studio {
 namespace option {
 
-GamsConfigParamTableModel::GamsConfigParamTableModel(const QList<ParamConfigItem *> itemList, OptionTokenizer *tokenizer, QObject *parent)
+GamsConfigParamTableModel::GamsConfigParamTableModel(const QList<ParamConfigItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
+    QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
     mHeader << "Key"  << "Value" << "minVersion" << "maxVersion"  << "Debug Entry";  // TODO (JP)<< "Action";
    // TODO (JP) init data with itemList
@@ -239,14 +240,16 @@ bool GamsConfigParamTableModel::setData(const QModelIndex &index, const QVariant
         if (index.row() > mOptionItem.size())
             return false;
 
-        if (index.column() == 0) { // key
+        if (index.column() == COLUMN_PARAM_KEY) { // key
             QString from = data(index, Qt::DisplayRole).toString();
             mOptionItem[index.row()]->key = dataValue;
             if (QString::compare(from, dataValue, Qt::CaseInsensitive)!=0)
                 emit optionNameChanged(from, dataValue);
-        } else if (index.column() == 1) { // value
+        } else if (index.column() == COLUMN_PARAM_VALUE) { // value
                   mOptionItem[index.row()]->value = dataValue;
                   emit optionValueChanged(index);
+        } else if (index.column() == COLUMN_ENTRY_NUMBER) {
+                  mOptionItem[index.row()]->optionId = dataValue.toInt();
         }
         emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
@@ -361,6 +364,7 @@ bool GamsConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::Drop
     Q_UNUSED(column)
     if (action == Qt::IgnoreAction)
         return true;
+
     if (!mimedata->hasFormat("application/vnd.gams-pf.text"))
         return false;
 
@@ -389,12 +393,12 @@ bool GamsConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::Drop
 //    StudioSettings* settings = SettingsLocator::settings();
     if (action ==  Qt::CopyAction) {
 
-        QList<OptionItem> itemList;
+        QList<ParamConfigItem *> itemList;
         QList<int> overrideIdRowList;
         for (const QString &text : newItems) {
             QStringList textList = text.split("=");
             int optionid = mOption->getOptionDefinition(textList.at(0)).number;
-            itemList.append(OptionItem(optionid, textList.at( COLUMN_PARAM_KEY ), textList.at( COLUMN_PARAM_VALUE )));
+            itemList.append(new ParamConfigItem(optionid, textList.at( COLUMN_PARAM_KEY ), textList.at( COLUMN_PARAM_VALUE )));
             QModelIndexList indices = match(index(COLUMN_PARAM_KEY,COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
 //          if (settings && settings->overridExistingOption()) {
@@ -475,14 +479,14 @@ bool GamsConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::Drop
              }
          } // else entry not exist
 
-         for (const OptionItem &item : itemList) {
+         for (const ParamConfigItem* item : itemList) {
              if (!replaceExistingEntry)
                  insertRows(beginRow, 1, QModelIndex());
 
              QModelIndex idx = index(beginRow, COLUMN_PARAM_KEY);
-             setData(idx, item.key, Qt::EditRole);
-             setData( index(beginRow, COLUMN_PARAM_VALUE), item.value, Qt::EditRole);
-             setData( index(beginRow, COLUMN_ENTRY_NUMBER), item.optionId, Qt::EditRole);
+             setData(idx, item->key, Qt::EditRole);
+             setData( index(beginRow, COLUMN_PARAM_VALUE), item->value, Qt::EditRole);
+             setData( index(beginRow, COLUMN_ENTRY_NUMBER), item->optionId, Qt::EditRole);
              setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
              emit newTableRowDropped( idx );
              beginRow++;

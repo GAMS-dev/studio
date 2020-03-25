@@ -17,11 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "paramconfigeditor.h"
-#include "ui_paramconfigeditor.h"
+#include "common.h"
 #include "definitionitemdelegate.h"
 #include "gamsoptiondefinitionmodel.h"
 #include "optionsortfilterproxymodel.h"
+#include "paramconfigeditor.h"
+#include "ui_paramconfigeditor.h"
 
 namespace gams {
 namespace studio {
@@ -42,12 +43,41 @@ ParamConfigEditor::ParamConfigEditor(QWidget *parent):
     mParameterTableModel = new GamsConfigParamTableModel(optionItem, mOptionTokenizer, this);
     ui->ParamCfgTableView->setModel( mParameterTableModel );
 
+    mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->ParamCfgTableView);
+    ui->ParamCfgTableView->setItemDelegate( mOptionCompleter );
+    connect(mOptionCompleter, &QStyledItemDelegate::commitData, this, &ParamConfigEditor::parameterItemCommitted);
+    ui->ParamCfgTableView->setEditTriggers(QAbstractItemView::DoubleClicked
+                       | QAbstractItemView::SelectedClicked
+                       | QAbstractItemView::EditKeyPressed
+                       | QAbstractItemView::AnyKeyPressed );
+    ui->ParamCfgTableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    ui->ParamCfgTableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->ParamCfgTableView->setAutoScroll(true);
+    ui->ParamCfgTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->ParamCfgTableView->setSortingEnabled(false);
+
+    ui->ParamCfgTableView->setDragEnabled(true);
+    ui->ParamCfgTableView->viewport()->setAcceptDrops(true);
+    ui->ParamCfgTableView->setDropIndicatorShown(true);
+    ui->ParamCfgTableView->setDragDropMode(QAbstractItemView::DropOnly);
+    ui->ParamCfgTableView->setDragDropOverwriteMode(true);
+    ui->ParamCfgTableView->setDefaultDropAction(Qt::CopyAction);
+
+    ui->ParamCfgTableView->setColumnHidden(GamsConfigParamTableModel::COLUMN_ENTRY_NUMBER, false); // TODO (JP) true);
+    ui->ParamCfgTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->ParamCfgTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->ParamCfgTableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     GamsOptionDefinitionModel* optdefmodel =  new GamsOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
     proxymodel->setFilterKeyColumn(-1);
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    connect(ui->ParamCfgDefSearch, &QLineEdit::textChanged,
+            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
     ui->ParamCfgDefTreeView->setModel( proxymodel );
     ui->ParamCfgDefTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -70,12 +100,22 @@ ParamConfigEditor::ParamConfigEditor(QWidget *parent):
 ParamConfigEditor::~ParamConfigEditor()
 {
     delete ui;
-
     if (mOptionTokenizer)
         delete mOptionTokenizer;
-
     if (mParameterTableModel)
         delete mParameterTableModel;
+    if (mOptionCompleter)
+        delete mOptionCompleter;
+}
+
+void ParamConfigEditor::parameterItemCommitted(QWidget *editor)
+{
+    Q_UNUSED(editor)
+    if (mOptionCompleter->currentEditedIndex().isValid()) {
+        ui->ParamCfgTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
+        ui->ParamCfgTableView->setCurrentIndex( mOptionCompleter->currentEditedIndex() );
+        ui->ParamCfgTableView->setFocus();
+    }
 }
 
 
