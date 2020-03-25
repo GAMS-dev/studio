@@ -29,7 +29,7 @@ namespace gams {
 namespace studio {
 namespace option {
 
-enum OptionErrorType {
+enum class OptionErrorType {
     No_Error,     // 0
     Invalid_Key,  // 1
     Incorrect_Value_Type, // 2
@@ -55,7 +55,7 @@ struct OptionItem {
     int valuePosition = -1;
     bool disabled = false;
     bool recurrent = false;
-    OptionErrorType error = No_Error;
+    OptionErrorType error = OptionErrorType::No_Error;
 };
 
 struct ParamConfigItem {
@@ -68,7 +68,7 @@ struct ParamConfigItem {
     int maxVersion = 0;
     bool disabled = false;
     bool recurrent = false;
-    OptionErrorType error = No_Error;
+    OptionErrorType error = OptionErrorType::No_Error;
 };
 
 struct SolverOptionItem {
@@ -84,7 +84,7 @@ struct SolverOptionItem {
     QString text = "";
     bool disabled = false;
     bool recurrent = false;
-    OptionErrorType error = No_Error;
+    OptionErrorType error = OptionErrorType::No_Error;
 };
 
 struct OptionGroup {

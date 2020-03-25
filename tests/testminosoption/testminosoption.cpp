@@ -409,20 +409,20 @@ void TestMINOSOption::testReadOptionFile_data()
                            << items.at(1)->value    << QVariant("")
                            << items.at(1)->text     << ""
                            << items.at(1)->optionId << -1
-                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("[empty line1]")  << items.at(2)->disabled <<  true
                            << items.at(2)->key      << ""
                            << items.at(2)->value    << QVariant("")
                            << items.at(2)->text     << ""
                            << items.at(2)->optionId << -1
-                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("[empty line2]")  << items.at(12)->disabled <<  true
                            << items.at(12)->key      << ""
                            << items.at(12)->value    << QVariant("")
                            << items.at(12)->text     << ""
                            << items.at(12)->optionId << -1
-                           << static_cast<int>(items.at(12)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(12)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     // valid options
     QTest::newRow("print level 1")  << items.at(0)->disabled <<  false
@@ -430,70 +430,70 @@ void TestMINOSOption::testReadOptionFile_data()
                            << items.at(0)->value    << QVariant("1")
                            << items.at(0)->text     << ""
                            << items.at(0)->optionId << 6
-                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("hessian dimension=8")  << items.at(3)->disabled <<  false
                            << items.at(3)->key      << "hessian dimension"
                            << items.at(3)->value    << QVariant("8")
                            << items.at(3)->text     << ""
                            << items.at(3)->optionId << 23
-                           << static_cast<int>(items.at(3)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(3)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("crash option 2")  << items.at(4)->disabled <<  false
                            << items.at(4)->key      << "crash option"
                            << items.at(4)->value    << QVariant("2")
                            << items.at(4)->text     << ""
                            << items.at(4)->optionId << 32
-                           << static_cast<int>(items.at(4)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(4)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("major damping parameter 4.2")  << items.at(5)->disabled <<  false
                            << items.at(5)->key      << "major damping parameter"
                            << items.at(5)->value    << QVariant("4.2")
                            << items.at(5)->text     << ""
                            << items.at(5)->optionId << 39
-                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("radius of convergence = 0.1")  << items.at(6)->disabled <<  false
                            << items.at(6)->key      << "radius of convergence"
                            << items.at(6)->value    << QVariant("0.1")
                            << items.at(6)->text     << ""
                            << items.at(6)->optionId << 44
-                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("lagrangian YES      * Default value (recommended) ")  << items.at(7)->disabled <<  false
                            << items.at(7)->key      << "lagrangian"
                            << items.at(7)->value    << QVariant("YES")
                            << items.at(7)->text     << "Default value (recommended)"
                            << items.at(7)->optionId << 35
-                           << static_cast<int>(items.at(7)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(7)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("start assigned nonlinears BASIC")  << items.at(8)->disabled <<  false
                            << items.at(8)->key      << "start assigned nonlinears"
                            << items.at(8)->value    << QVariant("BASIC")
                            << items.at(8)->text     << ""
                            << items.at(8)->optionId << 51
-                           << static_cast<int>(items.at(8)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(8)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("scale nonlinear variables  * No value")  << items.at(9)->disabled <<  false
                            << items.at(9)->key      << "scale nonlinear variables"
                            << items.at(9)->value    << QVariant("")
                            << items.at(9)->text     << "No value"
                            << items.at(9)->optionId << 49
-                           << static_cast<int>(items.at(9)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(9)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("scale print")  << items.at(10)->disabled <<  false
                            << items.at(10)->key      << "scale print"
                            << items.at(10)->value    << QVariant("")
                            << items.at(10)->text     << ""
                            << items.at(10)->optionId << 7
-                           << static_cast<int>(items.at(10)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(10)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("secret strlist - back door for secret or undocumented MINOS options")  << items.at(11)->disabled <<  false
                            << items.at(11)->key      << "secret"
                            << items.at(11)->value    << QVariant("strlist - back door for secret or undocumented MINOS options")
                            << items.at(11)->text     << ""
                            << items.at(11)->optionId << 59
-                           << static_cast<int>(items.at(11)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(11)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     QTest::newRow("unbounded step size * ub")
                            << items.at(13)->disabled <<  false
@@ -501,7 +501,7 @@ void TestMINOSOption::testReadOptionFile_data()
                            << items.at(13)->value    << QVariant("")
                            << items.at(13)->text     << "ub"
                            << items.at(13)->optionId << -1
-                           << static_cast<int>(items.at(13)->error)    << static_cast<int>(UserDefined_Error);
+                           << static_cast<int>(items.at(13)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 
     // incorrect Option Key
     QTest::newRow("unbounded_step_size 1.2345")
@@ -510,7 +510,7 @@ void TestMINOSOption::testReadOptionFile_data()
                            << items.at(14)->value    << QVariant("")
                            << items.at(14)->text     << ""
                            << items.at(14)->optionId << -1
-                           << static_cast<int>(items.at(14)->error)    << static_cast<int>(UserDefined_Error);
+                           << static_cast<int>(items.at(14)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 
     // incorrect EOL Comment Character
     QTest::newRow("scale option 2 ! Scale linear + nonlinear variables")
@@ -519,7 +519,7 @@ void TestMINOSOption::testReadOptionFile_data()
                            << items.at(15)->value    << QVariant("")
                            << items.at(15)->text     << ""
                            << items.at(15)->optionId << -1
-                           << static_cast<int>(items.at(15)->error)    << static_cast<int>(Incorrect_Value_Type);
+                           << static_cast<int>(items.at(15)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
 
     QTest::newRow("start_assigned_nonlinears ELIGIBLE_FOR_CRASH")
                            << items.at(16)->disabled <<  false
@@ -527,7 +527,7 @@ void TestMINOSOption::testReadOptionFile_data()
                            << items.at(16)->value    << QVariant("")
                            << items.at(16)->text     << ""
                            << items.at(16)->optionId << -1
-                           << static_cast<int>(items.at(16)->error)    << static_cast<int>(UserDefined_Error);
+                           << static_cast<int>(items.at(16)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 
 }
 

@@ -269,11 +269,11 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                 itemList << item;
 
                 switch (mOption->getValueErrorType(key, item.value)) {
-                case Incorrect_Value_Type:
-                case Value_Out_Of_Range:
+                case OptionErrorType::Incorrect_Value_Type:
+                case OptionErrorType::Value_Out_Of_Range:
                     optionErrorList.append(OptionError(fr, item.value + QString(" (Invalid value for deprecated option \"%1\", option will be eventually ignored)").arg(key)) );
                     break;
-                case No_Error:
+                case OptionErrorType::No_Error:
                 default:
                     optionErrorList.append(OptionError(fr, key + " (Deprecated option, will be ignored)"));
                     break;
@@ -350,7 +350,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                    }
                 } else { // not enum
                     switch(mOption->getValueErrorType(key, item.value)) {
-                    case Value_Out_Of_Range: {
+                    case OptionErrorType::Value_Out_Of_Range: {
                         QString errorMessage = value + " (value error for option ";
                         errorMessage.append( QString("\"%1\"), not in range [%2,%3]").arg(keyStr).arg(mOption->getLowerBound(key).toDouble()).arg(mOption->getUpperBound(key).toDouble()) );
                         QTextLayout::FormatRange fr;
@@ -360,7 +360,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                         optionErrorList.append(OptionError(fr, errorMessage));
                         break;
                     }
-                    case Incorrect_Value_Type: {
+                    case OptionErrorType::Incorrect_Value_Type: {
                         bool foundError = false;
                         bool isCorrectDataType = false;
                         QString errorMessage = value + " (value error for option ";
@@ -386,7 +386,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                         }
                         break;
                     }
-                    case No_Error:
+                    case OptionErrorType::No_Error:
                     default:
                         break;
                     }
@@ -610,14 +610,14 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
         item->key = "";
         item->value = "";
         item->text = "";
-        item->error = No_Error;
+        item->error = OptionErrorType::No_Error;
         item->disabled = true;
     } else if (isValidLineCommentChar(text.at(0)) && firstTime) {
         item->optionId = -1;
         item->key = text;
         item->value = "";
         item->text = "";
-        item->error = No_Error;
+        item->error = OptionErrorType::No_Error;
         item->disabled = true;
     } else {
         if (mLineComments.contains(text.at(0))) {
@@ -702,8 +702,9 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                     item->optionId = i;
                     item->key = key;
                     item->value = value;
-                    item->text = (errorType != No_Error && commentCharIndex >= 0) ? text.mid(commentCharIndex+1).simplified() :  eolComment;
-                    item->error = (errorType == No_Error || errorType == Deprecated_Option) ? errorType : Value_Out_Of_Range;
+                    item->text = (errorType != OptionErrorType::No_Error && commentCharIndex >= 0) ? text.mid(commentCharIndex+1).simplified() :  eolComment;
+                    item->error = ( errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option)
+                                   ? errorType : OptionErrorType::Value_Out_Of_Range;
                     item->disabled = false;
 
                     mOption->setModified(QString::fromLatin1(name), true);
@@ -726,7 +727,7 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
     }
 
     OptionErrorType error = logAndClearMessage(  mOPTHandle );
-    return (error==No_Error);
+    return (error==OptionErrorType::No_Error);
 }
 
 void OptionTokenizer::formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr)
@@ -754,7 +755,7 @@ void OptionTokenizer::formatItemLineEdit(QLineEdit* lineEdit, const QList<Option
 
 OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
 {
-    OptionErrorType type = No_Error;
+    OptionErrorType type = OptionErrorType::No_Error;
     int itype;
     char svalue[GMS_SSSIZE];
     for (int i = 1; i <= optMessageCount(mOPTHandle); ++i) {
@@ -762,26 +763,26 @@ OptionErrorType OptionTokenizer::getErrorType(optHandle_t &mOPTHandle)
         switch (itype) {
         case optMsgValueWarning : {
             logger()->append(QString::fromLatin1(svalue), LogMsgType::Error);
-            type = Value_Out_Of_Range;
+            type = OptionErrorType::Value_Out_Of_Range;
             break;
         }
         case optMsgDeprecated : {
             logger()->append(QString::fromLatin1(svalue), LogMsgType::Warning);
-            type = Deprecated_Option;
+            type = OptionErrorType::Deprecated_Option;
             break;
         }
         case optMsgDefineError: {
             logger()->append(QString::fromLatin1(svalue), LogMsgType::Error);
-            type = Invalid_Key;
+            type = OptionErrorType::Invalid_Key;
             break;
         }
         case optMsgValueError: {
             logger()->append(QString::fromLatin1(svalue), LogMsgType::Error);
-            type = Incorrect_Value_Type; break;
+            type = OptionErrorType::Incorrect_Value_Type; break;
         }
         case optMsgUserError: {
             logger()->append(QString::fromLatin1(svalue), LogMsgType::Warning);
-            type = UserDefined_Error; break;
+            type = OptionErrorType::UserDefined_Error; break;
         }
 //        case optMsgTooManyMsgs: { type = Unknown_Error; break; }
         default: break;
@@ -826,7 +827,7 @@ bool OptionTokenizer::logMessage(optHandle_t &mOPTHandle)
 
 OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool logged)
 {
-    OptionErrorType messageType = No_Error;
+    OptionErrorType messageType = OptionErrorType::No_Error;
     int itype;
     char msg[GMS_SSSIZE];
 
@@ -842,38 +843,38 @@ OptionErrorType OptionTokenizer::logAndClearMessage(optHandle_t &OPTHandle, bool
             continue;
         case optMsgInputEcho :
         case optMsgHelp:
-            if (messageType != UserDefined_Error) {
-                messageType = UserDefined_Error;
+            if (messageType != OptionErrorType::UserDefined_Error) {
+                messageType = OptionErrorType::UserDefined_Error;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Info);
             }
             break;
         case optMsgValueWarning :
-            if (messageType != Value_Out_Of_Range) {
-               messageType = Value_Out_Of_Range;
+            if (messageType != OptionErrorType::Value_Out_Of_Range) {
+               messageType = OptionErrorType::Value_Out_Of_Range;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Warning);
             }
             break;
         case optMsgDeprecated :
-            if (messageType != Deprecated_Option) {
-               messageType = Deprecated_Option;
+            if (messageType != OptionErrorType::Deprecated_Option) {
+               messageType = OptionErrorType::Deprecated_Option;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Warning);
             }
             break;
         case optMsgDefineError:
-            if (messageType != Invalid_Key) {
-                messageType = Invalid_Key;
+            if (messageType != OptionErrorType::Invalid_Key) {
+                messageType = OptionErrorType::Invalid_Key;
                 if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
             break;
         case optMsgValueError:
-            if (messageType != Incorrect_Value_Type) {
-               messageType = Incorrect_Value_Type;
+            if (messageType != OptionErrorType::Incorrect_Value_Type) {
+               messageType = OptionErrorType::Incorrect_Value_Type;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
             break;
         case optMsgUserError:
-            if (messageType != UserDefined_Error) {
-               messageType = UserDefined_Error;  //Invalid_Key;
+            if (messageType != OptionErrorType::UserDefined_Error) {
+               messageType = OptionErrorType::UserDefined_Error;  //Invalid_Key;
                if (logged) logger()->append(QString::fromLatin1(msg), LogMsgType::Error);
             }
             break;
@@ -903,7 +904,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
         item->key = str;
         item->value = "";
         item->text = "";
-        item->error = No_Error;
+        item->error = OptionErrorType::No_Error;
         item->disabled = true;
     } else {
        optReadFromStr( mOPTHandle, str.toLatin1() );
@@ -985,10 +986,10 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    item->value = definedValue;
                    item->text = eolComment;
                    item->error = errorType;
-                   if (errorType == No_Error || errorType == Deprecated_Option)
+                   if (errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option)
                        item->error = errorType;
                    else
-                       item->error = Value_Out_Of_Range;
+                       item->error = OptionErrorType::Value_Out_Of_Range;
 
                    mOption->setModified(QString::fromLatin1(name), true);
                }
@@ -996,7 +997,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
            }
        }
        if (!valueRead) {
-           if (errorType == No_Error) { // eg. indicator option
+           if (errorType == OptionErrorType::No_Error) { // eg. indicator option
                item->optionId = -1;
                item->key = key;
                item->value = value;
@@ -1012,7 +1013,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
            }
        }
     }
-    return (logAndClearMessage(mOPTHandle, false)==No_Error);
+    return (logAndClearMessage(mOPTHandle, false)==OptionErrorType::No_Error);
 }
 
 QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintKey)
@@ -1231,32 +1232,32 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
     for(SolverOptionItem* item: items) {
             out << formatOption( item ) << endl;
             switch (item->error) {
-            case Invalid_Key:
+            case OptionErrorType::Invalid_Key:
                 logger()->append( QString("Unknown option '%1'").arg(item->key),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
-            case Incorrect_Value_Type:
+            case OptionErrorType::Incorrect_Value_Type:
                 logger()->append( QString("Option key '%1' has an incorrect value type").arg(item->key),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
-            case Value_Out_Of_Range:
+            case OptionErrorType::Value_Out_Of_Range:
                 logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key).arg(item->value.toString()),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
-            case Deprecated_Option:
+            case OptionErrorType::Deprecated_Option:
                 logger()->append( QString("Option '%1' is deprecated, will be eventually ignored").arg(item->key),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
-            case Override_Option:
+            case OptionErrorType::Override_Option:
                 logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key).arg(item->value.toString()),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
-            case No_Error:
+            case OptionErrorType::No_Error:
             default:
                 break;
             }

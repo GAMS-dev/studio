@@ -133,11 +133,11 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
         if (isASynonym(key))
             key = getNameFromSynonym(optionName);
         else
-            return Invalid_Key;
+            return OptionErrorType::Invalid_Key;
     }
 
     if (isDeprecated(key))
-        return Deprecated_Option;
+        return OptionErrorType::Deprecated_Option;
 
     switch(getOptionType(key)) {
      case optTypeEnumInt : {
@@ -146,21 +146,21 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
          if (isCorrectDataType) {
             for (OptionValue optValue: getValueList(key)) {
                if (optValue.value.toInt() == n) { // && !optValue.hidden) {
-                   return No_Error;
+                   return OptionErrorType::No_Error;
                }
             }
-            return Value_Out_Of_Range;
+            return OptionErrorType::Value_Out_Of_Range;
          } else {
-             return Incorrect_Value_Type;
+             return OptionErrorType::Incorrect_Value_Type;
          }
      }
      case optTypeEnumStr : {
          for (OptionValue optValue: getValueList(key)) {
            if (QString::compare(optValue.value.toString(), value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
-               return No_Error;
+               return OptionErrorType::No_Error;
            }
          }
-        return Value_Out_Of_Range;
+        return OptionErrorType::Value_Out_Of_Range;
      }
      case optTypeInteger: {
         bool isCorrectDataType = false;
@@ -180,7 +180,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
                  doublev.setDecimals(OPTION_VALUE_DECIMALS);
                  doublev.setTop(GMS_SV_PINF);
                  if (doublev.validate(v, pos) != QValidator::Acceptable)
-                    return Incorrect_Value_Type;
+                    return OptionErrorType::Incorrect_Value_Type;
 
                  bool isCorrectDataType = false;
                  double d = value.toDouble(&isCorrectDataType);
@@ -188,21 +188,21 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
                  if (qAbs(d-ivalue) < 0.01)
                      n = ivalue;
                  else
-                    return Incorrect_Value_Type;
+                    return OptionErrorType::Incorrect_Value_Type;
              }
           }
         }
         if ((n < getLowerBound(key).toInt()) || (getUpperBound(key).toInt() < n))
-            return Value_Out_Of_Range;
+            return OptionErrorType::Value_Out_Of_Range;
         else
-             return No_Error;
+             return OptionErrorType::No_Error;
     }
     case optTypeDouble: {
         bool isCorrectDataType = false;
         double d = value.toDouble(&isCorrectDataType);
         if (!isCorrectDataType) {
            if (value.compare("eps", Qt::CaseInsensitive)==0) {
-               return No_Error;
+               return OptionErrorType::No_Error;
            } else if (value.compare("maxdouble", Qt::CaseInsensitive)==0) {
                       d = OPTION_VALUE_MAXDOUBLE;
            } else if (value.compare("mindouble", Qt::CaseInsensitive)==0) {
@@ -212,28 +212,28 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
                 QString v = value;
                 int pos = 0;
                 if (doublev.validate(v, pos) != QValidator::Acceptable)
-                   return Incorrect_Value_Type;
+                   return OptionErrorType::Incorrect_Value_Type;
             }
         }
         if ((d < getLowerBound(key).toDouble()) || (getUpperBound(key).toDouble() < d))
-            return Value_Out_Of_Range;
+            return OptionErrorType::Value_Out_Of_Range;
         else
-            return No_Error;
+            return OptionErrorType::No_Error;
      }
     case optTypeBoolean: {
         bool isCorrectDataType = false;
         int n = value.toInt(&isCorrectDataType);
         if (isCorrectDataType) {
             if (n==0 || n==1) {
-                return No_Error;
+                return OptionErrorType::No_Error;
             }
         }
-        return Incorrect_Value_Type;
+        return OptionErrorType::Incorrect_Value_Type;
     }
     default:
         break;
     }
-    return No_Error;  //Unknown_Error;
+    return OptionErrorType::No_Error;  //Unknown_Error;
 }
 
 QString Option::getNameFromSynonym(const QString &synonym) const
