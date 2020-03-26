@@ -28,11 +28,11 @@ namespace gams {
 namespace studio {
 namespace option {
 
-class GamsConfigParamTableModel : public QAbstractTableModel
+class ConfigParamTableModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    GamsConfigParamTableModel(const QList<ParamConfigItem *> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    ConfigParamTableModel(const QList<ParamConfigItem *> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

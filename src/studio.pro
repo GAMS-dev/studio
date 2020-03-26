@@ -156,9 +156,9 @@ SOURCES += \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/configoptiondefinitionmodel.cpp \
+    option/configparamtablemodel.cpp \
     option/definitionitemdelegate.cpp \
     option/gamsconfigeditor.cpp \
-    option/gamsconfigparamtablemodel.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsparametertablemodel.cpp \
     option/lineeditcompleteevent.cpp \
@@ -299,9 +299,9 @@ HEADERS += \
     option/addoptionheaderview.h \
     option/commandline.h \
     option/configoptiondefinitionmodel.h \
+    option/configparamtablemodel.h \
     option/definitionitemdelegate.h \
     option/gamsconfigeditor.h \
-    option/gamsconfigparamtablemodel.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsparametertablemodel.h \
     option/lineeditcompleteevent.h \

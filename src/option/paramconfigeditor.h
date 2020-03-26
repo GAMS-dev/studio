@@ -21,7 +21,7 @@
 #define PARAMCONFIGEDITOR_H
 
 #include "optiontokenizer.h"
-#include "gamsconfigparamtablemodel.h"
+#include "configparamtablemodel.h"
 #include "optioncompleterdelegate.h"
 
 #include <QWidget>
@@ -62,7 +62,7 @@ private:
     Ui::ParamConfigEditor *ui;
 
     OptionTokenizer* mOptionTokenizer;
-    GamsConfigParamTableModel * mParameterTableModel;
+    ConfigParamTableModel * mParameterTableModel;
     OptionCompleterDelegate* mOptionCompleter;
 };
 

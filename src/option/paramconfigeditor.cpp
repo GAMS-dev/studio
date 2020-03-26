@@ -40,7 +40,7 @@ ParamConfigEditor::ParamConfigEditor(QWidget *parent):
     QList<ParamConfigItem *> optionItem;
 // TODO (JP): initialize from gamsconfig.yaml
 //    QString normalizedText = mOptionTokenizer->normalize(optionItem);
-    mParameterTableModel = new GamsConfigParamTableModel(optionItem, mOptionTokenizer, this);
+    mParameterTableModel = new ConfigParamTableModel(optionItem, mOptionTokenizer, this);
     ui->ParamCfgTableView->setModel( mParameterTableModel );
 
     mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->ParamCfgTableView);
@@ -63,7 +63,7 @@ ParamConfigEditor::ParamConfigEditor(QWidget *parent):
     ui->ParamCfgTableView->setDragDropOverwriteMode(true);
     ui->ParamCfgTableView->setDefaultDropAction(Qt::CopyAction);
 
-    ui->ParamCfgTableView->setColumnHidden(GamsConfigParamTableModel::COLUMN_ENTRY_NUMBER, false); // TODO (JP) true);
+    ui->ParamCfgTableView->setColumnHidden(ConfigParamTableModel::COLUMN_ENTRY_NUMBER, false); // TODO (JP) true);
     ui->ParamCfgTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->ParamCfgTableView->horizontalHeader()->setStretchLastSection(true);
@@ -107,7 +107,7 @@ ParamConfigEditor::ParamConfigEditor(QWidget *parent):
 //    connect(ui->ParamCfgDefTreeView, &QTreeView::customContextMenuRequested, this, &ParameterEditor::showDefinitionContextMenu, Qt::UniqueConnection);
 //    connect(ui->ParamCfgDefTreeView, &QAbstractItemView::doubleClicked, this, &ParameterEditor::addParameterFromDefinition, Qt::UniqueConnection);
 
-    connect(mParameterTableModel, &GamsConfigParamTableModel::optionModelChanged,
+    connect(mParameterTableModel, &ConfigParamTableModel::optionModelChanged,
             optdefmodel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
 
 }
@@ -144,14 +144,14 @@ void ParamConfigEditor::findAndSelectionParameterFromDefinition()
     QModelIndex idx = (parentIndex.row()<0) ? ui->ParamCfgDefTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
                                             : ui->ParamCfgDefTreeView->model()->index( parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER );
     QVariant data = ui->ParamCfgDefTreeView->model()->data( idx, Qt::DisplayRole );
-    QModelIndexList indices = ui->ParamCfgTableView->model()->match(ui->ParamCfgTableView->model()->index(0, GamsConfigParamTableModel::COLUMN_ENTRY_NUMBER),
+    QModelIndexList indices = ui->ParamCfgTableView->model()->match(ui->ParamCfgTableView->model()->index(0, ConfigParamTableModel::COLUMN_ENTRY_NUMBER),
                                                                        Qt::DisplayRole,
                                                                        data, -1, Qt::MatchExactly|Qt::MatchRecursive);
     ui->ParamCfgTableView->clearSelection();
     ui->ParamCfgTableView->clearFocus();
     QItemSelection selection;
     for(QModelIndex i :indices) {
-        QModelIndex valueIndex = ui->ParamCfgTableView->model()->index(i.row(), GamsConfigParamTableModel::COLUMN_PARAM_VALUE);
+        QModelIndex valueIndex = ui->ParamCfgTableView->model()->index(i.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE);
         QString value =  ui->ParamCfgTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
         bool selected = false;
         if (parentIndex.row() < 0) {

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gamsconfigparamtablemodel.h"
+#include "configparamtablemodel.h"
 #include "scheme.h"
 
 #include <QApplication>
@@ -28,14 +28,14 @@ namespace gams {
 namespace studio {
 namespace option {
 
-GamsConfigParamTableModel::GamsConfigParamTableModel(const QList<ParamConfigItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
+ConfigParamTableModel::ConfigParamTableModel(const QList<ParamConfigItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
     mHeader << "Key"  << "Value" << "minVersion" << "maxVersion"  << "Debug Entry";  // TODO (JP)<< "Action";
    // TODO (JP) init data with itemList
 }
 
-QVariant GamsConfigParamTableModel::headerData(int index, Qt::Orientation orientation, int role) const
+QVariant ConfigParamTableModel::headerData(int index, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal) {
        if (role == Qt::DisplayRole) {
@@ -97,7 +97,7 @@ QVariant GamsConfigParamTableModel::headerData(int index, Qt::Orientation orient
     return QVariant();
 }
 
-int GamsConfigParamTableModel::rowCount(const QModelIndex &parent) const
+int ConfigParamTableModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
@@ -105,14 +105,14 @@ int GamsConfigParamTableModel::rowCount(const QModelIndex &parent) const
     return  mOptionItem.size();
 }
 
-int GamsConfigParamTableModel::columnCount(const QModelIndex &parent) const
+int ConfigParamTableModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return mHeader.size();
 }
 
-QVariant GamsConfigParamTableModel::data(const QModelIndex &index, int role) const
+QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
@@ -213,7 +213,7 @@ QVariant GamsConfigParamTableModel::data(const QModelIndex &index, int role) con
 
 }
 
-Qt::ItemFlags GamsConfigParamTableModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ConfigParamTableModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
      if (!index.isValid())
@@ -222,7 +222,7 @@ Qt::ItemFlags GamsConfigParamTableModel::flags(const QModelIndex &index) const
          return Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
 }
 
-bool GamsConfigParamTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
+bool ConfigParamTableModel::setHeaderData(int index, Qt::Orientation orientation, const QVariant &value, int role)
 {
     if (orientation != Qt::Vertical || role != Qt::CheckStateRole)
         return false;
@@ -233,7 +233,7 @@ bool GamsConfigParamTableModel::setHeaderData(int index, Qt::Orientation orienta
     return true;
 }
 
-bool GamsConfigParamTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role == Qt::EditRole)   {
         QString dataValue = value.toString().simplified();
@@ -266,14 +266,14 @@ bool GamsConfigParamTableModel::setData(const QModelIndex &index, const QVariant
     return true;
 }
 
-QModelIndex GamsConfigParamTableModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex ConfigParamTableModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (hasIndex(row, column, parent))
         return QAbstractTableModel::createIndex(row, column);
     return QModelIndex();
 }
 
-bool GamsConfigParamTableModel::insertRows(int row, int count, const QModelIndex &parent)
+bool ConfigParamTableModel::insertRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size())
@@ -290,7 +290,7 @@ bool GamsConfigParamTableModel::insertRows(int row, int count, const QModelIndex
     return true;
 }
 
-bool GamsConfigParamTableModel::removeRows(int row, int count, const QModelIndex &parent)
+bool ConfigParamTableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent)
     if (count < 1 || row < 0 || row > mOptionItem.size() || mOptionItem.size() ==0)
@@ -305,7 +305,7 @@ bool GamsConfigParamTableModel::removeRows(int row, int count, const QModelIndex
     return true;
 }
 
-bool GamsConfigParamTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+bool ConfigParamTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
 {
     if (mOptionItem.size() == 0 || count < 1 || destinationChild < 0 ||  destinationChild > mOptionItem.size())
          return false;
@@ -321,14 +321,14 @@ bool GamsConfigParamTableModel::moveRows(const QModelIndex &sourceParent, int so
     return true;
 }
 
-QStringList GamsConfigParamTableModel::mimeTypes() const
+QStringList ConfigParamTableModel::mimeTypes() const
 {
     QStringList types;
     types << optionMimeType(OptionDefinitionType::ConfigOptionDefinition);
     return types;
 }
 
-QMimeData *GamsConfigParamTableModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *ConfigParamTableModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
@@ -351,17 +351,17 @@ QMimeData *GamsConfigParamTableModel::mimeData(const QModelIndexList &indexes) c
     return mimeData;
 }
 
-Qt::DropActions GamsConfigParamTableModel::supportedDragActions() const
+Qt::DropActions ConfigParamTableModel::supportedDragActions() const
 {
     return Qt::MoveAction ;
 }
 
-Qt::DropActions GamsConfigParamTableModel::supportedDropActions() const
+Qt::DropActions ConfigParamTableModel::supportedDropActions() const
 {
     return Qt::MoveAction | Qt::CopyAction ;
 }
 
-bool GamsConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     Q_UNUSED(column)
     if (action == Qt::IgnoreAction)
@@ -501,7 +501,7 @@ bool GamsConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::Drop
     }
 }
 
-QString GamsConfigParamTableModel::getParameterTableEntry(int row)
+QString ConfigParamTableModel::getParameterTableEntry(int row)
 {
     QModelIndex keyIndex = index(row, COLUMN_PARAM_KEY);
     QVariant optionKey = data(keyIndex, Qt::DisplayRole);
