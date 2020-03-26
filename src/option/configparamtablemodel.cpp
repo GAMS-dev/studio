@@ -235,7 +235,12 @@ bool ConfigParamTableModel::setHeaderData(int index, Qt::Orientation orientation
 
 bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    if (index.row() > mOptionItem.size())
+        return false;
+
+    QVector<int> roles;
     if (role == Qt::EditRole)   {
+        roles = { Qt::EditRole };
         QString dataValue = value.toString().simplified();
         if (dataValue.isEmpty())
             return false;
@@ -246,11 +251,8 @@ bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &va
         if (index.column() == COLUMN_PARAM_KEY) { // key
             QString from = data(index, Qt::DisplayRole).toString();
             mOptionItem[index.row()]->key = dataValue;
-            if (QString::compare(from, dataValue, Qt::CaseInsensitive)!=0)
-                emit optionNameChanged(from, dataValue);
         } else if (index.column() == COLUMN_PARAM_VALUE) { // value
                   mOptionItem[index.row()]->value = dataValue;
-                  emit optionValueChanged(index);
         } else if (index.column() == COLUMN_ENTRY_NUMBER) {
                   mOptionItem[index.row()]->optionId = dataValue.toInt();
         } else if (index.column() == COLUMN_MIN_VERSION) {
@@ -258,15 +260,14 @@ bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &va
         } else if (index.column() == COLUMN_MAX_VERSION) {
             mOptionItem[index.row()]->maxVersion = dataValue;
         }
-        emit optionModelChanged(  mOptionItem );
+        emit dataChanged(index, index, roles);
     } else if (role == Qt::CheckStateRole) {
-        if (index.row() > mOptionItem.size())
-            return false;
-
+        roles = { Qt::CheckStateRole };
+        mOptionItem[index.row()]->disabled = (Qt::CheckState(value.toUInt())==Qt::PartiallyChecked);
+        mCheckState[index.row()] = value;
         mOptionItem[index.row()]->disabled = value.toBool();
-        emit optionModelChanged(  mOptionItem );
+        emit dataChanged(index, index, roles);
     }
-    emit dataChanged(index, index);
     return true;
 }
 
@@ -290,7 +291,6 @@ bool ConfigParamTableModel::insertRows(int row, int count, const QModelIndex &pa
          mOptionItem.insert(row, new ParamConfigItem());
 
     endInsertRows();
-    emit optionModelChanged(mOptionItem);
     return true;
 }
 
@@ -305,7 +305,6 @@ bool ConfigParamTableModel::removeRows(int row, int count, const QModelIndex &pa
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
-    emit optionModelChanged(mOptionItem);
     return true;
 }
 
@@ -316,12 +315,24 @@ bool ConfigParamTableModel::moveRows(const QModelIndex &sourceParent, int source
 
     Q_UNUSED(sourceParent)
     Q_UNUSED(destinationParent)
-    beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count - 1, QModelIndex(), destinationChild);
-    mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
-    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
-    mOptionItem.removeAt(removeIndex);
+    beginMoveRows(QModelIndex(), sourceRow, sourceRow  + count -1 , QModelIndex(), destinationChild);
+//    mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
+//    int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow+1;
+//    mOptionItem.removeAt(removeIndex);
+    if (destinationChild > sourceRow) { // move down
+       for(int i=0; i<count; ++i) {
+           mOptionItem.insert(destinationChild, mOptionItem.at(sourceRow));
+           mOptionItem.removeAt(sourceRow);
+       }
+    } else { // move up
+           for(int i=0; i<count; ++i) {
+               ParamConfigItem* item = mOptionItem.at(sourceRow+i);
+               mOptionItem.removeAt(sourceRow+i);
+               mOptionItem.insert(destinationChild+i, item);
+           }
+    }
+    updateCheckState();
     endMoveRows();
-    emit optionModelChanged(mOptionItem);
     return true;
 }
 
@@ -505,6 +516,113 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
     } else {
          return false;
     }
+}
+
+void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+{
+    QModelIndex idx = topLeft;
+    int row = idx.row();
+    while(row <= bottomRight.row()) {
+        idx = index(row++, idx.column());
+        if (roles.first()==Qt::EditRole) {
+          if (mOptionItem.at(idx.row())->disabled) {
+              setHeaderData( idx.row(), Qt::Vertical,
+                          Qt::CheckState(Qt::PartiallyChecked),
+                          Qt::CheckStateRole );
+          } else {
+              QString key = data( index(idx.row(), ConfigParamTableModel::COLUMN_PARAM_KEY), Qt::DisplayRole).toString();
+              QString value = data( index(idx.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE), Qt::DisplayRole).toString();
+              QString text = "";
+//              if (mOption->isEOLCharDefined()) {
+//                  text = data( index(idx.row(), SolverOptionTableModel::COLUMN_EOL_COMMENT), Qt::DisplayRole).toString();
+//              }
+
+// TODO (JP)
+//              if (mOptionTokenizer->getOption()->available())
+//                  mOptionTokenizer->updateOptionItem(key, value, text, mOptionItem.at(idx.row()));
+
+              if (mOptionItem.at(idx.row())->error == OptionErrorType::No_Error)
+                   setHeaderData( idx.row(), Qt::Vertical,
+                          Qt::CheckState(Qt::Unchecked),
+                          Qt::CheckStateRole );
+               else
+                   setHeaderData( idx.row(), Qt::Vertical,
+                      Qt::CheckState(Qt::Checked),
+                      Qt::CheckStateRole );
+          }
+          emit configParamModelChanged(mOptionItem);
+       } else if (roles.first()==Qt::CheckStateRole) {
+                  emit configParamModelChanged(mOptionItem);
+       }
+    }
+    updateRecurrentStatus();
+}
+
+void ConfigParamTableModel::on_removeConfigParamItem()
+{
+    beginResetModel();
+    mOptionTokenizer->validateOption(mOptionItem);
+
+    setRowCount(mOptionItem.size());
+
+    for (int i=0; i<mOptionItem.size(); ++i) {
+        if (mOptionItem.at(i)->disabled) {
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::PartiallyChecked),
+                              Qt::CheckStateRole );
+        } else {
+            if (mOptionItem.at(i)->error ==OptionErrorType::No_Error)
+                setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+            else
+                setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+        }
+    }
+    emit configParamModelChanged(mOptionItem);
+    updateRecurrentStatus();
+    endResetModel();
+}
+
+void ConfigParamTableModel::updateRecurrentStatus()
+{
+    QList<int> idList;
+    for(ParamConfigItem* item : mOptionItem) {
+        idList << item->optionId;
+    }
+    for(ParamConfigItem* item : mOptionItem) {
+        item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
+    }
+    headerDataChanged(Qt::Vertical, 0, mOptionItem.size());
+}
+
+void ConfigParamTableModel::updateCheckState()
+{
+    for(int i = 0; i<mOptionItem.size(); ++i) {
+        QVariant value =  QVariant(Qt::Unchecked);
+        if (mOptionItem.at(i)->disabled)
+            value = QVariant(Qt::PartiallyChecked);
+        else if (mOptionItem.at(i)->error == OptionErrorType::No_Error)
+                value = QVariant(Qt::Unchecked);
+        else
+            value = QVariant(Qt::Checked);
+
+        mCheckState[i] = value;
+    }
+}
+
+void ConfigParamTableModel::setRowCount(int rows)
+{
+    int rc = mOptionItem.size();
+    if (rows < 0 ||  rc == rows)
+       return;
+
+    if (rc < rows)
+       insertRows(qMax(rc, 0), rows - rc);
+    else
+        removeRows(qMax(rows, 0), rc - rows);
 }
 
 QString ConfigParamTableModel::getParameterTableEntry(int row)

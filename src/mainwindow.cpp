@@ -2339,8 +2339,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             setProjectViewVisibility(false);
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
             mGamsParameterEditor->deSelectParameters();
-        } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-            ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
+        } else if (mRecent.editor() != nullptr) {
+            if (ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+                ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
+            } else if (ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                       ViewHelper::toGamsConfigEditor(mRecent.editor())->deSelectAll();
+            }
         }
 
         // search widget

@@ -25,6 +25,7 @@
 #include "optioncompleterdelegate.h"
 
 #include <QWidget>
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -47,19 +48,52 @@ public:
     explicit ParamConfigEditor(QWidget *parent = nullptr);
     ~ParamConfigEditor();
 
+    bool isInFocus(QWidget* focusWidget) const;
+
+signals:
+    void modificationChanged(bool modifiedState);
+
 public slots:
+    void showParameterContextMenu(const QPoint &pos);
+    void showDefinitionContextMenu(const QPoint &pos);
+
     void parameterItemCommitted(QWidget *editor);
+    void on_selectRow(int logicalIndex);
+    void deSelectOptions();
 
 private slots:
-    void findAndSelectionParameterFromDefinition();
+    void addActions();
+    void init();
 
-//    void on_newTableRowDropped(const QModelIndex &index);
-//    void on_parameterTableNameChanged(const QString &from, const QString &to);
-//    void on_parameterValueChanged(const QModelIndex &index);
-//    void on_parameterTableModelChanged(const QString &commandLineStr);
+    void findAndSelectionParameterFromDefinition();
+    void selectAnOption();
+    void insertOption();
+    void deleteOption();
+    void moveOptionUp();
+    void moveOptionDown();
+    void selectAllOptions();
+    void resizeColumnsToContents();
+
+    void addParameterFromDefinition(const QModelIndex &index);
+    void showOptionDefinition(bool selectRow = true);
+    void showOptionRecurrence();
+    void copyDefinitionToClipboard(int column);
+
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_newTableRowDropped(const QModelIndex &index);
+
+    QList<int> getRecurrentOption(const QModelIndex &index);
+    QString getParameterTableEntry(int row);
+
+    void deleteParameter();
+
+    bool isThereARow() const;
+    bool isThereARowSelection() const;
+    bool isEverySelectionARow() const;
 
 private:
     Ui::ParamConfigEditor *ui;
+    QMenu mContextMenu;
 
     OptionTokenizer* mOptionTokenizer;
     ConfigParamTableModel * mParameterTableModel;

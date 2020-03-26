@@ -63,9 +63,19 @@ public:
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
-    void optionModelChanged(const QList<ParamConfigItem *> &optionItem);
-    void optionNameChanged(const QString &from, const QString &to);
-    void optionValueChanged(const QModelIndex &index);
+    void configParamModelChanged(const QList<ParamConfigItem *> &optionItem);
+    void configParamItemChanged(const ParamConfigItem* optionItem);
+    void configParamItemRemoved();
+
+public slots:
+    void on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_removeConfigParamItem();
+    void updateRecurrentStatus();
+    QString getParameterTableEntry(int row);
+
+private slots:
+    void setRowCount(int rows);
+    void updateCheckState();
 
 private:
     QList<ParamConfigItem *> mOptionItem;
@@ -75,7 +85,6 @@ private:
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
 
-    QString getParameterTableEntry(int row);
 };
 
 } // namepsace option

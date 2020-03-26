@@ -26,19 +26,67 @@ namespace gams {
 namespace studio {
 namespace option {
 
-GamsConfigEditor::GamsConfigEditor(QWidget *parent) :
+GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
+                                   FileId id, QTextCodec*codec, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::GamsConfigEditor)
+    ui(new Ui::GamsConfigEditor),
+    mFileId(id),
+    mLocation(optionFilePath),
+    mFileName(fileName),
+    mCodec(codec),
+    mModified(false)
 {
     ui->setupUi(this);
-
     ui->GamsCfgTabWidget->setCurrentIndex(0);
     setFocusProxy(ui->GamsCfgTabWidget);
+
+    ParamConfigEditor* configEditor =  static_cast<ParamConfigEditor*>(ui->GamsCfgTabWidget->widget(int(ConfigEditorType::commandLineParameter)));
+    initEditorType(configEditor);
+
+    connect(configEditor, &ParamConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
 }
 
 GamsConfigEditor::~GamsConfigEditor()
 {
     delete ui;
+}
+
+FileId GamsConfigEditor::fileId() const
+{
+    return mFileId;
+}
+
+bool GamsConfigEditor::isModified() const
+{
+    return mModified;
+}
+
+void GamsConfigEditor::setModified(bool modified)
+{
+    mModified = modified;
+//    updateEditActions(mModified);
+//    emit modificationChanged( mModified );
+}
+
+bool GamsConfigEditor::saveConfigFile(const QString &location)
+{
+    return saveAs(location);
+}
+
+void GamsConfigEditor::deSelectAll()
+{
+    // TODO (JP)
+    QWidget* w = ui->GamsCfgTabWidget->currentWidget();
+    if (toParamConfigEditor(w)) {
+        toParamConfigEditor(w)->deSelectOptions();
+    }
+}
+
+bool GamsConfigEditor::saveAs(const QString &location)
+{
+    setModified(false);
+
+    // TODO (JP)
 }
 
 }

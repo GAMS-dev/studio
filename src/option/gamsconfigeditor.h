@@ -22,6 +22,9 @@
 
 #include <QWidget>
 
+#include "common.h"
+#include "paramconfigeditor.h"
+
 namespace gams {
 namespace studio {
 
@@ -35,16 +38,55 @@ class GamsConfigEditor;
 
 class OptionTokenizer;
 
+enum  class ConfigEditorType {
+    commandLineParameter = 0,
+    environmentVariable = 1,
+    solverConfiguration = 2,
+    undefined = 3
+};
+
 class GamsConfigEditor : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit GamsConfigEditor(QWidget *parent = nullptr);
+    explicit GamsConfigEditor(QString fileName, QString optionFilePath,
+                               FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
     ~GamsConfigEditor();
+
+    FileId fileId() const;
+
+    bool saveAs(const QString &location);
+
+    inline static ParamConfigEditor* initEditorType(ParamConfigEditor * w) {
+        if(w) w->setProperty("ConfigEditorType", int(ConfigEditorType::commandLineParameter));
+        return w;
+    }
+    inline static ConfigEditorType configEditorType(QWidget* w) {
+        QVariant v = w ? w->property("EditorType") : QVariant();
+        return (v.isValid() ? static_cast<ConfigEditorType>(v.toInt()) : ConfigEditorType::undefined);
+    }
+    inline static ParamConfigEditor* toParamConfigEditor(QWidget* w) {
+        return (configEditorType(w) == ConfigEditorType::commandLineParameter) ? static_cast<ParamConfigEditor*>(w) : nullptr;
+    }
+
+public slots:
+    bool isModified() const;
+    void setModified(bool modified);
+
+    bool saveConfigFile(const QString &location);
+
+    void deSelectAll();
 
 private:
     Ui::GamsConfigEditor *ui;
+
+    FileId mFileId;
+    QString mLocation;
+    QString mFileName;
+    QTextCodec* mCodec;
+
+    bool mModified;
 };
 
 
