@@ -2174,6 +2174,8 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
 
     if (!miro::MiroCommon::writeAssemblyFile(assemblyFile, dlg.selectedFiles()))
         SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1").arg(assemblyFile), LogMsgType::Error);
+    else
+        addToGroup(mRecent.group, assemblyFile);
 }
 
 void MainWindow::on_actionDeploy_triggered()
