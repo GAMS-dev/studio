@@ -253,6 +253,10 @@ bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &va
                   emit optionValueChanged(index);
         } else if (index.column() == COLUMN_ENTRY_NUMBER) {
                   mOptionItem[index.row()]->optionId = dataValue.toInt();
+        } else if (index.column() == COLUMN_MIN_VERSION) {
+                   mOptionItem[index.row()]->minVersion = dataValue;
+        } else if (index.column() == COLUMN_MAX_VERSION) {
+            mOptionItem[index.row()]->maxVersion = dataValue;
         }
         emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
@@ -489,6 +493,8 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
              setData(idx, item->key, Qt::EditRole);
              setData( index(beginRow, COLUMN_PARAM_VALUE), item->value, Qt::EditRole);
              setData( index(beginRow, COLUMN_ENTRY_NUMBER), item->optionId, Qt::EditRole);
+             setData( index(beginRow, COLUMN_MIN_VERSION), item->minVersion, Qt::EditRole);
+             setData( index(beginRow, COLUMN_MAX_VERSION), item->maxVersion, Qt::EditRole);
              setHeaderData( idx.row(), Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
              emit newTableRowDropped( idx );
              beginRow++;
