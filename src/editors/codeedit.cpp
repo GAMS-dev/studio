@@ -1358,6 +1358,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
             selection.cursor = tc;
+            selection.format.setForeground(Qt::white);
             selection.format.setBackground(toColor(Scheme::Edit_matchesBg));
             selections << selection;
         }
