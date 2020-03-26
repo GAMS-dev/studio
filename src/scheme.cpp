@@ -160,7 +160,7 @@ void Scheme::initDefault()
 
     mColorSchemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_directive,         Color(dark_assignment));
-    mColorSchemes[sNr].insert(Syntax_keyword,           Color(dark_neutral, fBold));
+    mColorSchemes[sNr].insert(Syntax_keyword,           Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_declaration,       Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_description,       Color(dark_unobstrusive));
     mColorSchemes[sNr].insert(Syntax_comment,           Color(dark_unobstrusive, fItalic));
