@@ -144,11 +144,11 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
         stream << licenseLines.join("\n");
         licenseFile.close();
     } else {
-        auto logger = SysLogLocator::systemLog();
-        logger->append("Unable to open file " +
-                       QDir::toNativeSeparators(licenseFile.fileName()) +
-                       ": " + licenseFile.errorString(),
-                       LogMsgType::Error);
+        QMessageBox::critical(parent,
+                              "Unable to write gamslice.txt",
+                              "Unable to write " +
+                              QDir::toNativeSeparators(licenseFile.fileName()) +
+                              ": " + licenseFile.errorString());
     }
 }
 
