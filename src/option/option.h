@@ -32,11 +32,13 @@ namespace option {
 enum class OptionErrorType {
     No_Error,     // 0
     Invalid_Key,  // 1
-    Incorrect_Value_Type, // 2
-    Value_Out_Of_Range,   // 3
-    Deprecated_Option,    // 4
-    Override_Option,      // 5
-    UserDefined_Error     // 6
+    Incorrect_Value_Type,// 2
+    Value_Out_Of_Range,  // 3
+    Deprecated_Option,   // 4
+    Override_Option,     // 5
+    UserDefined_Error,   // 6
+    Invalid_minVersion,  // 7
+    Invalid_maxVersion   // 8
 };
 
 enum class OptionDefinitionType {
@@ -80,8 +82,8 @@ struct ParamConfigItem {
     int optionId = -1;
     QString key = "";
     QString value = "";
-    int minVersion = 0;
-    int maxVersion = 0;
+    QString minVersion = "";
+    QString maxVersion =  "";
     bool disabled = false;
     bool recurrent = false;
     OptionErrorType error = OptionErrorType::No_Error;

@@ -126,11 +126,14 @@ QVariant GamsConfigParamTableModel::data(const QModelIndex &index, int role) con
             return mOptionItem.at(row)->key;
         } else if (col== COLUMN_PARAM_VALUE) {
                  return mOptionItem.at(row)->value;
+        } else if (col==COLUMN_MIN_VERSION) {
+                  return mOptionItem.at(row)->minVersion;
+        } else if (col==COLUMN_MAX_VERSION) {
+                  return mOptionItem.at(row)->maxVersion;
         } else if (col==COLUMN_ENTRY_NUMBER) {
-                  return mOptionItem.at(row)->optionId;
-        } else { // TODO (JP)
-            break;
+            return mOptionItem.at(row)->optionId;
         }
+        break;
     }
     case Qt::TextAlignmentRole: {
         return Qt::AlignLeft+ Qt::AlignVCenter;
