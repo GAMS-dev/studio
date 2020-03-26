@@ -157,6 +157,8 @@ ParameterEditor::~ParameterEditor()
        delete mOptionTokenizer;
     if (mParameterTableModel)
        delete mParameterTableModel;
+    if (mOptionCompleter)
+       delete mOptionCompleter;
 }
 
 void ParameterEditor::runDefaultAction()
