@@ -330,6 +330,7 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     dimIdxEnd = -1;
     dimIdxStart = -1;
 
+    static_cast<GdxSymbolView*>(parent()->parent())->toggleColumnHidden();
     static_cast<GdxSymbolView*>(parent()->parent())->autoResizeColumns();
 }
 
