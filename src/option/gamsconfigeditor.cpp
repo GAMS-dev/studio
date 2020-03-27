@@ -87,6 +87,7 @@ bool GamsConfigEditor::saveAs(const QString &location)
     setModified(false);
 
     // TODO (JP)
+    return false;
 }
 
 }
