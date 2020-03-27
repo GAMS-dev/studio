@@ -168,10 +168,16 @@ void Keys::reset()
 //    *seq << QKeySequence("Ctrl+,") << QKeySequence("Meta+,");
 //    setHotkey(Hotkey::BookmarkPrev, seq);
 
+#ifdef __APPLE__
+    seq = new KeySeqList("Meta+Shift+Up", "start block edit");
+    *seq << QKeySequence("Meta+Shift+Down") << QKeySequence("Meta+Shift+Left")
+         << QKeySequence("Meta+Shift+Right");
+    setHotkey(Hotkey::BlockEditStart, seq);
+#else
     seq = new KeySeqList("Shift+Alt+Up","start block edit");
     *seq << QKeySequence("Shift+Alt+Down") << QKeySequence("Shift+Alt+Left") << QKeySequence("Shift+Alt+Right");
     setHotkey(Hotkey::BlockEditStart, seq);
-
+#endif
     seq = new KeySeqList("Esc","end block edit");
     *seq << QKeySequence("Up") << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
          << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
