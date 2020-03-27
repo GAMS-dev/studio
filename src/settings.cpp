@@ -242,21 +242,21 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skViewOption, KeyData(scGams, {"viewMenu","optionEdit"}, false));
 
     // general system settings
-    res.insert(skDefaultCodecMib, KeyData(scGams2, {"defaultCodecMib"}, 106));
-    res.insert(skEncodingMib, KeyData(scGams2, {"encodingMIBs"}, QString("106,0,4,17,2025")));
-    res.insert(skProjects, KeyData(scGams2, {"projects"}, QJsonObject()));
-    res.insert(skTabs, KeyData(scGams2, {"tabs"}, QJsonObject()));
-    res.insert(skHistory, KeyData(scGams2, {"history"}, QJsonArray()));
+    res.insert(skDefaultCodecMib, KeyData(scGams, {"defaultCodecMib"}, 106));
+    res.insert(skEncodingMib, KeyData(scGams, {"encodingMIBs"}, QString("106,0,4,17,2025")));
+    res.insert(skProjects, KeyData(scGams, {"projects"}, QJsonObject()));
+    res.insert(skTabs, KeyData(scGams, {"tabs"}, QJsonObject()));
+    res.insert(skHistory, KeyData(scGams, {"history"}, QJsonArray()));
 
     // settings of help page
-    res.insert(skHelpBookmarks, KeyData(scGams2, {"help","bookmarks"}, QJsonArray()));
-    res.insert(skHelpZoomFactor, KeyData(scGams2, {"help","zoom"}, 1.0));
+    res.insert(skHelpBookmarks, KeyData(scGams, {"help","bookmarks"}, QJsonArray()));
+    res.insert(skHelpZoomFactor, KeyData(scGams, {"help","zoom"}, 1.0));
 
     // search widget
-    res.insert(skSearchUseRegex, KeyData(scGams2, {"search", "regex"}, false));
-    res.insert(skSearchCaseSens, KeyData(scGams2, {"search", "caseSens"}, false));
-    res.insert(skSearchWholeWords, KeyData(scGams2, {"search", "wholeWords"}, false));
-    res.insert(skSearchScope, KeyData(scGams2, {"search", "scope"}, 0));
+    res.insert(skSearchUseRegex, KeyData(scGams, {"search", "regex"}, false));
+    res.insert(skSearchCaseSens, KeyData(scGams, {"search", "caseSens"}, false));
+    res.insert(skSearchWholeWords, KeyData(scGams, {"search", "wholeWords"}, false));
+    res.insert(skSearchScope, KeyData(scGams, {"search", "scope"}, 0));
 
     // general settings page
     res.insert(skDefaultWorkspace, KeyData(scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir()));
@@ -295,7 +295,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skSoDeleteCommentsAbove, KeyData(scUser, {"solverOption","deleteCommentsAbove"}, false));
 
     // user model library directory
-    res.insert(skUserModelLibraryDir, KeyData(scGams2, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
+    res.insert(skUserModelLibraryDir, KeyData(scGams, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
     return res;
 }
 
