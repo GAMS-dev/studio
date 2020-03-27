@@ -923,7 +923,7 @@
     <string>Duplicate Line</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+L</string>
+    <string>Ctrl+D</string>
    </property>
   </action>
   <action name="actionRemove_Line">

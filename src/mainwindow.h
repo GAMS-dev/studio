@@ -70,8 +70,13 @@ class MiroDeployDialog;
 
 struct RecentData {
 
-    QWidget *editor() const;
-    void setEditor(QWidget *editor, MainWindow* window);
+    QWidget* editor() const {
+        return mEditor;
+    }
+
+    void setEditor(QWidget* editor, MainWindow* window);
+
+    void reset();
 
     bool validRunGroup();
 
@@ -208,7 +213,6 @@ private slots:
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
-    void updateMiroMenu();
     void newProcessCall(const QString &text, const QString &call);
 
     // View
@@ -257,6 +261,7 @@ private slots:
     void on_actionStop_MIRO_triggered();
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
+    void on_menuMIRO_aboutToShow();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
 
@@ -377,6 +382,8 @@ private:
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
     QFont createEditorFont(const QString &fontFamily, int pointSize);
+    bool isMiroAvailable();
+    bool validMiroPrerequisites();
 
 private:
     Ui::MainWindow *ui;

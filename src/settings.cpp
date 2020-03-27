@@ -144,8 +144,8 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
       mKeys(generateKeys())
 {
     // initialize storage
-    mData.insert(scUi, Data());
-    mData.insert(scSys, Data());
+    mData.insert(scGams, Data());
+    mData.insert(scGams2, Data());
     mData.insert(scUser, Data());
 
     // initialize json format and make it the default
@@ -161,7 +161,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     if (mCanWrite || mCanRead) {
         QSettings *sUi = nullptr;
         // create basic non versionized application settings
-        sUi = newQSettings("uistates");
+        sUi = newQSettings("gams");
         if (sUi->status() != QSettings::NoError) {
             if (sUi->status() == QSettings::FormatError) {
                 QString uiFile = sUi->fileName();
@@ -170,7 +170,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
                     DynamicFile(uiFile, 2); // creates backup
                     DEB() << " - created backup file.";
                 }
-                sUi = newQSettings("uistates");
+                sUi = newQSettings("gams");
             }
             if (sUi->status()) {
                 delete sUi;
@@ -180,8 +180,8 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
         if (sUi) {
             // only if the basic settings file has been created ...
             sUi->sync();
-            mSettings.insert(scUi, sUi);
-            load(scUi);
+            mSettings.insert(scGams, sUi);
+            load(scGams);
 //            saveFile(KUi);
             // ... create versionized settings (may init from older version)
             createSettingFiles();
@@ -230,33 +230,33 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skVersionStudio, KeyData(scAll, {"version","studio"}, QString(GAMS_VERSION_STR)));
 
     // window settings
-    res.insert(skWinSize, KeyData(scUi, {"window","size"}, QString("1024,768")));
-    res.insert(skWinPos, KeyData(scUi, {"window","pos"}, QString("0,0")));
-    res.insert(skWinState, KeyData(scUi, {"window","state"}, QByteArray("")));
-    res.insert(skWinMaximized, KeyData(scUi, {"window","maximized"}, false));
+    res.insert(skWinSize, KeyData(scGams, {"window","size"}, QString("1024,768")));
+    res.insert(skWinPos, KeyData(scGams, {"window","pos"}, QString("0,0")));
+    res.insert(skWinState, KeyData(scGams, {"window","state"}, QByteArray("")));
+    res.insert(skWinMaximized, KeyData(scGams, {"window","maximized"}, false));
 
     // view menu settings
-    res.insert(skViewProject, KeyData(scUi, {"viewMenu","project"}, true));
-    res.insert(skViewOutput, KeyData(scUi, {"viewMenu","output"}, true));
-    res.insert(skViewHelp, KeyData(scUi, {"viewMenu","help"}, false));
-    res.insert(skViewOption, KeyData(scUi, {"viewMenu","optionEdit"}, false));
+    res.insert(skViewProject, KeyData(scGams, {"viewMenu","project"}, true));
+    res.insert(skViewOutput, KeyData(scGams, {"viewMenu","output"}, true));
+    res.insert(skViewHelp, KeyData(scGams, {"viewMenu","help"}, false));
+    res.insert(skViewOption, KeyData(scGams, {"viewMenu","optionEdit"}, false));
 
     // general system settings
-    res.insert(skDefaultCodecMib, KeyData(scSys, {"defaultCodecMib"}, 106));
-    res.insert(skEncodingMib, KeyData(scSys, {"encodingMIBs"}, QString("106,0,4,17,2025")));
-    res.insert(skProjects, KeyData(scSys, {"projects"}, QJsonObject()));
-    res.insert(skTabs, KeyData(scSys, {"tabs"}, QJsonObject()));
-    res.insert(skHistory, KeyData(scSys, {"history"}, QJsonArray()));
+    res.insert(skDefaultCodecMib, KeyData(scGams, {"defaultCodecMib"}, 106));
+    res.insert(skEncodingMib, KeyData(scGams, {"encodingMIBs"}, QString("106,0,4,17,2025")));
+    res.insert(skProjects, KeyData(scGams, {"projects"}, QJsonObject()));
+    res.insert(skTabs, KeyData(scGams, {"tabs"}, QJsonObject()));
+    res.insert(skHistory, KeyData(scGams, {"history"}, QJsonArray()));
 
     // settings of help page
-    res.insert(skHelpBookmarks, KeyData(scSys, {"help","bookmarks"}, QJsonArray()));
-    res.insert(skHelpZoomFactor, KeyData(scSys, {"help","zoom"}, 1.0));
+    res.insert(skHelpBookmarks, KeyData(scGams, {"help","bookmarks"}, QJsonArray()));
+    res.insert(skHelpZoomFactor, KeyData(scGams, {"help","zoom"}, 1.0));
 
     // search widget
-    res.insert(skSearchUseRegex, KeyData(scSys, {"search", "regex"}, false));
-    res.insert(skSearchCaseSens, KeyData(scSys, {"search", "caseSens"}, false));
-    res.insert(skSearchWholeWords, KeyData(scSys, {"search", "wholeWords"}, false));
-    res.insert(skSearchScope, KeyData(scSys, {"search", "scope"}, 0));
+    res.insert(skSearchUseRegex, KeyData(scGams, {"search", "regex"}, false));
+    res.insert(skSearchCaseSens, KeyData(scGams, {"search", "caseSens"}, false));
+    res.insert(skSearchWholeWords, KeyData(scGams, {"search", "wholeWords"}, false));
+    res.insert(skSearchScope, KeyData(scGams, {"search", "scope"}, 0));
 
     // general settings page
     res.insert(skDefaultWorkspace, KeyData(scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir()));
@@ -295,7 +295,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skSoDeleteCommentsAbove, KeyData(scUser, {"solverOption","deleteCommentsAbove"}, false));
 
     // user model library directory
-    res.insert(skUserModelLibraryDir, KeyData(scSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
+    res.insert(skUserModelLibraryDir, KeyData(scGams, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
     return res;
 }
 
@@ -317,7 +317,7 @@ int Settings::checkVersion()
     // Find setting files of the highest version up to mVersion
     QStringList files = dir.entryList(QDir::Files);
     while (res) {
-        if (files.contains(QString("systemsettings%1.json").arg(res))) break;
+        if (files.contains(QString("gams%1.json").arg(res))) break;
         if (files.contains(QString("usersettings%1.json").arg(res))) break;
         --res;
     }
@@ -335,7 +335,7 @@ bool Settings::createSettingFiles()
 
     // create setting files of found version to read from
     initSettingsFiles(version);
-    load(scSys);
+    load(scGams2);
     load(scUser);
     if (version == mVersion) {
         setValue(skVersionStudio, mKeys.value(skVersionStudio).initial);
@@ -374,7 +374,7 @@ bool Settings::createSettingFiles()
 void Settings::initSettingsFiles(int version)
 {
     // initializes versionized setting files
-    mSettings.insert(scSys, newQSettings(QString("systemsettings%1").arg(version)));
+    mSettings.insert(scGams2, newQSettings(QString("gams%1").arg(version)));
     mSettings.insert(scUser, newQSettings(QString("usersettings%1").arg(version)));
     // TODO(JM) Handle studioscheme.json and syntaxscheme.json
 }
@@ -404,8 +404,8 @@ void Settings::reload()
 
 void Settings::resetViewSettings()
 {
-    initDefault(scUi);
-    QSettings *set = mSettings.value(scUi);
+    initDefault(scGams);
+    QSettings *set = mSettings.value(scGams);
     if (set) set->sync();
 }
 
@@ -579,7 +579,7 @@ QString Settings::keyText(SettingsKey key)
 
 QString Settings::settingsPath()
 {
-    if (QSettings *settings = mSettings[scUi]) {
+    if (QSettings *settings = mSettings[scGams]) {
         return QFileInfo(settings->fileName()).path();
     }
     DEB() << "ERROR: Settings file must be initialized before using settingsPath()";
