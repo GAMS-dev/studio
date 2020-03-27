@@ -192,7 +192,7 @@ void Keys::reset()
     seq = new KeySeqList("Shift+F3", "Find Previous");
     setHotkey(Hotkey::SearchFindPrev, seq);
 
-    seq = new KeySeqList("Shift+Ctrl+L","duplicate line");
+    seq = new KeySeqList("Ctrl+D","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
 
     seq = new KeySeqList("Tab","indent selected lines");
