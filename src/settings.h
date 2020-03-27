@@ -111,7 +111,10 @@ enum SettingsKey {
 class Settings
 {
 public:
-    enum Scope {scAll, scUi, scSys, scUser};
+    enum Scope {scAll,      // All setting scopes
+                scGams,     // Initial GAMS setting
+                scGams2,    // GAMS settings that had to be modified
+                scUser};    // user settings
 
 public:
     static void createSettings(bool ignore, bool reset, bool resetView);

@@ -3788,7 +3788,7 @@ void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
     Settings::settings()->resetViewSettings();
-    Settings::settings()->load(Settings::scUi);
+    Settings::settings()->load(Settings::scGams);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {

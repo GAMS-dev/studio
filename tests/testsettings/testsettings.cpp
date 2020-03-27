@@ -36,7 +36,7 @@ void createVersion1Settings()
 
     // --------- create uistates.json in version 1 -----
 
-    QFile f1("./GAMS/uistates.json");
+    QFile f1("./GAMS/gams.json");
     if (f1.open(QFile::WriteOnly)) {
         f1.write(
 R"({
@@ -61,9 +61,9 @@ R"({
 
     }
 
-    // --------- create systemsettings1.json in version 1 -----
+    // --------- create gams1.json in version 1 -----
 
-    QFile f2("./GAMS/systemsettings1.json");
+    QFile f2("./GAMS/gams1.json");
     if (f2.open(QFile::WriteOnly)) {
         f2.write(
 R"({
@@ -147,11 +147,11 @@ R"({
 }
 
 void removeSettingFiles(int version) {
-    QFile f1("./GAMS/uistates.json");
+    QFile f1("./GAMS/gams.json");
     if (f1.exists()) {
         Q_ASSERT(f1.remove());
     }
-    QFile f2(QString("./GAMS/systemsettings%1.json").arg(version));
+    QFile f2(QString("./GAMS/gams%1.json").arg(version));
     if (f2.exists()) {
         Q_ASSERT(f2.remove());
     }
@@ -323,7 +323,7 @@ void TestSettings::testWriteSettingsReset()
 void TestSettings::testIgnoreIfNoFilesExist()
 {
     removeSettingFiles(Settings::version());
-    QFile file("./GAMS/uistates.json");
+    QFile file("./GAMS/gams.json");
     // try creating settings files with ignore flag
     Settings::createSettings(true, false, false);
     Settings::settings()->save();
