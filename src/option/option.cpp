@@ -126,6 +126,12 @@ bool Option::isDoubleDashedOptionNameValid(const QString &optionName) const
     return QRegExp("^[a-zA-Z]+[_a-zA-Z0-9]*").exactMatch(optionName) ;
 }
 
+bool Option::isConformantVersion(const QString &version) const
+{
+    QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
+    return re.exactMatch(version);
+}
+
 OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value) const
 {
     QString key = optionName;

@@ -163,6 +163,12 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
         case OptionErrorType::UserDefined_Error:
             tooltipText.append( QString("Invalid parameter key or value or comment defined") );
             break;
+        case OptionErrorType::Invalid_minVersion:
+            tooltipText.append( QString("Invalid minVersion format, must be [x[.y[.z]]") );
+            break;
+        case OptionErrorType::Invalid_maxVersion:
+            tooltipText.append( QString("Invalid maxVersion format, must be [x[.y[.z]]") );
+            break;
         default:
             break;
         }

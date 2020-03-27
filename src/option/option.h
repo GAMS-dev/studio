@@ -166,6 +166,7 @@ public:
     bool isDeprecated(const QString &optionName) const;
     bool isDoubleDashedOption(const QString &option) const;
     bool isDoubleDashedOptionNameValid(const QString &optionName) const;
+    bool isConformantVersion(const QString &version) const;
     OptionErrorType getValueErrorType(const QString &optionName, const QString &value) const;
 
     QString getNameFromSynonym(const QString &synonym) const;

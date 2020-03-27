@@ -150,9 +150,16 @@ void TestOptionAPI::testVersionFormat_data()
     QTest::newRow("100")    << "100"      << true;
     QTest::newRow("30.1")   << "30.1"     << true;
     QTest::newRow("30.0")   << "30.0"     << true;
+    QTest::newRow("30.1.0") << "30.1.0"   << true;
     QTest::newRow("30.1.2") << "30.1.2"   << true;
-    QTest::newRow("30.1.02") << "30.1.02"  << false;
-    QTest::newRow("30.1.2.1")  << "30.1.2.1"     << false;
+
+    QTest::newRow("30.1.02")  << "30.1.02"   << false;
+    QTest::newRow("30.1.2.1") << "30.1.2.1"  << false;
+    QTest::newRow("30.")      << "30."       << false;
+    QTest::newRow("30.1.")    << "30.1."     << false;
+    QTest::newRow("30.1.2.")  << "30.1.2."   << false;
+    QTest::newRow(".1 ")      << ".1"        << false;
+    QTest::newRow(".2. ")     << ".2."       << false;
 
     QTest::newRow("")       << ""       << false;
     QTest::newRow(" ")      << " "      << false;
@@ -166,6 +173,7 @@ void TestOptionAPI::testVersionFormat_data()
     QTest::newRow("x.y.z")  << "x.y.z"  << false;
     QTest::newRow("x.y.1")  << "x.y.1"  << false;
     QTest::newRow("30./.2") << "30./.2"   << false;
+
 }
 
 void TestOptionAPI::testVersionFormat()

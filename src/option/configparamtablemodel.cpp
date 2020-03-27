@@ -136,7 +136,10 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
         break;
     }
     case Qt::TextAlignmentRole: {
-        return Qt::AlignLeft+ Qt::AlignVCenter;
+        if (col==COLUMN_MIN_VERSION || col==COLUMN_MAX_VERSION)
+            return Qt::AlignRight+ Qt::AlignVCenter;
+        else
+           return Qt::AlignLeft+ Qt::AlignVCenter;
     }
     case Qt::ToolTipRole: {
         QString tooltipText = "";
@@ -156,6 +159,10 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
         case OptionErrorType::UserDefined_Error:
             tooltipText.append( QString("Invalid parameter key or value or comment defined") );
             break;
+        case OptionErrorType::Invalid_minVersion:
+        case OptionErrorType::Invalid_maxVersion:
+            tooltipText.append( QString("Invalid version format, must be [x[.y[.z]]") );
+            break;
         default:
             break;
         }
@@ -173,6 +180,21 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
         if (mOptionItem[index.row()]->recurrent && index.column()==COLUMN_PARAM_KEY)
             return QVariant::fromValue(QColor(Qt::darkYellow));
 
+        if (index.column()==COLUMN_MIN_VERSION) {
+            if (mOptionItem[index.row()]->minVersion.isEmpty())
+                return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+            else if (mOption->isConformantVersion(mOptionItem[index.row()]->minVersion))
+                     return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+            else
+                 return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+        } else if (index.column()==COLUMN_MAX_VERSION) {
+            if (mOptionItem[index.row()]->maxVersion.isEmpty())
+                return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+            else if (mOption->isConformantVersion(mOptionItem[index.row()]->maxVersion))
+                    return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+            else
+                return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+        }
         if (mOption->isDoubleDashedOption(mOptionItem.at(row)->key)) { // double dashed parameter
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row)->key)) )
                 return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
@@ -186,7 +208,7 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
-            } else { // value
+            } else if (col==COLUMN_PARAM_VALUE) { // value
                   switch (mOption->getValueErrorType(mOptionItem.at(row)->key, mOptionItem.at(row)->value)) {
                       case OptionErrorType::Incorrect_Value_Type:
                             return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
@@ -197,6 +219,10 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
                       default:
                            return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                   }
+            } else if (col==COLUMN_MIN_VERSION && mOption->isConformantVersion(mOptionItem.at(row)->minVersion)) {
+                      return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+            } else if (col==COLUMN_MAX_VERSION && mOption->isConformantVersion(mOptionItem.at(row)->maxVersion)) {
+                       return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
             }
         } else { // invalid option
             if (col ==COLUMN_PARAM_KEY)
@@ -525,23 +551,8 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
     while(row <= bottomRight.row()) {
         idx = index(row++, idx.column());
         if (roles.first()==Qt::EditRole) {
-          if (mOptionItem.at(idx.row())->disabled) {
-              setHeaderData( idx.row(), Qt::Vertical,
-                          Qt::CheckState(Qt::PartiallyChecked),
-                          Qt::CheckStateRole );
-          } else {
-              QString key = data( index(idx.row(), ConfigParamTableModel::COLUMN_PARAM_KEY), Qt::DisplayRole).toString();
-              QString value = data( index(idx.row(), ConfigParamTableModel::COLUMN_PARAM_VALUE), Qt::DisplayRole).toString();
-              QString text = "";
-//              if (mOption->isEOLCharDefined()) {
-//                  text = data( index(idx.row(), SolverOptionTableModel::COLUMN_EOL_COMMENT), Qt::DisplayRole).toString();
-//              }
-
-// TODO (JP)
-//              if (mOptionTokenizer->getOption()->available())
-//                  mOptionTokenizer->updateOptionItem(key, value, text, mOptionItem.at(idx.row()));
-
-              if (mOptionItem.at(idx.row())->error == OptionErrorType::No_Error)
+              QList<OptionErrorType> errorList = mOptionTokenizer->validate(mOptionItem.at(idx.row()));
+              if (errorList.size()<=0)
                    setHeaderData( idx.row(), Qt::Vertical,
                           Qt::CheckState(Qt::Unchecked),
                           Qt::CheckStateRole );
@@ -549,8 +560,7 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
                    setHeaderData( idx.row(), Qt::Vertical,
                       Qt::CheckState(Qt::Checked),
                       Qt::CheckStateRole );
-          }
-          emit configParamModelChanged(mOptionItem);
+              emit configParamModelChanged(mOptionItem);
        } else if (roles.first()==Qt::CheckStateRole) {
                   emit configParamModelChanged(mOptionItem);
        }

@@ -57,6 +57,7 @@ public:
     QList<OptionItem> tokenize(const QString &commandLineStr);
     QList<OptionItem> tokenize(const QString &commandLineStr, const QList<QString> &disabledOption);
     QList<OptionError> format(const QList<OptionItem> &items);
+    QList<OptionErrorType> validate(ParamConfigItem * item);
     QString normalize(const QString &commandLineStr);
     QString normalize(const QList<OptionItem> &items);
 

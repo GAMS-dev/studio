@@ -411,6 +411,53 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
     return optionErrorList;
 }
 
+QList<OptionErrorType> OptionTokenizer::validate(ParamConfigItem* item)
+{
+    QList<OptionErrorType> optionErrorList;
+    if (!mOption->available())
+        return optionErrorList;
+
+    if (!mOption->isDoubleDashedOption(item->key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
+        QString key = item->key;
+        if (key.startsWith("-"))
+           key = key.mid(1);
+        else if (key.startsWith("/"))
+                 key = key.mid(1);
+
+        if (key.isEmpty()) {
+            optionErrorList.append(OptionErrorType::Invalid_Key);
+        } else {
+            if (!mOption->isValid(key) && (!mOption->isASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
+               ) {
+                 optionErrorList.append(OptionErrorType::Invalid_Key);
+            } else if (mOption->isDeprecated(key)) {
+                       optionErrorList.append(OptionErrorType::Deprecated_Option);
+            }
+        }
+    } else { // neither invalid nor deprecated key
+        QString key = item->key;
+        if (key.startsWith("-"))
+           key = key.mid(1);
+        else if (key.startsWith("/"))
+                 key = key.mid(1);
+
+        if (!mOption->isValid(key))
+             key = mOption->getNameFromSynonym(key);
+
+        OptionErrorType errorType = mOption->getValueErrorType(key, item->value);
+        if (!optionErrorList.contains(errorType))
+           optionErrorList.append(errorType);
+    }
+
+    if (!item->minVersion.isEmpty() && !mOption->isConformantVersion(item->minVersion)) {
+        optionErrorList.append(OptionErrorType::Invalid_minVersion);
+    } else if (!item->maxVersion.isEmpty() && !mOption->isConformantVersion(item->maxVersion)) {
+            optionErrorList.append(OptionErrorType::Invalid_maxVersion);
+    }
+
+    return optionErrorList;
+}
+
 QString OptionTokenizer::normalize(const QString &commandLineStr)
 {
     return normalize( tokenize(commandLineStr) );
