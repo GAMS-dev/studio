@@ -161,6 +161,7 @@ SOURCES += \
     option/gamsconfigeditor.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsparametertablemodel.cpp \
+    option/gamsuserconfig.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
     option/optioncompleterdelegate.cpp \
@@ -304,6 +305,7 @@ HEADERS += \
     option/gamsconfigeditor.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsparametertablemodel.h \
+    option/gamsuserconfig.h \
     option/lineeditcompleteevent.h \
     option/option.h \
     option/optioncompleterdelegate.h \

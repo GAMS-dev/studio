@@ -43,8 +43,8 @@ enum class OptionErrorType {
 
 enum class OptionDefinitionType {
     GamsOptionDefinition = 0,
-    SolverOptionDefinition,  // 1
-    ConfigOptionDefinition   // 2
+    SolverOptionDefinition = 1,
+    ConfigOptionDefinition = 2
 };
 
 inline const QString optionMimeType(OptionDefinitionType type) {
