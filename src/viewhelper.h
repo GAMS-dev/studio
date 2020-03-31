@@ -75,7 +75,7 @@ public:
         return w;
     }
     inline static option::GamsConfigEditor* initEditorType(option::GamsConfigEditor * w) {
-        if(w) w->setProperty("EditorType", int(EditorType::gcfg));
+        if(w) w->setProperty("EditorType", int(EditorType::gucfg));
         return w;
     }
 
@@ -118,7 +118,7 @@ public:
         return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
     }
     inline static option::GamsConfigEditor* toGamsConfigEditor(QWidget* w) {
-        return (editorType(w) == EditorType::gcfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
+        return (editorType(w) == EditorType::gucfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
     }
 
     inline static QStringList dialogFileFilterUserCreated() {

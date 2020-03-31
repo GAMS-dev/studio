@@ -38,7 +38,7 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
     new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true),
     new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false),
-    new FileType(FileKind::GCfg, {"yaml"}, "GAMS Config File", false)
+    new FileType(FileKind::Guc, {"yaml"}, "GAMS Config File", false)
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);

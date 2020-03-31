@@ -563,7 +563,7 @@ void FileMeta::save(const QString &newLocation)
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
 
-    } else if (kind() == FileKind::GCfg) {
+    } else if (kind() == FileKind::Guc) {
         mActivelySaved = true;
         option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor( mEditors.first() );
         if (gucEditor) gucEditor->saveConfigFile(location);
@@ -698,7 +698,7 @@ bool FileMeta::isModified() const
             if (solverOptionWidget)
                 return solverOptionWidget->isModified();
         }
-    } else if (kind() == FileKind::GCfg) {
+    } else if (kind() == FileKind::Guc) {
                for (QWidget *wid: mEditors) {
                    option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor(wid);
                    if (gucEditor)
@@ -743,7 +743,7 @@ void FileMeta::setModified(bool modified)
                option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
                if (so) so->setModified(modified);
           }
-    } else if (kind() == FileKind::GCfg) {
+    } else if (kind() == FileKind::Guc) {
         for (QWidget *e : mEditors) {
              option::GamsConfigEditor *so = ViewHelper::toGamsConfigEditor(e);
              if (so) so->setModified(modified);
@@ -839,7 +839,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
-    } else if (kind() == FileKind::GCfg) {
+    } else if (kind() == FileKind::Guc) {
               res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
                                                                              id(), mCodec, tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {

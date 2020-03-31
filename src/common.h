@@ -90,7 +90,7 @@ enum class FileKind {
     Gdx,
     Ref,
     Opt,
-    GCfg
+    Guc
 };
 Q_ENUM_NS(FileKind)
 
@@ -110,7 +110,7 @@ enum class EditorType {
     gdx = 7,
     ref = 8,
     opt = 9,
-    gcfg = 10
+    gucfg = 10
 };
 Q_ENUM_NS(EditorType)
 
