@@ -64,8 +64,7 @@ bool GamsConfigEditor::isModified() const
 void GamsConfigEditor::setModified(bool modified)
 {
     mModified = modified;
-//    updateEditActions(mModified);
-//    emit modificationChanged( mModified );
+    emit modificationChanged( mModified );
 }
 
 bool GamsConfigEditor::saveConfigFile(const QString &location)

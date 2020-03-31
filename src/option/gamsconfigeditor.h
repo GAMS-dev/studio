@@ -70,6 +70,9 @@ public:
         return (configEditorType(w) == ConfigEditorType::commandLineParameter) ? static_cast<ParamConfigEditor*>(w) : nullptr;
     }
 
+signals:
+    void modificationChanged(bool modifiedState);
+
 public slots:
     bool isModified() const;
     void setModified(bool modified);
