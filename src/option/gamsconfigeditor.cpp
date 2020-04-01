@@ -93,9 +93,13 @@ void GamsConfigEditor::deSelectAll()
 
 bool GamsConfigEditor::saveAs(const QString &location)
 {
+    // TODO (JP)
+    mGuc->updateCommandLineParameters( mParamConfigEditor->parameterConfigItems() );
+    mGuc->writeGamsUserConfigFile(location);
+
+    mParamConfigEditor->setModified(false);
     setModified(false);
 
-    // TODO (JP)
     return false;
 }
 

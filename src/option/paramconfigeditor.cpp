@@ -647,6 +647,15 @@ bool ParamConfigEditor::isModified() const
     return mModified;
 }
 
+QList<ConfigItem *> ParamConfigEditor::parameterConfigItems()
+{
+    QList<ConfigItem *> itemList;
+    for(ParamConfigItem* item : mParameterTableModel->parameterConfigItems()) {
+        itemList.append( new ConfigItem(item->key, item->value, item->minVersion, item->maxVersion) );
+    }
+    return itemList;
+}
+
 void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
 {
     emit modificationChanged(true);

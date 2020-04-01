@@ -62,6 +62,8 @@ public slots:
     void setModified(bool modified);
     bool isModified() const;
 
+    QList<ConfigItem *> parameterConfigItems();
+
 private slots:
     void addActions();
     void init(const QList<ConfigItem *> &initParams);
@@ -97,7 +99,7 @@ private:
     QMenu mContextMenu;
 
     OptionTokenizer* mOptionTokenizer;
-    ConfigParamTableModel * mParameterTableModel;
+    ConfigParamTableModel* mParameterTableModel;
     OptionCompleterDelegate* mOptionCompleter;
 
     bool mModified;

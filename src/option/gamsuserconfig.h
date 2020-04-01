@@ -33,6 +33,8 @@ class ConfigItem {
 public:
     ConfigItem() {}
     ConfigItem(QString k, QString v) : key(k), value(v) {}
+    ConfigItem(QString k, QString v, QString min, QString max) :
+        key(k), value(v), minVersion(min), maxVersion(max) {}
 
     QString key = "";
     QString value = "";

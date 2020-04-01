@@ -548,6 +548,11 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
     }
 }
 
+QList<ParamConfigItem *> ConfigParamTableModel::parameterConfigItems()
+{
+    return mOptionItem;
+}
+
 void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     QModelIndex idx = topLeft;
