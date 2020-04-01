@@ -745,8 +745,8 @@ void FileMeta::setModified(bool modified)
           }
     } else if (kind() == FileKind::Guc) {
         for (QWidget *e : mEditors) {
-             option::GamsConfigEditor *so = ViewHelper::toGamsConfigEditor(e);
-             if (so) so->setModified(modified);
+             option::GamsConfigEditor *gco = ViewHelper::toGamsConfigEditor(e);
+             if (gco) gco->setModified(modified);
         }
     }
 }

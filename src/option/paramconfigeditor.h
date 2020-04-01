@@ -61,6 +61,12 @@ public slots:
     void on_selectRow(int logicalIndex);
     void deSelectOptions();
 
+    void setModified(bool modified);
+    bool isModified() const;
+
+    void setName(const QString &name);
+    QString name() const;
+
 private slots:
     void addActions();
     void init();
@@ -98,6 +104,9 @@ private:
     OptionTokenizer* mOptionTokenizer;
     ConfigParamTableModel * mParameterTableModel;
     OptionCompleterDelegate* mOptionCompleter;
+
+    QString mName;
+    bool mModified;
 };
 
 }

@@ -36,7 +36,8 @@ namespace option {
 
 ParamConfigEditor::ParamConfigEditor(QWidget *parent):
     QWidget(parent),
-    ui(new Ui::ParamConfigEditor)
+    ui(new Ui::ParamConfigEditor),
+    mModified(false)
 {
     ui->setupUi(this);
 
@@ -257,6 +258,8 @@ void ParamConfigEditor::init()
     connect(mParameterTableModel, &ConfigParamTableModel::configParamModelChanged, optdefmodel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigParamTableModel::configParamItemChanged, optdefmodel, &ConfigOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigParamTableModel::configParamItemRemoved, mParameterTableModel, &ConfigParamTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
+
+    connect(this, &ParamConfigEditor::modificationChanged, this, &ParamConfigEditor::setModified, Qt::UniqueConnection);
 }
 
 bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
@@ -626,6 +629,26 @@ void ParamConfigEditor::deSelectOptions()
              ui->ParamCfgDefTreeView->selectionModel()->clearSelection();
     else
         this->focusNextChild();
+}
+
+void ParamConfigEditor::setModified(bool modified)
+{
+    mModified = modified;
+}
+
+bool ParamConfigEditor::isModified() const
+{
+    return mModified;
+}
+
+void ParamConfigEditor::setName(const QString &name)
+{
+    mName = name;
+}
+
+QString ParamConfigEditor::name() const
+{
+    return mName;
 }
 
 void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)

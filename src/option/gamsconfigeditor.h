@@ -58,18 +58,6 @@ public:
 
     bool saveAs(const QString &location);
 
-    inline static ParamConfigEditor* initEditorType(ParamConfigEditor * w) {
-        if(w) w->setProperty("ConfigEditorType", int(ConfigEditorType::commandLineParameter));
-        return w;
-    }
-    inline static ConfigEditorType configEditorType(QWidget* w) {
-        QVariant v = w ? w->property("EditorType") : QVariant();
-        return (v.isValid() ? static_cast<ConfigEditorType>(v.toInt()) : ConfigEditorType::undefined);
-    }
-    inline static ParamConfigEditor* toParamConfigEditor(QWidget* w) {
-        return (configEditorType(w) == ConfigEditorType::commandLineParameter) ? static_cast<ParamConfigEditor*>(w) : nullptr;
-    }
-
 signals:
     void modificationChanged(bool modifiedState);
 
