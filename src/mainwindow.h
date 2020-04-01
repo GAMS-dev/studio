@@ -21,6 +21,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMessageBox>
 
 #include "editors/codeedit.h"
 #include "file.h"
@@ -49,6 +50,7 @@ namespace gams {
 namespace studio {
 
 class AbstractProcess;
+class FileEventHandler;
 class GamsProcess;
 class GamsLibProcess;
 class WelcomePage;
@@ -135,7 +137,10 @@ public:
     void execute(QString commandLineStr,
                  std::unique_ptr<AbstractProcess> process = nullptr,
                  ProjectFileNode *gmsFileNode = nullptr);
+
     void resetHistory();
+    void clearHistory(FileMeta *file);
+    void historyChanged();
 
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
@@ -165,6 +170,8 @@ public slots:
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
     bool eventFilter(QObject*sender, QEvent* event);
+    void closeGroup(ProjectGroupNode* group);
+    void closeFileEditors(const FileId fileId);
 
 private slots:
     void openInitialFiles();
@@ -180,9 +187,7 @@ private slots:
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
-    void closeGroup(ProjectGroupNode* group);
     void closeNodeConditionally(ProjectFileNode *node);
-    void closeFileEditors(const FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(ProjectAbstractNode* node, bool openOutput, bool createMissing);
@@ -348,11 +353,10 @@ private:
     void initTabs();
     void initIcons();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
-    int fileChangedExtern(FileId fileId, bool ask, int count = 1);
-    int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
+    int fileChangedExtern(FileId fileId);
+    int fileDeletedExtern(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
-    void historyChanged();
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
     void updateAndSaveSettings();
     void restoreFromSettings();
@@ -370,7 +374,7 @@ private:
     void dockWidgetShow(QDockWidget* dw, bool show);
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
-    int externChangedMessageBox(QString filePath, bool deleted, bool modified, int count);
+    void openFileEventMessageBox(QString filePath, bool deleted, bool modified, int count);
     void initToolBar();
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
@@ -411,7 +415,7 @@ private:
 
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
-    int mExternFileEventChoice = -1;
+    QSharedPointer<FileEventHandler> mFileEventHandler;
 
     bool mDebugMode = false;
     bool mStartedUp = false;

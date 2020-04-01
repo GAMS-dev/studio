@@ -189,7 +189,6 @@ void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 void FileMetaRepo::unwatch(const QString &filePath)
 {
     if (filePath.isEmpty()) return;
-
     mWatcher.removePath(filePath);
     mMissList.removeAll(filePath);
     if (mMissList.isEmpty()) mMissCheckTimer.stop();

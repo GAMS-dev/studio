@@ -114,6 +114,7 @@ SOURCES += \
     file/projecttreeview.cpp \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
+    fileeventhandler.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
     gdxdiffdialog/filepathlineedit.cpp \
@@ -268,6 +269,7 @@ HEADERS += \
     file/projecttreeview.h \
     file/recentdata.h \
     file/treeitemdelegate.h \
+    fileeventhandler.h \
     gamslibprocess.h \
     gamsprocess.h \
     gdxdiffdialog/filepathlineedit.h \
