@@ -366,7 +366,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
         }
         end = pos;
         // if no dot or colon follows, finish
-        while (isWhitechar(line,pos)) ++pos;
+//        while (isWhitechar(line,pos)) ++pos;
         if (pos < line.length() && special.indexOf(line.at(pos)) < 3) break;
         if (pos < line.length() && special.indexOf(line.at(pos)) < 7) ++pos;
         while (isWhitechar(line,pos)) ++pos;
