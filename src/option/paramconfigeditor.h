@@ -20,6 +20,7 @@
 #ifndef PARAMCONFIGEDITOR_H
 #define PARAMCONFIGEDITOR_H
 
+#include "gamsuserconfig.h"
 #include "optiontokenizer.h"
 #include "configparamtablemodel.h"
 #include "optioncompleterdelegate.h"
@@ -29,9 +30,6 @@
 
 namespace gams {
 namespace studio {
-
-class MainWindow;
-
 namespace option {
 
 namespace Ui {
@@ -45,7 +43,7 @@ class ParamConfigEditor : public QWidget
     Q_OBJECT
 
 public:
-    explicit ParamConfigEditor(QWidget *parent = nullptr);
+    explicit ParamConfigEditor(const QList<ConfigItem *> &initParams, QWidget *parent = nullptr);
     ~ParamConfigEditor();
 
     bool isInFocus(QWidget* focusWidget) const;
@@ -64,12 +62,9 @@ public slots:
     void setModified(bool modified);
     bool isModified() const;
 
-    void setName(const QString &name);
-    QString name() const;
-
 private slots:
     void addActions();
-    void init();
+    void init(const QList<ConfigItem *> &initParams);
 
     void findAndSelectionParameterFromDefinition();
     void selectAnOption();
@@ -105,7 +100,6 @@ private:
     ConfigParamTableModel * mParameterTableModel;
     OptionCompleterDelegate* mOptionCompleter;
 
-    QString mName;
     bool mModified;
 };
 

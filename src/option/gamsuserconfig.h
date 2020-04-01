@@ -21,8 +21,8 @@
 #include <QObject>
 
 #include "gclgms.h"
-//#include "ymlcc.h"
-//#include "gyamlapi.h"
+//#include "guccc.h"
+//#include "gucapi.h"
 
 namespace gams {
 namespace studio {
@@ -61,17 +61,22 @@ public:
     GamsUserConfig(const QString &location);
     ~GamsUserConfig();
 
-    QList<ConfigItem *> readCommandLineParameters();
-    QList<EnvVarConfigItem *> readEnvironmentVariables();
+    QList<ConfigItem *> readCommandLineParameters() const;
+    QList<EnvVarConfigItem *> readEnvironmentVariables() const;
+    void updateCommandLineParameters(const QList<ConfigItem *> &items);
+    void updateEnvironmentVariables(const QList<EnvVarConfigItem *> &items);
 
-    void writeGamsUserConfigFile(QList<ConfigItem *> clpi,
-                                 QList<EnvVarConfigItem *> evi,
-                                 const QString &location, const QString &fileName);
+    void writeGamsUserConfigFile(const QString &location);
+
+    bool isAvailable() const;
 
 private:
-    QString mLocation;
+    static int errorCallback(int count, const char *message);
 
-//    ymlHandle_t mGUCfg;
+    QString mLocation;
+    bool mAvailable;
+//    gucHandle_t mGUCfg;
+
 };
 
 } // namespace option

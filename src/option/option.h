@@ -78,6 +78,8 @@ struct OptionItem {
 struct ParamConfigItem {
     ParamConfigItem() { }
     ParamConfigItem(int id, QString k, QString v) : optionId(id), key(k), value(v) {}
+    ParamConfigItem(int id, QString k, QString v, QString min, QString max) :
+        optionId(id), key(k), value(v), minVersion(min), maxVersion(max) {}
 
     int optionId = -1;
     QString key = "";

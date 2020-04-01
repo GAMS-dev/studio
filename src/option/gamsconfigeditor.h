@@ -23,6 +23,8 @@
 #include <QWidget>
 
 #include "common.h"
+#include "gamsuserconfig.h"
+#include "envvarconfigeditor.h"
 #include "paramconfigeditor.h"
 
 namespace gams {
@@ -43,6 +45,13 @@ enum  class ConfigEditorType {
     environmentVariable = 1,
     solverConfiguration = 2,
     undefined = 3
+};
+
+static const QList<QString> ConfigEditorName = {
+    "Command Line Parameters",
+    "Environment Variables",
+    "Solver Configuration",
+    "Undefined",
 };
 
 class GamsConfigEditor : public QWidget
@@ -76,8 +85,11 @@ private:
     QString mLocation;
     QString mFileName;
     QTextCodec* mCodec;
-
     bool mModified;
+
+    GamsUserConfig* mGuc;
+    ParamConfigEditor* mParamConfigEditor;
+    EnvVarConfigEditor* mEnvVarConfigEditor;
 };
 
 

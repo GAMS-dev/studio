@@ -158,6 +158,7 @@ SOURCES += \
     option/configoptiondefinitionmodel.cpp \
     option/configparamtablemodel.cpp \
     option/definitionitemdelegate.cpp \
+    option/envvarconfigeditor.cpp \
     option/gamsconfigeditor.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsparametertablemodel.cpp \
@@ -302,6 +303,7 @@ HEADERS += \
     option/configoptiondefinitionmodel.h \
     option/configparamtablemodel.h \
     option/definitionitemdelegate.h \
+    option/envvarconfigeditor.h \
     option/gamsconfigeditor.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsparametertablemodel.h \
@@ -376,6 +378,7 @@ FORMS += \
     miro/mirodeploydialog.ui \
     miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
+    option/envvarconfigeditor.ui \
     option/gamsconfigeditor.ui \
     option/paramconfigeditor.ui \
     option/parametereditor.ui \

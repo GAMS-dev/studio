@@ -21,6 +21,7 @@
 #include "ui_gamsconfigeditor.h"
 
 #include <QPushButton>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -37,17 +38,25 @@ GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
     mModified(false)
 {
     ui->setupUi(this);
-    ui->GamsCfgTabWidget->setCurrentIndex(0);
+
+    mGuc = new GamsUserConfig(mLocation);
+    mParamConfigEditor = new ParamConfigEditor(mGuc->readCommandLineParameters(), this);
+    ui->GamsCfgTabWidget->addTab( mParamConfigEditor, ConfigEditorName.at(int(ConfigEditorType::commandLineParameter)) );
+
+    mEnvVarConfigEditor = new EnvVarConfigEditor(mGuc->readEnvironmentVariables(), this);
+    ui->GamsCfgTabWidget->addTab( mEnvVarConfigEditor, ConfigEditorName.at(int(ConfigEditorType::environmentVariable)) );
+
+    connect(mParamConfigEditor, &ParamConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
+    connect(mEnvVarConfigEditor, &EnvVarConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
+
+    ui->GamsCfgTabWidget->setCurrentIndex(int(ConfigEditorType::commandLineParameter));
     setFocusProxy(ui->GamsCfgTabWidget);
-
-    ui->gamsParamTab->setName( ui->GamsCfgTabWidget->tabText(int(ConfigEditorType::commandLineParameter)) );
-
-    connect(ui->gamsParamTab, &ParamConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
 }
 
 GamsConfigEditor::~GamsConfigEditor()
 {
     delete ui;
+    if (mGuc)  delete  mGuc;
 }
 
 FileId GamsConfigEditor::fileId() const
@@ -65,8 +74,10 @@ void GamsConfigEditor::setModified(bool modified)
     mModified = modified;
     emit modificationChanged( mModified );
 
-    ui->GamsCfgTabWidget->setTabText(int(ConfigEditorType::commandLineParameter), ui->gamsParamTab->name() + (ui->gamsParamTab->isModified() ? "*" : ""));
-    // TODO (JP) set tab text for EnvVarConfigEditor
+    ui->GamsCfgTabWidget->setTabText(int(ConfigEditorType::commandLineParameter),
+                                     ConfigEditorName.at(int(ConfigEditorType::commandLineParameter)) + (mParamConfigEditor->isModified() ? "*" : ""));
+    ui->GamsCfgTabWidget->setTabText(int(ConfigEditorType::environmentVariable),
+                                     ConfigEditorName.at(int(ConfigEditorType::environmentVariable)) + (mEnvVarConfigEditor->isModified() ? "*" : ""));
 }
 
 bool GamsConfigEditor::saveConfigFile(const QString &location)
@@ -76,7 +87,7 @@ bool GamsConfigEditor::saveConfigFile(const QString &location)
 
 void GamsConfigEditor::deSelectAll()
 {
-    ui->gamsParamTab->deSelectOptions();
+    mParamConfigEditor->deSelectOptions();
     // TODO (JP)
 }
 

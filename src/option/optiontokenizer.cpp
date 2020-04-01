@@ -417,36 +417,18 @@ QList<OptionErrorType> OptionTokenizer::validate(ParamConfigItem* item)
     if (!mOption->available())
         return optionErrorList;
 
-    if (!mOption->isDoubleDashedOption(item->key)) { //( item.key.startsWith("--") || item.key.startsWith("-/") || item.key.startsWith("/-") || item.key.startsWith("//") ) { // double dash parameter
-        QString key = item->key;
-        if (key.startsWith("-"))
-           key = key.mid(1);
-        else if (key.startsWith("/"))
-                 key = key.mid(1);
-
-        if (key.isEmpty()) {
-            optionErrorList.append(OptionErrorType::Invalid_Key);
-        } else {
-            if (!mOption->isValid(key) && (!mOption->isASynonym(key)) // &&!gamsOption->isValid(gamsOption->getSynonym(key))
-               ) {
-                 optionErrorList.append(OptionErrorType::Invalid_Key);
-            } else if (mOption->isDeprecated(key)) {
-                       optionErrorList.append(OptionErrorType::Deprecated_Option);
-            }
+    if (mOption->isDoubleDashedOption(item->key)) { // double dashed parameter
+        if (! mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item->key)) )
+           optionErrorList.append(OptionErrorType::Invalid_Key);
+    } else if (mOption->isValid(item->key) || mOption->isASynonym(item->key)) { // valid option
+        item->optionId = mOption->getOrdinalNumber(item->key);
+        if (mOption->isDeprecated(item->key)) { // deprecated option
+            optionErrorList.append( OptionErrorType::Deprecated_Option );
+        } else { // valid and not deprected Option
+            optionErrorList.append( mOption->getValueErrorType(item->key, item->value) );
         }
-    } else { // neither invalid nor deprecated key
-        QString key = item->key;
-        if (key.startsWith("-"))
-           key = key.mid(1);
-        else if (key.startsWith("/"))
-                 key = key.mid(1);
-
-        if (!mOption->isValid(key))
-             key = mOption->getNameFromSynonym(key);
-
-        OptionErrorType errorType = mOption->getValueErrorType(key, item->value);
-        if (!optionErrorList.contains(errorType))
-           optionErrorList.append(errorType);
+    } else { // invalid option
+        optionErrorList.append(OptionErrorType::Invalid_Key);
     }
 
     if (!item->minVersion.isEmpty() && !mOption->isConformantVersion(item->minVersion)) {

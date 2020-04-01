@@ -32,30 +32,12 @@
       <enum>QTabWidget::South</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>-1</number>
      </property>
-     <widget class="gams::studio::option::ParamConfigEditor" name="gamsParamTab">
-      <attribute name="title">
-       <string>Command Line Parameters</string>
-      </attribute>
-     </widget>
-     <widget class="QWidget" name="envVariableTab">
-      <attribute name="title">
-       <string>Environment Variables</string>
-      </attribute>
-     </widget>
     </widget>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>gams::studio::option::ParamConfigEditor</class>
-   <extends>QWidget</extends>
-   <header>option/paramconfigeditor.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

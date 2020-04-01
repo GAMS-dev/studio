@@ -34,17 +34,14 @@ namespace gams {
 namespace studio {
 namespace option {
 
-ParamConfigEditor::ParamConfigEditor(QWidget *parent):
+ParamConfigEditor::ParamConfigEditor(const QList<ConfigItem *> &initParams, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ParamConfigEditor),
     mModified(false)
 {
     ui->setupUi(this);
-
-    mOptionTokenizer = new OptionTokenizer(GamsOptDefFile);
-
     addActions();
-    init();
+    init(initParams);
 }
 
 ParamConfigEditor::~ParamConfigEditor()
@@ -177,16 +174,18 @@ void ParamConfigEditor::addActions()
     resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->ParamCfgTableView->addAction(resizeColumns);
     ui->ParamCfgDefTreeView->addAction(resizeColumns);
-
 }
 
-void ParamConfigEditor::init()
+void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
 {
+    mOptionTokenizer = new OptionTokenizer(GamsOptDefFile);
+
     setFocusPolicy(Qt::StrongFocus);
 
     QList<ParamConfigItem *> optionItem;
-// TODO (JP): initialize from gamsconfig.yaml
-//    QString normalizedText = mOptionTokenizer->normalize(optionItem);
+    for(ConfigItem* item: initParamItems) {
+        optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
+    }
     mParameterTableModel = new ConfigParamTableModel(optionItem, mOptionTokenizer, this);
     ui->ParamCfgTableView->setModel( mParameterTableModel );
 
@@ -216,6 +215,11 @@ void ParamConfigEditor::init()
     ui->ParamCfgTableView->horizontalHeader()->setStretchLastSection(true);
     ui->ParamCfgTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
+    ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_KEY);
+    ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_VALUE);
+    ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MIN_VERSION);
+    ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MAX_VERSION);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     ConfigOptionDefinitionModel* optdefmodel =  new ConfigOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
@@ -612,6 +616,8 @@ void ParamConfigEditor::resizeColumnsToContents()
             return;
         ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_KEY);
         ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_VALUE);
+        ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MIN_VERSION);
+        ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MAX_VERSION);
     } else  if (focusWidget()==ui->ParamCfgDefTreeView) {
         ui->ParamCfgDefTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_OPTION_NAME);
         ui->ParamCfgDefTreeView->resizeColumnToContents(OptionDefinitionModel::COLUMN_SYNONYM);
@@ -639,16 +645,6 @@ void ParamConfigEditor::setModified(bool modified)
 bool ParamConfigEditor::isModified() const
 {
     return mModified;
-}
-
-void ParamConfigEditor::setName(const QString &name)
-{
-    mName = name;
-}
-
-QString ParamConfigEditor::name() const
-{
-    return mName;
 }
 
 void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)

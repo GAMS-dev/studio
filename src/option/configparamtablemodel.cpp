@@ -28,11 +28,15 @@ namespace gams {
 namespace studio {
 namespace option {
 
-ConfigParamTableModel::ConfigParamTableModel(const QList<ParamConfigItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
+ConfigParamTableModel::ConfigParamTableModel(QList<ParamConfigItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
     mHeader << "Key"  << "Value" << "minVersion" << "maxVersion"  << "Debug Entry";  // TODO (JP)<< "Action";
-   // TODO (JP) init data with itemList
+
+    for(ParamConfigItem* item : itemList) {
+        QList<OptionErrorType> errorType = mOptionTokenizer->validate(item);
+        item->error =  (errorType.isEmpty() ? OptionErrorType::No_Error : errorType.at(0));
+    }
 }
 
 QVariant ConfigParamTableModel::headerData(int index, Qt::Orientation orientation, int role) const
