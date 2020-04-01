@@ -200,6 +200,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
+    initIcons();
     restoreFromSettings();
     mRecent.path = settings->toString(skDefaultWorkspace);
     mSearchDialog = new search::SearchDialog(this);
@@ -217,7 +218,6 @@ MainWindow::MainWindow(QWidget *parent)
     on_actionShow_System_Log_triggered();
 
     initTabs();
-    initIcons();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
