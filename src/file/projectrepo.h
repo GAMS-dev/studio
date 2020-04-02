@@ -110,8 +110,8 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    void read(const QVariantMap &data);
-    void write(QVariantMap &projects) const;
+    void read(const QVariantList &data);
+    void write(QVariantList &projects) const;
 
     ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
     ProjectFileNode *findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup = nullptr, FileType *knownType = nullptr

@@ -238,15 +238,9 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
-void ProjectRepo::read(const QVariantMap &data)
+void ProjectRepo::read(const QVariantList &data)
 {
-    QVariantMap map;
-    map.value("projects").canConvert(QVariant::List);
-
-    if (data.contains("projects") && data.value("projects").canConvert(QVariant::List)) {
-        QVariantList rootChildren = data.value("projects").toList();
-        readGroup(mTreeModel->rootNode(), rootChildren);
-    }
+    readGroup(mTreeModel->rootNode(), data);
 }
 
 void ProjectRepo::readGroup(ProjectGroupNode* group, const QVariantList& children)
@@ -297,11 +291,9 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QVariantList& childre
     }
 }
 
-void ProjectRepo::write(QVariantMap& projects) const
+void ProjectRepo::write(QVariantList &projects) const
 {
-    QVariantList tree;
-    writeGroup(mTreeModel->rootNode(), tree);
-    projects["projects"] = tree;
+    writeGroup(mTreeModel->rootNode(), projects);
 }
 
 void ProjectRepo::writeGroup(const ProjectGroupNode* group, QVariantList& childList) const

@@ -99,7 +99,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 
 void SettingsDialog::loadSettings()
 {
-    mSettings->load(Settings::scUser);
+    mSettings->load(Settings::scUserX);
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));

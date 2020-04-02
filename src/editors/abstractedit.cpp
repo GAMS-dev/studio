@@ -368,6 +368,7 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 
 void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 {
+    mMarksAtMouse.clear();
     Q_UNUSED(dirtyLines)
 }
 

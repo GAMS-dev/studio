@@ -46,14 +46,14 @@ public:
 
     void setDefaults();
 
-    void setModelAssemblyFile(const QString &file) {
-        mModelAssemblyFile = file;
-    }
+    void setModelAssemblyFile(const QString &file);
 
 signals:
+    void updateModelAssemblyFile();
     void testDeploy(bool testDeploy, MiroDeployMode mode);
 
 private slots:
+    void on_assemblyFileButton_clicked();
     void on_testBaseButton_clicked();
     void on_testHcubeButton_clicked();
     void on_deployButton_clicked();
@@ -61,11 +61,9 @@ private slots:
     void updateTestDeployButtons();
 
 private:
-    bool showMessageBox();
-
-private:
     Ui::MiroDeployDialog *ui;
     QString mModelAssemblyFile;
+    bool mValidAssemblyFile;
 };
 
 }

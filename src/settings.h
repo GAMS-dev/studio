@@ -36,8 +36,9 @@ class MainWindow;
 
 enum SettingsKey {
     // REMARK: version is treated differently as it is passed to ALL versionized setting files
-    skVersionSettings,
-    skVersionStudio,
+    skVersionSysSettings,
+    skVersionUserSettings,
+    skVersionGamsStudio,
 
     // window settings
     skWinSize,
@@ -111,19 +112,26 @@ enum SettingsKey {
 class Settings
 {
 public:
-    enum Scope {scAll,      // All setting scopes
-                scGams,     // Initial GAMS setting
-                scGams2,    // GAMS settings that had to be modified
-                scUser};    // user settings
+    enum Scope {scSys,      // System setting (shared with all versions)
+                scSysX,     // System setting (for current version)
+                scUser,     // User settings (shared with all versions)
+                scUserX,    // User settings (for current version)
+               };
+
+    struct ScopePair {
+        ScopePair(Scope _base, Scope _versionized) : base(_base), versionized(_versionized) {}
+        Scope base;
+        Scope versionized;
+    };
 
 public:
     static void createSettings(bool ignore, bool reset, bool resetView);
     static Settings *settings();
     static void releaseSettings();
-    static int version();
+    static int version(Scope scope);
     static void useRelocatedPathForTests();
 
-    void load(Scope kind);
+    void load(Scope scopeFilter);
     void save();
     void block() { mBlock = true; }
     void unblock() { mBlock = false; }
@@ -135,7 +143,7 @@ public:
     QPoint toPoint(SettingsKey key) const;
     QString toString(SettingsKey key) const { return value(key).toString(); }
     QByteArray toByteArray(SettingsKey key) const;
-    QVariantMap toVariantMap(SettingsKey key) const;
+    QVariantMap toMap(SettingsKey key) const;
     QVariantList toList(SettingsKey key) const;
     void setBool(SettingsKey key, bool value) { setValue(key, value);}
     void setInt(SettingsKey key, int value) { setValue(key, value);}
@@ -156,18 +164,18 @@ public:
     void resetViewSettings();
 
 private:
-    typedef QMap<QString, QVariant> Data;
+    typedef QVariantMap Data;
     struct KeyData {
         KeyData() {}
         KeyData(Settings::Scope _scope, QStringList _keys, QVariant _initial)
             : scope(_scope), keys(_keys), initial(_initial) {}
-        Settings::Scope scope = scAll;
+        Settings::Scope scope;
         QStringList keys;
         QVariant initial;
     };
 
     static Settings *mInstance;
-    static const int mVersion;
+    static const QHash<Scope, int> mVersion;
     static bool mUseRelocatedTestDir;
     bool mCanWrite = false;
     bool mCanRead = false;
@@ -185,15 +193,13 @@ private:
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
     bool canWrite() {return mCanWrite && !mBlock; }
 
-    int checkVersion();
+    int checkVersion(ScopePair scopes);
     QString settingsPath();
-    bool createSettingFiles();
-    void reset(Scope scope);
-    void initDefault(Scope scope);
+    void initDefault();
+    void addVersionInfo(Scope scope, QVariantMap &map);
     void saveFile(Scope scope);
-    QVariant read(SettingsKey key, Scope scope = scAll);
-
-    void initSettingsFiles(int version);
+    void loadMap(Scope scope, QVariantMap map);
+    QVariant read(SettingsKey key);
 
     QVariant value(SettingsKey key) const;
     bool setValue(SettingsKey key, QVariant value);

@@ -190,6 +190,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::updateModelAssemblyFile,
+            this, &MainWindow::miroDeployAssemblyFileUpdate);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
             this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
@@ -198,6 +200,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
+    initIcons();
     restoreFromSettings();
     mRecent.path = settings->toString(skDefaultWorkspace);
     mSearchDialog = new search::SearchDialog(this);
@@ -215,7 +218,6 @@ MainWindow::MainWindow(QWidget *parent)
     on_actionShow_System_Log_triggered();
 
     initTabs();
-    initIcons();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
@@ -2014,9 +2016,9 @@ void MainWindow::updateAndSaveSettings()
     settings->setDouble(skHelpZoomFactor, helpWidget()->getZoomFactor());
 #endif
 
-    QVariantMap projects;
+    QVariantList projects;
     projectRepo()->write(projects);
-    settings->setMap(skProjects, projects);
+    settings->setList(skProjects, projects);
 
     QVariantMap tabData;
     writeTabs(tabData);
@@ -2197,6 +2199,14 @@ void MainWindow::on_actionDeploy_triggered()
 void MainWindow::on_menuMIRO_aboutToShow()
 {
     ui->menuMIRO->setEnabled(isMiroAvailable());
+}
+
+void MainWindow::miroDeployAssemblyFileUpdate()
+{
+    on_actionCreate_model_assembly_triggered();
+    auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
+                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
+    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
@@ -2683,10 +2693,10 @@ void MainWindow::parameterRunChanged()
 void MainWindow::openInitialFiles()
 {
     Settings *settings = Settings::settings();
-    projectRepo()->read(settings->toVariantMap(skProjects));
+    projectRepo()->read(settings->toList(skProjects));
 
     if (settings->toBool(skRestoreTabs)) {
-        QVariantMap joTabs = settings->toVariantMap(skTabs);
+        QVariantMap joTabs = settings->toMap(skTabs);
         if (!readTabs(joTabs)) return;
     }
     mHistory.files().clear();
@@ -3794,7 +3804,7 @@ void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
     Settings::settings()->resetViewSettings();
-    Settings::settings()->load(Settings::scGams);
+    Settings::settings()->load(Settings::scSys);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {

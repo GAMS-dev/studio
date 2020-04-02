@@ -262,6 +262,7 @@ private slots:
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void on_menuMIRO_aboutToShow();
+    void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
 
