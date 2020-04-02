@@ -193,7 +193,8 @@ private:
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
     bool canWrite() {return mCanWrite && !mBlock; }
 
-    int checkVersion(ScopePair scopes);
+    int usableVersion(ScopePair scopes);
+    void loadVersionData(ScopePair scopes);
     QString settingsPath();
     void initDefault();
     void addVersionInfo(Scope scope, QVariantMap &map);

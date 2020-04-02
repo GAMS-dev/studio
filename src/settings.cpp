@@ -306,21 +306,6 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 //    }
 //}
 
-int Settings::checkVersion(ScopePair scopes)
-{
-    int res = version(scopes.versionized);
-    QSettings *settings = mSettings.value(scopes.base);
-    if (settings) {
-        while (res) {
-            if (settings->contains(QString("v%1").arg(res))) break;
-            --res;
-        }
-    }
-    // nothing to do if no versionized part exists
-    if (!res) res = version(scopes.versionized);
-    return res;
-}
-
 void Settings::initDefault()
 {
     for (QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin() ; di != mKeys.constEnd() ; ++di) {
@@ -515,6 +500,12 @@ bool Settings::addToMap(QVariantMap &group, const QString &key, QVariant value)
     return true;
 }
 
+QString Settings::keyText(SettingsKey key)
+{
+    KeyData dat = mKeys.value(key);
+    return dat.keys.join("/");
+}
+
 QString Settings::settingsPath()
 {
     if (QSettings *settings = mSettings[scSys]) {
@@ -583,6 +574,77 @@ QVariant Settings::read(SettingsKey key)
     return QVariant();
 }
 
+int Settings::usableVersion(ScopePair scopes)
+{
+    int res = version(scopes.versionized);
+    QSettings *settings = mSettings.value(scopes.base);
+    if (settings) {
+        while (res) {
+            if (settings->contains(QString("v%1").arg(res))) break;
+            --res;
+        }
+    }
+    // nothing to do if no versionized part exists
+    if (!res) res = version(scopes.versionized);
+    return res;
+}
+
+void Settings::loadVersionData(ScopePair scopes)
+{
+    int scopeVersion = version(scopes.versionized);
+    int foundVersion = usableVersion(scopes);
+
+    QSettings *settings = mSettings.value(scopes.base);
+
+    // load found version data
+    if (settings->contains(QString("v%1").arg(foundVersion))) {
+        QVariantMap dat = settings->value(QString("v%1").arg(foundVersion)).toMap();
+        loadMap(scopes.versionized, dat);
+    }
+
+    // upgrade version data if neccesary
+    while (foundVersion < scopeVersion) {
+        if (scopes.base == scSys) {
+
+            // --------- version handling for scSys ---------
+            switch (foundVersion) {
+            case 1: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+
+                break;
+            }
+            case 2: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+
+                break;
+            }
+            default:
+                break;
+            }
+
+        } else if (scopes.base == scUser) {
+
+            // --------- version handling for scUser ---------
+            switch (foundVersion) {
+            case 1: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+                if (!setValue(skEdAppearance, directValue(scUser, "editor", "colorSchemeIndex").toInt()))
+                    DEB() << "Error on upgrading value to version " << (foundVersion+1) << " for " << keyText(skEdAppearance);
+                break;
+            }
+            case 2: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+
+                break;
+            }
+            default:
+                break;
+            }
+
+        } else {
+            DEB() << "Warning: Missing version handling for scope " << scopes.base;
+        }
+        ++foundVersion;
+    }
+
+}
+
 /*         case 1: {
             // On increasing version from 1 to 2 -> implement mData conversion HERE
             if (!setValue(skEdAppearance, directValue(scUser, "editor", "colorSchemeIndex").toInt()))
@@ -610,17 +672,7 @@ void Settings::load(Scope scope)
 
         QVariantMap dat = settings->value("base").toMap();
         loadMap(scopes.base, dat);
-
-        int scopeVersion = version(scopes.versionized);
-        // determinate the highest version number
-//            for (const QString &key : settings->allKeys()) {
-
-//            }
-//            upgradeVersion(basScope);
-
-        // TODO(JM) remove when upgrading logic is finished
-        dat = settings->value(QString("v%1").arg(scopeVersion)).toMap();
-        loadMap(scopes.versionized, dat);
+        loadVersionData(scopes);
     }
 
 //    Scheme::instance()->initDefault();
