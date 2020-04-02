@@ -190,6 +190,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::updateModelAssemblyFile,
+            this, &MainWindow::miroDeployAssemblyFileUpdate);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
             this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
@@ -198,6 +200,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
+    initIcons();
     restoreFromSettings();
     mRecent.path = settings->toString(skDefaultWorkspace);
     mSearchDialog = new search::SearchDialog(this);
@@ -215,7 +218,6 @@ MainWindow::MainWindow(QWidget *parent)
     on_actionShow_System_Log_triggered();
 
     initTabs();
-    initIcons();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
@@ -2193,6 +2195,14 @@ void MainWindow::on_actionDeploy_triggered()
 void MainWindow::on_menuMIRO_aboutToShow()
 {
     ui->menuMIRO->setEnabled(isMiroAvailable());
+}
+
+void MainWindow::miroDeployAssemblyFileUpdate()
+{
+    on_actionCreate_model_assembly_triggered();
+    auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
+                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
+    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
