@@ -2012,9 +2012,9 @@ void MainWindow::updateAndSaveSettings()
     settings->setDouble(skHelpZoomFactor, helpWidget()->getZoomFactor());
 #endif
 
-    QJsonObject joProjects;
+    QJsonArray joProjects;
     projectRepo()->write(joProjects);
-    settings->setJsonObject(skProjects, joProjects);
+    settings->setJsonArray(skProjects, joProjects);
 
     QJsonObject joTabs;
     writeTabs(joTabs);
@@ -2679,7 +2679,7 @@ void MainWindow::parameterRunChanged()
 void MainWindow::openInitialFiles()
 {
     Settings *settings = Settings::settings();
-    QJsonObject joProject = settings->toJsonObject(skProjects);
+    QJsonArray joProject = settings->toJsonArray(skProjects);
     projectRepo()->read(joProject);
 
     if (settings->toBool(skRestoreTabs)) {
@@ -3788,7 +3788,7 @@ void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
     Settings::settings()->resetViewSettings();
-    Settings::settings()->load(Settings::scGams);
+    Settings::settings()->load(Settings::scSys);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {

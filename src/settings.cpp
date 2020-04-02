@@ -37,7 +37,8 @@ namespace gams {
 namespace studio {
 
 // Increase mVersion only on MAJOR changes (change/remove existing field or add to array-element)
-const int Settings::mVersion = 1;
+const QHash<Settings::Scope, int> Settings::mVersion = {{Settings::scSysX, 1},
+                                                        {Settings::scUserX ,1}};
 Settings *Settings::mInstance = nullptr;
 bool Settings::mUseRelocatedTestDir = false;
 
@@ -83,6 +84,13 @@ QString findFixedFont()
     return font.family();
 }
 
+Settings::ScopePair scopePair(Settings::Scope scope)
+{
+    int iScope = scope;
+    if (iScope % 2) return Settings::ScopePair(static_cast<Settings::Scope>(scope-1), scope);
+    return Settings::ScopePair(scope, static_cast<Settings::Scope>(scope+1));
+}
+
 // ====== reader and writer for JSON files ======
 
 bool readJsonFile(QIODevice &device, QSettings::SettingsMap &map)
@@ -124,9 +132,9 @@ void Settings::releaseSettings()
     mInstance = nullptr;
 }
 
-int Settings::version()
+int Settings::version(Scope scope)
 {
-    return mVersion;
+    return mVersion[scopePair(scope).versionized];
 }
 
 void Settings::useRelocatedPathForTests()
@@ -144,9 +152,8 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
       mKeys(generateKeys())
 {
     // initialize storage
-    mData.insert(scGams, Data());
-    mData.insert(scGams2, Data());
-    mData.insert(scUser, Data());
+    mData.insert(scSys, Data());
+    mData.insert(scUserX, Data());
 
     // initialize json format and make it the default
     QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
@@ -154,37 +161,20 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     if (mUseRelocatedTestDir)
         QSettings::setPath(jsonFormat, QSettings::UserScope, ".");
 
-
-    initDefault(scAll);
+    initDefault();
 
     // QSettings only needed if we want to write
     if (mCanWrite || mCanRead) {
-        QSettings *sUi = nullptr;
         // create basic non versionized application settings
-        sUi = newQSettings("gams");
-        if (sUi->status() != QSettings::NoError) {
-            if (sUi->status() == QSettings::FormatError) {
-                QString uiFile = sUi->fileName();
-                delete sUi;
-                if (QFile(uiFile).exists()) {
-                    DynamicFile(uiFile, 2); // creates backup
-                    DEB() << " - created backup file.";
-                }
-                sUi = newQSettings("gams");
-            }
-            if (sUi->status()) {
-                delete sUi;
-                sUi = nullptr;
-            }
-        }
-        if (sUi) {
+        QSettings *settings = newQSettings("studio");
+        if (settings) {
             // only if the basic settings file has been created ...
-            sUi->sync();
-            mSettings.insert(scGams, sUi);
-            load(scGams);
-//            saveFile(KUi);
-            // ... create versionized settings (may init from older version)
-            createSettingFiles();
+            mSettings.insert(scSys, settings);
+            load(scSys);
+            settings = newQSettings("usersettings");
+            mSettings.insert(scUser, settings);
+            load(scUser);
+
             QDir location(settingsPath());
             for (const QString &fileName: location.entryList({"*.lock"})) {
                 QFile f(location.path() +  "/" + fileName);
@@ -214,10 +204,13 @@ Settings::~Settings()
 
 QSettings *Settings::newQSettings(QString name)
 {
-    QSettings *res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
+    QSettings *res = nullptr;
+    res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
     if (res->status()) {
-        DEB() << (res->status()==1 ? "Access-" : "Format-") << "error in file: " << res->fileName();
+        // TODO(JM) convert this to DEB-message after initial tests
+        FATAL() << (res->status()==1 ? "Access-" : "Format-") << "error in file: " << res->fileName();
     }
+    res->sync();
     return res;
 }
 
@@ -225,38 +218,41 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 {
     QHash<SettingsKey, Settings::KeyData> res;
 
-    // versions for all settings files (KAll)
-    res.insert(skVersionSettings, KeyData(scAll, {"version","settings"}, mVersion));
-    res.insert(skVersionStudio, KeyData(scAll, {"version","studio"}, QString(GAMS_VERSION_STR)));
+    res.insert(skVersionSysSettings, KeyData(scSys, {"version","studiosettings"}, version(scSys)));
+    res.insert(skVersionGamsStudio, KeyData(scSys, {"version","gamsstudio"}, QString(GAMS_VERSION_STR)));
+    res.insert(skVersionUserSettings, KeyData(scUser, {"version","usersettings"}, version(scUser)));
 
     // window settings
-    res.insert(skWinSize, KeyData(scGams, {"window","size"}, QString("1024,768")));
-    res.insert(skWinPos, KeyData(scGams, {"window","pos"}, QString("0,0")));
-    res.insert(skWinState, KeyData(scGams, {"window","state"}, QByteArray("")));
-    res.insert(skWinMaximized, KeyData(scGams, {"window","maximized"}, false));
+    res.insert(skWinSize, KeyData(scSys, {"window","size"}, QString("1024,768")));
+    res.insert(skWinPos, KeyData(scSys, {"window","pos"}, QString("0,0")));
+    res.insert(skWinState, KeyData(scSys, {"window","state"}, QByteArray("")));
+    res.insert(skWinMaximized, KeyData(scSys, {"window","maximized"}, false));
 
     // view menu settings
-    res.insert(skViewProject, KeyData(scGams, {"viewMenu","project"}, true));
-    res.insert(skViewOutput, KeyData(scGams, {"viewMenu","output"}, true));
-    res.insert(skViewHelp, KeyData(scGams, {"viewMenu","help"}, false));
-    res.insert(skViewOption, KeyData(scGams, {"viewMenu","optionEdit"}, false));
+    res.insert(skViewProject, KeyData(scSys, {"viewMenu","project"}, true));
+    res.insert(skViewOutput, KeyData(scSys, {"viewMenu","output"}, true));
+    res.insert(skViewHelp, KeyData(scSys, {"viewMenu","help"}, false));
+    res.insert(skViewOption, KeyData(scSys, {"viewMenu","optionEdit"}, false));
 
     // general system settings
-    res.insert(skDefaultCodecMib, KeyData(scGams, {"defaultCodecMib"}, 106));
-    res.insert(skEncodingMib, KeyData(scGams, {"encodingMIBs"}, QString("106,0,4,17,2025")));
-    res.insert(skProjects, KeyData(scGams, {"projects"}, QJsonObject()));
-    res.insert(skTabs, KeyData(scGams, {"tabs"}, QJsonObject()));
-    res.insert(skHistory, KeyData(scGams, {"history"}, QJsonArray()));
+    res.insert(skDefaultCodecMib, KeyData(scSys, {"defaultCodecMib"}, 106));
+    res.insert(skEncodingMib, KeyData(scSys, {"encodingMIBs"}, QString("106,0,4,17,2025")));
+    res.insert(skProjects, KeyData(scSys, {"projects"}, QJsonArray()));
+    res.insert(skTabs, KeyData(scSys, {"tabs"}, QJsonObject()));
+    res.insert(skHistory, KeyData(scSys, {"history"}, QJsonArray()));
+
+    // user model library directory
+    res.insert(skUserModelLibraryDir, KeyData(scSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
 
     // settings of help page
-    res.insert(skHelpBookmarks, KeyData(scGams, {"help","bookmarks"}, QJsonArray()));
-    res.insert(skHelpZoomFactor, KeyData(scGams, {"help","zoom"}, 1.0));
+    res.insert(skHelpBookmarks, KeyData(scSys, {"help","bookmarks"}, QJsonArray()));
+    res.insert(skHelpZoomFactor, KeyData(scSys, {"help","zoom"}, 1.0));
 
     // search widget
-    res.insert(skSearchUseRegex, KeyData(scGams, {"search", "regex"}, false));
-    res.insert(skSearchCaseSens, KeyData(scGams, {"search", "caseSens"}, false));
-    res.insert(skSearchWholeWords, KeyData(scGams, {"search", "wholeWords"}, false));
-    res.insert(skSearchScope, KeyData(scGams, {"search", "scope"}, 0));
+    res.insert(skSearchUseRegex, KeyData(scSys, {"search", "regex"}, false));
+    res.insert(skSearchCaseSens, KeyData(scSys, {"search", "caseSens"}, false));
+    res.insert(skSearchWholeWords, KeyData(scSys, {"search", "wholeWords"}, false));
+    res.insert(skSearchScope, KeyData(scSys, {"search", "scope"}, 0));
 
     // general settings page
     res.insert(skDefaultWorkspace, KeyData(scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir()));
@@ -294,9 +290,10 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skSoAddEOLComment, KeyData(scUser, {"solverOption","addEOLComment"}, false));
     res.insert(skSoDeleteCommentsAbove, KeyData(scUser, {"solverOption","deleteCommentsAbove"}, false));
 
-    // user model library directory
-    res.insert(skUserModelLibraryDir, KeyData(scGams, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
     return res;
+
+
+    // TODO(JM) protect against double-usage in the future: check if each key-path is unique
 }
 
 //void Settings::initGroups()
@@ -309,92 +306,53 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 //    }
 //}
 
-int Settings::checkVersion()
+int Settings::checkVersion(ScopePair scopes)
 {
-    int res = mVersion;
-    QDir dir(settingsPath());
-
-    // Find setting files of the highest version up to mVersion
-    QStringList files = dir.entryList(QDir::Files);
-    while (res) {
-        if (files.contains(QString("gams%1.json").arg(res))) break;
-        if (files.contains(QString("usersettings%1.json").arg(res))) break;
-        --res;
+    int res = version(scopes.versionized);
+    QSettings *settings = mSettings.value(scopes.base);
+    if (settings) {
+        while (res) {
+            if (settings->contains(QString("v%1").arg(res))) break;
+            --res;
+        }
     }
-    // nothing to do if no setting file found
-    if (!res) res = mVersion;
-
+    // nothing to do if no versionized part exists
+    if (!res) res = version(scopes.versionized);
     return res;
 }
 
-bool Settings::createSettingFiles()
+void Settings::initDefault()
 {
-    // look for latest setting files
-    int version = checkVersion();
-
-    // create setting files of found version to read from
-    initSettingsFiles(version);
-    load(scGams2);
-    load(scUser);
-    if (version == mVersion) return true;
-
-    // Need to upgrade from older version
-    while (version < mVersion) {
-        switch (version) {
-        case 1:
-            // On increasing version from 1 to 2 -> implement mData conversion HERE
-            break;
-        case 2:
-            // On increasing version from 2 to 3 -> implement mData conversion HERE
-            break;
-        default:
-            break;
-        }
-        ++version;
-    }
-
-    // write setting files in current version
-    initSettingsFiles(version);
-//    save();
-    return true;
-}
-
-void Settings::initSettingsFiles(int version)
-{
-    // initializes versionized setting files
-    mSettings.insert(scGams2, newQSettings(QString("gams%1").arg(version)));
-    mSettings.insert(scUser, newQSettings(QString("usersettings%1").arg(version)));
-    // TODO(JM) Handle studioscheme.json and syntaxscheme.json
-}
-
-void Settings::reset(Scope scope)
-{
-    for (Scope &sc : mData.keys()) {
-        if (scope == scAll || sc == scope) mData[sc].clear();
-    }
-    initDefault(scope);
-}
-
-void Settings::initDefault(Scope scope)
-{
-    QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
-    for ( ; di != mKeys.constEnd() ; ++di) {
+    for (QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin() ; di != mKeys.constEnd() ; ++di) {
         KeyData dat = di.value();
-        if (scope == scAll || scope == dat.scope)
-            setValue(di.key(), dat.initial);
+        setValue(di.key(), dat.initial);
     }
+}
+
+void Settings::addVersionInfo(Settings::Scope scope, QVariantMap &map)
+{
+    ScopePair scopes = scopePair(scope);
+    QVariantMap ver;
+
+    KeyData dat = mKeys.value(skVersionGamsStudio);
+    ver.insert(dat.keys.last(), QString(GAMS_VERSION_STR));
+
+    // TODO(JM) need to be extended for new versions - find a generic solution
+    dat = mKeys.value(scopes.versionized==scSysX ? skVersionSysSettings : skVersionUserSettings);
+    ver.insert(dat.keys.last(), mVersion.value(scopes.versionized));
+
+    map.insert(dat.keys.first(), ver);
 }
 
 void Settings::reload()
 {
-    load(scAll);
+    load(scSys);
+    load(scUser);
 }
 
 void Settings::resetViewSettings()
 {
-    initDefault(scGams);
-    QSettings *set = mSettings.value(scGams);
-    if (set) set->sync();
+    // TODO(JM) handle individual keys
 }
 
 void Settings::save()
@@ -559,7 +517,7 @@ bool Settings::setJsonArray(SettingsKey key, QJsonArray value)
 
 QString Settings::settingsPath()
 {
-    if (QSettings *settings = mSettings[scGams]) {
+    if (QSettings *settings = mSettings[scSys]) {
         return QFileInfo(settings->fileName()).path();
     }
     DEB() << "ERROR: Settings file must be initialized before using settingsPath()";
@@ -569,27 +527,53 @@ QString Settings::settingsPath()
 void Settings::saveFile(Scope scope)
 {
     if (!canWrite()) return;
-    if (!mSettings.contains(scope)) return;
+    ScopePair scopes = scopePair(scope);
+    if (!mSettings.contains(scopes.base)) return; // for safety
+    QSettings *settings = mSettings.value(scopes.base);
 
-    // Store values that are repeated in ALL settings, like the versions
-    Data::const_iterator it = mData[scAll].constBegin();
-    for ( ; it != mData[scAll].constEnd() ; ++it) {
-        mSettings[scope]->setValue(it.key(), it.value());
+    // store base settings
+    QVariantMap baseDat;
+    Data src = mData.value(scopes.base);
+    for (Data::const_iterator it = src.constBegin() ; it != src.constEnd() ; ++it) {
+        baseDat.insert(it.key(), it.value());
     }
+    addVersionInfo(scope, baseDat);
+    settings->setValue("base", baseDat);
 
-    // store individual settings
-    it = mData[scope].constBegin();
-    for ( ; it != mData[scope].constEnd() ; ++it) {
-        mSettings[scope]->setValue(it.key(), it.value());
+    // store versionized settings
+    QVariantMap verDat;
+    src = mData.value(scopes.versionized);
+    for (Data::const_iterator it = src.constBegin() ; it != src.constEnd() ; ++it) {
+        verDat.insert(it.key(), it.value());
     }
-    mSettings[scope]->sync();
+    addVersionInfo(scope, verDat);
+    settings->setValue(QString("v%1").arg(version(scopes.versionized)), verDat);
+
+    settings->sync();
 }
 
-QVariant Settings::read(SettingsKey key, Settings::Scope scope)
+void Settings::loadMap(Scope scope, QVariantMap map)
+{
+    for (QVariantMap::const_iterator it = map.constBegin() ; it != map.constEnd() ; ++it) {
+        QVariant var = it.value();
+        if (var.isNull()) continue;
+        if (var.canConvert<QJsonObject>() || var.canConvert<QVariantMap>()) {
+            // copy all elements
+            QJsonObject joSrc = var.toJsonObject();
+            QJsonObject joDest = mData.value(scope).value(it.key()).toJsonObject();
+            for (const QString &joKey : joSrc.keys()) {
+                joDest[joKey] = joSrc[joKey];
+            }
+            var = joDest;
+        }
+        setDirectValue(scope, it.key(), var);
+    }
+}
+
+QVariant Settings::read(SettingsKey key)
 {
     KeyData dat = keyData(key);
-    if (scope == scAll) scope = dat.scope;
-    QSettings *qs = mSettings.value(scope, nullptr);
+    QSettings *qs = mSettings.value(dat.scope, nullptr);
     if (!qs) return QVariant();
     if (dat.keys.size() == 1) return  qs->value(dat.keys[0]);
     if (dat.keys.size() == 2) {
@@ -601,62 +585,31 @@ QVariant Settings::read(SettingsKey key, Settings::Scope scope)
 
 void Settings::load(Scope scope)
 {
-    if (mCanRead) {
+    if (!mCanRead) return;
 
-        // load settings content into mData
-        for (QMap<Scope, QSettings*>::const_iterator si = mSettings.constBegin() ; si != mSettings.constEnd() ; ++si) {
-            if (!si.value() || (scope != scAll && scope != si.key())) continue;
+    ScopePair scopes = scopePair(scope);
+    // load settings content into mData
+    for (QMap<Scope, QSettings*>::const_iterator si = mSettings.constBegin() ; si != mSettings.constEnd() ; ++si) {
+        if (!si.value() || scopes.base != si.key()) continue;
+        QSettings *settings = si.value();
+        // sync settings of this scope
+        settings->sync();
 
-            // sync settings of this scope
-            si.value()->sync();
+        QVariantMap dat = settings->value("base").toMap();
+        loadMap(scopes.base, dat);
 
-            // iterate over the settings content
-            for (const QString &key : si.value()->allKeys()) {
-                QVariant var = si.value()->value(key);
-                if (var.isNull()) continue;
-                if (var.canConvert<QJsonObject>() || var.canConvert<QVariantMap>()) {
-                    // copy all elements
-                    QJsonObject joSrc = var.toJsonObject();
-                    QJsonObject joDest = mData.value(si.key()).value(key).toJsonObject();
-                    for (const QString &joKey : joSrc.keys()) {
-                        joDest[joKey] = joSrc[joKey];
-                    }
-                    var = joDest;
-                }
-                setDirectValue(si.key(), key, var);
-            }
-        }
+        int scopeVersion = version(scopes.versionized);
+        // determinate the highest version number
+//            for (const QString &key : settings->allKeys()) {
 
+//            }
+//            upgradeVersion(basScope);
 
-
-        QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin();
-
-
-        for ( ; di != mKeys.constEnd() ; ++di) {
-            KeyData dat = di.value();
-
-            if (dat.scope == scAll) {
-                // --- special handling of entries for all files (like version)
-                if (scope == scAll) {
-                    // Update shared entry over all files
-                    for (const Scope &k : mData.keys()) {
-                        if (k == scAll) continue;
-                        QVariant var = read(di.key(), k);
-                        if (var.isValid()) setValue(di.key(), var);
-                    }
-                } else {
-                    // Only update given scope
-                    QVariant var = read(di.key());
-                    if (var.isValid()) setValue(di.key(), var);
-                }
-
-            } else if (scope == scAll || scope == dat.scope) {
-                // --- common update of entry
-                QVariant var = read(di.key());
-                if (var.isValid()) setValue(di.key(), var);
-            }
-        }
+        // TODO(JM) remove when upgrading logic is finished
+        dat = settings->value(QString("v%1").arg(scopeVersion)).toMap();
+        loadMap(scopes.versionized, dat);
     }
+
 //    Scheme::instance()->initDefault();
 
 
@@ -667,19 +620,19 @@ void Settings::load(Scope scope)
 
 void Settings::importSettings(const QString &path)
 {
-    if (!mSettings.value(scUser)) return;
+    if (!mSettings.value(scUserX)) return;
     QFile backupFile(path);
-    QFile settingsFile(mSettings.value(scUser)->fileName());
+    QFile settingsFile(mSettings.value(scUserX)->fileName());
     settingsFile.remove(); // remove old file
     backupFile.copy(settingsFile.fileName()); // import new file
     reload();
-    load(scUser);
+    load(scUserX);
 }
 
 void Settings::exportSettings(const QString &path)
 {
-    if (!mSettings.value(scUser)) return;
-    QFile originFile(mSettings.value(scUser)->fileName());
+    if (!mSettings.value(scUserX)) return;
+    QFile originFile(mSettings.value(scUserX)->fileName());
     originFile.copy(path);
 }
 

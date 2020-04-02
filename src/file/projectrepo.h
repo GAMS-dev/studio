@@ -110,8 +110,8 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    void read(const QJsonObject &json);
-    void write(QJsonObject &json) const;
+    void read(const QJsonArray &json);
+    void write(QJsonArray &json) const;
 
     ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
     ProjectFileNode *findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup = nullptr, FileType *knownType = nullptr

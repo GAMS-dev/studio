@@ -240,12 +240,9 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
-void ProjectRepo::read(const QJsonObject &json)
+void ProjectRepo::read(const QJsonArray &json)
 {
-    if (json.contains("projects") && json["projects"].isArray()) {
-        QJsonArray gprArray = json["projects"].toArray();
-        readGroup(mTreeModel->rootNode(), gprArray);
-    }
+    readGroup(mTreeModel->rootNode(), json);
 }
 
 void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray)
@@ -295,11 +292,9 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QJsonArray& jsonArray
     }
 }
 
-void ProjectRepo::write(QJsonObject& json) const
+void ProjectRepo::write(QJsonArray& json) const
 {
-    QJsonArray gprArray;
-    writeGroup(mTreeModel->rootNode(), gprArray);
-    json["projects"] = gprArray;
+    writeGroup(mTreeModel->rootNode(), json);
 }
 
 void ProjectRepo::writeGroup(const ProjectGroupNode* group, QJsonArray& jsonArray) const
