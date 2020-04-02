@@ -141,8 +141,6 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(skSoAddCommentAbove));
     ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(skSoAddEOLComment));
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
-
-    mMain->changeAppearance();
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -269,7 +267,7 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
     mSettings->setInt(skEdColorSchemeIndex, index);
-    mMain->changeAppearance();
+    mSettings->changeAppearance(index);
 }
 
 void SettingsDialog::schemeModified()

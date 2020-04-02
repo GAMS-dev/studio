@@ -246,7 +246,7 @@ MainWindow::MainWindow(QWidget *parent)
     invalidateScheme();
 
     // this needs to be re-called for studio startup, as the call when loading settings is too early
-    changeAppearance();
+    settings->setAppearance();
 }
 
 
@@ -1926,29 +1926,6 @@ void MainWindow::historyChanged()
         joHistory << joOpenFile;
     }
     Settings::settings()->setJsonArray(skHistory, joHistory);
-}
-
-void MainWindow::changeAppearance()
-{
-    int pickedTheme = Settings::settings()->toInt(skEdColorSchemeIndex);
-
-    bool canFollowOS = false;
-#ifdef _WIN32
-    canFollowOS = true; // deactivate follow OS option for linux
-#endif
-
-    if (canFollowOS && pickedTheme == 0) { // do OS specific things
-#ifdef _WIN32
-        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
-        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-#endif
-    } else if (canFollowOS) {
-        pickedTheme--; // deduct "Follow OS" option
-    }
-
-    PaletteManager::instance()->setPalette(pickedTheme);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 }
 
 bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
