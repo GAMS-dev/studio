@@ -24,7 +24,6 @@
 #include "exception.h"
 #include "textviewedit.h"
 #include "keys.h"
-#include "studiosettings.h"
 #include "settingslocator.h"
 
 #include <QScrollBar>
