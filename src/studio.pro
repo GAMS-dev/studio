@@ -159,6 +159,7 @@ SOURCES += \
     option/configparamtablemodel.cpp \
     option/definitionitemdelegate.cpp \
     option/envvarconfigeditor.cpp \
+    option/envvartablemodel.cpp \
     option/gamsconfigeditor.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsparametertablemodel.cpp \
@@ -304,6 +305,7 @@ HEADERS += \
     option/configparamtablemodel.h \
     option/definitionitemdelegate.h \
     option/envvarconfigeditor.h \
+    option/envvartablemodel.h \
     option/gamsconfigeditor.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsparametertablemodel.h \

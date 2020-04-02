@@ -30,6 +30,8 @@
 #include <QMenu>
 #include <QClipboard>
 
+#include <QDebug>
+
 namespace gams {
 namespace studio {
 namespace option {
@@ -57,6 +59,11 @@ ParamConfigEditor::~ParamConfigEditor()
 
 void ParamConfigEditor::addActions()
 {
+    mToolBar = new QToolBar();
+    mToolBar ->setIconSize(QSize(16,16));
+//    QIcon::Mode mode = QIcon::Disabled;
+//    QIcon::State state = QIcon::Off;
+
 //    QAction* commentAction = mContextMenu.addAction("Toggle comment/option selection", [this]() { toggleCommentOption(); });
 //    commentAction->setObjectName("actionToggle_comment");
 //    commentAction->setShortcut( QKeySequence("Ctrl+T") );
@@ -65,12 +72,18 @@ void ParamConfigEditor::addActions()
 //    ui->ParamCfgTableView->addAction(commentAction);
 //    addAction(commentAction);
 
-    QAction* insertOptionAction = mContextMenu.addAction(Scheme::icon(":/img/insert"), "Insert new option", [this]() { insertOption(); });
+    QIcon plusIcon = Scheme::icon(":/img/plus");
+    plusIcon.pixmap( QSize(16, 16), QIcon::Disabled
+                                  , QIcon::Off );
+    QAction* insertOptionAction = mContextMenu.addAction(plusIcon, "Insert new parameter", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
     insertOptionAction->setShortcut( QKeySequence("Ctrl+Return") );
     insertOptionAction->setShortcutVisibleInContextMenu(true);
     insertOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+//    insertOptionAction->setEnabled(false);
+//    insertOptionAction->setChecked(false);
     ui->ParamCfgTableView->addAction(insertOptionAction);
+    mToolBar->addAction(insertOptionAction);
 
     QAction* deleteAction = mContextMenu.addAction(Scheme::icon(":/img/delete-all"), "Delete selection", [this]() { deleteOption(); });
     deleteAction->setObjectName("actionDelete_option");
@@ -174,6 +187,18 @@ void ParamConfigEditor::addActions()
     resizeColumns->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->ParamCfgTableView->addAction(resizeColumns);
     ui->ParamCfgDefTreeView->addAction(resizeColumns);
+
+//    tb->addAction(insertOptionAction);
+    mToolBar->addAction(deleteAction);
+    mToolBar->addSeparator();
+    mToolBar->addAction(moveUpAction);
+    mToolBar->addAction(moveDownAction);
+    ui-> ParamCfgCtrl->layout()->setMenuBar(mToolBar);
+
+    //            action->icon().pixmap( QSize(16, 16), isEnabled ? QIcon::Active : QIcon::Disabled,
+    //                                                  action->isChecked() ? QIcon::On : QIcon::Off);
+//    ui->AddParamCfgButton->setIcon( Scheme::icon(":/img/plus").pixmap(QSize(16,16)) );
+
 }
 
 void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
@@ -250,6 +275,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     ui->ParamCfgTableView->setTabKeyNavigation(true);
 
     connect(ui->ParamCfgTableView, &QTableView::customContextMenuRequested,this, &ParamConfigEditor::showParameterContextMenu, Qt::UniqueConnection);
+    connect(ui->ParamCfgTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &ParamConfigEditor::currentTableSelectionChanged);
     connect(mParameterTableModel, &ConfigParamTableModel::newTableRowDropped, this, &ParamConfigEditor::on_newTableRowDropped, Qt::UniqueConnection);
 
     connect(ui->ParamCfgDefTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -269,6 +295,28 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
 bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
 {
     return (focusWidget==ui->ParamCfgTableView || focusWidget==ui->ParamCfgDefTreeView);
+}
+
+void ParamConfigEditor::currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+    qDebug() << "current:" << current.row() << "," << current.column();
+    for(QAction* action : ui->ParamCfgTableView->actions()) {
+        if (action->objectName().compare("actionInsert_option")==0) {
+                    action->setEnabled(mParameterTableModel->rowCount()>0);
+                } else if (action->objectName().compare("actionDelete_option")==0) {
+                          action->setEnabled(mParameterTableModel->rowCount()>0);
+                } else if (action->objectName().compare("actionMoveUp_option")==0) {
+                          action->setEnabled(current.row() > 0);
+                } else if (action->objectName().compare("actionMoveDown_option")==0) {
+                          bool enabled = current.row() < mParameterTableModel->rowCount()-1;
+                          action->setEnabled(enabled);
+        } else {
+            action->setDisabled(false);
+        }
+        action->icon().pixmap( QSize(16, 16), action->isEnabled() ? QIcon::Normal : QIcon::Disabled,
+                                              action->isChecked() ? QIcon::On : QIcon::Off);
+    }
+    mToolBar->repaint();
 }
 
 void ParamConfigEditor::showParameterContextMenu(const QPoint &pos)
@@ -291,17 +339,9 @@ void ParamConfigEditor::showParameterContextMenu(const QPoint &pos)
 
     QMenu menu(this);
     for(QAction* action : ui->ParamCfgTableView->actions()) {
-        if (action->objectName().compare("actionToggle_comment")==0) {
-            if ( thereIsARowSelection )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionInsert_option")==0) {
-                   if ( !isThereARow() || isThereARowSelection() )
-                      menu.addAction(action);
-        } else if (action->objectName().compare("actionInsert_comment")==0) {
-                  if ( !isThereARow() || isThereARowSelection() )
-                     menu.addAction(action);
-                  menu.addSeparator();
+        if (action->objectName().compare("actionInsert_option")==0) {
+            if (!isThereARow() || isThereARowSelection())
+                 menu.addAction(action);
         } else if (action->objectName().compare("actionDelete_option")==0) {
                   if ( thereIsARowSelection )
                      menu.addAction(action);

@@ -1,9 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author/>
- <comment/>
- <exportmacro/>
- <class>EnvVarConfigEditor</class>
- <widget class="QWidget" name="EnvVarConfigEditor">
+ <class>gams::studio::option::EnvVarConfigEditor</class>
+ <widget class="QWidget" name="gams::studio::option::EnvVarConfigEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,7 +13,74 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QTableView" name="EnvVarConfigTableView"/>
+   </item>
+  </layout>
+  <action name="actionInsert">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/plus</normaloff>:/img/plus</iconset>
+   </property>
+   <property name="text">
+    <string>Insert</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert Environment Varaibles</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/delete-all</normaloff>:/img/delete-all</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Environment Variable</string>
+   </property>
+  </action>
+  <action name="actionMoveUp">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/move-up</normaloff>:/img/move-up</iconset>
+   </property>
+   <property name="text">
+    <string>MoveUp</string>
+   </property>
+   <property name="toolTip">
+    <string>Move Up</string>
+   </property>
+  </action>
+  <action name="actionMoveDown">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/move-down</normaloff>:/img/move-down</iconset>
+   </property>
+   <property name="text">
+    <string>MoveDown</string>
+   </property>
+   <property name="toolTip">
+    <string>Move Down</string>
+   </property>
+  </action>
  </widget>
- <pixmapfunction/>
+ <resources>
+  <include location="../../icons/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

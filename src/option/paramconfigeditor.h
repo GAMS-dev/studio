@@ -27,6 +27,7 @@
 
 #include <QWidget>
 #include <QMenu>
+#include <QToolBar>
 
 namespace gams {
 namespace studio {
@@ -52,6 +53,7 @@ signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
+    void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
     void showParameterContextMenu(const QPoint &pos);
     void showDefinitionContextMenu(const QPoint &pos);
 
@@ -97,6 +99,7 @@ private slots:
 private:
     Ui::ParamConfigEditor *ui;
     QMenu mContextMenu;
+    QToolBar* mToolBar;
 
     OptionTokenizer* mOptionTokenizer;
     ConfigParamTableModel* mParameterTableModel;

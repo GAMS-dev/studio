@@ -20,6 +20,7 @@
 #ifndef ENVVARCONFIGEDITOR_H
 #define ENVVARCONFIGEDITOR_H
 
+#include "envvartablemodel.h"
 #include "gamsuserconfig.h"
 
 #include <QWidget>
@@ -37,21 +38,27 @@ class EnvVarConfigEditor : public QWidget
     Q_OBJECT
 
 public:
-    explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initParams, QWidget *parent = nullptr);
+    explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItemss, QWidget *parent = nullptr);
     ~EnvVarConfigEditor();
 
 signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
+    void deSelectOptions();
+
     void setModified(bool modified);
     bool isModified() const;
 
+    QList<EnvVarConfigItem *> envVarConfigItems();
+
 private slots:
-    void init(const QList<EnvVarConfigItem *> &initParams);
+    void init(const QList<EnvVarConfigItem *> &initItems);
 
 private:
     Ui::EnvVarConfigEditor *ui;
+
+    EnvVarTableModel* mEnvVarTableModel;
     bool mModified;
 };
 

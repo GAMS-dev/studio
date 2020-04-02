@@ -87,17 +87,23 @@ bool GamsConfigEditor::saveConfigFile(const QString &location)
 
 void GamsConfigEditor::deSelectAll()
 {
-    mParamConfigEditor->deSelectOptions();
-    // TODO (JP)
+    if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter))
+        mParamConfigEditor->deSelectOptions();
+    else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable))
+            mEnvVarConfigEditor->deSelectOptions();
 }
 
 bool GamsConfigEditor::saveAs(const QString &location)
 {
-    // TODO (JP)
-    mGuc->updateCommandLineParameters( mParamConfigEditor->parameterConfigItems() );
+    if (mParamConfigEditor->isModified()) {
+       mGuc->updateCommandLineParameters( mParamConfigEditor->parameterConfigItems() );
+       mParamConfigEditor->setModified(false);
+    }
+    if (mEnvVarConfigEditor->isModified()) {
+       mGuc->updateEnvironmentVariables( mEnvVarConfigEditor->envVarConfigItems());
+       mParamConfigEditor->setModified(false);
+    }
     mGuc->writeGamsUserConfigFile(location);
-
-    mParamConfigEditor->setModified(false);
     setModified(false);
 
     return false;
