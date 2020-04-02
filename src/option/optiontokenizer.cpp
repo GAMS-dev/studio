@@ -420,12 +420,14 @@ QList<OptionErrorType> OptionTokenizer::validate(ParamConfigItem* item)
     if (mOption->isDoubleDashedOption(item->key)) { // double dashed parameter
         if (! mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item->key)) )
            optionErrorList.append(OptionErrorType::Invalid_Key);
-    } else if (mOption->isValid(item->key) || mOption->isASynonym(item->key)) { // valid option
+    } else  if (mOption->isValid(item->key) || mOption->isASynonym(item->key)) { // valid option
         item->optionId = mOption->getOrdinalNumber(item->key);
         if (mOption->isDeprecated(item->key)) { // deprecated option
             optionErrorList.append( OptionErrorType::Deprecated_Option );
         } else { // valid and not deprected Option
-            optionErrorList.append( mOption->getValueErrorType(item->key, item->value) );
+            OptionErrorType error = mOption->getValueErrorType(item->key, item->value);
+            if (error!=OptionErrorType::No_Error)
+               optionErrorList.append(error);
         }
     } else { // invalid option
         optionErrorList.append(OptionErrorType::Invalid_Key);
@@ -434,7 +436,7 @@ QList<OptionErrorType> OptionTokenizer::validate(ParamConfigItem* item)
     if (!item->minVersion.isEmpty() && !mOption->isConformantVersion(item->minVersion)) {
         optionErrorList.append(OptionErrorType::Invalid_minVersion);
     } else if (!item->maxVersion.isEmpty() && !mOption->isConformantVersion(item->maxVersion)) {
-            optionErrorList.append(OptionErrorType::Invalid_maxVersion);
+              optionErrorList.append(OptionErrorType::Invalid_maxVersion);
     }
 
     return optionErrorList;

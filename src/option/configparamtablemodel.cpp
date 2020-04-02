@@ -79,6 +79,12 @@ QVariant ConfigParamTableModel::headerData(int index, Qt::Orientation orientatio
         case OptionErrorType::Invalid_Key:
             tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(index)->key) );
             break;
+        case OptionErrorType::Invalid_minVersion:
+            tooltipText.append( QString("Invalid minVersion '%1', must be  conformed to [x[.y[.z]]] format").arg(mOptionItem.at(index)->minVersion) );
+            break;
+        case OptionErrorType::Invalid_maxVersion:
+            tooltipText.append( QString("Invalid maxVersion '%1', must be  conformed to [x[.y[.z]]] format").arg(mOptionItem.at(index)->minVersion) );
+            break;
         case OptionErrorType::Incorrect_Value_Type:
             tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key) );
             break;
@@ -164,8 +170,10 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
             tooltipText.append( QString("Invalid parameter key or value or comment defined") );
             break;
         case OptionErrorType::Invalid_minVersion:
+            tooltipText.append( QString("Invalid minVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mOptionItem.at(row)->minVersion) );
+            break;
         case OptionErrorType::Invalid_maxVersion:
-            tooltipText.append( QString("Invalid version format, must be [x[.y[.z]]") );
+            tooltipText.append( QString("Invalid maxVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mOptionItem.at(row)->maxVersion) );
             break;
         default:
             break;
@@ -561,6 +569,10 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
         idx = index(row++, idx.column());
         if (roles.first()==Qt::EditRole) {
               QList<OptionErrorType> errorList = mOptionTokenizer->validate(mOptionItem.at(idx.row()));
+              if (errorList.isEmpty())
+                  mOptionItem[idx.row()]->error = OptionErrorType::No_Error;
+              else
+                  mOptionItem[idx.row()]->error = errorList.at(0);
               if (errorList.size()<=0)
                    setHeaderData( idx.row(), Qt::Vertical,
                           Qt::CheckState(Qt::Unchecked),
