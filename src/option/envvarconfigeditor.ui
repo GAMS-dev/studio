@@ -41,6 +41,9 @@
    <property name="toolTip">
     <string>Insert Environment Varaibles</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Return</string>
+   </property>
   </action>
   <action name="actionDelete">
    <property name="icon">
@@ -52,6 +55,9 @@
    </property>
    <property name="toolTip">
     <string>Delete Environment Variable</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Del</string>
    </property>
   </action>
   <action name="actionMoveUp">
@@ -65,6 +71,9 @@
    <property name="toolTip">
     <string>Move Up</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Up</string>
+   </property>
   </action>
   <action name="actionMoveDown">
    <property name="icon">
@@ -76,6 +85,9 @@
    </property>
    <property name="toolTip">
     <string>Move Down</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Down</string>
    </property>
   </action>
  </widget>

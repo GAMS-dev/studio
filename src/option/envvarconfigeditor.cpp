@@ -21,6 +21,8 @@
 #include "envvarconfigeditor.h"
 #include "ui_envvarconfigeditor.h"
 
+#include <QDebug>
+
 namespace gams {
 namespace studio {
 namespace option {
@@ -37,10 +39,43 @@ EnvVarConfigEditor::EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItem
 EnvVarConfigEditor::~EnvVarConfigEditor()
 {
     delete ui;
+    if (mEnvVarTableModel)
+        delete mEnvVarTableModel;
+}
+
+void EnvVarConfigEditor::currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+    qDebug() << "current:" << current.row() << "," << current.column();
+
+     ui->actionInsert->setEnabled(mEnvVarTableModel->rowCount()>0);
+     ui->actionDelete->setEnabled(mEnvVarTableModel->rowCount()>0);
+     ui->actionMoveUp->setEnabled(current.row() > 0);
+     ui->actionMoveDown->setEnabled( current.row() < mEnvVarTableModel->rowCount()-1 );
+     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                     QIcon::Off);
+     ui->actionDelete->icon().pixmap( QSize(16, 16), ui->actionDelete->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                     QIcon::Off);
+     ui->actionMoveUp->icon().pixmap( QSize(16, 16), ui->actionMoveUp->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                     QIcon::Off);
+     ui->actionMoveUp->icon().pixmap( QSize(16, 16), ui->actionMoveDown->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                     QIcon::Off);
+     mToolBar->repaint();
+}
+
+void EnvVarConfigEditor::showContextMenu(const QPoint &pos)
+{
+    QMenu menu(this);
+    menu.addAction(ui->actionInsert);
+    menu.addAction(ui->actionDelete);
+    menu.addSeparator();
+    menu.addAction(ui->actionMoveUp);
+    menu.addAction(ui->actionMoveDown);
+    menu.exec(ui->EnvVarConfigTableView->viewport()->mapToGlobal(pos));
 }
 
 void EnvVarConfigEditor::deSelectOptions()
 {
+    initActions();
     if (ui->EnvVarConfigTableView->hasFocus() && ui->EnvVarConfigTableView->selectionModel()->hasSelection())
         ui->EnvVarConfigTableView->selectionModel()->clearSelection();
     else
@@ -64,6 +99,17 @@ QList<EnvVarConfigItem *> EnvVarConfigEditor::envVarConfigItems()
 
 void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 {
+    initActions();
+
+    mToolBar = new QToolBar();
+    mToolBar ->setIconSize(QSize(16,16));
+    mToolBar->addAction(ui->actionInsert);
+    mToolBar->addAction(ui->actionDelete);
+    mToolBar->addSeparator();
+    mToolBar->addAction(ui->actionMoveUp);
+    mToolBar->addAction(ui->actionMoveDown);
+    this->layout()->setMenuBar(mToolBar);
+
     setFocusPolicy(Qt::StrongFocus);
 
     mEnvVarTableModel = new EnvVarTableModel(initItems, this);
@@ -98,6 +144,41 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
     ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PATH_VAR);
 
     ui->EnvVarConfigTableView->setTabKeyNavigation(true);
+
+    connect(ui->EnvVarConfigTableView, &QTableView::customContextMenuRequested,this, &EnvVarConfigEditor::showContextMenu, Qt::UniqueConnection);
+    connect(ui->EnvVarConfigTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &EnvVarConfigEditor::currentTableSelectionChanged);
+}
+
+void EnvVarConfigEditor::initActions()
+{
+    ui->actionInsert->setEnabled(true);
+    ui->actionDelete->setEnabled(false);
+    ui->actionMoveUp->setEnabled(false);
+    ui->actionMoveDown->setEnabled(false);
+    ui->actionInsert->icon().pixmap( QSize(16, 16), QIcon::Selected, QIcon::Off);
+    ui->actionDelete->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
+    ui->actionMoveUp->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
+    ui->actionDelete->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
+}
+
+void EnvVarConfigEditor::on_actionInsert_triggered()
+{
+    qDebug() << "insert";
+}
+
+void EnvVarConfigEditor::on_actionDelete_triggered()
+{
+    qDebug() << "delete";
+}
+
+void EnvVarConfigEditor::on_actionMoveUp_triggered()
+{
+    qDebug() << "move up";
+}
+
+void EnvVarConfigEditor::on_actionMoveDown_triggered()
+{
+    qDebug() << "move down";
 }
 
 }

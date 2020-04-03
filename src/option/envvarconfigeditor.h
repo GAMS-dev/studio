@@ -24,6 +24,8 @@
 #include "gamsuserconfig.h"
 
 #include <QWidget>
+#include <QMenu>
+#include <QToolBar>
 
 namespace gams {
 namespace studio {
@@ -45,6 +47,8 @@ signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
+    void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
+    void showContextMenu(const QPoint &pos);
     void deSelectOptions();
 
     void setModified(bool modified);
@@ -54,12 +58,20 @@ public slots:
 
 private slots:
     void init(const QList<EnvVarConfigItem *> &initItems);
+    void initActions();
+
+    void on_actionInsert_triggered();
+    void on_actionDelete_triggered();
+    void on_actionMoveUp_triggered();
+    void on_actionMoveDown_triggered();
 
 private:
     Ui::EnvVarConfigEditor *ui;
-
     EnvVarTableModel* mEnvVarTableModel;
     bool mModified;
+
+    QMenu mContextMenu;
+    QToolBar* mToolBar;
 };
 
 }
