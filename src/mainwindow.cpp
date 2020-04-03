@@ -240,13 +240,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Themes
 #ifdef __APPLE__
-    Settings::settings()->setInt(skEdColorSchemeIndex, (MacOSCocoaBridge::isDarkMode() ? 1 : 0));
+    settings->setAppearance(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
+#else
+    // this needs to be re-called for studio startup, as the call when loading settings is too early
+    settings->setAppearance();
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
-
-    // this needs to be re-called for studio startup, as the call when loading settings is too early
-    settings->setAppearance();
 }
 
 

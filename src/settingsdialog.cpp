@@ -266,8 +266,9 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 
 void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
-    mSettings->setInt(skEdColorSchemeIndex, index);
+#ifndef __APPLE__
     mSettings->changeAppearance(index);
+#endif
 }
 
 void SettingsDialog::schemeModified()
