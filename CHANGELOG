@@ -1,3 +1,26 @@
+Version 1.0 RC1
+==================
+## General
+- **introduced new settings format.**
+All settings have been reset and are now saved in JSON format. Unfortunately that means that all your settings are lost.
+- fixed behavior of Process Log and Help widget which were restored to the wrong postion
+- fixed terminal opening wrong path when having new/reset settings
+- added error popup when Studio is unable to write a GAMS license file
+- fixed shortcut on macOS: block edit mode is now *CMD+Shift+Arrow Key*
+- changed shortcut to dulicate line to: *Ctrl+D* (all platforms)
+- fixed icon of Parameter Editor when Studio starts with the editor extended
+- fixed crash related to mouseover events and textmarks
+- fixed dialogs opening in wrong locations under certain circumstances
+- improved coloring of search results when using Find Next/Previous
+- improved dark theme colors of Studio to make checkboxes clearer to identify
+
+## MIRO
+- disabled MIRO shortcuts if MIRO is unavailable
+- MIRO assembly files are now added to the group
+- Assembly file dialog now pops up instead of an error message if the assembly file is missing
+
+
+
 Version 0.14.6
 ==================
 ## General
