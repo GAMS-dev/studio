@@ -64,7 +64,7 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
         QIcon icon(Scheme::icon(iconRes));
         QPixmap pm = icon.pixmap(mFilterIconWidth, mFilterIconWidth);
 
-        int posX = rect.bottomRight().x()-mFilterIconWidth-mFilterIconMargin;
+        int posX = rect.x() + mFilterIconMargin;
         int posY = rect.bottomRight().y()-mFilterIconWidth-mFilterIconMargin;
 
         painter->drawImage(posX, posY, pm.toImage());
