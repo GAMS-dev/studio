@@ -28,13 +28,12 @@ namespace studio {
 namespace option {
 
 GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
-                                   FileId id, QTextCodec*codec, QWidget *parent) :
+                                   FileId id, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::GamsConfigEditor),
     mFileId(id),
     mLocation(optionFilePath),
     mFileName(fileName),
-    mCodec(codec),
     mModified(false)
 {
     ui->setupUi(this);
@@ -90,7 +89,12 @@ void GamsConfigEditor::deSelectAll()
     if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter))
         mParamConfigEditor->deSelectOptions();
     else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable))
-            mEnvVarConfigEditor->deSelectOptions();
+        mEnvVarConfigEditor->deSelectOptions();
+}
+
+void GamsConfigEditor::setFileChangedExtern(bool value)
+{
+    mFileHasChangedExtern = value;
 }
 
 bool GamsConfigEditor::saveAs(const QString &location)

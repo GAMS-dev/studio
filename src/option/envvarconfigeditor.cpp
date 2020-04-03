@@ -78,8 +78,7 @@ void EnvVarConfigEditor::deSelectOptions()
     initActions();
     if (ui->EnvVarConfigTableView->hasFocus() && ui->EnvVarConfigTableView->selectionModel()->hasSelection())
         ui->EnvVarConfigTableView->selectionModel()->clearSelection();
-    else
-        this->focusNextChild();
+    this->focusNextChild();
 }
 
 void EnvVarConfigEditor::setModified(bool modified)

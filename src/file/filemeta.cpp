@@ -495,6 +495,7 @@ void FileMeta::load(int codecMib, bool init)
         if (!textOptEditor)
             return;
     }
+    // TODO (JP) if (kind() == FileKind::Guc)
 
     QFile file(location());
     bool canOpen = true;
@@ -840,8 +841,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Guc) {
+              // Guc Editor ignore other encoding scheme than UTF-8
               res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
-                                                                             id(), mCodec, tabWidget));
+                                                                             id(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
             QFileInfo fileInfo(name());
             support::SolverConfigInfo solverConfigInfo;

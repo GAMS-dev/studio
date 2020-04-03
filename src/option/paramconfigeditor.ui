@@ -103,7 +103,137 @@
     </widget>
    </item>
   </layout>
+  <action name="actionInsert">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/plus</normaloff>:/img/plus</iconset>
+   </property>
+   <property name="text">
+    <string>Insert</string>
+   </property>
+   <property name="toolTip">
+    <string>Add/Insert new paramaeter</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Ins</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/delete-all</normaloff>:/img/delete-all</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Parameter</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Del</string>
+   </property>
+  </action>
+  <action name="actionMoveUp">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/move-up</normaloff>:/img/move-up</iconset>
+   </property>
+   <property name="text">
+    <string>Move Up</string>
+   </property>
+   <property name="toolTip">
+    <string>Move Up</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Up</string>
+   </property>
+  </action>
+  <action name="actionMoveDown">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/move-down</normaloff>:/img/move-down</iconset>
+   </property>
+   <property name="text">
+    <string>Move Down</string>
+   </property>
+   <property name="toolTip">
+    <string>Move Down</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Down</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="text">
+    <string>Select All</string>
+   </property>
+   <property name="toolTip">
+    <string>Select All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionResize_Columns_To_Contents">
+   <property name="text">
+    <string>Resize Columns To Contents</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionShow_Option_Definition">
+   <property name="text">
+    <string>Show Option Definition</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Option Definition</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F1</string>
+   </property>
+  </action>
+  <action name="actionShowRecurrence">
+   <property name="text">
+    <string>Show all parameters of the same definition</string>
+   </property>
+   <property name="toolTip">
+    <string>Show all parameters of the same definition</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F1</string>
+   </property>
+  </action>
+  <action name="actionAdd_This_Parameter">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/plus</normaloff>:/img/plus</iconset>
+   </property>
+   <property name="text">
+    <string>Add This Parameter</string>
+   </property>
+   <property name="shortcut">
+    <string>Return</string>
+   </property>
+  </action>
+  <action name="actionRemove_This_Parameter">
+   <property name="icon">
+    <iconset resource="../../icons/icons.qrc">
+     <normaloff>:/img/delete-all</normaloff>:/img/delete-all</iconset>
+   </property>
+   <property name="text">
+    <string>Remove This Parameter</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove This Parameter</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../icons/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -54,6 +54,7 @@ signals:
 
 public slots:
     void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
+    void currentDefinitionSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
     void showParameterContextMenu(const QPoint &pos);
     void showDefinitionContextMenu(const QPoint &pos);
 
@@ -69,19 +70,15 @@ public slots:
 private slots:
     void addActions();
     void init(const QList<ConfigItem *> &initParams);
+    void initActions();
 
     void findAndSelectionParameterFromDefinition();
     void selectAnOption();
-    void insertOption();
     void deleteOption();
-    void moveOptionUp();
-    void moveOptionDown();
-    void selectAllOptions();
-    void resizeColumnsToContents();
+
 
     void addParameterFromDefinition(const QModelIndex &index);
     void showOptionDefinition(bool selectRow = true);
-    void showOptionRecurrence();
     void copyDefinitionToClipboard(int column);
 
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
@@ -95,6 +92,19 @@ private slots:
     bool isThereARow() const;
     bool isThereARowSelection() const;
     bool isEverySelectionARow() const;
+
+    void on_actionInsert_triggered();
+    void on_actionDelete_triggered();
+    void on_actionMoveUp_triggered();
+    void on_actionMoveDown_triggered();
+
+    void on_actionSelectAll_triggered();
+    void on_actionRecurrence_triggered();
+    void on_actionResize_Columns_To_Contents_triggered();
+    void on_actionShow_Option_Definition_triggered();
+
+    void on_actionAdd_This_Parameter_triggered();
+    void on_actionRemove_This_Parameter_triggered();
 
 private:
     Ui::ParamConfigEditor *ui;

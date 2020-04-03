@@ -60,7 +60,7 @@ class GamsConfigEditor : public QWidget
 
 public:
     explicit GamsConfigEditor(QString fileName, QString optionFilePath,
-                               FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
+                               FileId id, QWidget *parent = nullptr);
     ~GamsConfigEditor();
 
     FileId fileId() const;
@@ -77,6 +77,7 @@ public slots:
     bool saveConfigFile(const QString &location);
 
     void deSelectAll();
+    void setFileChangedExtern(bool value);
 
 private:
     Ui::GamsConfigEditor *ui;
@@ -84,8 +85,9 @@ private:
     FileId mFileId;
     QString mLocation;
     QString mFileName;
-    QTextCodec* mCodec;
     bool mModified;
+
+    bool mFileHasChangedExtern = false;
 
     GamsUserConfig* mGuc;
     ParamConfigEditor* mParamConfigEditor;

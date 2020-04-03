@@ -135,7 +135,7 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
         if (col==COLUMN_PARAM_KEY) {
             return mOptionItem.at(row)->key;
         } else if (col== COLUMN_PARAM_VALUE) {
-                 return mOptionItem.at(row)->value;
+                 return  mOptionItem.at(row)->value;
         } else if (col==COLUMN_MIN_VERSION) {
                   return mOptionItem.at(row)->minVersion;
         } else if (col==COLUMN_MAX_VERSION) {
@@ -559,6 +559,50 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
 QList<ParamConfigItem *> ConfigParamTableModel::parameterConfigItems()
 {
     return mOptionItem;
+}
+
+void ConfigParamTableModel::reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem)
+{
+    disconnect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateConfigParamItem);
+
+    beginResetModel();
+
+    qDeleteAll(mOptionItem);
+    mOptionItem.clear();
+
+    mOptionItem = optionItem;
+    mOptionTokenizer->validateOption(mOptionItem);
+    updateCheckState();
+
+    setRowCount(mOptionItem.size());
+
+    for (int i=0; i<mOptionItem.size(); ++i) {
+        if (mOptionItem.at(i)->disabled) {
+            setData( index(i, COLUMN_PARAM_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::PartiallyChecked),
+                              Qt::CheckStateRole );
+            setData( index(i, COLUMN_ENTRY_NUMBER), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
+        } else {
+           setData( index(i, COLUMN_PARAM_KEY), QVariant(mOptionItem.at(i)->key), Qt::EditRole);
+           setData( index(i, COLUMN_PARAM_VALUE), QVariant(mOptionItem.at(i)->value), Qt::EditRole);
+           setData( index(i, COLUMN_MIN_VERSION), mOptionItem.at(i)->minVersion, Qt::EditRole);
+           setData( index(i, COLUMN_MAX_VERSION), mOptionItem.at(i)->maxVersion, Qt::EditRole);
+           setData( index(i, COLUMN_ENTRY_NUMBER), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
+           if (mOptionItem.at(i)->error == OptionErrorType::No_Error)
+               setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+           else
+               setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+        }
+    }
+    emit configParamModelChanged(mOptionItem);
+    updateRecurrentStatus();
+    endResetModel();
+    connect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
 }
 
 void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)

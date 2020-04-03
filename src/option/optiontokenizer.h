@@ -22,6 +22,8 @@
 
 #include <QTextLayout>
 #include <QLineEdit>
+#include <QTextCodec>
+
 #include "option.h"
 #include "editors/abstractsystemlogger.h"
 
