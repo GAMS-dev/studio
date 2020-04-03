@@ -722,9 +722,12 @@ void Settings::changeAppearance(int appearance)
         pickedTheme--; // deduct "Follow OS" option
     }
 
-    PaletteManager::instance()->setPalette(pickedTheme);
     Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+
+#ifndef __APPLE__
+    PaletteManager::instance()->setPalette(pickedTheme);
     Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
+#endif
 }
 
 }
