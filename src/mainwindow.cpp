@@ -202,7 +202,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     initIcons();
     restoreFromSettings();
-    mRecent.path = settings->toString(skDefaultWorkspace);
     mSearchDialog = new search::SearchDialog(this);
 
     // stack help under output
