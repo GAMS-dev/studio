@@ -12,6 +12,8 @@ All settings have been reset and are now saved in JSON format. That means that s
 - fixed crash related to mouseover events and textmarks
 - fixed dialogs opening in wrong locations under certain circumstances
 - moved GDX Viewer Filter icon to not block sorting indicator in table header
+- fixed unwanted/wrong theme switch on macOS
+- fixed faulty live update of Studio when macOS theme gets changed
 
 ## MIRO
 - disabled MIRO shortcuts if MIRO is unavailable

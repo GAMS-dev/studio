@@ -120,7 +120,6 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
-    void changeAppearance();
     QStringList encodingNames();
     QString encodingMIBsString();
     QList<int> encodingMIBs();

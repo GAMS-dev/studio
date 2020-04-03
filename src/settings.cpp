@@ -32,6 +32,8 @@
 #include "version.h"
 #include "exception.h"
 #include "file/dynamicfile.h"
+#include "colors/palettemanager.h"
+#include "scheme.h"
 
 namespace gams {
 namespace studio {
@@ -681,6 +683,51 @@ void Settings::exportSettings(const QString &path)
     if (!mSettings.value(scUser)) return;
     QFile originFile(mSettings.value(scUser)->fileName());
     originFile.copy(path);
+}
+
+///
+/// \brief StudioSettings::setAppearance sets and saves the appearance
+/// \param appearance
+///
+void Settings::setAppearance(int appearance)
+{
+    if (appearance == -1)
+        appearance = toInt(skEdColorSchemeIndex);
+
+    setInt(skEdColorSchemeIndex, appearance);
+    changeAppearance(appearance);
+}
+
+///
+/// \brief StudioSettings::changeAppearance sets the appearance without saving it into settings.
+/// Useful for previews. ! THIS CHANGE IS NOT PERSISTENT !
+/// \param appearance
+/// \return
+///
+void Settings::changeAppearance(int appearance)
+{
+    int pickedTheme = appearance;
+
+    bool canFollowOS = false;
+#ifdef _WIN32
+    canFollowOS = true; // deactivate follow OS option for linux
+#endif
+
+    if (canFollowOS && pickedTheme == 0) { // do OS specific things
+#ifdef _WIN32
+        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#endif
+    } else if (canFollowOS) {
+        pickedTheme--; // deduct "Follow OS" option
+    }
+
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+
+#ifndef __APPLE__
+    PaletteManager::instance()->setPalette(pickedTheme);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
+#endif
 }
 
 }
