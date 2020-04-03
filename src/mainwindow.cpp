@@ -957,7 +957,7 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -967,7 +967,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionOpenNew_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -2076,7 +2076,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_actionGDX_Diff_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = QFileInfo(mRecent.path).path();
     actionGDX_Diff_triggered(path);
 }
 
@@ -3761,7 +3761,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 void RecentData::reset()
 {
     editFileId = -1;
-    path = Settings::settings()->toString(skDefaultWorkspace);
+    path = ".";
     group = nullptr;
     mEditor = nullptr;
 }
