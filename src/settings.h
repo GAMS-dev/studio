@@ -152,6 +152,8 @@ public:
     void reload();
     void resetViewSettings();
 
+    void setAppearance(int appearance = -1);
+    void changeAppearance(int appearance);
 private:
     typedef QMap<QString, QVariant> Data;
     struct KeyData {

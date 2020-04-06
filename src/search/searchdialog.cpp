@@ -247,11 +247,18 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     }
 
     // apply filter
+    FileMeta* current = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     QList<FileMeta*> res;
     for (FileMeta* fm : files) {
-        if ((ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1) && (!ignoreReadOnly || !fm->isReadOnly()))
-            res.append(fm);
+        if ((ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1) && (!ignoreReadOnly || !fm->isReadOnly())) {
+
+            if (fm == current)
+                res.insert(0, fm);
+            else
+                res.append(fm);
+        }
     }
+
     return res;
 }
 

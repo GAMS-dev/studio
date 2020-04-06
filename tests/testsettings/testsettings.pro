@@ -26,8 +26,10 @@ INCLUDEPATH += $$SRCPATH
 
 HEADERS += \
     testsettings.h \
-    $$SRCPATH/file/dynamicfile.h
-
+    $$SRCPATH/file/dynamicfile.h \
+    $$SRCPATH/scheme.h \
+    $$SRCPATH/svgengine.h \
+    $$SRCPATH/colors/palettemanager.h
 
 SOURCES += \
     testsettings.cpp \
@@ -35,4 +37,7 @@ SOURCES += \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/logger.cpp \
     $$SRCPATH/exception.cpp \
-    $$SRCPATH/file/dynamicfile.cpp
+    $$SRCPATH/file/dynamicfile.cpp \
+    $$SRCPATH/scheme.cpp \
+    $$SRCPATH/svgengine.cpp \
+    $$SRCPATH/colors/palettemanager.cpp

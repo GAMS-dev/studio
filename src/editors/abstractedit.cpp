@@ -168,8 +168,10 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(toColor(Scheme::Normal_Red));
-                if (m->size() == 1)
+                if (m->size() == 1) {
                     selection.format.setBackground(toColor(Scheme::Edit_errorBg));
+                    selection.format.setForeground(toColor(Scheme::Edit_text));
+                }
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorName(QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
