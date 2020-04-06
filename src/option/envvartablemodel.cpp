@@ -261,6 +261,73 @@ QList<EnvVarConfigItem *> EnvVarTableModel::envVarConfigItems()
     return mEnvVarItem;
 }
 
+void EnvVarTableModel::on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+{
+    QModelIndex idx = topLeft;
+    int row = idx.row();
+    while(row <= bottomRight.row()) {
+        idx = index(row++, idx.column());
+        if (roles.first()==Qt::EditRole) {
+              if (validate( mEnvVarItem.at(idx.row())) )
+                   setHeaderData( idx.row(), Qt::Vertical,
+                          Qt::CheckState(Qt::Unchecked),
+                          Qt::CheckStateRole );
+               else
+                   setHeaderData( idx.row(), Qt::Vertical,
+                      Qt::CheckState(Qt::Checked),
+                      Qt::CheckStateRole );
+       }
+    }
+}
+
+
+void EnvVarTableModel::on_removeEnvVarItem()
+{
+    beginResetModel();
+    setRowCount(mEnvVarItem.size());
+
+    for(int i = 0; i<mEnvVarItem.size(); ++i) {
+        if (validate(mEnvVarItem.at(i))) {
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+         } else {
+                setHeaderData( i, Qt::Vertical,
+                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckStateRole );
+         }
+    }
+    endResetModel();
+}
+
+void EnvVarTableModel::setRowCount(int rows)
+{
+    int rc = mEnvVarItem.size();
+    if (rows < 0 ||  rc == rows)
+       return;
+
+    if (rc < rows)
+       insertRows(qMax(rc, 0), rows - rc);
+    else
+        removeRows(qMax(rows, 0), rc - rows);
+}
+
+bool EnvVarTableModel::validate(EnvVarConfigItem* item) const
+{
+    bool error = false;
+    if (!item->maxVersion.isEmpty())  error = isConformatVersion(item->maxVersion);
+    if (!item->minVersion.isEmpty())  error = isConformatVersion(item->minVersion);
+
+    error = (item->key.isEmpty() || item->value.isEmpty());
+    return error;
+}
+
+bool EnvVarTableModel::isConformatVersion(const QString &version) const
+{
+    QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
+    return re.exactMatch(version);
+}
+
 } // namepsace option
 } // namespace studio
 } // namespace gams

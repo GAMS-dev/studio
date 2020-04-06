@@ -90,6 +90,28 @@
     <string>Ctrl+Down</string>
    </property>
   </action>
+  <action name="actionResize_Columns_To_Contents">
+   <property name="text">
+    <string>Resize Columns To Contents</string>
+   </property>
+   <property name="toolTip">
+    <string>Resize Columns To Contents</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="text">
+    <string>Select All</string>
+   </property>
+   <property name="toolTip">
+    <string>Select All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../../icons/icons.qrc"/>

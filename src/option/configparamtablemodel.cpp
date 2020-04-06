@@ -343,6 +343,7 @@ bool ConfigParamTableModel::removeRows(int row, int count, const QModelIndex &pa
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
+    emit  configParamItemRemoved();
     return true;
 }
 
@@ -625,9 +626,9 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
                    setHeaderData( idx.row(), Qt::Vertical,
                       Qt::CheckState(Qt::Checked),
                       Qt::CheckStateRole );
-              emit configParamModelChanged(mOptionItem);
+              emit configParamItemChanged(mOptionItem.at(idx.row()));
        } else if (roles.first()==Qt::CheckStateRole) {
-                  emit configParamModelChanged(mOptionItem);
+                  emit configParamItemChanged(mOptionItem.at(idx.row()));
        }
     }
     updateRecurrentStatus();

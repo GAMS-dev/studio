@@ -76,7 +76,6 @@ private slots:
     void selectAnOption();
     void deleteOption();
 
-
     void addParameterFromDefinition(const QModelIndex &index);
     void showOptionDefinition(bool selectRow = true);
     void copyDefinitionToClipboard(int column);
@@ -99,7 +98,7 @@ private slots:
     void on_actionMoveDown_triggered();
 
     void on_actionSelectAll_triggered();
-    void on_actionRecurrence_triggered();
+    void on_actionShowRecurrence_triggered();
     void on_actionResize_Columns_To_Contents_triggered();
     void on_actionShow_Option_Definition_triggered();
 

@@ -30,6 +30,7 @@ namespace option {
 
 class EnvVarTableModel : public QAbstractTableModel
 {
+    Q_OBJECT
 public:
     EnvVarTableModel(QList<EnvVarConfigItem *> itemList, QObject *parent = nullptr);
 
@@ -54,6 +55,16 @@ public:
     static const int COLUMN_PATH_VAR = 4;
 
     QList<EnvVarConfigItem *> envVarConfigItems();
+
+public slots:
+    void on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_removeEnvVarItem();
+
+private slots:
+    void setRowCount(int rows);
+
+    bool validate(EnvVarConfigItem* item) const;
+    bool isConformatVersion(const QString &version) const;
 
 private:
     QList<EnvVarConfigItem *> mEnvVarItem;

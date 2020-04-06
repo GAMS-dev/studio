@@ -105,7 +105,7 @@ bool GamsConfigEditor::saveAs(const QString &location)
     }
     if (mEnvVarConfigEditor->isModified()) {
        mGuc->updateEnvironmentVariables( mEnvVarConfigEditor->envVarConfigItems());
-       mParamConfigEditor->setModified(false);
+       mEnvVarConfigEditor->setModified(false);
     }
     mGuc->writeGamsUserConfigFile(location);
     setModified(false);

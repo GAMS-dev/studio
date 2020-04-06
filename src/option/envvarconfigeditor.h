@@ -60,10 +60,18 @@ private slots:
     void init(const QList<EnvVarConfigItem *> &initItems);
     void initActions();
 
+    void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+
+    bool isThereARow() const;
+    bool isThereARowSelection() const;
+    bool isEverySelectionARow() const;
+
     void on_actionInsert_triggered();
     void on_actionDelete_triggered();
     void on_actionMoveUp_triggered();
     void on_actionMoveDown_triggered();
+    void on_actionSelectAll_triggered();
+    void on_actionResize_Columns_To_Contents_triggered();
 
 private:
     Ui::EnvVarConfigEditor *ui;
