@@ -241,12 +241,12 @@ MainWindow::MainWindow(QWidget *parent)
     // Themes
 #ifdef __APPLE__
     Settings::settings()->setInt(skEdAppearance, (MacOSCocoaBridge::isDarkMode() ? 1 : 0));
+#else
+    // this needs to be re-called for studio startup, as the call when loading settings is too early
+    setAppearance();
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
-
-    // this needs to be re-called for studio startup, as the call when loading settings is too early
-    changeAppearance();
 }
 
 
@@ -957,7 +957,7 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -967,7 +967,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionOpenNew_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = QFileInfo(mRecent.path).path();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -1928,29 +1928,6 @@ void MainWindow::historyChanged()
     Settings::settings()->setList(skHistory, joHistory);
 }
 
-void MainWindow::changeAppearance()
-{
-    int pickedTheme = Settings::settings()->toInt(skEdAppearance);
-
-    bool canFollowOS = false;
-#ifdef _WIN32
-    canFollowOS = true; // deactivate follow OS option for linux
-#endif
-
-    if (canFollowOS && pickedTheme == 0) { // do OS specific things
-#ifdef _WIN32
-        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
-        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-#endif
-    } else if (canFollowOS) {
-        pickedTheme--; // deduct "Follow OS" option
-    }
-
-    PaletteManager::instance()->setPalette(pickedTheme);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
-}
-
 bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
 {
     if (runGroups.isEmpty()) return true;
@@ -2080,7 +2057,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_actionGDX_Diff_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = QFileInfo(mRecent.path).path();
     actionGDX_Diff_triggered(path);
 }
 
@@ -2430,6 +2407,50 @@ void MainWindow::dockTopLevelChanged(bool)
         dw->installEventFilter(this);
     } else
         dw->removeEventFilter(this);
+}
+
+///
+/// \brief StudioSettings::setAppearance sets and saves the appearance
+/// \param appearance
+///
+void MainWindow::setAppearance(int appearance)
+{
+    if (appearance == -1)
+        appearance = Settings::settings()->toInt(skEdAppearance);
+
+    Settings::settings()->setInt(skEdAppearance, appearance);
+    changeAppearance(appearance);
+}
+
+///
+/// \brief StudioSettings::changeAppearance sets the appearance without saving it into settings.
+/// Useful for previews. ! THIS CHANGE IS NOT PERSISTENT !
+/// \param appearance
+/// \return
+///
+void MainWindow::changeAppearance(int appearance)
+{
+    int pickedTheme = appearance;
+    bool canFollowOS = false;
+#ifdef _WIN32
+    canFollowOS = true; // deactivate follow OS option for linux
+#endif
+
+    if (canFollowOS && pickedTheme == 0) { // do OS specific things
+#ifdef _WIN32
+        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#endif
+    } else if (canFollowOS) {
+        pickedTheme--; // deduct "Follow OS" option
+    }
+
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+
+#ifndef __APPLE__
+    PaletteManager::instance()->setPalette(pickedTheme);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
+#endif
 }
 
 bool MainWindow::eventFilter(QObject*, QEvent* event)
@@ -3767,7 +3788,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 void RecentData::reset()
 {
     editFileId = -1;
-    path = Settings::settings()->toString(skDefaultWorkspace);
+    path = ".";
     group = nullptr;
     mEditor = nullptr;
 }

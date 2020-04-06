@@ -163,6 +163,8 @@ public:
     void reload();
     void resetViewSettings();
 
+//    void setAppearance(int appearance = -1);
+//    void changeAppearance(int appearance);
 private:
     typedef QVariantMap Data;
     struct KeyData {

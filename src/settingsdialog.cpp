@@ -141,8 +141,6 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(skSoAddCommentAbove));
     ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(skSoAddEOLComment));
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
-
-    mMain->changeAppearance();
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -268,8 +266,9 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 
 void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
-    mSettings->setInt(skEdAppearance, index);
-    mMain->changeAppearance();
+#ifndef __APPLE__
+    mMain->changeAppearance(index);
+#endif
 }
 
 void SettingsDialog::schemeModified()

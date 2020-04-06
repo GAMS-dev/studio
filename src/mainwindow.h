@@ -120,7 +120,6 @@ public:
     bool projectViewVisibility();
     bool optionEditorVisibility();
     bool helpViewVisibility();
-    void changeAppearance();
     QStringList encodingNames();
     QString encodingMIBsString();
     QList<int> encodingMIBs();
@@ -189,6 +188,8 @@ public slots:
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     bool eventFilter(QObject*, QEvent* event);
     void dockTopLevelChanged(bool);
+    void setAppearance(int appearance = -1);
+    void changeAppearance(int appearance);
 
 private slots:
     void openInitialFiles();
