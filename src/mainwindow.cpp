@@ -53,7 +53,7 @@
 #include "colors/palettemanager.h"
 #include "help/helpdata.h"
 #include "support/aboutgamsdialog.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "miro/miroprocess.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
@@ -243,7 +243,7 @@ MainWindow::MainWindow(QWidget *parent)
     Settings::settings()->setInt(skEdAppearance, (MacOSCocoaBridge::isDarkMode() ? 1 : 0));
 #else
     // this needs to be re-called for studio startup, as the call when loading settings is too early
-    setAppearance();
+    ViewHelper::setAppearance();
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
@@ -2407,50 +2407,6 @@ void MainWindow::dockTopLevelChanged(bool)
         dw->installEventFilter(this);
     } else
         dw->removeEventFilter(this);
-}
-
-///
-/// \brief StudioSettings::setAppearance sets and saves the appearance
-/// \param appearance
-///
-void MainWindow::setAppearance(int appearance)
-{
-    if (appearance == -1)
-        appearance = Settings::settings()->toInt(skEdAppearance);
-
-    Settings::settings()->setInt(skEdAppearance, appearance);
-    changeAppearance(appearance);
-}
-
-///
-/// \brief StudioSettings::changeAppearance sets the appearance without saving it into settings.
-/// Useful for previews. ! THIS CHANGE IS NOT PERSISTENT !
-/// \param appearance
-/// \return
-///
-void MainWindow::changeAppearance(int appearance)
-{
-    int pickedTheme = appearance;
-    bool canFollowOS = false;
-#ifdef _WIN32
-    canFollowOS = true; // deactivate follow OS option for linux
-#endif
-
-    if (canFollowOS && pickedTheme == 0) { // do OS specific things
-#ifdef _WIN32
-        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
-        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-#endif
-    } else if (canFollowOS) {
-        pickedTheme--; // deduct "Follow OS" option
-    }
-
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
-
-#ifndef __APPLE__
-    PaletteManager::instance()->setPalette(pickedTheme);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
-#endif
 }
 
 bool MainWindow::eventFilter(QObject*, QEvent* event)

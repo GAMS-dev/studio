@@ -94,7 +94,6 @@ SOURCES += \
     editors/systemlogedit.cpp \
     editors/textview.cpp \
     editors/textviewedit.cpp \
-    editors/viewhelper.cpp \
     encodingsdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
@@ -208,6 +207,7 @@ SOURCES += \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
     tabdialog.cpp \
+    viewhelper.cpp \
     welcomepage.cpp \
     wplabel.cpp
 
@@ -233,7 +233,6 @@ HEADERS += \
     editors/systemlogedit.h \
     editors/textview.h \
     editors/textviewedit.h \
-    editors/viewhelper.h \
     encodingsdialog.h \
     exception.h \
     file.h \
@@ -350,6 +349,7 @@ HEADERS += \
     syntax/textmarkrepo.h \
     tabdialog.h \
     version.h \
+    viewhelper.h \
     welcomepage.h \
     wplabel.h
 

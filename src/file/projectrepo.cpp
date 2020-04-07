@@ -28,7 +28,7 @@
 #include "filemetarepo.h"
 #include "abstractprocess.h"
 #include "projecttreeview.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "settings.h"
 
 namespace gams {

@@ -298,16 +298,6 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     // TODO(JM) protect against double-usage in the future: check if each key-path is unique
 }
 
-//void Settings::initGroups()
-//{
-//    for (QHash<SettingsKey, KeyData>::const_iterator it = mKeys.constBegin(); it == mKeys.constEnd(); ++it) {
-//        if (it.value().keys.size() != 2) continue;
-//        if (!mGroups.contains(it.value().keys.first()))
-//            mGroups.insert(it.value().keys.first(), QList<SettingsKey>());
-//        mGroups[it.value().keys.first()] << it.key();
-//    }
-//}
-
 void Settings::initDefault()
 {
     for (QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin() ; di != mKeys.constEnd() ; ++di) {
@@ -644,21 +634,7 @@ void Settings::loadVersionData(ScopePair scopes)
         }
         ++foundVersion;
     }
-
 }
-
-/*         case 1: {
-            // On increasing version from 1 to 2 -> implement mData conversion HERE
-            if (!setValue(skEdAppearance, directValue(scUser, "editor", "colorSchemeIndex").toInt()))
-                DEB() << "Error on upgrading value to version " << (version+1) << " for " << keyText(skEdAppearance);
-            break;
-        }
-        case 2: {
-            // On increasing version from 2 to 3 -> implement mData conversion HERE
-            break;
-        }
-*/
-
 
 void Settings::load(Scope scope)
 {
@@ -702,41 +678,6 @@ void Settings::exportSettings(const QString &path)
     QFile originFile(mSettings.value(scUserX)->fileName());
     originFile.copy(path);
 }
-
-//void Settings::setAppearance(int appearance)
-//{
-//    if (appearance == -1)
-//        appearance = toInt(skEdAppearance);
-
-//    setInt(skEdAppearance, appearance);
-//    changeAppearance(appearance);
-//}
-
-//void Settings::changeAppearance(int appearance)
-//{
-//    int pickedTheme = appearance;
-
-//    bool canFollowOS = false;
-//#ifdef _WIN32
-//    canFollowOS = true; // deactivate follow OS option for linux
-//#endif
-
-//    if (canFollowOS && pickedTheme == 0) { // do OS specific things
-//#ifdef _WIN32
-//        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
-//        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-//#endif
-//    } else if (canFollowOS) {
-//        pickedTheme--; // deduct "Follow OS" option
-//    }
-
-//    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
-
-//#ifndef __APPLE__
-//    PaletteManager::instance()->setPalette(pickedTheme);
-//    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
-//#endif
-//}
 
 }
 }

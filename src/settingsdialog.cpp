@@ -28,6 +28,7 @@
 #include "ui_settingsdialog.h"
 #include "miro/mirocommon.h"
 #include "schemewidget.h"
+#include "viewhelper.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -267,7 +268,7 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
 #ifndef __APPLE__
-    mMain->changeAppearance(index);
+    ViewHelper::changeAppearance(index);
 #endif
 }
 

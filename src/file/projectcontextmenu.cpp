@@ -24,7 +24,7 @@
 #include "projectcontextmenu.h"
 #include "file.h"
 #include "commonpaths.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "support/solverconfiginfo.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"

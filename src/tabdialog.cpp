@@ -18,7 +18,7 @@
 #include "tabdialog.h"
 #include "ui_tabdialog.h"
 #include "logger.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 
 #include <QTimer>
 #include <QScrollBar>

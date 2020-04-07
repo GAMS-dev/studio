@@ -26,7 +26,7 @@
 #include "searchresultlist.h"
 #include "searchworker.h"
 #include "option/solveroptionwidget.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "lxiviewer/lxiviewer.h"
 #include "../keys.h"
 
