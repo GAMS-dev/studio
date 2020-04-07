@@ -67,14 +67,15 @@ public slots:
     QList<ConfigItem *> parameterConfigItems();
 
 private slots:
-    void addActions();
     void init(const QList<ConfigItem *> &initParams);
 
     void initActions();
     void updateActionsState(const QModelIndex &index);
     void updateActionsState(const QModelIndexList &indexList);
 
+    void updateDefinitionActionsState(const QModelIndex &index);
     void findAndSelectionParameterFromDefinition();
+
     void selectAnOption();
     void deleteOption();
 

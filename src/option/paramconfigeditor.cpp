@@ -42,7 +42,6 @@ ParamConfigEditor::ParamConfigEditor(const QList<ConfigItem *> &initParams,  QWi
     mModified(false)
 {
     ui->setupUi(this);
-    addActions();
     init(initParams);
 }
 
@@ -55,24 +54,6 @@ ParamConfigEditor::~ParamConfigEditor()
         delete mParameterTableModel;
     if (mOptionCompleter)
         delete mOptionCompleter;
-}
-
-void ParamConfigEditor::addActions()
-{
-    QAction* addThisOptionAction = mContextMenu.addAction(Scheme::icon(":/img/plus"), "Add this option", [this]() {
-        QModelIndexList selection = ui->ParamCfgDefTreeView->selectionModel()->selectedRows();
-        if (selection.size()>0) {
-            ui->ParamCfgTableView->clearSelection();
-            ui->ParamCfgDefTreeView->clearSelection();
-            addParameterFromDefinition(selection.at(0));
-        }
-    });
-    addThisOptionAction->setObjectName("actionAddThisOption");
-    addThisOptionAction->setShortcut( QKeySequence(Qt::Key_Return) );
-    addThisOptionAction->setShortcutVisibleInContextMenu(true);
-    addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->ParamCfgDefTreeView->addAction(addThisOptionAction);
-
 }
 
 void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
@@ -261,6 +242,22 @@ void ParamConfigEditor::updateActionsState(const QModelIndexList &indexList)
     mToolBar->repaint();
 }
 
+void ParamConfigEditor::updateDefinitionActionsState(const QModelIndex &index)
+{
+    QModelIndex parentIndex =  ui->ParamCfgDefTreeView->model()->parent(index);
+    QVariant data = (parentIndex.row() < 0) ?  ui->ParamCfgDefTreeView->model()->data(index, Qt::CheckStateRole)
+                                            : ui->ParamCfgDefTreeView->model()->data(parentIndex, Qt::CheckStateRole);
+
+    ui->actionAdd_This_Parameter->setEnabled( Qt::CheckState(data.toInt()) == Qt::Unchecked );
+    ui->actionRemove_This_Parameter->setEnabled( Qt::CheckState(data.toInt()) == Qt::Checked );
+    ui->actionResize_Columns_To_Contents->setEnabled( true );
+
+    ui->actionAdd_This_Parameter->icon().pixmap( QSize(16, 16), ui->actionAdd_This_Parameter->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                                QIcon::Off);
+    ui->actionRemove_This_Parameter->icon().pixmap( QSize(16, 16), ui->actionRemove_This_Parameter ? QIcon::Selected : QIcon::Disabled,
+                                                                   QIcon::Off);
+}
+
 void ParamConfigEditor::showParameterContextMenu(const QPoint &pos)
 {
     QModelIndexList indexSelection = ui->ParamCfgTableView->selectionModel()->selectedIndexes();
@@ -339,8 +336,10 @@ void ParamConfigEditor::findAndSelectionParameterFromDefinition()
     if (ui->ParamCfgTableView->model()->rowCount() <= 0)
         return;
 
-    ui->actionRemove_This_Parameter->setEnabled(true);
     QModelIndex index = ui->ParamCfgDefTreeView->selectionModel()->currentIndex();
+
+    updateDefinitionActionsState(index);
+
     QModelIndex parentIndex =  ui->ParamCfgDefTreeView->model()->parent(index);
 
     QModelIndex idx = (parentIndex.row()<0) ? ui->ParamCfgDefTreeView->model()->index( index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER )
@@ -594,9 +593,9 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
 
     QString text =  mParameterTableModel->getParameterTableEntry(insertNumberIndex.row());
     if (replaceExistingEntry)
-        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been replaced").arg(text), LogMsgType::Info);
+        mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been replaced").arg(text), LogMsgType::Info);
     else
-        mOptionTokenizer->logger()->append(QString("Option entry '%1' has been added").arg(text), LogMsgType::Info);
+        mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been added").arg(text), LogMsgType::Info);
 
     int lastColumn = ui->ParamCfgTableView->model()->columnCount()-1;
     int lastRow = rowToBeAdded;
@@ -630,7 +629,7 @@ void ParamConfigEditor::showOptionDefinition(bool selectRow)
         return;
 
     disconnect(ui->ParamCfgDefTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &ParamConfigEditor::findAndSelectionParameterFromDefinition);
+               this, &ParamConfigEditor::findAndSelectionParameterFromDefinition);
 
     ui->ParamCfgDefSearch->clear();
 
@@ -980,7 +979,7 @@ void ParamConfigEditor::on_actionDelete_triggered()
             if (current != prev) {
                 QString text = mParameterTableModel->getParameterTableEntry(current);
                 ui->ParamCfgTableView->model()->removeRows( current, 1 );
-                mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
+                mOptionTokenizer->logger()->append(QString("Parameter entry '%1' has been deleted").arg(text), LogMsgType::Info);
                 prev = current;
             }
         }
