@@ -867,7 +867,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = (!groups.isEmpty()) ? groups.first()->location() : mRecent.path;
+    QString path = (!groups.isEmpty()) ? groups.first()->location() : currentPath();
     if (path.isEmpty()) path = ".";
 
     if (mRecent.editFileId >= 0) {
@@ -956,7 +956,7 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = currentPath();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -966,7 +966,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionOpenNew_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = currentPath();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -2063,6 +2063,15 @@ void MainWindow::restoreFromSettings()
 
 }
 
+QString MainWindow::currentPath()
+{
+    if (ui->mainTabs->currentWidget() != mWp) {
+        return QFileInfo(mRecent.path).filePath();
+    }
+    return Settings::settings()->toString(skDefaultWorkspace);
+
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     modeldialog::ModelDialog dialog(Settings::settings()->toString(skUserModelLibraryDir), this);
@@ -2076,7 +2085,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_actionGDX_Diff_triggered()
 {
-    QString path = QFileInfo(mRecent.path).filePath();
+    QString path = currentPath();
     actionGDX_Diff_triggered(path);
 }
 

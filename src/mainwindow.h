@@ -362,6 +362,7 @@ private:
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
     void updateAndSaveSettings();
     void restoreFromSettings();
+    QString currentPath();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
