@@ -36,7 +36,7 @@ void createVersion1Settings()
 
     // --------- create uistates.json in version 1 -----
 
-    QFile f1("./GAMS/uistates.json");
+    QFile f1("./GAMS/gams.json");
     if (f1.open(QFile::WriteOnly)) {
         f1.write(
 R"({
@@ -61,9 +61,9 @@ R"({
 
     }
 
-    // --------- create systemsettings1.json in version 1 -----
+    // --------- create gams1.json in version 1 -----
 
-    QFile f2("./GAMS/systemsettings1.json");
+    QFile f2("./GAMS/gams1.json");
     if (f2.open(QFile::WriteOnly)) {
         f2.write(
 R"({
@@ -146,24 +146,20 @@ R"({
     // group-level key renamed: miro/installationLocation -> miro/installationPath
 }
 
-void removeSettingFiles(int version) {
-    QFile f1("./GAMS/uistates.json");
+void removeSettingFiles() {
+    QFile f1("./GAMS/studio.json");
     if (f1.exists()) {
         Q_ASSERT(f1.remove());
     }
-    QFile f2(QString("./GAMS/systemsettings%1.json").arg(version));
+    QFile f2("./GAMS/usersettings.json");
     if (f2.exists()) {
         Q_ASSERT(f2.remove());
-    }
-    QFile f3(QString("./GAMS/usersettings%1.json").arg(version));
-    if (f3.exists()) {
-        Q_ASSERT(f3.remove());
     }
 }
 
 void TestSettings::testChangeValueAtRoot()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
     Settings::createSettings(false, true, false);
     // change value, save and release settings
     bool value = Settings::settings()->toBool(skSkipWelcomePage);
@@ -182,7 +178,7 @@ void TestSettings::testChangeValueAtRoot()
 
 void TestSettings::testChangeValueInGroup()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
     Settings::createSettings(false, true, false);
     // change value, save and release settings
     bool value = Settings::settings()->toBool(skViewHelp);
@@ -201,7 +197,7 @@ void TestSettings::testChangeValueInGroup()
 
 void TestSettings::testReadSettingsIgnore()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
     Settings::createSettings(false, true, false);
     // change value, save and release settings
     bool value = Settings::settings()->toBool(skViewHelp);
@@ -220,7 +216,7 @@ void TestSettings::testReadSettingsIgnore()
 
 void TestSettings::testReadSettingsIgnoreReset()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
     Settings::createSettings(false, true, false);
     // change value, save and release settings
     bool value = Settings::settings()->toBool(skViewHelp);
@@ -239,7 +235,7 @@ void TestSettings::testReadSettingsIgnoreReset()
 
 void TestSettings::testReadSettingsReset()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
     Settings::createSettings(false, true, false);
     // change value, save and release settings
     bool value = Settings::settings()->toBool(skViewHelp);
@@ -258,7 +254,7 @@ void TestSettings::testReadSettingsReset()
 
 void TestSettings::testWriteSettingsIgnore()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
 
     // open settings with ignore flag
     Settings::createSettings(true, false, false);
@@ -280,7 +276,7 @@ void TestSettings::testWriteSettingsIgnore()
 
 void TestSettings::testWriteSettingsIgnoreReset()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
 
     Settings::createSettings(true, true, false);
     // change value, save and release settings
@@ -301,7 +297,7 @@ void TestSettings::testWriteSettingsIgnoreReset()
 
 void TestSettings::testWriteSettingsReset()
 {
-    removeSettingFiles(Settings::version());
+    removeSettingFiles();
 
     Settings::createSettings(false, true, false);
 
@@ -322,8 +318,8 @@ void TestSettings::testWriteSettingsReset()
 
 void TestSettings::testIgnoreIfNoFilesExist()
 {
-    removeSettingFiles(Settings::version());
-    QFile file("./GAMS/uistates.json");
+    removeSettingFiles();
+    QFile file("./GAMS/gams.json");
     // try creating settings files with ignore flag
     Settings::createSettings(true, false, false);
     Settings::settings()->save();

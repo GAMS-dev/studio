@@ -20,7 +20,6 @@
 #include "solveroptiondefinitionmodel.h"
 #include "settings.h"
 #include <QDataStream>
-#include <QDataStream>
 
 namespace gams {
 namespace studio {

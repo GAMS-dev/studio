@@ -36,8 +36,9 @@ class MainWindow;
 
 enum SettingsKey {
     // REMARK: version is treated differently as it is passed to ALL versionized setting files
-    skVersionSettings,
-    skVersionStudio,
+    skVersionSysSettings,
+    skVersionUserSettings,
+    skVersionGamsStudio,
 
     // window settings
     skWinSize,
@@ -79,7 +80,7 @@ enum SettingsKey {
     skHistorySize,
 
     // editor settings page
-    skEdColorSchemeIndex,
+    skEdAppearance,
     skEdFontFamily,
     skEdFontSize,
     skEdShowLineNr,
@@ -111,16 +112,26 @@ enum SettingsKey {
 class Settings
 {
 public:
-    enum Scope {scAll, scUi, scSys, scUser};
+    enum Scope {scSys,      // System setting (shared with all versions)
+                scSysX,     // System setting (for current version)
+                scUser,     // User settings (shared with all versions)
+                scUserX,    // User settings (for current version)
+               };
+
+    struct ScopePair {
+        ScopePair(Scope _base, Scope _versionized) : base(_base), versionized(_versionized) {}
+        Scope base;
+        Scope versionized;
+    };
 
 public:
     static void createSettings(bool ignore, bool reset, bool resetView);
     static Settings *settings();
     static void releaseSettings();
-    static int version();
+    static int version(Scope scope);
     static void useRelocatedPathForTests();
 
-    void load(Scope kind);
+    void load(Scope scopeFilter);
     void save();
     void block() { mBlock = true; }
     void unblock() { mBlock = false; }
@@ -132,8 +143,8 @@ public:
     QPoint toPoint(SettingsKey key) const;
     QString toString(SettingsKey key) const { return value(key).toString(); }
     QByteArray toByteArray(SettingsKey key) const;
-    QJsonObject toJsonObject(SettingsKey key) const;
-    QJsonArray toJsonArray(SettingsKey key) const;
+    QVariantMap toMap(SettingsKey key) const;
+    QVariantList toList(SettingsKey key) const;
     void setBool(SettingsKey key, bool value) { setValue(key, value);}
     void setInt(SettingsKey key, int value) { setValue(key, value);}
     void setDouble(SettingsKey key, double value) { setValue(key, value);}
@@ -141,8 +152,8 @@ public:
     void setPoint(SettingsKey key, const QPoint &value);
     void setString(SettingsKey key, QString value) { setValue(key, value);}
     void setByteArray(SettingsKey key, QByteArray value) { setValue(key, value);}
-    bool setJsonObject(SettingsKey key, QJsonObject value);
-    bool setJsonArray(SettingsKey key, QJsonArray value);
+    bool setMap(SettingsKey key, QVariantMap value);
+    bool setList(SettingsKey key, QVariantList value);
 
     void exportSettings(const QString &settingsPath);
     void importSettings(const QString &settingsPath);
@@ -152,21 +163,19 @@ public:
     void reload();
     void resetViewSettings();
 
-    void setAppearance(int appearance = -1);
-    void changeAppearance(int appearance);
 private:
-    typedef QMap<QString, QVariant> Data;
+    typedef QVariantMap Data;
     struct KeyData {
         KeyData() {}
         KeyData(Settings::Scope _scope, QStringList _keys, QVariant _initial)
             : scope(_scope), keys(_keys), initial(_initial) {}
-        Settings::Scope scope = scAll;
+        Settings::Scope scope;
         QStringList keys;
         QVariant initial;
     };
 
     static Settings *mInstance;
-    static const int mVersion;
+    static const QHash<Scope, int> mVersion;
     static bool mUseRelocatedTestDir;
     bool mCanWrite = false;
     bool mCanRead = false;
@@ -184,15 +193,14 @@ private:
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
     bool canWrite() {return mCanWrite && !mBlock; }
 
-    int checkVersion();
+    int usableVersion(ScopePair scopes);
+    void loadVersionData(ScopePair scopes);
     QString settingsPath();
-    bool createSettingFiles();
-    void reset(Scope scope);
-    void initDefault(Scope scope);
+    void initDefault();
+    void addVersionInfo(Scope scope, QVariantMap &map);
     void saveFile(Scope scope);
-    QVariant read(SettingsKey key, Scope scope = scAll);
-
-    void initSettingsFiles(int version);
+    void loadMap(Scope scope, QVariantMap map);
+    QVariant read(SettingsKey key);
 
     QVariant value(SettingsKey key) const;
     bool setValue(SettingsKey key, QVariant value);
@@ -201,7 +209,8 @@ private:
     QVariant directValue(const Scope &scope, const QString &group, const QString &key) const;
     bool setDirectValue(const Scope &scope, const QString &key, QVariant value);
     bool setDirectValue(const Scope &scope, const QString &group, const QString &key, QVariant value);
-    bool addToJsonObject(QJsonObject &group, const QString &key, QVariant value);
+    bool addToMap(QVariantMap &group, const QString &key, QVariant value);
+    QString keyText(SettingsKey key);
 
     bool isValidVersion(QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);

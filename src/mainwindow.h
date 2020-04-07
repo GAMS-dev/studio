@@ -143,8 +143,8 @@ public:
     void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
-    bool readTabs(const QJsonObject &json);
-    void writeTabs(QJsonObject &json) const;
+    bool readTabs(const QVariantMap &tabData);
+    void writeTabs(QVariantMap &tabData) const;
     void resetViews();
     void resizeOptionEditor(const QSize &size);
     void updateRunState();

@@ -94,7 +94,6 @@ SOURCES += \
     editors/systemlogedit.cpp \
     editors/textview.cpp \
     editors/textviewedit.cpp \
-    editors/viewhelper.cpp \
     encodingsdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
@@ -190,7 +189,6 @@ SOURCES += \
     search/searchworker.cpp \
     settings.cpp \
     settingsdialog.cpp \
-    settingslocator.cpp \
     statuswidgets.cpp \
     support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
@@ -209,6 +207,7 @@ SOURCES += \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
     tabdialog.cpp \
+    viewhelper.cpp \
     welcomepage.cpp \
     wplabel.cpp
 
@@ -234,7 +233,6 @@ HEADERS += \
     editors/systemlogedit.h \
     editors/textview.h \
     editors/textviewedit.h \
-    editors/viewhelper.h \
     encodingsdialog.h \
     exception.h \
     file.h \
@@ -330,7 +328,6 @@ HEADERS += \
     search/searchworker.h \
     settings.h \
     settingsdialog.h \
-    settingslocator.h \
     statuswidgets.h \
     support/aboutgamsdialog.h       \
     support/checkforupdatewrapper.h \
@@ -352,6 +349,7 @@ HEADERS += \
     syntax/textmarkrepo.h \
     tabdialog.h \
     version.h \
+    viewhelper.h \
     welcomepage.h \
     wplabel.h
 

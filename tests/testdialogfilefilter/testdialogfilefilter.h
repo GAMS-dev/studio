@@ -21,7 +21,7 @@
 #define TESTDIALOGFILEFILTER_H
 
 #include <QtTest/QTest>
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 
 using namespace gams::studio;
 

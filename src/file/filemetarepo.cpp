@@ -24,7 +24,7 @@
 #include "settings.h"
 #include "exception.h"
 #include "logger.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include <QFileInfo>
 
 namespace gams {

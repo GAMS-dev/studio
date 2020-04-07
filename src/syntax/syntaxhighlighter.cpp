@@ -27,7 +27,6 @@
 #include "file.h"
 #include "common.h"
 #include "settings.h"
-#include "settingslocator.h"
 
 namespace gams {
 namespace studio {

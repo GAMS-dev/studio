@@ -26,7 +26,7 @@
 #include "syntax/textmarkrepo.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "exception.h"
 #include "file.h"
 #include "logger.h"

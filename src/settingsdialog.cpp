@@ -28,6 +28,7 @@
 #include "ui_settingsdialog.h"
 #include "miro/mirocommon.h"
 #include "schemewidget.h"
+#include "viewhelper.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -99,7 +100,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 
 void SettingsDialog::loadSettings()
 {
-    mSettings->load(Settings::scUser);
+    mSettings->load(Settings::scUserX);
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
@@ -111,7 +112,7 @@ void SettingsDialog::loadSettings()
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
 
     // editor tab page
-    ui->combo_appearance->setCurrentIndex(mSettings->toInt(skEdColorSchemeIndex));
+    ui->combo_appearance->setCurrentIndex(mSettings->toInt(skEdAppearance));
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
     ui->sb_fontsize->setValue(mSettings->toInt(skEdFontSize));
     ui->cb_showlinenr->setChecked(mSettings->toBool(skEdShowLineNr));
@@ -193,7 +194,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
-    mSettings->setInt(skEdColorSchemeIndex, ui->combo_appearance->currentIndex());
+    mSettings->setInt(skEdAppearance, ui->combo_appearance->currentIndex());
     mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());
     mSettings->setInt(skEdFontSize, ui->sb_fontsize->value());
     mSettings->setBool(skEdShowLineNr, ui->cb_showlinenr->isChecked());
@@ -267,7 +268,7 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
 #ifndef __APPLE__
-    mSettings->changeAppearance(index);
+    ViewHelper::changeAppearance(index);
 #endif
 }
 

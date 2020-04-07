@@ -110,8 +110,8 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    void read(const QJsonObject &json);
-    void write(QJsonObject &json) const;
+    void read(const QVariantList &data);
+    void write(QVariantList &projects) const;
 
     ProjectGroupNode *createGroup(QString name, QString path, QString runFileName, ProjectGroupNode *_parent = nullptr);
     ProjectFileNode *findOrCreateFileNode(QString location, ProjectGroupNode *fileGroup = nullptr, FileType *knownType = nullptr
@@ -158,8 +158,8 @@ public slots:
 private:
     friend class ProjectRunGroupNode;
 
-    void writeGroup(const ProjectGroupNode* group, QJsonArray &jsonArray) const;
-    void readGroup(ProjectGroupNode* group, const QJsonArray &jsonArray);
+    void writeGroup(const ProjectGroupNode* group, QVariantList &childList) const;
+    void readGroup(ProjectGroupNode* group, const QVariantList &children);
     inline void addToIndex(ProjectAbstractNode* node) {
         mNodes.insert(node->id(), node);
     }

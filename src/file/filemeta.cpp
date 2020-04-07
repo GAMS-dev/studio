@@ -26,7 +26,7 @@
 #include "logger.h"
 #include "settings.h"
 #include "commonpaths.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "support/solverconfiginfo.h"

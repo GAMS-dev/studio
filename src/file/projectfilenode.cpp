@@ -24,7 +24,7 @@
 #include "syntax/textmarkrepo.h"
 #include "filemeta.h"
 #include "fileicon.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "editors/codeedit.h"
 #include "logger.h"
 #include <QScrollBar>

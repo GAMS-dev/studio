@@ -16,8 +16,10 @@
  *
  */
 #include "viewhelper.h"
-#include "abstractedit.h"
+#include "editors/abstractedit.h"
 #include "file/filemeta.h"
+#include "colors/palettemanager.h"
+#include "settings.h"
 
 #include <QVariant>
 
@@ -83,6 +85,50 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
     } else if (TextView* tv = toTextView(widget)) {
         if (tv != widget) tv->edit()->setProperty("location", location);
     }
+}
+
+///
+/// \brief ViewHelper::setAppearance sets and saves the appearance
+/// \param appearance
+///
+void ViewHelper::setAppearance(int appearance)
+{
+    if (appearance == -1)
+        appearance = Settings::settings()->toInt(skEdAppearance);
+
+    Settings::settings()->setInt(skEdAppearance, appearance);
+    changeAppearance(appearance);
+}
+
+///
+/// \brief ViewHelper::changeAppearance sets the appearance without saving it into settings.
+/// Useful for previews. ! THIS CHANGE IS NOT PERSISTENT !
+/// \param appearance
+/// \return
+///
+void ViewHelper::changeAppearance(int appearance)
+{
+    int pickedTheme = appearance;
+    bool canFollowOS = false;
+#ifdef _WIN32
+    canFollowOS = true; // deactivate follow OS option for linux
+#endif
+
+    if (canFollowOS && pickedTheme == 0) { // do OS specific things
+#ifdef _WIN32
+        QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
+        pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
+#endif
+    } else if (canFollowOS) {
+        pickedTheme--; // deduct "Follow OS" option
+    }
+
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+
+#ifndef __APPLE__
+    PaletteManager::instance()->setPalette(pickedTheme);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
+#endif
 }
 
 } // namespace studio

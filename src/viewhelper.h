@@ -19,9 +19,9 @@
 #define VIEWHELPER_H
 
 #include "common.h"
-#include "codeedit.h"
-#include "processlogedit.h"
-#include "textview.h"
+#include "editors/codeedit.h"
+#include "editors/processlogedit.h"
+#include "editors/textview.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 #include "option/solveroptionwidget.h"
@@ -128,6 +128,8 @@ public:
                << "Text files (*.txt)"
                << "All files (*.*)";
     }
+    static void setAppearance(int appearance = -1);
+    static void changeAppearance(int appearance);
 
 };
 
