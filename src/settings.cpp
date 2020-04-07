@@ -40,7 +40,7 @@ namespace studio {
 
 // Increase mVersion only on MAJOR changes (change/remove existing field or add to array-element)
 const QHash<Settings::Scope, int> Settings::mVersion = {{Settings::scSysX, 1},
-                                                        {Settings::scUserX ,1}};
+                                                        {Settings::scUserX ,2}};
 Settings *Settings::mInstance = nullptr;
 bool Settings::mUseRelocatedTestDir = false;
 
