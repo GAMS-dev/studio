@@ -37,6 +37,7 @@ ConfigParamTableModel::ConfigParamTableModel(QList<ParamConfigItem *> itemList, 
         QList<OptionErrorType> errorType = mOptionTokenizer->validate(item);
         item->error =  (errorType.isEmpty() ? OptionErrorType::No_Error : errorType.at(0));
     }
+    updateCheckState();
 }
 
 QVariant ConfigParamTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -614,14 +615,16 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
         idx = index(row++, idx.column());
         if (roles.first()==Qt::EditRole) {
               QList<OptionErrorType> errorList = mOptionTokenizer->validate(mOptionItem.at(idx.row()));
-              if (errorList.isEmpty())
-                  mOptionItem[idx.row()]->error = OptionErrorType::No_Error;
-              else
-                  mOptionItem[idx.row()]->error = errorList.at(0);
-              if (errorList.size()<=0)
-                   setHeaderData( idx.row(), Qt::Vertical,
-                          Qt::CheckState(Qt::Unchecked),
-                          Qt::CheckStateRole );
+              mOptionItem[idx.row()]->error = (errorList.isEmpty()) ? OptionErrorType::No_Error : errorList.at(0);
+              mOptionItem.at(idx.row())->disabled = (mOptionItem[idx.row()]->error == OptionErrorType::Deprecated_Option);
+              if (mOptionItem.at(idx.row())->error==OptionErrorType::Deprecated_Option)
+                  setHeaderData( idx.row(), Qt::Vertical,
+                                 Qt::CheckState(Qt::PartiallyChecked),
+                                 Qt::CheckStateRole );
+              else if (mOptionItem.at(idx.row())->error==OptionErrorType::No_Error)
+                      setHeaderData( idx.row(), Qt::Vertical,
+                                     Qt::CheckState(Qt::Unchecked),
+                                     Qt::CheckStateRole );
                else
                    setHeaderData( idx.row(), Qt::Vertical,
                       Qt::CheckState(Qt::Checked),
@@ -678,7 +681,7 @@ void ConfigParamTableModel::updateCheckState()
 {
     for(int i = 0; i<mOptionItem.size(); ++i) {
         QVariant value =  QVariant(Qt::Unchecked);
-        if (mOptionItem.at(i)->disabled)
+        if (mOptionItem.at(i)->disabled || mOptionItem.at(i)->error == OptionErrorType::Deprecated_Option)
             value = QVariant(Qt::PartiallyChecked);
         else if (mOptionItem.at(i)->error == OptionErrorType::No_Error)
                 value = QVariant(Qt::Unchecked);
