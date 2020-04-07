@@ -240,7 +240,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Themes
 #ifdef __APPLE__
-    settings->setAppearance(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
+    ViewHelper::setAppearance(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
 #else
     // this needs to be re-called for studio startup, as the call when loading settings is too early
     ViewHelper::setAppearance();
