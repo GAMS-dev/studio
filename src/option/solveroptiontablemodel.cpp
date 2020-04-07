@@ -201,8 +201,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::TextColorRole: {
         if (mOptionItem.at(row)->disabled) {
-            // TODO(RG): This and all following colors need to be changed to qpalette something
-            return QVariant::fromValue(QColor(Qt::gray));
+            return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
         } else {
             switch(mOptionItem.at(row)->error) {
             case UserDefined_Error:
@@ -213,12 +212,12 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             case Deprecated_Option:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
                     return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
-                else return QVariant::fromValue(QColor(Qt::gray));
+                else return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
             case No_Error:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
                     return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
                 else if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
-                    return QVariant::fromValue(QColor(Qt::gray));
+                    return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
                 else
                     return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             default:
