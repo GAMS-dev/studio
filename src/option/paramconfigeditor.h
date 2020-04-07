@@ -70,7 +70,9 @@ public slots:
 private slots:
     void addActions();
     void init(const QList<ConfigItem *> &initParams);
+
     void initActions();
+    void updateActionsState(const QModelIndex &index);
 
     void findAndSelectionParameterFromDefinition();
     void selectAnOption();
