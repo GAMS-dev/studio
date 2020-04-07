@@ -247,6 +247,8 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
+
+    updateRunState();
 }
 
 
