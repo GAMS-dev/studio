@@ -181,13 +181,13 @@ void ParamConfigEditor::initActions()
     ui->actionDelete->setEnabled(false);
     ui->actionMoveUp->setEnabled(false);
     ui->actionMoveDown->setEnabled(false);
-    ui->actionSelectAll->setEnabled(true);
+    ui->actionSelectAll->setEnabled(false);
     ui->actionShow_Option_Definition->setEnabled(false);
     ui->actionShowRecurrence->setEnabled(false);
 
     ui->actionAdd_This_Parameter->setEnabled(false);
     ui->actionRemove_This_Parameter->setEnabled(false);
-    ui->actionResize_Columns_To_Contents->setEnabled(true);
+    ui->actionResize_Columns_To_Contents->setEnabled(false);
 
     ui->actionResize_Columns_To_Contents->setEnabled(false);
     ui->actionInsert->icon().pixmap( QSize(16, 16), QIcon::Selected, QIcon::Off);
@@ -237,9 +237,28 @@ void ParamConfigEditor::updateActionsState(const QModelIndex &index)
     mToolBar->repaint();
 }
 
-void ParamConfigEditor::currentDefinitionSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
+void ParamConfigEditor::updateActionsState(const QModelIndexList &indexList)
 {
-    qDebug() << "optdef " << current.row() << ":" << current.column();
+    ui->actionInsert->setEnabled( isThereARow() );
+    ui->actionDelete->setEnabled( indexList.first().row() < mParameterTableModel->rowCount() );
+
+    ui->actionMoveUp->setEnabled( indexList.first().row() > 0 );
+    ui->actionMoveDown->setEnabled( indexList.last().row() < mParameterTableModel->rowCount()-1 );
+
+    ui->actionSelectAll->setEnabled( isThereARow( ));
+    ui->actionShow_Option_Definition->setEnabled( indexList.first().row() < mParameterTableModel->rowCount() );
+    ui->actionResize_Columns_To_Contents->setEnabled( indexList.first().row() < mParameterTableModel->rowCount() );
+    ui->actionShowRecurrence->setEnabled( indexList.first().row() < mParameterTableModel->rowCount()
+                                          && getRecurrentOption(indexList.first()).size() >0 );
+    ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                    QIcon::Off);
+    ui->actionDelete->icon().pixmap( QSize(16, 16), ui->actionDelete->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                    QIcon::Off);
+    ui->actionMoveUp->icon().pixmap( QSize(16, 16), ui->actionMoveUp->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                    QIcon::Off);
+    ui->actionMoveUp->icon().pixmap( QSize(16, 16), ui->actionMoveDown->isEnabled() ? QIcon::Selected : QIcon::Disabled,
+                                                    QIcon::Off);
+    mToolBar->repaint();
 }
 
 void ParamConfigEditor::showParameterContextMenu(const QPoint &pos)
@@ -317,7 +336,6 @@ void ParamConfigEditor::on_selectRow(int logicalIndex)
 
 void ParamConfigEditor::findAndSelectionParameterFromDefinition()
 {
-    qDebug() << "findAndSelection...";
     if (ui->ParamCfgTableView->model()->rowCount() <= 0)
         return;
 
@@ -884,7 +902,6 @@ bool ParamConfigEditor::isEverySelectionARow() const
 {
     QModelIndexList selection = ui->ParamCfgTableView->selectionModel()->selectedRows();
     QModelIndexList indexSelection = ui->ParamCfgTableView->selectionModel()->selectedIndexes();
-
     return ((selection.count() > 0) && (indexSelection.count() % ui->ParamCfgTableView->model()->columnCount() == 0));
 
 }
@@ -993,11 +1010,8 @@ void ParamConfigEditor::on_actionMoveUp_triggered()
                                                          QModelIndex(), idx.row()-1);
     }
 
-    QModelIndexList rowIndices = ui->ParamCfgTableView->selectionModel()->selectedRows();
-    updateActionsState(rowIndices.first());
-//    ui->ParamCfgTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
-//                                                 QModelIndex(), index.row()-1);
     emit modificationChanged(true);
+    updateActionsState( ui->ParamCfgTableView->selectionModel()->selectedRows() );
 }
 
 void ParamConfigEditor::on_actionMoveDown_triggered()
@@ -1013,7 +1027,7 @@ void ParamConfigEditor::on_actionMoveDown_triggered()
     QModelIndexList selection = ui->ParamCfgTableView->selectionModel()->selectedRows();
     QModelIndexList idxSelection = QModelIndexList(selection);
     std::stable_sort(idxSelection.begin(), idxSelection.end(), [](QModelIndex a, QModelIndex b) { return a.row() < b.row(); });
-    if  (idxSelection.first().row() <= 0)
+    if  (idxSelection.first().row() >= mParameterTableModel->rowCount()-1)
         return;
 
     for(int i=0; i<idxSelection.size(); i++) {
@@ -1021,11 +1035,8 @@ void ParamConfigEditor::on_actionMoveDown_triggered()
         mParameterTableModel->moveRows(QModelIndex(), idx.row(), 1,
                                     QModelIndex(), idx.row()+2);
     }
-    QModelIndexList rowIndices = ui->ParamCfgTableView->selectionModel()->selectedRows();
-    updateActionsState(rowIndices.first());
-//    ui->ParamCfgTableView->model()->moveRows(QModelIndex(), index.row(), selection.count(),
-//                                                 QModelIndex(), index.row()-1);
     emit modificationChanged(true);
+    updateActionsState( ui->ParamCfgTableView->selectionModel()->selectedRows() );
 }
 
 void ParamConfigEditor::on_actionSelectAll_triggered()

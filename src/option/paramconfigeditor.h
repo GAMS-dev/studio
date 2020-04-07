@@ -54,7 +54,6 @@ signals:
 
 public slots:
     void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
-    void currentDefinitionSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
     void showParameterContextMenu(const QPoint &pos);
     void showDefinitionContextMenu(const QPoint &pos);
 
@@ -73,6 +72,7 @@ private slots:
 
     void initActions();
     void updateActionsState(const QModelIndex &index);
+    void updateActionsState(const QModelIndexList &indexList);
 
     void findAndSelectionParameterFromDefinition();
     void selectAnOption();

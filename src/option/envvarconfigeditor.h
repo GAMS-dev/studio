@@ -58,7 +58,10 @@ public slots:
 
 private slots:
     void init(const QList<EnvVarConfigItem *> &initItems);
+
     void initActions();
+    void updateActionsState(const QModelIndex &index);
+    void updateActionsState(const QModelIndexList &indexList);
 
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
