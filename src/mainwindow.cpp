@@ -1223,7 +1223,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setEncoding(node->file()->codecMib());
         mRecent.setEditor(editWidget, this);
         mRecent.group = mProjectRepo.asGroup(ViewHelper::groupId(editWidget));
-        mRecent.path = node->location();
+        mRecent.path = QFileInfo(node->location()).path();
 
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
             mStatusWidgets->setLineCount(edit->blockCount());
@@ -1725,8 +1725,7 @@ void MainWindow::on_actionUpdate_triggered()
 
 void MainWindow::on_actionTerminal_triggered()
 {
-    auto workingDir = mRecent.group ? mRecent.group->location() :
-                                      CommonPaths::defaultWorkingDir();
+    auto workingDir = currentPath();
     actionTerminalTriggered(workingDir);
 }
 
@@ -2066,7 +2065,7 @@ void MainWindow::restoreFromSettings()
 QString MainWindow::currentPath()
 {
     if (ui->mainTabs->currentWidget() != mWp) {
-        return QFileInfo(mRecent.path).filePath();
+        return mRecent.path;
     }
     return Settings::settings()->toString(skDefaultWorkspace);
 
@@ -2994,7 +2993,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         changeToLog(fileNode, false, false);
         mRecent.setEditor(tabWidget->currentWidget(), this);
         mRecent.editFileId = fileMeta->id();
-        mRecent.path = fileMeta->location();
+        mRecent.path = QFileInfo(fileMeta->location()).path();
         mRecent.group = runGroup;
     }
     addToOpenedFiles(fileMeta->location());
