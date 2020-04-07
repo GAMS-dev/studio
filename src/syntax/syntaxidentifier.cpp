@@ -343,37 +343,36 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
     if (entryKind == SyntaxKind::AssignmentLabel && index != 0) {
         return SyntaxBlock(this);
     }
+    int nesting = 1; // (JM) Best, if we can get nesting from prev line
 
-    // get delimiters
-    QString delim("\"\'");
-    QString special("/, .:*(\"\')");
+    QString quote("\"\'");
+    QString extender(".:*");
+    QString ender("/,");
+    QString pPairs("()");
     int end = start;
-    int pos = start;
-    while (pos < line.length()) {
-        end = pos;
-        // we are at the first non-white-char
-        if (int quoteKind = delim.indexOf(line.at(pos))+1) {
-            // find matching quote
-            end = line.indexOf(quoteKind<3 ? delim.at(quoteKind-1) : ')', pos+1);
-            if (end < 0)
-                return SyntaxBlock(this, start, pos+1, SyntaxShift::in, true);
-            pos = end+1;
+    bool extended = false;
+    for (int pos = start; pos < line.length(); ++pos) {
+        if (extender.contains(line.at(pos))) {
+            while (isWhitechar(line, pos+1)) ++pos;
+            extended = true;
         } else {
-            while (++pos < line.length()) {
-                if (special.contains(line.at(pos)))
-                    break;
+            if (quote.contains(line.at(pos))) {
+                pos = endOfQuotes(line, pos);
+                extended = false;
+                if (pos < start) return SyntaxBlock(this);
+            } else if (line.at(pos) == '(') {
+                pos = endOfParentheses(line, pos, pPairs, nesting);
+                if (pos <= start) pos = line.length()-1; // wrong_nesting
+            } else if (isWhitechar(line, pos)) {
+                while (isWhitechar(line, pos+1)) ++pos;
+                if (!extended && (pos+1 < line.length()) && !extender.contains(line.at(pos+1)))
+                    return SyntaxBlock(this, start, pos, SyntaxShift::shift);
+            } else if (ender.contains(line.at(pos))) {
+                return SyntaxBlock(this, start, pos, SyntaxShift::shift);
             }
+            extended = false;
         }
-        end = pos;
-        // if no dot or colon follows, finish
-        while (isWhitechar(line,pos)) ++pos;
-        if (pos >= line.length()) break;
-        if (special.indexOf(line.at(pos)) < 3) break;
-        if (special.indexOf(line.at(pos)) < 7) ++pos;
-        else if (end != pos && delim.contains(line.at(pos))) break;
-
-        while (isWhitechar(line,pos)) ++pos;
-        end = pos;
+        end = pos+1;
     }
 
     if (end > start) {

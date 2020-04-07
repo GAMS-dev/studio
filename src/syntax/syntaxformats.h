@@ -180,6 +180,8 @@ protected:
         return prev;
     }
 
+    int endOfQuotes(const QString &line, const int &start);
+    int endOfParentheses(const QString &line, const int &start, const QString &validPairs, int &nest);
 
     inline bool isKeywordChar(const QChar& ch) {
         return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
@@ -194,6 +196,7 @@ protected:
         const QChar& ch(line.at(index));
         return (ch.category()==QChar::Separator_Space || ch == '\t' || ch == '\n' || ch == '\r');
     }
+
 protected:
     SyntaxKind mKind;
     Scheme::ColorSlot mColorSlot = Scheme::ColorSlot::invalid;

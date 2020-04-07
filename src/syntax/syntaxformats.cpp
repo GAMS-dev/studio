@@ -73,6 +73,34 @@ SyntaxKind SyntaxAbstract::intToState(int intState)
         return SyntaxKind::Standard;
 }
 
+int SyntaxAbstract::endOfQuotes(const QString &line, const int &start)
+{
+    if (start > line.size()) return start;
+    QChar ch = line.at(start);
+    QString bounds("\"\'");
+    if (bounds.indexOf(ch) < 0) return start; // no start character
+    for (int i = start+1; i < line.length(); ++i) {
+        if (line.at(i) == ch) return i;
+    }
+    return line.length();
+}
+
+int SyntaxAbstract::endOfParentheses(const QString &line, const int &start, const QString &validPairs, int &nest)
+{
+    if (start > line.size()) return start;
+    QChar ch = line.at(start);
+    if (validPairs.indexOf(ch) % 2) return start; // no start character
+    for (int i = start+1; i < line.length(); ++i) {
+        if (!validPairs.contains(line.at(i))) continue;
+        if (validPairs.indexOf(line.at(i)) % 2)
+            --nest;
+        else
+            ++nest;
+        if (!nest) return i;
+    }
+    return line.length();
+}
+
 
 SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
 {
