@@ -64,7 +64,6 @@ void NestedHeaderView::reset()
                 for (QString label : labelsInRows.at(i))
                     sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.width(label)));
             }
-            //TODO (CW) The size is not completely correct. We need to adjust the width using the styles margins/paddings, etc
             for (int i=0; i<dimension; i++)
                 sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
         } else {
