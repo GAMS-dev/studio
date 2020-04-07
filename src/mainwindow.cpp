@@ -1840,6 +1840,7 @@ void MainWindow::showWelcomePage()
 {
     ui->mainTabs->insertTab(0, mWp, QString("Welcome")); // always first position
     ui->mainTabs->setCurrentIndex(0); // go to welcome page
+
 }
 
 bool MainWindow::isActiveTabRunnable()
@@ -3357,6 +3358,7 @@ bool MainWindow::readTabs(const QJsonObject &json)
             }
         }
     }
+    if (ui->mainTabs->currentWidget() == mWp) mRecent.reset();
     QTimer::singleShot(0, this, SLOT(initAutoSave()));
     return true;
 }
