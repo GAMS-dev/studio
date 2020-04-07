@@ -182,7 +182,7 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     connect(mEnvVarTableModel, &QAbstractTableModel::dataChanged, this, &EnvVarConfigEditor::on_dataItemChanged, Qt::UniqueConnection);
     connect(mEnvVarTableModel, &QAbstractTableModel::dataChanged, mEnvVarTableModel, &EnvVarTableModel::on_updateEnvVarItem, Qt::UniqueConnection);
-//    connect(mEnvVarTableModel, &EnvVarTableModel::configParamItemRemoved, mEnvVarTableModel, &EnvVarTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
+    connect(mEnvVarTableModel, &EnvVarTableModel::envVarItemRemoved, mEnvVarTableModel, &EnvVarTableModel::on_removeEnvVarItem, Qt::UniqueConnection);
 
     connect(this, &EnvVarConfigEditor::modificationChanged, this, &EnvVarConfigEditor::setModified, Qt::UniqueConnection);
 
@@ -238,8 +238,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-// TODO (JP)
-//    disconnect(mEnvVarTableModel, &QAbstractTableModel::dataChanged, mEnvVarTableModel, &EnvVarTableModel::on_updateConfigParamItem);
+    disconnect(mEnvVarTableModel, &QAbstractTableModel::dataChanged, mEnvVarTableModel, &EnvVarTableModel::on_updateEnvVarItem);
     int rowToBeInserted = -1;
     if (isThereARowSelection()) {
         QList<int> rows;
@@ -260,7 +259,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     QModelIndex maxVersionIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_MIN_VERSION);
     QModelIndex pathVarIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PATH_VAR);
     ui->EnvVarConfigTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
-                                                    Qt::CheckState(Qt::Unchecked),
+                                                    Qt::CheckState(Qt::Checked),
                                                     Qt::CheckStateRole );
 
     ui->EnvVarConfigTableView->model()->setData( insertKeyIndex, "", Qt::EditRole);
@@ -270,8 +269,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     ui->EnvVarConfigTableView->model()->setData( pathVarIndex, "", Qt::EditRole);
     ui->EnvVarConfigTableView->scrollTo(insertKeyIndex, QAbstractItemView::EnsureVisible);
 
-    //    connect(mEnvVarTableModel, &QAbstractTableModel::dataChanged,
-//            mEnvVarTableModel, &EnvVarTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
+    connect(mEnvVarTableModel, &QAbstractTableModel::dataChanged, mEnvVarTableModel, &EnvVarTableModel::on_updateEnvVarItem, Qt::UniqueConnection);
 
     emit modificationChanged(true);
 
@@ -279,7 +277,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     ui->EnvVarConfigTableView->selectRow(rowToBeInserted);
 
     QModelIndex index = mEnvVarTableModel->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_KEY);
-    ui->EnvVarConfigTableView->edit( mEnvVarTableModel->index(rowToBeInserted, EnvVarTableModel::COLUMN_PARAM_KEY) );
+    ui->EnvVarConfigTableView->edit( index );
     updateActionsState(index);
 }
 

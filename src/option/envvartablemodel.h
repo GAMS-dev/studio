@@ -56,14 +56,18 @@ public:
 
     QList<EnvVarConfigItem *> envVarConfigItems();
 
+signals:
+    void envVarItemRemoved();
+
 public slots:
     void on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeEnvVarItem();
 
 private slots:
     void setRowCount(int rows);
+    void updateCheckState();
 
-    bool validate(EnvVarConfigItem* item) const;
+    bool isThereAnError(EnvVarConfigItem* item) const;
     bool isConformatVersion(const QString &version) const;
 
 private:

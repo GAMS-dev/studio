@@ -344,7 +344,7 @@ bool ConfigParamTableModel::removeRows(int row, int count, const QModelIndex &pa
         mOptionItem.removeAt(i);
     }
     endRemoveRows();
-    emit  configParamItemRemoved();
+    emit configParamItemRemoved();
     return true;
 }
 

@@ -30,6 +30,7 @@ EnvVarTableModel::EnvVarTableModel(QList<EnvVarConfigItem *> itemList, QObject *
     QAbstractTableModel(parent), mEnvVarItem(itemList)
 {
     mHeader << "Name"  << "Value" << "minVersion" << "maxVersion" << "pathVariable";
+    updateCheckState();
 }
 
 QVariant EnvVarTableModel::headerData(int index, Qt::Orientation orientation, int role) const
@@ -225,6 +226,7 @@ bool EnvVarTableModel::removeRows(int row, int count, const QModelIndex &parent)
         mEnvVarItem.removeAt(i);
     }
     endRemoveRows();
+    emit envVarItemRemoved();
     return true;
 }
 
@@ -251,7 +253,7 @@ bool EnvVarTableModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
                mEnvVarItem.insert(destinationChild+i, item);
            }
     }
-//    updateCheckState();
+    updateCheckState();
     endMoveRows();
     return true;
 }
@@ -268,14 +270,15 @@ void EnvVarTableModel::on_updateEnvVarItem(const QModelIndex &topLeft, const QMo
     while(row <= bottomRight.row()) {
         idx = index(row++, idx.column());
         if (roles.first()==Qt::EditRole) {
-              if (validate( mEnvVarItem.at(idx.row())) )
+              if (isThereAnError( mEnvVarItem.at(idx.row())) ) {
                    setHeaderData( idx.row(), Qt::Vertical,
-                          Qt::CheckState(Qt::Unchecked),
+                          Qt::CheckState(Qt::Checked),
                           Qt::CheckStateRole );
-               else
+               } else {
                    setHeaderData( idx.row(), Qt::Vertical,
-                      Qt::CheckState(Qt::Checked),
+                      Qt::CheckState(Qt::Unchecked),
                       Qt::CheckStateRole );
+              }
        }
     }
 }
@@ -287,13 +290,13 @@ void EnvVarTableModel::on_removeEnvVarItem()
     setRowCount(mEnvVarItem.size());
 
     for(int i = 0; i<mEnvVarItem.size(); ++i) {
-        if (validate(mEnvVarItem.at(i))) {
+        if (isThereAnError(mEnvVarItem.at(i))) {
             setHeaderData( i, Qt::Vertical,
-                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckState(Qt::Checked),
                               Qt::CheckStateRole );
          } else {
                 setHeaderData( i, Qt::Vertical,
-                          Qt::CheckState(Qt::Checked),
+                          Qt::CheckState(Qt::Unchecked),
                           Qt::CheckStateRole );
          }
     }
@@ -312,14 +315,33 @@ void EnvVarTableModel::setRowCount(int rows)
         removeRows(qMax(rows, 0), rc - rows);
 }
 
-bool EnvVarTableModel::validate(EnvVarConfigItem* item) const
+void EnvVarTableModel::updateCheckState()
 {
-    bool error = false;
-    if (!item->maxVersion.isEmpty())  error = isConformatVersion(item->maxVersion);
-    if (!item->minVersion.isEmpty())  error = isConformatVersion(item->minVersion);
+    for(int i = 0; i<mEnvVarItem.size(); ++i) {
+        QVariant value =  QVariant(Qt::Unchecked);
+         if (isThereAnError( mEnvVarItem.at(i)) ) {
+             setHeaderData( i, Qt::Vertical,
+                               Qt::CheckState(Qt::Checked),
+                               Qt::CheckStateRole );
+         } else {
+             setHeaderData( i, Qt::Vertical,
+                               Qt::CheckState(Qt::Unchecked),
+                               Qt::CheckStateRole );
+         }
+         mCheckState[i] = value;
+    }
+}
 
-    error = (item->key.isEmpty() || item->value.isEmpty());
-    return error;
+bool EnvVarTableModel::isThereAnError(EnvVarConfigItem* item) const
+{
+    if (item->key.isEmpty() || item->value.isEmpty())
+        return true;
+    else if (!item->maxVersion.isEmpty() && !isConformatVersion(item->maxVersion))
+             return true;
+    else  if (!item->minVersion.isEmpty() && !isConformatVersion(item->minVersion))
+              return true;
+    else
+        return false;
 }
 
 bool EnvVarTableModel::isConformatVersion(const QString &version) const
