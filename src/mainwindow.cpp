@@ -822,8 +822,9 @@ void MainWindow::updateEditorPos()
 void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
-    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mRecent.editor());
-    if (soEdit) {
+    if (ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+        mStatusWidgets->setEditMode(StatusWidgets::EditMode::Insert);
+    } else if (ViewHelper::toGamsConfigEditor(mRecent.editor())) {
         mStatusWidgets->setEditMode(StatusWidgets::EditMode::Insert);
     } else if (!edit || edit->isReadOnly()) {
         mStatusWidgets->setEditMode(StatusWidgets::EditMode::Readonly);
