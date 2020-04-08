@@ -202,7 +202,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     initIcons();
     restoreFromSettings();
-    mRecent.path = settings->toString(skDefaultWorkspace);
     mSearchDialog = new search::SearchDialog(this);
 
     // stack help under output
@@ -870,7 +869,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = (!groups.isEmpty()) ? groups.first()->location() : mRecent.path;
+    QString path = (!groups.isEmpty()) ? groups.first()->location() : currentPath();
     if (path.isEmpty()) path = ".";
 
     if (mRecent.editFileId >= 0) {
@@ -959,7 +958,7 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString path = QFileInfo(mRecent.path).path();
+    QString path = currentPath();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -969,7 +968,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionOpenNew_triggered()
 {
-    QString path = QFileInfo(mRecent.path).path();
+    QString path = currentPath();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
@@ -1226,7 +1225,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setEncoding(node->file()->codecMib());
         mRecent.setEditor(editWidget, this);
         mRecent.group = mProjectRepo.asGroup(ViewHelper::groupId(editWidget));
-        mRecent.path = node->location();
+        mRecent.path = QFileInfo(node->location()).path();
 
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
             mStatusWidgets->setLineCount(edit->blockCount());
@@ -1728,8 +1727,7 @@ void MainWindow::on_actionUpdate_triggered()
 
 void MainWindow::on_actionTerminal_triggered()
 {
-    auto workingDir = mRecent.group ? mRecent.group->location() :
-                                      CommonPaths::defaultWorkingDir();
+    auto workingDir = currentPath();
     actionTerminalTriggered(workingDir);
 }
 
@@ -1843,6 +1841,7 @@ void MainWindow::showWelcomePage()
 {
     ui->mainTabs->insertTab(0, mWp, QString("Welcome")); // always first position
     ui->mainTabs->setCurrentIndex(0); // go to welcome page
+
 }
 
 bool MainWindow::isActiveTabRunnable()
@@ -2046,6 +2045,15 @@ void MainWindow::restoreFromSettings()
 
 }
 
+QString MainWindow::currentPath()
+{
+    if (ui->mainTabs->currentWidget() && ui->mainTabs->currentWidget() != mWp) {
+        return mRecent.path;
+    }
+    return Settings::settings()->toString(skDefaultWorkspace);
+
+}
+
 void MainWindow::on_actionGAMS_Library_triggered()
 {
     modeldialog::ModelDialog dialog(Settings::settings()->toString(skUserModelLibraryDir), this);
@@ -2059,7 +2067,7 @@ void MainWindow::on_actionGAMS_Library_triggered()
 
 void MainWindow::on_actionGDX_Diff_triggered()
 {
-    QString path = QFileInfo(mRecent.path).path();
+    QString path = currentPath();
     actionGDX_Diff_triggered(path);
 }
 
@@ -2970,7 +2978,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         changeToLog(fileNode, false, false);
         mRecent.setEditor(tabWidget->currentWidget(), this);
         mRecent.editFileId = fileMeta->id();
-        mRecent.path = fileMeta->location();
+        mRecent.path = QFileInfo(fileMeta->location()).path();
         mRecent.group = runGroup;
     }
     addToOpenedFiles(fileMeta->location());
@@ -3343,6 +3351,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
             }
         }
     }
+    if (ui->mainTabs->currentWidget() == mWp) mRecent.reset();
     QTimer::singleShot(0, this, SLOT(initAutoSave()));
     return true;
 }
@@ -3746,7 +3755,7 @@ void RecentData::setEditor(QWidget *editor, MainWindow* window)
 void RecentData::reset()
 {
     editFileId = -1;
-    path = ".";
+    path = Settings::settings()->toString(skDefaultWorkspace);
     group = nullptr;
     mEditor = nullptr;
 }

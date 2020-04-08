@@ -69,15 +69,12 @@ class MiroDeployDialog;
 }
 
 struct RecentData {
+    RecentData() { reset(); }
 
-    QWidget* editor() const {
-        return mEditor;
-    }
-
+    QWidget* editor() const { return mEditor; }
     void setEditor(QWidget* editor, MainWindow* window);
 
     void reset();
-
     bool validRunGroup();
 
     /**
@@ -86,12 +83,12 @@ struct RecentData {
      */
     QString mainModelName(bool stripped = true);
 
-    FileId editFileId = -1;
-    QString path = ".";
-    ProjectGroupNode* group = nullptr;
+    FileId editFileId;
+    QString path;
+    ProjectGroupNode* group;
 
 private:
-    QWidget* mEditor = nullptr;
+    QWidget* mEditor;
 };
 
 struct HistoryData {
@@ -364,6 +361,7 @@ private:
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
     void updateAndSaveSettings();
     void restoreFromSettings();
+    QString currentPath();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
