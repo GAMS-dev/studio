@@ -60,6 +60,7 @@ signals:
     void envVarItemRemoved();
 
 public slots:
+    void on_reloadEnvVarModel(const QList<EnvVarConfigItem *> &configItem);
     void on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeEnvVarItem();
 

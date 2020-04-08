@@ -185,10 +185,6 @@ bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
     return (focusWidget==ui->ParamCfgTableView || focusWidget==ui->ParamCfgDefTreeView);
 }
 
-//void on_reloadGamsUserConfigFile(QTextCodec *codec) {
-//    // TODO (JP)
-//}
-
 void ParamConfigEditor::currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_UNUSED(previous)
@@ -329,6 +325,17 @@ void ParamConfigEditor::on_selectRow(int logicalIndex)
     QModelIndex  bottomRight = ui->ParamCfgTableView->model()->index(logicalIndex, ConfigParamTableModel::COLUMN_ENTRY_NUMBER, QModelIndex());
     QItemSelection selection( topLeft, bottomRight);
     selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+}
+
+void ParamConfigEditor::on_reloadGamsUserConfigFile(const QList<ConfigItem *> &initParams)
+{
+    qDebug() << "param config reload";
+    QList<ParamConfigItem *> optionItem;
+    for(ConfigItem* item: initParams) {
+        optionItem.append( new ParamConfigItem(-1, item->key, item->value, item->minVersion, item->maxVersion) );
+    }
+    mParameterTableModel->on_reloadConfigParamModel(optionItem);
+    setModified(false);
 }
 
 void ParamConfigEditor::findAndSelectionParameterFromDefinition()

@@ -53,6 +53,7 @@ public:
 
     EnvVarConfigItem() { }
     EnvVarConfigItem(QString k, QString v): ConfigItem(k, v)  { }
+    EnvVarConfigItem(QString k, QString v, pathDefinition path): ConfigItem(k, v), pathVariable(path) { }
     bool hasPathVariable() { return (pathVariable != NONE); }
 };
 
@@ -63,16 +64,20 @@ public:
     GamsUserConfig(const QString &location);
     ~GamsUserConfig();
 
-    QList<ConfigItem *> readCommandLineParameters() const;
     QList<EnvVarConfigItem *> readEnvironmentVariables() const;
+    QList<ConfigItem *> readCommandLineParameters() const;
+
     void updateCommandLineParameters(const QList<ConfigItem *> &items);
     void updateEnvironmentVariables(const QList<EnvVarConfigItem *> &items);
 
     void writeGamsUserConfigFile(const QString &location);
 
+    bool reloadGAMSUserConfigFile(const QString &location);
+
     bool isAvailable() const;
 
 private:
+    bool readGAMSUserConfigFile(const QString &location);
     static int errorCallback(int count, const char *message);
 
     QString mLocation;

@@ -486,8 +486,7 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::Opt) {
         bool textOptEditor = true;
         for (QWidget *wid : mEditors) {
-            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
-            if (so) {
+            if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
                 textOptEditor = false;
                 so->on_reloadSolverOptionFile(mCodec);
             }
@@ -495,7 +494,17 @@ void FileMeta::load(int codecMib, bool init)
         if (!textOptEditor)
             return;
     }
-    // TODO (JP) if (kind() == FileKind::Guc)
+    if (kind() == FileKind::Guc) {
+        bool textOptEditor = true;
+        for (QWidget *wid : mEditors) {
+            if (option::GamsConfigEditor *cfge = ViewHelper::toGamsConfigEditor(wid)) {
+                textOptEditor = false;
+                cfge->on_reloadGamsUserConfigFile(mCodec);
+            }
+        }
+        if (!textOptEditor)
+            return;
+    }
 
     QFile file(location());
     bool canOpen = true;
@@ -840,7 +849,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
-    } else if (kind() == FileKind::Guc) {
+    } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
               // Guc Editor ignore other encoding scheme than UTF-8
               res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
                                                                              id(), tabWidget));

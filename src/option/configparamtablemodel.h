@@ -70,7 +70,7 @@ signals:
     void configParamItemRemoved();
 
 public slots:
-    void reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem);
+    void on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem);
     void on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeConfigParamItem();
     void updateRecurrentStatus();

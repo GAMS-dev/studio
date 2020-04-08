@@ -116,6 +116,13 @@ void EnvVarConfigEditor::deSelectOptions()
     this->focusNextChild();
 }
 
+void EnvVarConfigEditor::on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems)
+{
+    qDebug() << "envvar config reload";
+    mEnvVarTableModel->on_reloadEnvVarModel(initItems);
+    setModified(false);
+}
+
 void EnvVarConfigEditor::setModified(bool modified)
 {
     mModified = modified;

@@ -563,7 +563,7 @@ QList<ParamConfigItem *> ConfigParamTableModel::parameterConfigItems()
     return mOptionItem;
 }
 
-void ConfigParamTableModel::reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem)
+void ConfigParamTableModel::on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem)
 {
     disconnect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateConfigParamItem);
 
@@ -573,7 +573,10 @@ void ConfigParamTableModel::reloadConfigParamModel(const QList<ParamConfigItem *
     mOptionItem.clear();
 
     mOptionItem = optionItem;
-    mOptionTokenizer->validateOption(mOptionItem);
+    for(ParamConfigItem* item : optionItem) {
+        QList<OptionErrorType> errorType = mOptionTokenizer->validate(item);
+        item->error =  (errorType.isEmpty() ? OptionErrorType::No_Error : errorType.at(0));
+    }
     updateCheckState();
 
     setRowCount(mOptionItem.size());
@@ -594,6 +597,10 @@ void ConfigParamTableModel::reloadConfigParamModel(const QList<ParamConfigItem *
            if (mOptionItem.at(i)->error == OptionErrorType::No_Error)
                setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+           else if (mOptionItem.at(i)->error == OptionErrorType::Deprecated_Option)
+               setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
            else
                setHeaderData( i, Qt::Vertical,

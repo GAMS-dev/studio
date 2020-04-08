@@ -40,7 +40,7 @@ class EnvVarConfigEditor : public QWidget
     Q_OBJECT
 
 public:
-    explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItemss, QWidget *parent = nullptr);
+    explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItems, QWidget *parent = nullptr);
     ~EnvVarConfigEditor();
 
 signals:
@@ -50,6 +50,8 @@ public slots:
     void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
     void showContextMenu(const QPoint &pos);
     void deSelectOptions();
+
+    void on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems);
 
     void setModified(bool modified);
     bool isModified() const;

@@ -45,12 +45,7 @@ GamsUserConfig::GamsUserConfig(const QString &location) :
 
 //    gucCreate(&mGUCfg, message,sizeof(message));
 
-//    if (!gucReadGAMSConfig(mGUCfg,  mLocation.toStdString().c_str())) {
-//        gucGetErrorMessage(mGUCfg, message, sizeof(message));
-//        logger->append(message, LogMsgType::Error);
-//    } else {
-//        mAvailable = true;
-//    }
+//    readGAMSUserConfigFile(mLocation);
 }
 
 GamsUserConfig::~GamsUserConfig()
@@ -142,6 +137,7 @@ void GamsUserConfig::updateCommandLineParameters(const QList<ConfigItem *> &item
 //        if (gsec == CLP) {
 //            gucMakeNoneItem(mGUCfg,ipos);
 //            qDebug() << QString("CLP none ipos=%1").arg(ipos);
+//            continue;
 //        }
 //    }
 
@@ -176,7 +172,7 @@ void GamsUserConfig::updateEnvironmentVariables(const QList<EnvVarConfigItem *> 
 //        if (gsec == EV) {
 //            gucMakeNoneItem(mGUCfg,ipos);
 //            qDebug() << QString("EV none ipos=%1").arg(ipos);
-//            break;
+//            continue;
 //        }
 //    }
 
@@ -188,7 +184,9 @@ void GamsUserConfig::updateEnvironmentVariables(const QList<EnvVarConfigItem *> 
 //        if (!i->minVersion.isEmpty())
 //           gucAddItemKV( mGUCfg,gucsMinVersion,0, i->minVersion.toStdString().c_str());
 //        if (!i->maxVersion.isEmpty())
-//           gucAddItemKV( mGUCfg, gucsMaxVersion,0, i->maxVersion.toStdString().c_str());
+//            gucAddItemKV( mGUCfg, gucsMaxVersion,0, i->maxVersion.toStdString().c_str());
+//        // int ret =
+//           // TODO (JP) check if (ret != 0) error report ?? : qDebug() << i->maxVersion << ":ret=" << ret;
 //        if (i->hasPathVariable())
 //            gucAddItemKV( mGUCfg,guciPathVariable, i->pathVariable, "");
 
@@ -215,6 +213,34 @@ void GamsUserConfig::writeGamsUserConfigFile(const QString &location)
 //    }
 
 //    gucWriteGAMSConfig(mGUCfg, location.toStdString().c_str());
+}
+
+bool GamsUserConfig::reloadGAMSUserConfigFile(const QString &location)
+{
+//    for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
+//        gucMakeNoneItem(mGUCfg,ipos);
+//    }
+
+//    mLocation  = location;
+//    readGAMSUserConfigFile(mLocation);
+//    // TODO(JP)
+    return true;
+}
+
+bool GamsUserConfig::readGAMSUserConfigFile(const QString &location)
+{
+//    auto logger = SysLogLocator::systemLog();
+//    char message[GMS_SSSIZE];
+//    mLocation = location;
+//    if (!gucReadGAMSConfig(mGUCfg, location.toStdString().c_str())) {
+//        gucGetErrorMessage(mGUCfg, message, sizeof(message));
+//        logger->append(message, LogMsgType::Error);
+//        mAvailable = false;
+//    } else {
+//        mAvailable = true;
+//    }
+//    return mAvailable;
+    return false;
 }
 
 bool GamsUserConfig::isAvailable() const

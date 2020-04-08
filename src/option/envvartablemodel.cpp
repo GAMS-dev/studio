@@ -303,6 +303,37 @@ void EnvVarTableModel::on_removeEnvVarItem()
     endResetModel();
 }
 
+void EnvVarTableModel::on_reloadEnvVarModel(const QList<EnvVarConfigItem *> &configItem)
+{
+    beginResetModel();
+
+    qDeleteAll(mEnvVarItem);
+    mEnvVarItem.clear();
+
+    mEnvVarItem = configItem;
+    updateCheckState();
+    updateCheckState();
+
+    setRowCount(mEnvVarItem.size());
+
+    for (int i=0; i<mEnvVarItem.size(); ++i) {
+        setData( index(i, COLUMN_PARAM_KEY), QVariant(mEnvVarItem.at(i)->key), Qt::EditRole);
+        setData( index(i, COLUMN_PARAM_VALUE), QVariant(mEnvVarItem.at(i)->value), Qt::EditRole);
+        setData( index(i, COLUMN_MIN_VERSION), QVariant(mEnvVarItem.at(i)->minVersion), Qt::EditRole);
+        setData( index(i, COLUMN_MAX_VERSION), QVariant(mEnvVarItem.at(i)->maxVersion), Qt::EditRole);
+        setData( index(i, COLUMN_PATH_VAR), QVariant(mEnvVarItem.at(i)->PATH_DEFINED), Qt::EditRole);
+        if (isThereAnError( mEnvVarItem.at(i)) )
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Checked),
+                              Qt::CheckStateRole );
+        else
+            setHeaderData( i, Qt::Vertical,
+                              Qt::CheckState(Qt::Unchecked),
+                              Qt::CheckStateRole );
+    }
+    endResetModel();
+}
+
 void EnvVarTableModel::setRowCount(int rows)
 {
     int rc = mEnvVarItem.size();

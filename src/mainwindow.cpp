@@ -1158,6 +1158,7 @@ void MainWindow::codecReload(QAction *action)
     if (!focusWidget()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (fm && fm->kind() == FileKind::Log) return;
+    if (fm && fm->kind() == FileKind::Guc) return;
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fm->isModified()) {
@@ -1272,6 +1273,19 @@ void MainWindow::activeTabChanged(int index)
                 node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
+        } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
+                 ui->menuEncoding->setEnabled(false);
+                 ProjectFileNode* fc = mProjectRepo.findFileNode(gucEditor);
+                 if (fc) {
+                     mRecent.editFileId = fc->file()->id();
+                     ui->menuEncoding->setEnabled(false);
+                     ui->menureload_with->setEnabled(false);
+                     ui->menuconvert_to->setEnabled(false);
+                     mStatusWidgets->setFileName(fc->location());
+                     mStatusWidgets->setEncoding(fc->file()->codecMib());
+                     node->file()->reload();
+                     updateMenuToCodec(node->file()->codecMib());
+                 }
         }
         updateMenuToCodec(node->file()->codecMib());
     } else {
@@ -1353,8 +1367,14 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
     }
     if (file->kind() == FileKind::Opt) {
         for (QWidget *e : file->editors()) {
-            option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e);
-            if (sow) sow->setFileChangedExtern(true);
+            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e))
+               sow->setFileChangedExtern(true);
+        }
+    }
+    if (file->kind() == FileKind::Guc) {
+        for (QWidget *e : file->editors()) {
+            if (option::GamsConfigEditor *guce = ViewHelper::toGamsConfigEditor(e))
+               guce->setFileChangedExtern(true);
         }
     }
     int choice;

@@ -19,6 +19,8 @@
  */
 #include "gamsconfigeditor.h"
 #include "ui_gamsconfigeditor.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 
 #include <QPushButton>
 #include <QDebug>
@@ -77,6 +79,25 @@ void GamsConfigEditor::setModified(bool modified)
                                      ConfigEditorName.at(int(ConfigEditorType::commandLineParameter)) + (mParamConfigEditor->isModified() ? "*" : ""));
     ui->GamsCfgTabWidget->setTabText(int(ConfigEditorType::environmentVariable),
                                      ConfigEditorName.at(int(ConfigEditorType::environmentVariable)) + (mEnvVarConfigEditor->isModified() ? "*" : ""));
+}
+
+void GamsConfigEditor::on_reloadGamsUserConfigFile(QTextCodec *codec)
+{
+    qDebug() << "reload" << codec->name();
+    if (QTextCodec::codecForName("UTF-8") != codec)
+        SysLogLocator::systemLog()->append(QString("Gams User Confiugration Editor supports only %1 encoding").arg(QString(codec->name())), LogMsgType::Info);
+    else if (mFileHasChangedExtern)
+             SysLogLocator::systemLog()->append(QString("Loading Gams User Configuration from %1").arg(mLocation), LogMsgType::Info);
+    else
+        return;
+
+    if (mGuc->reloadGAMSUserConfigFile( mLocation )) {
+        mParamConfigEditor->on_reloadGamsUserConfigFile( mGuc->readCommandLineParameters() );
+        mEnvVarConfigEditor->on_reloadGamsUserConfigFile( mGuc->readEnvironmentVariables() );
+    } else { /* TODO (JP) */ }
+
+    setFileChangedExtern(false);
+    setModified(false);
 }
 
 bool GamsConfigEditor::saveConfigFile(const QString &location)

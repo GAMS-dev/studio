@@ -66,6 +66,9 @@ public:
     FileId fileId() const;
 
     bool saveAs(const QString &location);
+    void setFileChangedExtern(bool value);
+
+    void on_reloadGamsUserConfigFile(QTextCodec* codec);
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -77,7 +80,6 @@ public slots:
     bool saveConfigFile(const QString &location);
 
     void deSelectAll();
-    void setFileChangedExtern(bool value);
 
 private:
     Ui::GamsConfigEditor *ui;

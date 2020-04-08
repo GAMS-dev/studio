@@ -58,7 +58,10 @@ public slots:
     void showDefinitionContextMenu(const QPoint &pos);
 
     void parameterItemCommitted(QWidget *editor);
+
     void on_selectRow(int logicalIndex);
+    void on_reloadGamsUserConfigFile(const QList<ConfigItem *> &initParams);
+
     void deSelectOptions();
 
     void setModified(bool modified);
