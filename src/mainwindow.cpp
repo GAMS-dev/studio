@@ -2064,7 +2064,7 @@ void MainWindow::restoreFromSettings()
 
 QString MainWindow::currentPath()
 {
-    if (ui->mainTabs->currentWidget() != mWp) {
+    if (ui->mainTabs->currentWidget() && ui->mainTabs->currentWidget() != mWp) {
         return mRecent.path;
     }
     return Settings::settings()->toString(skDefaultWorkspace);
