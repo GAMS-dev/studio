@@ -107,20 +107,28 @@ bool CommonPaths::isSystemDirValid()
     return true;
 }
 
-QString CommonPaths::userDocumentsDir()
+QString CommonPaths::gamsDocumentsDir()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (dir.isEmpty())
         FATAL() << "Unable to access user documents location";
-    QDir userDocumentsDir = QDir::cleanPath(dir + "/GAMSStudio");
-    if(!userDocumentsDir.exists())
+    QDir gamsDocumentsDir = QDir::cleanPath(dir + "/GAMS");
+    if(!gamsDocumentsDir.exists())
+        gamsDocumentsDir.mkpath(".");
+    return gamsDocumentsDir.path();
+}
+
+QString CommonPaths::userDocumentsDir()
+{
+    QDir userDocumentsDir(gamsDocumentsDir() + "/Studio");
+    if (!userDocumentsDir.exists())
         userDocumentsDir.mkpath(".");
     return userDocumentsDir.path();
 }
 
 QString CommonPaths::userModelLibraryDir()
 {
-    QDir userModelLibraryDir(userDocumentsDir() + "/modellibs");
+    QDir userModelLibraryDir(gamsDocumentsDir() + "/modellibs");
     if(!userModelLibraryDir.exists())
         userModelLibraryDir.mkpath(".");
     return userModelLibraryDir.path();

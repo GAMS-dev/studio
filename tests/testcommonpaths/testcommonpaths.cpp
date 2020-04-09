@@ -39,17 +39,17 @@ void TestCommonPaths::testSystemDir()
 
 void TestCommonPaths::testSetSystemDirNull()
 {
-    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
     CommonPaths::setSystemDir(QString());
-    auto result = CommonPaths::systemDir();
+    auto result = QDir(CommonPaths::systemDir()).canonicalPath();
     QVERIFY(expected == result);
 }
 
 void TestCommonPaths::testSetSystemDirEmpty()
 {
-    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
     CommonPaths::setSystemDir("");
-    auto result = CommonPaths::systemDir();
+    auto result = QDir(CommonPaths::systemDir()).canonicalPath();
     QVERIFY(expected == result);
 }
 
@@ -81,22 +81,28 @@ void TestCommonPaths::testSetSystemDirAPPIMAGE()
 #endif
 }
 
+void TestCommonPaths::testGamsDocumentsDir()
+{
+    auto result = CommonPaths::gamsDocumentsDir();
+    QVERIFY(result.endsWith("/GAMS"));
+}
+
 void TestCommonPaths::testUserDocumentDir()
 {
     auto result = CommonPaths::userDocumentsDir();
-    QVERIFY(result.endsWith("GAMSStudio"));
+    QVERIFY(result.endsWith("/GAMS/Studio"));
 }
 
 void TestCommonPaths::testUserModelLibraryDir()
 {
     auto result = CommonPaths::userModelLibraryDir();
-    QVERIFY(result.endsWith("modellibs"));
+    QVERIFY(result.endsWith("/GAMS/modellibs"));
 }
 
 void TestCommonPaths::testDefaultWorkingDir()
 {
     auto result = CommonPaths::defaultWorkingDir();
-    QVERIFY(result.endsWith("workspace"));
+    QVERIFY(result.endsWith("/GAMS/Studio/workspace"));
 }
 
 void TestCommonPaths::testIsSystemDirValid()

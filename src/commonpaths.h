@@ -65,6 +65,8 @@ public:
 
     static QString defaultWorkingDir();
 
+    static QString gamsDocumentsDir();
+
     static QString userDocumentsDir();
 
     static QString userModelLibraryDir();

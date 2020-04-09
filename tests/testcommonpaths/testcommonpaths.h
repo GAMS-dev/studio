@@ -37,6 +37,7 @@ private slots:
     void testSetSystemDirNoGAMS();
     void testSetSystemDirAPPIMAGE();
 
+    void testGamsDocumentsDir();
     void testUserDocumentDir();
     void testUserModelLibraryDir();
     void testDefaultWorkingDir();
