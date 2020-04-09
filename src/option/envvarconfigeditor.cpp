@@ -22,8 +22,6 @@
 #include "envvarcfgcompleterdelegate.h"
 #include "ui_envvarconfigeditor.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace option {
@@ -47,15 +45,22 @@ EnvVarConfigEditor::~EnvVarConfigEditor()
 void EnvVarConfigEditor::currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_UNUSED(previous)
-    updateActionsState( current );
+    if (ui->EnvVarConfigTableView->selectionModel()->selectedRows().isEmpty()) {
+        updateActionsState(current);
+    } else {
+        if (ui->EnvVarConfigTableView->selectionModel()->isRowSelected(current.row(), current.parent()) )
+            updateActionsState();
+        else
+            updateActionsState(current);
+    }
 }
 
 void EnvVarConfigEditor::updateActionsState(const QModelIndex &index)
 {
     ui->actionInsert->setEnabled( isThereARow());
-    ui->actionDelete->setEnabled( index.row() < mEnvVarTableModel->rowCount() );
-    ui->actionMoveUp->setEnabled( index.row() > 0);
-    ui->actionMoveDown->setEnabled( index.row() < mEnvVarTableModel->rowCount()-1 );
+    ui->actionDelete->setEnabled( false );
+    ui->actionMoveUp->setEnabled( false );
+    ui->actionMoveDown->setEnabled( false );
     ui->actionSelectAll->setEnabled( isThereARow( ));
     ui->actionResize_Columns_To_Contents->setEnabled( index.row() < mEnvVarTableModel->rowCount() );
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
@@ -69,16 +74,23 @@ void EnvVarConfigEditor::updateActionsState(const QModelIndex &index)
     mToolBar->repaint();
 }
 
-void EnvVarConfigEditor::updateActionsState(const QModelIndexList &indexList)
+void EnvVarConfigEditor::updateActionsState()
 {
-    ui->actionInsert->setEnabled( isThereARow());
-    ui->actionDelete->setEnabled( indexList.first().row() < mEnvVarTableModel->rowCount() );
+    QModelIndexList idxSelection = ( ui->EnvVarConfigTableView->selectionModel()->selectedRows().isEmpty()
+                                         ? ui->EnvVarConfigTableView->selectionModel()->selectedIndexes()
+                                         : ui->EnvVarConfigTableView->selectionModel()->selectedRows() );
 
-    ui->actionMoveUp->setEnabled( indexList.first().row() > 0 );
-    ui->actionMoveDown->setEnabled( indexList.last().row() < mEnvVarTableModel->rowCount()-1 );
+    if (idxSelection.isEmpty())
+        return;
+
+    ui->actionInsert->setEnabled( isThereARow());
+    ui->actionDelete->setEnabled( idxSelection.first().row() < mEnvVarTableModel->rowCount() );
+
+    ui->actionMoveUp->setEnabled( idxSelection.first().row() > 0 );
+    ui->actionMoveDown->setEnabled( idxSelection.last().row() < mEnvVarTableModel->rowCount()-1 );
 
     ui->actionSelectAll->setEnabled( isThereARow( ));
-    ui->actionResize_Columns_To_Contents->setEnabled( indexList.first().row() < mEnvVarTableModel->rowCount() );
+    ui->actionResize_Columns_To_Contents->setEnabled( idxSelection.first().row() < mEnvVarTableModel->rowCount() );
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                                     QIcon::Off);
     ui->actionDelete->icon().pixmap( QSize(16, 16), ui->actionDelete->isEnabled() ? QIcon::Selected : QIcon::Disabled,
@@ -90,6 +102,19 @@ void EnvVarConfigEditor::updateActionsState(const QModelIndexList &indexList)
     mToolBar->repaint();
 }
 
+void EnvVarConfigEditor::on_selectRow(int logicalIndex)
+{
+    if (ui->EnvVarConfigTableView->model()->rowCount() <= 0)
+        return;
+
+    QItemSelectionModel *selectionModel = ui->EnvVarConfigTableView->selectionModel();
+    QModelIndex topLeft = ui->EnvVarConfigTableView->model()->index(logicalIndex, EnvVarTableModel::COLUMN_PARAM_KEY, QModelIndex());
+    QModelIndex  bottomRight = ui->EnvVarConfigTableView->model()->index(logicalIndex, EnvVarTableModel::COLUMN_PARAM_VALUE, QModelIndex());
+    QItemSelection selection( topLeft, bottomRight);
+    selectionModel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+
+    updateActionsState();
+}
 
 void EnvVarConfigEditor::showContextMenu(const QPoint &pos)
 {
@@ -97,6 +122,7 @@ void EnvVarConfigEditor::showContextMenu(const QPoint &pos)
     for(QModelIndex index : indexSelection) {
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
+    updateActionsState();
 
     QMenu menu(this);
     menu.addAction(ui->actionInsert);
@@ -105,11 +131,21 @@ void EnvVarConfigEditor::showContextMenu(const QPoint &pos)
     menu.addAction(ui->actionMoveUp);
     menu.addAction(ui->actionMoveDown);
     menu.addSeparator();
+    menu.addAction(ui->actionSelectAll);
+    menu.addSeparator();
     menu.addAction(ui->actionResize_Columns_To_Contents);
     menu.exec(ui->EnvVarConfigTableView->viewport()->mapToGlobal(pos));
 }
 
-void EnvVarConfigEditor::deSelectOptions()
+void EnvVarConfigEditor::selectAll()
+{
+    ui->EnvVarConfigTableView->setFocus();
+    ui->EnvVarConfigTableView->selectAll();
+
+    updateActionsState( );
+}
+
+void EnvVarConfigEditor::deSelect()
 {
     initActions();
     if (ui->EnvVarConfigTableView->hasFocus() && ui->EnvVarConfigTableView->selectionModel()->hasSelection())
@@ -129,7 +165,6 @@ void EnvVarConfigEditor::parameterItemCommitted(QWidget *editor)
 
 void EnvVarConfigEditor::on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems)
 {
-    qDebug() << "envvar config reload";
     mEnvVarTableModel->on_reloadEnvVarModel(initItems);
     setModified(false);
 }
@@ -200,6 +235,7 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     ui->EnvVarConfigTableView->setTabKeyNavigation(true);
 
+    connect(ui->EnvVarConfigTableView->verticalHeader(), &QHeaderView::sectionClicked, this, &EnvVarConfigEditor::on_selectRow, Qt::UniqueConnection);
     connect(ui->EnvVarConfigTableView, &QTableView::customContextMenuRequested,this, &EnvVarConfigEditor::showContextMenu, Qt::UniqueConnection);
     connect(ui->EnvVarConfigTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &EnvVarConfigEditor::currentTableSelectionChanged);
 
@@ -217,6 +253,7 @@ void EnvVarConfigEditor::initActions()
     ui->actionDelete->setEnabled(false);
     ui->actionMoveUp->setEnabled(false);
     ui->actionMoveDown->setEnabled(false);
+    ui->actionSelect_Current_Row->setEnabled(true);
     ui->actionSelectAll->setEnabled(true);
     ui->actionResize_Columns_To_Contents->setEnabled(true);
     ui->actionInsert->icon().pixmap( QSize(16, 16), QIcon::Selected, QIcon::Off);
@@ -358,7 +395,7 @@ void EnvVarConfigEditor::on_actionMoveUp_triggered()
                                                          QModelIndex(), idx.row()-1);
     }
     emit modificationChanged(true);
-    updateActionsState( ui->EnvVarConfigTableView->selectionModel()->selectedRows() );
+    updateActionsState();
 }
 
 void EnvVarConfigEditor::on_actionMoveDown_triggered()
@@ -383,13 +420,23 @@ void EnvVarConfigEditor::on_actionMoveDown_triggered()
                                     QModelIndex(), idx.row()+2);
     }
     emit modificationChanged(true);
-    updateActionsState( ui->EnvVarConfigTableView->selectionModel()->selectedRows() );
+    updateActionsState();
+}
+
+void EnvVarConfigEditor::on_actionSelect_Current_Row_triggered()
+{
+   QList<int> rowList;
+   for(QModelIndex idx : ui->EnvVarConfigTableView->selectionModel()->selectedIndexes()) {
+       if (!rowList.contains(idx.row())) {
+           on_selectRow(idx.row());
+           rowList << idx.row();
+       }
+   }
 }
 
 void EnvVarConfigEditor::on_actionSelectAll_triggered()
 {
-    ui->EnvVarConfigTableView->setFocus();
-    ui->EnvVarConfigTableView->selectAll();
+    selectAll();
 }
 
 void EnvVarConfigEditor::on_actionResize_Columns_To_Contents_triggered()

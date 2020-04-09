@@ -79,6 +79,7 @@ public slots:
 
     bool saveConfigFile(const QString &location);
 
+    void selectAll();
     void deSelectAll();
 
 private:

@@ -48,13 +48,11 @@ signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
-    void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
-    void showContextMenu(const QPoint &pos);
-    void deSelectOptions();
-
     void parameterItemCommitted(QWidget *editor);
-
     void on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems);
+
+    void selectAll();
+    void deSelect();
 
     void setModified(bool modified);
     bool isModified() const;
@@ -66,8 +64,12 @@ private slots:
 
     void initActions();
     void updateActionsState(const QModelIndex &index);
-    void updateActionsState(const QModelIndexList &indexList);
+    void updateActionsState();
 
+    void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
+    void showContextMenu(const QPoint &pos);
+
+    void on_selectRow(int logicalIndex);
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
     bool isThereARow() const;
@@ -78,6 +80,7 @@ private slots:
     void on_actionDelete_triggered();
     void on_actionMoveUp_triggered();
     void on_actionMoveDown_triggered();
+    void on_actionSelect_Current_Row_triggered();
     void on_actionSelectAll_triggered();
     void on_actionResize_Columns_To_Contents_triggered();
 

@@ -53,16 +53,11 @@ signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
-    void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
-    void showParameterContextMenu(const QPoint &pos);
-    void showDefinitionContextMenu(const QPoint &pos);
-
     void parameterItemCommitted(QWidget *editor);
-
-    void on_selectRow(int logicalIndex);
     void on_reloadGamsUserConfigFile(const QList<ConfigItem *> &initParams);
 
-    void deSelectOptions();
+    void selectAll();
+    void deSelect();
 
     void setModified(bool modified);
     bool isModified() const;
@@ -74,7 +69,11 @@ private slots:
 
     void initActions();
     void updateActionsState(const QModelIndex &index);
-    void updateActionsState(const QModelIndexList &indexList);
+    void updateActionsState();
+
+    void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
+    void showParameterContextMenu(const QPoint &pos);
+    void showDefinitionContextMenu(const QPoint &pos);
 
     void updateDefinitionActionsState(const QModelIndex &index);
     void findAndSelectionParameterFromDefinition();
@@ -86,6 +85,7 @@ private slots:
     void showOptionDefinition(bool selectRow = true);
     void copyDefinitionToClipboard(int column);
 
+    void on_selectRow(int logicalIndex);
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_newTableRowDropped(const QModelIndex &index);
 
@@ -103,6 +103,7 @@ private slots:
     void on_actionMoveUp_triggered();
     void on_actionMoveDown_triggered();
 
+    void on_actionSelect_Current_Row_triggered();
     void on_actionSelectAll_triggered();
     void on_actionShowRecurrence_triggered();
     void on_actionResize_Columns_To_Contents_triggered();

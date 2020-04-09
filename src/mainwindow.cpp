@@ -2975,8 +2975,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             ae->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-        } else if (ViewHelper::toSolverOptionEdit(edit) || ViewHelper::toGamsConfigEditor(edit)) {
+        } else if (ViewHelper::toSolverOptionEdit(edit)) {
                    connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        } else if (ViewHelper::toGamsConfigEditor(edit)) {
+                  connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         }
         if (focus) {
             tabWidget->setCurrentWidget(edit);
@@ -3498,6 +3500,8 @@ void MainWindow::on_actionSelect_All_triggered()
         tv->selectAllText();
     } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         so->selectAllOptions();
+    } else if (option::GamsConfigEditor *guce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+        guce->selectAll();
     }
 }
 

@@ -105,12 +105,20 @@ bool GamsConfigEditor::saveConfigFile(const QString &location)
     return saveAs(location);
 }
 
+void GamsConfigEditor::selectAll()
+{
+    if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter))
+        mParamConfigEditor->selectAll();
+    else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable))
+             mEnvVarConfigEditor->selectAll();
+}
+
 void GamsConfigEditor::deSelectAll()
 {
     if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter))
-        mParamConfigEditor->deSelectOptions();
+        mParamConfigEditor->deSelect();
     else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable))
-        mEnvVarConfigEditor->deSelectOptions();
+        mEnvVarConfigEditor->deSelect();
 }
 
 void GamsConfigEditor::setFileChangedExtern(bool value)

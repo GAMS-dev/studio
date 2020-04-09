@@ -231,6 +231,17 @@
     <string>Del</string>
    </property>
   </action>
+  <action name="actionSelect_Current_Row">
+   <property name="text">
+    <string>Select Current Row</string>
+   </property>
+   <property name="toolTip">
+    <string>Select Current Row</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../../icons/icons.qrc"/>
