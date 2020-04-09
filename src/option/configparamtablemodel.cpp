@@ -217,7 +217,7 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
         if (mOption->isValid(mOptionItem.at(row)->key) || mOption->isASynonym(mOptionItem.at(row)->key)) { // valid option
             if (col==COLUMN_PARAM_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row)->key)) { // deprecated option
-                    return QVariant::fromValue(QColor(Qt::gray));
+                    return QVariant::fromValue(QColor(Scheme::Disable_Gray));
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }

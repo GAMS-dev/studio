@@ -118,6 +118,13 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ToolTipRole: {
         QString tooltipText = "";
+        if (!mEnvVarItem.at(row)->minVersion.isEmpty() &&
+            !isConformatVersion(mEnvVarItem.at(row)->minVersion)) {
+            tooltipText = QString("Invalid minVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mEnvVarItem.at(row)->minVersion);
+        } else if (!mEnvVarItem.at(row)->maxVersion.isEmpty() &&
+                   !isConformatVersion(mEnvVarItem.at(row)->maxVersion)) {
+                   tooltipText = QString("Invalid maxVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mEnvVarItem.at(row)->maxVersion);
+        }
         return tooltipText;
     }
     case Qt::TextColorRole: {
