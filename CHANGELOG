@@ -20,6 +20,7 @@ All settings have been reset and are now saved in JSON format. That means that s
 - fixed handling of last path for dialogs
 - fixed active GAMS run buttons when no gams file was active
 - fixed crash when deleting scratch dirs while user is on welcome page
+- fixed unwanted reappearance of filtered columns in GDX Viewer Table View
 
 ## MIRO
 - disabled MIRO shortcuts if MIRO is unavailable
@@ -27,7 +28,7 @@ All settings have been reset and are now saved in JSON format. That means that s
 - Assembly file dialog now pops up instead of an error message if the assembly file is missing
 
 ## Themes
-- changed color of option keyword to be better distinguishable from assignments
+- changed color of option keyword to be better distinguishable from assignments in dark theme
 - improved coloring of search results when using Find Next/Previous
 - improved dark theme colors of Studio to make checkboxes clearer to identify
 - improved readability of text highlighted as error
