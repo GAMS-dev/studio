@@ -71,8 +71,13 @@ QSize stringToSize(QString s) {
 QString findFixedFont()
 {
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    if (font.fixedPitch())
-        return font.family();
+    if (font.fixedPitch()) {
+        if (!font.family().isEmpty())
+            return font.family();
+        else
+            return font.defaultFamily();
+    }
+
     QFontDatabase fdb;
     QStringList list = fdb.families();
     for (int i = 0; i < list.size(); ++i) {
