@@ -58,7 +58,7 @@ private slots:
 
     void testConfigFile();
 
-    void testLicenseFile();
+    void testGamsLicenseFilePath();
 };
 
 #endif // TESTCOMMONPATHS_H

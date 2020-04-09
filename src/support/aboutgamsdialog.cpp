@@ -118,7 +118,7 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
     if (!licenseInfo.isLicenseValid(licenseLines))
         return;
 
-    QFile licenseFile(CommonPaths::systemDir() + "/gamslice.txt");
+    QFile licenseFile(CommonPaths::gamsLicenseFilePath());
     if (licenseFile.exists()) {
         auto result = QMessageBox::question(parent,
                                             "Overwrite current GAMS license file?",
@@ -137,6 +137,9 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
                                             QDir::toNativeSeparators(licenseFile.fileName()));
         if (result == QMessageBox::No)
             return;
+
+        auto licensePath = QFileInfo(licenseFile).absolutePath();
+        QDir(licensePath).mkpath(".");
     }
 
     if (licenseFile.open(QFile::WriteOnly | QFile::Text)) {

@@ -190,11 +190,18 @@ void TestCommonPaths::testConfigFile()
     QCOMPARE(actual, expected.path());
 }
 
-void TestCommonPaths::testLicenseFile()
+void TestCommonPaths::testGamsLicenseFilePath()
 {
-    auto actual = CommonPaths::licenseFile();
-    QDir expected(CommonPaths::systemDir() + "/" + "gamslice.txt");
-    QCOMPARE(actual, expected.path());
+    auto actual = CommonPaths::gamsLicenseFilePath();
+#ifdef WIN32
+    auto expected = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
+            "/GAMS/gamslice.txt";
+#else
+    auto expected = QStandardPaths::writableLocation(QStandardPaths::DataLocation) +
+            "/GAMS/gamslice.txt";
+#endif
+    QCOMPARE(QFileInfo(actual).canonicalFilePath(),
+             QFileInfo(expected).canonicalFilePath());
 }
 
 QTEST_MAIN(TestCommonPaths)
