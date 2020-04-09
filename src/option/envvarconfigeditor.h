@@ -21,6 +21,7 @@
 #define ENVVARCONFIGEDITOR_H
 
 #include "envvartablemodel.h"
+#include "envvarcfgcompleterdelegate.h"
 #include "gamsuserconfig.h"
 
 #include <QWidget>
@@ -50,6 +51,8 @@ public slots:
     void currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous);
     void showContextMenu(const QPoint &pos);
     void deSelectOptions();
+
+    void parameterItemCommitted(QWidget *editor);
 
     void on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems);
 
@@ -81,6 +84,7 @@ private slots:
 private:
     Ui::EnvVarConfigEditor *ui;
     EnvVarTableModel* mEnvVarTableModel;
+    EnvVarCfgCompleterDelegate* mCompleter;
     bool mModified;
 
     QMenu mContextMenu;

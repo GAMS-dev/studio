@@ -100,7 +100,7 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
                   return mEnvVarItem.at(row)->maxVersion;
         } else if (col==COLUMN_PATH_VAR) {
             if (mEnvVarItem.at(row)->pathVariable == EnvVarConfigItem::pathDefinition::NONE)
-                return "";
+                return " ";
             else if (mEnvVarItem.at(row)->pathVariable == EnvVarConfigItem::pathDefinition::PATH_DEFINED)
                     return "True";
             else if (mEnvVarItem.at(row)->pathVariable == EnvVarConfigItem::pathDefinition::NO_PATH_DEFINED)
@@ -158,25 +158,21 @@ bool EnvVarTableModel::setData(const QModelIndex &index, const QVariant &value, 
     QVector<int> roles;
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
-        QString dataValue = value.toString().simplified();
-        if (dataValue.isEmpty())
-            return false;
-
         if (index.row() > mEnvVarItem.size())
             return false;
-
+        QString dataValue = value.toString();
         if (index.column() == COLUMN_PARAM_KEY) { // key
             QString from = data(index, Qt::DisplayRole).toString();
             mEnvVarItem[index.row()]->key = dataValue;
         } else if (index.column() == COLUMN_PARAM_VALUE) { // value
                   mEnvVarItem[index.row()]->value = dataValue;
         } else if (index.column() == COLUMN_PATH_VAR) {
-                  if (dataValue.isEmpty())
-                     mEnvVarItem[index.row()]->pathVariable = EnvVarConfigItem::pathDefinition::NONE;
-                  else if (QString::compare(dataValue, "true", Qt::CaseInsensitive) == 0)
+                  if (QString::compare(dataValue, "True", Qt::CaseInsensitive) == 0)
                           mEnvVarItem[index.row()]->pathVariable = EnvVarConfigItem::pathDefinition::PATH_DEFINED;
+                  else if (QString::compare(dataValue, "False", Qt::CaseInsensitive) == 0)
+                          mEnvVarItem[index.row()]->pathVariable = EnvVarConfigItem::pathDefinition::NO_PATH_DEFINED;
                   else
-                      mEnvVarItem[index.row()]->pathVariable = EnvVarConfigItem::pathDefinition::NO_PATH_DEFINED;
+                      mEnvVarItem[index.row()]->pathVariable = EnvVarConfigItem::pathDefinition::NONE;
         } else if (index.column() == COLUMN_MIN_VERSION) {
                    mEnvVarItem[index.row()]->minVersion = dataValue;
         } else if (index.column() == COLUMN_MAX_VERSION) {

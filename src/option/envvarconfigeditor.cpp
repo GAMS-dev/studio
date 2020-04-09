@@ -19,6 +19,7 @@
  */
 #include "common.h"
 #include "envvarconfigeditor.h"
+#include "envvarcfgcompleterdelegate.h"
 #include "ui_envvarconfigeditor.h"
 
 #include <QDebug>
@@ -116,6 +117,16 @@ void EnvVarConfigEditor::deSelectOptions()
     this->focusNextChild();
 }
 
+void EnvVarConfigEditor::parameterItemCommitted(QWidget *editor)
+{
+    Q_UNUSED(editor)
+    if (mCompleter->currentEditedIndex().isValid()) {
+        ui->EnvVarConfigTableView->selectionModel()->select( mCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
+        ui->EnvVarConfigTableView->setCurrentIndex( mCompleter->currentEditedIndex() );
+        ui->EnvVarConfigTableView->setFocus();
+    }
+}
+
 void EnvVarConfigEditor::on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems)
 {
     qDebug() << "envvar config reload";
@@ -155,6 +166,11 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     mEnvVarTableModel = new EnvVarTableModel(initItems, this);
     ui->EnvVarConfigTableView->setModel( mEnvVarTableModel );
+
+    mCompleter = new  EnvVarCfgCompleterDelegate(ui->EnvVarConfigTableView);
+    ui->EnvVarConfigTableView->setItemDelegate( mCompleter );
+    connect(mCompleter, &QStyledItemDelegate::commitData, this, &EnvVarConfigEditor::parameterItemCommitted);
+
     ui->EnvVarConfigTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
@@ -380,7 +396,12 @@ void EnvVarConfigEditor::on_actionResize_Columns_To_Contents_triggered()
 {
     if (ui->EnvVarConfigTableView->model()->rowCount()<=0)
         return;
-    ui->EnvVarConfigTableView->resizeColumnsToContents();
+
+    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PARAM_KEY);
+    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PARAM_VALUE);
+    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_MIN_VERSION);
+    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_MAX_VERSION);
+    ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PATH_VAR);
 }
 
 }

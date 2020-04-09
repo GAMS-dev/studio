@@ -284,24 +284,11 @@ void ParamConfigEditor::showDefinitionContextMenu(const QPoint &pos)
     if (selection.count() <= 0)
         return;
 
-    bool hasSelectionBeenAdded = (selection.size()>0);
-    // assume single selection
-    for (QModelIndex idx : selection) {
-        QModelIndex parentIdx = ui->ParamCfgDefTreeView->model()->parent(idx);
-        QVariant data = (parentIdx.row() < 0) ?  ui->ParamCfgDefTreeView->model()->data(idx, Qt::CheckStateRole)
-                                              : ui->ParamCfgDefTreeView->model()->data(parentIdx, Qt::CheckStateRole);
-        hasSelectionBeenAdded = (Qt::CheckState(data.toInt()) == Qt::Checked);
-    }
-
     QMenu menu(this);
-    if ( !hasSelectionBeenAdded )
-        menu.addAction(ui->actionAdd_This_Parameter);
-    if ( hasSelectionBeenAdded && ui->ParamCfgTableView->selectionModel()->selectedRows().size() > 0)
-        menu.addAction(ui->actionRemove_This_Parameter);
+    menu.addAction(ui->actionAdd_This_Parameter);
+    menu.addAction(ui->actionRemove_This_Parameter);
     menu.addSeparator();
-    if ( selection.size() > 0 )
-        menu.addAction(ui->actionResize_Columns_To_Contents);
-
+    menu.addAction(ui->actionResize_Columns_To_Contents);
     menu.exec(ui->ParamCfgDefTreeView->viewport()->mapToGlobal(pos));
 }
 
@@ -1120,7 +1107,6 @@ void ParamConfigEditor::on_actionRemove_This_Parameter_triggered()
 {
     findAndSelectionParameterFromDefinition();
     deleteOption();
-    // TODO (JP) : update
 }
 
 

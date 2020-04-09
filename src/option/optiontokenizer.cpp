@@ -1366,15 +1366,16 @@ void OptionTokenizer::validateOption(QList<ParamConfigItem *> &items)
         QString key = item->key;
         QString value = item->value;
 
-        // TODO (JP)
         idList << item->optionId;
         item->error = OptionErrorType::No_Error;
-        if (mOption->isValid(item->key) || mOption->isASynonym(item->key)) { // valid option
+        if (mOption->isDoubleDashedOption(item->key)) { // double dashed option
+            item->error = OptionErrorType::No_Error;
+        } else  if (mOption->isValid(item->key) || mOption->isASynonym(item->key)) { // valid option
             if (mOption->isDeprecated(item->key)) { // deprecated option
                 item->error = OptionErrorType::Deprecated_Option;
             } else { // valid and not deprected Option
                 item->error = mOption->getValueErrorType(item->key, item->value);
-                if (item->error!=OptionErrorType::No_Error) {
+                if (item->error==OptionErrorType::No_Error) {
                     QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
                     if (re.exactMatch(item->minVersion)) {
                         item->error = OptionErrorType::Invalid_minVersion;

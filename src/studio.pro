@@ -158,6 +158,7 @@ SOURCES += \
     option/configoptiondefinitionmodel.cpp \
     option/configparamtablemodel.cpp \
     option/definitionitemdelegate.cpp \
+    option/envvarcfgcompleterdelegate.cpp \
     option/envvarconfigeditor.cpp \
     option/envvartablemodel.cpp \
     option/gamsconfigeditor.cpp \
@@ -304,6 +305,7 @@ HEADERS += \
     option/configoptiondefinitionmodel.h \
     option/configparamtablemodel.h \
     option/definitionitemdelegate.h \
+    option/envvarcfgcompleterdelegate.h \
     option/envvarconfigeditor.h \
     option/envvartablemodel.h \
     option/gamsconfigeditor.h \

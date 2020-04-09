@@ -652,7 +652,7 @@ void ConfigParamTableModel::on_removeConfigParamItem()
     setRowCount(mOptionItem.size());
 
     for (int i=0; i<mOptionItem.size(); ++i) {
-        if (mOptionItem.at(i)->disabled) {
+        if (mOptionItem.at(i)->disabled || mOptionItem.at(i)->error ==OptionErrorType::Deprecated_Option) {
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
