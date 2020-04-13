@@ -258,10 +258,8 @@ void ParamConfigEditor::updateActionsState()
 void ParamConfigEditor::updateDefinitionActionsState(const QModelIndex &index)
 {
     QModelIndex parentIndex =  ui->ParamCfgDefTreeView->model()->parent(index);
-    qDebug()<< "a:" << parentIndex.row();
     QVariant data = (parentIndex.row() < 0) ? ui->ParamCfgDefTreeView->model()->data(index, Qt::CheckStateRole)
                                             : ui->ParamCfgDefTreeView->model()->data(parentIndex, Qt::CheckStateRole);
-    qDebug()<< "b:" << data.toInt();
     ui->actionAdd_This_Parameter->setEnabled( Qt::CheckState(data.toInt()) == Qt::Unchecked );
     ui->actionRemove_This_Parameter->setEnabled( Qt::CheckState(data.toInt()) == Qt::Checked );
     ui->actionResize_Columns_To_Contents->setEnabled( true );
@@ -481,7 +479,6 @@ QList<ConfigItem *> ParamConfigEditor::parameterConfigItems()
 
 void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
 {
-    qDebug() << "index:" << index.row() << "," << index.column();
     emit modificationChanged(true);
 
     QModelIndex parentIndex =  ui->ParamCfgDefTreeView->model()->parent(index);

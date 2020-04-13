@@ -373,10 +373,7 @@ void EnvVarConfigEditor::on_actionDelete_triggered()
         for(int i=rows.count()-1; i>=0; i--) {
             int current = rows[i];
             if (current != prev) {
-// TODO (JP)
-//                QString text = mEnvVarTableModel->getParameterTableEntry(current);
                 ui->EnvVarConfigTableView->model()->removeRows( current, 1 );
-//                mOptionTokenizer->logger()->append(QString("Option entry '%1' has been deleted").arg(text), LogMsgType::Info);
                 prev = current;
             }
         }

@@ -83,7 +83,6 @@ void GamsConfigEditor::setModified(bool modified)
 
 void GamsConfigEditor::on_reloadGamsUserConfigFile(QTextCodec *codec)
 {
-    qDebug() << "reload" << codec->name();
     if (QTextCodec::codecForName("UTF-8") != codec)
         SysLogLocator::systemLog()->append(QString("Gams User Confiugration Editor supports only %1 encoding").arg(QString(codec->name())), LogMsgType::Info);
     else if (mFileHasChangedExtern)
@@ -94,7 +93,7 @@ void GamsConfigEditor::on_reloadGamsUserConfigFile(QTextCodec *codec)
     if (mGuc->reloadGAMSUserConfigFile( mLocation )) {
         mParamConfigEditor->on_reloadGamsUserConfigFile( mGuc->readCommandLineParameters() );
         mEnvVarConfigEditor->on_reloadGamsUserConfigFile( mGuc->readEnvironmentVariables() );
-    } else { /* TODO (JP) */ }
+    }
 
     setFileChangedExtern(false);
     setModified(false);
