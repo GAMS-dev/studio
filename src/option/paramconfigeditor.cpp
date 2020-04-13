@@ -942,6 +942,7 @@ void ParamConfigEditor::on_actionInsert_triggered()
         }
         std::sort(rows.begin(), rows.end());
         rowToBeInserted = rows.at(0);
+        ui->ParamCfgTableView->model()->insertRows(rowToBeInserted, 1, QModelIndex());
     } else {
         ui->ParamCfgTableView->model()->insertRows(ui->ParamCfgTableView->model()->rowCount(), 1, QModelIndex());
         rowToBeInserted = mParameterTableModel->rowCount()-1;
