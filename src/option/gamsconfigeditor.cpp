@@ -121,6 +121,55 @@ void GamsConfigEditor::deSelectAll()
         mEnvVarConfigEditor->deSelect();
 }
 
+void GamsConfigEditor::keyPressEvent(QKeyEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        if ( (event->key() == Qt::Key_F1) &&
+             (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) ) {
+               mParamConfigEditor->on_actionShow_Option_Definition_triggered();
+               event->accept(); return;
+        } else if (event->key() == Qt::Key_R) {
+                  if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+                     mParamConfigEditor->on_actionResize_Columns_To_Contents_triggered();
+                     event->accept(); return;
+                  } else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable)) {
+                             mEnvVarConfigEditor->on_actionResize_Columns_To_Contents_triggered();
+                             event->accept(); return;
+                  }
+        } else if (event->key() == Qt::Key_B) {
+            if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+               mParamConfigEditor->on_actionSelect_Current_Row_triggered();
+               event->accept(); return;
+            } else if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::environmentVariable)) {
+                       mEnvVarConfigEditor->on_actionSelect_Current_Row_triggered();
+                       event->accept(); return;
+            }
+        }
+    } else if (event->modifiers() & Qt::ShiftModifier) {
+              if ( (event->key() == Qt::Key_F1) &&
+                   (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) ) {
+                    mParamConfigEditor->on_actionShowRecurrence_triggered();
+                    event->accept(); return;
+              }
+    }
+
+    if (event->key() == Qt::Key_Return) {
+        if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+            mParamConfigEditor->on_actionAdd_This_Parameter_triggered();
+            event->accept(); return;
+        }
+    }
+
+    if (event->key() == Qt::Key_Delete) {
+        if (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) {
+            mParamConfigEditor->on_actionRemove_This_Parameter_triggered();
+            event->accept(); return;
+        }
+    }
+
+    QWidget::keyPressEvent(event);
+}
+
 void GamsConfigEditor::setFileChangedExtern(bool value)
 {
     mFileHasChangedExtern = value;

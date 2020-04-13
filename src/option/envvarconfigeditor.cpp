@@ -61,7 +61,8 @@ void EnvVarConfigEditor::updateActionsState(const QModelIndex &index)
     ui->actionDelete->setEnabled( false );
     ui->actionMoveUp->setEnabled( false );
     ui->actionMoveDown->setEnabled( false );
-    ui->actionSelectAll->setEnabled( isThereARow( ));
+    ui->actionSelect_Current_Row->setEnabled( isThereAnIndexSelection() );
+    ui->actionSelectAll->setEnabled( isThereARow() );
     ui->actionResize_Columns_To_Contents->setEnabled( index.row() < mEnvVarTableModel->rowCount() );
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                                     QIcon::Off);
@@ -89,7 +90,9 @@ void EnvVarConfigEditor::updateActionsState()
     ui->actionMoveUp->setEnabled( idxSelection.first().row() > 0 );
     ui->actionMoveDown->setEnabled( idxSelection.last().row() < mEnvVarTableModel->rowCount()-1 );
 
+    ui->actionSelect_Current_Row->setEnabled( isThereAnIndexSelection() );
     ui->actionSelectAll->setEnabled( isThereARow( ));
+
     ui->actionResize_Columns_To_Contents->setEnabled( idxSelection.first().row() < mEnvVarTableModel->rowCount() );
     ui->actionInsert->icon().pixmap( QSize(16, 16), ui->actionInsert->isEnabled() ? QIcon::Selected : QIcon::Disabled,
                                                     QIcon::Off);
@@ -131,6 +134,7 @@ void EnvVarConfigEditor::showContextMenu(const QPoint &pos)
     menu.addAction(ui->actionMoveUp);
     menu.addAction(ui->actionMoveDown);
     menu.addSeparator();
+    menu.addAction(ui->actionSelect_Current_Row);
     menu.addAction(ui->actionSelectAll);
     menu.addSeparator();
     menu.addAction(ui->actionResize_Columns_To_Contents);
@@ -274,6 +278,12 @@ void EnvVarConfigEditor::on_dataItemChanged(const QModelIndex &topLeft, const QM
 bool EnvVarConfigEditor::isThereARow() const
 {
     return (ui->EnvVarConfigTableView->model()->rowCount() > 0);
+}
+
+bool EnvVarConfigEditor::isThereAnIndexSelection() const
+{
+    QModelIndexList selection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
+    return (selection.count() > 0);
 }
 
 bool EnvVarConfigEditor::isThereARowSelection() const

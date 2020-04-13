@@ -42,7 +42,7 @@
     <string>Insert Environment Varaibles</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Return</string>
+    <string>Ctrl+Ins</string>
    </property>
   </action>
   <action name="actionDelete">

@@ -82,6 +82,9 @@ public slots:
     void selectAll();
     void deSelectAll();
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 private:
     Ui::GamsConfigEditor *ui;
 

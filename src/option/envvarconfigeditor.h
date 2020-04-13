@@ -73,6 +73,7 @@ private slots:
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
     bool isThereARow() const;
+    bool isThereAnIndexSelection() const;
     bool isThereARowSelection() const;
     bool isEverySelectionARow() const;
 
@@ -85,6 +86,8 @@ private slots:
     void on_actionResize_Columns_To_Contents_triggered();
 
 private:
+    friend class GamsConfigEditor;
+
     Ui::EnvVarConfigEditor *ui;
     EnvVarTableModel* mEnvVarTableModel;
     EnvVarCfgCompleterDelegate* mCompleter;

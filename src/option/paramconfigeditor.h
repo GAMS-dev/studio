@@ -92,9 +92,10 @@ private slots:
     QList<int> getRecurrentOption(const QModelIndex &index);
     QString getParameterTableEntry(int row);
 
-    void deleteParameter();
+//    void deleteParameter();
 
     bool isThereARow() const;
+    bool isThereAnIndexSelection() const;
     bool isThereARowSelection() const;
     bool isEverySelectionARow() const;
 
@@ -113,6 +114,8 @@ private slots:
     void on_actionRemove_This_Parameter_triggered();
 
 private:
+    friend class GamsConfigEditor;
+
     Ui::ParamConfigEditor *ui;
     QMenu mContextMenu;
     QToolBar* mToolBar;

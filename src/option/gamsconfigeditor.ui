@@ -37,21 +37,7 @@
     </widget>
    </item>
   </layout>
-  <action name="actionInsertParam">
-   <property name="icon">
-    <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/plus</normaloff>:/img/plus</iconset>
-   </property>
-   <property name="text">
-    <string>InsertParam</string>
-   </property>
-   <property name="toolTip">
-    <string>Insert new Parameter</string>
-   </property>
-  </action>
  </widget>
- <resources>
-  <include location="../../icons/icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
