@@ -64,7 +64,6 @@ void TestConopt4Option::testOptionBooleanType_data()
 
     QTest::newRow("FByCol")          << "FByCol"          << false << 1  << "";
     QTest::newRow("Flg_Dbg_Intv")    << "Flg_Dbg_Intv"    << true  << 0  << "Flag for debugging interval evaluations.";
-    QTest::newRow("Flg_DC_Unique")   << "Flg_DC_Unique"   << true  << 1  << "Flag for requiring definitional constraints to be unique";
     QTest::newRow("Scale_Infeas")    << "Scale_Infeas"    << false << 1  << "";
     QTest::newRow("Flg_Crash_Basis") << "Flg_Crash_Basis" << true  << 1  << "Flag for crashing an initial basis without fixed slacks";
     QTest::newRow("LSLACK")          << "LSLACK"          << false << 0  << "";
@@ -147,10 +146,10 @@ void TestConopt4Option::testOptionIntegerType_data()
     QTest::addColumn<int>("upperBound");
     QTest::addColumn<int>("defaultValue");
 
-    QTest::newRow("LFDERR")        << "LFDERR"        << false  << 1  << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
-    QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1  << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
-    QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 2  << gams::studio::option::OPTION_VALUE_MAXINT  << 100;
-    QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1 << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("LFDERR")        << "LFDERR"        << false  << 1   << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1   << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 20  << gams::studio::option::OPTION_VALUE_MAXINT  << 100;
+    QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1  << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
 }
 
 void TestConopt4Option::testOptionIntegerType()

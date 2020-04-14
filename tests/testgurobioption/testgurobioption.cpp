@@ -256,7 +256,7 @@ void TestGUROBIOption::testOptionIntegerType_data()
     QTest::newRow(".partition")     << ".partition"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << 0;
     QTest::newRow("quad")           << "quad"           << true  << -1   << 1                                         << -1;
     QTest::newRow("rins")           << "rins"           << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
-    QTest::newRow("scaleflag")      << "scaleflag"      << true  << 0    << 2                                         << 1;
+    QTest::newRow("scaleflag")      << "scaleflag"      << true  << 0    << 3                                         << 1;
     QTest::newRow("threads")        << "threads"        << true  << -128 << gams::studio::option::OPTION_VALUE_MAXINT << 0;
     QTest::newRow("workerport")     << "workerport"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
     QTest::newRow("zeroobjnodes")   << "zeroobjnodes"   << true  << 0    << gams::studio::option::OPTION_VALUE_MAXINT << 0;
