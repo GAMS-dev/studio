@@ -200,7 +200,7 @@ void ParamConfigEditor::currentTableSelectionChanged(const QModelIndex &current,
 
 void ParamConfigEditor::updateActionsState(const QModelIndex &index)
 {
-    ui->actionInsert->setEnabled( isThereARow() );
+    ui->actionInsert->setEnabled( true );
     ui->actionDelete->setEnabled( false );
     ui->actionMoveUp->setEnabled( false );
     ui->actionMoveDown->setEnabled( false );
@@ -820,8 +820,8 @@ QList<int> ParamConfigEditor::getRecurrentOption(const QModelIndex &index)
 {
     QList<int> optionList;
 
-    if (!isInFocus(focusWidget()))
-        return optionList;
+//    if (!isInFocus(focusWidget()))
+//        return optionList;
 
     QVariant data = ui->ParamCfgTableView->model()->headerData(index.row(), Qt::Vertical,  Qt::CheckStateRole);
     if (Qt::CheckState(data.toUInt())==Qt::PartiallyChecked)
@@ -929,7 +929,7 @@ bool ParamConfigEditor::isEverySelectionARow() const
 
 void ParamConfigEditor::on_actionInsert_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionInsert->isEnabled())
+    if (!ui->actionInsert->isEnabled())
         return;
 
     QModelIndexList indexSelection = ui->ParamCfgTableView->selectionModel()->selectedIndexes();
@@ -983,8 +983,6 @@ void ParamConfigEditor::on_actionInsert_triggered()
 
 void ParamConfigEditor::on_actionDelete_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionDelete->isEnabled())
-        return;
     if (!ui->actionDelete->isEnabled())
         return;
 
@@ -1020,7 +1018,7 @@ void ParamConfigEditor::on_actionDelete_triggered()
 
 void ParamConfigEditor::on_actionMoveUp_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionMoveUp->isEnabled())
+    if (!ui->actionMoveUp->isEnabled())
         return;
     QModelIndexList indexSelection = ui->ParamCfgTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
@@ -1048,7 +1046,7 @@ void ParamConfigEditor::on_actionMoveUp_triggered()
 
 void ParamConfigEditor::on_actionMoveDown_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionMoveDown->isEnabled())
+    if (!ui->actionMoveDown->isEnabled())
         return;
     QModelIndexList indexSelection = ui->ParamCfgTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
@@ -1075,7 +1073,7 @@ void ParamConfigEditor::on_actionMoveDown_triggered()
 
 void ParamConfigEditor::on_actionSelect_Current_Row_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionSelect_Current_Row->isEnabled())
+    if (!ui->actionSelect_Current_Row->isEnabled())
         return;
     QList<int> rowList;
     for(QModelIndex idx : ui->ParamCfgTableView->selectionModel()->selectedIndexes()) {
@@ -1088,7 +1086,7 @@ void ParamConfigEditor::on_actionSelect_Current_Row_triggered()
 
 void ParamConfigEditor::on_actionSelectAll_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionSelectAll->isEnabled())
+    if (!ui->actionSelectAll->isEnabled())
         return;
 
     selectAll();
@@ -1096,7 +1094,7 @@ void ParamConfigEditor::on_actionSelectAll_triggered()
 
 void ParamConfigEditor::on_actionShowRecurrence_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionShowRecurrence->isEnabled())
+    if (!ui->actionShowRecurrence->isEnabled())
         return;
 
     QModelIndexList indexSelection = ui->ParamCfgTableView->selectionModel()->selectedIndexes();
@@ -1149,7 +1147,7 @@ void ParamConfigEditor::on_actionResize_Columns_To_Contents_triggered()
 
 void ParamConfigEditor::on_actionShow_Option_Definition_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionShow_Option_Definition->isEnabled())
+    if (!ui->actionShow_Option_Definition->isEnabled())
         return;
 
     showOptionDefinition(true);
@@ -1157,7 +1155,7 @@ void ParamConfigEditor::on_actionShow_Option_Definition_triggered()
 
 void ParamConfigEditor::on_actionAdd_This_Parameter_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionAdd_This_Parameter->isEnabled())
+    if (!ui->actionAdd_This_Parameter->isEnabled())
         return;
 
     QModelIndexList selection = ui->ParamCfgDefTreeView->selectionModel()->selectedIndexes(); // Rows();
@@ -1170,7 +1168,7 @@ void ParamConfigEditor::on_actionAdd_This_Parameter_triggered()
 
 void ParamConfigEditor::on_actionRemove_This_Parameter_triggered()
 {
-    if (!isInFocus(focusWidget()) || !ui->actionRemove_This_Parameter->isEnabled())
+    if (!ui->actionRemove_This_Parameter->isEnabled())
         return;
 
     findAndSelectionParameterFromDefinition();

@@ -57,7 +57,7 @@ void EnvVarConfigEditor::currentTableSelectionChanged(const QModelIndex &current
 
 void EnvVarConfigEditor::updateActionsState(const QModelIndex &index)
 {
-    ui->actionInsert->setEnabled( isThereARow());
+    ui->actionInsert->setEnabled( true );
     ui->actionDelete->setEnabled( false );
     ui->actionMoveUp->setEnabled( false );
     ui->actionMoveDown->setEnabled( false );
@@ -84,7 +84,7 @@ void EnvVarConfigEditor::updateActionsState()
     if (idxSelection.isEmpty())
         return;
 
-    ui->actionInsert->setEnabled( isThereARow());
+    ui->actionInsert->setEnabled( true );
     ui->actionDelete->setEnabled( idxSelection.first().row() < mEnvVarTableModel->rowCount() );
 
     ui->actionMoveUp->setEnabled( idxSelection.first().row() > 0 );
