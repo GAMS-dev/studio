@@ -228,6 +228,10 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind) : SyntaxKeywordBase(kind)
         list = QList<QPair<QString, QString>> {{"option",""}, {"options",""}};
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
         break;
+    case SyntaxKind::Execute:
+        list = QList<QPair<QString, QString>> {{"execute",""}};
+        mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
+        break;
     default:
         Q_ASSERT_X(false, "SyntaxReserved", ("Invalid SyntaxKind: "+syntaxKindName(kind)).toLatin1());
     }
@@ -251,6 +255,8 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, const QString &line
             return SyntaxBlock(this, start, end, false, SyntaxShift::in, SyntaxKind::SolveBody);
         case SyntaxKind::Option:
             return SyntaxBlock(this, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
+        case SyntaxKind::Execute:
+            return SyntaxBlock(this, start, end, false, SyntaxShift::in, SyntaxKind::ExecuteBody);
         default:
             break;
         }
@@ -314,6 +320,11 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind) : SyntaxKeywordBase(kind)
     case SyntaxKind::OptionKey:
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
         list << SyntaxData::options();
+        mKeywords.insert(int(kind), new DictList(list));
+        break;
+    case SyntaxKind::ExecuteKey:
+        mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
+        list << SyntaxData::execute();
         mKeywords.insert(int(kind), new DictList(list));
         break;
     case SyntaxKind::SolveKey:
