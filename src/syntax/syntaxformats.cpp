@@ -168,7 +168,6 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mSpecialKinds.insert(QString("continueEmbeddedCode").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("continueEmbeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("continueEmbeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
-    mSpecialKinds.insert(QString("onEmbedded").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("onEmbeddedCode").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("onEmbeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("onEmbeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
@@ -186,8 +185,7 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
         if (match.captured(2).compare("pauseembeddedcode", Qt::CaseInsensitive) == 0
                 || match.captured(2).compare("endembeddedcode", Qt::CaseInsensitive) == 0
-                || match.captured(2).compare("offembeddedcode", Qt::CaseInsensitive) == 0
-                || match.captured(2).compare("offembedded", Qt::CaseInsensitive) == 0)
+                || match.captured(2).compare("offembeddedcode", Qt::CaseInsensitive) == 0)
             return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (mSyntaxCommentEndline) {
