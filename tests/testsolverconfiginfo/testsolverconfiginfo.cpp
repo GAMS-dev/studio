@@ -184,7 +184,7 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("LINDOGLOBAL")   << "LINDOGLOBAL"   << "optlindoglobal.def"   << false;
     QTest::newRow("LINGO")         << "LINGO"         << "optlingo.def"         << false;
     QTest::newRow("LOCALSOLVER")   << "LOCALSOLVER"   << "optlocalsolver.def"   << false;
-    QTest::newRow("LOCALSOLVER70") << "LOCALSOLVER70" << "optlocalsolver.def" << false;
+    QTest::newRow("LOCALSOLVER70") << "LOCALSOLVER70" << "optlocalsolver.def"   << true;
     QTest::newRow("LOGMIP")        << "LOGMIP"        << "optjams.def"          << false;
     QTest::newRow("LS")            << "LS"            << "optls.def"            << false;
     QTest::newRow("MILES")         << "MILES"         << "optmiles.def"         << false;
