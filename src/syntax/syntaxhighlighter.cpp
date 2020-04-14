@@ -124,7 +124,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
     bool emptyLineKinds = true;
-    DEB() << text;
+//    DEB() << text;
 
     while (index < text.length()) {
         KindCode kindCode = (!code.isValid()) ? mCodes.at(0) : mCodes.at(code.kind());
@@ -165,9 +165,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->kind() != SyntaxKind::Standard) {
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
-                        if (tailBlock.syntax)
-                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
-                                  << tailBlock.syntax->kind() << "  (tail from " << syntax->kind() << ")";
+//                        if (tailBlock.syntax)
+//                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
+//                                  << tailBlock.syntax->kind() << "  (tail from " << syntax->kind() << ")";
                         scanParentheses(text, tailBlock.start, tailBlock.length(), syntax->kind(),
                                         tailBlock.syntax->kind(), tailBlock.next, parPosList);
                     }
@@ -180,9 +180,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError());
         } else if (nextBlock.syntax->kind() != SyntaxKind::Standard) {
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
-            if (nextBlock.syntax)
-                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
-                      << " " << nextBlock.syntax->kind() << "  (next from " << syntax->kind() << ")";
+//            if (nextBlock.syntax)
+//                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
+//                      << " " << nextBlock.syntax->kind() << "  (next from " << syntax->kind() << ")";
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),
@@ -211,7 +211,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             textBlock.setUserData(blockData);
     }
     setCurrentBlockState(purgeCode(code.code()));
-    DEB() << text << "      _" << codeDeb(code.code());
+//    DEB() << text << "      _" << codeDeb(code.code());
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind)
