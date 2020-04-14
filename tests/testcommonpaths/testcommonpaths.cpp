@@ -197,7 +197,7 @@ void TestCommonPaths::testGamsLicenseFilePath()
     auto expected = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
             "/GAMS/gamslice.txt";
 #else
-    auto expected = QStandardPaths::writableLocation(QStandardPaths::DataLocation) +
+    auto expected = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation) +
             "/GAMS/gamslice.txt";
 #endif
     QCOMPARE(QFileInfo(actual).canonicalFilePath(),

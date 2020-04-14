@@ -85,7 +85,7 @@ R"({
     },
     "tabs": {
     },
-    "userModelLibraryDir": "./GAMSStudio/modellibs",
+    "userModelLibraryDir": "./GAMS/modellibs",
     "version": {
         "settings": 1,
         "studio": "0.14.3.0"
@@ -101,7 +101,7 @@ R"({
         f3.write(
 R"({
     "autosaveOnRun": true,
-    "defaultWorkspace": "./GAMSStudio/workspace",
+    "defaultWorkspace": "./GAMS/Studio/workspace",
     "editor": {
         "TabSize": 4,
         "autoCloseBraces": true,
