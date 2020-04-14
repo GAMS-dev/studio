@@ -37,6 +37,7 @@ private slots:
     void testSetSystemDirNoGAMS();
     void testSetSystemDirAPPIMAGE();
 
+    void testGamsDocumentsDir();
     void testUserDocumentDir();
     void testUserModelLibraryDir();
     void testDefaultWorkingDir();
@@ -57,7 +58,7 @@ private slots:
 
     void testConfigFile();
 
-    void testLicenseFile();
+    void testGamsLicenseFilePath();
 };
 
 #endif // TESTCOMMONPATHS_H
