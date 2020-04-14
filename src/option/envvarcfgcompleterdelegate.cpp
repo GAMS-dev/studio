@@ -50,7 +50,6 @@ QWidget *EnvVarCfgCompleterDelegate::createEditor(QWidget *parent, const QStyleO
     lineEdit->adjustSize();
 
     connect( lineEdit, &QLineEdit::editingFinished, this, &EnvVarCfgCompleterDelegate::commitAndCloseEditor) ;
-    emit currentEditedIndexChanged(index);
     return lineEdit;
 }
 

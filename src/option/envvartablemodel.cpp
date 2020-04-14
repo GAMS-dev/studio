@@ -60,6 +60,16 @@ QVariant EnvVarTableModel::headerData(int index, Qt::Orientation orientation, in
         }
     case Qt::ToolTipRole:
         QString tooltipText = "";
+        if (mEnvVarItem.at(index)->key.simplified().isEmpty())
+           tooltipText.append( QString("Empty environment variable Name.") );
+        if (mEnvVarItem.at(index)->value.simplified().isEmpty())
+           tooltipText.append( QString("%1Empty environment variable Value.").arg( tooltipText.isEmpty() ? "" : "\n") );
+        if (!mEnvVarItem.at(index)->minVersion.simplified().isEmpty() && !isConformatVersion(mEnvVarItem.at(index)->minVersion))
+           tooltipText.append( QString("%1minVersion '%2' must be a version number that is conformed to [x[.y[.z]]] format.")
+                               .arg( tooltipText.isEmpty() ? "" : "\n").arg( mEnvVarItem.at(index)->minVersion ) );
+        if (!mEnvVarItem.at(index)->maxVersion.simplified().isEmpty() && !isConformatVersion(mEnvVarItem.at(index)->maxVersion))
+           tooltipText.append( QString("%1maxVersion '%2' must be a version number that is conformed to [x[.y[.z]]] format.")
+                               .arg( tooltipText.isEmpty() ? "" : "\n").arg( mEnvVarItem.at(index)->maxVersion ) );
         return tooltipText;
     }
     return QVariant();
@@ -118,10 +128,10 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ToolTipRole: {
         QString tooltipText = "";
-        if (!mEnvVarItem.at(row)->minVersion.isEmpty() &&
+        if (!mEnvVarItem.at(row)->minVersion.simplified().isEmpty() &&
             !isConformatVersion(mEnvVarItem.at(row)->minVersion)) {
             tooltipText = QString("Invalid minVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mEnvVarItem.at(row)->minVersion);
-        } else if (!mEnvVarItem.at(row)->maxVersion.isEmpty() &&
+        } else if (!mEnvVarItem.at(row)->maxVersion.simplified().isEmpty() &&
                    !isConformatVersion(mEnvVarItem.at(row)->maxVersion)) {
                    tooltipText = QString("Invalid maxVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mEnvVarItem.at(row)->maxVersion);
         }
@@ -315,7 +325,6 @@ void EnvVarTableModel::on_reloadEnvVarModel(const QList<EnvVarConfigItem *> &con
 
     mEnvVarItem = configItem;
     updateCheckState();
-    updateCheckState();
 
     setRowCount(mEnvVarItem.size());
 
@@ -352,7 +361,6 @@ void EnvVarTableModel::setRowCount(int rows)
 void EnvVarTableModel::updateCheckState()
 {
     for(int i = 0; i<mEnvVarItem.size(); ++i) {
-        QVariant value =  QVariant(Qt::Unchecked);
          if (isThereAnError( mEnvVarItem.at(i)) ) {
              setHeaderData( i, Qt::Vertical,
                                Qt::CheckState(Qt::Checked),
@@ -362,17 +370,18 @@ void EnvVarTableModel::updateCheckState()
                                Qt::CheckState(Qt::Unchecked),
                                Qt::CheckStateRole );
          }
-         mCheckState[i] = value;
     }
 }
 
 bool EnvVarTableModel::isThereAnError(EnvVarConfigItem* item) const
 {
-    if (item->key.isEmpty() || item->value.isEmpty())
+    if (item->key.simplified().isEmpty())
         return true;
-    else if (!item->maxVersion.isEmpty() && !isConformatVersion(item->maxVersion))
+    else if (item->value.simplified().isEmpty())
              return true;
-    else  if (!item->minVersion.isEmpty() && !isConformatVersion(item->minVersion))
+    else if (!item->maxVersion.simplified().isEmpty() && !isConformatVersion(item->maxVersion))
+             return true;
+    else  if (!item->minVersion.simplified().isEmpty() && !isConformatVersion(item->minVersion))
               return true;
     else
         return false;

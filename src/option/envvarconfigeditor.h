@@ -48,7 +48,6 @@ signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
-    void parameterItemCommitted(QWidget *editor);
     void on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems);
 
     void selectAll();

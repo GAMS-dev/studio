@@ -157,16 +157,6 @@ void EnvVarConfigEditor::deSelect()
     this->focusNextChild();
 }
 
-void EnvVarConfigEditor::parameterItemCommitted(QWidget *editor)
-{
-    Q_UNUSED(editor)
-    if (mCompleter->currentEditedIndex().isValid()) {
-        ui->EnvVarConfigTableView->selectionModel()->select( mCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
-        ui->EnvVarConfigTableView->setCurrentIndex( mCompleter->currentEditedIndex() );
-        ui->EnvVarConfigTableView->setFocus();
-    }
-}
-
 void EnvVarConfigEditor::on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems)
 {
     mEnvVarTableModel->on_reloadEnvVarModel(initItems);
@@ -208,7 +198,6 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     mCompleter = new  EnvVarCfgCompleterDelegate(ui->EnvVarConfigTableView);
     ui->EnvVarConfigTableView->setItemDelegate( mCompleter );
-    connect(mCompleter, &QStyledItemDelegate::commitData, this, &EnvVarConfigEditor::parameterItemCommitted);
 
     ui->EnvVarConfigTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
