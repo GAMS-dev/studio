@@ -16,7 +16,7 @@ QIcon FileIcon::iconForFileKind(FileKind kind, bool isReadonly, bool isMain)
     if (kind == FileKind::Gdx) return Scheme::icon(":/img/database", true);
     if (kind == FileKind::Ref) return Scheme::icon(":/img/ref-file", true);
     if (kind == FileKind::Opt) return Scheme::icon(":/img/option-file", true);
-    if (kind == FileKind::Guc) return Scheme::icon(":/img/option-file", true);
+    if (kind == FileKind::Guc) return Scheme::icon(":/img/gams-config-file", true);
     if (kind == FileKind::Lst) return Scheme::icon(":/img/file-alt", true);
     if (kind == FileKind::Lxi) return Scheme::icon(":/img/file-alt", true);
     if (kind == FileKind::Log) return Scheme::icon(":/img/file-alt", true);
