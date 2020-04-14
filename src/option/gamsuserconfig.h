@@ -22,7 +22,9 @@
 
 #include "gclgms.h"
 #include "guccc.h"
+extern "C" {
 #include "gucapi.h"
+}
 
 namespace gams {
 namespace studio {
