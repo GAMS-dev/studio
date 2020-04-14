@@ -21,8 +21,8 @@
 #include <QObject>
 
 #include "gclgms.h"
-//#include "guccc.h"
-//#include "gucapi.h"
+#include "guccc.h"
+#include "gucapi.h"
 
 namespace gams {
 namespace studio {
@@ -82,7 +82,7 @@ private:
 
     QString mLocation;
     bool mAvailable;
-//    gucHandle_t mGUCfg;
+    gucHandle_t mGUCfg;
 
 };
 
