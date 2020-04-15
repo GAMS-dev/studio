@@ -42,6 +42,14 @@ EnvVarConfigEditor::~EnvVarConfigEditor()
         delete mEnvVarTableModel;
 }
 
+void EnvVarConfigEditor::parameterItemCommitted(QWidget *editor)
+{
+    Q_UNUSED(editor)
+    if (mCompleter->currentEditedIndex().isValid()) {
+        ui->EnvVarConfigTableView->resizeColumnToContents( mCompleter->currentEditedIndex().column() );
+    }
+}
+
 void EnvVarConfigEditor::currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_UNUSED(previous)
@@ -198,6 +206,7 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     mCompleter = new  EnvVarCfgCompleterDelegate(ui->EnvVarConfigTableView);
     ui->EnvVarConfigTableView->setItemDelegate( mCompleter );
+    connect(mCompleter, &QStyledItemDelegate::commitData, this, &EnvVarConfigEditor::parameterItemCommitted);
 
     ui->EnvVarConfigTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked

@@ -80,6 +80,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->ParamCfgTableView);
     ui->ParamCfgTableView->setItemDelegate( mOptionCompleter );
     connect(mOptionCompleter, &QStyledItemDelegate::commitData, this, &ParamConfigEditor::parameterItemCommitted);
+
     ui->ParamCfgTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
@@ -314,6 +315,7 @@ void ParamConfigEditor::parameterItemCommitted(QWidget *editor)
 {
     Q_UNUSED(editor)
     if (mOptionCompleter->currentEditedIndex().isValid()) {
+        ui->ParamCfgTableView->resizeColumnToContents( mOptionCompleter->currentEditedIndex().column() );
         ui->ParamCfgTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
         ui->ParamCfgTableView->setCurrentIndex( mOptionCompleter->currentEditedIndex() );
         ui->ParamCfgTableView->setFocus();
@@ -623,6 +625,9 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
      mParameterTableModel->on_updateConfigParamItem( ui->ParamCfgTableView->model()->index(firstRow, lastColumn),
                                                      ui->ParamCfgTableView->model()->index(lastRow, lastColumn),
                                                      {Qt::EditRole});
+
+     ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_KEY);
+     ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_VALUE);
 
     connect( mParameterTableModel, &QAbstractTableModel::dataChanged,  mParameterTableModel, &ConfigParamTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
 
