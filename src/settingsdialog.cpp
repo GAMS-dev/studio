@@ -269,6 +269,8 @@ void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
 {
 #ifndef __APPLE__
     ViewHelper::changeAppearance(index);
+#else
+    Q_UNUSED(index)
 #endif
 }
 

@@ -14,6 +14,12 @@ All settings have been reset and are now saved in JSON format. That means that s
 - moved GDX Viewer Filter icon to not block sorting indicator in table header
 - fixed unwanted/wrong theme switch on macOS
 - fixed faulty live update of Studio when macOS theme gets changed
+- fixed search sometimes ignoring the current file if search limit is reached
+- fixed highlighting of dimensions in labels
+- further improvements to syntax highlighting
+- fixed handling of last path for dialogs
+- fixed active GAMS run buttons when no gams file was active
+- fixed crash when deleting scratch dirs while user is on welcome page
 
 ## MIRO
 - disabled MIRO shortcuts if MIRO is unavailable

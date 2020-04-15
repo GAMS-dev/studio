@@ -31,6 +31,7 @@ PaletteManager::PaletteManager()
     darkPalette.setColor(QPalette::ToolTipText, Qt::white);
     darkPalette.setColor(QPalette::Text, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::Text, disabledColor);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(0, 0, 0, 0)); // removes white text shadow
     darkPalette.setColor(QPalette::Button, QColor(50,50,50));
     darkPalette.setColor(QPalette::ButtonText, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledColor);

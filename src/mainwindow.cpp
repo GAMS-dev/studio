@@ -1517,7 +1517,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
     if (exitCode == GAMSRETRN_TOO_MANY_SCRATCH_DIRS) {
         ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
-        QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+        QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 
         QMessageBox msgBox;
         msgBox.setWindowTitle("Delete scratch directories");
@@ -3923,7 +3923,7 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 void MainWindow::on_actionDeleteScratchDirs_triggered()
 {
     ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
-    QString path = node ? QDir::toNativeSeparators(node->location()) : "";
+    QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 
     QMessageBox msgBox;
     msgBox.setWindowTitle("Delete scratch directories");

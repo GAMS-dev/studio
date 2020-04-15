@@ -52,6 +52,8 @@ void ViewHelper::setFileId(QWidget *widget, FileId id)
 
 NodeId ViewHelper::groupId(QWidget *widget)
 {
+    if (!widget) return NodeId();
+
     bool ok;
     NodeId res = widget->property("groupId").toInt(&ok);
     return ok ? res : NodeId();
