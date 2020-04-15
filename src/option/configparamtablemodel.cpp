@@ -31,7 +31,7 @@ namespace option {
 ConfigParamTableModel::ConfigParamTableModel(QList<ParamConfigItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
-    mHeader << "Key"  << "Value" << "minVersion" << "maxVersion"  << "Debug Entry";  // TODO (JP)<< "Action";
+    mHeader << "Key"  << "Value" << "minVersion" << "maxVersion"  << "Debug Entry";
 
     for(ParamConfigItem* item : itemList) {
         QList<OptionErrorType> errorType = mOptionTokenizer->validate(item);

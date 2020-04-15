@@ -186,8 +186,7 @@ void GamsUserConfig::updateEnvironmentVariables(const QList<EnvVarConfigItem *> 
            gucAddItemKV( mGUCfg,gucsMinVersion,0, i->minVersion.toStdString().c_str());
         if (!i->maxVersion.isEmpty())
             gucAddItemKV( mGUCfg, gucsMaxVersion,0, i->maxVersion.toStdString().c_str());
-        // int ret =
-        // TODO (JP) check if (ret != 0) error report ?? : qDebug() << i->maxVersion << ":ret=" << ret;
+        // int ret = check if (ret != 0) error report ?? : qDebug() << i->maxVersion << ":ret=" << ret;
         if (i->hasPathVariable())
             gucAddItemKV( mGUCfg,guciPathVariable, i->pathVariable, "");
 
