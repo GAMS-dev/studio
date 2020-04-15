@@ -851,6 +851,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
               // Guc Editor ignore other encoding scheme than UTF-8
+              mCodec = QTextCodec::codecForName("utf-8");
               res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
                                                                              id(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
