@@ -4,8 +4,6 @@ Version 1.0 RC1
 - **introduced new settings format.**
 All settings have been reset and are now saved in JSON format. That means that settings from previous versions of Studio cannot be restored.
 - changed location of default workspace and model library
-    - default workspace now is located at $DOCUMENTS/GAMS/Studio/workspace
-    - user model library is now located at $DOCUMENTS/GAMS/modellibs
 - changed location where gamslice.txt is put when created using Studio
 - fixed behavior of Process Log and Help widget which were restored to the wrong postion
 - fixed terminal opening wrong path when having new/reset settings
