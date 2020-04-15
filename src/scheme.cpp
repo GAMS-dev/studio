@@ -159,7 +159,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,  QColor(Qt::black));
 
     mColorSchemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
-    mColorSchemes[sNr].insert(Syntax_directive,         Color(dark_assignment));
+    mColorSchemes[sNr].insert(Syntax_directive,         QColor(200,60,90));
     mColorSchemes[sNr].insert(Syntax_keyword,           Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_declaration,       Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_description,       Color(dark_unobstrusive));
