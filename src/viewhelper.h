@@ -123,8 +123,9 @@ public:
 
     inline static QStringList dialogFileFilterUserCreated() {
         return QStringList("GAMS source (*.gms)")
-               << "Text files (*.txt)"
                << "Option files (*.opt *.op* *.o*)"
+               << "Gams Configuration file (*.yaml)"
+               << "Text files (*.txt)"
                << "All files (*.*)";
     }
 
