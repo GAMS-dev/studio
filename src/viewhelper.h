@@ -125,7 +125,6 @@ public:
         return QStringList("GAMS source (*.gms)")
                << "Text files (*.txt)"
                << "Option files (*.opt *.op* *.o*)"
-               << "Gams Config file (gamsconfig.yaml)"
                << "All files (*.*)";
     }
 
@@ -133,7 +132,7 @@ public:
         return QStringList("GAMS Source (*.gms)")
                << "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
                << "Option files (*.opt *.op* *.o*)"
-               << "Gams Config file (gamsconfig.yaml)"
+               << "Gams Configuration file (*.yaml)"
                << "Reference files (*.ref)"
                << "Text files (*.txt)"
                << "All files (*.*)";

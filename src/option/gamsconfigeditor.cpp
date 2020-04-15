@@ -22,8 +22,8 @@
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 
+#include <QMessageBox>
 #include <QPushButton>
-#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -51,6 +51,7 @@ GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
     connect(mEnvVarConfigEditor, &EnvVarConfigEditor::modificationChanged, this, &GamsConfigEditor::setModified, Qt::UniqueConnection);
 
     ui->GamsCfgTabWidget->setCurrentIndex(int(ConfigEditorType::commandLineParameter));
+
     setFocusProxy(ui->GamsCfgTabWidget);
 }
 
@@ -83,16 +84,32 @@ void GamsConfigEditor::setModified(bool modified)
 
 void GamsConfigEditor::on_reloadGamsUserConfigFile(QTextCodec *codec)
 {
-    if (QTextCodec::codecForName("UTF-8") != codec)
+    if (QTextCodec::codecForName("UTF-8") != codec) {
         SysLogLocator::systemLog()->append(QString("Gams User Confiugration Editor supports only %1 encoding").arg(QString(codec->name())), LogMsgType::Info);
-    else if (mFileHasChangedExtern)
-             SysLogLocator::systemLog()->append(QString("Loading Gams User Configuration from %1").arg(mLocation), LogMsgType::Info);
-    else
+    } else if (mFileHasChangedExtern) {
+             SysLogLocator::systemLog()->append(QString("Reloading Gams User Configuration from %1").arg(mLocation), LogMsgType::Info);
+    } else {
+        if (!mGuc->isAvailable()) {
+            SysLogLocator::systemLog()->append(mGuc->getLastErrorMessage(), LogMsgType::Warning);
+            QMessageBox msgBox;
+            msgBox.setText( QString("The contents of %1 does not conform to Gams Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
+            msgBox.setIcon( QMessageBox::Warning );
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.exec();
+        }
         return;
+    }
 
     if (mGuc->reloadGAMSUserConfigFile( mLocation )) {
         mParamConfigEditor->on_reloadGamsUserConfigFile( mGuc->readCommandLineParameters() );
         mEnvVarConfigEditor->on_reloadGamsUserConfigFile( mGuc->readEnvironmentVariables() );
+    } else {
+        SysLogLocator::systemLog()->append(mGuc->getLastErrorMessage(), LogMsgType::Warning);
+        QMessageBox msgBox;
+        msgBox.setText( QString("The contents of %1 does not conform to Gams Configuration file format.\nThe contents may be lost if continue editing. Try \"Reopen as Text\" to preserve editing the file contents.").arg(mLocation));
+        msgBox.setIcon( QMessageBox::Warning );
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
     }
 
     setFileChangedExtern(false);

@@ -44,8 +44,7 @@ GamsUserConfig::GamsUserConfig(const QString &location) :
     }
 
     gucCreate(&mGUCfg, message,sizeof(message));
-
-    readGAMSUserConfigFile(mLocation);
+    mAvailable = readGAMSUserConfigFile(mLocation);
 }
 
 GamsUserConfig::~GamsUserConfig()
@@ -53,17 +52,20 @@ GamsUserConfig::~GamsUserConfig()
     if (mGUCfg)  gucFree(&mGUCfg);
 }
 
-QList<ConfigItem *> GamsUserConfig::readCommandLineParameters() const
+QList<ConfigItem *> GamsUserConfig::readCommandLineParameters()
 {
     QList<ConfigItem *> itemList;
+    if (!mAvailable)
+        return itemList;
+
+    clearLastErrorMessage();
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
        int gsec, ival, isset;
        char sval[GMS_SSSIZE], skey[GMS_SSSIZE];
 
        int rc = gucGetItemKV(mGUCfg, ipos, guciGSection, &isset, &gsec, sval, sizeof(sval)) ;
        if (rc > 1) {
-           SysLogLocator::systemLog()->append(QString("Failure to read commandLineParameters from %1").arg(mLocation),
-                                              LogMsgType::Error);
+           setLastErrorMessage( QString("Failure to read commandLineParameters from %1").arg(mLocation) );
            break;
        }
 
@@ -86,17 +88,20 @@ QList<ConfigItem *> GamsUserConfig::readCommandLineParameters() const
     return itemList;
 }
 
-QList<EnvVarConfigItem *> GamsUserConfig::readEnvironmentVariables() const
+QList<EnvVarConfigItem *> GamsUserConfig::readEnvironmentVariables()
 {
     QList<EnvVarConfigItem *> itemList;
+    if (!mAvailable)
+        return itemList;
+
+    clearLastErrorMessage();
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
        int gsec, ival, isset;
        char sval[GMS_SSSIZE], skey[GMS_SSSIZE];
 
        int rc = gucGetItemKV(mGUCfg, ipos, guciGSection, &isset, &gsec, sval, sizeof(sval));
        if (rc > 1) {
-           SysLogLocator::systemLog()->append(QString("Failure to read environmentVariables from %1").arg(mLocation),
-                                              LogMsgType::Error);
+           setLastErrorMessage( QString("Failure to read environmentVariables from %1").arg(mLocation) );
            break;
        }
 
@@ -125,6 +130,7 @@ QList<EnvVarConfigItem *> GamsUserConfig::readEnvironmentVariables() const
 
 void GamsUserConfig::updateCommandLineParameters(const QList<ConfigItem *> &items)
 {
+    clearLastErrorMessage();
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
         int gsec,  isset;
         char sval[GMS_SSSIZE];
@@ -133,10 +139,8 @@ void GamsUserConfig::updateCommandLineParameters(const QList<ConfigItem *> &item
             break;
         if (rc==1)
             continue;
-        qDebug() << QString("CLP ipos=%1, gsec=%2").arg(ipos).arg(guc_gsection_Name[gsec]);
         if (gsec == CLP) {
             gucMakeNoneItem(mGUCfg,ipos);
-            qDebug() << QString("CLP none ipos=%1").arg(ipos);
             continue;
         }
     }
@@ -144,7 +148,6 @@ void GamsUserConfig::updateCommandLineParameters(const QList<ConfigItem *> &item
     for (ConfigItem* i : items) {
         int ipos;
         gucStartSectionItem( mGUCfg, gucCommandLineParameters, i->key.toStdString().c_str(), &ipos);
-        qDebug() << QString("CLP update ipos=%1").arg(ipos);
         gucAddItemKV( mGUCfg,gucsValue,0,i->value.toStdString().c_str());
         if (!i->minVersion.isEmpty())
            gucAddItemKV( mGUCfg,gucsMinVersion,0, i->minVersion.toStdString().c_str());
@@ -153,13 +156,14 @@ void GamsUserConfig::updateCommandLineParameters(const QList<ConfigItem *> &item
         if (0==gucDoneSectionItem(mGUCfg)) {
             char msg[GMS_SSSIZE];
             if (0==gucGetErrorMessage( mGUCfg, msg, sizeof(msg)))
-                qDebug() << QString("Error: %1").arg(msg);
+                setLastErrorMessage(QString(msg));
         }
     }
 }
 
 void GamsUserConfig::updateEnvironmentVariables(const QList<EnvVarConfigItem *> &items)
 {
+    clearLastErrorMessage();
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
         int gsec,  isset;
         char sval[GMS_SSSIZE];
@@ -168,10 +172,8 @@ void GamsUserConfig::updateEnvironmentVariables(const QList<EnvVarConfigItem *> 
             break;
         if (1==rc)
             continue;
-        qDebug() << QString("EV ipos=%1, gsec=%2").arg(ipos).arg( guc_gsection_Name[gsec]);
         if (gsec == EV) {
             gucMakeNoneItem(mGUCfg,ipos);
-            qDebug() << QString("EV none ipos=%1").arg(ipos);
             continue;
         }
     }
@@ -179,28 +181,27 @@ void GamsUserConfig::updateEnvironmentVariables(const QList<EnvVarConfigItem *> 
     for (EnvVarConfigItem* i : items) {
         int ipos;
         gucStartSectionItem( mGUCfg, gucEnvironmentVariables, i->key.toStdString().c_str(), &ipos);
-        qDebug() << QString("EV update ipos=%1").arg(ipos);
         gucAddItemKV( mGUCfg,gucsValue,0,i->value.toStdString().c_str());
         if (!i->minVersion.isEmpty())
            gucAddItemKV( mGUCfg,gucsMinVersion,0, i->minVersion.toStdString().c_str());
         if (!i->maxVersion.isEmpty())
             gucAddItemKV( mGUCfg, gucsMaxVersion,0, i->maxVersion.toStdString().c_str());
         // int ret =
-           // TODO (JP) check if (ret != 0) error report ?? : qDebug() << i->maxVersion << ":ret=" << ret;
+        // TODO (JP) check if (ret != 0) error report ?? : qDebug() << i->maxVersion << ":ret=" << ret;
         if (i->hasPathVariable())
             gucAddItemKV( mGUCfg,guciPathVariable, i->pathVariable, "");
 
         if (0==gucDoneSectionItem(mGUCfg)) {
             char msg[GMS_SSSIZE];
             if (0==gucGetErrorMessage( mGUCfg, msg, sizeof(msg)))
-               qDebug() << QString("Error: %1").arg(msg);
+                setLastErrorMessage( msg );
         }
     }
 }
 
 void GamsUserConfig::writeGamsUserConfigFile(const QString &location)
 {
-    qDebug() << "writing : " << location.toStdString().c_str();
+    clearLastErrorMessage();
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
         int gsec,  isset;
         char sval[GMS_SSSIZE];
@@ -209,7 +210,6 @@ void GamsUserConfig::writeGamsUserConfigFile(const QString &location)
             break;
         if (1==rc)
             continue;
-        qDebug() << QString("EV ipos=%1, gsec=%2").arg(ipos).arg( guc_gsection_Name[gsec]);
     }
 
     gucWriteGAMSConfig(mGUCfg, location.toStdString().c_str());
@@ -217,26 +217,45 @@ void GamsUserConfig::writeGamsUserConfigFile(const QString &location)
 
 bool GamsUserConfig::reloadGAMSUserConfigFile(const QString &location)
 {
+    mLocation  = location;
     for (int ipos=0; ipos<gucGetItemCount(mGUCfg); ipos++) {
         gucMakeNoneItem(mGUCfg,ipos);
     }
 
-    mLocation  = location;
-    return (readGAMSUserConfigFile(mLocation));
+    mAvailable = readGAMSUserConfigFile(mLocation);
+    return mAvailable;
 }
 
 bool GamsUserConfig::readGAMSUserConfigFile(const QString &location)
 {
-    char message[GMS_SSSIZE];
-    mLocation = location;
-    if (!gucReadGAMSConfig(mGUCfg, location.toStdString().c_str())) {
-        if (0==gucGetErrorMessage(mGUCfg, message, sizeof(message)))
-            SysLogLocator::systemLog()->append(message, LogMsgType::Error);
-        mAvailable = false;
+    if (0!=gucReadGAMSConfig(mGUCfg, location.toStdString().c_str())) {
+        char msg[GMS_SSSIZE];
+        if (0==gucGetErrorMessage( mGUCfg, msg, sizeof(msg)))
+           setLastErrorMessage( msg );
+        return false;
     } else {
-        mAvailable = true;
+        return true;
     }
-    return mAvailable;
+}
+
+void GamsUserConfig::clearLastErrorMessage()
+{
+    mLastErrorMessage.clear();
+}
+
+void GamsUserConfig::setLastErrorMessage(const char *message)
+{
+    mLastErrorMessage = QString(message);
+}
+
+void GamsUserConfig::setLastErrorMessage(const QString &message)
+{
+    mLastErrorMessage = message;
+}
+
+QString GamsUserConfig::getLastErrorMessage() const
+{
+    return mLastErrorMessage;
 }
 
 bool GamsUserConfig::isAvailable() const

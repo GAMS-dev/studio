@@ -22,9 +22,7 @@
 
 #include "gclgms.h"
 #include "guccc.h"
-extern "C" {
 #include "gucapi.h"
-}
 
 namespace gams {
 namespace studio {
@@ -66,8 +64,8 @@ public:
     GamsUserConfig(const QString &location);
     ~GamsUserConfig();
 
-    QList<EnvVarConfigItem *> readEnvironmentVariables() const;
-    QList<ConfigItem *> readCommandLineParameters() const;
+    QList<EnvVarConfigItem *> readEnvironmentVariables();
+    QList<ConfigItem *> readCommandLineParameters();
 
     void updateCommandLineParameters(const QList<ConfigItem *> &items);
     void updateEnvironmentVariables(const QList<EnvVarConfigItem *> &items);
@@ -77,11 +75,16 @@ public:
     bool reloadGAMSUserConfigFile(const QString &location);
 
     bool isAvailable() const;
+    QString getLastErrorMessage() const;
 
 private:
     bool readGAMSUserConfigFile(const QString &location);
+    void clearLastErrorMessage();
+    void setLastErrorMessage(const char *message);
+    void setLastErrorMessage(const QString &message);
     static int errorCallback(int count, const char *message);
 
+    QString mLastErrorMessage;
     QString mLocation;
     bool mAvailable;
     gucHandle_t mGUCfg;
