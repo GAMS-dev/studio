@@ -97,7 +97,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     ui->ParamCfgTableView->setDragDropOverwriteMode(true);
     ui->ParamCfgTableView->setDefaultDropAction(Qt::CopyAction);
 
-    ui->ParamCfgTableView->setColumnHidden(ConfigParamTableModel::COLUMN_ENTRY_NUMBER, false); // TODO (JP) true);
+    ui->ParamCfgTableView->setColumnHidden(ConfigParamTableModel::COLUMN_ENTRY_NUMBER, true);
     ui->ParamCfgTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->ParamCfgTableView->horizontalHeader()->setStretchLastSection(true);
