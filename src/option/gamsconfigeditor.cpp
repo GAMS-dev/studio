@@ -116,6 +116,14 @@ void GamsConfigEditor::on_reloadGamsUserConfigFile(QTextCodec *codec)
     setModified(false);
 }
 
+QString GamsConfigEditor::getSelectedParameterName(QWidget *widget) const
+{
+    if (ui->GamsCfgTabWidget->currentIndex() == int(ConfigEditorType::commandLineParameter)) {
+        return mParamConfigEditor->getSelectedParameterName(widget);
+    }
+    return "";
+}
+
 bool GamsConfigEditor::saveConfigFile(const QString &location)
 {
     return saveAs(location);

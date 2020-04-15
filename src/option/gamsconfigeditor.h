@@ -69,6 +69,7 @@ public:
     void setFileChangedExtern(bool value);
 
     void on_reloadGamsUserConfigFile(QTextCodec* codec);
+    QString getSelectedParameterName(QWidget* widget) const;
 
 signals:
     void modificationChanged(bool modifiedState);

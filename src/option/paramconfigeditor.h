@@ -53,6 +53,7 @@ signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
+    QString getSelectedParameterName(QWidget* widget) const;
     void parameterItemCommitted(QWidget *editor);
     void on_reloadGamsUserConfigFile(const QList<ConfigItem *> &initParams);
 

@@ -1678,9 +1678,13 @@ void MainWindow::on_actionHelp_triggered()
                          } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
                                     mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
                                                                           help::HelpData::getStudioSectionName(help::StudioSection::ListingViewer));
-                         } else if (ViewHelper::toGamsConfigEditor(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                          help::HelpData::getStudioSectionName(help::StudioSection::GamsUserConfigEditor));
+                         } else if (option::GamsConfigEditor* editor = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                                   QString optionName = editor->getSelectedParameterName(widget);
+                                  if (optionName.isEmpty())
+                                      mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                            help::HelpData::getStudioSectionName(help::StudioSection::GamsUserConfigEditor));
+                                  else
+                                      mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
                          } else {
                              mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
                          }

@@ -186,6 +186,40 @@ bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
     return (focusWidget==ui->ParamCfgTableView || focusWidget==ui->ParamCfgDefTreeView);
 }
 
+QString ParamConfigEditor::getSelectedParameterName(QWidget *widget) const
+{
+    if (widget == ui->ParamCfgTableView) {
+        QModelIndexList selection = ui->ParamCfgTableView->selectionModel()->selectedIndexes();
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            QVariant headerData = ui->ParamCfgTableView->model()->headerData(index.row(), Qt::Vertical, Qt::CheckStateRole);
+            if (Qt::CheckState(headerData.toUInt())==Qt::PartiallyChecked) {
+                return "";
+            }
+            QVariant data = ui->ParamCfgTableView->model()->data( index.sibling(index.row(),0) );
+            if (mOptionTokenizer->getOption()->isValid(data.toString()))
+               return data.toString();
+            else if (mOptionTokenizer->getOption()->isASynonym(data.toString()))
+                    return mOptionTokenizer->getOption()->getNameFromSynonym(data.toString());
+            else
+               return "";
+        }
+    } else if (widget == ui->ParamCfgDefTreeView) {
+        QModelIndexList selection = ui->ParamCfgDefTreeView->selectionModel()->selectedRows();
+        if (selection.count() > 0) {
+            QModelIndex index = selection.at(0);
+            QModelIndex  parentIndex =  ui->ParamCfgDefTreeView->model()->parent(index);
+            if (parentIndex.row() >= 0) {
+                return ui->ParamCfgDefTreeView->model()->data( parentIndex.sibling(parentIndex.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
+            } else {
+                return ui->ParamCfgDefTreeView->model()->data( index.sibling(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME) ).toString();
+            }
+        }
+    }
+    return "";
+
+}
+
 void ParamConfigEditor::currentTableSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     Q_UNUSED(previous)
