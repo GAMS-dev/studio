@@ -343,7 +343,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
     if (entryKind == SyntaxKind::AssignmentLabel && index != 0) {
         return SyntaxBlock(this);
     }
-    int nesting = 1; // (JM) Best, if we can get nesting from prev line
+    int nesting = 0; // (JM) Best, if we can get nesting from prev line
 
     QString quote("\"\'");
     QString extender(".:*");
@@ -361,6 +361,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &lin
                 extended = false;
                 if (pos < start) return SyntaxBlock(this);
             } else if (line.at(pos) == '(') {
+                ++nesting;
                 pos = endOfParentheses(line, pos, pPairs, nesting);
                 if (pos <= start) pos = line.length()-1; // wrong_nesting
             } else if (isWhitechar(line, pos)) {
