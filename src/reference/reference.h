@@ -71,7 +71,7 @@ public:
     /// \return <c>List of SymbolReferenceItem of the symbols of the given type</c> if found;
     ///         otherwise <c>List of SymbolReferenceItem of all symbols</c>.
     ///
-    QList<SymbolReferenceItem *> findReference(SymbolDataType::SymbolType type);
+    QList<SymbolReferenceItem *> findReferenceFromType(SymbolDataType::SymbolType type);
 
     ///
     /// \brief Find the SymbolReferenceItem of the symbol by id.
@@ -80,7 +80,7 @@ public:
     /// \param id Symbol id.
     /// \return <c>SymbolReferenceItem of the symbol</c> if found; otherwise <c>nullptr</c>.
     ///
-    SymbolReferenceItem* findReference(SymbolId symbolid);
+    SymbolReferenceItem* findReferenceFromId(SymbolId symbolid);
 
     ///
     /// \brief Find the SymbolReferenceItem of the symbol by name.
@@ -89,7 +89,7 @@ public:
     /// \param symbolName Symbol name.
     /// \return <c>SymbolReferenceItem of the symbol</c> if found; otherwise <c>nullptr</c>.
     ///
-    SymbolReferenceItem* findReference(const QString &symbolName);
+    SymbolReferenceItem* findReferenceFromName(const QString &symbolName);
 
     ///
     /// \brief Checks if symbol of the given id exists in the reference object.

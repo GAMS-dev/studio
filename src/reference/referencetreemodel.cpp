@@ -197,7 +197,7 @@ void ReferenceTreeModel::updateSelectedSymbol(SymbolId symbolid)
     QList<ReferenceItemModel*> parents;
     parents << mRootItem;
 
-    SymbolReferenceItem* symbolRef = mReference->findReference(mCurrentSymbolID);
+    SymbolReferenceItem* symbolRef = mReference->findReferenceFromId(mCurrentSymbolID);
     if (symbolRef) {
         insertSymbolReference(parents, symbolRef->declare(), "Declared");
         insertSymbolReference(parents, symbolRef->define(), "Defined");
@@ -222,7 +222,7 @@ void ReferenceTreeModel::updateSelectedSymbol(const QString &symbolName)
     QList<ReferenceItemModel*> parents;
     parents << mRootItem;
 
-    SymbolReferenceItem* symbolRef = mReference->findReference(symbolName);
+    SymbolReferenceItem* symbolRef = mReference->findReferenceFromName(symbolName);
     if (symbolRef) {
         mCurrentSymbolID = symbolRef->id();
         insertSymbolReference(parents, symbolRef->declare(), "Declared");
