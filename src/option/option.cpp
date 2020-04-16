@@ -128,7 +128,7 @@ bool Option::isDoubleDashedOptionNameValid(const QString &optionName) const
 
 bool Option::isConformantVersion(const QString &version) const
 {
-    QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
+    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
     return re.exactMatch(version);
 }
 

@@ -389,7 +389,7 @@ bool EnvVarTableModel::isThereAnError(EnvVarConfigItem* item) const
 
 bool EnvVarTableModel::isConformatVersion(const QString &version) const
 {
-    QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
+    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
     return re.exactMatch(version);
 }
 

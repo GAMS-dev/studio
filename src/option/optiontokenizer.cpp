@@ -1376,7 +1376,7 @@ void OptionTokenizer::validateOption(QList<ParamConfigItem *> &items)
             } else { // valid and not deprected Option
                 item->error = mOption->getValueErrorType(item->key, item->value);
                 if (item->error==OptionErrorType::No_Error) {
-                    QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
+                    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
                     if (re.exactMatch(item->minVersion)) {
                         item->error = OptionErrorType::Invalid_minVersion;
                     } else if (re.exactMatch(item->maxVersion)) {
