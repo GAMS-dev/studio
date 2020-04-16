@@ -29,15 +29,32 @@ namespace gams {
 namespace studio {
 namespace option {
 
-enum OptionErrorType {
+enum class OptionErrorType {
     No_Error,     // 0
     Invalid_Key,  // 1
-    Incorrect_Value_Type, // 2
-    Value_Out_Of_Range,   // 3
-    Deprecated_Option,    // 4
-    Override_Option,      // 5
-    UserDefined_Error     // 6
+    Incorrect_Value_Type,// 2
+    Value_Out_Of_Range,  // 3
+    Deprecated_Option,   // 4
+    Override_Option,     // 5
+    UserDefined_Error,   // 6
+    Invalid_minVersion,  // 7
+    Invalid_maxVersion   // 8
 };
+
+enum class OptionDefinitionType {
+    GamsOptionDefinition = 0,
+    SolverOptionDefinition = 1,
+    ConfigOptionDefinition = 2
+};
+
+inline const QString optionMimeType(OptionDefinitionType type) {
+    switch (type) {
+      case OptionDefinitionType::GamsOptionDefinition:  return "application/vnd.gams-pf.text";
+      case OptionDefinitionType::SolverOptionDefinition:  return "application/vnd.solver-opt.text";
+      case OptionDefinitionType::ConfigOptionDefinition:  return "application/vnd.gams-cfg.text";
+   }
+   return "";
+}
 
 struct OptionItem {
     OptionItem() { }
@@ -55,9 +72,24 @@ struct OptionItem {
     int valuePosition = -1;
     bool disabled = false;
     bool recurrent = false;
-    OptionErrorType error = No_Error;
+    OptionErrorType error = OptionErrorType::No_Error;
 };
 
+struct ParamConfigItem {
+    ParamConfigItem() { }
+    ParamConfigItem(int id, QString k, QString v) : optionId(id), key(k), value(v) {}
+    ParamConfigItem(int id, QString k, QString v, QString min, QString max) :
+        optionId(id), key(k), value(v), minVersion(min), maxVersion(max) {}
+
+    int optionId = -1;
+    QString key = "";
+    QString value = "";
+    QString minVersion = "";
+    QString maxVersion =  "";
+    bool disabled = false;
+    bool recurrent = false;
+    OptionErrorType error = OptionErrorType::No_Error;
+};
 
 struct SolverOptionItem {
     SolverOptionItem() { }
@@ -72,7 +104,7 @@ struct SolverOptionItem {
     QString text = "";
     bool disabled = false;
     bool recurrent = false;
-    OptionErrorType error = No_Error;
+    OptionErrorType error = OptionErrorType::No_Error;
 };
 
 struct OptionGroup {
@@ -120,7 +152,6 @@ struct OptionDefinition {
     bool modified = false;
 };
 
-
 class Option
 {
 public:
@@ -137,6 +168,7 @@ public:
     bool isDeprecated(const QString &optionName) const;
     bool isDoubleDashedOption(const QString &option) const;
     bool isDoubleDashedOptionNameValid(const QString &optionName) const;
+    bool isConformantVersion(const QString &version) const;
     OptionErrorType getValueErrorType(const QString &optionName, const QString &value) const;
 
     QString getNameFromSynonym(const QString &synonym) const;
@@ -213,6 +245,7 @@ const double OPTION_VALUE_MINDOUBLE = -1e+299;
 const int OPTION_VALUE_MAXINT = INT_MAX;
 const int OPTION_VALUE_MININT = INT_MIN;
 const int OPTION_VALUE_DECIMALS = 20;
+const QString GamsOptDefFile = "optgams.def";
 
 } // namespace option
 } // namespace studio

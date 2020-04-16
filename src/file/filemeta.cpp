@@ -358,7 +358,6 @@ void FileMeta::addEditor(QWidget *edit)
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
-    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
 
     if (aEdit) {
         if (!mDocument)
@@ -384,9 +383,12 @@ void FileMeta::addEditor(QWidget *edit)
         if (tv->kind() == TextView::FileText)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     }
-    if (soEdit) {
+    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
+              connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     }
+
     if (mEditors.size() == 1) emit documentOpened();
     if (aEdit)
         aEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
@@ -404,7 +406,6 @@ void FileMeta::removeEditor(QWidget *edit)
 
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
-    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
     mEditors.removeAt(i);
 
     if (aEdit) {
@@ -428,8 +429,10 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
-    if (soEdit) {
+    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
        disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
+              disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     }
 
     if (mEditors.isEmpty()) {
@@ -483,10 +486,20 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::Opt) {
         bool textOptEditor = true;
         for (QWidget *wid : mEditors) {
-            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
-            if (so) {
+            if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
                 textOptEditor = false;
                 so->on_reloadSolverOptionFile(mCodec);
+            }
+        }
+        if (!textOptEditor)
+            return;
+    }
+    if (kind() == FileKind::Guc) {
+        bool textOptEditor = true;
+        for (QWidget *wid : mEditors) {
+            if (option::GamsConfigEditor *cfge = ViewHelper::toGamsConfigEditor(wid)) {
+                textOptEditor = false;
+                cfge->on_reloadGamsUserConfigFile(mCodec);
             }
         }
         if (!textOptEditor)
@@ -559,6 +572,11 @@ void FileMeta::save(const QString &newLocation)
         mActivelySaved = true;
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
+
+    } else if (kind() == FileKind::Guc) {
+        mActivelySaved = true;
+        option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor( mEditors.first() );
+        if (gucEditor) gucEditor->saveConfigFile(location);
 
     } else { // no document, e.g. lst
         mActivelySaved = true;
@@ -690,6 +708,12 @@ bool FileMeta::isModified() const
             if (solverOptionWidget)
                 return solverOptionWidget->isModified();
         }
+    } else if (kind() == FileKind::Guc) {
+               for (QWidget *wid: mEditors) {
+                   option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor(wid);
+                   if (gucEditor)
+                       return gucEditor->isModified();
+               }
     }
     return false;
 }
@@ -729,6 +753,11 @@ void FileMeta::setModified(bool modified)
                option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
                if (so) so->setModified(modified);
           }
+    } else if (kind() == FileKind::Guc) {
+        for (QWidget *e : mEditors) {
+             option::GamsConfigEditor *gco = ViewHelper::toGamsConfigEditor(e);
+             if (gco) gco->setModified(modified);
+        }
     }
 }
 
@@ -820,6 +849,11 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
+    } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
+              // Guc Editor ignore other encoding scheme than UTF-8
+              mCodec = QTextCodec::codecForName("utf-8");
+              res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
+                                                                             id(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
             QFileInfo fileInfo(name());
             support::SolverConfigInfo solverConfigInfo;

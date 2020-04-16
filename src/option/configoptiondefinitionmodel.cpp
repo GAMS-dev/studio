@@ -17,14 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gamsoptiondefinitionmodel.h"
+
+#include "configoptiondefinitionmodel.h"
+
 #include <QDataStream>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
 namespace option {
 
-GamsOptionDefinitionModel::GamsOptionDefinitionModel(Option *data, int optionGroup, QObject *parent):
+ConfigOptionDefinitionModel::ConfigOptionDefinitionModel(Option *data, int optionGroup, QObject *parent):
     OptionDefinitionModel (data, optionGroup, parent)
 {
     QList<QVariant> rootData;
@@ -35,14 +38,14 @@ GamsOptionDefinitionModel::GamsOptionDefinitionModel(Option *data, int optionGro
     setupTreeItemModelData(mOption, rootItem);
 }
 
-QStringList GamsOptionDefinitionModel::mimeTypes() const
+QStringList ConfigOptionDefinitionModel::mimeTypes() const
 {
     QStringList types;
-    types <<  optionMimeType(OptionDefinitionType::GamsOptionDefinition);
+    types << optionMimeType(OptionDefinitionType::ConfigOptionDefinition);
     return types;
 }
 
-QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *ConfigOptionDefinitionModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
@@ -74,15 +77,16 @@ QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) c
         }
     }
 
-    mimeData->setData(optionMimeType(OptionDefinitionType::GamsOptionDefinition), encodedData);
+    mimeData->setData(optionMimeType(OptionDefinitionType::ConfigOptionDefinition), encodedData);
     return mimeData;
+
 }
 
-void GamsOptionDefinitionModel::modifyOptionDefinitionItem(const OptionItem &optionItem)
+void ConfigOptionDefinitionModel::modifyOptionDefinitionItem(const ParamConfigItem *optionItem)
 {
     QModelIndexList indices = match(index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                              Qt::DisplayRole,
-                                             QString::number(optionItem.optionId) , 1);
+                                             QString::number(optionItem->optionId) , 1);
     beginResetModel();
     for(QModelIndex idx : indices) {
         QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
@@ -91,19 +95,19 @@ void GamsOptionDefinitionModel::modifyOptionDefinitionItem(const OptionItem &opt
         OptionDefinitionItem *parentItem = nodeItem->parentItem();
         if (parentItem == rootItem) {
             OptionDefinition optdef = mOption->getOptionDefinition(nodeItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString());
-            optdef.modified = !optionItem.disabled;
+            optdef.modified = !optionItem->disabled;
             setData(node, optdef.modified ? Qt::CheckState(Qt::Checked) : Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
         }
     }
     endResetModel();
 }
 
-void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem> &optionItems)
+void ConfigOptionDefinitionModel::modifyOptionDefinition(const QList<ParamConfigItem *> &optionItems)
 {
     QMap<int, int> modifiedOption;
     for(int i = 0; i<optionItems.size(); ++i) {
-        if (optionItems.at(i).optionId != -1)
-            modifiedOption[optionItems.at(i).optionId] = i;
+        if (optionItems.at(i)->optionId != -1)
+            modifiedOption[optionItems.at(i)->optionId] = i;
     }
     QList<int> ids = modifiedOption.keys();
     beginResetModel();
@@ -128,3 +132,4 @@ void GamsOptionDefinitionModel::modifyOptionDefinition(const QList<OptionItem> &
 } // namespace option
 } // namespace studio
 } // namespace gams
+

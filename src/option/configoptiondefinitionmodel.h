@@ -17,42 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTOPTIONAPI_H
-#define TESTOPTIONAPI_H
+#ifndef CONFIGOPTIONDEFINITIONMODEL_H
+#define CONFIGOPTIONDEFINITIONMODEL_H
 
-#include <QtTest/QTest>
+#include "optiondefinitionmodel.h"
 
-#include "gclgms.h"
-#include "optcc.h"
+namespace gams {
+namespace studio {
+namespace option {
 
-class TestOptionAPI : public QObject
+class ConfigOptionDefinitionModel : public OptionDefinitionModel
 {
-    Q_OBJECT
+public:
+    ConfigOptionDefinitionModel(Option* data, int optionGroup=0, QObject* parent=nullptr);
 
-private slots:
-    void initTestCase();
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
-    void testOptFileSuffix_data();
-    void testOptFileSuffix();
-
-    void testVersionFormat_data();
-    void testVersionFormat();
-
-    void testEOLChars();
-
-    void testReadFromStr_data();
-    void testReadFromStr();
-
-    void cleanupTestCase();
-
-private:
-    bool Dcreated = false;
-    bool optdefRead = false;
-    optHandle_t mOPTHandle;
-
-    int logAndClearMessage();
-    int getErrorCode(optMsgType type);
-    void isDefined(bool defined, bool definedR, QString &value);
+public slots:
+    void modifyOptionDefinitionItem(const ParamConfigItem* optionItem);
+    void modifyOptionDefinition(const QList<ParamConfigItem *> &optionItems);
 };
 
-#endif // TESTOPTIONAPI_H
+} // namespace option
+} // namespace studio
+} // namespace gams
+
+#endif // CONFIGOPTIONDEFINITIONMODEL_H

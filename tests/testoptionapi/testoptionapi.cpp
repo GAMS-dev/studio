@@ -19,8 +19,6 @@
  */
 #include <QStandardPaths>
 #include <QtMath>
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
 
 #include "common.h"
 #include "commonpaths.h"
@@ -140,6 +138,65 @@ void TestOptionAPI::testOptFileSuffix()
     QCOMPARE(FileType::from(expectedKind), FileType::from(suffix));
 }
 
+void TestOptionAPI::testVersionFormat_data()
+{
+    QTest::addColumn<QString>("version");
+    QTest::addColumn<bool>("valid");
+
+    QTest::newRow("1")       << "1"        << false;
+    QTest::newRow("0")       << "0"        << false;
+    QTest::newRow("09")      << "09"       << false;
+    QTest::newRow("28")      << "28"       << true;
+    QTest::newRow("30")      << "30"       << true;
+    QTest::newRow("55")      << "55"       << true;
+    QTest::newRow("100")     << "100"      << false;
+    QTest::newRow("123")     << "123"      << false;
+    QTest::newRow("1234")    << "1234"     << false;
+    QTest::newRow("1.23")    << "1.23"     << false;
+    QTest::newRow("24.7")    << "24.7"     << true;
+    QTest::newRow("30.1")    << "30.1"     << true;
+    QTest::newRow("30.0")    << "30.0"     << true;
+    QTest::newRow("30.10")   << "30.10"    << false;
+    QTest::newRow("23.01")   << "23.01"    << false;
+    QTest::newRow("30.1.0")  << "30.1.0"   << true;
+    QTest::newRow("30.1.2")  << "30.1.2"   << true;
+    QTest::newRow("10.23")   << "10.23"    << false;
+    QTest::newRow("27.0.11") << "27.0.11"  << false;
+    QTest::newRow("30.11.2") << "30.11.2"  << false;
+
+    QTest::newRow("30.1.02")  << "30.1.02"   << false;
+    QTest::newRow("30.1.2.1") << "30.1.2.1"  << false;
+    QTest::newRow("30.")      << "30."       << false;
+    QTest::newRow("30.1.")    << "30.1."     << false;
+    QTest::newRow("30.1.2.")  << "30.1.2."   << false;
+    QTest::newRow(".1 ")      << ".1"        << false;
+    QTest::newRow(".2. ")     << ".2."       << false;
+
+    QTest::newRow("")       << ""       << false;
+    QTest::newRow(" ")      << " "      << false;
+    QTest::newRow("  ")     << "  "     << false;
+    QTest::newRow(".")      << "."      << false;
+    QTest::newRow("..")     << ".."     << false;
+    QTest::newRow("...")    << "..."    << false;
+    QTest::newRow("x")      << "x"      << false;
+    QTest::newRow("x.y")    << "x.y"    << false;
+    QTest::newRow("x.1")    << "x.1"    << false;
+    QTest::newRow("1.y")    << "1.y"    << false;
+    QTest::newRow("x.y.z")  << "x.y.z"  << false;
+    QTest::newRow("x.y.1")  << "x.y.1"  << false;
+    QTest::newRow("30.y.1") << "30.y.1" << false;
+}
+
+void TestOptionAPI::testVersionFormat()
+{
+    QFETCH(QString, version);
+    QFETCH(bool, valid);
+
+//    QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
+    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
+    QCOMPARE( re.exactMatch(version) , valid);
+}
+
 void TestOptionAPI::testEOLChars()
 {
     char eolchars[256];
@@ -203,7 +260,7 @@ void TestOptionAPI::testReadFromStr_data()
     QTest::newRow("completion full")                   << "completion full"                 << "completion"                << true    << true     << "full"        << false       << -1;
     QTest::newRow("start assigned nonlinears BASIC")   << "start assigned nonlinears BASIC" << "start assigned nonlinears" << true    << true     << "Basic"       << false       << -1;
 
-    QTest::newRow("lagrangian completion full")        << "lagrangian completion full"      << "lagrangian"                << false   << false    << "n/a"         << true       <<  getErrorCode(optMsgValueError);;
+    QTest::newRow("lagrangian completion full")        << "lagrangian completion full"      << "lagrangian"                << false   << false    << "n/a"         << true       <<  getErrorCode(optMsgValueError);
 
     // double option
     QTest::newRow("weight on linear objective 1e-5")  << "weight on linear objective 1e-5"   << "weight on linear objective"  << true    << true    << "1e-5"       << false      << -1;

@@ -17,11 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMSPARAMETERTABLEMODEL_H
-#define GAMSPARAMETERTABLEMODEL_H
+#ifndef GAMSCONFIGPARAMETERTABLEMODEL_H
+#define GAMSCONFIGPARAMETERTABLEMODEL_H
 
-#include <QAbstractItemModel>
-#include <QMimeData>
+#include <QAbstractTableModel>
 
 #include "optiontokenizer.h"
 
@@ -29,12 +28,11 @@ namespace gams {
 namespace studio {
 namespace option {
 
-class GamsParameterTableModel : public QAbstractTableModel
+class ConfigParamTableModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    GamsParameterTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
-    GamsParameterTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    ConfigParamTableModel(QList<ParamConfigItem *> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -46,8 +44,8 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    virtual bool insertRows(int row, int count, const QModelIndex &parent) override;
-    virtual bool removeRows(int row, int count, const QModelIndex &parent) override;
+    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+    virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
 
     QStringList mimeTypes() const override;
@@ -57,39 +55,41 @@ public:
     Qt::DropActions supportedDropActions() const override;
     bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
-    static const int COLUMN_OPTION_KEY = 0;
-    static const int COLUMN_OPTION_VALUE = 1;
-    static const int COLUMN_ENTRY_NUMBER = 2;
+    static const int COLUMN_PARAM_KEY = 0;
+    static const int COLUMN_PARAM_VALUE = 1;
+    static const int COLUMN_MIN_VERSION = 2;
+    static const int COLUMN_MAX_VERSION = 3;
+    static const int COLUMN_ENTRY_NUMBER = 4;
+
+    QList<ParamConfigItem *> parameterConfigItems();
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
-    void optionModelChanged(const QList<OptionItem> &optionItem);
-    void optionNameChanged(const QString &from, const QString &to);
-    void optionValueChanged(const QModelIndex &index);
+    void configParamModelChanged(const QList<ParamConfigItem *> &optionItem);
+    void configParamItemChanged(const ParamConfigItem* optionItem);
+    void configParamItemRemoved();
 
 public slots:
-    void toggleActiveOptionItem(int index);
-    void on_ParameterTableModelChanged(const QString &text);
+    void on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem);
+    void on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void on_removeConfigParamItem();
+    void updateRecurrentStatus();
+    QString getParameterTableEntry(int row);
+
+private slots:
+    void setRowCount(int rows);
+    void updateCheckState();
 
 private:
-    QList<OptionItem> mOptionItem;
+    QList<ParamConfigItem *> mOptionItem;
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
 
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
-
-    bool mTokenizerUsed;
-
-    void setRowCount(int rows);
-    void itemizeOptionFromCommandLineStr(const QString text);
-
-    QList<OptionItem> getCurrentListOfOptionItems();
-    QString getParameterTableEntry(int row);
 };
 
 } // namepsace option
 } // namespace studio
 } // namespace gams
-
-#endif // GAMSPARAMETERTABLEMODEL_H
+#endif // GAMSCONFIGPARAMETERTABLEMODEL_H
