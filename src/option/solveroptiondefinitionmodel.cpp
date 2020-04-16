@@ -39,7 +39,7 @@ SolverOptionDefinitionModel::SolverOptionDefinitionModel(Option *data, int optio
 QStringList SolverOptionDefinitionModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/vnd.solver-opt.text";
+    types << optionMimeType(OptionDefinitionType::SolverOptionDefinition);
     return types;
 }
 
@@ -88,7 +88,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
         }
     }
 
-    mimeData->setData("application/vnd.solver-opt.text", encodedData);
+    mimeData->setData(optionMimeType(OptionDefinitionType::SolverOptionDefinition), encodedData);
     return mimeData;
 }
 

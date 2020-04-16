@@ -822,8 +822,9 @@ void MainWindow::updateEditorPos()
 void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
-    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mRecent.editor());
-    if (soEdit) {
+    if (ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+        mStatusWidgets->setEditMode(StatusWidgets::EditMode::Insert);
+    } else if (ViewHelper::toGamsConfigEditor(mRecent.editor())) {
         mStatusWidgets->setEditMode(StatusWidgets::EditMode::Insert);
     } else if (!edit || edit->isReadOnly()) {
         mStatusWidgets->setEditMode(StatusWidgets::EditMode::Readonly);
@@ -1157,6 +1158,7 @@ void MainWindow::codecReload(QAction *action)
     if (!focusWidget()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
     if (fm && fm->kind() == FileKind::Log) return;
+    if (fm && fm->kind() == FileKind::Guc) return;
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fm->isModified()) {
@@ -1271,6 +1273,19 @@ void MainWindow::activeTabChanged(int index)
                 node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
+        } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
+                 ui->menuEncoding->setEnabled(false);
+                 ProjectFileNode* fc = mProjectRepo.findFileNode(gucEditor);
+                 if (fc) {
+                     mRecent.editFileId = fc->file()->id();
+                     ui->menuEncoding->setEnabled(false);
+                     ui->menureload_with->setEnabled(false);
+                     ui->menuconvert_to->setEnabled(false);
+                     mStatusWidgets->setFileName(fc->location());
+                     mStatusWidgets->setEncoding(fc->file()->codecMib());
+                     node->file()->reload();
+                     updateMenuToCodec(node->file()->codecMib());
+                 }
         }
         updateMenuToCodec(node->file()->codecMib());
     } else {
@@ -1352,8 +1367,14 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
     }
     if (file->kind() == FileKind::Opt) {
         for (QWidget *e : file->editors()) {
-            option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e);
-            if (sow) sow->setFileChangedExtern(true);
+            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e))
+               sow->setFileChangedExtern(true);
+        }
+    }
+    if (file->kind() == FileKind::Guc) {
+        for (QWidget *e : file->editors()) {
+            if (option::GamsConfigEditor *guce = ViewHelper::toGamsConfigEditor(e))
+               guce->setFileChangedExtern(true);
         }
     }
     int choice;
@@ -1657,6 +1678,13 @@ void MainWindow::on_actionHelp_triggered()
                          } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
                                     mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
                                                                           help::HelpData::getStudioSectionName(help::StudioSection::ListingViewer));
+                         } else if (option::GamsConfigEditor* editor = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                                   QString optionName = editor->getSelectedParameterName(widget);
+                                  if (optionName.isEmpty())
+                                      mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                            help::HelpData::getStudioSectionName(help::StudioSection::GamsUserConfigEditor));
+                                  else
+                                      mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
                          } else {
                              mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
                          }
@@ -2339,8 +2367,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
             setProjectViewVisibility(false);
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
             mGamsParameterEditor->deSelectParameters();
-        } else if (mRecent.editor() != nullptr && ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-            ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
+        } else if (mRecent.editor() != nullptr) {
+            if (ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+                ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
+            } else if (ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                       ViewHelper::toGamsConfigEditor(mRecent.editor())->deSelectAll();
+            }
         }
 
         // search widget
@@ -2951,7 +2983,9 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         } else if (ViewHelper::toSolverOptionEdit(edit)) {
-            connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+                   connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        } else if (ViewHelper::toGamsConfigEditor(edit)) {
+                  connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         }
         if (focus) {
             tabWidget->setCurrentWidget(edit);
@@ -3473,6 +3507,8 @@ void MainWindow::on_actionSelect_All_triggered()
         tv->selectAllText();
     } else if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         so->selectAllOptions();
+    } else if (option::GamsConfigEditor *guce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+        guce->selectAll();
     }
 }
 

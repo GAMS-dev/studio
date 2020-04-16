@@ -212,7 +212,8 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, const QString& lin
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
         bool atEnd = match.capturedEnd(0) >= line.length();
-        SyntaxShift shift = (atEnd && next != SyntaxKind::CommentBlock) ? SyntaxShift::skip : SyntaxShift::in;
+        bool isMultiLine = next == SyntaxKind::CommentBlock || next == SyntaxKind::EmbeddedBody;
+        SyntaxShift shift = (atEnd && !isMultiLine) ? SyntaxShift::skip : SyntaxShift::in;
         return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
     } else {
         return SyntaxBlock(this, match.capturedStart(1), match.capturedEnd(0), next, true);

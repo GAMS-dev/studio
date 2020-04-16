@@ -693,25 +693,25 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(2)->value    << QVariant("")
                            << items.at(2)->text     << ""
                            << items.at(2)->optionId << -1
-                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("*")     << items.at(4)->disabled <<  true
                            << items.at(4)->key      << "*"
                            << items.at(4)->value    << QVariant("")
                            << items.at(4)->text     << ""
                            << items.at(4)->optionId << -1
-                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("")     << items.at(5)->disabled <<  true
                            << items.at(5)->key      << ""
                            << items.at(5)->value    << QVariant("")
                            << items.at(5)->text     << ""
                            << items.at(5)->optionId << -1
-                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("*  eprhs=0.001") << items.at(14)->disabled <<  true
                            << items.at(14)->key      << "*  eprhs=0.001"
                            << items.at(14)->value    << QVariant("")
                            << items.at(14)->text     << ""
                            << items.at(14)->optionId << -1
-                           << static_cast<int>(items.at(14)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(14)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     // valid options
     QTest::newRow("advind=0")  << items.at(0)->disabled <<  false
@@ -719,81 +719,81 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(0)->value    << QVariant("0")
                            << items.at(0)->text     << ""
                            << items.at(0)->optionId << 6
-                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("advind -1")  << items.at(1)->disabled <<  false
                            << items.at(1)->key      << "advind -1"
                            << items.at(1)->value    << QVariant("")
                            << items.at(1)->text     << ""
                            << items.at(1)->optionId << -1
-                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(Incorrect_Value_Type);
+                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
     QTest::newRow("cuts 2")  << items.at(6)->disabled <<  false
                            << items.at(6)->key      << "cuts"
                            << items.at(6)->value    << QVariant("2")
                            << items.at(6)->text     << ""
                            << items.at(6)->optionId << 45
-                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("cost.feaspref 0.9")  << items.at(7)->disabled <<  false
                            << items.at(7)->key      << "cost.feaspref"
                            << items.at(7)->value    << QVariant("0.9")
                            << items.at(7)->text     << ""
                            << items.at(7)->optionId << 74
-                           << static_cast<int>(items.at(7)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(7)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("cost.feaspref(*,*) 4")  << items.at(8)->disabled <<  false
                            << items.at(8)->key      << "cost.feaspref(*,*)"
                            << items.at(8)->value    << QVariant("4")
                            << items.at(8)->text     << ""
                            << items.at(8)->optionId << 74
-                           << static_cast<int>(items.at(8)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(8)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("benderspartitioninstage 1")  << items.at(9)->disabled <<  false
                            << items.at(9)->key      << "benderspartitioninstage"
                            << items.at(9)->value    << QVariant("1")
                            << items.at(9)->text     << ""
                            << items.at(9)->optionId << 27
-                           << static_cast<int>(items.at(9)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(9)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("dettilim 1e+075") << items.at(10)->disabled <<  false
                            << items.at(10)->key      << "dettilim"
                            << items.at(10)->value    << QVariant("1e+075")
                            << items.at(10)->text     << ""
                            << items.at(10)->optionId << 50
-                           << static_cast<int>(items.at(10)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(10)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("secret def 1 34") << items.at(11)->disabled <<  false
                            << items.at(11)->key      << "secret"
                            << items.at(11)->value    << QVariant("def 1 34")
                            << items.at(11)->text     << ""
                            << items.at(11)->optionId << 182
-                           << static_cast<int>(items.at(11)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(11)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("computeserver  https://somewhere.org/") << items.at(12)->disabled <<  false
                            << items.at(12)->key      << "computeserver"
                            << items.at(12)->value    << QVariant("https://somewhere.org/")
                            << items.at(12)->text     << ""
                            << items.at(12)->optionId << 38
-                           << static_cast<int>(items.at(12)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(12)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("rerun=auto") << items.at(13)->disabled <<  false
                            << items.at(13)->key      << "rerun"
                            << items.at(13)->value    << QVariant("auto")
                            << items.at(13)->text     << ""
                            << items.at(13)->optionId << 176
-                           << static_cast<int>(items.at(12)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(12)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("solnpoolcapacity=1100000000")
                            << items.at(15)->disabled <<  false
                            << items.at(15)->key      << "solnpoolcapacity"
                            << items.at(15)->value    << QVariant("1100000000")
                            << items.at(15)->text     << ""
                            << items.at(15)->optionId << 193
-                           << static_cast<int>(items.at(15)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(15)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("solnpoolintensity  3") << items.at(17)->disabled <<  false
                            << items.at(17)->key      << "solnpoolintensity"
                            << items.at(17)->value    << QVariant("3")
                            << items.at(17)->text     << ""
                            << items.at(17)->optionId << 195
-                           << static_cast<int>(items.at(17)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(17)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("tuning str1, str2, str3")
                            << items.at(18)->disabled <<  false
                            << items.at(18)->key      << "tuning"
                            << items.at(18)->value    << QVariant("str1, str2, str3")
                            << items.at(18)->text     << ""
                            << items.at(18)->optionId << 216
-                           << static_cast<int>(items.at(18)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(18)->error)    << static_cast<int>(OptionErrorType::No_Error);
     // "tuning str 4"                          // strlist
     // ", str 5"
     QTest::newRow("tuning str 4, str 5")
@@ -802,21 +802,21 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(19)->value    << QVariant("str 4, str 5")
                            << items.at(19)->text     << ""
                            << items.at(19)->optionId << 216
-                           << static_cast<int>(items.at(19)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(19)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("indic equ1(i,j,k)$bin1(i,k) 1")
                            << items.at(20)->disabled <<  false
                            << items.at(20)->key      << "indic equ1(i,j,k)$bin1(i,k) 1"
                            << items.at(20)->value    << QVariant("")
                            << items.at(20)->text     << ""
                            << items.at(20)->optionId << -1
-                           << static_cast<int>(items.at(20)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(20)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("rerun YES")
                            << items.at(26)->disabled <<  false
                            << items.at(26)->key      << "rerun"
                            << items.at(26)->value    << QVariant("YES")
                            << items.at(26)->text     << ""
                            << items.at(26)->optionId << 176
-                           << static_cast<int>(items.at(26)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(26)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     // invalid options
     QTest::newRow("scalex no")         // bool value upper case
@@ -825,42 +825,42 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(21)->value    << QVariant("")
                            << items.at(21)->text     << ""
                            << items.at(21)->optionId << -1
-                           << static_cast<int>(items.at(21)->error)    << static_cast<int>(UserDefined_Error);
+                           << static_cast<int>(items.at(21)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
     QTest::newRow("siftitlim abc")     // integer incorrectvalue
                            << items.at(22)->disabled <<  false
                            << items.at(22)->key      << "siftitlim abc"
                            << items.at(22)->value    << QVariant("")
                            << items.at(22)->text     << ""
                            << items.at(22)->optionId << -1
-                           << static_cast<int>(items.at(22)->error)    << static_cast<int>(Incorrect_Value_Type);
+                           << static_cast<int>(items.at(22)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
     QTest::newRow("barqcpepcomp -1.234")     // double out of reange value
                            << items.at(23)->disabled <<  false
                            << items.at(23)->key      << "barqcpepcomp"
                            << items.at(23)->value    << QVariant("-1.234")
                            << items.at(23)->text     << ""
                            << items.at(23)->optionId << 21
-                           << static_cast<int>(items.at(23)->error)    << static_cast<int>(Value_Out_Of_Range);
+                           << static_cast<int>(items.at(23)->error)    << static_cast<int>(OptionErrorType::Value_Out_Of_Range);
     QTest::newRow("barqcpepcomp x")     // double incorrectvalue
                            << items.at(24)->disabled <<  false
                            << items.at(24)->key      << "barqcpepcomp x"
                            << items.at(24)->value    << QVariant("")
                            << items.at(24)->text     << ""
                            << items.at(24)->optionId << -1
-                           << static_cast<int>(items.at(24)->error)    << static_cast<int>(Incorrect_Value_Type);
+                           << static_cast<int>(items.at(24)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
     QTest::newRow("bbinterval 7 1")     // integer too many values
                            << items.at(25)->disabled <<  false
                            << items.at(25)->key      << "bbinterval 7 1"
                            << items.at(25)->value    << QVariant("")
                            << items.at(25)->text     << ""
                            << items.at(25)->optionId << -1
-                           << static_cast<int>(items.at(25)->error)    << static_cast<int>(Incorrect_Value_Type);
+                           << static_cast<int>(items.at(25)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
     QTest::newRow("xyz.feaspref(i) 1")         // dot option
                            << items.at(27)->disabled <<  false
                            << items.at(27)->key      << "xyz.feaspref(i) 1"
                            << items.at(27)->value    << QVariant("")
                            << items.at(27)->text     << ""
                            << items.at(27)->optionId << -1
-                           << static_cast<int>(items.at(27)->error)    << static_cast<int>(UserDefined_Error);
+                           << static_cast<int>(items.at(27)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 
     // with End Of Line Comments
     QTest::newRow("advind 2 ! this sets the option to two")
@@ -869,56 +869,56 @@ void TestCPLEXOption::testReadOptionFile_data()
                            << items.at(28)->value    << QVariant("2")
                            << items.at(28)->text     << "this sets the option to two"
                            << items.at(28)->optionId << 6
-                           << static_cast<int>(items.at(28)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(28)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("workdir /x/y!/z/a/b")
                            << items.at(29)->disabled <<  false
                            << items.at(29)->key      << "workdir"
                            << items.at(29)->value    << QVariant("/x/y")
                            << items.at(29)->text     << "/z/a/b"
                            << items.at(29)->optionId << 252
-                           << static_cast<int>(items.at(29)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(29)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("workdir /x/y!/z/a/b")
                            << items.at(29)->disabled <<  false
                            << items.at(29)->key      << "workdir"
                            << items.at(29)->value    << QVariant("/x/y")
                            << items.at(29)->text     << "/z/a/b"
                            << items.at(29)->optionId << 252
-                           << static_cast<int>(items.at(29)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(29)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("workdir \"/x/y!/z/a/b\"")
                            << items.at(30)->disabled <<  false
                            << items.at(30)->key      << "workdir"
                            << items.at(30)->value    << QVariant("\"/x/y!/z/a/b\"")
                            << items.at(30)->text     << ""
                            << items.at(30)->optionId << 252
-                           << static_cast<int>(items.at(30)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(30)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("epgap  0.00001 ! 1MIP solve criteria to optimal (default is GAMS OptCA/OptCR)")
                            << items.at(31)->disabled <<  false
                            << items.at(31)->key      << "epgap"
                            << items.at(31)->value    << QVariant("0.00001")
                            << items.at(31)->text     << "1MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"
                            << items.at(31)->optionId << 65
-                           << static_cast<int>(items.at(31)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(31)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("epgap  w0.00001 ! 2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)")
                            << items.at(32)->disabled <<  false
                            << items.at(32)->key      << "epgap w0.00001"
                            << items.at(32)->value    << QVariant("")
                            << items.at(32)->text     << "2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"
                            << items.at(32)->optionId << -1
-                           << static_cast<int>(items.at(32)->error)    << static_cast<int>(Incorrect_Value_Type);
+                           << static_cast<int>(items.at(32)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
     QTest::newRow("epgap  1E-5!3MIP solve criteria to optimal (default is GAMS OptCA/OptCR)")
                            << items.at(33)->disabled <<  false
                            << items.at(33)->key      << "epgap"
                            << items.at(33)->value    << QVariant("1E-5")
                            << items.at(33)->text     << "3MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"
                            << items.at(33)->optionId << 65
-                           << static_cast<int>(items.at(33)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(33)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("neteprhs 1e-003  ! feasibility tolerance for the network simplex method ")
             << items.at(34)->disabled <<  false
             << items.at(34)->key      << "neteprhs"
             << items.at(34)->value    << QVariant("1e-003")
             << items.at(34)->text     << "feasibility tolerance for the network simplex method"
             << items.at(34)->optionId << 120
-            << static_cast<int>(items.at(34)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(34)->error)    << static_cast<int>(OptionErrorType::No_Error);
 
     // test negative control flows
     QTest::newRow("varsel 1  asd")
@@ -927,7 +927,7 @@ void TestCPLEXOption::testReadOptionFile_data()
             << items.at(35)->value    << QVariant("")
             << items.at(35)->text     << ""
             << items.at(35)->optionId << -1
-            << static_cast<int>(items.at(35)->error)    << static_cast<int>(Incorrect_Value_Type);
+            << static_cast<int>(items.at(35)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
 
     QTest::newRow("barqcpepcomp   !convergence tolerance for the barrier optimizer for QCPs")
             << items.at(36)->disabled <<  false
@@ -935,7 +935,7 @@ void TestCPLEXOption::testReadOptionFile_data()
             << items.at(36)->value    << QVariant("")
             << items.at(36)->text     << "convergence tolerance for the barrier optimizer for QCPs"
             << items.at(36)->optionId << -1
-            << static_cast<int>(items.at(36)->error)    << static_cast<int>(UserDefined_Error);
+            << static_cast<int>(items.at(36)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 
     QTest::newRow("non-exist-option 0")
             << items.at(37)->disabled <<  false
@@ -943,7 +943,7 @@ void TestCPLEXOption::testReadOptionFile_data()
             << items.at(37)->value    << QVariant("")
             << items.at(37)->text     << ""
             << items.at(37)->optionId << -1
-            << static_cast<int>(items.at(37)->error)    << static_cast<int>(UserDefined_Error);
+            << static_cast<int>(items.at(37)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 
     QTest::newRow("another-non-exist-option")
             << items.at(38)->disabled <<  false
@@ -951,7 +951,7 @@ void TestCPLEXOption::testReadOptionFile_data()
             << items.at(38)->value    << QVariant("")
             << items.at(38)->text     << ""
             << items.at(38)->optionId << -1
-            << static_cast<int>(items.at(38)->error)    << static_cast<int>(UserDefined_Error);
+            << static_cast<int>(items.at(38)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 
     QTest::newRow("epint ;")   // incorrect EOL comment char
             << items.at(39)->disabled <<  false
@@ -959,7 +959,7 @@ void TestCPLEXOption::testReadOptionFile_data()
             << items.at(39)->value    << QVariant("")
             << items.at(39)->text     << ""
             << items.at(39)->optionId << -1
-            << static_cast<int>(items.at(39)->error)    << static_cast<int>(Incorrect_Value_Type);
+            << static_cast<int>(items.at(39)->error)    << static_cast<int>(OptionErrorType::Incorrect_Value_Type);
 
     QTest::newRow("record !")   // incorrect EOL comment char
             << items.at(40)->disabled <<  false
@@ -967,7 +967,7 @@ void TestCPLEXOption::testReadOptionFile_data()
             << items.at(40)->value    << QVariant("")
             << items.at(40)->text     << ""
             << items.at(40)->optionId << -1
-            << static_cast<int>(items.at(40)->error)    << static_cast<int>(UserDefined_Error);
+            << static_cast<int>(items.at(40)->error)    << static_cast<int>(OptionErrorType::UserDefined_Error);
 }
 
 void TestCPLEXOption::testReadOptionFile()

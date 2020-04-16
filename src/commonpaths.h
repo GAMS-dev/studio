@@ -65,9 +65,13 @@ public:
 
     static QString defaultWorkingDir();
 
+    static QString gamsDocumentsDir();
+
     static QString userDocumentsDir();
 
     static QString userModelLibraryDir();
+
+    static QString gamsLicenseFilePath();
 
     ///
     /// \brief Get the absolut file path.
@@ -92,12 +96,6 @@ public:
     static QString configFile();
 
     ///
-    /// \brief Get GAMS license file name (with path).
-    /// \return Returns GAMS license file name.
-    ///
-    static QString licenseFile();
-
-    ///
     /// \brief Get the changelog file including its path.
     /// \return Returns the changelog file name.
     ///
@@ -112,6 +110,7 @@ private:
     static const QString DocumentationDir;
     static const QString ModlibsPrefixPath;
     static const QString LicenseFile;
+    static const QString LicensePath;
 };
 
 }

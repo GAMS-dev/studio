@@ -41,6 +41,7 @@
         <file alias="square-gray-yellow">square-gray-yellow.svg</file>
         <file alias="square-red">square-red.svg</file>
         <file alias="square-red-yellow">square-red-yellow.svg</file>
+        <file alias="gams-config-file">gamscfg.svg</file>
     </qresource>
     <qresource prefix="/solid">
         <file alias="backward">solid/arrow-left.svg</file>

@@ -81,16 +81,16 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
     case Qt::ToolTipRole:
         QString tooltipText = "";
         switch(mOptionItem.at(index).error) {
-        case Invalid_Key:
+        case OptionErrorType::Invalid_Key:
             tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(index).key) );
             break;
-        case Incorrect_Value_Type:
+        case OptionErrorType::Incorrect_Value_Type:
             tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(index).key) );
             break;
-        case Value_Out_Of_Range:
+        case OptionErrorType::Value_Out_Of_Range:
             tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(index).value).arg(mOptionItem.at(index).key) );
             break;
-        case Deprecated_Option:
+        case OptionErrorType::Deprecated_Option:
             tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index).key) );
             break;
         default:
@@ -148,20 +148,26 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole: {
         QString tooltipText = "";
         switch(mOptionItem.at(row).error) {
-        case Invalid_Key:
+        case OptionErrorType::Invalid_Key:
             tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(row).key));
             break;
-        case Incorrect_Value_Type:
+        case OptionErrorType::Incorrect_Value_Type:
             tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(row).key) );
             break;
-        case Value_Out_Of_Range:
+        case OptionErrorType::Value_Out_Of_Range:
             tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key) );
             break;
-        case Deprecated_Option:
+        case OptionErrorType::Deprecated_Option:
             tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key) );
             break;
-        case UserDefined_Error:
+        case OptionErrorType::UserDefined_Error:
             tooltipText.append( QString("Invalid parameter key or value or comment defined") );
+            break;
+        case OptionErrorType::Invalid_minVersion:
+            tooltipText.append( QString("Invalid minVersion format, must be [x[.y[.z]]") );
+            break;
+        case OptionErrorType::Invalid_maxVersion:
+            tooltipText.append( QString("Invalid maxVersion format, must be [x[.y[.z]]") );
             break;
         default:
             break;
@@ -195,11 +201,11 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
                 }
             } else { // value
                   switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
-                      case Incorrect_Value_Type:
+                      case OptionErrorType::Incorrect_Value_Type:
                             return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
-                      case Value_Out_Of_Range:
+                      case OptionErrorType::Value_Out_Of_Range:
                             return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
-                      case No_Error:
+                      case OptionErrorType::No_Error:
                             return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                       default:
                            return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
@@ -249,14 +255,16 @@ bool GamsParameterTableModel::setData(const QModelIndex &index, const QVariant &
         if (index.row() > mOptionItem.size())
             return false;
 
-        if (index.column() == 0) { // key
+        if (index.column() == COLUMN_OPTION_KEY) { // key
             QString from = data(index, Qt::DisplayRole).toString();
             mOptionItem[index.row()].key = dataValue;
             if (QString::compare(from, dataValue, Qt::CaseInsensitive)!=0)
                 emit optionNameChanged(from, dataValue);
-        } else if (index.column() == 1) { // value
+        } else if (index.column() == COLUMN_OPTION_VALUE) { // value
                   mOptionItem[index.row()].value = dataValue;
                   emit optionValueChanged(index);
+        } else if (index.column() == COLUMN_ENTRY_NUMBER) {
+                  mOptionItem[index.row()].optionId = dataValue.toInt();
         }
        emit optionModelChanged(  mOptionItem );
     } else if (role == Qt::CheckStateRole) {
@@ -328,7 +336,7 @@ bool GamsParameterTableModel::moveRows(const QModelIndex &sourceParent, int sour
 QStringList GamsParameterTableModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/vnd.gams-pf.text";
+    types << optionMimeType(OptionDefinitionType::GamsOptionDefinition);
     return types;
 }
 
@@ -351,7 +359,7 @@ QMimeData *GamsParameterTableModel::mimeData(const QModelIndexList &indexes) con
         }
     }
 
-    mimeData->setData("application/vnd.gams-pf.text", encodedData);
+    mimeData->setData(optionMimeType(OptionDefinitionType::GamsOptionDefinition), encodedData);
     return mimeData;
 }
 
@@ -370,10 +378,10 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
     Q_UNUSED(column)
     if (action == Qt::IgnoreAction)
         return true;
-    if (!mimedata->hasFormat("application/vnd.gams-pf.text"))
+    if (!mimedata->hasFormat(optionMimeType(OptionDefinitionType::GamsOptionDefinition)))
         return false;
 
-    QByteArray encodedData = mimedata->data("application/vnd.gams-pf.text");
+    QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::GamsOptionDefinition));
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
     QStringList newItems;
     int rows = 0;
@@ -543,11 +551,11 @@ void GamsParameterTableModel::on_ParameterTableModelChanged(const QString &text)
         setData(QAbstractTableModel::createIndex(i, GamsParameterTableModel::COLUMN_OPTION_KEY), QVariant(mOptionItem.at(i).key), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, GamsParameterTableModel::COLUMN_OPTION_VALUE), QVariant(mOptionItem.at(i).value), Qt::EditRole);
         setData(QAbstractTableModel::createIndex(i, GamsParameterTableModel::COLUMN_ENTRY_NUMBER), QVariant(mOptionItem.at(i).optionId), Qt::EditRole);
-        if (mOptionItem.at(i).error == No_Error)
+        if (mOptionItem.at(i).error == OptionErrorType::No_Error)
             setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
-        else if (mOptionItem.at(i).error == Deprecated_Option)
+        else if (mOptionItem.at(i).error == OptionErrorType::Deprecated_Option)
                 setHeaderData( i, Qt::Vertical,
                                   Qt::CheckState(Qt::PartiallyChecked),
                                   Qt::CheckStateRole );

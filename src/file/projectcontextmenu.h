@@ -76,7 +76,7 @@ private:
     void onOpenFileLoc();
     void onOpenFile();
     void onOpenFileAsText();
-    void onReOpenSolverOptionFile();
+    void onReOpenFile();
     void onReOpenSolverOptionFileAsText();
     void onOpenLog();
 

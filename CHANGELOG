@@ -1,8 +1,11 @@
-Version 1.0 RC1
+Version 1.0
 ==================
 ## General
 - **introduced new settings format.**
 All settings have been reset and are now saved in JSON format. That means that settings from previous versions of Studio cannot be restored.
+- **added editor for GAMS user configuration**
+- changed location of default workspace and model library
+- changed location where gamslice.txt is put when created using Studio
 - fixed behavior of Process Log and Help widget which were restored to the wrong postion
 - fixed terminal opening wrong path when having new/reset settings
 - added error popup when Studio is unable to write a GAMS license file
@@ -21,6 +24,10 @@ All settings have been reset and are now saved in JSON format. That means that s
 - fixed active GAMS run buttons when no gams file was active
 - fixed crash when deleting scratch dirs while user is on welcome page
 - fixed unwanted reappearance of filtered columns in GDX Viewer Table View
+- removed beta description from welcome page
+- fixed broken syntax highlighting related to $onEmbedded commands
+- fixed rare issue on linux where studio was unable to pick an editor font
+- fixed crash when opening reference file with missing domain reference
 
 ## MIRO
 - disabled MIRO shortcuts if MIRO is unavailable
@@ -32,6 +39,7 @@ All settings have been reset and are now saved in JSON format. That means that s
 - improved coloring of search results when using Find Next/Previous
 - improved dark theme colors of Studio to make checkboxes clearer to identify
 - improved readability of text highlighted as error
+- improved hard to read text for deactivated menu items in dark mode
 
 Version 0.14.6
 ==================

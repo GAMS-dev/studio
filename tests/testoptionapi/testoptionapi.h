@@ -35,6 +35,9 @@ private slots:
     void testOptFileSuffix_data();
     void testOptFileSuffix();
 
+    void testVersionFormat_data();
+    void testVersionFormat();
+
     void testEOLChars();
 
     void testReadFromStr_data();

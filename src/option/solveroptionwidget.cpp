@@ -221,11 +221,6 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     }
 }
 
-bool SolverOptionWidget::isInFocused(QWidget *focusWidget)
-{
-    return (focusWidget==ui->solverOptionTableView || focusWidget==ui->solverOptionTreeView);
-}
-
 FileId SolverOptionWidget::fileId() const
 {
     return mFileId;
@@ -762,7 +757,7 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
 
 void SolverOptionWidget::showOptionRecurrence()
 {
-    if (!isAnOptionWidgetFocused(focusWidget()))
+    if (!isInFocus(focusWidget()))
         return;
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
@@ -1204,7 +1199,7 @@ QList<int> SolverOptionWidget::getRecurrentOption(const QModelIndex &index)
 {
     QList<int> optionList;
 
-    if (!isAnOptionWidgetFocused(focusWidget()))
+    if (!isInFocus(focusWidget()))
         return optionList;
 
     QVariant data = ui->solverOptionTableView->model()->headerData(index.row(), Qt::Vertical,  Qt::CheckStateRole);
@@ -1507,7 +1502,7 @@ bool SolverOptionWidget::saveAs(const QString &location)
     return success;
 }
 
-bool SolverOptionWidget::isAnOptionWidgetFocused(QWidget *focusWidget) const
+bool SolverOptionWidget::isInFocus(QWidget *focusWidget) const
 {
     return (focusWidget==ui->solverOptionTableView || focusWidget==ui->solverOptionTreeView);
 }

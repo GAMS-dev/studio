@@ -24,7 +24,6 @@
 #include <QMimeData>
 
 #include "optiontokenizer.h"
-#include "option.h"
 
 namespace gams {
 namespace studio {

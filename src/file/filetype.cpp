@@ -37,7 +37,8 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Gdx, {"gdx"}, "GAMS Data", true),
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
     new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true),
-    new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false)
+    new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false),
+    new FileType(FileKind::Guc, {"yaml"}, "GAMS Config File", false)
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
@@ -125,6 +126,7 @@ void FileType::clear()
     delete mNone;
     mNone = nullptr;
 }
+
 
 } // namespace studio
 } // namespace gams

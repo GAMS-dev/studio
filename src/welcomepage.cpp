@@ -48,8 +48,6 @@ WelcomePage::WelcomePage(MainWindow *parent)
 
     auto p = palette();
     p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
-    ui->welcometext->setPalette(p);
-    ui->welcometext->setAutoFillBackground(true);
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
@@ -102,7 +100,6 @@ bool WelcomePage::event(QEvent *event)
         auto p = palette();
         p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
 
-        ui->welcometext->setPalette(p);
         for (WpLabel* w : findChildren<WpLabel*>())
             w->setPalette(p);
 
