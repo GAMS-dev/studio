@@ -227,6 +227,8 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     ui->EnvVarConfigTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->EnvVarConfigTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_KEY, QHeaderView::Stretch);
+    ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_VALUE, QHeaderView::Stretch);
     ui->EnvVarConfigTableView->horizontalHeader()->setStretchLastSection(true);
 
     ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PARAM_KEY);

@@ -101,7 +101,8 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     ui->ParamCfgTableView->setColumnHidden(ConfigParamTableModel::COLUMN_ENTRY_NUMBER, true);
     ui->ParamCfgTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-    ui->ParamCfgTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Stretch);
+    ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Stretch);
 
     ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_KEY);
     ui->ParamCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_VALUE);
