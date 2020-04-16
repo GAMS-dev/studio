@@ -491,13 +491,14 @@ QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
 {
     if (!mReference)
         return "";
-
     if (domain.size() > 0) {
        QString domainStr = "(";
-       domainStr.append(  mReference->findReference( domain.at(0) )->name() );
+       SymbolReferenceItem* dom = mReference->findReference( domain.at(0) );
+       if (dom) domainStr.append( dom->name() );
        for(int i=1; i<domain.size(); i++) {
            domainStr.append( "," );
-           domainStr.append( mReference->findReference( domain.at(i) )->name() );
+           dom = mReference->findReference( domain.at(i) );
+           if (dom) domainStr.append( dom->name() );
        }
        domainStr.append( ")" );
        return domainStr;
