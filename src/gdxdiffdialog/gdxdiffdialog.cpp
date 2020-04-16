@@ -19,8 +19,8 @@
 #include "ui_gdxdiffdialog.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include <editors/viewhelper.h>
-#include <gdxviewer/gdxviewer.h>
+#include "viewhelper.h"
+#include "gdxviewer/gdxviewer.h"
 
 namespace gams {
 namespace studio {

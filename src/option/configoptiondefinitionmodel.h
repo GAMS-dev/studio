@@ -17,23 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "settingslocator.h"
-#include "studiosettings.h"
+#ifndef CONFIGOPTIONDEFINITIONMODEL_H
+#define CONFIGOPTIONDEFINITIONMODEL_H
+
+#include "optiondefinitionmodel.h"
 
 namespace gams {
 namespace studio {
+namespace option {
 
-StudioSettings* SettingsLocator::mSettings = nullptr;
-
-StudioSettings *SettingsLocator::settings()
+class ConfigOptionDefinitionModel : public OptionDefinitionModel
 {
-    return mSettings;
-}
+public:
+    ConfigOptionDefinitionModel(Option* data, int optionGroup=0, QObject* parent=nullptr);
 
-void SettingsLocator::provide(StudioSettings *s)
-{
-    mSettings = s;
-}
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
-}
-}
+public slots:
+    void modifyOptionDefinitionItem(const ParamConfigItem* optionItem);
+    void modifyOptionDefinition(const QList<ParamConfigItem *> &optionItems);
+};
+
+} // namespace option
+} // namespace studio
+} // namespace gams
+
+#endif // CONFIGOPTIONDEFINITIONMODEL_H

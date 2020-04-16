@@ -423,7 +423,7 @@ multadd (bigHeap_t *hp, Bigint *b, int m, int a) /* multiply by m and add a */
       Bfree(hp, b);
       b = b1;
     }
-    b->x[wds++] = carry;
+    b->x[wds++] = (uint32_t)carry;
     b->wds = wds;
   }
   return b;
@@ -579,7 +579,7 @@ mult (bigHeap_t *hp, const Bigint *a, const Bigint *b)
         carry = z >> 32;
         *xc++ = z & FFFFFFFF;
       } while(x < xae);
-      *xc = carry;
+      *xc = (uint32_t)carry;
     }
   }
   for (xc0 = c->x, xc = xc0 + wc;  wc > 0 && !*--xc;  --wc);
@@ -1130,7 +1130,7 @@ rshift(Bigint *b, int k)
       while(x < xe)
         *x1++ = *x++;
   }
-  if ((b->wds = x1 - b->x) == 0)
+  if ((b->wds = (int) (x1 - b->x)) == 0)
     b->x[0] = 0;
 } /* rshift */
 
@@ -1323,7 +1323,7 @@ gethex(bigHeap_t *hp, const char **sp, U *rvp, int rounding, int sign)
     word1(rvp) = Big1;
     return;
   }
-  n = s1 - s0 - 1;
+  n = (int) (s1 - s0 - 1);
   for(k = 0; n > (1 << (kshift-2)) - 1; n >>= 1)
     k++;
   b = Balloc(hp, k);
@@ -1352,7 +1352,7 @@ gethex(bigHeap_t *hp, const char **sp, U *rvp, int rounding, int sign)
     n += 4;
   }
   *x++ = L;
-  b->wds = n = x - b->x;
+  b->wds = n = (int) (x - b->x);
   n = ULbits*n - hi0bits(L);
   nbits = Nbits;
   lostbits = 0;
@@ -1847,7 +1847,7 @@ strtodLoc (const char *s00, char **se, int *locErrno)
     else if (nd < DBL_DIG + 2)
       z = 10*z + c - '0';
   nd0 = nd;
-  bc.dp0 = bc.dp1 = s - s0;
+  bc.dp0 = bc.dp1 = (int) (s - s0);
   for(s1 = s; s1 > s0 && *--s1 == '0'; )
     ++nz1;
 #ifdef USE_LOCALE
@@ -1871,13 +1871,13 @@ strtodLoc (const char *s00, char **se, int *locErrno)
 #endif
   if (c == '.') {
     c = *++s;
-    bc.dp1 = s - s0;
+    bc.dp1 = (int) (s - s0);
     bc.dplen = bc.dp1 - bc.dp0;
     if (!nd) {
       for ( ;  c == '0';  c = *++s)
         nz++;
       if (c > '0' && c <= '9') {
-        bc.dp0 = s0 - s;
+        bc.dp0 = (int) (s0 - s);
         bc.dp1 = bc.dp0 + bc.dplen;
         s0 = s;
         nf += nz;
@@ -2540,7 +2540,7 @@ strtodLoc (const char *s00, char **se, int *locErrno)
     else {
       if (bc.scale && y <= 2*P*Exp_msk1) {
         if (aadj <= 0x7fffffff) {
-          if ((z = aadj) <= 0)
+          if ((z = (uint32_t)aadj) <= 0)
             z = 1;
           aadj = z;
           aadj1 = bc.dsign ? aadj : -aadj;
@@ -3001,7 +3001,7 @@ dtoaLoc (double dd, int mode, int ndigits,
           eps.d = eps1.d;
       }
       for (i = 0; ; ) {
-        L = dval(&u);
+        L = (int32_t) dval(&u);
         dval(&u) -= L;
         *s++ = '0' + (int)L;
         if (1. - dval(&u) < dval(&eps))

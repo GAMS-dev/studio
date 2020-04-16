@@ -17,24 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SETTINGSLOCATOR_H
-#define SETTINGSLOCATOR_H
+#ifndef TESTSETTINGS_H
+#define TESTSETTINGS_H
 
-namespace gams {
-namespace studio {
+#include <QtTest/QTest>
 
-class StudioSettings;
-
-class SettingsLocator
+class TestSettings : public QObject
 {
-public:
-    static StudioSettings* settings();
-    static void provide(StudioSettings* s);
+    Q_OBJECT
 
-private:
-    static StudioSettings* mSettings;
+private slots:
+    void initTestCase();
+
+//    void testUpgradeFromVersion1();
+
+    void testChangeValueAtRoot();
+    void testChangeValueInGroup();
+
+    void testReadSettingsIgnore();
+    void testReadSettingsIgnoreReset();
+    void testReadSettingsReset();
+
+    void testWriteSettingsIgnore();
+    void testWriteSettingsIgnoreReset();
+    void testWriteSettingsReset();
+
+    void testIgnoreIfNoFilesExist();
 };
 
-}
-}
-#endif // SETTINGSLOCATOR_H
+#endif // TESTSETTINGS_H

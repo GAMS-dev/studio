@@ -35,7 +35,7 @@ class QWidget;
 namespace gams {
 namespace studio {
 
-class StudioSettings;
+class Settings;
 class LineNumberArea;
 class SearchWidget;
 
@@ -259,7 +259,7 @@ private:
     QTimer mWordDelay;
     QTimer mParenthesesDelay;
     ParenthesesMatch mParenthesesMatch;
-    StudioSettings *mSettings = nullptr;
+    Settings *mSettings = nullptr;
     int mBlockEditRealPos = -1;
     QString mBlockEditInsText;
     QVector<BlockEditPos*> mBlockEditPos;

@@ -118,7 +118,7 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
     if (!licenseInfo.isLicenseValid(licenseLines))
         return;
 
-    QFile licenseFile(CommonPaths::systemDir() + "/gamslice.txt");
+    QFile licenseFile(CommonPaths::gamsLicenseFilePath());
     if (licenseFile.exists()) {
         auto result = QMessageBox::question(parent,
                                             "Overwrite current GAMS license file?",
@@ -137,6 +137,9 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
                                             QDir::toNativeSeparators(licenseFile.fileName()));
         if (result == QMessageBox::No)
             return;
+
+        auto licensePath = QFileInfo(licenseFile).absolutePath();
+        QDir(licensePath).mkpath(".");
     }
 
     if (licenseFile.open(QFile::WriteOnly | QFile::Text)) {
@@ -144,11 +147,11 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
         stream << licenseLines.join("\n");
         licenseFile.close();
     } else {
-        auto logger = SysLogLocator::systemLog();
-        logger->append("Unable to open file " +
-                       QDir::toNativeSeparators(licenseFile.fileName()) +
-                       ": " + licenseFile.errorString(),
-                       LogMsgType::Error);
+        QMessageBox::critical(parent,
+                              "Unable to write gamslice.txt",
+                              "Unable to write " +
+                              QDir::toNativeSeparators(licenseFile.fileName()) +
+                              ": " + licenseFile.errorString());
     }
 }
 

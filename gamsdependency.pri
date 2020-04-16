@@ -70,4 +70,6 @@ SOURCES += \
     $$GAMS_DISTRIB_C_API/palmcc.c \
     $$GAMS_DISTRIB_C_API/gdxcc.c  \
     $$GAMS_DISTRIB_C_API/optcc.c  \
-    $$GAMS_DISTRIB_C_API/cfgmcc.c
+    $$GAMS_DISTRIB_C_API/cfgmcc.c \
+    $$GAMS_DISTRIB_C_API/guccc.c  \
+    $$GAMS_DISTRIB_C_API/gucapi.c

@@ -168,10 +168,16 @@ void Keys::reset()
 //    *seq << QKeySequence("Ctrl+,") << QKeySequence("Meta+,");
 //    setHotkey(Hotkey::BookmarkPrev, seq);
 
+#ifdef __APPLE__
+    seq = new KeySeqList("Meta+Shift+Up", "start block edit");
+    *seq << QKeySequence("Meta+Shift+Down") << QKeySequence("Meta+Shift+Left")
+         << QKeySequence("Meta+Shift+Right");
+    setHotkey(Hotkey::BlockEditStart, seq);
+#else
     seq = new KeySeqList("Shift+Alt+Up","start block edit");
     *seq << QKeySequence("Shift+Alt+Down") << QKeySequence("Shift+Alt+Left") << QKeySequence("Shift+Alt+Right");
     setHotkey(Hotkey::BlockEditStart, seq);
-
+#endif
     seq = new KeySeqList("Esc","end block edit");
     *seq << QKeySequence("Up") << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
          << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
@@ -186,7 +192,7 @@ void Keys::reset()
     seq = new KeySeqList("Shift+F3", "Find Previous");
     setHotkey(Hotkey::SearchFindPrev, seq);
 
-    seq = new KeySeqList("Shift+Ctrl+L","duplicate line");
+    seq = new KeySeqList("Ctrl+D","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
 
     seq = new KeySeqList("Tab","indent selected lines");
@@ -206,14 +212,14 @@ void Keys::reset()
     setHotkey(Hotkey::SelectParentheses, seq);
 }
 
-void Keys::read(const QJsonObject& json)
+void Keys::read(const QVariantMap& keys)
 {
-    Q_UNUSED(json)
+    Q_UNUSED(keys)
 }
 
-void Keys::write(QJsonObject& json) const
+void Keys::write(QVariantMap& keys) const
 {
-    Q_UNUSED(json)
+    Q_UNUSED(keys)
 }
 
 void Keys::setHotkey(Hotkey key, KeySeqList* keySeqList)

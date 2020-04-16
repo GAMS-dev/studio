@@ -256,7 +256,7 @@ void TestGUROBIOption::testOptionIntegerType_data()
     QTest::newRow(".partition")     << ".partition"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << 0;
     QTest::newRow("quad")           << "quad"           << true  << -1   << 1                                         << -1;
     QTest::newRow("rins")           << "rins"           << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
-    QTest::newRow("scaleflag")      << "scaleflag"      << true  << 0    << 2                                         << 1;
+    QTest::newRow("scaleflag")      << "scaleflag"      << true  << 0    << 3                                         << 1;
     QTest::newRow("threads")        << "threads"        << true  << -128 << gams::studio::option::OPTION_VALUE_MAXINT << 0;
     QTest::newRow("workerport")     << "workerport"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
     QTest::newRow("zeroobjnodes")   << "zeroobjnodes"   << true  << 0    << gams::studio::option::OPTION_VALUE_MAXINT << 0;
@@ -436,43 +436,43 @@ void TestGUROBIOption::testReadOptionFile_data()
                            << items.at(0)->value    << QVariant("0.12345") << true
                            << items.at(0)->text     << ""
                            << items.at(0)->optionId << 28
-                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(0)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("cliquecuts=-1")  << items.at(1)->disabled <<  false
                            << items.at(1)->key      << "cliquecuts"
                            << items.at(1)->value    << QVariant("-1")  << false
                            << items.at(1)->text     << ""
                            << items.at(1)->optionId << 13
-                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("iterationlimit=120000")  << items.at(2)->disabled <<  false
                            << items.at(2)->key      << "iterationlimit"
                            << items.at(2)->value    << QVariant("120000")  << false
                            << items.at(2)->text     << ""
                            << items.at(2)->optionId << 59
-                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(2)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("barconvtol 1e-08")  << items.at(3)->disabled <<  false
                            << items.at(3)->key      << "barconvtol"
                            << items.at(3)->value    << QVariant(1e-8)  << true
                            << items.at(3)->text     << ""
                            << items.at(3)->optionId << 5
-                           << static_cast<int>(items.at(3)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(3)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("mipgap 0.10")  << items.at(4)->disabled <<  false
                            << items.at(4)->key      << "mipgap"
                            << items.at(4)->value    << QVariant(0.10) << true
                            << items.at(4)->text     << ""
                            << items.at(4)->optionId << 69
-                           << static_cast<int>(items.at(4)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(4)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("fixoptfile /This/Is/a/Fix/opt/file")  << items.at(5)->disabled <<  false
                            << items.at(5)->key      << "fixoptfile"
                            << items.at(5)->value    << QVariant("/This/Is/a/Fix/opt/file") << false
                            << items.at(5)->text     << ""
                            << items.at(5)->optionId << 39
-                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(5)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("objnreltol str1, str2, str3")  << items.at(6)->disabled <<  false
                            << items.at(6)->key      << "objnreltol"
                            << items.at(6)->value    << QVariant("str1, str2, str3") << false
                            << items.at(6)->text     << ""
                            << items.at(6)->optionId << 93
-                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
+                           << static_cast<int>(items.at(6)->error)    << static_cast<int>(OptionErrorType::No_Error);
 }
 
 void TestGUROBIOption::testReadOptionFile()

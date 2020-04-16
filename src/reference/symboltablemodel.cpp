@@ -141,7 +141,7 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
         return QVariant(aFlag | Qt::AlignVCenter);
     }
     case Qt::DisplayRole: {
-         QList<SymbolReferenceItem*> refList = mReference->findReference(mType);
+         QList<SymbolReferenceItem*> refList = mReference->findReferenceFromType(mType);
          int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[static_cast<size_t>(index.row())]] );
          switch(mType) {
          case SymbolDataType::Set :
@@ -201,7 +201,7 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
     if (!mReference)
         return;
 
-    QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+    QList<SymbolReferenceItem *> items = mReference->findReferenceFromType(mType);
     SortType sortType = getSortTypeOf(column);
     ColumnType colType = getColumnTypeOf(column);
 
@@ -316,7 +316,7 @@ int SymbolTableModel::getSortedIndexOf(const SymbolId id) const
     if (!mReference)
         return -1;
 
-    QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+    QList<SymbolReferenceItem *> items = mReference->findReferenceFromType(mType);
     int rec;
     for(rec=0; rec<items.size(); rec++) {
         int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[ static_cast<size_t>(rec) ] ] );
@@ -341,7 +341,7 @@ int SymbolTableModel::getSortedIndexOf(const QString &name) const
        }
        return rec < items.size() ? rec : -1;
     } else {
-       QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+       QList<SymbolReferenceItem *> items = mReference->findReferenceFromType(mType);
        int rec = -1;
        for(rec=0; rec<items.size(); rec++) {
            int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[ static_cast<size_t>(rec) ] ] );
@@ -491,13 +491,16 @@ QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
 {
     if (!mReference)
         return "";
-
     if (domain.size() > 0) {
        QString domainStr = "(";
-       domainStr.append(  mReference->findReference( domain.at(0) )->name() );
+       SymbolReferenceItem* dom = mReference->findReferenceFromId( domain.at(0) );
+       if (dom) domainStr.append( dom->name() );
        for(int i=1; i<domain.size(); i++) {
-           domainStr.append( "," );
-           domainStr.append( mReference->findReference( domain.at(i) )->name() );
+           dom = mReference->findReferenceFromId( domain.at(i) );
+           if (dom) {
+              domainStr.append( "," );
+              domainStr.append( dom->name() );
+           }
        }
        domainStr.append( ")" );
        return domainStr;
@@ -553,7 +556,7 @@ void SymbolTableModel::filterRows()
         if (mType == SymbolDataType::SymbolType::FileUsed)
             size = static_cast<size_t>(mReference->getFileUsed().size());
         else
-            size = static_cast<size_t>(mReference->findReference(mType).size());
+            size = static_cast<size_t>(mReference->findReferenceFromType(mType).size());
         for(size_t rec=0; rec<size; rec++) {
             mFilterActive[rec] = false;
             mFilterIdxMap[rec] = rec;
@@ -592,7 +595,7 @@ void SymbolTableModel::filterRows()
            mFilterIdxMap[filteredRec] = mSortIdxMap[filteredRec];
         }
     } else {
-        QList<SymbolReferenceItem *> items = mReference->findReference(mType);
+        QList<SymbolReferenceItem *> items = mReference->findReferenceFromType(mType);
         size = static_cast<size_t>(items.size());
         for(size_t rec=0; rec<size; rec++) {
             int idx = static_cast<int>(mSortIdxMap[rec]);
@@ -633,7 +636,7 @@ void SymbolTableModel::resetSizeAndIndices()
         mFilteredKeyColumn = 0;
     } else {
         if (mReference)
-           size = static_cast<size_t>(mReference->findReference(mType).size());
+           size = static_cast<size_t>(mReference->findReferenceFromType(mType).size());
         mFilteredKeyColumn = 1;
     }
     mSortIdxMap.resize( size );

@@ -64,7 +64,6 @@ void TestConopt4Option::testOptionBooleanType_data()
 
     QTest::newRow("FByCol")          << "FByCol"          << false << 1  << "";
     QTest::newRow("Flg_Dbg_Intv")    << "Flg_Dbg_Intv"    << true  << 0  << "Flag for debugging interval evaluations.";
-    QTest::newRow("Flg_DC_Unique")   << "Flg_DC_Unique"   << true  << 1  << "Flag for requiring definitional constraints to be unique";
     QTest::newRow("Scale_Infeas")    << "Scale_Infeas"    << false << 1  << "";
     QTest::newRow("Flg_Crash_Basis") << "Flg_Crash_Basis" << true  << 1  << "Flag for crashing an initial basis without fixed slacks";
     QTest::newRow("LSLACK")          << "LSLACK"          << false << 0  << "";
@@ -147,10 +146,10 @@ void TestConopt4Option::testOptionIntegerType_data()
     QTest::addColumn<int>("upperBound");
     QTest::addColumn<int>("defaultValue");
 
-    QTest::newRow("LFDERR")        << "LFDERR"        << false  << 1  << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
-    QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1  << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
-    QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 2  << gams::studio::option::OPTION_VALUE_MAXINT  << 100;
-    QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1 << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
+    QTest::newRow("LFDERR")        << "LFDERR"        << false  << 1   << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("LFEMSG")        << "LFEMSG"        << false  << 1   << gams::studio::option::OPTION_VALUE_MAXINT  << 10;
+    QTest::newRow("Lim_StallIter") << "Lim_StallIter" << true   << 20  << gams::studio::option::OPTION_VALUE_MAXINT  << 100;
+    QTest::newRow("LKDEBG")        << "LKDEBG"        << false  << -1  << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
 }
 
 void TestConopt4Option::testOptionIntegerType()
@@ -336,63 +335,63 @@ void TestConopt4Option::testReadOptionFile_data()
             << items.at(0)->value    << QVariant("")   << false
             << items.at(0)->text     << ""
             << items.at(0)->optionId << -1
-            << static_cast<int>(items.at(0)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(0)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("DF_Method 1")
             << items.at(1)->disabled <<  true
             << items.at(1)->key      << "* DF_Method 1"
             << items.at(0)->value    << QVariant("")   << false
             << items.at(0)->text     << ""
             << items.at(0)->optionId << -1
-            << static_cast<int>(items.at(1)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("Lim_Iteration=100")
             << items.at(2)->disabled <<  false
             << items.at(2)->key      << "Lim_Iteration"
             << items.at(2)->value    << QVariant("100") << false
             << items.at(2)->text     << ""
             << items.at(2)->optionId << 25
-            << static_cast<int>(items.at(2)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(2)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("Lim_Iteration 100")
             << items.at(3)->disabled <<  false
             << items.at(3)->key      << "Lim_Iteration"
             << items.at(3)->value    << QVariant("100") << false
             << items.at(3)->text     << ""
             << items.at(3)->optionId << 25
-            << static_cast<int>(items.at(3)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(3)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("Flg_Hessian 1")
             << items.at(4)->disabled <<  false
             << items.at(4)->key      << "Flg_Hessian"
             << items.at(4)->value    << QVariant("1")  << false
             << items.at(4)->text     << ""
             << items.at(4)->optionId << 281
-            << static_cast<int>(items.at(4)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(4)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("cooptfile \"C:/Users/Dude/coopt.file\"")
             << items.at(5)->disabled <<  false
             << items.at(5)->key      << "cooptfile"
             << items.at(5)->value    << QVariant("\"C:/Users/Dude/coopt.file\"") << false
             << items.at(5)->text     << ""
             << items.at(5)->optionId << 298
-            << static_cast<int>(items.at(5)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(5)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("Tol_Bound=5.E-9 ; Bound filter tolerance for solution values close to a bound.")
             << items.at(6)->disabled <<  false
             << items.at(6)->key      << "Tol_Bound"
             << items.at(6)->value    << QVariant("5.E-9")  << true
             << items.at(6)->text     << "Bound filter tolerance for solution values close to a bound."
             << items.at(6)->optionId << 224
-            << static_cast<int>(items.at(6)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(6)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("HEAPLIMIT 1e20  # Maximum Heap size in MB allowed")
             << items.at(7)->disabled <<  false
             << items.at(7)->key      << "HEAPLIMIT"
             << items.at(7)->value    << QVariant("1e20")   << true
             << items.at(7)->text     << "Maximum Heap size in MB allowed"
             << items.at(7)->optionId << 299
-            << static_cast<int>(items.at(7)->error)    << static_cast<int>(No_Error);
+            << static_cast<int>(items.at(7)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("Lim_Variable  1e+03 ")
             << items.at(8)->disabled <<  false
             << items.at(8)->key      << "Lim_Variable"
             << items.at(8)->value    << QVariant("1e+03")   << true
             << items.at(8)->text     << ""
             << items.at(8)->optionId << 175
-            << static_cast<int>(items.at(8)->error)    << static_cast<int>(Value_Out_Of_Range);
+            << static_cast<int>(items.at(8)->error)    << static_cast<int>(OptionErrorType::Value_Out_Of_Range);
 }
 
 void TestConopt4Option::testReadOptionFile()

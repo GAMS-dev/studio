@@ -26,8 +26,7 @@
 #include "exception.h"
 #include "file.h"
 #include "common.h"
-#include "studiosettings.h"
-#include "settingslocator.h"
+#include "settings.h"
 
 namespace gams {
 namespace studio {

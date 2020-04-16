@@ -94,7 +94,6 @@ SOURCES += \
     editors/systemlogedit.cpp \
     editors/textview.cpp \
     editors/textviewedit.cpp \
-    editors/viewhelper.cpp \
     encodingsdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
@@ -156,9 +155,16 @@ SOURCES += \
     numerics/dtoaLoc.c \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
+    option/configoptiondefinitionmodel.cpp \
+    option/configparamtablemodel.cpp \
     option/definitionitemdelegate.cpp \
+    option/envvarcfgcompleterdelegate.cpp \
+    option/envvarconfigeditor.cpp \
+    option/envvartablemodel.cpp \
+    option/gamsconfigeditor.cpp \
     option/gamsoptiondefinitionmodel.cpp \
     option/gamsparametertablemodel.cpp \
+    option/gamsuserconfig.cpp \
     option/lineeditcompleteevent.cpp \
     option/option.cpp \
     option/optioncompleterdelegate.cpp \
@@ -166,6 +172,7 @@ SOURCES += \
     option/optiondefinitionmodel.cpp \
     option/optionsortfilterproxymodel.cpp \
     option/optiontokenizer.cpp \
+    option/paramconfigeditor.cpp \
     option/parametereditor.cpp \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
@@ -188,10 +195,9 @@ SOURCES += \
     search/searchlocator.cpp \
     search/searchresultlist.cpp \
     search/searchworker.cpp \
+    settings.cpp \
     settingsdialog.cpp \
-    settingslocator.cpp \
     statuswidgets.cpp \
-    studiosettings.cpp \
     support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
     support/distributionvalidator.cpp \
@@ -209,6 +215,7 @@ SOURCES += \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
     tabdialog.cpp \
+    viewhelper.cpp \
     welcomepage.cpp \
     wplabel.cpp
 
@@ -234,7 +241,6 @@ HEADERS += \
     editors/systemlogedit.h \
     editors/textview.h \
     editors/textviewedit.h \
-    editors/viewhelper.h \
     encodingsdialog.h \
     exception.h \
     file.h \
@@ -296,9 +302,16 @@ HEADERS += \
     numerics/dtoaLoc.h \
     option/addoptionheaderview.h \
     option/commandline.h \
+    option/configoptiondefinitionmodel.h \
+    option/configparamtablemodel.h \
     option/definitionitemdelegate.h \
+    option/envvarcfgcompleterdelegate.h \
+    option/envvarconfigeditor.h \
+    option/envvartablemodel.h \
+    option/gamsconfigeditor.h \
     option/gamsoptiondefinitionmodel.h \
     option/gamsparametertablemodel.h \
+    option/gamsuserconfig.h \
     option/lineeditcompleteevent.h \
     option/option.h \
     option/optioncompleterdelegate.h \
@@ -306,6 +319,7 @@ HEADERS += \
     option/optiondefinitionmodel.h \
     option/optionsortfilterproxymodel.h \
     option/optiontokenizer.h \
+    option/paramconfigeditor.h \
     option/parametereditor.h \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
@@ -328,10 +342,9 @@ HEADERS += \
     search/searchlocator.h \
     search/searchresultlist.h \
     search/searchworker.h \
+    settings.h \
     settingsdialog.h \
-    settingslocator.h \
     statuswidgets.h \
-    studiosettings.h \
     support/aboutgamsdialog.h       \
     support/checkforupdatewrapper.h \
     support/distributionvalidator.h \
@@ -352,6 +365,7 @@ HEADERS += \
     syntax/textmarkrepo.h \
     tabdialog.h \
     version.h \
+    viewhelper.h \
     welcomepage.h \
     wplabel.h
 
@@ -368,6 +382,9 @@ FORMS += \
     miro/mirodeploydialog.ui \
     miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
+    option/envvarconfigeditor.ui \
+    option/gamsconfigeditor.ui \
+    option/paramconfigeditor.ui \
     option/parametereditor.ui \
     option/solveroptionwidget.ui \
     reference/referenceviewer.ui \

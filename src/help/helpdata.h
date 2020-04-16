@@ -25,6 +25,7 @@
 #include <QList>
 #include <QString>
 #include <QPair>
+#include <QUrl>
 
 #include "commonpaths.h"
 
@@ -54,6 +55,7 @@ enum struct StudioSection {
     GDXViewer,
     ReferenceFileViewer,
     SolverOptionEditor,
+    GamsUserConfigEditor,
     Toolbar,
     OptionEditor,
 };
@@ -90,6 +92,7 @@ public:
             {StudioSection::GDXViewer, "GDX Viewer"},
             {StudioSection::ReferenceFileViewer, "Reference File Viewer"},
             {StudioSection::SolverOptionEditor, "Solver Option Editor"},
+            {StudioSection::GamsUserConfigEditor, "Gams Configuration Editor"},
             {StudioSection::OptionEditor, "Option Editor"},
         };
         return list;

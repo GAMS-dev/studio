@@ -55,7 +55,7 @@ public:
     QStringList parameters() const;
     void setParameters(const QStringList &parameters);
 
-    virtual QStringList defaultParameters() const { // TODO (AF) review/needed?
+    virtual QStringList defaultParameters() const {
         return QStringList();
     }
 

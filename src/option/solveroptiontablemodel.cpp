@@ -22,8 +22,7 @@
 #include <QApplication>
 
 #include "solveroptiontablemodel.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "scheme.h"
 
 namespace gams {
@@ -71,16 +70,16 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
         } else {
             QString tooltipText = "";
             switch(mOptionItem.at(index)->error) {
-            case Invalid_Key:
+            case OptionErrorType::Invalid_Key:
                 tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(index)->key) );
                 break;
-            case Incorrect_Value_Type:
+            case OptionErrorType::Incorrect_Value_Type:
                 tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key));
                 break;
-            case Value_Out_Of_Range:
+            case OptionErrorType::Value_Out_Of_Range:
                 tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key));
                 break;
-            case Deprecated_Option:
+            case OptionErrorType::Deprecated_Option:
                 tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key));
                 break;
             default:
@@ -174,19 +173,19 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         } else {
             QString tooltipText = "";
             switch(mOptionItem.at(row)->error) {
-            case Invalid_Key:
+            case OptionErrorType::Invalid_Key:
                 tooltipText.append( QString("Unknown option '%1'").arg(mOptionItem.at(row)->key));
                 break;
-            case Incorrect_Value_Type:
+            case OptionErrorType::Incorrect_Value_Type:
                 tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key) );
                 break;
-            case Value_Out_Of_Range:
+            case OptionErrorType::Value_Out_Of_Range:
                 tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key) );
                 break;
-            case Deprecated_Option:
+            case OptionErrorType::Deprecated_Option:
                 tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key) );
                 break;
-            case UserDefined_Error:
+            case OptionErrorType::UserDefined_Error:
                 tooltipText.append( QString("Invalid option key or value or comment defined") );
                 break;
             default:
@@ -202,24 +201,23 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::TextColorRole: {
         if (mOptionItem.at(row)->disabled) {
-            // TODO(RG): This and all following colors need to be changed to qpalette something
-            return QVariant::fromValue(QColor(Qt::gray));
+            return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
         } else {
             switch(mOptionItem.at(row)->error) {
-            case UserDefined_Error:
-            case Invalid_Key:
-            case Incorrect_Value_Type:
-            case Value_Out_Of_Range:
+            case OptionErrorType::UserDefined_Error:
+            case OptionErrorType::Invalid_Key:
+            case OptionErrorType::Incorrect_Value_Type:
+            case OptionErrorType::Value_Out_Of_Range:
                  return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
-            case Deprecated_Option:
+            case OptionErrorType::Deprecated_Option:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
                     return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
-                else return QVariant::fromValue(QColor(Qt::gray));
-            case No_Error:
+                else return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
+            case OptionErrorType::No_Error:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
                     return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
                 else if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
-                    return QVariant::fromValue(QColor(Qt::gray));
+                    return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
                 else
                     return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             default:
@@ -394,7 +392,7 @@ bool SolverOptionTableModel::moveRows(const QModelIndex &sourceParent, int sourc
 QStringList SolverOptionTableModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/vnd.solver-opt.text";
+    types << optionMimeType(OptionDefinitionType::SolverOptionDefinition);
     return types;
 }
 
@@ -410,10 +408,10 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     if (action == Qt::IgnoreAction)
         return true;
 
-    if (!mimedata->hasFormat("application/vnd.solver-opt.text"))
+    if (!mimedata->hasFormat(optionMimeType(OptionDefinitionType::SolverOptionDefinition)))
         return false;
 
-    QByteArray encodedData = mimedata->data("application/vnd.solver-opt.text");
+    QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::SolverOptionDefinition));
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
     QStringList newItems;
     int rows = 0;
@@ -434,7 +432,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     else
         beginRow = rowCount(QModelIndex());
 
-    StudioSettings* settings = SettingsLocator::settings();
+    Settings* settings = Settings::settings();
     if (action ==  Qt::CopyAction) {
 
         disconnect(this, &QAbstractTableModel::dataChanged, this, &SolverOptionTableModel::on_updateSolverOptionItem);
@@ -455,7 +453,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                                                      false));
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
-                if (settings && settings->overridExistingOption()) {
+                if (settings && settings->toBool(skSoOverrideExisting)) {
                     for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
                 }
             }
@@ -549,7 +547,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
                 setData(idx, item->key, Qt::EditRole);
                 setData( index(beginRow, COLUMN_OPTION_VALUE), item->value, Qt::EditRole);
-                if (settings && settings->addEOLCommentDescriptionOption()) { //addEOLComment) {
+                if (settings && settings->toBool(skSoAddEOLComment)) { //addEOLComment) {
                     setData(index(beginRow, COLUMN_EOL_COMMENT), item->text, Qt::EditRole);
                 }
                 setData(index(beginRow, columnEntryNumber), item->optionId, Qt::EditRole);
@@ -635,7 +633,7 @@ void SolverOptionTableModel::reloadSolverOptionModel(const QList<SolverOptionIte
            if (mOption->isEOLCharDefined())
                setData( index(i, COLUMN_EOL_COMMENT), QVariant(mOptionItem.at(i)->text), Qt::EditRole);
            setData( index(i, getColumnEntryNumber()), QVariant(mOptionItem.at(i)->optionId), Qt::EditRole);
-           if (mOptionItem.at(i)->error == No_Error)
+           if (mOptionItem.at(i)->error == OptionErrorType::No_Error)
                setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
@@ -673,7 +671,7 @@ void SolverOptionTableModel::on_updateSolverOptionItem(const QModelIndex &topLef
               if (mOptionTokenizer->getOption()->available())
                   mOptionTokenizer->updateOptionItem(key, value, text, mOptionItem.at(idx.row()));
 
-              if (mOptionItem.at(idx.row())->error == No_Error)
+              if (mOptionItem.at(idx.row())->error == OptionErrorType::No_Error)
                    setHeaderData( idx.row(), Qt::Vertical,
                           Qt::CheckState(Qt::Unchecked),
                           Qt::CheckStateRole );
@@ -703,7 +701,7 @@ void SolverOptionTableModel::on_removeSolverOptionItem()
                               Qt::CheckState(Qt::PartiallyChecked),
                               Qt::CheckStateRole );
         } else {
-            if (mOptionItem.at(i)->error == No_Error)
+            if (mOptionItem.at(i)->error ==OptionErrorType::No_Error)
                 setHeaderData( i, Qt::Vertical,
                               Qt::CheckState(Qt::Unchecked),
                               Qt::CheckStateRole );
@@ -722,7 +720,7 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
 {
     if (mCheckState[logicalIndex].toInt() == Qt::PartiallyChecked) { // from comment
         mOptionTokenizer->getOptionItemFromStr(mOptionItem.at(logicalIndex), false, mOptionItem.at(logicalIndex)->key);
-        if (mOptionItem.at(logicalIndex)->error == No_Error)
+        if (mOptionItem.at(logicalIndex)->error == OptionErrorType::No_Error)
             mCheckState[logicalIndex] = QVariant(Qt::Unchecked);
         else
             mCheckState[logicalIndex] = QVariant(Qt::Checked);
@@ -798,7 +796,7 @@ void SolverOptionTableModel::updateCheckState()
         QVariant value =  QVariant(Qt::Unchecked);
         if (mOptionItem.at(i)->disabled)
             value = QVariant(Qt::PartiallyChecked);
-        else if (mOptionItem.at(i)->error == No_Error)
+        else if (mOptionItem.at(i)->error == OptionErrorType::No_Error)
                 value = QVariant(Qt::Unchecked);
         else
             value = QVariant(Qt::Checked);

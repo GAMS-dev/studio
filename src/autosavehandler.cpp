@@ -22,7 +22,6 @@
 
 #include <QMessageBox>
 #include <QDir>
-#include <QJsonObject>
 #include <QTextStream>
 
 namespace gams {

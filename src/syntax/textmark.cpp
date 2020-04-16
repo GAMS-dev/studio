@@ -23,8 +23,7 @@
 #include "logger.h"
 #include "exception.h"
 #include "scheme.h"
-#include "studiosettings.h"
-#include "settingslocator.h"
+#include "settings.h"
 
 namespace gams {
 namespace studio {

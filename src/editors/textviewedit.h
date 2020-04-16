@@ -22,7 +22,6 @@
 
 #include "codeedit.h"
 #include "abstracttextmapper.h"
-#include "settingslocator.h"
 #include <QWidget>
 
 namespace gams {
@@ -78,7 +77,7 @@ private:
 
 private:
     AbstractTextMapper &mMapper;
-    StudioSettings *mSettings;
+    Settings *mSettings;
     qint64 mTopByte = 0;
     QPoint mClickPos;
     bool mClickStart = false;

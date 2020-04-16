@@ -89,7 +89,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(255, 250, 170));
     mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
-    mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(Qt::green).lighter(160));
+    mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(22,164,25));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
     mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black)); // TODO: is this unused?
     mColorSchemes[sNr].insert(Edit_parenthesesValidBg,        QColor(Qt::green).lighter(170));
@@ -159,8 +159,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,  QColor(Qt::black));
 
     mColorSchemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
-    mColorSchemes[sNr].insert(Syntax_directive,         Color(dark_assignment));
-    mColorSchemes[sNr].insert(Syntax_keyword,           Color(dark_neutral, fBold));
+    mColorSchemes[sNr].insert(Syntax_directive,         QColor(200,60,90));
+    mColorSchemes[sNr].insert(Syntax_keyword,           Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_declaration,       Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_description,       Color(dark_unobstrusive));
     mColorSchemes[sNr].insert(Syntax_comment,           Color(dark_unobstrusive, fItalic));

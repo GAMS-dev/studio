@@ -38,7 +38,7 @@ GamsOptionDefinitionModel::GamsOptionDefinitionModel(Option *data, int optionGro
 QStringList GamsOptionDefinitionModel::mimeTypes() const
 {
     QStringList types;
-    types << "application/vnd.gams-pf.text";
+    types <<  optionMimeType(OptionDefinitionType::GamsOptionDefinition);
     return types;
 }
 
@@ -74,7 +74,7 @@ QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) c
         }
     }
 
-    mimeData->setData("application/vnd.gams-pf.text", encodedData);
+    mimeData->setData(optionMimeType(OptionDefinitionType::GamsOptionDefinition), encodedData);
     return mimeData;
 }
 

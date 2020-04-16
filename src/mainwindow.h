@@ -51,7 +51,7 @@ class AbstractProcess;
 class GamsProcess;
 class GamsLibProcess;
 class WelcomePage;
-class StudioSettings;
+class Settings;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
@@ -69,10 +69,12 @@ class MiroDeployDialog;
 }
 
 struct RecentData {
+    RecentData() { reset(); }
 
-    QWidget *editor() const;
-    void setEditor(QWidget *editor, MainWindow* window);
+    QWidget* editor() const { return mEditor; }
+    void setEditor(QWidget* editor, MainWindow* window);
 
+    void reset();
     bool validRunGroup();
 
     /**
@@ -81,15 +83,18 @@ struct RecentData {
      */
     QString mainModelName(bool stripped = true);
 
-    FileId editFileId = -1;
-    QString path = ".";
-    ProjectGroupNode* group = nullptr;
+    FileId editFileId;
+    QString path;
+    ProjectGroupNode* group;
 
 private:
-    QWidget* mEditor = nullptr;
+    QWidget* mEditor;
 };
 
 struct HistoryData {
+    QStringList &files() { return mLastOpenedFiles; }
+    const QStringList &files() const { return mLastOpenedFiles; }
+private:
     QStringList mLastOpenedFiles;
 };
 
@@ -118,7 +123,7 @@ public:
     void setEncodingMIBs(QString mibList, int active = -1);
     void setEncodingMIBs(QList<int> mibs, int active = -1);
     void setActiveMIB(int active = -1);
-    HistoryData* history();
+    const HistoryData &history();
     void setOutputViewVisibility(bool visibility);
     void setProjectViewVisibility(bool visibility);
     void setOptionEditorVisibility(bool visibility);
@@ -135,8 +140,8 @@ public:
     void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
-    bool readTabs(const QJsonObject &json);
-    void writeTabs(QJsonObject &json) const;
+    bool readTabs(const QVariantMap &tabData);
+    void writeTabs(QVariantMap &tabData) const;
     void resetViews();
     void resizeOptionEditor(const QSize &size);
     void updateRunState();
@@ -204,7 +209,6 @@ private slots:
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
-    void updateMiroMenu();
     void newProcessCall(const QString &text, const QString &call);
 
     // View
@@ -253,6 +257,8 @@ private slots:
     void on_actionStop_MIRO_triggered();
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
+    void on_menuMIRO_aboutToShow();
+    void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
 
@@ -351,7 +357,11 @@ private:
     int fileDeletedExtern(FileId fileId, bool ask, int count = 1);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
+    void historyChanged();
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
+    void updateAndSaveSettings();
+    void restoreFromSettings();
+    QString currentPath();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
@@ -370,6 +380,8 @@ private:
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
     QFont createEditorFont(const QString &fontFamily, int pointSize);
+    bool isMiroAvailable();
+    bool validMiroPrerequisites();
 
 private:
     Ui::MainWindow *ui;
@@ -393,7 +405,6 @@ private:
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData mHistory;
-    StudioSettings* mSettings;
     std::unique_ptr<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;

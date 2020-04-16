@@ -19,8 +19,7 @@
  */
 #include "welcomepage.h"
 #include "commonpaths.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "ui_welcomepage.h"
 #include "mainwindow.h"
 #include "wplabel.h"
@@ -49,8 +48,6 @@ WelcomePage::WelcomePage(MainWindow *parent)
 
     auto p = palette();
     p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
-    ui->welcometext->setPalette(p);
-    ui->welcometext->setAutoFillBackground(true);
 
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
@@ -66,13 +63,13 @@ void WelcomePage::historyChanged()
     }
 
     WpLabel *tmpLabel;
-    HistoryData *history = mMain->history();
+    const QStringList &history = mMain->history().files();
     int j = 0;
-    for (int i = 0; i < SettingsLocator::settings()->historySize(); i++) {
-        if (i >= history->mLastOpenedFiles.size()) break;
+    for (int i = 0; i < Settings::settings()->toInt(skHistorySize); i++) {
+        if (i >= history.size()) break;
 
-        QFileInfo file(history->mLastOpenedFiles.at(i));
-        if (history->mLastOpenedFiles.at(i) == "") continue;
+        QFileInfo file(history.at(i));
+        if (history.at(i) == "") continue;
 
         if (file.exists()) {
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
@@ -103,7 +100,6 @@ bool WelcomePage::event(QEvent *event)
         auto p = palette();
         p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
 
-        ui->welcometext->setPalette(p);
         for (WpLabel* w : findChildren<WpLabel*>())
             w->setPalette(p);
 

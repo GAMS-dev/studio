@@ -287,12 +287,11 @@ void GdxSymbol::calcDefaultColumns()
     }
 }
 
-//TODO(CW): refactoring for better performance
 void GdxSymbol::calcUelsInColumn()
 {
     for(int dim=0; dim<mDim; dim++) {
         std::vector<int>* uels = new std::vector<int>();
-        bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false}; //TODO(CW): squeeze using mMinUel
+        bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false};
 
         int lastUel = -1;
         int currentUel = - 1;

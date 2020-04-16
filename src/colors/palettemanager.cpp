@@ -14,22 +14,25 @@ PaletteManager::PaletteManager()
     mDefaultStyle = QApplication::style()->objectName();
 
     // Nr1: default style
-    mStyles.append(QApplication::palette());
+    auto p = QApplication::palette();
+    p.setColor(QPalette::Inactive, QPalette::Highlight, QColor(0,90,255));
+    p.setColor(QPalette::Inactive, QPalette::HighlightedText, p.color(QPalette::HighlightedText));
+    mStyles.append(p);
 
     // Nr2: dark theme
     QPalette darkPalette(QApplication::palette());
-    QColor darkColor = QColor(55,55,55);
     QColor disabledColor = QColor(127,127,127);
-    darkPalette.setColor(QPalette::Window, darkColor);
+    darkPalette.setColor(QPalette::Window, QColor(30,30,30));
     darkPalette.setColor(QPalette::WindowText, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, disabledColor);
-    darkPalette.setColor(QPalette::Base, QColor(30,30,30));
+    darkPalette.setColor(QPalette::Base, QColor(45,45,45));
     darkPalette.setColor(QPalette::AlternateBase, QColor(66,66,66));
     darkPalette.setColor(QPalette::ToolTipBase, QColor(42,42,42));
     darkPalette.setColor(QPalette::ToolTipText, Qt::white);
     darkPalette.setColor(QPalette::Text, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::Text, disabledColor);
-    darkPalette.setColor(QPalette::Button, darkColor);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(0, 0, 0, 0)); // removes white text shadow
+    darkPalette.setColor(QPalette::Button, QColor(50,50,50));
     darkPalette.setColor(QPalette::ButtonText, Qt::white);
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledColor);
     darkPalette.setColor(QPalette::BrightText, Qt::red);

@@ -24,10 +24,9 @@
 #include "editors/codeedit.h"
 #include "exception.h"
 #include "logger.h"
-#include "settingslocator.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "commonpaths.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "support/solverconfiginfo.h"
@@ -46,7 +45,7 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
-    mCodec = QTextCodec::codecForMib(SettingsLocator::settings()->defaultCodecMib());
+    mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
     if (!mCodec) mCodec = QTextCodec::codecForLocale();
     if (location.contains('\\'))
         location = QDir::fromNativeSeparators(location);
@@ -359,7 +358,6 @@ void FileMeta::addEditor(QWidget *edit)
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
-    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
 
     if (aEdit) {
         if (!mDocument)
@@ -385,9 +383,12 @@ void FileMeta::addEditor(QWidget *edit)
         if (tv->kind() == TextView::FileText)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     }
-    if (soEdit) {
+    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
+              connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     }
+
     if (mEditors.size() == 1) emit documentOpened();
     if (aEdit)
         aEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
@@ -405,7 +406,6 @@ void FileMeta::removeEditor(QWidget *edit)
 
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
-    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit);
     mEditors.removeAt(i);
 
     if (aEdit) {
@@ -429,8 +429,10 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
-    if (soEdit) {
+    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
        disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
+              disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     }
 
     if (mEditors.isEmpty()) {
@@ -449,7 +451,7 @@ bool FileMeta::hasEditor(QWidget * const &edit) const
 void FileMeta::load(int codecMib, bool init)
 {
     if (codecMib == -1) {
-        codecMib = SettingsLocator::settings()->defaultCodecMib();
+        codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     }
     mCodec = QTextCodec::codecForMib(codecMib);
     mData = Data(location(), mData.type);
@@ -484,10 +486,20 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::Opt) {
         bool textOptEditor = true;
         for (QWidget *wid : mEditors) {
-            option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid);
-            if (so) {
+            if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
                 textOptEditor = false;
                 so->on_reloadSolverOptionFile(mCodec);
+            }
+        }
+        if (!textOptEditor)
+            return;
+    }
+    if (kind() == FileKind::Guc) {
+        bool textOptEditor = true;
+        for (QWidget *wid : mEditors) {
+            if (option::GamsConfigEditor *cfge = ViewHelper::toGamsConfigEditor(wid)) {
+                textOptEditor = false;
+                cfge->on_reloadGamsUserConfigFile(mCodec);
             }
         }
         if (!textOptEditor)
@@ -560,6 +572,11 @@ void FileMeta::save(const QString &newLocation)
         mActivelySaved = true;
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
+
+    } else if (kind() == FileKind::Guc) {
+        mActivelySaved = true;
+        option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor( mEditors.first() );
+        if (gucEditor) gucEditor->saveConfigFile(location);
 
     } else { // no document, e.g. lst
         mActivelySaved = true;
@@ -691,6 +708,12 @@ bool FileMeta::isModified() const
             if (solverOptionWidget)
                 return solverOptionWidget->isModified();
         }
+    } else if (kind() == FileKind::Guc) {
+               for (QWidget *wid: mEditors) {
+                   option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor(wid);
+                   if (gucEditor)
+                       return gucEditor->isModified();
+               }
     }
     return false;
 }
@@ -730,6 +753,11 @@ void FileMeta::setModified(bool modified)
                option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
                if (so) so->setModified(modified);
           }
+    } else if (kind() == FileKind::Guc) {
+        for (QWidget *e : mEditors) {
+             option::GamsConfigEditor *gco = ViewHelper::toGamsConfigEditor(e);
+             if (gco) gco->setModified(modified);
+        }
     }
 }
 
@@ -740,7 +768,7 @@ QTextDocument *FileMeta::document() const
 
 int FileMeta::codecMib() const
 {
-    return mCodec ? mCodec->mibEnum() : SettingsLocator::settings()->defaultCodecMib();
+    return mCodec ? mCodec->mibEnum() : Settings::settings()->toInt(skDefaultCodecMib);
 }
 
 void FileMeta::setCodecMib(int mib)
@@ -765,7 +793,7 @@ void FileMeta::setCodec(QTextCodec *codec)
 {
     if (!codec) {
         if (!mCodec) {
-            mCodec = QTextCodec::codecForMib(SettingsLocator::settings()->defaultCodecMib());
+            mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
             DEB() << "Encoding parameter invalid, initialized to " << mCodec->name();
         } else {
             DEB() << "Encoding parameter invalid, left unchanged at " << mCodec->name();
@@ -796,7 +824,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
-    if (codecMib == -1) codecMib = SettingsLocator::settings()->defaultCodecMib();
+    if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::Gdx) {
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
@@ -821,6 +849,11 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
+    } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
+              // Guc Editor ignore other encoding scheme than UTF-8
+              mCodec = QTextCodec::codecForName("utf-8");
+              res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
+                                                                             id(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
             QFileInfo fileInfo(name());
             support::SolverConfigInfo solverConfigInfo;
@@ -846,8 +879,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         codeEdit  = new CodeEdit(tabWidget);
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);
-        edit->setLineWrapMode(SettingsLocator::settings()->lineWrapEditor() ? QPlainTextEdit::WidgetWidth
-                                                                            : QPlainTextEdit::NoWrap);
+        edit->setLineWrapMode(Settings::settings()->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
+                                                                             : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
         res = edit;
         if (kind() == FileKind::Log) {

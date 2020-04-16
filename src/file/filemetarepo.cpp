@@ -21,11 +21,10 @@
 #include "filemeta.h"
 #include "projectrepo.h"
 #include "syntax/textmarkrepo.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "exception.h"
 #include "logger.h"
-#include "settingslocator.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include <QFileInfo>
 
 namespace gams {
@@ -38,7 +37,7 @@ FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
     mMissCheckTimer.setInterval(5000);
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
-    mSettings = SettingsLocator::settings();
+    mSettings = Settings::settings();
 }
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const

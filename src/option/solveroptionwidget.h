@@ -49,8 +49,6 @@ public:
                                 FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
     ~SolverOptionWidget();
 
-    bool isInFocused(QWidget* focusWidget);
-
     FileId fileId() const;
 
     bool isModified() const;
@@ -58,7 +56,7 @@ public:
 
     bool saveAs(const QString &location);
 
-    bool isAnOptionWidgetFocused(QWidget* focusWidget) const;
+    bool isInFocus(QWidget* focusWidget) const;
     QString getSelectedOptionName(QWidget* widget) const;
 
     QString getSolverName() const;

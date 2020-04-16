@@ -45,8 +45,11 @@ QString CommonPaths::SystemDir = QString();
 
 #if defined(__APPLE__) || defined(__unix__)
     const QString CommonPaths::ConfigFile = "gmscmpun.txt";
+    const QString CommonPaths::LicensePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+
 #else
     const QString CommonPaths::ConfigFile = "gmscmpnt.txt";
+    const QString CommonPaths::LicensePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
 
 const QString CommonPaths::LicenseFile = "gamslice.txt";
@@ -107,23 +110,36 @@ bool CommonPaths::isSystemDirValid()
     return true;
 }
 
-QString CommonPaths::userDocumentsDir()
+QString CommonPaths::gamsDocumentsDir()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     if (dir.isEmpty())
         FATAL() << "Unable to access user documents location";
-    QDir userDocumentsDir = QDir::cleanPath(dir + "/GAMSStudio");
-    if(!userDocumentsDir.exists())
+    QDir gamsDocumentsDir = QDir::cleanPath(dir + "/GAMS");
+    if(!gamsDocumentsDir.exists())
+        gamsDocumentsDir.mkpath(".");
+    return gamsDocumentsDir.path();
+}
+
+QString CommonPaths::userDocumentsDir()
+{
+    QDir userDocumentsDir(gamsDocumentsDir() + "/Studio");
+    if (!userDocumentsDir.exists())
         userDocumentsDir.mkpath(".");
     return userDocumentsDir.path();
 }
 
 QString CommonPaths::userModelLibraryDir()
 {
-    QDir userModelLibraryDir(userDocumentsDir() + "/modellibs");
+    QDir userModelLibraryDir(gamsDocumentsDir() + "/modellibs");
     if(!userModelLibraryDir.exists())
         userModelLibraryDir.mkpath(".");
     return userModelLibraryDir.path();
+}
+
+QString CommonPaths::gamsLicenseFilePath()
+{
+    return QDir::cleanPath(LicensePath + "/GAMS/" + LicenseFile);
 }
 
 QString CommonPaths::defaultWorkingDir()
@@ -152,12 +168,6 @@ QString CommonPaths::configFile()
 {
     QDir configFile(systemDir() + "/" + ConfigFile);
     return configFile.path();
-}
-
-QString CommonPaths::licenseFile()
-{
-    QDir licenseFile(systemDir() + "/" + LicenseFile);
-    return licenseFile.path();
 }
 
 QString CommonPaths::changelog()

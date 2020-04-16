@@ -23,7 +23,6 @@
 #include <QToolTip>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
-#include "settingslocator.h"
 #include "logger.h"
 #include "keys.h"
 #include "scheme.h"
@@ -138,7 +137,7 @@ int AbstractEdit::topVisibleLine()
 
 void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!SettingsLocator::settings()->highlightCurrentLine()) return;
+    if (!Settings::settings()->toBool(skEdHighlightCurrentLine)) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Scheme::Edit_currentLineBg));
@@ -169,8 +168,10 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(toColor(Scheme::Normal_Red));
-                if (m->size() == 1)
+                if (m->size() == 1) {
                     selection.format.setBackground(toColor(Scheme::Edit_errorBg));
+                    selection.format.setForeground(toColor(Scheme::Edit_text));
+                }
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorName(QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
@@ -255,7 +256,7 @@ bool AbstractEdit::event(QEvent *e)
     }
     if (e->type() == QEvent::FontChange) {
         QFontMetrics metric(font());
-        setTabStopDistance(SettingsLocator::settings()->tabSize() * metric.width(' '));
+        setTabStopDistance(Settings::settings()->toInt(skEdTabSize) * metric.width(' '));
     }
     return QPlainTextEdit::event(e);
 }
@@ -369,6 +370,7 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 
 void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 {
+    mMarksAtMouse.clear();
     Q_UNUSED(dirtyLines)
 }
 

@@ -48,7 +48,7 @@ GamsLicenseInfo::GamsLicenseInfo()
     }
     int rc; // additional return code, not used here
     if (!palLicenseReadU(mPAL,
-                         CommonPaths::licenseFile().toStdString().c_str(),
+                         CommonPaths::gamsLicenseFilePath().toStdString().c_str(),
                          msg,
                          &rc))
         logger->append(msg, LogMsgType::Error);

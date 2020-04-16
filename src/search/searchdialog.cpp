@@ -19,15 +19,14 @@
  */
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "studiosettings.h"
+#include "settings.h"
 #include "syntax.h"
 #include "file.h"
 #include "exception.h"
 #include "searchresultlist.h"
 #include "searchworker.h"
 #include "option/solveroptionwidget.h"
-#include "settingslocator.h"
-#include "editors/viewhelper.h"
+#include "viewhelper.h"
 #include "lxiviewer/lxiviewer.h"
 #include "../keys.h"
 
@@ -45,13 +44,13 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    StudioSettings *mSettings = SettingsLocator::settings();
+    Settings *mSettings = Settings::settings();
 
     ui->setupUi(this);
-    ui->cb_regex->setChecked(mSettings->searchUseRegex());
-    ui->cb_caseSens->setChecked(mSettings->searchCaseSens());
-    ui->cb_wholeWords->setChecked(mSettings->searchWholeWords());
-    ui->combo_scope->setCurrentIndex(mSettings->selectedScopeIndex());
+    ui->cb_regex->setChecked(mSettings->toBool(skSearchUseRegex));
+    ui->cb_caseSens->setChecked(mSettings->toBool(skSearchCaseSens));
+    ui->cb_wholeWords->setChecked(mSettings->toBool(skSearchWholeWords));
+    ui->combo_scope->setCurrentIndex(mSettings->toInt(skSearchScope));
     ui->lbl_nrResults->setText("");
     ui->combo_search->setAutoCompletion(false);
     adjustSize();
@@ -247,11 +246,18 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     }
 
     // apply filter
+    FileMeta* current = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     QList<FileMeta*> res;
     for (FileMeta* fm : files) {
-        if ((ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1) && (!ignoreReadOnly || !fm->isReadOnly()))
-            res.append(fm);
+        if ((ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1) && (!ignoreReadOnly || !fm->isReadOnly())) {
+
+            if (fm == current)
+                res.insert(0, fm);
+            else
+                res.append(fm);
+        }
     }
+
     return res;
 }
 

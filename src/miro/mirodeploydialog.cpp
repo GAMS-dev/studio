@@ -19,6 +19,7 @@
  */
 #include "mirodeploydialog.h"
 #include "ui_mirodeploydialog.h"
+#include "scheme.h"
 
 #include <QMessageBox>
 #include <QDir>
@@ -67,42 +68,57 @@ void MiroDeployDialog::setDefaults()
     ui->targetEnvBox->setCurrentIndex(0);
 }
 
+void MiroDeployDialog::setModelAssemblyFile(const QString &file) {
+    mModelAssemblyFile = file;
+    QFileInfo fi(mModelAssemblyFile);
+    mValidAssemblyFile = fi.exists();
+    if (fi.exists()) {
+        auto palette = ui->assemblyFileLabel->palette();
+        palette.setColor(ui->assemblyFileLabel->foregroundRole(),
+                         Scheme::color(Scheme::Normal_Green));
+        ui->assemblyFileLabel->setPalette(palette);
+        ui->assemblyFileLabel->setText(fi.fileName());
+        ui->assemblyFileButton->setText("Update");
+    } else {
+        auto palette = ui->assemblyFileLabel->palette();
+        palette.setColor(ui->assemblyFileLabel->foregroundRole(),
+                         Scheme::color(Scheme::Normal_Red));
+        ui->assemblyFileLabel->setPalette(palette);
+        ui->assemblyFileLabel->setText("none");
+        ui->assemblyFileButton->setText("Create");
+    }
+    updateTestDeployButtons();
+}
+
+void MiroDeployDialog::on_assemblyFileButton_clicked()
+{
+    emit updateModelAssemblyFile();
+}
+
 void MiroDeployDialog::on_testBaseButton_clicked()
 {
-    if (showMessageBox())
-        return;
     emit testDeploy(true, MiroDeployMode::Base);
 }
 
 void MiroDeployDialog::on_testHcubeButton_clicked()
 {
-    if (showMessageBox())
-        return;
     emit testDeploy(true, MiroDeployMode::Hypercube);
 }
 
 void MiroDeployDialog::on_deployButton_clicked()
 {
-    if (showMessageBox())
-        return;
     accept();
 }
 
 void MiroDeployDialog::updateTestDeployButtons()
 {
-    ui->testBaseButton->setEnabled(ui->baseBox->isChecked());
-    ui->testHcubeButton->setEnabled(ui->hypercubeBox->isChecked());
-    ui->deployButton->setEnabled(ui->baseBox->isChecked() || ui->hypercubeBox->isChecked());
-}
-
-bool MiroDeployDialog::showMessageBox()
-{
-    bool noFile = !QDir().exists(mModelAssemblyFile);
-    if (noFile)
-        QMessageBox::critical(this,
-                              "No model assembly file!",
-                              "Please create the MIRO model assembly file first.");
-    return noFile;
+    ui->testBaseButton->setEnabled(ui->baseBox->isChecked() &&
+                                   mValidAssemblyFile);
+    ui->testHcubeButton->setEnabled(ui->hypercubeBox->isChecked() &&
+                                    mValidAssemblyFile);
+    ui->deployButton->setEnabled((ui->baseBox->isChecked() ||
+                                 ui->hypercubeBox->isChecked()) &&
+                                 mValidAssemblyFile);
 }
 
 }
