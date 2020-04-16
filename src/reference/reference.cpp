@@ -34,7 +34,7 @@ Reference::~Reference()
     clear();
 }
 
-QList<SymbolReferenceItem *> Reference::findReference(SymbolDataType::SymbolType type)
+QList<SymbolReferenceItem *> Reference::findReferenceFromType(SymbolDataType::SymbolType type)
 {
     switch(type) {
     case SymbolDataType::Set :
@@ -63,7 +63,7 @@ QList<SymbolReferenceItem *> Reference::findReference(SymbolDataType::SymbolType
 
 }
 
-SymbolReferenceItem *Reference::findReference(SymbolId symbolid)
+SymbolReferenceItem *Reference::findReferenceFromId(SymbolId symbolid)
 {
     if (isValid() && mReference.contains(symbolid))
         return mReference[symbolid];
@@ -71,7 +71,7 @@ SymbolReferenceItem *Reference::findReference(SymbolId symbolid)
     return nullptr;
 }
 
-SymbolReferenceItem *Reference::findReference(const QString &symbolName)
+SymbolReferenceItem *Reference::findReferenceFromName(const QString &symbolName)
 {
     if (isValid() && mSymbolNameMap.contains(symbolName)) {
         SymbolId id =  mSymbolNameMap[symbolName];
