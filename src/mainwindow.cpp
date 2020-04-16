@@ -1961,10 +1961,13 @@ void MainWindow::updateAndSaveSettings()
 {
     Settings *settings = Settings::settings();
 
-    settings->setSize(skWinSize, size());
-    settings->setPoint(skWinPos, pos());
+    if (!isMaximized() && !isFullScreen()) {
+        settings->setSize(skWinSize, size());
+        settings->setPoint(skWinPos, pos());
+    }
     settings->setByteArray(skWinState, saveState());
-    settings->setBool(skWinMaximized, isMaximized());
+    settings->setBool(skWinMaximized, isMaximized() || (mMaximizedBeforeFullScreen && isFullScreen()));
+    settings->setBool(skWinFullScreen, isFullScreen());
 
     settings->setBool(skViewProject, projectViewVisibility());
     settings->setBool(skViewOutput, outputViewVisibility());
@@ -2013,14 +2016,18 @@ void MainWindow::restoreFromSettings()
     Settings *settings = Settings::settings();
 
     // main window
-    if (settings->toBool(skWinMaximized)) {
-        setWindowState(Qt::WindowMaximized);
+    mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
+    if (settings->toBool(skWinFullScreen)) {
+        showFullScreen();
+    } else if (mMaximizedBeforeFullScreen) {
+        showMaximized();
     } else {
         resize(settings->toSize(skWinSize));
         move(settings->toPoint(skWinPos));
     }
     restoreState(settings->toByteArray(skWinState));
     ensureInScreen();
+    ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
 
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
@@ -3791,8 +3798,7 @@ void MainWindow::on_actionReset_Views_triggered()
 void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
-    Settings::settings()->resetViewSettings();
-    Settings::settings()->load(Settings::scSys);
+    ui->actionFull_Screen->setChecked(false);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
@@ -3814,6 +3820,9 @@ void MainWindow::resetViews()
     mGamsParameterEditor->setEditorExtended(false);
     ui->toolBar->setVisible(true);
     addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
+
+    Settings::settings()->resetKeys(Settings::viewKeys());
+    Settings::settings()->save();
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
@@ -4023,7 +4032,7 @@ void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
 
 void MainWindow::on_actionFull_Screen_triggered()
 {
-    if (isFullScreen()) {
+    if (!ui->actionFull_Screen->isChecked()) {
         if (mMaximizedBeforeFullScreen)
             showMaximized();
         else
