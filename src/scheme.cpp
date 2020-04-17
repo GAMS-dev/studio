@@ -196,6 +196,7 @@ int Scheme::setActiveScheme(QString schemeName, Scope scope)
 
 int Scheme::setActiveScheme(int scheme, Scope scope)
 {
+    qDebug() << QTime::currentTime() << "Scheme::setActiveScheme" << scheme << scope; // rogo: delete
     if (scheme < 0 || scheme >= mSchemeNames.size()) return -1;
     mScopeScheme.insert(scope, scheme);
     invalidate();

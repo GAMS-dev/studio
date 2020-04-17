@@ -95,9 +95,11 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
 ///
 void ViewHelper::setAppearance(int appearance)
 {
+    qDebug() << QTime::currentTime() << "setAppearance" << appearance; // rogo: delete
     if (appearance == -1)
         appearance = Settings::settings()->toInt(skEdAppearance);
 
+    qDebug() << QTime::currentTime() << "setAppearance.2" << appearance; // rogo: delete
     Settings::settings()->setInt(skEdAppearance, appearance);
     changeAppearance(appearance);
 }
@@ -110,24 +112,24 @@ void ViewHelper::setAppearance(int appearance)
 ///
 void ViewHelper::changeAppearance(int appearance)
 {
+    qDebug() << QTime::currentTime() << "changeAppearance" << appearance; // rogo: delete
     int pickedTheme = appearance;
-    bool canFollowOS = false;
+
 #ifdef _WIN32
-    canFollowOS = true; // deactivate follow OS option for linux
-#endif
+    bool canFollowOS = true; // deactivate follow OS option for linux
 
     if (canFollowOS && pickedTheme == 0) { // do OS specific things
-#ifdef _WIN32
         QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
         pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-#endif
     } else if (canFollowOS) {
         pickedTheme--; // deduct "Follow OS" option
     }
+#endif
 
     Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
 
 #ifndef __APPLE__
+    qDebug() << QTime::currentTime() << "IF NOT APPLE"; // rogo: delete
     PaletteManager::instance()->setPalette(pickedTheme);
     Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 #endif
