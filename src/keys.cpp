@@ -205,10 +205,10 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+Y","remove line");
     setHotkey(Hotkey::RemoveLine, seq);
 
-    seq = new KeySeqList("F8","goto matching parentheses");
+    seq = new KeySeqList("Ctrl+B","goto matching parentheses");
     setHotkey(Hotkey::MatchParentheses, seq);
 
-    seq = new KeySeqList("Shift+F8","select to matching parentheses");
+    seq = new KeySeqList("Ctrl+Shift+B","select to matching parentheses");
     setHotkey(Hotkey::SelectParentheses, seq);
 }
 
