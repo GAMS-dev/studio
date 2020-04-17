@@ -189,9 +189,9 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             DEB() << "Could not create settings files, switched to --ignore-settings";
         }
     }
-    if (resetView)
-        resetViewSettings();
-
+    if (resetView) {
+        resetKeys(viewKeys());
+    }
 }
 
 Settings::~Settings()
@@ -230,6 +230,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skWinPos, KeyData(scSys, {"window","pos"}, QString("0,0")));
     res.insert(skWinState, KeyData(scSys, {"window","state"}, QByteArray("")));
     res.insert(skWinMaximized, KeyData(scSys, {"window","maximized"}, false));
+    res.insert(skWinFullScreen, KeyData(scSys, {"window","fullScreen"}, false));
 
     // view menu settings
     res.insert(skViewProject, KeyData(scSys, {"viewMenu","project"}, true));
@@ -328,9 +329,20 @@ void Settings::reload()
     load(scUser);
 }
 
-void Settings::resetViewSettings()
+QList<SettingsKey> Settings::viewKeys()
 {
-    // TODO(JM) handle individual keys
+    return QList<SettingsKey> {
+        skWinPos, skWinSize, skWinState, skWinMaximized, skWinFullScreen,
+        skViewHelp, skViewOption, skViewOutput, skViewProject
+    };
+}
+
+void Settings::resetKeys(QList<SettingsKey> keys)
+{
+    for (const SettingsKey &key : keys) {
+        KeyData dat = mKeys.value(key);
+        setValue(key, dat.initial);
+    }
 }
 
 void Settings::save()
