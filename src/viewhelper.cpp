@@ -95,11 +95,9 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
 ///
 void ViewHelper::setAppearance(int appearance)
 {
-    qDebug() << QTime::currentTime() << "setAppearance" << appearance; // rogo: delete
     if (appearance == -1)
         appearance = Settings::settings()->toInt(skEdAppearance);
 
-    qDebug() << QTime::currentTime() << "setAppearance.2" << appearance; // rogo: delete
     Settings::settings()->setInt(skEdAppearance, appearance);
     changeAppearance(appearance);
 }
@@ -112,7 +110,6 @@ void ViewHelper::setAppearance(int appearance)
 ///
 void ViewHelper::changeAppearance(int appearance)
 {
-    qDebug() << QTime::currentTime() << "changeAppearance" << appearance; // rogo: delete
     int pickedTheme = appearance;
 
 #ifdef _WIN32
@@ -126,13 +123,11 @@ void ViewHelper::changeAppearance(int appearance)
     }
 #endif
 
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
-
 #ifndef __APPLE__
-    qDebug() << QTime::currentTime() << "IF NOT APPLE"; // rogo: delete
     PaletteManager::instance()->setPalette(pickedTheme);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 #endif
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 }
 
 } // namespace studio
