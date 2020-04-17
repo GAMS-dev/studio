@@ -28,7 +28,7 @@ INCLUDEPATH +=  \
 
 HEADERS += \
     testdialogfilefilter.h \
-    $$SRCPATH/editors/viewhelper.h
+    $$SRCPATH/viewhelper.h
 
 SOURCES += \
     testdialogfilefilter.cpp
