@@ -115,6 +115,7 @@ SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
               << SyntaxKind::Directive
               << SyntaxKind::Solve
               << SyntaxKind::Option
+              << SyntaxKind::Execute
               << SyntaxKind::Reserved
               << SyntaxKind::Embedded
               << SyntaxKind::Formula;
@@ -348,7 +349,7 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, bool &has
 SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Option
-              << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
+              << SyntaxKind::Execute << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
               << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Directive << SyntaxKind::Assignment
               << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
               << SyntaxKind::DeclarationVariableType << SyntaxKind::DeclarationTable;
@@ -361,6 +362,9 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
         break;
     case SyntaxKind::OptionBody:
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
+        break;
+    case SyntaxKind::ExecuteBody:
+        mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
         break;
     default:
         Q_ASSERT_X(false, "SyntaxFormula", ("Invalid SyntaxKind:"+syntaxKindName(kind)).toLatin1());

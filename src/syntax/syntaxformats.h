@@ -88,6 +88,9 @@ enum class SyntaxKind {
     Option,
     OptionBody,
     OptionKey,
+    Execute,
+    ExecuteBody,
+    ExecuteKey,
 
     KindCount
 };
