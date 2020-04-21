@@ -3695,7 +3695,8 @@ void MainWindow::on_actionRemove_Line_triggered()
 void MainWindow::on_actionComment_triggered()
 {
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
-    if (!fm || !focusWidget()) return;
+    if (!fm || !focusWidget() || !mRecent.editor()->isAncestorOf(focusWidget()))
+        return;
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) {
