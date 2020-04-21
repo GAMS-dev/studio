@@ -85,9 +85,6 @@ public:
     ProjectFileNode* toFile();
     const ProjectLogNode* toLog() const;
 
-    bool isActive() const;
-    void setActive();
-
     bool debugMode() const;
 
 signals:

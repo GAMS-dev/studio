@@ -126,10 +126,6 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         if (node && !node->file()->exists(true))
             return isCurrent(ind) ? Scheme::color(Scheme::Normal_Red).darker()
                                   : QColor(Qt::gray);
-        if (mProjectRepo->node(ind)->isActive()) {
-            return (isCurrent(ind)) ? Scheme::color(Scheme::Normal_Blue)
-                                    : QColor(Qt::black);
-        }
         break;
     }
 
