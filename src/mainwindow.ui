@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -252,6 +252,8 @@
     </property>
     <addaction name="actionTerminal"/>
     <addaction name="actionGDX_Diff"/>
+    <addaction name="separator"/>
+    <addaction name="actionEditDefaultConfig"/>
    </widget>
    <widget class="QMenu" name="menuMIRO">
     <property name="title">
@@ -1326,6 +1328,18 @@
    </property>
    <property name="text">
     <string>Toolbar</string>
+   </property>
+  </action>
+  <action name="actionEditDefaultConfig">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/gams-config-file</normaloff>:/img/gams-config-file</iconset>
+   </property>
+   <property name="text">
+    <string>Edit Default Gams Configuration</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit Default Gams Configuration</string>
    </property>
   </action>
  </widget>

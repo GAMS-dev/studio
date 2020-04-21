@@ -74,6 +74,7 @@ public:
     static QString gamsLicenseFilePath();
 
     static QString gamsUserConfigDir();
+    static QString defaultGamsUserConfigFile();
 
     ///
     /// \brief Get the absolut file path.
@@ -111,6 +112,7 @@ private:
     static const QString ConfigFile;
     static const QString DocumentationDir;
     static const QString ModlibsPrefixPath;
+    static const QString GamsUserConfigFile;
     static const QString LicenseFile;
     static const QString LicensePath;
 };

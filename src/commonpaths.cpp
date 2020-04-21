@@ -52,6 +52,7 @@ QString CommonPaths::SystemDir = QString();
     const QString CommonPaths::LicensePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
 
+const QString CommonPaths::GamsUserConfigFile = "gamsconfig.yaml";
 const QString CommonPaths::LicenseFile = "gamslice.txt";
 
 CommonPaths::CommonPaths()
@@ -153,6 +154,12 @@ QString CommonPaths::gamsUserConfigDir()
     if(!gamsUserConfigDir.exists())
         gamsUserConfigDir.mkpath(".");
     return gamsUserConfigDir.path();
+}
+
+QString CommonPaths::defaultGamsUserConfigFile()
+{
+    QDir configFile(gamsUserConfigDir() + "/" + GamsUserConfigFile);
+    return configFile.path();
 }
 
 QString CommonPaths::defaultWorkingDir()

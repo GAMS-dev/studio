@@ -314,6 +314,29 @@ void MainWindow::initAutoSave()
     mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
 }
 
+void MainWindow::on_actionEditDefaultConfig_triggered()
+{
+    qDebug() << "edit gamsconfig.yaml from " << CommonPaths::defaultGamsUserConfigFile();
+
+    QString filePath = CommonPaths::defaultGamsUserConfigFile();
+
+    QFileInfo fi(filePath);
+
+    QFile file(filePath);
+    if (file.exists()) {
+        FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
+        if (destFM) { qDebug() << "exists: " << destFM->name(); }
+    } else {
+        file.open(QIODevice::WriteOnly); // create empty file
+        file.close();
+    }
+
+    ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+    ProjectFileNode* node = addNode("", filePath, group);
+    openFileNode(node);
+    setMainGms(node); // does nothing if file is not of type gms
+}
+
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
