@@ -32,6 +32,7 @@ SUBDIRS +=                              \
            testeditors                  \
            testgamslicenseinfo          \
            testgamsoption               \
+           testgamsuserconfig           \
            testgurobioption             \
            testmemorymapper             \
            testminosoption              \
