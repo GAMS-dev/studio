@@ -990,10 +990,10 @@
   </action>
   <action name="actionComment">
    <property name="text">
-    <string>Comment</string>
+    <string>Toggle Comment Line(s)</string>
    </property>
    <property name="toolTip">
-    <string>(Un)Comment Line(s)</string>
+    <string>Toggle Comment Line(s)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+*</string>
