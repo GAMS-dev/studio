@@ -67,6 +67,8 @@ public:
     void selectSearchField() const;
     void setFileChangedExtern(bool value);
 
+    void toggleCommentOption();
+
 signals:
     void modificationChanged(bool modifiedState);
     void itemCountChanged(int newItemCount);
@@ -103,7 +105,6 @@ private slots:
     void showOptionRecurrence();
     void copyDefinitionToClipboard(int column);
     void findAndSelectionOptionFromDefinition();
-    void toggleCommentOption();
     void selectAnOption();
     void insertOption();
     void insertComment();

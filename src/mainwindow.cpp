@@ -3694,12 +3694,17 @@ void MainWindow::on_actionRemove_Line_triggered()
 
 void MainWindow::on_actionComment_triggered()
 {
-    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
-        return;
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget()) return;
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly())
+    if (ce && !ce->isReadOnly()) {
         ce->commentLine();
+    } else  {
+        if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+           so->toggleCommentOption();
+        }
+    }
 }
 
 void MainWindow::toggleDebugMode()

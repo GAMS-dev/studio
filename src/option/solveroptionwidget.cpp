@@ -251,12 +251,19 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     }
 
     QMenu menu(this);
+    if ( thereIsARowSelection ) {
+       QList<QAction*> ret;
+       getMainWindow()->getAdvancedActions(&ret);
+       for(QAction *action : ret) {
+          if (action->objectName().compare("actionComment")==0) {
+              menu.addAction(action);
+              menu.addSeparator();
+              break;
+          }
+      }
+   }
     for(QAction* action : ui->solverOptionTableView->actions()) {
-        if (action->objectName().compare("actionToggle_comment")==0) {
-            if ( thereIsARowSelection )
-                menu.addAction(action);
-            menu.addSeparator();
-        } else if (action->objectName().compare("actionInsert_option")==0) {
+        if (action->objectName().compare("actionInsert_option")==0) {
                    if ( !viewIsCompact && (!isThereARow() || isThereARowSelection()) )
                       menu.addAction(action);
         } else if (action->objectName().compare("actionInsert_comment")==0) {
@@ -883,6 +890,7 @@ void SolverOptionWidget::toggleCommentOption()
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     for(int i=0; i<selection.count(); ++i) {
         on_toggleRowHeader( selection.at(i).row() );
+        ui->solverOptionTableView->setFocus();
         modified = true;
     }
     if (modified) {
@@ -1249,14 +1257,6 @@ void SolverOptionWidget::refreshOptionTableModel(bool hideAllComments)
 
 void SolverOptionWidget::addActions()
 {
-    QAction* commentAction = mContextMenu.addAction("Toggle comment/option selection", [this]() { toggleCommentOption(); });
-    commentAction->setObjectName("actionToggle_comment");
-    commentAction->setShortcut( QKeySequence("Ctrl+T") );
-    commentAction->setShortcutVisibleInContextMenu(true);
-    commentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    ui->solverOptionTableView->addAction(commentAction);
-    addAction(commentAction);
-
     QAction* insertOptionAction = mContextMenu.addAction(Scheme::icon(":/img/insert"), "Insert new option", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
     insertOptionAction->setShortcut( QKeySequence("Ctrl+Return") );
