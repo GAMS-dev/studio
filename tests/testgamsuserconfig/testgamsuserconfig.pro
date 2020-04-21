@@ -24,7 +24,11 @@ include(../tests.pri)
 INCLUDEPATH += $$SRCPATH
 
 HEADERS +=                  \
-    testgamsuserconfig.h
+    testgamsuserconfig.h    \
+    $$SRCPATH/exception.h   \
+    $$SRCPATH/commonpaths.h
 
-SOURCES +=                                       \
-    testgamsuserconfig.cpp
+SOURCES +=                    \
+    testgamsuserconfig.cpp    \
+    $$SRCPATH/exception.cpp   \
+    $$SRCPATH/commonpaths.cpp

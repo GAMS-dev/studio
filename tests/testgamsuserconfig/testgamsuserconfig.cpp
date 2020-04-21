@@ -17,8 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "exception.h"
 #include "commonpaths.h"
 #include "testgamsuserconfig.h"
+
+using gams::studio::CommonPaths;
+
+void TestGamsUserConfig::testUserConfigDir()
+{
+    qDebug() << QString("QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)=[%1]").arg(CommonPaths::userConfigDir());
+    QVERIFY(true);
+}
 
 void TestGamsUserConfig::testVersionFormat_data()
 {

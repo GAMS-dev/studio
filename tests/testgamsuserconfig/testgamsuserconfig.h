@@ -28,6 +28,8 @@ class TestGamsUserConfig : public QObject
 
 private slots:
 
+    void testUserConfigDir();
+
     void testVersionFormat_data();
     void testVersionFormat();
 

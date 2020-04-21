@@ -142,6 +142,11 @@ QString CommonPaths::gamsLicenseFilePath()
     return QDir::cleanPath(LicensePath + "/GAMS/" + LicenseFile);
 }
 
+QString CommonPaths::userConfigDir()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+}
+
 QString CommonPaths::defaultWorkingDir()
 {
     QDir defWorkingDir(userDocumentsDir() + "/workspace");
