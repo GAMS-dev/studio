@@ -73,7 +73,7 @@ public:
 
     static QString gamsLicenseFilePath();
 
-    static QString userConfigDir();
+    static QString gamsUserConfigDir();
 
     ///
     /// \brief Get the absolut file path.

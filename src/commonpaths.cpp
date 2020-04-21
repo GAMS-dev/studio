@@ -142,9 +142,17 @@ QString CommonPaths::gamsLicenseFilePath()
     return QDir::cleanPath(LicensePath + "/GAMS/" + LicenseFile);
 }
 
-QString CommonPaths::userConfigDir()
+QString CommonPaths::gamsUserConfigDir()
 {
-    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QDir gamsUserConfigDir;
+#ifdef _WIN32
+    gamsUserConfigDir = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS");
+#else
+    gamsUserConfigDir = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/GAMS");
+#endif
+    if(!gamsUserConfigDir.exists())
+        gamsUserConfigDir.mkpath(".");
+    return gamsUserConfigDir.path();
 }
 
 QString CommonPaths::defaultWorkingDir()

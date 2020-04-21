@@ -25,7 +25,7 @@ using gams::studio::CommonPaths;
 
 void TestGamsUserConfig::testUserConfigDir()
 {
-    qDebug() << QString("QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)=[%1]").arg(CommonPaths::userConfigDir());
+    qDebug() << QString("QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)=[%1]").arg(CommonPaths::gamsUserConfigDir());
     QVERIFY(true);
 }
 
