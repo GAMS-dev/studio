@@ -27,12 +27,18 @@ class TestGamsUserConfig : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
 
     void testUserConfigDir();
+
+    void testReadEmptyDefaultGamsConfigFile();
+    void testReadyDefaultGamsConfigFile();
 
     void testVersionFormat_data();
     void testVersionFormat();
 
+private:
+    QString systemDir;
 };
 
 #endif // TESTGAMSUSERCONFIG_H

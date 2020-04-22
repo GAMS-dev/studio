@@ -25,10 +25,14 @@ INCLUDEPATH += $$SRCPATH
 
 HEADERS +=                  \
     testgamsuserconfig.h    \
+    $$SRCPATH/option/gamsuserconfig.h   \
     $$SRCPATH/exception.h   \
     $$SRCPATH/commonpaths.h
 
 SOURCES +=                    \
-    testgamsuserconfig.cpp    \
+    testgamsuserconfig.cpp                    \
+    $$SRCPATH/option/gamsuserconfig.cpp       \
+    $$SRCPATH/editors/sysloglocator.cpp       \
+    $$SRCPATH/editors/defaultsystemlogger.cpp \
     $$SRCPATH/exception.cpp   \
     $$SRCPATH/commonpaths.cpp

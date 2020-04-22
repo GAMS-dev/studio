@@ -19,15 +19,103 @@
  */
 #include "exception.h"
 #include "commonpaths.h"
+#include "option/gamsuserconfig.h"
 #include "testgamsuserconfig.h"
 
+#include <QStandardPaths>
+
 using gams::studio::CommonPaths;
+using gams::studio::option::GamsUserConfig;
+
+void TestGamsUserConfig::initTestCase()
+{
+    systemDir = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    qDebug() << QString("systemDir=[%1]").arg(CommonPaths::systemDir());
+}
 
 void TestGamsUserConfig::testUserConfigDir()
 {
-    qDebug() << QString("QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)=[%1]").arg(CommonPaths::gamsUserConfigDir());
-    qDebug() << QString("defaultGamsConfigFilepath)=[%1]").arg(CommonPaths::defaultGamsUserConfigFile());
-    QVERIFY(true);
+    qDebug() << QString("gamsUserConfigDir=[%1]").arg(CommonPaths::gamsUserConfigDir());
+}
+
+void TestGamsUserConfig::testReadEmptyDefaultGamsConfigFile()
+{
+    // given
+    CommonPaths::setSystemDir(systemDir);
+
+    QString testFile = CommonPaths::defaultGamsUserConfigFile();
+    qDebug() << QString("gamsUserConfigDir=[%1]").arg(CommonPaths::gamsUserConfigDir());
+    qDebug() << QString("defaultGamsConfigFilepath=[%1]").arg(testFile);
+
+    QFile file(testFile);
+    if (file.open(QIODevice::WriteOnly))
+        file.close();
+
+    // when
+    GamsUserConfig* guc(new GamsUserConfig(testFile));
+
+    // then
+    QVERIFY(guc->isAvailable());
+    QVERIFY(guc->readCommandLineParameters().size()==0);
+    QVERIFY(guc->readEnvironmentVariables().size()==0);
+
+    // cleanup
+    if (guc) delete  guc;
+    if (file.exists())  file.remove();
+}
+
+void TestGamsUserConfig::testReadyDefaultGamsConfigFile()
+{
+    // given
+    CommonPaths::setSystemDir(systemDir);
+
+    QString testFile = CommonPaths::defaultGamsUserConfigFile();
+    qDebug() << QString("gamsUserConfigDir=[%1]").arg(CommonPaths::gamsUserConfigDir());
+    qDebug() << QString("defaultGamsConfigFilepath=[%1]").arg(testFile);
+
+    QFile file(testFile);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        QFAIL(QString("expected to open [%1] to write, but failed").arg(testFile).toLatin1());
+
+    QTextStream out(&file);
+    out << "---" << endl;
+    out << "commandLineParameters:" << endl;
+    out << "- pySetup:"             << endl;
+    out << "    value: 0"           << endl;
+    out << "    minVersion: 23"     << endl;
+    out << "    maxVersion: 30.2"   << endl;
+    out << "- action:"              << endl;
+    out << "    value: ce"          << endl;
+    out << "    maxVersion: 30.2"   << endl;
+    out << "- CurDir:"              << endl;
+    out << "    value: x"           << endl;
+    out << "- CNS:"                 << endl;
+    out << "    value: y"           << endl;
+    out << "environmentVariables:"  << endl;
+    out << "- PYTHON38:"            << endl;
+    out << "    value: blah"        << endl;
+    out << "..."                    << endl;
+    file.close();
+
+    // when
+    GamsUserConfig* guc(new GamsUserConfig(testFile));
+
+    // then
+    QVERIFY(guc->isAvailable());
+    QVERIFY(guc->readCommandLineParameters().size()==4);
+    QCOMPARE(guc->readCommandLineParameters().first()->key, "pySetup");
+    QCOMPARE(guc->readCommandLineParameters().first()->value, "0");
+    QCOMPARE(guc->readCommandLineParameters().first()->minVersion, "23");
+    QCOMPARE(guc->readCommandLineParameters().first()->maxVersion, "30.2");
+    QCOMPARE(guc->readCommandLineParameters().last()->key, "CNS");
+    QCOMPARE(guc->readCommandLineParameters().last()->value, "y");
+    QVERIFY(guc->readEnvironmentVariables().size()==1);
+    QCOMPARE(guc->readEnvironmentVariables().first()->key, "PYTHON38");
+    QCOMPARE(guc->readEnvironmentVariables().first()->value, "blah");
+
+    // cleanup
+    if (guc) delete  guc;
+    if (file.exists())  file.remove();
 }
 
 void TestGamsUserConfig::testVersionFormat_data()
