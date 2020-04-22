@@ -320,21 +320,28 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
 
     QString filePath = CommonPaths::defaultGamsUserConfigFile();
 
-    QFileInfo fi(filePath);
-
     QFile file(filePath);
     if (file.exists()) {
-        FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
-        if (destFM) { qDebug() << "exists: " << destFM->name(); }
+        FileMeta *fm = mFileMetaRepo.fileMeta(filePath);
+        if (fm) {
+           openFile(fm);
+           return;
+        }
     } else {
         file.open(QIODevice::WriteOnly); // create empty file
         file.close();
     }
 
+    QFileInfo fi(filePath);
+
     ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
-    ProjectFileNode* node = addNode("", filePath, group);
-    openFileNode(node);
-    setMainGms(node); // does nothing if file is not of type gms
+    if (fi.exists()) {
+        ProjectFileNode *node = addNode("", filePath, group);
+        openFileNode(node);
+    } else {
+        ProjectFileNode* node = addNode("", filePath, group);
+        openFileNode(node);
+    }
 }
 
 void MainWindow::timerEvent(QTimerEvent *event)
