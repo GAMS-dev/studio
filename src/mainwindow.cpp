@@ -335,13 +335,8 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
     QFileInfo fi(filePath);
 
     ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
-    if (fi.exists()) {
-        ProjectFileNode *node = addNode("", filePath, group);
-        openFileNode(node);
-    } else {
-        ProjectFileNode* node = addNode("", filePath, group);
-        openFileNode(node);
-    }
+    ProjectFileNode *node = addNode("", filePath, group);
+    openFileNode(node);
 }
 
 void MainWindow::timerEvent(QTimerEvent *event)
