@@ -629,8 +629,6 @@ void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 
     if (ui->compactViewCheckBox->isChecked())
         on_compactViewCheckBox_stateChanged(Qt::Checked);
-
-    showOptionDefinition(true);
 }
 
 void SolverOptionWidget::on_compactViewCheckBox_stateChanged(int checkState)
@@ -692,9 +690,10 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
     if (selectRow) {
        selectAnOption();
        selection = ui->solverOptionTableView->selectionModel()->selectedRows();
+       ui->solverOptionTableView->selectionModel()->setCurrentIndex ( indexSelection.first(), QItemSelectionModel::Current ); //Select );
     } else {
          selection = indexSelection;
-         ui->solverOptionTableView->selectionModel()->setCurrentIndex ( selection.first(), QItemSelectionModel::Select );
+         ui->solverOptionTableView->selectionModel()->setCurrentIndex ( indexSelection.first(), QItemSelectionModel::Current ); //Select );
     }
 
     QModelIndexList selectIndices;
@@ -889,9 +888,16 @@ void SolverOptionWidget::toggleCommentOption()
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     for(int i=0; i<selection.count(); ++i) {
         on_toggleRowHeader( selection.at(i).row() );
-        ui->solverOptionTableView->setFocus();
         modified = true;
     }
+    for(int i=0; i<selection.count(); ++i) {
+         on_selectRow( selection.at(i).row() );
+    }
+
+    if (!indexSelection.isEmpty())
+        ui->solverOptionTableView->selectionModel()->setCurrentIndex( indexSelection.first(), QItemSelectionModel::Current );
+    ui->solverOptionTableView->setFocus();
+
     if (modified) {
         setModified(modified);
     }
@@ -901,18 +907,30 @@ void SolverOptionWidget::selectAllOptions()
 {
     if (isViewCompact()) return;
 
+    QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+
     ui->solverOptionTableView->setFocus();
     ui->solverOptionTableView->selectAll();
+
+    if (!indexSelection.isEmpty())
+        ui->solverOptionTableView->selectionModel()->setCurrentIndex( indexSelection.first(), QItemSelectionModel::Current );
 }
 
 void SolverOptionWidget::deSelectOptions()
 {
-    if (ui->solverOptionTableView->hasFocus() && ui->solverOptionTableView->selectionModel()->hasSelection())
+    if (ui->solverOptionTableView->hasFocus() && ui->solverOptionTableView->selectionModel()->hasSelection()) {
+        QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
+        ui->solverOptionTreeView->selectionModel()->clearSelection();
         ui->solverOptionTableView->selectionModel()->clearSelection();
-    else if (ui->solverOptionTreeView->hasFocus() && ui->solverOptionTreeView->selectionModel()->hasSelection())
+        if (!indexSelection.isEmpty())
+             ui->solverOptionTableView->selectionModel()->setCurrentIndex( indexSelection.first(), QItemSelectionModel::Current );
+        ui->solverOptionTableView->setFocus();
+    } else if (ui->solverOptionTreeView->hasFocus() && ui->solverOptionTreeView->selectionModel()->hasSelection()) {
              ui->solverOptionTreeView->selectionModel()->clearSelection();
-    else
+             ui->solverOptionTreeView->setFocus();
+    } else {
         this->focusNextChild();
+    }
 }
 
 void SolverOptionWidget::completeEditingOption(QWidget *editor, QAbstractItemDelegate::EndEditHint hint)
@@ -935,6 +953,8 @@ void SolverOptionWidget::selectAnOption()
             on_selectRow( indexSelection.at(i).row() );
         }
     }
+    ui->solverOptionTableView->selectionModel()->clearCurrentIndex();
+    ui->solverOptionTableView->selectionModel()->setCurrentIndex( indexSelection.first(), QItemSelectionModel::Current );
 }
 
 void SolverOptionWidget::insertOption()
