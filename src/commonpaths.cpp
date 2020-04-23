@@ -149,7 +149,7 @@ QString CommonPaths::gamsUserConfigDir()
 #ifdef _WIN32
     gamsUserConfigDir = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS");
 #else
-    gamsUserConfigDir = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/GAMS");
+    gamsUserConfigDir = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) /*+ "/GAMS" */ );
 #endif
     if(!gamsUserConfigDir.exists())
         gamsUserConfigDir.mkpath(".");
