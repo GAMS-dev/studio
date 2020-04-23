@@ -34,6 +34,8 @@
 #include "file/dynamicfile.h"
 #include "colors/palettemanager.h"
 #include "scheme.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
@@ -522,7 +524,10 @@ QString Settings::settingsPath()
 
 void Settings::saveFile(Scope scope)
 {
-    if (!canWrite()) return;
+    if (!canWrite()) {
+        SysLogLocator::systemLog()->append("Unable to write to settings file." , LogMsgType::Error);
+        return;
+    }
     ScopePair scopes = scopePair(scope);
     if (!mSettings.contains(scopes.base)) return; // for safety
     QSettings *settings = mSettings.value(scopes.base);
@@ -676,19 +681,19 @@ void Settings::load(Scope scope)
 
 void Settings::importSettings(const QString &path)
 {
-    if (!mSettings.value(scUserX)) return;
+    if (!mSettings.value(scUser)) return;
     QFile backupFile(path);
-    QFile settingsFile(mSettings.value(scUserX)->fileName());
+    QFile settingsFile(mSettings.value(scUser)->fileName());
     settingsFile.remove(); // remove old file
     backupFile.copy(settingsFile.fileName()); // import new file
     reload();
-    load(scUserX);
+    load(scUser);
 }
 
 void Settings::exportSettings(const QString &path)
 {
-    if (!mSettings.value(scUserX)) return;
-    QFile originFile(mSettings.value(scUserX)->fileName());
+    if (!mSettings.value(scUser)) return;
+    QFile originFile(mSettings.value(scUser)->fileName());
     originFile.copy(path);
 }
 
