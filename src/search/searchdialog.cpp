@@ -182,9 +182,9 @@ void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fm
 
     // non-parallel first
     for (FileMeta* fm : modified)
-        findInDoc(createRegex(), fm, collection);
+        findInDoc(fm, collection);
 
-    SearchWorker* sw = new SearchWorker(mMutex, createRegex(), unmodified, collection);
+    SearchWorker* sw = new SearchWorker(mMutex, unmodified, collection);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -196,13 +196,13 @@ void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fm
     emit startSearch();
 }
 
-void SearchDialog::findInDoc(QRegularExpression searchRegex, FileMeta* fm, SearchResultList* collection)
+void SearchDialog::findInDoc(FileMeta* fm, SearchResultList* collection)
 {
     QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
     QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
     do {
-        item = fm->document()->find(searchRegex, lastItem, flags);
+        item = fm->document()->find(collection->searchRegex(), lastItem, flags);
         if (item != lastItem) lastItem = item;
         else break;
 
@@ -886,7 +886,7 @@ QRegularExpression SearchDialog::createRegex()
     QRegularExpression searchRegex(searchTerm);
 
     if (!regex()) searchRegex.setPattern(QRegularExpression::escape(searchTerm));
-    if (wholeWords()) searchRegex.setPattern("\\b" + searchRegex.pattern() + "\\b");
+    if (wholeWords()) searchRegex.setPattern("(?<!\\w|\\$)" + searchRegex.pattern() + "(?=\\W|\\s|$)");
     if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
     return searchRegex;
