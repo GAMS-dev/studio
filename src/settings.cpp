@@ -34,8 +34,6 @@
 #include "file/dynamicfile.h"
 #include "colors/palettemanager.h"
 #include "scheme.h"
-#include "editors/sysloglocator.h"
-#include "editors/abstractsystemlogger.h"
 
 namespace gams {
 namespace studio {
@@ -175,10 +173,10 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
         if (settings) {
             // only if the basic settings file has been created ...
             mSettings.insert(scSys, settings);
-            load(scSys);
+            loadFile(scSys);
             settings = newQSettings("usersettings");
             mSettings.insert(scUser, settings);
-            load(scUser);
+            loadFile(scUser);
 
             QDir location(settingsPath());
             for (const QString &fileName: location.entryList({"*.lock"})) {
@@ -327,8 +325,8 @@ void Settings::addVersionInfo(Settings::Scope scope, QVariantMap &map)
 
 void Settings::reload()
 {
-    load(scSys);
-    load(scUser);
+    loadFile(scSys);
+    loadFile(scUser);
 }
 
 QList<SettingsKey> Settings::viewKeys()
@@ -524,11 +522,10 @@ QString Settings::settingsPath()
 
 void Settings::saveFile(Scope scope)
 {
-    if (!canWrite()) {
-        SysLogLocator::systemLog()->append("Unable to write to settings file." , LogMsgType::Error);
-        return;
-    }
+    if (!canWrite()) return;
     ScopePair scopes = scopePair(scope);
+
+    // TODO: when can this happen? we should probably print an error if we reach this early return:
     if (!mSettings.contains(scopes.base)) return; // for safety
     QSettings *settings = mSettings.value(scopes.base);
 
@@ -654,7 +651,7 @@ void Settings::loadVersionData(ScopePair scopes)
     }
 }
 
-void Settings::load(Scope scope)
+void Settings::loadFile(Scope scope)
 {
     if (!mCanRead) return;
 
@@ -687,7 +684,6 @@ void Settings::importSettings(const QString &path)
     settingsFile.remove(); // remove old file
     backupFile.copy(settingsFile.fileName()); // import new file
     reload();
-    load(scUser);
 }
 
 void Settings::exportSettings(const QString &path)
