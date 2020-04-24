@@ -1336,10 +1336,10 @@
      <normaloff>:/img/gams-config-file</normaloff>:/img/gams-config-file</iconset>
    </property>
    <property name="text">
-    <string>Edit Default Gams Configuration</string>
+    <string>Default GAMS Configuration</string>
    </property>
    <property name="toolTip">
-    <string>Edit Default Gams Configuration</string>
+    <string>Edit GAMS configuration file at the default location</string>
    </property>
   </action>
  </widget>
