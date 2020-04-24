@@ -23,6 +23,7 @@
 #include "testgamsuserconfig.h"
 
 #include <QStandardPaths>
+#include <QProcess>
 
 using gams::studio::CommonPaths;
 using gams::studio::option::GamsUserConfig;
@@ -48,6 +49,7 @@ void TestGamsUserConfig::testReadEmptyDefaultGamsConfigFile()
     qDebug() << QString("defaultGamsConfigFilepath=[%1]").arg(testFile);
 
     QFile file(testFile);
+    if (file.exists())  file.remove();
     if (file.open(QIODevice::WriteOnly))
         file.close();
 
@@ -64,16 +66,15 @@ void TestGamsUserConfig::testReadEmptyDefaultGamsConfigFile()
     if (file.exists())  file.remove();
 }
 
-void TestGamsUserConfig::testReadyDefaultGamsConfigFile()
+void TestGamsUserConfig::testReadDefaultGamsConfigFile()
 {
     // given
     CommonPaths::setSystemDir(systemDir);
 
     QString testFile = CommonPaths::defaultGamsUserConfigFile();
-    qDebug() << QString("gamsUserConfigDir=[%1]").arg(CommonPaths::gamsUserConfigDir());
-    qDebug() << QString("defaultGamsConfigFilepath=[%1]").arg(testFile);
-
     QFile file(testFile);
+    if (file.exists())  file.remove();
+
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         QFAIL(QString("expected to open [%1] to write, but failed").arg(testFile).toLatin1());
 
@@ -116,6 +117,69 @@ void TestGamsUserConfig::testReadyDefaultGamsConfigFile()
     // cleanup
     if (guc) delete  guc;
     if (file.exists())  file.remove();
+}
+
+void TestGamsUserConfig::testGamsRunningDefaultConfigFile()
+{
+    // given
+    CommonPaths::setSystemDir(systemDir);
+    QDir gamsSysDir(CommonPaths::systemDir());
+    QString tempDir = QDir::currentPath();
+    QDir gamsPath = QDir(gamsSysDir).filePath("gams");
+    QDir gamslibPath = QDir(gamsSysDir).filePath("gamslib");
+    QDir gmsOutputPath = QDir(tempDir).filePath("trnsport.gms");
+    QDir gdxOutputPath = QDir(tempDir).filePath("mygdxfromconfig.gdx");
+
+    QString testFile = CommonPaths::defaultGamsUserConfigFile();
+    qDebug() << QString("gamsUserConfigDir=[%1]").arg(CommonPaths::gamsUserConfigDir());
+    qDebug() << QString("defaultGamsConfigFilepath=[%1]").arg(testFile);
+    qDebug() << "running test in QDir::currentPath()=" << tempDir;
+
+    QFile gmsOutputFile(gmsOutputPath.path());
+    if (gmsOutputFile.exists())  gmsOutputFile.remove();
+    QFile gdxOutputFile(gdxOutputPath.path());
+    if (gdxOutputFile.exists())  gdxOutputFile.remove();
+    QFile gamsConfigFile(testFile);
+    if (gamsConfigFile.exists())  gamsConfigFile.remove();
+
+    if (!gamsConfigFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        QFAIL(QString("expected to open [%1] to write, but failed").arg(testFile).toLatin1());
+
+    QTextStream out(&gamsConfigFile);
+    out << "---"                            << endl;
+    out << "commandLineParameters:"         << endl;
+    out << "- GDX:"                         << endl;
+    out << "    value: mygdxfromconfig.gdx" << endl;
+    out << "..."                            << endl;
+    gamsConfigFile.close();
+
+    // when
+    QProcess* gamsLibProc = new QProcess(this);
+    gamsLibProc->setWorkingDirectory(tempDir);
+    gamsLibProc->setArguments( {"1"} ); // get trnsport.gms
+    gamsLibProc->setProgram(gamslibPath.path());
+    gamsLibProc->start();
+    if (gamsLibProc->waitForFinished()) {
+        QCOMPARE( gamsLibProc->exitCode(), 0);
+        QVERIFY(gmsOutputFile.exists());
+        QVERIFY(gmsOutputFile.size() > 0);
+
+        QProcess* gamsProc = new QProcess(this);
+        gamsProc->setWorkingDirectory(tempDir);
+        gamsProc->setArguments( {"trnsport.gms"} );
+        gamsProc->setProgram(gamsPath.path());
+        gamsProc->start();
+        // then
+        if (gamsProc->waitForFinished()) {
+            QCOMPARE( gamsProc->exitCode(), 0);
+            QVERIFY(gdxOutputFile.exists());
+            QVERIFY(gdxOutputFile.size() > 0);
+        } else {
+            QFAIL(QString("expected to run [%1] successfully, but failed").arg(gamsProc->program()).toLatin1());
+        }
+    } else {
+        QFAIL(QString("expected to run [%1] successfully, but failed").arg(gamsLibProc->program()).toLatin1());
+    }
 }
 
 void TestGamsUserConfig::testVersionFormat_data()

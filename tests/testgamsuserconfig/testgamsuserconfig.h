@@ -32,7 +32,9 @@ private slots:
     void testUserConfigDir();
 
     void testReadEmptyDefaultGamsConfigFile();
-    void testReadyDefaultGamsConfigFile();
+    void testReadDefaultGamsConfigFile();
+
+    void testGamsRunningDefaultConfigFile();
 
     void testVersionFormat_data();
     void testVersionFormat();
