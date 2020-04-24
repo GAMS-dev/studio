@@ -111,6 +111,9 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenNew"/>
@@ -132,6 +135,9 @@
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>&amp;Edit</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <widget class="QMenu" name="menuEncoding">
      <property name="title">
@@ -185,6 +191,9 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <widget class="QMenu" name="menuBookmarks">
      <property name="title">
       <string>Bookmarks</string>
@@ -219,6 +228,9 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
     <addaction name="actionAbout_GAMS"/>
@@ -233,6 +245,9 @@
    <widget class="QMenu" name="menu_GAMs">
     <property name="title">
      <string>&amp;GAMS</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <addaction name="actionRun"/>
     <addaction name="actionRun_with_GDX_Creation"/>
@@ -250,6 +265,9 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionTerminal"/>
     <addaction name="actionGDX_Diff"/>
     <addaction name="separator"/>
@@ -258,6 +276,9 @@
    <widget class="QMenu" name="menuMIRO">
     <property name="title">
      <string>&amp;MIRO</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <addaction name="actionBase_mode"/>
     <addaction name="actionHypercube_mode"/>
