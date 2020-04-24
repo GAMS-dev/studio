@@ -115,6 +115,7 @@ private:
     static const QString GamsUserConfigFile;
     static const QString LicenseFile;
     static const QString LicensePath;
+    static const QString GamsConfigPath;
 };
 
 }

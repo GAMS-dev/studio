@@ -46,10 +46,12 @@ QString CommonPaths::SystemDir = QString();
 #if defined(__APPLE__) || defined(__unix__)
     const QString CommonPaths::ConfigFile = "gmscmpun.txt";
     const QString CommonPaths::LicensePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    const QString CommonPaths::GamsConfigPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
 
 #else
     const QString CommonPaths::ConfigFile = "gmscmpnt.txt";
     const QString CommonPaths::LicensePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    const QString CommonPaths::GamsConfigPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS";
 #endif
 
 const QString CommonPaths::GamsUserConfigFile = "gamsconfig.yaml";
@@ -145,12 +147,7 @@ QString CommonPaths::gamsLicenseFilePath()
 
 QString CommonPaths::gamsUserConfigDir()
 {
-    QDir gamsUserConfigDir;
-#ifdef _WIN32
-    gamsUserConfigDir = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS");
-#else
-    gamsUserConfigDir = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) /*+ "/GAMS" */ );
-#endif
+    QDir gamsUserConfigDir = QDir(GamsConfigPath);
     if(!gamsUserConfigDir.exists())
         gamsUserConfigDir.mkpath(".");
     return gamsUserConfigDir.path();
@@ -158,8 +155,7 @@ QString CommonPaths::gamsUserConfigDir()
 
 QString CommonPaths::defaultGamsUserConfigFile()
 {
-    QDir configFile(gamsUserConfigDir() + "/" + GamsUserConfigFile);
-    return configFile.path();
+    return QDir::cleanPath(gamsUserConfigDir() + "/" + GamsUserConfigFile);
 }
 
 QString CommonPaths::defaultWorkingDir()
