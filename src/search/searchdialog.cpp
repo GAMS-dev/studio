@@ -886,7 +886,7 @@ QRegularExpression SearchDialog::createRegex()
     QRegularExpression searchRegex(searchTerm);
 
     if (!regex()) searchRegex.setPattern(QRegularExpression::escape(searchTerm));
-    if (wholeWords()) searchRegex.setPattern("(?<!\\w|\\$)" + searchRegex.pattern() + "(?=\\W|\\s|$)");
+    if (wholeWords()) searchRegex.setPattern("(?<!\\w|\\$)" + searchRegex.pattern() + "(?!\\w|\\$)");
     if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
     return searchRegex;
