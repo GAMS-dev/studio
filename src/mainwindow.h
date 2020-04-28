@@ -71,24 +71,28 @@ class MiroDeployDialog;
 struct RecentData {
     RecentData() { reset(); }
 
+    void setEditor(QWidget* edit, MainWindow* window);
+
     QWidget* editor() const { return mEditor; }
-    void setEditor(QWidget* editor, MainWindow* window);
+    ProjectGroupNode* group() const {return mGroup; }
+    FileId editFileId() const { return mEditFileId; }
+    QString path() const { return mPath; }
 
     void reset();
-    bool validRunGroup();
+    bool hasValidRunGroup();
 
     /**
      * @brief Name of the main model.
-     * @remark Call <c>validRunGroup()</c> before.
+     * @remark Call <c>hasValidRunGroup()</c> before.
      */
     QString mainModelName(bool stripped = true);
 
-    FileId editFileId;
-    QString path;
-    ProjectGroupNode* group;
 
 private:
     QWidget* mEditor;
+    FileId mEditFileId;
+    ProjectGroupNode* mGroup;
+    QString mPath;
 };
 
 struct HistoryData {
