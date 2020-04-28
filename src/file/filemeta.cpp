@@ -425,6 +425,7 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
+        tv->edit()->setMarks(nullptr);
         tv->edit()->disconnectTimers();
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
