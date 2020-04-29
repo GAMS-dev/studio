@@ -110,6 +110,7 @@ SOURCES += \
     file/projectrepo.cpp \
     file/projecttreemodel.cpp \
     file/projecttreeview.cpp \
+    file/recentdata.cpp \
     file/treeitemdelegate.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
@@ -258,6 +259,7 @@ HEADERS += \
     file/projectrepo.h \
     file/projecttreemodel.h \
     file/projecttreeview.h \
+    file/recentdata.h \
     file/treeitemdelegate.h \
     gamslibprocess.h \
     gamsprocess.h \

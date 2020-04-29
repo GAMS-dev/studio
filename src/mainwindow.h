@@ -25,6 +25,7 @@
 
 #include "editors/codeedit.h"
 #include "file.h"
+#include "file/recentdata.h"
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
 #include "search/resultsview.h"
@@ -67,29 +68,6 @@ class GdxDiffDialog;
 namespace miro {
 class MiroDeployDialog;
 }
-
-struct RecentData {
-    RecentData() { reset(); }
-
-    QWidget* editor() const { return mEditor; }
-    void setEditor(QWidget* editor, MainWindow* window);
-
-    void reset();
-    bool validRunGroup();
-
-    /**
-     * @brief Name of the main model.
-     * @remark Call <c>validRunGroup()</c> before.
-     */
-    QString mainModelName(bool stripped = true);
-
-    FileId editFileId;
-    QString path;
-    ProjectGroupNode* group;
-
-private:
-    QWidget* mEditor;
-};
 
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }

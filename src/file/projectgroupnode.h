@@ -90,6 +90,7 @@ public:
     ProjectLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
+    QString mainModelName(bool stripped = true) const;
     QString tooltip() override;
     QString errorText(int lstLine) override;
     void clearErrorTexts();
