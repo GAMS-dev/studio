@@ -316,8 +316,6 @@ void MainWindow::initAutoSave()
 
 void MainWindow::on_actionEditDefaultConfig_triggered()
 {
-    qDebug() << "edit gamsconfig.yaml from " << CommonPaths::defaultGamsUserConfigFile();
-
     QString filePath = CommonPaths::defaultGamsUserConfigFile();
 
     QFile file(filePath);
