@@ -260,6 +260,8 @@
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
     <addaction name="actionDeleteScratchDirs"/>
+    <addaction name="separator"/>
+    <addaction name="actionEditDefaultConfig"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -271,7 +273,6 @@
     <addaction name="actionTerminal"/>
     <addaction name="actionGDX_Diff"/>
     <addaction name="separator"/>
-    <addaction name="actionEditDefaultConfig"/>
    </widget>
    <widget class="QMenu" name="menuMIRO">
     <property name="title">
