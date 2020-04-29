@@ -2436,7 +2436,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 {
-    if (e->mimeData()->hasUrls()) {
+    if (e->mimeData()->hasUrls() && FileMeta::hasExistingFile(e->mimeData()->urls())) {
         e->setDropAction(Qt::CopyAction);
         e->accept();
     } else {
@@ -2446,28 +2446,25 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 
 void MainWindow::dropEvent(QDropEvent* e)
 {
-    if (e->mimeData()->hasUrls()) {
-        e->accept();
-        QStringList pathList;
-        for (QUrl url: e->mimeData()->urls()) {
-            pathList << url.toLocalFile();
-        }
+    if (!e->mimeData()->hasUrls()) return;
+    QStringList pathList = FileMeta::pathList(e->mimeData()->urls());
+    if (pathList.isEmpty()) return;
+    e->accept();
 
-        int answer;
-        if(pathList.size() > 25) {
-            raise();
-            activateWindow();
-            QMessageBox msgBox;
-            msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
-                           " files at once. Depending on the file sizes this may take a long time.");
-            msgBox.setInformativeText("Do you want to continue?");
-            msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
-            answer = msgBox.exec();
+    int answer;
+    if (pathList.size() > 25) {
+        raise();
+        activateWindow();
+        QMessageBox msgBox;
+        msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
+                       " files at once. Depending on the file sizes this may take a long time.");
+        msgBox.setInformativeText("Do you want to continue?");
+        msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
+        answer = msgBox.exec();
 
-            if(answer != QMessageBox::Open) return;
-        }
-        openFiles(pathList);
+        if (answer != QMessageBox::Open) return;
     }
+    openFiles(pathList);
 }
 
 void MainWindow::dockTopLevelChanged(bool)

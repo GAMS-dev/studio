@@ -98,6 +98,9 @@ public:
     void reloadDelayed();
     void setLocation(QString location);
 
+    static bool hasExistingFile(QList<QUrl> urls);
+    static QStringList pathList(QList<QUrl> urls);
+
 public slots:
     void reload();
     void invalidate();

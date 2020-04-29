@@ -18,6 +18,7 @@
 #include "projecttreeview.h"
 #include "logger.h"
 #include "projecttreemodel.h"
+#include "filemeta.h"
 #include <QApplication>
 #include <QMimeData>
 
@@ -96,9 +97,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
     }
     if (event->mimeData()->hasUrls()) {
         event->accept();
-        for (QUrl url: event->mimeData()->urls()) {
-            pathList << url.toLocalFile();
-        }
+        pathList << FileMeta::pathList(event->mimeData()->urls());
         event->setDropAction(Qt::CopyAction);
     }
     QList<QModelIndex> newSelection;
@@ -128,8 +127,11 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
         if (!event->keyboardModifiers().testFlag(Qt::ControlModifier)
                 && event->mimeData()->formats().contains(ItemModelDataType)) {
             event->setDropAction(Qt::MoveAction);
-        } else {
+        } else if (FileMeta::hasExistingFile(event->mimeData()->urls())) {
             event->setDropAction(Qt::CopyAction);
+        } else {
+            event->ignore();
+            return;
         }
         QModelIndex groupInd = treeModel->findGroup(ind);
         selectionModel()->select(groupInd, QItemSelectionModel::ClearAndSelect);
