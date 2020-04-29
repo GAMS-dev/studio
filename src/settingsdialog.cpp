@@ -100,7 +100,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 
 void SettingsDialog::loadSettings()
 {
-    mSettings->load(Settings::scUserX);
+    mSettings->loadFile(Settings::scUser);
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
@@ -346,6 +346,9 @@ void SettingsDialog::on_btn_import_clicked()
     emit editorLineWrappingChanged();
     emit editorFontChanged(mSettings->toString(skEdFontFamily),
                            mSettings->toInt(skEdFontSize));
+#ifndef __APPLE__
+    ViewHelper::setAppearance(); // update ui
+#endif
     close();
 }
 

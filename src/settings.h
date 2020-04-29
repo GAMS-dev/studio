@@ -134,7 +134,7 @@ public:
     static void useRelocatedPathForTests();
     static QList<SettingsKey> viewKeys();
 
-    void load(Scope scopeFilter);
+    void loadFile(Scope scopeFilter);
     void save();
     void block() { mBlock = true; }
     void unblock() { mBlock = false; }
