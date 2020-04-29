@@ -28,8 +28,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(QMutex& mutex, QRegularExpression regex, QList<FileMeta*> fml, SearchResultList* list)
-    : mMutex(mutex), mRegex(regex), mFiles(fml), mMatches(list)
+SearchWorker::SearchWorker(QMutex& mutex, QList<FileMeta*> fml, SearchResultList* list)
+    : mMutex(mutex), mFiles(fml), mMatches(list)
 {
 }
 
@@ -59,7 +59,7 @@ void SearchWorker::findInFiles()
                 QString line = in.readLine();
 
                 QRegularExpressionMatch match;
-                QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
+                QRegularExpressionMatchIterator i = mMatches->searchRegex().globalMatch(line);
                 while (i.hasNext()) {
                     match = i.next();
                     mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),

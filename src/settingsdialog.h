@@ -72,6 +72,8 @@ private slots:
 
     void on_combo_appearance_currentIndexChanged(int index);
 
+    void on_btn_resetHistory_clicked();
+
 private:
     Ui::SettingsDialog *ui;
     Settings *mSettings;

@@ -17,41 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHWORKER_H
-#define SEARCHWORKER_H
+#ifndef TESTGAMSUSERCONFIG_H
+#define TESTGAMSUSERCONFIG_H
 
-#include <QMutex>
-#include <QObject>
-#include <QRegularExpression>
+#include <QtTest/QTest>
 
-namespace gams {
-namespace studio {
-
-class FileMeta;
-
-namespace search {
-
-class SearchResultList;
-class SearchWorker : public QObject
+class TestGamsUserConfig : public QObject
 {
     Q_OBJECT
-public:
-    SearchWorker(QMutex& mutex, QList<FileMeta*> fml, SearchResultList* list);
-    ~SearchWorker();
-    void findInFiles();
 
-signals:
-    void update();
-    void resultReady();
+private slots:
+    void initTestCase();
+
+    void testUserConfigDir();
+
+    void testReadEmptyDefaultGamsConfigFile();
+    void testReadDefaultGamsConfigFile();
+
+    void testGamsRunningDefaultConfigFile();
+
+    void testVersionFormat_data();
+    void testVersionFormat();
 
 private:
-    QMutex& mMutex;
-    QList<FileMeta*> mFiles;
-    SearchResultList* mMatches;
+    QString systemDir;
 };
 
-}
-}
-}
-
-#endif // SEARCHWORKER_H
+#endif // TESTGAMSUSERCONFIG_H

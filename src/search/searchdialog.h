@@ -122,7 +122,7 @@ private:
     void insertHistory();
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList* collection);
-    void findInDoc(QRegularExpression searchRegex, FileMeta *fm, SearchResultList* collection);
+    void findInDoc(FileMeta *fm, SearchResultList* collection);
     void updateEditHighlighting();
     void setSearchOngoing(bool searching);
     void setSearchStatus(SearchStatus status);
