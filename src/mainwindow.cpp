@@ -314,6 +314,29 @@ void MainWindow::initAutoSave()
     mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
 }
 
+void MainWindow::on_actionEditDefaultConfig_triggered()
+{
+    QString filePath = CommonPaths::defaultGamsUserConfigFile();
+
+    QFile file(filePath);
+    if (file.exists()) {
+        FileMeta *fm = mFileMetaRepo.fileMeta(filePath);
+        if (fm) {
+           openFile(fm);
+           return;
+        }
+    } else {
+        file.open(QIODevice::WriteOnly); // create empty file
+        file.close();
+    }
+
+    QFileInfo fi(filePath);
+
+    ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+    ProjectFileNode *node = addNode("", filePath, group);
+    openFileNode(node);
+}
+
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
@@ -1283,6 +1306,7 @@ void MainWindow::activeTabChanged(int index)
                      ui->menuconvert_to->setEnabled(false);
                      mStatusWidgets->setFileName(fc->location());
                      mStatusWidgets->setEncoding(fc->file()->codecMib());
+                     mStatusWidgets->setLineCount(-1);
                      node->file()->reload();
                      updateMenuToCodec(node->file()->codecMib());
                  }

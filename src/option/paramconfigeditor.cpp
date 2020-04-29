@@ -642,7 +642,10 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
     QModelIndex insertNumberIndex = ui->ParamCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_ENTRY_NUMBER);
     int optionEntryNumber = mOptionTokenizer->getOption()->getOptionDefinition(optionNameData).number;
     ui->ParamCfgTableView->model()->setData( insertNumberIndex, optionEntryNumber, Qt::EditRole);
-    ui->ParamCfgTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
+    if (selectedValueData.isEmpty())
+        ui->ParamCfgTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Checked), Qt::CheckStateRole );
+    else
+       ui->ParamCfgTableView->model()->setHeaderData( rowToBeAdded, Qt::Vertical, Qt::CheckState(Qt::Unchecked), Qt::CheckStateRole );
     ui->ParamCfgTableView->selectRow(rowToBeAdded);
     selectAnOption();
 

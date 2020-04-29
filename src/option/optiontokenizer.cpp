@@ -426,6 +426,8 @@ QList<OptionErrorType> OptionTokenizer::validate(ParamConfigItem* item)
             optionErrorList.append( OptionErrorType::Deprecated_Option );
         } else { // valid and not deprected Option
             OptionErrorType error = mOption->getValueErrorType(item->key, item->value);
+            if (item->value.isEmpty())
+                error = OptionErrorType::Incorrect_Value_Type;
             if (error!=OptionErrorType::No_Error)
                optionErrorList.append(error);
         }

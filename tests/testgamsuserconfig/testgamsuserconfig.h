@@ -17,39 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTOPTIONAPI_H
-#define TESTOPTIONAPI_H
+#ifndef TESTGAMSUSERCONFIG_H
+#define TESTGAMSUSERCONFIG_H
 
 #include <QtTest/QTest>
 
-#include "gclgms.h"
-#include "optcc.h"
-
-class TestOptionAPI : public QObject
+class TestGamsUserConfig : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase();
 
-    void testOptFileSuffix_data();
-    void testOptFileSuffix();
+    void testUserConfigDir();
 
-    void testEOLChars();
+    void testReadEmptyDefaultGamsConfigFile();
+    void testReadDefaultGamsConfigFile();
 
-    void testReadFromStr_data();
-    void testReadFromStr();
+    void testGamsRunningDefaultConfigFile();
 
-    void cleanupTestCase();
+    void testVersionFormat_data();
+    void testVersionFormat();
 
 private:
-    bool Dcreated = false;
-    bool optdefRead = false;
-    optHandle_t mOPTHandle;
-
-    int logAndClearMessage();
-    int getErrorCode(optMsgType type);
-    void isDefined(bool defined, bool definedR, QString &value);
+    QString systemDir;
 };
 
-#endif // TESTOPTIONAPI_H
+#endif // TESTGAMSUSERCONFIG_H

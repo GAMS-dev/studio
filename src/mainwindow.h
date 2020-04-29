@@ -319,6 +319,7 @@ private slots:
     void on_actionRestore_Recently_Closed_Tab_triggered();
     void on_actionReset_Views_triggered();
     void initAutoSave();
+    void on_actionEditDefaultConfig_triggered();
 
     void on_actionNextTab_triggered();
     void on_actionPreviousTab_triggered();
