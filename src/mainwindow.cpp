@@ -2129,7 +2129,7 @@ void MainWindow::on_actionBase_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.mainModelName());
+    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -2144,7 +2144,7 @@ void MainWindow::on_actionHypercube_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.mainModelName());
+    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
@@ -2159,7 +2159,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.mainModelName());
+    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -2180,8 +2180,10 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
     QStringList checkedFiles;
     if (mRecent.hasValidRunGroup()) {
         location = mRecent.group()->toRunGroup()->location();
-        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->location(), mRecent.mainModelName());
-        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.mainModelName(false));
+        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->location(),
+                                                          mRecent.group()->toRunGroup()->mainModelName());
+        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
+                                                                    mRecent.group()->toRunGroup()->mainModelName(false));
     }
 
     miro::MiroModelAssemblyDialog dlg(location, this);
@@ -2201,7 +2203,7 @@ void MainWindow::on_actionDeploy_triggered()
         return;
 
     auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
+                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
     mMiroDeployDialog->exec();
@@ -2216,7 +2218,7 @@ void MainWindow::miroDeployAssemblyFileUpdate()
 {
     on_actionCreate_model_assembly_triggered();
     auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
+                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
     mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
 }
 
@@ -2228,7 +2230,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
     process->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    process->setModelName(mRecent.mainModelName());
+    process->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
@@ -2987,10 +2989,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             updateMenuToCodec(fileMeta->codecMib());
-//            if (tabWidget == ui->mainTabs) {
-//                mRecent.setEditor(tabWidget->currentWidget(), this);
-//                mRecent.editFileId = fileMeta->id();
-//            }
         }
         if (fileMeta->kind() == FileKind::Ref) {
             reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
@@ -3007,10 +3005,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         ProjectFileNode* fileNode = mProjectRepo.findFileNode(edit);
         changeToLog(fileNode, false, false);
         mRecent.setEditor(tabWidget->currentWidget(), this);
-//        mRecent.setEditor(tabWidget->currentWidget(), this);
-//        mRecent.editFileId = fileMeta->id();
-//        mRecent.path = QFileInfo(fileMeta->location()).path();
-//        mRecent.group = runGroup;
     }
     addToOpenedFiles(fileMeta->location());
 }
@@ -3750,83 +3744,6 @@ void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
     }
 
     mGamsParameterEditor->setEditorExtended(checked);
-}
-
-void RecentData::setEditor(QWidget *edit, MainWindow* window)
-{
-    if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
-        MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-    } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
-        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
-    }
-    if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-//        MainWindow::disconnect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
-        window->resetLoadAmount();
-    }
-
-    mEditor = edit;
-    mGroup = window->projectRepo()->asGroup(ViewHelper::groupId(edit));
-    if (ProjectFileNode* node = window->projectRepo()->findFileNode(edit)) {
-        mEditFileId = node->file()->id();
-        mPath = QFileInfo(node->location()).path();
-    } else {
-        mEditFileId = FileId();
-        mPath = Settings::settings()->toString(skDefaultWorkspace);
-    }
-
-    if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
-        MainWindow::connect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-    } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
-        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
-    }
-    if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos, Qt::UniqueConnection);
-//        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
-        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
-    }
-    window->updateEditorMode();
-    window->updateEditorPos();
-}
-
-void RecentData::reset()
-{
-    mEditFileId = -1;
-    mPath = Settings::settings()->toString(skDefaultWorkspace);
-    mGroup = nullptr;
-    mEditor = nullptr;
-}
-
-bool RecentData::hasValidRunGroup()
-{
-    if (!group())
-        return false;
-    return group()->toRunGroup() != nullptr;
-}
-
-QString RecentData::mainModelName(bool stripped)
-{
-    auto fileMeta = group()->toRunGroup()->runnableGms();
-
-    if (!fileMeta) {
-        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for group: %1")
-                .arg(group()->toRunGroup()->name()), LogMsgType::Error);
-        return QString();
-    }
-
-    QFileInfo fileInfo(fileMeta->name());
-    if (stripped)
-        return fileInfo.completeBaseName();
-    return fileInfo.fileName();
 }
 
 void MainWindow::on_actionReset_Views_triggered()
