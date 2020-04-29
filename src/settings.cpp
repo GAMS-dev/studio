@@ -266,7 +266,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skOpenLst, KeyData(scUser, {"openLst"}, false));
     res.insert(skJumpToError, KeyData(scUser, {"jumpToErrors"}, true));
     res.insert(skForegroundOnDemand, KeyData(scUser, {"foregroundOnDemand"}, true));
-    res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 12));
+    res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 20));
 
     // editor settings page
     res.insert(skEdAppearance, KeyData(scUser, {"editor","appearance"}, 0));

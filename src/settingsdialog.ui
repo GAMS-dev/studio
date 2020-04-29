@@ -914,16 +914,16 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="lbl_wpHistorySize">
+           <widget class="QLabel" name="lbl_wpHistory">
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Welcome Page size of 'Last Files' list&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset 'Last Files' list on Welcome Page&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QPushButton" name="btn_resetView">
             <property name="text">
-             <string>Reset</string>
+             <string>Reset Window</string>
             </property>
            </widget>
           </item>
@@ -947,16 +947,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QSpinBox" name="sb_historySize">
-            <property name="suffix">
-             <string/>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="btn_openUserLibLocation">
             <property name="sizePolicy">
@@ -967,6 +957,13 @@
             </property>
             <property name="text">
              <string>Open Location</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="btn_resetHistory">
+            <property name="text">
+             <string>Reset History</string>
             </property>
            </widget>
           </item>

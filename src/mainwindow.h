@@ -156,6 +156,7 @@ public:
     void execute(QString commandLineStr,
                  std::unique_ptr<AbstractProcess> process = nullptr,
                  ProjectFileNode *gmsFileNode = nullptr);
+    void resetHistory();
 
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;

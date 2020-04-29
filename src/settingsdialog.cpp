@@ -86,7 +86,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_autoindent, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_writeLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
-    connect(ui->sb_historySize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -135,8 +134,6 @@ void SettingsDialog::loadSettings()
         mSettings->setString(skMiroInstallPath, path);
     }
 
-    // misc tab page
-    ui->sb_historySize->setValue(mSettings->toInt(skHistorySize));
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
     ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(skSoAddCommentAbove));
@@ -215,11 +212,7 @@ void SettingsDialog::saveSettings()
     // colors page
 //    mSettings->saveScheme();
 
-    // misc page
-    mSettings->setInt(skHistorySize, ui->sb_historySize->value());
-
     // solver option editor
-    mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
     mSettings->setBool(skSoAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
     mSettings->setBool(skSoAddEOLComment, ui->addEOLCommentCheckBox->isChecked());
     mSettings->setBool(skSoDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
@@ -501,6 +494,11 @@ void SettingsDialog::initColorPage()
     }
 }
 
+void SettingsDialog::on_btn_resetHistory_clicked()
+{
+    mMain->resetHistory();
+    mSettings->setList(skHistory, QVariantList());
+}
 
 }
 }

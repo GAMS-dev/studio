@@ -1922,6 +1922,12 @@ const HistoryData &MainWindow::history()
     return mHistory;
 }
 
+void MainWindow::resetHistory()
+{
+    mHistory = HistoryData();
+    historyChanged();
+}
+
 void MainWindow::addToOpenedFiles(QString filePath)
 {
     if (!QFileInfo(filePath).exists()) return;
