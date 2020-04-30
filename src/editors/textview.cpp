@@ -395,84 +395,84 @@ int TextView::firstErrorLine()
 void TextView::editKeyPressEvent(QKeyEvent *event)
 {
     QPoint p = mMapper->position(true);
+    bool cursorIsValid = p.y() > AbstractTextMapper::cursorInvalid;
     QTextCursor::MoveMode mode = event->modifiers() & Qt::ShiftModifier ? QTextCursor::KeepAnchor
                                                                         : QTextCursor::MoveAnchor;
-    switch (event->key()) {
-    case Qt::Key_Home:
-        if (event->modifiers() & Qt::ControlModifier) {
-            mMapper->setVisibleTopLine(0);
-            mMapper->setPosRelative(0, 0, mode);
-            updatePosAndAnchor();
-        } else if (p.y() > AbstractTextMapper::cursorInvalid) {
-            mMapper->setPosRelative(p.y(), 0, mode);
-            updatePosAndAnchor();
-        }
-        break;
-    case Qt::Key_End:
-        if (event->modifiers() & Qt::ControlModifier) {
-            jumpToEnd();
-            if (p.y() > AbstractTextMapper::cursorInvalid) {
-                mMapper->setPosRelative(mMapper->visibleLineCount(), -1, mode);
-                updatePosAndAnchor();
-            }
-            emit selectionChanged();
-            return;
-        } else if (p.y() > AbstractTextMapper::cursorInvalid) {
-            mMapper->setPosRelative(p.y()+1, -1, mode);
+    if (event == Hotkey::MoveToStartOfDoc) {
+        mMapper->setVisibleTopLine(0);
+        mMapper->setPosRelative(0, 0, mode);
+        updatePosAndAnchor();
+    } else if (event == Hotkey::MoveToStartOfLine && cursorIsValid) {
+        mMapper->setPosRelative(p.y(), 0, mode);
+        updatePosAndAnchor();
+    } else if (event == Hotkey::MoveToEndOfDoc) {
+        jumpToEnd();
+        if (cursorIsValid) {
+            mMapper->setPosRelative(mMapper->visibleLineCount(), -1, mode);
             updatePosAndAnchor();
         }
-        break;
-    case Qt::Key_Left:
-        if (p.y() >= 0) {
-            mMapper->setPosRelative(p.y(), p.x()-1, mode);
-            if (mMapper->visibleTopLine() > 0 && p.y() < 2 && p.y() > mMapper->position(true).y())
+        emit selectionChanged();
+        return;
+    } else if (event == Hotkey::MoveToEndOfLine && cursorIsValid) {
+        mMapper->setPosRelative(p.y()+1, -1, mode);
+        updatePosAndAnchor();
+    } else if (event == Hotkey::MoveViewLineUp) {
+        mMapper->moveVisibleTopLine(-1);
+    } else if (event == Hotkey::MoveViewLineDown) {
+        mMapper->moveVisibleTopLine(1);
+    } else {
+        switch (event->key()) {
+        case Qt::Key_Up:
+            if (!cursorIsValid)
                 mMapper->moveVisibleTopLine(-1);
-            else updatePosAndAnchor();
-        }
-        break;
-    case Qt::Key_Up:
-        if (event->modifiers() & Qt::ControlModifier || p.y() <= AbstractTextMapper::cursorInvalid)
-            mMapper->moveVisibleTopLine(-1);
-        else {
-            QPoint p = mMapper->position(true);
-            mMapper->setPosRelative(p.y()-1, -2, mode);
-            if (mMapper->visibleTopLine() > 0 && p.y() < 2)
-                mMapper->moveVisibleTopLine(-1);
-            else updatePosAndAnchor();
-        }
-        break;
-    case Qt::Key_Right:
-        if (p.y() >= 0) {
-            QTextCursor cur = mEdit->textCursor();
-            if (cur.positionInBlock() < cur.block().length()-1) {
-                mMapper->setPosRelative(p.y(), p.x()+1, mode);
-                if (p.y() > mMapper->visibleLineCount()-2 && p.y() < mMapper->position(true).y())
-                    mMapper->moveVisibleTopLine(1);
+            else {
+                QPoint p = mMapper->position(true);
+                mMapper->setPosRelative(p.y()-1, -2, mode);
+                if (mMapper->visibleTopLine() > 0 && p.y() < 2)
+                    mMapper->moveVisibleTopLine(-1);
                 else updatePosAndAnchor();
-            } else {
-                mMapper->setPosRelative(p.y()+1, 0, mode);
+            }
+            break;
+        case Qt::Key_Down:
+            if (!cursorIsValid)
+                mMapper->moveVisibleTopLine(1);
+            else {
+                mMapper->setPosRelative(p.y()+1, -2, mode);
                 if (p.y() > mMapper->visibleLineCount()-2)
                     mMapper->moveVisibleTopLine(1);
                 else updatePosAndAnchor();
             }
+            break;
+        case Qt::Key_Left:
+            if (p.y() >= 0) {
+                mMapper->setPosRelative(p.y(), p.x()-1, mode);
+                if (mMapper->visibleTopLine() > 0 && p.y() < 2 && p.y() > mMapper->position(true).y())
+                    mMapper->moveVisibleTopLine(-1);
+                else updatePosAndAnchor();
+            }
+            break;
+        case Qt::Key_Right:
+            if (p.y() >= 0) {
+                QTextCursor cur = mEdit->textCursor();
+                if (cur.positionInBlock() < cur.block().length()-1) {
+                    mMapper->setPosRelative(p.y(), p.x()+1, mode);
+                    if (p.y() > mMapper->visibleLineCount()-2 && p.y() < mMapper->position(true).y())
+                        mMapper->moveVisibleTopLine(1);
+                    else updatePosAndAnchor();
+                } else {
+                    mMapper->setPosRelative(p.y()+1, 0, mode);
+                    if (p.y() > mMapper->visibleLineCount()-2)
+                        mMapper->moveVisibleTopLine(1);
+                    else updatePosAndAnchor();
+                }
+            }
+            break;
+        case Qt::Key_PageUp: mMapper->moveVisibleTopLine(-mMapper->visibleLineCount()+1); break;
+        case Qt::Key_PageDown: mMapper->moveVisibleTopLine(mMapper->visibleLineCount()-1); break;
+        default:
+            event->ignore();
+            break;
         }
-        break;
-    case Qt::Key_Down:
-        if (event->modifiers() & Qt::ControlModifier || mMapper->position().y() <= AbstractTextMapper::cursorInvalid)
-            mMapper->moveVisibleTopLine(1);
-        else {
-            mMapper->setPosRelative(p.y()+1, -2, mode);
-            if (p.y() > mMapper->visibleLineCount()-2)
-                mMapper->moveVisibleTopLine(1);
-            else updatePosAndAnchor();
-        }
-        break;
-
-    case Qt::Key_PageUp: mMapper->moveVisibleTopLine(-mMapper->visibleLineCount()+1); break;
-    case Qt::Key_PageDown: mMapper->moveVisibleTopLine(mMapper->visibleLineCount()-1); break;
-    default:
-        event->ignore();
-        break;
     }
     if (mStayAtTail) *mStayAtTail = mMapper->atTail();
     emit selectionChanged();
