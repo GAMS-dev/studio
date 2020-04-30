@@ -137,20 +137,12 @@ void Keys::reset()
     setHotkey(Hotkey::MoveToStartOfLine, seq);
 
     seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
-    *seq << QKeySequence(QKeySequence::MoveToNextWord);
+    *seq << QKeySequence(QKeySequence::MoveToNextWord) << QKeySequence(QKeySequence::SelectNextWord);
     setHotkey(Hotkey::MoveCharGroupRight, seq);
 
     seq = new KeySeqList("MoveCharGroupLeft","Move to the previous char-group");
-    *seq << QKeySequence(QKeySequence::MoveToPreviousWord);
+    *seq << QKeySequence(QKeySequence::MoveToPreviousWord) << QKeySequence(QKeySequence::SelectPreviousWord);
     setHotkey(Hotkey::MoveCharGroupLeft, seq);
-
-    seq = new KeySeqList("SelectCharGroupRight","Select to the next char-group");
-    *seq << QKeySequence(QKeySequence::SelectNextWord);
-    setHotkey(Hotkey::SelectCharGroupRight, seq);
-
-    seq = new KeySeqList("SelectCharGroupLeft","Select to the previous char-group");
-    *seq << QKeySequence(QKeySequence::SelectPreviousWord);
-    setHotkey(Hotkey::SelectCharGroupLeft, seq);
 
     seq = new KeySeqList("SelectAll","Select all text");
     *seq << QKeySequence("Ctrl+A");
