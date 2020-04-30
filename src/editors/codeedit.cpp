@@ -434,20 +434,20 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         // deactivate when manual cursor movement was detected
         if (moveKeys.contains(e->key())) mSmartType = false;
 
-        int index = mOpening.indexOf(e->text());
+        int indexOpening = mOpening.indexOf(e->text());
         int indexClosing = mClosing.indexOf(e->text());
 
         // exclude modifier combinations
         if (e->text().isEmpty()) {
-            index = -1;
+            indexOpening = -1;
             indexClosing = -1;
         }
 
         // surround selected text with characters
-        if ((index != -1) && (textCursor().hasSelection())) {
+        if ((indexOpening != -1) && (textCursor().hasSelection())) {
             QTextCursor tc(textCursor());
             QString selection(tc.selectedText());
-            selection = mOpening.at(index) + selection + mClosing.at(index);
+            selection = mOpening.at(indexOpening) + selection + mClosing.at(indexOpening);
             tc.insertText(selection);
             setTextCursor(tc);
             return;
@@ -462,11 +462,11 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
 
         // insert closing characters
-        } else if (index != -1 && allowClosing(index)) {
+        } else if (indexOpening != -1 && allowClosing(indexOpening)) {
             mSmartType = true;
             QTextCursor tc = textCursor();
             tc.insertText(e->text());
-            tc.insertText(mClosing.at(index));
+            tc.insertText(mClosing.at(indexOpening));
             tc.movePosition(QTextCursor::PreviousCharacter);
             setTextCursor(tc);
             e->accept();
@@ -478,7 +478,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             QChar a = document()->characterAt(textCursor().position()-1);
             QChar b = document()->characterAt(textCursor().position());
 
-            // ( is opening char )       && (char before and after cursor are identical)
+            // delete auto insertable char
             if (mOpening.indexOf(a) != -1 && (mOpening.indexOf(a) ==  mClosing.indexOf(b))) {
                 textCursor().deleteChar();
                 textCursor().deletePreviousChar();
@@ -501,18 +501,22 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 bool CodeEdit::allowClosing(int chIndex)
 {
     QString allowingChars(",;){}] ");
-    bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1;
+
+    // if next character is in the list of allowing characters
+    bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1
+        // AND next character is not closing partner of current
+            && mClosing.indexOf(document()->characterAt(textCursor().position())) != chIndex;
+
     bool nextLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
+    // if char before and after the cursor are a matching pair: allow anyways
+    QChar prior = document()->characterAt(textCursor().position() - 1);
+    bool matchingPairExists = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
 
     // insert closing if next char permits or is end of line
-    bool allowAutoClose =  nextAllows || nextLinebreak;
-
-    // if char before and after the cursor are a matching pair: allow
-    QChar prior = document()->characterAt(textCursor().position() - 1);
-    bool matchingPairExisting = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
+    bool allowAutoClose =  nextAllows || nextLinebreak || matchingPairExists;
 
     // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
-    return allowAutoClose && matchingPairExisting && (!prior.isLetterOrNumber() || chIndex < 3);
+    return allowAutoClose && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)

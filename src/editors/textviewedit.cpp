@@ -136,9 +136,9 @@ void TextViewEdit::keyPressEvent(QKeyEvent *event)
         emit keyPressed(event);
         if (!event->isAccepted())
             CodeEdit::keyPressEvent(event);
-    } else if (event->key() == Qt::Key_A && event->modifiers().testFlag(Qt::ControlModifier)) {
+    } else if (event == Hotkey::SelectAll) {
         selectAllText();
-    } else if (event->key() == Qt::Key_C && event->modifiers().testFlag(Qt::ControlModifier)) {
+    } else if (event == Hotkey::Copy) {
         copySelection();
     } else {
         CodeEdit::keyPressEvent(event);

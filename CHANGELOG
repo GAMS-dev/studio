@@ -1,3 +1,24 @@
+Version 1.1
+==================
+- **added default GAMS option editor**
+    - created menu entry to generate default GAMS option file: *GAMS > Default GAMS Configuration*
+- **fixed shortcut collisions and unification:**
+    - changed "Go to matching parentheses" to: *Ctrl+B*
+    - changed "Select to matching parentheses" to: *Ctrl+Shift+B*
+    - changed "Toggle Comment" shortcut in Solver Option Editor to: *Ctrl+\**
+    - changed "Expand Parameter Editor" shortcut to: *Ctrl+Alt+3*
+- fixed "Reset View" not resetting checkboxes
+- fixed broken dark theme on macOS
+- improved wording for some Solver Option Editor context menu items
+- fixed behavior of smart typing where some characters blocked automatic insertion of closing paranthesis or quote
+- fixed broken export and import function for settings
+- fixed behavior of "Whole Words" option in search not finding words that inlude a dollar sign
+- improved behavior of "Whole Words" option in search including dollar sign as part of a word as this makes more sense for the GAMS syntax
+- removed option from settings to adjust size of file history on welcome page, replaced with "Reset" button instead
+- fixed broken run state after switching files
+- fixed creation of empty groups after certain drag and drop events
+- fixed inconsistent behavior of text cursor movement shortcuts in Process Log
+
 Version 1.0
 ==================
 ## General

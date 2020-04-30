@@ -314,6 +314,29 @@ void MainWindow::initAutoSave()
     mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
 }
 
+void MainWindow::on_actionEditDefaultConfig_triggered()
+{
+    QString filePath = CommonPaths::defaultGamsUserConfigFile();
+
+    QFile file(filePath);
+    if (file.exists()) {
+        FileMeta *fm = mFileMetaRepo.fileMeta(filePath);
+        if (fm) {
+           openFile(fm);
+           return;
+        }
+    } else {
+        file.open(QIODevice::WriteOnly); // create empty file
+        file.close();
+    }
+
+    QFileInfo fi(filePath);
+
+    ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+    ProjectFileNode *node = addNode("", filePath, group);
+    openFileNode(node);
+}
+
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
@@ -357,7 +380,7 @@ void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
 
 void MainWindow::sendSourcePath(QString &source)
 {
-    source = mRecent.path;
+    source = mRecent.path();
 }
 
 void MainWindow::updateMenuToCodec(int mib)
@@ -666,7 +689,7 @@ void MainWindow::setActiveMIB(int active)
 
 void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
 {
-    if (mRecent.group == group) updateRunState();
+    if (mRecent.group() == group) updateRunState();
 
     ProjectRunGroupNode* runGroup = group->toRunGroup();
     ProjectLogNode* log = runGroup->logNode();
@@ -873,8 +896,8 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
     QString path = (!groups.isEmpty()) ? groups.first()->location() : currentPath();
     if (path.isEmpty()) path = ".";
 
-    if (mRecent.editFileId >= 0) {
-        FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    if (mRecent.editFileId() >= 0) {
+        FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
         if (fm) path = QFileInfo(fm->location()).path();
     }
 
@@ -979,7 +1002,7 @@ void MainWindow::on_actionOpenNew_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (!fm) return;
 
     if (fm->isModified() && !fm->isReadOnly())
@@ -1099,7 +1122,7 @@ void MainWindow::on_actionSave_As_triggered()
             }
         }
         if (choice == 1) {
-            mRecent.path = QFileInfo(filePath).path();
+//            mRecent.path = QFileInfo(filePath).path();
             ProjectFileNode* newNode =
                     mProjectRepo.findOrCreateFileNode(filePath, node->assignedRunGroup());
             openFileNode(newNode, true);
@@ -1143,7 +1166,7 @@ void MainWindow::on_actionClose_All_Except_triggered()
 
 void MainWindow::codecChanged(QAction *action)
 {
-    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (fm) {
         if (!fm->isReadOnly()) {
             fm->setCodecMib(action->data().toInt());
@@ -1156,7 +1179,7 @@ void MainWindow::codecChanged(QAction *action)
 void MainWindow::codecReload(QAction *action)
 {
     if (!focusWidget()) return;
-    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId);
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (fm && fm->kind() == FileKind::Log) return;
     if (fm && fm->kind() == FileKind::Guc) return;
     if (fm && fm->codecMib() != action->data().toInt()) {
@@ -1214,20 +1237,13 @@ void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 void MainWindow::activeTabChanged(int index)
 {
     ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
-    mRecent.reset();
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
-
-    loadCommandLines(oldTab, node);
-    updateRunState();
+    mRecent.setEditor(editWidget, this);
 
     if (node) {
-        mRecent.editFileId = node->file()->id();
         mStatusWidgets->setFileName(QDir::toNativeSeparators(node->location()));
         mStatusWidgets->setEncoding(node->file()->codecMib());
-        mRecent.setEditor(editWidget, this);
-        mRecent.group = mProjectRepo.asGroup(ViewHelper::groupId(editWidget));
-        mRecent.path = QFileInfo(node->location()).path();
 
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
             mStatusWidgets->setLineCount(edit->blockCount());
@@ -1251,9 +1267,7 @@ void MainWindow::activeTabChanged(int index)
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             ui->menuconvert_to->setEnabled(false);
-            ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer);
-            if (fc) {
-                mRecent.editFileId = fc->file()->id();
+            if (ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer)) {
                 ui->menuconvert_to->setEnabled(false);
                 mStatusWidgets->setFileName(QDir::toNativeSeparators(fc->location()));
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
@@ -1262,9 +1276,7 @@ void MainWindow::activeTabChanged(int index)
             }
         } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
             ui->menuEncoding->setEnabled(false);
-            ProjectFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor);
-            if (fc) {
-                mRecent.editFileId = fc->file()->id();
+            if (ProjectFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor)) {
                 ui->menuEncoding->setEnabled(true);
                 ui->menuconvert_to->setEnabled(true);
                 mStatusWidgets->setFileName(fc->location());
@@ -1274,18 +1286,17 @@ void MainWindow::activeTabChanged(int index)
                 updateMenuToCodec(node->file()->codecMib());
             }
         } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
-                 ui->menuEncoding->setEnabled(false);
-                 ProjectFileNode* fc = mProjectRepo.findFileNode(gucEditor);
-                 if (fc) {
-                     mRecent.editFileId = fc->file()->id();
-                     ui->menuEncoding->setEnabled(false);
-                     ui->menureload_with->setEnabled(false);
-                     ui->menuconvert_to->setEnabled(false);
-                     mStatusWidgets->setFileName(fc->location());
-                     mStatusWidgets->setEncoding(fc->file()->codecMib());
-                     node->file()->reload();
-                     updateMenuToCodec(node->file()->codecMib());
-                 }
+            ui->menuEncoding->setEnabled(false);
+            if (ProjectFileNode* fc = mProjectRepo.findFileNode(gucEditor)) {
+                ui->menuEncoding->setEnabled(false);
+                ui->menureload_with->setEnabled(false);
+                ui->menuconvert_to->setEnabled(false);
+                mStatusWidgets->setFileName(fc->location());
+                mStatusWidgets->setEncoding(fc->file()->codecMib());
+                mStatusWidgets->setLineCount(-1);
+                node->file()->reload();
+                updateMenuToCodec(node->file()->codecMib());
+            }
         }
         updateMenuToCodec(node->file()->codecMib());
     } else {
@@ -1295,6 +1306,8 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setLineCount(-1);
     }
 
+    loadCommandLines(oldTab, node);
+    updateRunState();
     searchDialog()->updateReplaceActionAvailability();
     updateToolbar(mainTabs()->currentWidget());
 
@@ -1578,7 +1591,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
     }
     if (groupNode && runMeta->exists(true)) {
         QString lstFile = groupNode->parameter("lst");
-        bool doFocus = groupNode == mRecent.group;
+        bool doFocus = (groupNode == mRecent.group());
 
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
         for (QWidget *edit: lstNode->file()->editors())
@@ -1888,8 +1901,8 @@ bool MainWindow::isActiveTabRunnable()
 
 bool MainWindow::isRecentGroupRunning()
 {
-    if (!mRecent.group) return false;
-    ProjectRunGroupNode *runGroup = mRecent.group->assignedRunGroup();
+    if (!mRecent.group()) return false;
+    ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
     if (!runGroup) return false;
     return (runGroup->gamsProcessState() == QProcess::Running);
 }
@@ -1920,6 +1933,12 @@ void MainWindow::triggerGamsLibFileCreation(modeldialog::LibraryItem *item)
 const HistoryData &MainWindow::history()
 {
     return mHistory;
+}
+
+void MainWindow::resetHistory()
+{
+    mHistory = HistoryData();
+    historyChanged();
 }
 
 void MainWindow::addToOpenedFiles(QString filePath)
@@ -1989,10 +2008,13 @@ void MainWindow::updateAndSaveSettings()
 {
     Settings *settings = Settings::settings();
 
-    settings->setSize(skWinSize, size());
-    settings->setPoint(skWinPos, pos());
+    if (!isMaximized() && !isFullScreen()) {
+        settings->setSize(skWinSize, size());
+        settings->setPoint(skWinPos, pos());
+    }
     settings->setByteArray(skWinState, saveState());
-    settings->setBool(skWinMaximized, isMaximized());
+    settings->setBool(skWinMaximized, isMaximized() || (mMaximizedBeforeFullScreen && isFullScreen()));
+    settings->setBool(skWinFullScreen, isFullScreen());
 
     settings->setBool(skViewProject, projectViewVisibility());
     settings->setBool(skViewOutput, outputViewVisibility());
@@ -2041,14 +2063,18 @@ void MainWindow::restoreFromSettings()
     Settings *settings = Settings::settings();
 
     // main window
-    if (settings->toBool(skWinMaximized)) {
-        setWindowState(Qt::WindowMaximized);
+    mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
+    if (settings->toBool(skWinFullScreen)) {
+        showFullScreen();
+    } else if (mMaximizedBeforeFullScreen) {
+        showMaximized();
     } else {
         resize(settings->toSize(skWinSize));
         move(settings->toPoint(skWinPos));
     }
     restoreState(settings->toByteArray(skWinState));
     ensureInScreen();
+    ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
 
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
@@ -2076,7 +2102,7 @@ void MainWindow::restoreFromSettings()
 QString MainWindow::currentPath()
 {
     if (ui->mainTabs->currentWidget() && ui->mainTabs->currentWidget() != mWp) {
-        return mRecent.path;
+        return mRecent.path();
     }
     return Settings::settings()->toString(skDefaultWorkspace);
 
@@ -2132,8 +2158,8 @@ void MainWindow::on_actionBase_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -2147,8 +2173,8 @@ void MainWindow::on_actionHypercube_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
@@ -2162,8 +2188,8 @@ void MainWindow::on_actionConfiguration_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -2172,9 +2198,9 @@ void MainWindow::on_actionConfiguration_mode_triggered()
 
 void MainWindow::on_actionStop_MIRO_triggered()
 {
-    if (!mRecent.validRunGroup())
+    if (!mRecent.hasValidRunGroup())
         return;
-    mRecent.group->toRunGroup()->process()->terminate();
+    mRecent.group()->toRunGroup()->process()->terminate();
 }
 
 void MainWindow::on_actionCreate_model_assembly_triggered()
@@ -2182,10 +2208,12 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
     QString location;
     QString assemblyFile;
     QStringList checkedFiles;
-    if (mRecent.validRunGroup()) {
-        location = mRecent.group->toRunGroup()->location();
-        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group->toRunGroup()->location(), mRecent.mainModelName());
-        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, mRecent.mainModelName(false));
+    if (mRecent.hasValidRunGroup()) {
+        location = mRecent.group()->toRunGroup()->location();
+        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->location(),
+                                                          mRecent.group()->toRunGroup()->mainModelName());
+        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
+                                                                    mRecent.group()->toRunGroup()->mainModelName(false));
     }
 
     miro::MiroModelAssemblyDialog dlg(location, this);
@@ -2196,7 +2224,7 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
     if (!miro::MiroCommon::writeAssemblyFile(assemblyFile, dlg.selectedFiles()))
         SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1").arg(assemblyFile), LogMsgType::Error);
     else
-        addToGroup(mRecent.group, assemblyFile);
+        addToGroup(mRecent.group(), assemblyFile);
 }
 
 void MainWindow::on_actionDeploy_triggered()
@@ -2204,8 +2232,8 @@ void MainWindow::on_actionDeploy_triggered()
     if (!validMiroPrerequisites())
         return;
 
-    auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
+    auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
+                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
     mMiroDeployDialog->exec();
@@ -2219,20 +2247,20 @@ void MainWindow::on_menuMIRO_aboutToShow()
 void MainWindow::miroDeployAssemblyFileUpdate()
 {
     on_actionCreate_model_assembly_triggered();
-    auto assemblyFile = mRecent.group->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.mainModelName());
+    auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
+                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
     mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 {
-    if (!mRecent.validRunGroup())
+    if (!mRecent.hasValidRunGroup())
         return;
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
-    process->setWorkingDirectory(mRecent.group->toRunGroup()->location());
-    process->setModelName(mRecent.mainModelName());
+    process->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    process->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
@@ -2408,7 +2436,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 {
-    if (e->mimeData()->hasUrls()) {
+    if (e->mimeData()->hasUrls() && FileMeta::hasExistingFile(e->mimeData()->urls())) {
         e->setDropAction(Qt::CopyAction);
         e->accept();
     } else {
@@ -2418,28 +2446,25 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 
 void MainWindow::dropEvent(QDropEvent* e)
 {
-    if (e->mimeData()->hasUrls()) {
-        e->accept();
-        QStringList pathList;
-        for (QUrl url: e->mimeData()->urls()) {
-            pathList << url.toLocalFile();
-        }
+    if (!e->mimeData()->hasUrls()) return;
+    QStringList pathList = FileMeta::pathList(e->mimeData()->urls());
+    if (pathList.isEmpty()) return;
+    e->accept();
 
-        int answer;
-        if(pathList.size() > 25) {
-            raise();
-            activateWindow();
-            QMessageBox msgBox;
-            msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
-                           " files at once. Depending on the file sizes this may take a long time.");
-            msgBox.setInformativeText("Do you want to continue?");
-            msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
-            answer = msgBox.exec();
+    int answer;
+    if (pathList.size() > 25) {
+        raise();
+        activateWindow();
+        QMessageBox msgBox;
+        msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
+                       " files at once. Depending on the file sizes this may take a long time.");
+        msgBox.setInformativeText("Do you want to continue?");
+        msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
+        answer = msgBox.exec();
 
-            if(answer != QMessageBox::Open) return;
-        }
-        openFiles(pathList);
+        if (answer != QMessageBox::Open) return;
     }
+    openFiles(pathList);
 }
 
 void MainWindow::dockTopLevelChanged(bool)
@@ -2991,10 +3016,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             updateMenuToCodec(fileMeta->codecMib());
-            if (tabWidget == ui->mainTabs) {
-                mRecent.setEditor(tabWidget->currentWidget(), this);
-                mRecent.editFileId = fileMeta->id();
-            }
         }
         if (fileMeta->kind() == FileKind::Ref) {
             reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
@@ -3011,9 +3032,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         ProjectFileNode* fileNode = mProjectRepo.findFileNode(edit);
         changeToLog(fileNode, false, false);
         mRecent.setEditor(tabWidget->currentWidget(), this);
-        mRecent.editFileId = fileMeta->id();
-        mRecent.path = QFileInfo(fileMeta->location()).path();
-        mRecent.group = runGroup;
     }
     addToOpenedFiles(fileMeta->location());
 }
@@ -3185,10 +3203,9 @@ void MainWindow::on_mainTabs_currentChanged(int index)
         mProjectRepo.editorActivated(edit, focusWidget() != ui->projectView);
     }
     ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
-    if (fc) mRecent.editFileId = fc->file()->id();
-
-    if (fc && mRecent.group != fc->parentNode()) {
-        mRecent.group = fc->parentNode();
+    bool groupChanged = (fc && mRecent.group() != fc->parentNode());
+    mRecent.setEditor(edit, this);
+    if (groupChanged) {
         updateRunState();
     }
     changeToLog(fc, false, false);
@@ -3687,12 +3704,18 @@ void MainWindow::on_actionRemove_Line_triggered()
 
 void MainWindow::on_actionComment_triggered()
 {
-    if ( !mRecent.editor() || (focusWidget() != mRecent.editor()) )
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget() || !mRecent.editor()->isAncestorOf(focusWidget()))
         return;
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
-    if (ce && !ce->isReadOnly())
+    if (ce && !ce->isReadOnly()) {
         ce->commentLine();
+    } else  {
+        if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+           so->toggleCommentOption();
+        }
+    }
 }
 
 void MainWindow::toggleDebugMode()
@@ -3750,75 +3773,6 @@ void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
     mGamsParameterEditor->setEditorExtended(checked);
 }
 
-void RecentData::setEditor(QWidget *editor, MainWindow* window)
-{
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditor);
-    option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor);
-    if (edit) {
-        MainWindow::disconnect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-    } else if (soEdit) {
-        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
-    }
-    if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-//        MainWindow::disconnect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
-        window->resetLoadAmount();
-    }
-    mEditor = editor;
-    if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditor)) {
-        MainWindow::connect(edit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(edit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(edit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(edit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-    } else if (soEdit) {
-        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
-    }
-    if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos, Qt::UniqueConnection);
-//        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
-        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
-    }
-    window->updateEditorMode();
-    window->updateEditorPos();
-}
-
-void RecentData::reset()
-{
-    editFileId = -1;
-    path = Settings::settings()->toString(skDefaultWorkspace);
-    group = nullptr;
-    mEditor = nullptr;
-}
-
-bool RecentData::validRunGroup()
-{
-    if (!group)
-        return false;
-    return group->toRunGroup() != nullptr;
-}
-
-QString RecentData::mainModelName(bool stripped)
-{
-    auto fileMeta = group->toRunGroup()->runnableGms();
-
-    if (!fileMeta) {
-        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for group: %1")
-                .arg(group->toRunGroup()->name()), LogMsgType::Error);
-        return QString();
-    }
-
-    QFileInfo fileInfo(fileMeta->name());
-    if (stripped)
-        return fileInfo.completeBaseName();
-    return fileInfo.fileName();
-}
-
 void MainWindow::on_actionReset_Views_triggered()
 {
     resetViews();
@@ -3827,8 +3781,7 @@ void MainWindow::on_actionReset_Views_triggered()
 void MainWindow::resetViews()
 {
     setWindowState(Qt::WindowNoState);
-    Settings::settings()->resetViewSettings();
-    Settings::settings()->load(Settings::scSys);
+    ui->actionFull_Screen->setChecked(false);
 
     QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
@@ -3850,6 +3803,9 @@ void MainWindow::resetViews()
     mGamsParameterEditor->setEditorExtended(false);
     ui->toolBar->setVisible(true);
     addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
+
+    Settings::settings()->resetKeys(Settings::viewKeys());
+    Settings::settings()->save();
 }
 
 void MainWindow::resizeOptionEditor(const QSize &size)
@@ -4013,7 +3969,7 @@ bool MainWindow::validMiroPrerequisites()
         return false;
     }
 
-    return mRecent.validRunGroup();
+    return mRecent.hasValidRunGroup();
 }
 
 void MainWindow::openGdxDiffFile()
@@ -4059,7 +4015,7 @@ void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
 
 void MainWindow::on_actionFull_Screen_triggered()
 {
-    if (isFullScreen()) {
+    if (!ui->actionFull_Screen->isChecked()) {
         if (mMaximizedBeforeFullScreen)
             showMaximized();
         else

@@ -45,6 +45,7 @@ enum SettingsKey {
     skWinPos,
     skWinState,
     skWinMaximized,
+    skWinFullScreen,
 
     // view menu settings
     skViewProject,
@@ -128,10 +129,12 @@ public:
     static void createSettings(bool ignore, bool reset, bool resetView);
     static Settings *settings();
     static void releaseSettings();
+
     static int version(Scope scope);
     static void useRelocatedPathForTests();
+    static QList<SettingsKey> viewKeys();
 
-    void load(Scope scopeFilter);
+    void loadFile(Scope scopeFilter);
     void save();
     void block() { mBlock = true; }
     void unblock() { mBlock = false; }
@@ -161,7 +164,7 @@ public:
     void updateSettingsFiles();
 
     void reload();
-    void resetViewSettings();
+    void resetKeys(QList<SettingsKey> keys);
 
 private:
     typedef QVariantMap Data;

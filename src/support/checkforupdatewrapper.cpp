@@ -31,10 +31,6 @@ namespace gams {
 namespace studio {
 namespace support {
 
-/**
-  * Possible improvments
-  * o html outout for checkForUpdate
-  */
 CheckForUpdateWrapper::CheckForUpdateWrapper()
 {
     c4uSetExitIndicator(0); // switch of exit() call
@@ -79,8 +75,7 @@ QString CheckForUpdateWrapper::checkForUpdate()
         return QString();
 
     char buffer[GMS_SSSIZE];
-    c4uReadLice(mC4U, CommonPaths::systemDir().toLatin1(),
-                QString(CommonPaths::systemDir()).append("/gamslice.txt").toLatin1(), false);
+    c4uReadLiceStd(mC4U, CommonPaths::systemDir().toStdString().c_str(), false);
     c4uCreateMsg(mC4U);
 
     int messageIndex=0;
