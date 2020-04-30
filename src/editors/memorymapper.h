@@ -23,8 +23,8 @@
 #include "abstracttextmapper.h"
 #include "logparser.h"
 #include <QMutex>
-#include <QTime>
 #include <QTimer>
+#include <QElapsedTimer>
 
 namespace gams {
 namespace studio {
@@ -169,7 +169,7 @@ private: // members
     bool mLastLineIsOpen = false;
     int mLastLineLen = 0;
     QStringList mNewLogLines;
-    QTime mDisplayCacheChanged;
+    QElapsedTimer mDisplayCacheChanged;
     QTimer mPendingTimer;
     int mNewLines = 0;
     bool mInstantRefresh = false;

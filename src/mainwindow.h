@@ -25,6 +25,7 @@
 
 #include "editors/codeedit.h"
 #include "file.h"
+#include "file/recentdata.h"
 #include "modeldialog/libraryitem.h"
 #include "option/lineeditcompleteevent.h"
 #include "search/resultsview.h"
@@ -67,29 +68,6 @@ class GdxDiffDialog;
 namespace miro {
 class MiroDeployDialog;
 }
-
-struct RecentData {
-    RecentData() { reset(); }
-
-    QWidget* editor() const { return mEditor; }
-    void setEditor(QWidget* editor, MainWindow* window);
-
-    void reset();
-    bool validRunGroup();
-
-    /**
-     * @brief Name of the main model.
-     * @remark Call <c>validRunGroup()</c> before.
-     */
-    QString mainModelName(bool stripped = true);
-
-    FileId editFileId;
-    QString path;
-    ProjectGroupNode* group;
-
-private:
-    QWidget* mEditor;
-};
 
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }
@@ -156,6 +134,7 @@ public:
     void execute(QString commandLineStr,
                  std::unique_ptr<AbstractProcess> process = nullptr,
                  ProjectFileNode *gmsFileNode = nullptr);
+    void resetHistory();
 
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
@@ -318,6 +297,7 @@ private slots:
     void on_actionRestore_Recently_Closed_Tab_triggered();
     void on_actionReset_Views_triggered();
     void initAutoSave();
+    void on_actionEditDefaultConfig_triggered();
 
     void on_actionNextTab_triggered();
     void on_actionPreviousTab_triggered();

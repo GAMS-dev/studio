@@ -17,19 +17,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
 TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH +=  \
-        $$SRCPATH \
-        $$SRCPATH/editors
+INCLUDEPATH += $$SRCPATH
 
-HEADERS += \
-    testdialogfilefilter.h \
-    $$SRCPATH/viewhelper.h
+HEADERS +=                  \
+    testgamsuserconfig.h    \
+    $$SRCPATH/option/gamsuserconfig.h   \
+    $$SRCPATH/exception.h   \
+    $$SRCPATH/commonpaths.h
 
-SOURCES += \
-    testdialogfilefilter.cpp
-
+SOURCES +=                    \
+    testgamsuserconfig.cpp                    \
+    $$SRCPATH/option/gamsuserconfig.cpp       \
+    $$SRCPATH/editors/sysloglocator.cpp       \
+    $$SRCPATH/editors/defaultsystemlogger.cpp \
+    $$SRCPATH/exception.cpp   \
+    $$SRCPATH/commonpaths.cpp

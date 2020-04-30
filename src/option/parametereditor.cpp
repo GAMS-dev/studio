@@ -502,12 +502,14 @@ void ParameterEditor::parameterItemCommitted(QWidget *editor)
 
 void ParameterEditor::deSelectParameters()
 {
-    if (ui->gamsParameterTableView->hasFocus() && ui->gamsParameterTableView->selectionModel()->hasSelection())
+    if (ui->gamsParameterTableView->hasFocus() && ui->gamsParameterTableView->selectionModel()->hasSelection()) {
         ui->gamsParameterTableView->selectionModel()->clearSelection();
-    else if (ui->gamsParameterTreeView->hasFocus() && ui->gamsParameterTreeView->selectionModel()->hasSelection())
+        ui->gamsParameterTreeView->selectionModel()->clearSelection();
+    } else if (ui->gamsParameterTreeView->hasFocus() && ui->gamsParameterTreeView->selectionModel()->hasSelection()) {
              ui->gamsParameterTreeView->selectionModel()->clearSelection();
-    else
+    } else {
         this->focusNextChild();
+    }
 }
 
 void ParameterEditor::findAndSelectionParameterFromDefinition()

@@ -111,26 +111,23 @@ void ViewHelper::setAppearance(int appearance)
 void ViewHelper::changeAppearance(int appearance)
 {
     int pickedTheme = appearance;
-    bool canFollowOS = false;
+
 #ifdef _WIN32
-    canFollowOS = true; // deactivate follow OS option for linux
-#endif
+    bool canFollowOS = true; // deactivate follow OS option for linux
 
     if (canFollowOS && pickedTheme == 0) { // do OS specific things
-#ifdef _WIN32
         QSettings readTheme("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::Registry64Format);
         pickedTheme = readTheme.value("AppsUseLightTheme").toBool() ? 0 : 1;
-#endif
     } else if (canFollowOS) {
         pickedTheme--; // deduct "Follow OS" option
     }
-
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+#endif
 
 #ifndef __APPLE__
     PaletteManager::instance()->setPalette(pickedTheme);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 #endif
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
+    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
 }
 
 } // namespace studio

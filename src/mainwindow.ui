@@ -104,12 +104,15 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
@@ -132,6 +135,9 @@
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>&amp;Edit</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <widget class="QMenu" name="menuEncoding">
      <property name="title">
@@ -185,6 +191,9 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <widget class="QMenu" name="menuBookmarks">
      <property name="title">
       <string>Bookmarks</string>
@@ -219,6 +228,9 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
     <addaction name="actionAbout_GAMS"/>
@@ -234,6 +246,9 @@
     <property name="title">
      <string>&amp;GAMS</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionRun"/>
     <addaction name="actionRun_with_GDX_Creation"/>
     <addaction name="separator"/>
@@ -245,17 +260,26 @@
     <addaction name="separator"/>
     <addaction name="actionGAMS_Library"/>
     <addaction name="actionDeleteScratchDirs"/>
+    <addaction name="separator"/>
+    <addaction name="actionEditDefaultConfig"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionTerminal"/>
     <addaction name="actionGDX_Diff"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuMIRO">
     <property name="title">
      <string>&amp;MIRO</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <addaction name="actionBase_mode"/>
     <addaction name="actionHypercube_mode"/>
@@ -990,10 +1014,10 @@
   </action>
   <action name="actionComment">
    <property name="text">
-    <string>Comment</string>
+    <string>Toggle Comment Line(s)</string>
    </property>
    <property name="toolTip">
-    <string>(Un)Comment Line(s)</string>
+    <string>Toggle Comment Line(s)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+*</string>
@@ -1166,7 +1190,7 @@
     <string>Show Extended Parameter Editor</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Alt+L</string>
+    <string>Ctrl+Alt+3</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -1326,6 +1350,18 @@
    </property>
    <property name="text">
     <string>Toolbar</string>
+   </property>
+  </action>
+  <action name="actionEditDefaultConfig">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/img/gams-config-file</normaloff>:/img/gams-config-file</iconset>
+   </property>
+   <property name="text">
+    <string>Default GAMS Configuration</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit GAMS configuration file at the default location</string>
    </property>
   </action>
  </widget>

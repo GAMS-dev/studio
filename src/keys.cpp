@@ -113,43 +113,43 @@ void Keys::reset()
     setHotkey(Hotkey::MoveViewLineDown, seq);
 
     seq = new KeySeqList("MoveViewPageUp","Move the view one page up");
-    *seq << QKeySequence("Ctrl+PgUp");
+    *seq << QKeySequence(QKeySequence::MoveToPreviousPage);
     setHotkey(Hotkey::MoveViewPageUp, seq);
 
     seq = new KeySeqList("MoveViewPageDown","Move the view one page down");
-    *seq << QKeySequence("Ctrl+PgDown");
+    *seq << QKeySequence(QKeySequence::MoveToNextPage);
     setHotkey(Hotkey::MoveViewPageDown, seq);
 
+    seq = new KeySeqList("MoveToEndOfDoc","Move to the end of document");
+    *seq << QKeySequence(QKeySequence::MoveToEndOfDocument) << QKeySequence(QKeySequence::SelectEndOfDocument);
+    setHotkey(Hotkey::MoveToEndOfDoc, seq);
+
+    seq = new KeySeqList("MoveToStartOfDoc","Move to the start of document");
+    *seq << QKeySequence(QKeySequence::MoveToStartOfDocument) << QKeySequence(QKeySequence::SelectStartOfDocument);
+    setHotkey(Hotkey::MoveToStartOfDoc, seq);
+
     seq = new KeySeqList("MoveToEndOfLine","Move to the end of line");
-#ifdef Q_OS_OSX
-    *seq << QKeySequence("Ctrl+Right") << QKeySequence("Shift+Ctrl+Right");
-#else
-    *seq << QKeySequence("End") << QKeySequence("Shift+End");
-#endif
+    *seq << QKeySequence(QKeySequence::MoveToEndOfLine) << QKeySequence(QKeySequence::SelectEndOfLine);
     setHotkey(Hotkey::MoveToEndOfLine, seq);
 
     seq = new KeySeqList("MoveToStartOfLine","Move to the start of line");
-#ifdef Q_OS_OSX
-    *seq << QKeySequence("Ctrl+Left") << QKeySequence("Shift+Ctrl+Left");
-#else
-    *seq << QKeySequence("Home") << QKeySequence("Shift+Home");
-#endif
+    *seq << QKeySequence(QKeySequence::MoveToStartOfLine) << QKeySequence(QKeySequence::SelectStartOfLine);
     setHotkey(Hotkey::MoveToStartOfLine, seq);
 
     seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
-    *seq << QKeySequence("Ctrl+Right");
+    *seq << QKeySequence(QKeySequence::MoveToNextWord);
     setHotkey(Hotkey::MoveCharGroupRight, seq);
 
     seq = new KeySeqList("MoveCharGroupLeft","Move to the previous char-group");
-    *seq << QKeySequence("Ctrl+Left");
+    *seq << QKeySequence(QKeySequence::MoveToPreviousWord);
     setHotkey(Hotkey::MoveCharGroupLeft, seq);
 
     seq = new KeySeqList("SelectCharGroupRight","Select to the next char-group");
-    *seq << QKeySequence("Shift+Ctrl+Right");
+    *seq << QKeySequence(QKeySequence::SelectNextWord);
     setHotkey(Hotkey::SelectCharGroupRight, seq);
 
     seq = new KeySeqList("SelectCharGroupLeft","Select to the previous char-group");
-    *seq << QKeySequence("Shift+Ctrl+Left");
+    *seq << QKeySequence(QKeySequence::SelectPreviousWord);
     setHotkey(Hotkey::SelectCharGroupLeft, seq);
 
     seq = new KeySeqList("SelectAll","Select all text");
@@ -205,10 +205,10 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+Y","remove line");
     setHotkey(Hotkey::RemoveLine, seq);
 
-    seq = new KeySeqList("F8","goto matching parentheses");
+    seq = new KeySeqList("Ctrl+B","goto matching parentheses");
     setHotkey(Hotkey::MatchParentheses, seq);
 
-    seq = new KeySeqList("Shift+F8","select to matching parentheses");
+    seq = new KeySeqList("Ctrl+Shift+B","select to matching parentheses");
     setHotkey(Hotkey::SelectParentheses, seq);
 }
 

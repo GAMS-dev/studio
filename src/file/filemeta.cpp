@@ -76,6 +76,27 @@ void FileMeta::setLocation(QString location)
     }
 }
 
+bool FileMeta::hasExistingFile(QList<QUrl> urls)
+{
+    for (const QUrl &url : urls) {
+        if (url.isEmpty()) continue;
+        QFileInfo fi(url.toLocalFile());
+        if (fi.isFile() && fi.exists()) return true;
+    }
+    return false;
+}
+
+QStringList FileMeta::pathList(QList<QUrl> urls)
+{
+    QStringList res;
+    for (const QUrl &url : urls) {
+        if (url.isEmpty()) continue;
+        QFileInfo fi(url.toLocalFile());
+        if (fi.isFile() && fi.exists()) res << url.toLocalFile();
+    }
+    return res;
+}
+
 void FileMeta::takeEditsFrom(FileMeta *other)
 {
     if (mDocument) return;
@@ -425,6 +446,7 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
     }
     if (TextView* tv = ViewHelper::toTextView(edit)) {
+        tv->edit()->setMarks(nullptr);
         tv->edit()->disconnectTimers();
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);

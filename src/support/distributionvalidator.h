@@ -34,7 +34,7 @@ class DistributionValidator
     Q_OBJECT
 
 public:
-    DistributionValidator(QObject *parent = Q_NULLPTR);
+    DistributionValidator(QObject *parent = nullptr);
 
     void run() override;
 

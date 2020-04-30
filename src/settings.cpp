@@ -173,10 +173,10 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
         if (settings) {
             // only if the basic settings file has been created ...
             mSettings.insert(scSys, settings);
-            load(scSys);
+            loadFile(scSys);
             settings = newQSettings("usersettings");
             mSettings.insert(scUser, settings);
-            load(scUser);
+            loadFile(scUser);
 
             QDir location(settingsPath());
             for (const QString &fileName: location.entryList({"*.lock"})) {
@@ -189,9 +189,9 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             DEB() << "Could not create settings files, switched to --ignore-settings";
         }
     }
-    if (resetView)
-        resetViewSettings();
-
+    if (resetView) {
+        resetKeys(viewKeys());
+    }
 }
 
 Settings::~Settings()
@@ -230,6 +230,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skWinPos, KeyData(scSys, {"window","pos"}, QString("0,0")));
     res.insert(skWinState, KeyData(scSys, {"window","state"}, QByteArray("")));
     res.insert(skWinMaximized, KeyData(scSys, {"window","maximized"}, false));
+    res.insert(skWinFullScreen, KeyData(scSys, {"window","fullScreen"}, false));
 
     // view menu settings
     res.insert(skViewProject, KeyData(scSys, {"viewMenu","project"}, true));
@@ -265,7 +266,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skOpenLst, KeyData(scUser, {"openLst"}, false));
     res.insert(skJumpToError, KeyData(scUser, {"jumpToErrors"}, true));
     res.insert(skForegroundOnDemand, KeyData(scUser, {"foregroundOnDemand"}, true));
-    res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 12));
+    res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 20));
 
     // editor settings page
     res.insert(skEdAppearance, KeyData(scUser, {"editor","appearance"}, 0));
@@ -324,13 +325,24 @@ void Settings::addVersionInfo(Settings::Scope scope, QVariantMap &map)
 
 void Settings::reload()
 {
-    load(scSys);
-    load(scUser);
+    loadFile(scSys);
+    loadFile(scUser);
 }
 
-void Settings::resetViewSettings()
+QList<SettingsKey> Settings::viewKeys()
 {
-    // TODO(JM) handle individual keys
+    return QList<SettingsKey> {
+        skWinPos, skWinSize, skWinState, skWinMaximized, skWinFullScreen,
+        skViewHelp, skViewOption, skViewOutput, skViewProject
+    };
+}
+
+void Settings::resetKeys(QList<SettingsKey> keys)
+{
+    for (const SettingsKey &key : keys) {
+        KeyData dat = mKeys.value(key);
+        setValue(key, dat.initial);
+    }
 }
 
 void Settings::save()
@@ -512,6 +524,8 @@ void Settings::saveFile(Scope scope)
 {
     if (!canWrite()) return;
     ScopePair scopes = scopePair(scope);
+
+    // TODO: when can this happen? we should probably print an error if we reach this early return:
     if (!mSettings.contains(scopes.base)) return; // for safety
     QSettings *settings = mSettings.value(scopes.base);
 
@@ -637,7 +651,7 @@ void Settings::loadVersionData(ScopePair scopes)
     }
 }
 
-void Settings::load(Scope scope)
+void Settings::loadFile(Scope scope)
 {
     if (!mCanRead) return;
 
@@ -664,19 +678,18 @@ void Settings::load(Scope scope)
 
 void Settings::importSettings(const QString &path)
 {
-    if (!mSettings.value(scUserX)) return;
+    if (!mSettings.value(scUser)) return;
     QFile backupFile(path);
-    QFile settingsFile(mSettings.value(scUserX)->fileName());
+    QFile settingsFile(mSettings.value(scUser)->fileName());
     settingsFile.remove(); // remove old file
     backupFile.copy(settingsFile.fileName()); // import new file
     reload();
-    load(scUserX);
 }
 
 void Settings::exportSettings(const QString &path)
 {
-    if (!mSettings.value(scUserX)) return;
-    QFile originFile(mSettings.value(scUserX)->fileName());
+    if (!mSettings.value(scUser)) return;
+    QFile originFile(mSettings.value(scUser)->fileName());
     originFile.copy(path);
 }
 

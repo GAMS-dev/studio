@@ -349,6 +349,23 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     if (hasLogNode()) logNode()->resetLst();
 }
 
+QString ProjectRunGroupNode::mainModelName(bool stripped) const
+{
+    FileMeta *fileMeta = toRunGroup()->runnableGms();
+
+    if (!fileMeta) {
+        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for group: %1")
+                .arg(toRunGroup()->name()), LogMsgType::Error);
+        return QString();
+    }
+
+    QFileInfo fileInfo(fileMeta->name());
+    if (stripped)
+        return fileInfo.completeBaseName();
+    return fileInfo.fileName();
+
+}
+
 QString ProjectRunGroupNode::errorText(int lstLine)
 {
     return mErrorTexts.value(lstLine);
