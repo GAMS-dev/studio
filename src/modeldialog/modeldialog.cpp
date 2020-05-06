@@ -105,6 +105,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
     // bind filter mechanism to textChanged
     for (int i=0; i<proxyModelList.size(); i++)
         connect(ui->lineEdit, &QLineEdit::textChanged, [this, i]( const QString &value ) { this->applyFilter(value, i); });
+    connect(ui->lineEdit, &QLineEdit::textChanged, this, &ModelDialog::jumpToNonEmptyTab);
 }
 
 ModelDialog::~ModelDialog()
@@ -246,6 +247,19 @@ void ModelDialog::applyFilter(QString filterString, int proxyModelIndex)
     else
         proxyModelList[proxyModelIndex]->setFilterWildcard(filterString);
     this->changeHeader(proxyModelIndex);
+}
+
+void ModelDialog::jumpToNonEmptyTab()
+{
+    // jump to the first non-mepty tab in case the current tab runs out of results
+    if (proxyModelList[ui->tabWidget->currentIndex()]->rowCount() == 0){
+        for (int i=0; i<proxyModelList.size(); i++) {
+            if (proxyModelList[i]->rowCount() > 0) {
+                ui->tabWidget->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
 }
 
 } // namespace modeldialog
