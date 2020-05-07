@@ -226,8 +226,10 @@ bool EnvVarTableModel::insertRows(int row, int count, const QModelIndex &parent)
      else
          mEnvVarItem.insert(row, new EnvVarConfigItem());
 
-    endInsertRows();
-    return true;
+     updateCheckState();
+
+     endInsertRows();
+     return true;
 }
 
 bool EnvVarTableModel::removeRows(int row, int count, const QModelIndex &parent)

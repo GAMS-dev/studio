@@ -337,6 +337,8 @@ bool ConfigParamTableModel::insertRows(int row, int count, const QModelIndex &pa
      else
          mOptionItem.insert(row, new ParamConfigItem());
 
+     updateCheckState();
+
     endInsertRows();
     return true;
 }
