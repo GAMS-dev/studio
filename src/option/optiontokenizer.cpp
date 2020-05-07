@@ -278,7 +278,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                     break;
                 case OptionErrorType::No_Error:
                 default:
-                    optionErrorList.append(OptionError(fr, key + " (Deprecated option, will be ignored)"));
+                    optionErrorList.append(OptionError(fr, QString("%1 (Deprecated option, will be ignored)").arg(key), true ));
                     break;
                 }
             } else { // neither invalid nor deprecated key
