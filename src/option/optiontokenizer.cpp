@@ -82,6 +82,9 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
     mInvalidValueFormat.setFontItalic(true);
     mInvalidValueFormat.setForeground(Scheme::color(Scheme::Normal_Red));
 
+    mMissingValueFormat.setFontItalic(true);
+    mMissingValueFormat.setForeground(Scheme::color(Scheme::Normal_Yellow));
+
     mDuplicateOptionFormat.setFontItalic(true);
     mDuplicateOptionFormat.setForeground(Scheme::color(Scheme::Normal_Yellow));
 
@@ -290,6 +293,14 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
 
                 QString value = item.value;
 
+                if (value.simplified().isEmpty()) {
+                    QTextLayout::FormatRange fr;
+                    fr.start = item.keyPosition;
+                    fr.length = item.key.length();
+                    fr.format = mMissingValueFormat;
+                    optionErrorList.append(OptionError(fr, QString("%1 (missing defined value)").arg(item.key), true ));
+                    continue;
+                }
                 if (item.value.startsWith("\"") && item.value.endsWith("\"")) { // peel off double quote
                     value = item.value.mid(1, item.value.length()-2);
                 }

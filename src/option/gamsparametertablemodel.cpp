@@ -65,6 +65,8 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
             if (mOptionItem.at(index).recurrent)
                return QVariant::fromValue(Scheme::icon(":/img/square-red-yellow"));
+            else if (mOptionItem.at(index).value.simplified().isEmpty())
+               return QVariant::fromValue(Scheme::icon(":/img/square-yellow"));
             else
                return QVariant::fromValue(Scheme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
@@ -81,6 +83,9 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
     case Qt::ToolTipRole:
         QString tooltipText = "";
         switch(mOptionItem.at(index).error) {
+        case OptionErrorType::Missing_Value:
+            tooltipText.append( QString("Missing value for Parameter key '%1'").arg(mOptionItem.at(index).key) );
+            break;
         case OptionErrorType::Invalid_Key:
             tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(index).key) );
             break;
@@ -189,6 +194,8 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
         if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
                 return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+            else  if (mOptionItem.at(row).value.simplified().isEmpty())
+                      return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
             else
                  return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
@@ -196,11 +203,15 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             if (col==GamsParameterTableModel::COLUMN_OPTION_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
+                }  else  if (mOptionItem.at(row).value.simplified().isEmpty()) {
+                            return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
             } else { // value
                   switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                     case OptionErrorType::Missing_Value:
+                        return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
                       case OptionErrorType::Incorrect_Value_Type:
                             return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
                       case OptionErrorType::Value_Out_Of_Range:
