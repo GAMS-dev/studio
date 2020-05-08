@@ -140,6 +140,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         bool stack = true;
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, stack);
+        tailBlock.flavor = code.isValid() ? code.flavor() : 0;
         if (stack) emptyLineKinds = false;
 
         // HOWTO(JM) For kinds redefined with directives:

@@ -75,9 +75,9 @@ SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const int kindFla
     int end = start;
     if (identChar(line.at(end++)) != 2) return SyntaxBlock(this);
     while (end < line.length()) {
-        if (!identChar(line.at(end++))) return SyntaxBlock(this, start, end-1, SyntaxShift::shift);
+        if (!identChar(line.at(end++))) return SyntaxBlock(this, 0, start, end-1, SyntaxShift::shift);
     }
-    return SyntaxBlock(this, start, end, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, start, end, SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index, bool &hasContent)
@@ -86,7 +86,7 @@ SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index, bool &ha
     while (isWhitechar(line, start))
         ++start;
     hasContent = false;
-    return SyntaxBlock(this, index, start, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, start, SyntaxShift::shift);
 }
 
 SyntaxIdentifierDim::SyntaxIdentifierDim(SyntaxKind kind) : SyntaxAbstract(kind)
@@ -133,7 +133,7 @@ SyntaxBlock SyntaxIdentifierDim::find(const SyntaxKind entryKind, const int kind
         ++start;
     if (start >= line.length()) return SyntaxBlock(this);
     if (line.at(start) != mDelimiterIn) return SyntaxBlock(this);
-    return SyntaxBlock(this, start, start+1, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, start, start+1, SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxIdentifierDim::validTail(const QString &line, int index, bool &hasContent)
@@ -144,10 +144,10 @@ SyntaxBlock SyntaxIdentifierDim::validTail(const QString &line, int index, bool 
     while (++end < line.length()) {
         if (line.at(end--) == mDelimiterOut) break;
         if (invalid.indexOf(line.at(++end)) >= 0)
-            return SyntaxBlock(this, index, end, SyntaxShift::out, true);
+            return SyntaxBlock(this, 0, index, end, SyntaxShift::out, true);
     }
     hasContent = index < end;
-    return SyntaxBlock(this, index, end+1, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end+1, SyntaxShift::shift);
 }
 
 SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract(kind)
@@ -199,7 +199,7 @@ SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, const int k
     while (isWhitechar(line, start))
         ++start;
     if (start >= line.length() || line.at(start) != mDelimiter)  return SyntaxBlock(this);
-    return SyntaxBlock(this, index, qMin(start+1, line.length()), SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, qMin(start+1, line.length()), SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, bool &hasContent)
@@ -209,7 +209,7 @@ SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, bo
     while (isWhitechar(line, end))
         ++end;
     hasContent = false;
-    return SyntaxBlock(this, index, end, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::shift);
 }
 
 SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
@@ -263,12 +263,12 @@ SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, const int kind
     int end = start;
     int lastNonWhite = start;
     while (++end < line.length()) {
-        if (line.at(end) == delim) return SyntaxBlock(this, start, end+(delim=='/'?0:1), SyntaxShift::shift);
+        if (line.at(end) == delim) return SyntaxBlock(this, 0, start, end+(delim=='/'?0:1), SyntaxShift::shift);
         if (delim == '/' && line.at(end) == ';') break;
         if (delim == '/' && line.at(end) == ',') break;
         if (!isWhitechar(line, end)) lastNonWhite = end;
     }
-    return SyntaxBlock(this, start, lastNonWhite+1, SyntaxShift::shift, (delim != '/'));
+    return SyntaxBlock(this, 0, start, lastNonWhite+1, SyntaxShift::shift, (delim != '/'));
 }
 
 SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, bool &hasContent)
@@ -277,7 +277,7 @@ SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, bool 
     while (isWhitechar(line, end))
         ++end;
     hasContent = false;
-    return SyntaxBlock(this, index, end, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::shift);
 }
 
 SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
@@ -310,7 +310,7 @@ SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, const int kindFl
     while (isWhitechar(line, start))
         ++start;
     if (start < line.length() && line.at(start) == delim)
-        return SyntaxBlock(this, start, start+1, SyntaxShift::shift);
+        return SyntaxBlock(this, 0, start, start+1, SyntaxShift::shift);
     return SyntaxBlock(this);
 }
 
@@ -322,7 +322,7 @@ SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, bool &h
     int end = (line.length() > start) ? start+1 : start;
     while (isWhitechar(line, end) || (line.length() > end && line.at(end) == ',')) end++;
     hasContent = (end > start);
-    return SyntaxBlock(this, index, end, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::shift);
 }
 
 AssignmentLabel::AssignmentLabel()
@@ -367,9 +367,9 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const int kindFlav
             } else if (isWhitechar(line, pos)) {
                 while (isWhitechar(line, pos+1)) ++pos;
                 if (!extended && (pos+1 < line.length()) && !extender.contains(line.at(pos+1)))
-                    return SyntaxBlock(this, start, pos, SyntaxShift::shift);
+                    return SyntaxBlock(this, 0, start, pos, SyntaxShift::shift);
             } else if (ender.contains(line.at(pos))) {
-                return SyntaxBlock(this, start, pos, SyntaxShift::shift);
+                return SyntaxBlock(this, 0, start, pos, SyntaxShift::shift);
             }
             extended = false;
         }
@@ -377,7 +377,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const int kindFlav
     }
 
     if (end > start) {
-        return SyntaxBlock(this, start, end, SyntaxShift::shift);
+        return SyntaxBlock(this, 0, start, end, SyntaxShift::shift);
     }
     return SyntaxBlock(this);
 }
@@ -388,7 +388,7 @@ SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, bool &has
     while (isWhitechar(line, end))
         ++end;
     hasContent = false;
-    return SyntaxBlock(this, index, end, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::shift);
 }
 
 AssignmentValue::AssignmentValue()
@@ -417,7 +417,7 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const int kindFlav
         QChar ch = quoteKind==3 ? ']' : delim.at(quoteKind-1);
         end = line.indexOf(ch, pos+1);
         if (end < 0)
-            return SyntaxBlock(this, start, pos+1, SyntaxShift::out, true);
+            return SyntaxBlock(this, 0, start, pos+1, SyntaxShift::out, true);
         pos = end+1;
     } else {
         while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
@@ -426,7 +426,7 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const int kindFlav
 //    while (isWhitechar(line, pos)) ++pos;
 
     if (end > start) {
-        return SyntaxBlock(this, start, end, SyntaxShift::skip);
+        return SyntaxBlock(this, 0, start, end, SyntaxShift::skip);
     }
     return SyntaxBlock(this);
 }
@@ -437,7 +437,7 @@ SyntaxBlock AssignmentValue::validTail(const QString &line, int index, bool &has
     while (isWhitechar(line, end))
         ++end;
     hasContent = false;
-    return SyntaxBlock(this, index, end, SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::shift);
 }
 
 SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
@@ -470,8 +470,8 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, const int kindFl
     }
     int end = line.indexOf(';', index);
     if (end < 0)
-        return SyntaxBlock(this, index, line.length(), SyntaxShift::shift);
-    return SyntaxBlock(this, index, end, SyntaxShift::out);
+        return SyntaxBlock(this, 0, index, line.length(), SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, bool &hasContent)
@@ -479,8 +479,8 @@ SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, bool &h
     Q_UNUSED(hasContent)
     int end = line.indexOf(';', index);
     if (end < 0)
-        return SyntaxBlock(this, index, line.length(), SyntaxShift::shift);
-    return SyntaxBlock(this, index, end, SyntaxShift::out);
+        return SyntaxBlock(this, 0, index, line.length(), SyntaxShift::shift);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 
 } // namespace syntax
