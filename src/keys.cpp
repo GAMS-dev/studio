@@ -202,6 +202,7 @@ void Keys::reset()
     *seq << QKeySequence("Shift+Backtab");
     setHotkey(Hotkey::Outdent, seq);
 
+    //TODO(JM) This is not in use and overwritten in MainWindow triggering "Redo"
     seq = new KeySeqList("Ctrl+Y","remove line");
     setHotkey(Hotkey::RemoveLine, seq);
 

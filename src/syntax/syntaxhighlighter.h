@@ -65,8 +65,6 @@ private:
     /// \param syntax The syntax to be added to the stack
     /// \param ci The index in mKinds of the previous syntax
     void addKind(SyntaxAbstract* syntax, CodeIndex ci = 0);
-    void xinitKind(int debug, SyntaxAbstract* syntax, QColor color = QColor(), Scheme::FontFlag fMod = Scheme::fNormal);
-    void xinitKind(SyntaxAbstract* syntax, QColor color = QColor(), Scheme::FontFlag fMod = Scheme::fNormal);
     void initKind(int debug, SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
     void initKind(SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
 

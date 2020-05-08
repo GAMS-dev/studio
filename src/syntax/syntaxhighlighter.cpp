@@ -126,6 +126,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     if (!code.isValid()) code = 0;
     int index = 0;
     QTextBlock textBlock = currentBlock();
+    if (!textBlock.userData()) textBlock.setUserData(new BlockData());
+    BlockData* blockData = static_cast<BlockData*>(textBlock.userData());
+
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
     bool emptyLineKinds = true;
@@ -203,18 +206,14 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
     }
     // update BlockData
-    if (!parPosList.isEmpty() || textBlock.userData()) {
-        parPosList.squeeze();
-        BlockData* blockData = textBlock.userData() ? static_cast<BlockData*>(textBlock.userData()) : nullptr;
-        if (!parPosList.isEmpty() && !blockData) {
-            blockData = new BlockData();
-        }
-        if (blockData) blockData->setParentheses(parPosList);
-        if (blockData && blockData->isEmpty())
-            textBlock.setUserData(nullptr);
-        else
-            textBlock.setUserData(blockData);
+    if (!parPosList.isEmpty() && !blockData) {
+        blockData = new BlockData();
     }
+    if (blockData) blockData->setParentheses(parPosList);
+    if (blockData && blockData->isEmpty())
+        textBlock.setUserData(nullptr);
+    else
+        textBlock.setUserData(blockData);
     setCurrentBlockState(purgeCode(code.code()));
 //    DEB() << text << "      _" << codeDeb(code.code());
 }
@@ -316,26 +315,6 @@ QColor backColor(int index) {
                                     QColor(Qt::blue).lighter(180), QColor(Qt::green).lighter(170) };
     index = (qAbs(index)-1) % debColor.size();
     return debColor.at(index);
-}
-
-void SyntaxHighlighter::xinitKind(int debug, SyntaxAbstract *syntax, QColor color, Scheme::FontFlag fMod)
-{
-    if (debug) syntax->charFormat().setBackground(backColor(debug));
-
-    syntax->charFormat().setProperty(QTextFormat::UserProperty, syntax->intSyntaxType());
-    if (color.isValid()) syntax->charFormat().setForeground(color);
-    if (fMod & Scheme::fItalic) syntax->charFormat().setFontItalic(true);
-    if (fMod & Scheme::fBold) syntax->charFormat().setFontWeight(QFont::Bold);
-
-    // TODO(JM) check if mSingleLineKinds can be left out of mKinds because the code won't be passed to the next line
-//    if (!mSingleLineKinds.contains(syntax->kind())) {}
-    mKinds << syntax;
-    addCode(mKinds.length()-1, 0);
-}
-
-void SyntaxHighlighter::xinitKind(SyntaxAbstract *syntax, QColor color, Scheme::FontFlag fMod)
-{
-    xinitKind(false, syntax, color, fMod);
 }
 
 void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, Scheme::ColorSlot slot)
