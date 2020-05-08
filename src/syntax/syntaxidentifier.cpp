@@ -65,7 +65,7 @@ int SyntaxIdentifier::identChar(const QChar &c) const
     return 0;                                                       // no valid identifier letter
 }
 
-SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const QString& line, int index)
+SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const int kindFlavor, const QString& line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -125,7 +125,7 @@ SyntaxIdentifierDim::SyntaxIdentifierDim(SyntaxKind kind) : SyntaxAbstract(kind)
     mDelimiterOut = (mDelimiterIn == '(') ? ')' : ']';
 }
 
-SyntaxBlock SyntaxIdentifierDim::find(const SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentifierDim::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -192,7 +192,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
     mDelimiter = delims.value(static_cast<int>(kind));
 }
 
-SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -238,7 +238,7 @@ SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
     }
 }
 
-SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
 {
     if (index == 0) return SyntaxBlock(this);
     if (mTable) {
@@ -300,7 +300,7 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
     }
 }
 
-SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
 {
     int start = index;
     bool inside = (kind() != SyntaxKind::IdentifierAssignmentEnd
@@ -334,7 +334,7 @@ AssignmentLabel::AssignmentLabel()
               << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
 }
 
-SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -399,7 +399,7 @@ AssignmentValue::AssignmentValue()
     mSubKinds << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
 }
 
-SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index+1;
@@ -456,7 +456,7 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
     }
 }
 
-SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, const QString &line, int index)
+SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
 {
     if (index > 0) return SyntaxBlock(this);
 

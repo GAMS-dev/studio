@@ -150,7 +150,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         for (SyntaxKind nextKind: syntax->nextKinds(emptyLineKinds)) {
             SyntaxAbstract* testSyntax = getSyntax(nextKind);
             if (testSyntax) {
-                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), text, index);
+                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), 0, text, index);
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;

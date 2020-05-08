@@ -30,7 +30,7 @@ class SyntaxIdentifier : public SyntaxAbstract
 {
 public:
     SyntaxIdentifier(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 private:
     int identChar(const QChar &c) const;
@@ -43,7 +43,7 @@ class SyntaxIdentifierDim : public SyntaxAbstract
     bool mTable;
 public:
     SyntaxIdentifierDim(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
     int maxNesting() override { return 1; }
 };
@@ -54,7 +54,7 @@ class SyntaxIdentifierDimEnd : public SyntaxAbstract
     bool mTable;
 public:
     SyntaxIdentifierDimEnd(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -63,7 +63,7 @@ class SyntaxIdentDescript : public SyntaxAbstract
     bool mTable;
 public:
     SyntaxIdentDescript(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -72,7 +72,7 @@ class SyntaxIdentAssign : public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxIdentAssign(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -80,7 +80,7 @@ class AssignmentLabel: public SyntaxAbstract
 {
 public:
     AssignmentLabel();
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -88,7 +88,7 @@ class AssignmentValue: public SyntaxAbstract
 {
 public:
     AssignmentValue();
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
@@ -96,7 +96,7 @@ class SyntaxTableAssign : public SyntaxAbstract
 {
 public:
     SyntaxTableAssign(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
 };
 
