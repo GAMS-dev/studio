@@ -65,8 +65,8 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
             if (mOptionItem.at(index).recurrent)
                return QVariant::fromValue(Scheme::icon(":/img/square-red-yellow"));
-            else if (mOptionItem.at(index).value.simplified().isEmpty())
-               return QVariant::fromValue(Scheme::icon(":/img/square-yellow"));
+            else if (mOption->getValueErrorType(mOptionItem.at(index).key, mOptionItem.at(index).value)==OptionErrorType::Missing_Value)
+                    return QVariant::fromValue(Scheme::icon(":/img/square-yellow"));
             else
                return QVariant::fromValue(Scheme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
@@ -153,6 +153,9 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole: {
         QString tooltipText = "";
         switch(mOptionItem.at(row).error) {
+        case OptionErrorType::Missing_Value:
+            tooltipText.append( QString("Missing value for Parameter key '%1'").arg(mOptionItem.at(row).key) );
+            break;
         case OptionErrorType::Invalid_Key:
             tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(row).key));
             break;
