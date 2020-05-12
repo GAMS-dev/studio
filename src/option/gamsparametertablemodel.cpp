@@ -202,6 +202,8 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             if (col==GamsParameterTableModel::COLUMN_OPTION_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
+                }  else if (mOptionItem.at(row).value.simplified().isEmpty()) {
+                        return QVariant::fromValue(Scheme::color(Scheme::Active_Gray));
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
