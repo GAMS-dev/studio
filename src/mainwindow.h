@@ -325,6 +325,8 @@ protected:
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
+    void moveEvent(QMoveEvent *event);
+    void resizeEvent(QResizeEvent *event);
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();

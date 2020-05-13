@@ -358,6 +358,26 @@ bool MainWindow::event(QEvent *event)
     return QMainWindow::event(event);
 }
 
+void MainWindow::moveEvent(QMoveEvent *event)
+{
+    Q_UNUSED(event)
+    QSize scrDiff = screen()->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen()->size() != size()) {
+        Settings::settings()->setPoint(skWinPos, pos());
+    }
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event)
+    // JM: In the closing procedure the WindowFlag "Maximized" is deleted without resizing the window. That leads to a
+    // resizeEvent with the wrong (maximized) size. Thus the metrics need to be taken into account here to skip that.
+    QSize scrDiff = screen()->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen()->size() != size()) {
+        Settings::settings()->setSize(skWinSize, size());
+    }
+}
+
 int MainWindow::logTabCount()
 {
     return ui->logTabs->count();
@@ -2008,7 +2028,8 @@ void MainWindow::updateAndSaveSettings()
 {
     Settings *settings = Settings::settings();
 
-    if (!isMaximized() && !isFullScreen()) {
+    QSize scrDiff = screen()->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen()->size() != size()) {
         settings->setSize(skWinSize, size());
         settings->setPoint(skWinPos, pos());
     }
@@ -2063,18 +2084,18 @@ void MainWindow::restoreFromSettings()
     Settings *settings = Settings::settings();
 
     // main window
+    resize(settings->toSize(skWinSize));
+    move(settings->toPoint(skWinPos));
+    ensureInScreen();
+
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
         showFullScreen();
     } else if (mMaximizedBeforeFullScreen) {
         showMaximized();
-    } else {
-        resize(settings->toSize(skWinSize));
-        move(settings->toPoint(skWinPos));
     }
-    restoreState(settings->toByteArray(skWinState));
-    ensureInScreen();
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
+    restoreState(settings->toByteArray(skWinState));
 
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
