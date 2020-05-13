@@ -77,7 +77,7 @@ QVariant ConfigParamTableModel::headerData(int index, Qt::Orientation orientatio
     case Qt::ToolTipRole:
         QString tooltipText = "";
         if (mOptionItem.at(index)->value.isEmpty()) {
-            tooltipText.append(QString("Value parameter name '%1' is empty").arg(mOptionItem.at(index)->key));
+            tooltipText.append(QString("Missing value for parameter key '%1'").arg(mOptionItem.at(index)->key));
         } else {
             switch(mOptionItem.at(index)->error) {
             case OptionErrorType::Invalid_Key:
@@ -159,7 +159,7 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole: {
         QString tooltipText = "";
         if (mOptionItem.at(row)->value.isEmpty()) {
-            tooltipText.append( QString("Value parameter name '%1' is empty").arg(mOptionItem.at(row)->key) );
+            tooltipText.append( QString("Missing value for parameter key '%1'").arg(mOptionItem.at(row)->key) );
         } else {
             switch(mOptionItem.at(row)->error) {
             case OptionErrorType::Invalid_Key:
@@ -336,6 +336,8 @@ bool ConfigParamTableModel::insertRows(int row, int count, const QModelIndex &pa
          mOptionItem.append(new ParamConfigItem());
      else
          mOptionItem.insert(row, new ParamConfigItem());
+
+     updateCheckState();
 
     endInsertRows();
     return true;

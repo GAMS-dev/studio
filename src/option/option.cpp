@@ -145,6 +145,9 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
     if (isDeprecated(key))
         return OptionErrorType::Deprecated_Option;
 
+    if (value.simplified().isEmpty())
+        return OptionErrorType::Missing_Value;
+
     switch(getOptionType(key)) {
      case optTypeEnumInt : {
          bool isCorrectDataType = false;

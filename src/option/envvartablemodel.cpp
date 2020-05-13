@@ -128,7 +128,9 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ToolTipRole: {
         QString tooltipText = "";
-        if (!mEnvVarItem.at(row)->minVersion.simplified().isEmpty() &&
+        if (mEnvVarItem.at(row)->value.isEmpty()) {
+            tooltipText.append( QString("Missing value for '%1'").arg(mEnvVarItem.at(row)->key) );
+        } else if (!mEnvVarItem.at(row)->minVersion.simplified().isEmpty() &&
             !isConformatVersion(mEnvVarItem.at(row)->minVersion)) {
             tooltipText = QString("Invalid minVersion '%1', must be conformed to [x[.y[.z]]] format").arg(mEnvVarItem.at(row)->minVersion);
         } else if (!mEnvVarItem.at(row)->maxVersion.simplified().isEmpty() &&
@@ -224,8 +226,10 @@ bool EnvVarTableModel::insertRows(int row, int count, const QModelIndex &parent)
      else
          mEnvVarItem.insert(row, new EnvVarConfigItem());
 
-    endInsertRows();
-    return true;
+     updateCheckState();
+
+     endInsertRows();
+     return true;
 }
 
 bool EnvVarTableModel::removeRows(int row, int count, const QModelIndex &parent)

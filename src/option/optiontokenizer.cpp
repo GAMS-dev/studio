@@ -82,6 +82,9 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
     mInvalidValueFormat.setFontItalic(true);
     mInvalidValueFormat.setForeground(Scheme::color(Scheme::Normal_Red));
 
+    mMissingValueFormat.setFontItalic(true);
+    mMissingValueFormat.setForeground(Scheme::color(Scheme::Active_Gray));
+
     mDuplicateOptionFormat.setFontItalic(true);
     mDuplicateOptionFormat.setForeground(Scheme::color(Scheme::Normal_Yellow));
 
@@ -275,7 +278,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                     break;
                 case OptionErrorType::No_Error:
                 default:
-                    optionErrorList.append(OptionError(fr, key + " (Deprecated option, will be ignored)"));
+                    optionErrorList.append(OptionError(fr, QString("%1 (Deprecated option, will be ignored)").arg(key), true, optionId ));
                     break;
                 }
             } else { // neither invalid nor deprecated key
@@ -290,6 +293,14 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
 
                 QString value = item.value;
 
+                if (value.simplified().isEmpty()) {
+                    QTextLayout::FormatRange fr;
+                    fr.start = item.keyPosition;
+                    fr.length = item.key.length();
+                    fr.format = mMissingValueFormat;
+                    optionErrorList.append(OptionError(fr, QString("\"\" (missing defined value for option \"%1\")").arg(item.key), false, optionId ));
+                    continue;
+                }
                 if (item.value.startsWith("\"") && item.value.endsWith("\"")) { // peel off double quote
                     value = item.value.mid(1, item.value.length()-2);
                 }
