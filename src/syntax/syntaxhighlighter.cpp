@@ -163,7 +163,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (!tailBlock.isValid()) {
                 // no valid characters found, mark error
                 index = text.length();
-                code = getCode(code, SyntaxShift::reset, kindCode.first, kindCode.first);
+                code = getCode(code, SyntaxShift::reset, tailBlock);
                 continue;
             }
             nextBlock = tailBlock;
@@ -180,7 +180,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         scanParentheses(text, tailBlock.start, tailBlock.length(), syntax->kind(),
                                         tailBlock.syntax->kind(), tailBlock.next, parPosList);
                     }
-                    code = getCode(code, tailBlock.shift, getKindIdx(tailBlock.syntax->kind()), getKindIdx(tailBlock.next));
+                    code = getCode(code, tailBlock.shift, tailBlock, 0);
                 }
             }
         }
@@ -198,7 +198,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         nextBlock.syntax->kind(), nextBlock.next, parPosList);
         index = nextBlock.end;
 
-        code = getCode(code, nextBlock.shift, getKindIdx(nextBlock.syntax->kind()), getKindIdx(nextBlock.next));
+        code = getCode(code, nextBlock.shift, nextBlock, 0);
 
         if (posForSyntaxKind <= index) {
             mLastSyntaxKind = nextBlock.syntax->intSyntaxType();
@@ -353,7 +353,8 @@ int SyntaxHighlighter::addCode(KindIndex si, CodeIndex ci)
     return mCodes.length()-1;
 }
 
-BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest)
+//BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest)
+BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, SyntaxBlock block, int nest)
 {
     if (!code.isValid()) code = 0; // default to syntax gams-standard
     if (nest) {
@@ -366,10 +367,10 @@ BlockCode SyntaxHighlighter::getCode(BlockCode code, SyntaxShift shift, KindInde
         code.setKind(mCodes.at(code.kind()).second);
         return code;
     } else if (shift == SyntaxShift::in) {
-        code.setKind(addCode(kindNext, code.kind()));
+        code.setKind(addCode(getKindIdx(block.next), code.kind()));
         return code;
     } else if (shift == SyntaxShift::shift) {
-        code.setKind(addCode(kind, mCodes.at(code.kind()).second));
+        code.setKind(addCode(getKindIdx(block.syntax->kind()), mCodes.at(code.kind()).second));
         return code;
     }
 

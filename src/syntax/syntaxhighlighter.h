@@ -69,7 +69,7 @@ private:
     void initKind(SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
 
     int addCode(KindIndex si, CodeIndex ci);
-    BlockCode getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest = 0);
+    BlockCode getCode(BlockCode code, SyntaxShift shift, SyntaxBlock block, int nest = 0);
     int purgeCode(int code);
     QString codeDeb(int code);
 
