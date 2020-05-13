@@ -361,8 +361,10 @@ bool MainWindow::event(QEvent *event)
 void MainWindow::moveEvent(QMoveEvent *event)
 {
     Q_UNUSED(event)
-    QSize scrDiff = screen()->availableSize() - frameSize();
-    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen()->size() != size()) {
+    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
+    QScreen *screen = window()->windowHandle()->screen();
+    QSize scrDiff = screen->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setPoint(skWinPos, pos());
     }
 }
@@ -372,8 +374,11 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     Q_UNUSED(event)
     // JM: In the closing procedure the WindowFlag "Maximized" is deleted without resizing the window. That leads to a
     // resizeEvent with the wrong (maximized) size. Thus the metrics need to be taken into account here to skip that.
-    QSize scrDiff = screen()->availableSize() - frameSize();
-    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen()->size() != size()) {
+
+    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
+    QScreen *screen = window()->windowHandle()->screen();
+    QSize scrDiff = screen->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setSize(skWinSize, size());
     }
 }
@@ -2028,8 +2033,10 @@ void MainWindow::updateAndSaveSettings()
 {
     Settings *settings = Settings::settings();
 
-    QSize scrDiff = screen()->availableSize() - frameSize();
-    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen()->size() != size()) {
+    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
+    QScreen *screen = window()->windowHandle()->screen();
+    QSize scrDiff = screen->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         settings->setSize(skWinSize, size());
         settings->setPoint(skWinPos, pos());
     }
