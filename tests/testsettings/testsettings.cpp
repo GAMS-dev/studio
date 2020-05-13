@@ -20,6 +20,7 @@
 #include "testsettings.h"
 #include "settings.h"
 #include "logger.h"
+#include "editors/abstractsystemlogger.h"
 
 using namespace gams::studio;
 
