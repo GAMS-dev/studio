@@ -44,24 +44,31 @@ void TestBlockCode::testFile()
     QCOMPARE(bc.depth(), 2);
     QCOMPARE(bc.parser(), 5);
 
-    QCOMPARE(bc.setKind(65535), true);
-    QCOMPARE(bc.kind(), 65535);
-    QCOMPARE(bc.setKind(65536), false);
-    QCOMPARE(bc.kind(), 65535);
+    QCOMPARE(bc.setKind(16383), true);
+    QCOMPARE(bc.kind(), 16383);
+    QCOMPARE(bc.setKind(16384), false);
+    QCOMPARE(bc.kind(), 16383);
     QCOMPARE(bc.setKind(-1), false);
     QCOMPARE(bc.kind(), 0);
 
-    QCOMPARE(bc.setDepth(511), true);
-    QCOMPARE(bc.depth(), 511);
-    QCOMPARE(bc.setDepth(512), false);
-    QCOMPARE(bc.depth(), 511);
+    QCOMPARE(bc.setFlavor(31), true);
+    QCOMPARE(bc.flavor(), 31);
+    QCOMPARE(bc.setFlavor(32), false);
+    QCOMPARE(bc.flavor(), 31);
+    QCOMPARE(bc.setFlavor(-1), false);
+    QCOMPARE(bc.flavor(), 0);
+
+    QCOMPARE(bc.setDepth(255), true);
+    QCOMPARE(bc.depth(), 255);
+    QCOMPARE(bc.setDepth(256), false);
+    QCOMPARE(bc.depth(), 255);
     QCOMPARE(bc.setDepth(-1), false);
     QCOMPARE(bc.depth(), 0);
 
-    QCOMPARE(bc.setParser(63), true);
-    QCOMPARE(bc.parser(), 63);
-    QCOMPARE(bc.setParser(64), false);
-    QCOMPARE(bc.parser(), 63);
+    QCOMPARE(bc.setParser(7), true);
+    QCOMPARE(bc.parser(), 7);
+    QCOMPARE(bc.setParser(8), false);
+    QCOMPARE(bc.parser(), 7);
     QCOMPARE(bc.setParser(-1), false);
     QCOMPARE(bc.parser(), 0);
 }
