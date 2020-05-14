@@ -218,7 +218,7 @@ pipeline {
         stage('Notarize') {
             agent { label 'macos' }
             when {
-                expression { return env.BRANCH_NAME == "master" || env.BRANCH_NAME ==~ /.*-rc/ }
+                expression { return env.BRANCH_NAME == "master" || env.BRANCH_NAME ==~ /.*-rc/ || env.BRANCH_NAME ==~ /.*-release/ }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: '4568bda5-894f-4fa1-b9c5-a8d42f6e61ac', passwordVariable: 'APPLE_ID_PASS', usernameVariable: 'APPLE_ID_USER')]) {
