@@ -8,7 +8,7 @@ Version 1.1.1
 - fixed numpad not working when running Studio from an AppImage (GitHub issue #191)
 - fixed `Shift+Arrow Key` not working when running Studio from an AppImage (GitHub issue #191)
 
-Version 1.1
+Version 1.1.0
 ==================
 - **added default GAMS Configuration Editor**
     - created menu entry to generate default GAMS Configuration file: *GAMS > Default GAMS Configuration*
@@ -29,7 +29,7 @@ Version 1.1
 - fixed creation of empty groups after certain drag and drop events
 - fixed inconsistent behavior of text cursor movement shortcuts in Process Log
 
-Version 1.0
+Version 1.0.0
 ==================
 ## General
 - **introduced new settings format.**
