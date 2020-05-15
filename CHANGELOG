@@ -1,6 +1,6 @@
 Version 1.1.1
 ==================
-- fixed behavior of `End` key in process log
+- fixed behavior of `Ctrl - End` combination in process log and lst file view
 - fixed GAMS parameters not updating when changing group (GitHub issue #194)
 - added parameter editor warnings for missing values
 - fixed update of table in GAMS configuration editor when inserting row
