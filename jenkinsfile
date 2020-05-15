@@ -205,7 +205,7 @@ pipeline {
                         '''
                         script {
                             def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master' || !(env.BRANCH_NAME ==~ /.*-release/)) {
+                            if (env.BRANCH_NAME != 'master' && !(env.BRANCH_NAME ==~ /.*-release/)) {
                                 sh "mv studio.dmg ${env.BRANCH_NAME}-studio-${versionData}-x86_64.dmg"
                             } else {
                                 sh "mv studio.dmg GAMS_Studio-${versionData}-x86_64.dmg"
@@ -279,7 +279,7 @@ pipeline {
                     steps {
                         script {
                             def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master' || !(env.BRANCH_NAME ==~ /.*-release/)) {
+                            if (env.BRANCH_NAME != 'master' && !(env.BRANCH_NAME ==~ /.*-release/)) {
                                 sh "mv GAMS_Studio-*.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
                                 archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
                             } else {
@@ -293,7 +293,7 @@ pipeline {
                     steps {
                         script {
                             def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master' || !(env.BRANCH_NAME ==~ /.*-release/)) {
+                            if (env.BRANCH_NAME != 'master' && !(env.BRANCH_NAME ==~ /.*-release/)) {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             } else {
                                 zip zipFile: "GAMS_Studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
