@@ -33,6 +33,8 @@
 #include "exception.h"
 #include "file/dynamicfile.h"
 #include "colors/palettemanager.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "scheme.h"
 
 namespace gams {
@@ -690,7 +692,11 @@ void Settings::exportSettings(const QString &path)
 {
     if (!mSettings.value(scUser)) return;
     QFile originFile(mSettings.value(scUser)->fileName());
-    originFile.copy(path);
+    if (QFile::exists(path))
+        QFile::remove(path);
+    if (!originFile.copy(path)) {
+        SysLogLocator::systemLog()->append("Error exporting settings to " + path, LogMsgType::Error);
+    }
 }
 
 }

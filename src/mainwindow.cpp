@@ -1239,9 +1239,16 @@ void MainWindow::activeTabChanged(int index)
     ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
+    if (mStartedUp)
+        mProjectRepo.editorActivated(editWidget, focusWidget() != ui->projectView);
     mRecent.setEditor(editWidget, this);
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
+        ce->updateExtraSelections();
+    else if (TextView* tv = ViewHelper::toTextView(editWidget))
+        tv->updateExtraSelections();
 
     if (node) {
+        changeToLog(node, false, false);
         mStatusWidgets->setFileName(QDir::toNativeSeparators(node->location()));
         mStatusWidgets->setEncoding(node->file()->codecMib());
 
@@ -2963,7 +2970,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             if (tabWidget == ui->mainTabs) {
-                on_mainTabs_currentChanged(tabWidget->indexOf(edit));
+                activeTabChanged(tabWidget->indexOf(edit));
             }
         }
     } else {
@@ -3192,29 +3199,6 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
             codeEdit->jumpTo(line, column);
         }
     }
-}
-
-void MainWindow::on_mainTabs_currentChanged(int index)
-{
-    QWidget* edit = ui->mainTabs->widget(index);
-    if (!edit) return;
-
-    if (mStartedUp) {
-        mProjectRepo.editorActivated(edit, focusWidget() != ui->projectView);
-    }
-    ProjectFileNode* fc = mProjectRepo.findFileNode(edit);
-    bool groupChanged = (fc && mRecent.group() != fc->parentNode());
-    mRecent.setEditor(edit, this);
-    if (groupChanged) {
-        updateRunState();
-    }
-    changeToLog(fc, false, false);
-
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(edit))
-        ce->updateExtraSelections();
-    else if (TextView* tv = ViewHelper::toTextView(edit))
-        tv->updateExtraSelections();
-
 }
 
 void MainWindow::on_actionSettings_triggered()

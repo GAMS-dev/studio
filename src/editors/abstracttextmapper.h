@@ -165,6 +165,8 @@ public:
     virtual void copyToClipboard();
 
     virtual void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+    virtual void setPosToAbsStart(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+    virtual void setPosToAbsEnd(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
     virtual void selectAll();
     virtual QPoint position(bool local = false) const;
     virtual QPoint anchor(bool local = false) const;

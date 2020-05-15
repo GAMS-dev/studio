@@ -103,9 +103,6 @@ public:
     /// \return The associated <c>ProjectLogNode</c> or a <c>nullptr</c>.
     ProjectLogNode* asLogNode(ProjectAbstractNode* node);
 
-    bool isActive(const ProjectAbstractNode *node) const;
-    void setActive(ProjectAbstractNode* node);
-
     ProjectTreeModel* treeModel() const;
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;

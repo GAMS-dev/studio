@@ -109,6 +109,7 @@ private:
 
     QTextCharFormat mInvalidKeyFormat;
     QTextCharFormat mInvalidValueFormat;
+    QTextCharFormat mMissingValueFormat;
     QTextCharFormat mDeprecateOptionFormat;
     QTextCharFormat mDeactivatedOptionFormat;
     QTextCharFormat mDuplicateOptionFormat;

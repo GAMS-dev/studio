@@ -172,16 +172,6 @@ const ProjectLogNode *ProjectAbstractNode::toLog() const
     return nullptr;
 }
 
-bool ProjectAbstractNode::isActive() const
-{
-    return projectRepo()->isActive(this);
-}
-
-void ProjectAbstractNode::setActive()
-{
-    projectRepo()->setActive(this);
-}
-
 bool ProjectAbstractNode::debugMode() const
 {
     return projectRepo() ? projectRepo()->debugMode() : false;

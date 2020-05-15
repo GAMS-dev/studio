@@ -400,19 +400,15 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
                                                                         : QTextCursor::MoveAnchor;
     if (event == Hotkey::MoveToStartOfDoc) {
         mMapper->setVisibleTopLine(0);
-        mMapper->setPosRelative(0, 0, mode);
+        mMapper->setPosToAbsStart(mode);
         updatePosAndAnchor();
     } else if (event == Hotkey::MoveToStartOfLine && cursorIsValid) {
         mMapper->setPosRelative(p.y(), 0, mode);
         updatePosAndAnchor();
     } else if (event == Hotkey::MoveToEndOfDoc) {
         jumpToEnd();
-        if (cursorIsValid) {
-            mMapper->setPosRelative(mMapper->visibleLineCount(), -1, mode);
-            updatePosAndAnchor();
-        }
-        emit selectionChanged();
-        return;
+        mMapper->setPosToAbsEnd(mode);
+        updatePosAndAnchor();
     } else if (event == Hotkey::MoveToEndOfLine && cursorIsValid) {
         mMapper->setPosRelative(p.y()+1, -1, mode);
         updatePosAndAnchor();

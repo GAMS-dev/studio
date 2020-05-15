@@ -651,6 +651,21 @@ void AbstractTextMapper::setPosRelative(int localLineNr, int charNr, QTextCursor
     setPosAbsolute(chunk, lineInChunk, charNr, mode);
 }
 
+void AbstractTextMapper::setPosToAbsStart(QTextCursor::MoveMode mode)
+{
+    if (!chunkCount()) return;
+    Chunk *chunk = getChunk(0, false);
+    setPosAbsolute(chunk, 0, 0, mode);
+}
+
+void AbstractTextMapper::setPosToAbsEnd(QTextCursor::MoveMode mode)
+{
+    if (!chunkCount()) return;
+    Chunk *chunk = getChunk(chunkCount()-1, false);
+    int lastLine = chunk->lineCount()-1;
+    setPosAbsolute(chunk, lastLine, chunk->lineBytes.at(lastLine) - chunk->lineBytes.at(lastLine-1), mode);
+}
+
 void AbstractTextMapper::setPosAbsolute(AbstractTextMapper::Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode)
 {
     mCursorColumn = charNr;

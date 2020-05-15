@@ -199,28 +199,6 @@ ProjectLogNode* ProjectRepo::asLogNode(ProjectAbstractNode* node)
     return nullptr;
 }
 
-bool ProjectRepo::isActive(const ProjectAbstractNode *node) const
-{
-    ProjectAbstractNode *par = mActiveStack.isEmpty() ? nullptr : mActiveStack.at(0);
-    while (par) {
-        if (par == node) return true;
-        par = par->parentNode();
-    }
-    return false;
-}
-
-void ProjectRepo::setActive(ProjectAbstractNode *node)
-{
-    int i = mActiveStack.indexOf(node);
-    if (i < 0) {
-        mActiveStack.insert(0, node);
-        while (mActiveStack.size() > 30)
-            mActiveStack.remove(30);
-    } else if (i > 0) {
-        mActiveStack.move(i, 0);
-    }
-}
-
 ProjectTreeModel*ProjectRepo::treeModel() const
 {
     return mTreeModel;
