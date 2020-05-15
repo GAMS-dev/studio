@@ -1,3 +1,13 @@
+Version 1.1.1
+==================
+- fixed behavior of `End` key in process log
+- fixed GAMS parameters not updating when changing group (GitHub issue #194)
+- added parameter editor warnings for missing values
+- fixed update of table in GAMS configuration editor when inserting row
+- fixed settings export not working when file already exists
+- fixed numpad not working when running Studio from an AppImage (GitHub issue #191)
+- fixed `Shift+Arrow Key` not working when running Studio from an AppImage (GitHub issue #191)
+
 Version 1.1
 ==================
 - **added default GAMS Configuration Editor**
