@@ -52,6 +52,13 @@ public:
         return *this;
     }
 
+    Logger& operator<<(const QSize& value) {
+        if (!mStream)
+            mStream = new QTextStream(&mBuffer);
+        (*mStream) << "Point(" << value.width() << "," << value.height() << ")";
+        return *this;
+    }
+
     template <typename T> Logger& operator<<(const T& value) {
         if (!mStream)
             mStream = new QTextStream(&mBuffer);
