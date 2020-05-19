@@ -109,17 +109,24 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
         DEB() << "No valid fileId to create a TextMark";
         return nullptr;
     }
+    TRACETIME()
     if (!mMarks.contains(fileId)) {
         mMarks.insert(fileId, new LineMarks());
     }
+    PEEKTIME() << "created LineMarks for fileId " << fileId;
     TextMark* mark = new TextMark(this, fileId, type, groupId);
+    PEEKTIME() << "created TextMark";
     mark->setPosition(line, column, size);
+    PEEKTIME() << "positioned TextMark";
     LineMarks *marks = mMarks.value(fileId);
+    PEEKTIME() << "referenced LineMarks for fileId " << fileId;
     marks->insert(mark->line(), mark);
+    PEEKTIME() << "inserted TextMark";
     if (mark->type() == TextMark::bookmark && !mBookmarkedFiles.contains(fileId))
         mBookmarkedFiles << fileId;
     FileMeta *fm = mFileRepo->fileMeta(fileId);
     if (fm) {
+        PEEKTIME() << "SIGNAL marksChanged()";
         fm->marksChanged(QSet<int>() << line);
     }
     return mark;
