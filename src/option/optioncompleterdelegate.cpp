@@ -93,9 +93,9 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
 void OptionCompleterDelegate::commitAndCloseEditor()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( sender() ) ;
-
     emit commitData(lineEdit);
     emit closeEditor(lineEdit);
+    updateCurrentEditedIndex(QModelIndex());
 }
 
 void OptionCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
