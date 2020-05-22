@@ -72,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(this),
+      mCursorHistory(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
@@ -1346,6 +1347,8 @@ void MainWindow::activeTabChanged(int index)
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
+
+    mCursorHistory.setActiveTab(editWidget);
 }
 
 void MainWindow::fileChanged(const FileId fileId)

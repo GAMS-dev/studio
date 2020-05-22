@@ -36,6 +36,7 @@
 #include "logtabcontextmenu.h"
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
+#include "editors/navigationhistory.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -370,6 +371,7 @@ private:
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
     QStringList mInitialFiles;
+    NavigationHistory mCursorHistory;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
