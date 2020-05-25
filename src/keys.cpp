@@ -113,11 +113,11 @@ void Keys::reset()
     setHotkey(Hotkey::MoveViewLineDown, seq);
 
     seq = new KeySeqList("MoveViewPageUp","Move the view one page up");
-    *seq << QKeySequence(QKeySequence::MoveToPreviousPage);
+    *seq << QKeySequence("Ctrl+PgUp");
     setHotkey(Hotkey::MoveViewPageUp, seq);
 
     seq = new KeySeqList("MoveViewPageDown","Move the view one page down");
-    *seq << QKeySequence(QKeySequence::MoveToNextPage);
+    *seq << QKeySequence("Ctrl+PgDown");
     setHotkey(Hotkey::MoveViewPageDown, seq);
 
     seq = new KeySeqList("MoveToEndOfDoc","Move to the end of document");
