@@ -103,14 +103,11 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
 
 void FileMetaRepo::toggleBookmark(FileId fileId, int lineNr, int posInLine)
 {
-    TRACETIME()
     if (mTextMarkRepo->marks(fileId, lineNr, -1, TextMark::bookmark, 1).isEmpty()) {
         // add bookmark
-        PEEKTIME() << "after existance check, about to create mark";
         mTextMarkRepo->createMark(fileId, TextMark::bookmark, lineNr, posInLine);
     } else {
         // remove bookmark
-        PEEKTIME() << "after existance check, about to remove mark";
         mTextMarkRepo->removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark, lineNr);
     }
 }

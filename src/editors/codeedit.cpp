@@ -77,8 +77,9 @@ int CodeEdit::lineNumberAreaWidth()
 
     int space = 0;
 
-    if (showLineNr())
-        space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+    if (showLineNr()) {
+        space = fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+    }
 
     if (marks() && marks()->hasVisibleMarks()) {
         space += iconSize();
@@ -86,6 +87,8 @@ int CodeEdit::lineNumberAreaWidth()
     } else {
         mIconCols = 0;
     }
+
+    if (space) space += 3; // add margin if visible
 
     return space;
 }
@@ -578,7 +581,7 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
     int addX = mousePos.x()-cursorRect(cursor).right();
     if (addX > 0) {
         QFontMetrics metric(font());
-        col += addX / metric.width(' ');
+        col += addX / metric.horizontalAdvance(' ');
     }
     return col;
 }
@@ -1043,7 +1046,7 @@ CodeEdit::CharType CodeEdit::charType(QChar c)
 void CodeEdit::updateTabSize()
 {
     QFontMetrics metric(font());
-    setTabStopDistance(mSettings->toInt(skEdTabSize) * metric.width(' '));
+    setTabStopDistance(mSettings->toInt(skEdTabSize) * metric.horizontalAdvance(' '));
 }
 
 int CodeEdit::findAlphaNum(const QString &text, int start, bool back)
@@ -1401,7 +1404,11 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     bool hasMarks = marks() && marks()->hasVisibleMarks();
-    if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
+    if (hasMarks && mIconCols == 0) {
+        QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
+        event->accept();
+        return;
+    }
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     QRectF fRect = blockBoundingGeometry(block).translated(contentOffset());
