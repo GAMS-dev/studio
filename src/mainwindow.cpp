@@ -346,7 +346,9 @@ void MainWindow::timerEvent(QTimerEvent *event)
 
 bool MainWindow::event(QEvent *event)
 {
-    if (event->type() == QEvent::WindowActivate) {
+    if (event->type() == QEvent::WindowStateChange) {
+        ui->actionFull_Screen->setChecked(windowState().testFlag(Qt::WindowFullScreen));
+    } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
