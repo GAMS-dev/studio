@@ -130,10 +130,16 @@ void Keys::reset()
 
     seq = new KeySeqList("MoveToEndOfLine","Move to the end of line");
     *seq << QKeySequence(QKeySequence::MoveToEndOfLine) << QKeySequence(QKeySequence::SelectEndOfLine);
+#ifdef __APPLE__
+    *seq << QKeySequence("Ctrl+Right");
+#endif
     setHotkey(Hotkey::MoveToEndOfLine, seq);
 
     seq = new KeySeqList("MoveToStartOfLine","Move to the start of line");
     *seq << QKeySequence(QKeySequence::MoveToStartOfLine) << QKeySequence(QKeySequence::SelectStartOfLine);
+#ifdef __APPLE__
+    *seq << QKeySequence("Ctrl+Left");
+#endif
     setHotkey(Hotkey::MoveToStartOfLine, seq);
 
     seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
