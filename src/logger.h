@@ -125,7 +125,7 @@ public:
     ~TimeTracer() {
         decDepth();
         if (!mFunctionName.isEmpty())
-            *this << "OUT " << timeString() << " " << mFunctionName;
+            *this << "OUT " << timeString() << " ms " << mFunctionName;
     }
     QString timeString() {
         qint64 elapsed = QDateTime::currentMSecsSinceEpoch() - mSec;
@@ -140,7 +140,7 @@ private:
 } // namespace gams
 
 #define TRACETIME() gams::studio::TimeTracer _GamsTimeTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
-#define PEEKTIME() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC) << Logger::indent() << _GamsTimeTracer_.timeString()
+#define PEEKTIME() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC) << Logger::indent() << _GamsTimeTracer_.timeString() << " ms "
 #define TRACE() gams::studio::Tracer _GamsTracer_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC);
 #define DEB() gams::studio::Logger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
 
