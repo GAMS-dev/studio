@@ -49,6 +49,7 @@ public slots:
     void changeHeader(int tabIndex);
     void updateSelectedLibraryItem();
     void clearSelections();
+    void storeSelectedTab();
 
 private slots:
     void on_pbDescription_clicked();
@@ -71,6 +72,7 @@ private:
     QString mIconUserLib = ":/%1/user";
 
     bool mHasGlbErrors = false;
+    int mLastTabIndex = 0;
 };
 
 } // namespace modeldialog
