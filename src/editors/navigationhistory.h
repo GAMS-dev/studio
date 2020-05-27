@@ -38,14 +38,17 @@ class NavigationHistory : public QObject
     Q_OBJECT
 public:
     NavigationHistory(QObject *parent = nullptr);
-    void setActiveTab(QWidget* newTab);
+    ~NavigationHistory();
 
     CursorHistoryItem goBack();
     CursorHistoryItem goForward();
-    bool itemValid(CursorHistoryItem item);
 
     void stopRecord();
-    void reenableRecord();
+    void startRecord();
+
+    bool itemValid(CursorHistoryItem item);
+    void setActiveTab(QWidget* newTab);
+    AbstractEdit *currentEditor() const;
 
 public slots:
     void receiveCursorPosChange();
@@ -58,7 +61,7 @@ private:
     int mStackPosition = -1;
     QWidget* mCurrentTab = nullptr;
     AbstractEdit* mCurrentEditor = nullptr;
-    bool mStopRecord = false;
+    bool mStopRecord = true;
 
     void insertCursorItem(QWidget* widget, int pos);
 

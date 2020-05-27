@@ -284,6 +284,7 @@ void MainWindow::initTabs()
     else
         showWelcomePage();
 
+    mNavigationHistory.startRecord();
 }
 
 void MainWindow::initToolBar()
@@ -4049,24 +4050,28 @@ void MainWindow::on_actionShowToolbar_triggered(bool checked)
 void MainWindow::on_actionGoBack_triggered()
 {
     CursorHistoryItem item = mNavigationHistory.goBack();
-    if (mNavigationHistory.itemValid(item)) {
-
-        mNavigationHistory.stopRecord();
-        ui->mainTabs->setCurrentWidget(item.tab);
-        mNavigationHistory.reenableRecord();
-        // TODO(RG): try get editor & move cursor
-    }
+    restoreCursorPosition(item);
 }
 
 void MainWindow::on_actionGoForward_triggered()
 {
     CursorHistoryItem item = mNavigationHistory.goForward();
+    restoreCursorPosition(item);
+}
+
+void MainWindow::restoreCursorPosition(CursorHistoryItem item) {
     if (mNavigationHistory.itemValid(item)) {
 
         mNavigationHistory.stopRecord();
         ui->mainTabs->setCurrentWidget(item.tab);
-        mNavigationHistory.reenableRecord();
-        // TODO(RG): try get editor & move cursor
+
+        // restore text cursor if editor available
+        if (AbstractEdit* ae = mNavigationHistory.currentEditor()) {
+            QTextCursor tc = ae->textCursor();
+            tc.setPosition(item.pos);
+            ae->setTextCursor(tc);
+        }
+        mNavigationHistory.startRecord();
     }
 }
 

@@ -368,6 +368,7 @@ private:
     QFont createEditorFont(const QString &fontFamily, int pointSize);
     bool isMiroAvailable();
     bool validMiroPrerequisites();
+    void restoreCursorPosition(CursorHistoryItem item);
 
 private:
     Ui::MainWindow *ui;
