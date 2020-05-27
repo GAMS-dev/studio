@@ -37,6 +37,7 @@ public:
     void setModel(QAbstractItemModel *model) override;
 
     void setDdEnabled(bool value);
+    int dim() const;
 
 public slots:
     void reset() override;
@@ -61,7 +62,6 @@ private:
     int toGlobalDim(int localDim, int orientation);
 
     TableViewModel* sym() const;
-    int dim() const;
     QPoint mMousePos = QPoint(-1,-1);
     QPoint mDragStartPosition;
 

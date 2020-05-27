@@ -335,7 +335,27 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     }
 
     QStringList sList;
+    if (mTableView) { // copy labels as well in table view mode
+        int colHeaderDim = ((NestedHeaderView*)tv->horizontalHeader())->dim();
+        int rowHeaderDim = ((NestedHeaderView*)tv->verticalHeader())->dim();
+        for (int i=0; i<colHeaderDim; i++) {
+            for (int j=0; j<rowHeaderDim; j++)
+                sList << separator;
+            for(int c=minCol; c<maxCol+1; c++) {
+                if (tv->isColumnHidden(tv->horizontalHeader()->logicalIndex(c)))
+                    continue;
+                sList << tv->model()->headerData(c, Qt::Horizontal).toStringList()[i] << separator;
+            }
+            sList.pop_back(); // remove last separator
+            sList << "\n";
+        }
+    }
+
     for(int r=minRow; r<maxRow+1; r++) {
+        if (mTableView) { // copy labels as well in table view mode
+            for (QString label:tv->model()->headerData(r, Qt::Vertical).toStringList())
+                sList << label << separator;
+        }
         for(int c=minCol; c<maxCol+1; c++) {
             if (tv->isColumnHidden(tv->horizontalHeader()->logicalIndex(c)))
                 continue;
