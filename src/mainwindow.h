@@ -316,6 +316,10 @@ private slots:
     void on_actionChangelog_triggered();
 
     void openGdxDiffFile();
+    void on_actionGoBack_triggered();
+
+    void on_actionGoForward_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);
@@ -371,7 +375,7 @@ private:
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
     QStringList mInitialFiles;
-    NavigationHistory mCursorHistory;
+    NavigationHistory mNavigationHistory;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

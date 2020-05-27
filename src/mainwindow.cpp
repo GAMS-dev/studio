@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(this),
-      mCursorHistory(this),
+      mNavigationHistory(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
@@ -1348,7 +1348,7 @@ void MainWindow::activeTabChanged(int index)
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
 
-    mCursorHistory.setActiveTab(editWidget);
+    mNavigationHistory.setActiveTab(editWidget);
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -4046,9 +4046,29 @@ void MainWindow::on_actionShowToolbar_triggered(bool checked)
     ui->toolBar->setVisible(checked);
 }
 
+void MainWindow::on_actionGoBack_triggered()
+{
+    CursorHistoryItem item = mNavigationHistory.goBack();
+    if (mNavigationHistory.itemValid(item)) {
 
+        mNavigationHistory.stopRecord();
+        ui->mainTabs->setCurrentWidget(item.tab);
+        mNavigationHistory.reenableRecord();
+        // TODO(RG): try get editor & move cursor
+    }
+}
 
+void MainWindow::on_actionGoForward_triggered()
+{
+    CursorHistoryItem item = mNavigationHistory.goForward();
+    if (mNavigationHistory.itemValid(item)) {
 
+        mNavigationHistory.stopRecord();
+        ui->mainTabs->setCurrentWidget(item.tab);
+        mNavigationHistory.reenableRecord();
+        // TODO(RG): try get editor & move cursor
+    }
+}
 
 }
 }

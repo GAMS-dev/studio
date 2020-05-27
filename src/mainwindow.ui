@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>24</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -502,6 +502,10 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
+   <addaction name="separator"/>
+   <addaction name="actionGoBack"/>
+   <addaction name="actionGoForward"/>
+   <addaction name="separator"/>
    <addaction name="actionSettings"/>
    <addaction name="actionGAMS_Library"/>
    <addaction name="actionToggle_Extended_Parameter_Editor"/>
@@ -1362,6 +1366,27 @@
    </property>
    <property name="toolTip">
     <string>Edit GAMS configuration file at the default location</string>
+   </property>
+  </action>
+  <action name="actionGoBack">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/backward</normaloff>:/solid/backward</iconset>
+   </property>
+   <property name="text">
+    <string>GoBack</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Left</string>
+   </property>
+  </action>
+  <action name="actionGoForward">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
+   </property>
+   <property name="text">
+    <string>GoForward</string>
    </property>
   </action>
  </widget>
