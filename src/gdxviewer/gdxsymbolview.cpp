@@ -45,30 +45,39 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->hide();
 
     //create context menu
-    QAction* cpComma = mContextMenu.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
+    QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
+    mContextMenuTV.addAction(cpComma);
     cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpComma->setShortcutVisibleInContextMenu(true);
     cpComma->setShortcutContext(Qt::WidgetShortcut);
     ui->tvListView->addAction(cpComma);
     ui->tvTableView->addAction(cpComma);
 
-    QAction* cpTab = mContextMenu.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
+    QAction* cpTab = mContextMenuLV.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
+    mContextMenuTV.addAction(cpTab);
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(cpTab);
     ui->tvTableView->addAction(cpTab);
 
-    mContextMenu.addSeparator();
+    mContextMenuTV.addAction("Copy without labels (comma-separated)", [this]() { copySelectionToClipboard(",", false); });
+    mContextMenuTV.addAction("Copy without labels (tab-separated)", [this]() { copySelectionToClipboard("\t", false); });
 
-    QAction* aResizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { autoResizeColumns(); }, QKeySequence("Ctrl+R"));
+    mContextMenuLV.addSeparator();
+    mContextMenuTV.addSeparator();
+
+    QAction* aResizeColumn = mContextMenuLV.addAction("Auto Resize Columns", [this]() { autoResizeColumns(); }, QKeySequence("Ctrl+R"));
+    mContextMenuTV.addAction(aResizeColumn);
     aResizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aResizeColumn->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(aResizeColumn);
     ui->tvTableView->addAction(aResizeColumn);
 
-    mContextMenu.addSeparator();
+    mContextMenuLV.addSeparator();
+    mContextMenuTV.addSeparator();
 
-    QAction* aSelectAll = mContextMenu.addAction("Select All\tCtrl+A", [this]() { selectAll(); });
+    QAction* aSelectAll = mContextMenuLV.addAction("Select All\tCtrl+A", [this]() { selectAll(); });
+    mContextMenuTV.addAction(aSelectAll);
     aSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aSelectAll->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(aSelectAll);
@@ -291,7 +300,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
     refreshView();
 }
 
-void GdxSymbolView::copySelectionToClipboard(QString separator)
+void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
 {
     if (!ui->tvListView->model())
         return;
@@ -300,8 +309,10 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     QTableView *tv;
     if (mTableView)
         tv = ui->tvTableView;
-    else
+    else {
         tv = ui->tvListView;
+        copyLabels = false; // copy labels only available in table view mode
+    }
 
     QModelIndexList selection = tv->selectionModel()->selection().indexes();
     if (selection.isEmpty())
@@ -335,7 +346,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     }
 
     QStringList sList;
-    if (mTableView) { // copy labels as well in table view mode
+    if (copyLabels) { // copy labels as well in table view mode
         int colHeaderDim = ((NestedHeaderView*)tv->horizontalHeader())->dim();
         int rowHeaderDim = ((NestedHeaderView*)tv->verticalHeader())->dim();
         for (int i=0; i<colHeaderDim; i++) {
@@ -352,7 +363,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator)
     }
 
     for(int r=minRow; r<maxRow+1; r++) {
-        if (mTableView) { // copy labels as well in table view mode
+        if (copyLabels) { // copy labels as well in table view mode
             for (QString label:tv->model()->headerData(r, Qt::Vertical).toStringList())
                 sList << label << separator;
         }
@@ -412,9 +423,9 @@ void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
     if (mTableView)
-        mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvTableView->verticalHeader()->width(), ui->tvTableView->horizontalHeader()->height()));
+        mContextMenuTV.exec(mapToGlobal(p)+ QPoint(ui->tvTableView->verticalHeader()->width(), ui->tvTableView->horizontalHeader()->height()));
     else
-        mContextMenu.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
+        mContextMenuLV.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
 }
 
 void GdxSymbolView::autoResizeColumns()
