@@ -25,6 +25,7 @@
 #include <QStyledItemDelegate>
 
 #include "common.h"
+#include "optioncompleterdelegate.h"
 #include "solveroptiontablemodel.h"
 
 namespace gams {
@@ -132,6 +133,7 @@ private:
 
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
+    OptionCompleterDelegate* mOptionCompleter;
 
     void refreshOptionTableModel(bool hideAllComments);
 
