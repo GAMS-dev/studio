@@ -60,8 +60,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->addAction(cpTab);
     ui->tvTableView->addAction(cpTab);
 
-    mContextMenuTV.addAction("Copy without labels (comma-separated)", [this]() { copySelectionToClipboard(",", false); });
-    mContextMenuTV.addAction("Copy without labels (tab-separated)", [this]() { copySelectionToClipboard("\t", false); });
+    mContextMenuTV.addAction("Copy Without Labels (comma-separated)", [this]() { copySelectionToClipboard(",", false); });
+    mContextMenuTV.addAction("Copy Without Labels (tab-separated)", [this]() { copySelectionToClipboard("\t", false); });
 
     mContextMenuLV.addSeparator();
     mContextMenuTV.addSeparator();
