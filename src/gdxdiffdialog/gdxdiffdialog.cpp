@@ -21,6 +21,8 @@
 #include <QMessageBox>
 #include "viewhelper.h"
 #include "gdxviewer/gdxviewer.h"
+#include "gdxdiffprocess.h"
+#include "mainwindow.h"
 
 namespace gams {
 namespace studio {

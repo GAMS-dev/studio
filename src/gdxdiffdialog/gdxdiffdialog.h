@@ -19,16 +19,23 @@
 #define GAMS_STUDIO_GDXDIFFDIALOG_H
 
 #include <QDialog>
-#include <mainwindow.h>
-#include "gdxdiffprocess.h"
+#include <memory>
 
 namespace gams {
 namespace studio {
+
+class FileMeta;
+namespace gdxviewer {
+    class GdxViewer;
+}
+
 namespace gdxdiffdialog {
 
 namespace Ui {
 class GdxDiffDialog;
 }
+
+class GdxDiffProcess;
 
 class GdxDiffDialog : public QDialog
 {
