@@ -28,7 +28,6 @@
 
 #include "addoptionheaderview.h"
 #include "definitionitemdelegate.h"
-#include "optioncompleterdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"
 #include "mainwindow.h"
@@ -60,6 +59,7 @@ SolverOptionWidget::~SolverOptionWidget()
 {
     delete ui;
     delete mOptionTokenizer;
+    delete mOptionCompleter;
     delete mOptionTableModel;
 }
 
@@ -78,8 +78,8 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     ui->solverOptionTableView->setModel( mOptionTableModel );
     updateTableColumnSpan();
 
-    OptionCompleterDelegate* optionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->solverOptionTableView);
-    ui->solverOptionTableView->setItemDelegate( optionCompleter );
+    mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->solverOptionTableView);
+    ui->solverOptionTableView->setItemDelegate( mOptionCompleter );
     ui->solverOptionTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
@@ -211,7 +211,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemModelChanged, optdefmodel, &SolverOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
         connect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem, Qt::UniqueConnection);
 
-        connect( optionCompleter, &OptionCompleterDelegate::closeEditor, this, &SolverOptionWidget::completeEditingOption, Qt::UniqueConnection );
+        connect( mOptionCompleter, &OptionCompleterDelegate::closeEditor, this, &SolverOptionWidget::completeEditingOption, Qt::UniqueConnection );
 
         connect(this, &SolverOptionWidget::compactViewChanged, optdefmodel, &SolverOptionDefinitionModel::on_compactViewChanged, Qt::UniqueConnection);
 
@@ -964,6 +964,8 @@ void SolverOptionWidget::insertOption()
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     for(QModelIndex index : indexSelection) {
+        if (mOptionCompleter->currentEditedIndex().isValid() && mOptionCompleter->currentEditedIndex().row()==index.row())
+            return;
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
