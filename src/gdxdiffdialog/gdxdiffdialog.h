@@ -19,6 +19,7 @@
 #define GAMS_STUDIO_GDXDIFFDIALOG_H
 
 #include <QDialog>
+#include <memory>
 
 namespace gams {
 namespace studio {
