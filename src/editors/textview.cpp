@@ -25,6 +25,8 @@
 #include "textviewedit.h"
 #include "keys.h"
 #include "settings.h"
+#include "editors/navigationhistorylocator.h"
+#include "editors/navigationhistory.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -509,6 +511,8 @@ void TextView::updateVScrollZone()
 
 void TextView::topLineMoved()
 {
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
+
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
@@ -544,6 +548,8 @@ void TextView::topLineMoved()
             mEdit->verticalScrollBar()->setSliderPosition(0);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
+
+        NavigationHistoryLocator::navigationHistory()->startRecord();
     }
 }
 
@@ -630,7 +636,9 @@ void TextView::updatePosAndAnchor()
         cursor.setPosition(p);
     }
     disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
     mEdit->setTextCursor(cursor);
+    NavigationHistoryLocator::navigationHistory()->startRecord();
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
 }
 

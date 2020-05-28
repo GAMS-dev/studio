@@ -376,7 +376,7 @@ private:
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
     QStringList mInitialFiles;
-    NavigationHistory mNavigationHistory;
+    NavigationHistory* mNavigationHistory;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

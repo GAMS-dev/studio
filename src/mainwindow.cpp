@@ -38,6 +38,7 @@
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
+#include "editors/navigationhistorylocator.h"
 #include "settings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
@@ -72,7 +73,6 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(this),
-      mNavigationHistory(this),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
@@ -217,7 +217,10 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
     on_actionShow_System_Log_triggered();
 
+    mNavigationHistory = new NavigationHistory();
+    NavigationHistoryLocator::provide(mNavigationHistory);
     initTabs();
+    mNavigationHistory->startRecord();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
@@ -263,6 +266,7 @@ MainWindow::~MainWindow()
     killTimer(mTimerID);
     delete mWp;
     delete ui;
+    delete mNavigationHistory;
     FileType::clear();
 }
 
@@ -283,8 +287,6 @@ void MainWindow::initTabs()
         mWp->hide();
     else
         showWelcomePage();
-
-    mNavigationHistory.startRecord();
 }
 
 void MainWindow::initToolBar()
@@ -1349,7 +1351,7 @@ void MainWindow::activeTabChanged(int index)
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
 
-    mNavigationHistory.setActiveTab(editWidget);
+    mNavigationHistory->setActiveTab(editWidget);
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -4049,29 +4051,29 @@ void MainWindow::on_actionShowToolbar_triggered(bool checked)
 
 void MainWindow::on_actionGoBack_triggered()
 {
-    CursorHistoryItem item = mNavigationHistory.goBack();
+    CursorHistoryItem item = mNavigationHistory->goBack();
     restoreCursorPosition(item);
 }
 
 void MainWindow::on_actionGoForward_triggered()
 {
-    CursorHistoryItem item = mNavigationHistory.goForward();
+    CursorHistoryItem item = mNavigationHistory->goForward();
     restoreCursorPosition(item);
 }
 
 void MainWindow::restoreCursorPosition(CursorHistoryItem item) {
-    if (mNavigationHistory.itemValid(item)) {
+    if (mNavigationHistory->itemValid(item)) {
 
-        mNavigationHistory.stopRecord();
+        mNavigationHistory->stopRecord();
         ui->mainTabs->setCurrentWidget(item.tab);
 
         // restore text cursor if editor available
-        if (AbstractEdit* ae = mNavigationHistory.currentEditor()) {
+        if (AbstractEdit* ae = mNavigationHistory->currentEditor()) {
             QTextCursor tc = ae->textCursor();
             tc.setPosition(item.pos);
             ae->setTextCursor(tc);
         }
-        mNavigationHistory.startRecord();
+        mNavigationHistory->startRecord();
     }
 }
 
