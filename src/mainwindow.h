@@ -162,8 +162,7 @@ public slots:
     void showErrorMessage(QString text);
     void parameterRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
-    bool eventFilter(QObject*, QEvent* event);
-    void dockTopLevelChanged(bool);
+    bool eventFilter(QObject*sender, QEvent* event);
 
 private slots:
     void openInitialFiles();
@@ -206,6 +205,8 @@ private slots:
     void showMainTabsMenu();
     void showLogTabsMenu();
     void showTabsMenu();
+    void pushDockSizes();
+    void popDockSizes();
 
     // File
     void on_actionNew_triggered();
@@ -380,6 +381,7 @@ private:
     option::ParameterEditor *mGamsParameterEditor = nullptr;
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
+    QTimer mWinStateTimer;
 
     GamsLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
