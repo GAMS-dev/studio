@@ -906,6 +906,19 @@ void MainWindow::focusProjectExplorer()
     ui->projectView->setFocus();
 }
 
+void MainWindow::focusCentralWidget()
+{
+    if (mRecent.editor()) {
+        raise();
+        activateWindow();
+        mRecent.editor()->setFocus();
+    } else if (mWp->isVisible()) {
+        raise();
+        activateWindow();
+        mWp->setFocus();
+    }
+}
+
 void MainWindow::focusProcessLogs()
 {
     setOutputViewVisibility(true);
@@ -2517,11 +2530,10 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
     // focus shortcuts
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {
-        setProjectViewVisibility(true);
-        ui->projectView->setFocus();
+        focusProjectExplorer();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_2)) {
-        if (mRecent.editor()) mRecent.editor()->setFocus();
+        focusCentralWidget();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_3)) {
         focusCmdLine();
