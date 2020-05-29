@@ -165,6 +165,7 @@ public slots:
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     bool eventFilter(QObject*, QEvent* event);
     void dockTopLevelChanged(bool);
+    void updateCursorHistoryAvailability();
 
 private slots:
     void openInitialFiles();

@@ -469,6 +469,9 @@
    <widget class="QWidget" name="dockHelpViewContents"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>0</horstretch>
@@ -1369,6 +1372,9 @@
    </property>
   </action>
   <action name="actionGoBack">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/backward</normaloff>:/solid/backward</iconset>
@@ -1379,14 +1385,26 @@
    <property name="shortcut">
     <string>Alt+Left</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionGoForward">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
    </property>
    <property name="text">
     <string>GoForward</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Right</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
  </widget>

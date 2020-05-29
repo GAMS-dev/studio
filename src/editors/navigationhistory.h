@@ -46,9 +46,15 @@ public:
     void stopRecord();
     void startRecord();
 
+    bool canGoForward();
+    bool canGoBackward();
+
     bool itemValid(CursorHistoryItem item);
     void setActiveTab(QWidget* newTab);
     AbstractEdit *currentEditor() const;
+
+signals:
+    void historyChanged();
 
 public slots:
     void receiveCursorPosChange();

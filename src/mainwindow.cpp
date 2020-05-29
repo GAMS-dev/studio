@@ -219,6 +219,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     mNavigationHistory = new NavigationHistory();
     NavigationHistoryLocator::provide(mNavigationHistory);
+    connect(mNavigationHistory, &NavigationHistory::historyChanged, this, &MainWindow::updateCursorHistoryAvailability);
+
     initTabs();
     mNavigationHistory->startRecord();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
@@ -4053,12 +4055,14 @@ void MainWindow::on_actionGoBack_triggered()
 {
     CursorHistoryItem item = mNavigationHistory->goBack();
     restoreCursorPosition(item);
+    updateCursorHistoryAvailability();
 }
 
 void MainWindow::on_actionGoForward_triggered()
 {
     CursorHistoryItem item = mNavigationHistory->goForward();
     restoreCursorPosition(item);
+    updateCursorHistoryAvailability();
 }
 
 void MainWindow::restoreCursorPosition(CursorHistoryItem item) {
@@ -4075,6 +4079,12 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item) {
         }
         mNavigationHistory->startRecord();
     }
+}
+
+void MainWindow::updateCursorHistoryAvailability()
+{
+    ui->actionGoBack->setEnabled(mNavigationHistory->canGoBackward());
+    ui->actionGoForward->setEnabled(mNavigationHistory->canGoForward());
 }
 
 }

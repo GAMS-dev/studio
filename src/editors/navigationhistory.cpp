@@ -65,6 +65,16 @@ CursorHistoryItem NavigationHistory::goForward()
     return chi;
 }
 
+bool NavigationHistory::canGoForward()
+{
+    return mStackPosition < mHistory.size()-1;
+}
+
+bool NavigationHistory::canGoBackward()
+{
+    return mStackPosition > 0;
+}
+
 void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 {
     if (mStopRecord) return;
@@ -86,13 +96,10 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
             // TODO(RG): add filter for same block position in next/prev line
             return; // do not save this item
         }
-    } else {
-        qDebug() << QTime::currentTime() << "first"; // rogo: delete
     }
 
     mHistory.push(chi);
     mStackPosition++;
-    qDebug() << QTime::currentTime() << "inserted" << mStackPosition << mCurrentTab << mCurrentEditor << pos; // rogo: delete
 }
 
 /// this function is used to get a cursor position change event and retrieve the new position
@@ -101,6 +108,7 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 void NavigationHistory::receiveCursorPosChange()
 {
     insertCursorItem(mCurrentTab, mCurrentEditor->textCursor().position());
+    emit historyChanged();
 }
 
 void NavigationHistory::setActiveTab(QWidget *newTab)
