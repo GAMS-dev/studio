@@ -1,3 +1,15 @@
+Version 1.1.2
+==================
+- improved performance of setting bookmarks
+- fixed fullscreen behavior on macOS
+- fixed crash after switching solver
+- fixed behavior of hotkeys to jump to beginning and end of line and page up/down
+- fixed crash in solver option editor when pressing Ctrl+Return repeatedly
+- fixed goto dialog not rejecting empty or too small values
+- fixed shortcuts to focus Project Explorer and Editor not working
+- fixed sizes of dock-widgets were not stored in FullScreen or Maximized window (GitHub issue #195)
+- fixed crash when reopening a tab of a file that was removed from Project Explorer
+
 Version 1.1.1
 ==================
 - fixed behavior of `Ctrl - End` combination in process log and lst file view
@@ -7,10 +19,6 @@ Version 1.1.1
 - fixed settings export not working when file already exists
 - fixed numpad not working when running Studio from an AppImage (GitHub issue #191)
 - fixed `Shift+Arrow Key` not working when running Studio from an AppImage (GitHub issue #191)
-- fixed crash on reopen a tab for a file that was removed from `Project Explorer`
-- fixed on macOS `Command-Left` didn't move to end of spaces in editor
-- fixed sizes of dock-widgets were not stored in FullScreen or Maximized window (GitHub issue #195)
-- fixed broken shortcuts to focus for project-explorer or editor
 
 Version 1.1.0
 ==================
