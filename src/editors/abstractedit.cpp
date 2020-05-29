@@ -61,6 +61,7 @@ void AbstractEdit::sendToggleBookmark()
     FileId fi = fileId();
     if (fi.isValid()) {
         emit toggleBookmark(fi, absoluteBlockNr(textCursor().blockNumber()), textCursor().positionInBlock());
+        emit updateRequest(rect(), 0);
     }
 }
 

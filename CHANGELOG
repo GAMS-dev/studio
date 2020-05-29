@@ -1,3 +1,15 @@
+Version 1.1.2
+==================
+- improved performance of setting bookmarks
+- fixed fullscreen behavior on macOS
+- fixed rare crash when reloading very large lst file
+- fixed behavior of hotkeys to jump to beginning and end of line and page up/down
+- fixed crash in solver option editor when pressing Ctrl+Return repeatedly
+- fixed Goto dialog jumping to beginning of file when entering invalid values
+- fixed shortcuts to focus Project Explorer and Editor not working
+- fixed sizes of dock-widgets were not stored in FullScreen or Maximized window (GitHub issue #195)
+- fixed crash when reopening a tab of a file that was removed from Project Explorer
+
 Version 1.1.1
 ==================
 - fixed behavior of `Ctrl - End` combination in process log and lst file view

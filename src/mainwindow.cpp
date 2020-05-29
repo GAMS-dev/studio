@@ -87,6 +87,9 @@ MainWindow::MainWindow(QWidget *parent)
     mFileTimer.setSingleShot(true);
     mFileTimer.setInterval(100);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
+    mWinStateTimer.setSingleShot(true);
+    mWinStateTimer.setInterval(10);
+    connect(&mWinStateTimer, &QTimer::timeout, this, &MainWindow::pushDockSizes);
     mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
@@ -181,10 +184,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->dockHelpView, &QDockWidget::visibilityChanged, this, &MainWindow::helpViewVisibilityChanged);
     connect(ui->toolBar, &QToolBar::visibilityChanged, this, &MainWindow::toolbarVisibilityChanged);
 
-    connect(ui->dockProjectView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
-    connect(ui->dockProcessLog, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
-    connect(ui->dockHelpView, &QDockWidget::topLevelChanged, this, &MainWindow::dockTopLevelChanged);
-
+    ui->dockProjectView->installEventFilter(this);
+    ui->dockProcessLog->installEventFilter(this);
+    ui->dockHelpView->installEventFilter(this);
 
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
@@ -346,7 +348,10 @@ void MainWindow::timerEvent(QTimerEvent *event)
 
 bool MainWindow::event(QEvent *event)
 {
-    if (event->type() == QEvent::WindowActivate) {
+    if (event->type() == QEvent::WindowStateChange) {
+        ui->actionFull_Screen->setChecked(windowState().testFlag(Qt::WindowFullScreen));
+        popDockSizes();
+    } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
@@ -356,6 +361,31 @@ bool MainWindow::event(QEvent *event)
 #endif
     }
     return QMainWindow::event(event);
+}
+
+void MainWindow::moveEvent(QMoveEvent *event)
+{
+    Q_UNUSED(event)
+    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
+    QScreen *screen = window()->windowHandle()->screen();
+    QSize scrDiff = screen->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
+        Settings::settings()->setPoint(skWinPos, pos());
+    }
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event)
+    // JM: In the closing procedure the WindowFlag "Maximized" is deleted without resizing the window. That leads to a
+    // resizeEvent with the wrong (maximized) size. Thus the metrics need to be taken into account here to skip that.
+
+    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
+    QScreen *screen = window()->windowHandle()->screen();
+    QSize scrDiff = screen->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
+        Settings::settings()->setSize(skWinSize, size());
+    }
 }
 
 int MainWindow::logTabCount()
@@ -796,6 +826,71 @@ void MainWindow::showTabsMenu()
         showMainTabsMenu();
 }
 
+void MainWindow::pushDockSizes()
+{
+    bool fs = (windowState().testFlag(Qt::WindowMaximized) || windowState().testFlag(Qt::WindowFullScreen));
+
+    QList<Qt::DockWidgetArea> areas;
+    areas << Qt::LeftDockWidgetArea << Qt::RightDockWidgetArea << Qt::TopDockWidgetArea << Qt::BottomDockWidgetArea;
+    QList<int> sizes = Settings::settings()->toIntList(fs ? skWinMaxSizes : skWinNormSizes);
+    if (sizes.isEmpty()) sizes << -1 << -1 << -1 << -1; // (left, right, top, bottom) - (normal, full-size)
+
+    QList<QDockWidget*> dwList;
+    dwList << mGamsParameterEditor->extendedEditor() << ui->dockProjectView << ui->dockProcessLog << ui->dockHelpView;
+    for (QDockWidget* dw : dwList) {
+        if (!dw->isVisible() || dw->isFloating()) continue;
+        Qt::DockWidgetArea area = dockWidgetArea(dw);
+        switch (area) {
+        case Qt::LeftDockWidgetArea: sizes[0] = dw->width(); break;
+        case Qt::RightDockWidgetArea: sizes[1] = dw->width(); break;
+        case Qt::TopDockWidgetArea: sizes[2] = dw->height(); break;
+        case Qt::BottomDockWidgetArea: sizes[3] = dw->height(); break;
+        default: break;
+        }
+    }
+    Settings::settings()->setIntList(fs ? skWinMaxSizes : skWinNormSizes, sizes);
+}
+
+void MainWindow::popDockSizes()
+{
+    bool fs = (windowState().testFlag(Qt::WindowMaximized) || windowState().testFlag(Qt::WindowFullScreen));
+    QList<int> sizes = Settings::settings()->toIntList(fs ? skWinMaxSizes : skWinNormSizes);
+    if (sizes.isEmpty()) return;
+
+    QList<QDockWidget*> dwList;
+    dwList << mGamsParameterEditor->extendedEditor() << ui->dockProjectView << ui->dockProcessLog << ui->dockHelpView;
+
+    QList<QDockWidget*> dwResizeH;
+    QList<int> dwSizesH;
+    QList<QDockWidget*> dwResizeV;
+    QList<int> dwSizesV;
+    for (QDockWidget* dw : dwList) {
+        if (!dw->isVisible() || dw->isFloating()) continue;
+        Qt::DockWidgetArea area = dockWidgetArea(dw);
+        switch (area) {
+        case Qt::LeftDockWidgetArea: if (sizes.at(0) >= 0) {
+                dwResizeH << dw;
+                dwSizesH << sizes.at(0);
+            } break;
+        case Qt::RightDockWidgetArea: if (sizes.at(1) >= 0) {
+                dwResizeH << dw;
+                dwSizesH << sizes.at(1);
+            } break;
+        case Qt::TopDockWidgetArea: if (sizes.at(2) >= 0) {
+                dwResizeV << dw;
+                dwSizesV << sizes.at(2);
+            } break;
+        case Qt::BottomDockWidgetArea: if (sizes.at(3) >= 0) {
+                dwResizeV << dw;
+                dwSizesV << sizes.at(3);
+            } break;
+        default: break;
+        }
+    }
+    if (!dwResizeH.isEmpty()) resizeDocks(dwResizeH, dwSizesH, Qt::Horizontal);
+    if (!dwResizeV.isEmpty()) resizeDocks(dwResizeV, dwSizesV, Qt::Vertical);
+}
+
 void MainWindow::focusCmdLine()
 {
     raise();
@@ -809,6 +904,19 @@ void MainWindow::focusProjectExplorer()
     ui->dockProjectView->activateWindow();
     ui->dockProjectView->raise();
     ui->projectView->setFocus();
+}
+
+void MainWindow::focusCentralWidget()
+{
+    if (mRecent.editor()) {
+        raise();
+        activateWindow();
+        mRecent.editor()->setFocus();
+    } else if (mWp->isVisible()) {
+        raise();
+        activateWindow();
+        mWp->setFocus();
+    }
 }
 
 void MainWindow::focusProcessLogs()
@@ -1851,7 +1959,6 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     } else if (ret == QMessageBox::Cancel) {
         return;
     }
-    mClosedTabsIndexes << index;
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -2015,7 +2122,10 @@ void MainWindow::updateAndSaveSettings()
 {
     Settings *settings = Settings::settings();
 
-    if (!isMaximized() && !isFullScreen()) {
+    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
+    QScreen *screen = window()->windowHandle()->screen();
+    QSize scrDiff = screen->availableSize() - frameSize();
+    if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         settings->setSize(skWinSize, size());
         settings->setPoint(skWinPos, pos());
     }
@@ -2070,18 +2180,18 @@ void MainWindow::restoreFromSettings()
     Settings *settings = Settings::settings();
 
     // main window
+    resize(settings->toSize(skWinSize));
+    move(settings->toPoint(skWinPos));
+    ensureInScreen();
+
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
         showFullScreen();
     } else if (mMaximizedBeforeFullScreen) {
         showMaximized();
-    } else {
-        resize(settings->toSize(skWinSize));
-        move(settings->toPoint(skWinPos));
     }
-    restoreState(settings->toByteArray(skWinState));
-    ensureInScreen();
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
+    restoreState(settings->toByteArray(skWinState));
 
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
@@ -2419,11 +2529,10 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
     // focus shortcuts
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {
-        setProjectViewVisibility(true);
-        ui->projectView->setFocus();
+        focusProjectExplorer();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_2)) {
-        if (mRecent.editor()) mRecent.editor()->setFocus();
+        focusCentralWidget();
         e->accept(); return;
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_3)) {
         focusCmdLine();
@@ -2474,21 +2583,17 @@ void MainWindow::dropEvent(QDropEvent* e)
     openFiles(pathList);
 }
 
-void MainWindow::dockTopLevelChanged(bool)
+bool MainWindow::eventFilter(QObject* sender, QEvent* event)
 {
-    QDockWidget* dw = static_cast<QDockWidget*>(QObject::sender());
+    QDockWidget* dw = static_cast<QDockWidget*>(sender);
     if (dw->isFloating()) {
-        dw->installEventFilter(this);
-    } else
-        dw->removeEventFilter(this);
-}
-
-bool MainWindow::eventFilter(QObject*, QEvent* event)
-{
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        keyPressEvent(keyEvent);
-        return true;
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            keyPressEvent(keyEvent);
+            return true;
+        }
+    } else if (event->type() == QEvent::Resize) {
+        mWinStateTimer.start();
     }
 
     return false;
@@ -3137,15 +3242,18 @@ void MainWindow::closeFileEditors(const FileId fileId)
 
     // add to recently closed tabs
     mClosedTabs << fm->location();
+    int lastIndex = mWp->isVisible() ? 1 : 0;
 
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
         if (mRecent.editor() == edit) mRecent.reset();
-        ui->mainTabs->removeTab(ui->mainTabs->indexOf(edit));
+        lastIndex = ui->mainTabs->indexOf(edit);
+        ui->mainTabs->removeTab(lastIndex);
         fm->removeEditor(edit);
         edit->deleteLater();
     }
+    mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
 }

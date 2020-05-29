@@ -93,9 +93,9 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
 void OptionCompleterDelegate::commitAndCloseEditor()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( sender() ) ;
-
     emit commitData(lineEdit);
     emit closeEditor(lineEdit);
+    updateCurrentEditedIndex(QModelIndex());
 }
 
 void OptionCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
@@ -118,10 +118,11 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
        QKeyEvent* keyEvent = static_cast<QKeyEvent *>(event);
        if (keyEvent->key() == Qt::Key_Escape) {
              emit closeEditor(lineEdit);
+             return true;
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
                   emit lineEdit->editingFinished();
+                  return true;
        }
-       return false;
     }
     return QStyledItemDelegate::eventFilter(editor, event);
 }
