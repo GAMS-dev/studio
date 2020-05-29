@@ -2,7 +2,7 @@ Version 1.1.2
 ==================
 - improved performance of setting bookmarks
 - fixed fullscreen behavior on macOS
-- fixed crash after switching solver
+- fixed rare crash when reloading very large lst file
 - fixed behavior of hotkeys to jump to beginning and end of line and page up/down
 - fixed crash in solver option editor when pressing Ctrl+Return repeatedly
 - fixed Goto dialog jumping to beginning of file when entering invalid values
