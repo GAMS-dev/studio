@@ -53,10 +53,13 @@ int GoToDialog::lineNumber() const
 void GoToDialog::on_goToButton_clicked()
 {
     mLineNumber = (ui->lineEdit->text().toInt())-1;
+
     if (!mWait && mLineNumber > mMaxLines)
         ui->lineEdit->setText(QString::number(mMaxLines));
-    if (mLineNumber <= mMaxLines)
+    if (mLineNumber >= 0 && mLineNumber <= mMaxLines)
         accept();
+    else
+        reject();
     mWait = false;
 }
 
