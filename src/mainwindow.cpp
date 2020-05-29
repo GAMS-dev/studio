@@ -1959,7 +1959,6 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     } else if (ret == QMessageBox::Cancel) {
         return;
     }
-    mClosedTabsIndexes << index;
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -3243,15 +3242,18 @@ void MainWindow::closeFileEditors(const FileId fileId)
 
     // add to recently closed tabs
     mClosedTabs << fm->location();
+    int lastIndex = mWp->isVisible() ? 1 : 0;
 
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
         if (mRecent.editor() == edit) mRecent.reset();
-        ui->mainTabs->removeTab(ui->mainTabs->indexOf(edit));
+        lastIndex = ui->mainTabs->indexOf(edit);
+        ui->mainTabs->removeTab(lastIndex);
         fm->removeEditor(edit);
         edit->deleteLater();
     }
+    mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
 }
