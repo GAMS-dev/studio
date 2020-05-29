@@ -8,6 +8,9 @@ Version 1.1.1
 - fixed numpad not working when running Studio from an AppImage (GitHub issue #191)
 - fixed `Shift+Arrow Key` not working when running Studio from an AppImage (GitHub issue #191)
 - fixed crash on reopen a tab for a file that was removed from `Project Explorer`
+- fixed on macOS `Command-Left` didn't move to end of spaces in editor
+- fixed sizes of dock-widgets were not stored in FullScreen or Maximized window (GitHub issue #195)
+- fixed broken shortcuts to focus for project-explorer or editor
 
 Version 1.1.0
 ==================
