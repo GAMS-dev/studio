@@ -80,7 +80,6 @@ public:
     QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedAsTextEdit = false);
     QWidgetList editors() const;
     QWidget* topEditor() const;
-    void addEditor(QWidget* edit);
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
@@ -91,7 +90,6 @@ public:
 
     void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0, int length = 0);
     void rehighlight(int line);
-    void rehighlightBlock(QTextBlock block, QTextBlock endBlock = QTextBlock());
     syntax::SyntaxHighlighter *highlighter() const;
     void marksChanged(QSet<int> lines = QSet<int>());
     void takeEditsFrom(FileMeta *other);
@@ -139,6 +137,7 @@ private:
     void updateSyntaxColors();
     void initEditorColors();
     void updateEditorColors();
+    void addEditor(QWidget* edit);
 
 private:
     FileId mId;

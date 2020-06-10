@@ -4069,7 +4069,11 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item) {
     if (mNavigationHistory->itemValid(item)) {
 
         mNavigationHistory->stopRecord();
-        ui->mainTabs->setCurrentWidget(item.tab);
+
+        if (ui->mainTabs->indexOf(item.tab) > 0)
+            ui->mainTabs->setCurrentWidget(item.tab);
+        else
+            openFilePath(item.filePath, true);
 
         // restore text cursor if editor available
         if (AbstractEdit* ae = mNavigationHistory->currentEditor()) {

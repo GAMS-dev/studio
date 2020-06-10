@@ -89,6 +89,7 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
     CursorHistoryItem chi;
     chi.tab = widget;
     chi.pos = pos;
+    chi.filePath = ViewHelper::location(widget);
 
     if (mStackPosition > -1) {
         CursorHistoryItem lastItem = mHistory.at(mStackPosition);

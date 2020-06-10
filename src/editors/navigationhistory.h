@@ -31,6 +31,7 @@ namespace studio {
 struct CursorHistoryItem {
     QWidget* tab;
     int pos;
+    QString filePath;
 };
 
 class NavigationHistory : public QObject
