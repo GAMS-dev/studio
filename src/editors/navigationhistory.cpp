@@ -96,6 +96,8 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
     chi.pos = pos;
     chi.filePath = ViewHelper::location(widget);
 
+    if (chi.filePath.isEmpty()) return; // do not insert empty path (e.g. welcome page)
+
     if (mStackPosition > -1) {
         CursorHistoryItem lastItem = mHistory.at(mStackPosition);
         if (lastItem.tab == widget && lastItem.pos == pos) {
@@ -113,7 +115,7 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 ///
 void NavigationHistory::receiveCursorPosChange()
 {
-    insertCursorItem(mCurrentTab, mCurrentEditor->textCursor().position());
+    insertCursorItem(mCurrentTab, mCurrentEditor ? mCurrentEditor->textCursor().position() : -1);
     emit historyChanged();
 }
 
@@ -137,7 +139,7 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
         connect(ae, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
     } else {
         mCurrentEditor = nullptr;     // current tab is not an editor with cursor
-        insertCursorItem(newTab, -1); // we only save the tab, no position
+        insertCursorItem(newTab); // we only save the tab, no position
     }
 }
 

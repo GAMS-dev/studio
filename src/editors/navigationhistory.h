@@ -70,7 +70,7 @@ private:
     AbstractEdit* mCurrentEditor = nullptr;
     bool mStopRecord = true;
 
-    void insertCursorItem(QWidget* widget, int pos);
+    void insertCursorItem(QWidget* widget, int pos = -1);
 
 signals:
 

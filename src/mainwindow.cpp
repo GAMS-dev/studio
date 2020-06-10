@@ -4065,24 +4065,26 @@ void MainWindow::on_actionGoForward_triggered()
     updateCursorHistoryAvailability();
 }
 
-void MainWindow::restoreCursorPosition(CursorHistoryItem item) {
-    if (mNavigationHistory->itemValid(item)) {
+void MainWindow::restoreCursorPosition(CursorHistoryItem item)
+{
+    if (!mNavigationHistory->itemValid(item)) return;
 
-        mNavigationHistory->stopRecord();
+    mNavigationHistory->stopRecord();
 
-        if (ui->mainTabs->indexOf(item.tab) > 0)
-            ui->mainTabs->setCurrentWidget(item.tab);
-        else
-            openFilePath(item.filePath, true);
-
-        // restore text cursor if editor available
-        if (AbstractEdit* ae = mNavigationHistory->currentEditor()) {
-            QTextCursor tc = ae->textCursor();
-            tc.setPosition(item.pos);
-            ae->setTextCursor(tc);
-        }
-        mNavigationHistory->startRecord();
+    // check if tab is still opened
+    if (ui->mainTabs->indexOf(item.tab) > 0) {
+        ui->mainTabs->setCurrentWidget(item.tab);
+    } else {
+        if (!item.filePath.isEmpty()) openFilePath(item.filePath, true);
     }
+
+    // restore text cursor if editor available
+    if (AbstractEdit* ae = mNavigationHistory->currentEditor()) {
+        QTextCursor tc = ae->textCursor();
+        tc.setPosition(item.pos);
+        ae->setTextCursor(tc);
+    }
+    mNavigationHistory->startRecord();
 }
 
 void MainWindow::updateCursorHistoryAvailability()
