@@ -86,6 +86,11 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
         }
     }
 
+    if (mHistory.size() >= MAX_SIZE) {
+        mHistory.removeAt(0);
+        mStackPosition--;
+    }
+
     CursorHistoryItem chi;
     chi.tab = widget;
     chi.pos = pos;
