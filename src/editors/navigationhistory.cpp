@@ -86,6 +86,7 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
         }
     }
 
+    // remove oldest entry when limit is reached
     if (mHistory.size() >= MAX_SIZE) {
         mHistory.removeAt(0);
         mStackPosition--;
@@ -100,9 +101,15 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 
     if (mStackPosition > -1) {
         CursorHistoryItem lastItem = mHistory.at(mStackPosition);
-        if (lastItem.tab == widget && lastItem.pos == pos) {
-            // TODO(RG): add filter for same block position in next/prev line
-            return; // do not save this item
+
+        // do some filtering:
+        if (lastItem.tab == widget) {
+            // do not save same pos
+            if (lastItem.pos == pos) return;
+
+            // do not save next/previus pos
+            if (lastItem.pos == pos-1) return;
+            if (lastItem.pos == pos+1) return;
         }
     }
 
