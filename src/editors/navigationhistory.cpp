@@ -99,6 +99,7 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 
     if (chi.filePath.isEmpty()) return; // do not insert empty path (e.g. welcome page)
 
+    bool replaceLast = false;
     if (mStackPosition > -1) {
         CursorHistoryItem lastItem = mHistory.at(mStackPosition);
 
@@ -107,14 +108,27 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
             // do not save same pos
             if (lastItem.pos == pos) return;
 
-            // do not save next/previus pos
-            if (lastItem.pos == pos-1) return;
-            if (lastItem.pos == pos+1) return;
+            // remove last when being in next/prev position
+            if (lastItem.pos == pos-1) replaceLast = true;
+            if (lastItem.pos == pos+1) replaceLast = true;
+
+            // do not save same pos in next/prev line
+            if (mCurrentEditor) {
+                QTextCursor tc = mCurrentEditor->textCursor();
+                tc.setPosition(lastItem.pos);
+                int hDiff = tc.blockNumber() - mCurrentEditor->textCursor().blockNumber();
+                int vDiff = tc.positionInBlock() - mCurrentEditor->textCursor().positionInBlock();
+
+                if (vDiff == 0 && (hDiff == 1 || hDiff == -1)) replaceLast = true;
+            }
         }
     }
+    if (replaceLast)
+        mHistory.removeLast();
+    else
+        mStackPosition++;
 
     mHistory.push(chi);
-    mStackPosition++;
 }
 
 /// this function is used to get a cursor position change event and retrieve the new position
