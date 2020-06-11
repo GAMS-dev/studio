@@ -107,6 +107,12 @@ void AbstractTextMapper::reset()
     mBytesPerLine = 20.0;
     mChunkMetrics.squeeze();
     mDelimiter.clear();
+    mTopLine = LinePosition();
+    mMaxTopLine = LinePosition();
+    mPosition = CursorPosition();
+    mAnchor = CursorPosition();
+    mFindChunk = 0;
+    mCursorColumn = 0;
 }
 
 qint64 AbstractTextMapper::size() const

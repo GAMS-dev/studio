@@ -77,8 +77,9 @@ int CodeEdit::lineNumberAreaWidth()
 
     int space = 0;
 
-    if (showLineNr())
-        space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+    if (showLineNr()) {
+        space = fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+    }
 
     if (marks() && marks()->hasVisibleMarks()) {
         space += iconSize();
@@ -86,6 +87,8 @@ int CodeEdit::lineNumberAreaWidth()
     } else {
         mIconCols = 0;
     }
+
+    if (space) space += 3; // add margin if visible
 
     return space;
 }
@@ -321,10 +324,10 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     }
     QTextCursor cur = textCursor();
+    QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
     if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
         ParenthesesMatch pm = matchParentheses();
         bool sel = (e == Hotkey::SelectParentheses);
-        QTextCursor::MoveMode mm = sel ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
         if (pm.match >= 0) {
             if (sel) cur.clearSelection();
             if (cur.position() != pm.pos) cur.movePosition(QTextCursor::Left);
@@ -332,16 +335,10 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
         }
     } else if (e == Hotkey::MoveToEndOfLine) {
-        QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
         cur.movePosition(QTextCursor::EndOfLine, mm);
         e->accept();
     } else if (e == Hotkey::MoveToStartOfLine) {
         QTextBlock block = cur.block();
-        QTextCursor::MoveMode mm = QTextCursor::MoveAnchor;
-
-        if (e->modifiers() & Qt::ShiftModifier)
-            mm = QTextCursor::KeepAnchor;
-
         QRegularExpression leadingSpaces("^(\\s*)");
         QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
 
@@ -349,8 +346,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
         else cur.setPosition(block.position(), mm);
         e->accept();
-    } else if (e == Hotkey::MoveCharGroupRight || e == Hotkey::SelectCharGroupRight) {
-        QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupRight) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+    } else if (e == Hotkey::MoveCharGroupRight) {
         int p = cur.positionInBlock();
         EditorHelper::nextWord(0, p, cur.block().text());
         if (p >= cur.block().length()) {
@@ -361,8 +357,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             cur.setPosition(cur.block().position() + p, mm);
         }
         e->accept();
-    } else if (e == Hotkey::MoveCharGroupLeft || e == Hotkey::SelectCharGroupLeft) {
-        QTextCursor::MoveMode mm = (e == Hotkey::SelectCharGroupLeft) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
+    } else if (e == Hotkey::MoveCharGroupLeft) {
         int p = cur.positionInBlock();
         if (p == 0) {
             QTextBlock block = cur.block().previous();
@@ -578,7 +573,7 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
     int addX = mousePos.x()-cursorRect(cursor).right();
     if (addX > 0) {
         QFontMetrics metric(font());
-        col += addX / metric.width(' ');
+        col += addX / metric.horizontalAdvance(' ');
     }
     return col;
 }
@@ -1043,7 +1038,7 @@ CodeEdit::CharType CodeEdit::charType(QChar c)
 void CodeEdit::updateTabSize()
 {
     QFontMetrics metric(font());
-    setTabStopDistance(mSettings->toInt(skEdTabSize) * metric.width(' '));
+    setTabStopDistance(mSettings->toInt(skEdTabSize) * metric.horizontalAdvance(' '));
 }
 
 int CodeEdit::findAlphaNum(const QString &text, int start, bool back)
@@ -1401,7 +1396,11 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     bool hasMarks = marks() && marks()->hasVisibleMarks();
-    if (hasMarks && mIconCols == 0) QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
+    if (hasMarks && mIconCols == 0) {
+        QTimer::singleShot(0, this, &CodeEdit::updateLineNumberAreaWidth);
+        event->accept();
+        return;
+    }
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     QRectF fRect = blockBoundingGeometry(block).translated(contentOffset());

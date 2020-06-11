@@ -49,11 +49,13 @@ public slots:
     void changeHeader(int tabIndex);
     void updateSelectedLibraryItem();
     void clearSelections();
+    void storeSelectedTab();
 
 private slots:
     void on_pbDescription_clicked();
     void on_cbRegEx_toggled(bool checked);
     void applyFilter(QString filterString, int proxyModelIndex);
+    void jumpToNonEmptyTab();
 
 private:
     void loadUserLibs();
@@ -70,6 +72,7 @@ private:
     QString mIconUserLib = ":/%1/user";
 
     bool mHasGlbErrors = false;
+    int mLastTabIndex = 0;
 };
 
 } // namespace modeldialog

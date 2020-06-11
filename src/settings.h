@@ -44,6 +44,8 @@ enum SettingsKey {
     skWinSize,
     skWinPos,
     skWinState,
+    skWinMaxSizes,
+    skWinNormSizes,
     skWinMaximized,
     skWinFullScreen,
 
@@ -144,6 +146,7 @@ public:
     double toDouble(SettingsKey key) const { return value(key).toDouble(); }
     QSize toSize(SettingsKey key) const;
     QPoint toPoint(SettingsKey key) const;
+    QList<int> toIntList(SettingsKey key) const;
     QString toString(SettingsKey key) const { return value(key).toString(); }
     QByteArray toByteArray(SettingsKey key) const;
     QVariantMap toMap(SettingsKey key) const;
@@ -153,6 +156,7 @@ public:
     void setDouble(SettingsKey key, double value) { setValue(key, value);}
     void setSize(SettingsKey key, const QSize &value);
     void setPoint(SettingsKey key, const QPoint &value);
+    void setIntList(SettingsKey key, const QList<int> &value);
     void setString(SettingsKey key, QString value) { setValue(key, value);}
     void setByteArray(SettingsKey key, QByteArray value) { setValue(key, value);}
     bool setMap(SettingsKey key, QVariantMap value);

@@ -1,3 +1,20 @@
+Version 1.2.0
+==================
+- the Model Library Explorer switches to the first non-empty tab in case the current one runs out of results and switches back as soon as the originally selected tab contains results again.
+- copy actions of the GDX Viewer table view contain the labels from the header now. Two additonal entries that allow to copy without the labels are available via the context menu.
+
+Version 1.1.2
+==================
+- improved performance of setting bookmarks
+- fixed fullscreen behavior on macOS
+- fixed rare crash when reloading very large lst file
+- fixed behavior of hotkeys to jump to beginning and end of line and page up/down
+- fixed crash in solver option editor when pressing Ctrl+Return repeatedly
+- fixed Goto dialog jumping to beginning of file when entering invalid values
+- fixed shortcuts to focus Project Explorer and Editor not working
+- fixed sizes of dock-widgets were not stored in FullScreen or Maximized window (GitHub issue #195)
+- fixed crash when reopening a tab of a file that was removed from Project Explorer
+
 Version 1.1.1
 ==================
 - fixed behavior of `Ctrl - End` combination in process log and lst file view
