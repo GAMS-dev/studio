@@ -118,6 +118,8 @@ MainWindow::MainWindow(QWidget *parent)
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
     ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
     ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
+    ui->actionGoForward->shortcuts().append(QKeySequence(Qt::ForwardButton));
+    ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
 
     // Status Bar
     QFont font = ui->statusBar->font();

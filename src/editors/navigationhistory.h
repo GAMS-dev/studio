@@ -46,6 +46,7 @@ public:
 
     void stopRecord();
     void startRecord();
+    bool isRecording();
 
     bool canGoForward();
     bool canGoBackward();

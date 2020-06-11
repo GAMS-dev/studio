@@ -114,10 +114,10 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 
             // do not save same pos in next/prev line
             if (mCurrentEditor) {
-                QTextCursor tc = mCurrentEditor->textCursor();
-                tc.setPosition(lastItem.pos);
-                int hDiff = tc.blockNumber() - mCurrentEditor->textCursor().blockNumber();
-                int vDiff = tc.positionInBlock() - mCurrentEditor->textCursor().positionInBlock();
+                QTextCursor lastCursor = mCurrentEditor->textCursor();
+                lastCursor.setPosition(lastItem.pos);
+                int hDiff = lastCursor.blockNumber() - mCurrentEditor->textCursor().blockNumber();
+                int vDiff = lastCursor.positionInBlock() - mCurrentEditor->textCursor().positionInBlock();
 
                 if (vDiff == 0 && (hDiff == 1 || hDiff == -1)) replaceLast = true;
             }
@@ -159,7 +159,7 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
         mCurrentTab = newTab;
         connect(ae, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
     } else {
-        mCurrentEditor = nullptr;     // current tab is not an editor with cursor
+        mCurrentEditor = nullptr; // current tab is not an editor with cursor
         insertCursorItem(newTab); // we only save the tab, no position
     }
 }
@@ -182,6 +182,11 @@ void NavigationHistory::stopRecord()
 void NavigationHistory::startRecord()
 {
     mStopRecord = false;
+}
+
+bool NavigationHistory::isRecording()
+{
+    return !mStopRecord;
 }
 
 } // namespace studio

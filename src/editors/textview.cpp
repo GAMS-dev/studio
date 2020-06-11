@@ -636,9 +636,13 @@ void TextView::updatePosAndAnchor()
         cursor.setPosition(p);
     }
     disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
+
+    bool wasRecording = NavigationHistoryLocator::navigationHistory()->isRecording();
     NavigationHistoryLocator::navigationHistory()->stopRecord();
+
     mEdit->setTextCursor(cursor);
-    NavigationHistoryLocator::navigationHistory()->startRecord();
+
+    if (wasRecording) NavigationHistoryLocator::navigationHistory()->startRecord();
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
 }
 
