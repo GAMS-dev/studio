@@ -106,6 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
 
+    // TODO: this should be moved to the platform switch above, for code consistency
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
         ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
         ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));

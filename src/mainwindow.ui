@@ -1380,7 +1380,7 @@
      <normaloff>:/solid/backward</normaloff>:/solid/backward</iconset>
    </property>
    <property name="text">
-    <string>GoBack</string>
+    <string>Go Back</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -1395,7 +1395,7 @@
      <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
    </property>
    <property name="text">
-    <string>GoForward</string>
+    <string>Go Forward</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
