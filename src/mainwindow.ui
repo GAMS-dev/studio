@@ -1382,9 +1382,6 @@
    <property name="text">
     <string>GoBack</string>
    </property>
-   <property name="shortcut">
-    <string>Alt+Left</string>
-   </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
    </property>
@@ -1399,9 +1396,6 @@
    </property>
    <property name="text">
     <string>GoForward</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+Right</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>

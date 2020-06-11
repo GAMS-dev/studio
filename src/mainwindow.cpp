@@ -111,6 +111,9 @@ MainWindow::MainWindow(QWidget *parent)
         ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
         ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
     }
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
+    ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
+    ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
 
     // Status Bar
     QFont font = ui->statusBar->font();
@@ -232,9 +235,6 @@ MainWindow::MainWindow(QWidget *parent)
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
     ui->mainTabs->setUsesScrollButtons(true);
-
-    // shortcuts
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
