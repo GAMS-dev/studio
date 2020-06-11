@@ -169,9 +169,16 @@ pipeline {
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                                 call vcvars64.bat
                                 cd %WORKSPACE%\\tmp\\studio
-                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com studio.exe
+                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /t http://timestamp.comodoca.com studio.exe
                             '''
                         }
+                        bat '''
+                            echo Setting up environment for VS2017 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            call vcvars64.bat
+                            cd %WORKSPACE%\\tmp\\studio
+                            signtool verify /v /pa studio.exe
+                        '''
                     }
                 }
                 stage ('macos') {
