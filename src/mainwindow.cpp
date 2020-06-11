@@ -3255,6 +3255,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     mClosedTabs << fm->location();
     int lastIndex = mWp->isVisible() ? 1 : 0;
 
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
@@ -3267,6 +3268,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
+    NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor)
