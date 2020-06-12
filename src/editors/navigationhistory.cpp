@@ -75,7 +75,7 @@ bool NavigationHistory::canGoBackward()
     return mStackPosition > 0;
 }
 
-void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
+void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
 {
     if (mStopRecord) return;
 
@@ -94,7 +94,8 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 
     CursorHistoryItem chi;
     chi.tab = widget;
-    chi.pos = pos;
+    chi.col = pos;
+    chi.lineNr = line;
     chi.filePath = ViewHelper::location(widget);
 
     if (chi.filePath.isEmpty()) return; // do not insert empty path (e.g. welcome page)
@@ -106,18 +107,16 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
         // do some filtering:
         if (lastItem.tab == widget) {
             // do not save same pos
-            if (lastItem.pos == pos) return;
+            if (lastItem.col == pos) return;
 
             // remove last when being in next/prev position
-            if (lastItem.pos == pos-1) replaceLast = true;
-            if (lastItem.pos == pos+1) replaceLast = true;
+            if (lastItem.col == pos-1) replaceLast = true;
+            if (lastItem.col == pos+1) replaceLast = true;
 
             // do not save same pos in next/prev line
             if (mCurrentEditor) {
-                QTextCursor lastCursor = mCurrentEditor->textCursor();
-                lastCursor.setPosition(lastItem.pos);
-                int hDiff = lastCursor.blockNumber() - mCurrentEditor->textCursor().blockNumber();
-                int vDiff = lastCursor.positionInBlock() - mCurrentEditor->textCursor().positionInBlock();
+                int hDiff = lastItem.lineNr - line;
+                int vDiff = lastItem.col - pos;
 
                 if (vDiff == 0 && (hDiff == 1 || hDiff == -1)) replaceLast = true;
             }
@@ -136,7 +135,12 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int pos)
 ///
 void NavigationHistory::receiveCursorPosChange()
 {
-    insertCursorItem(mCurrentTab, mCurrentEditor ? mCurrentEditor->textCursor().position() : -1);
+    if (mCurrentEditor)
+        insertCursorItem(mCurrentTab,
+                         currentEditor()->textCursor().blockNumber(),
+                         currentEditor()->textCursor().positionInBlock());
+    else insertCursorItem(mCurrentTab);
+
     emit historyChanged();
 }
 
@@ -145,19 +149,15 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
     if (!newTab) return;
 
     AbstractEdit *ae = ViewHelper::toCodeEdit(newTab);
-    if (!ae) {
-        // if not succeeded, try again with textview
-        if (TextView *tv = ViewHelper::toTextView(newTab))
-            ae = tv->edit();
-    }
+    TextView *tv = ViewHelper::toTextView(newTab);
 
-    if (ae) {
-        mCurrentEditor = ae;
+    if (ae || tv) {
+        mCurrentEditor = ae ? ae : tv->edit();
+        mCurrentTab = newTab;
+
         // remove connection from old editor
         mCurrentEditor->disconnect(mCurrentEditor, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
-
-        mCurrentTab = newTab;
-        connect(ae, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
+        connect(mCurrentEditor, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
     } else {
         mCurrentEditor = nullptr; // current tab is not an editor with cursor
         insertCursorItem(newTab); // we only save the tab, no position

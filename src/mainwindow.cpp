@@ -4164,11 +4164,12 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
     }
 
     // restore text cursor if editor available
-    if (AbstractEdit* ae = mNavigationHistory->currentEditor()) {
-        QTextCursor tc = ae->textCursor();
-        tc.setPosition(item.pos);
-        ae->setTextCursor(tc);
-    }
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEditor()))
+        ce->jumpTo(item.lineNr, item.col);
+    else if (TextView* tv = ViewHelper::toTextView(item.tab))
+        tv->jumpTo(item.lineNr, item.col, 0, true);
+    else
+        qDebug() << QTime::currentTime() << "there is more to do: " << mNavigationHistory->currentEditor(); // rogo: delete
     mNavigationHistory->startRecord();
 }
 

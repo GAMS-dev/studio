@@ -30,7 +30,8 @@ namespace studio {
 
 struct CursorHistoryItem {
     QWidget* tab;
-    int pos;
+    int lineNr;
+    int col;
     QString filePath;
 };
 
@@ -71,7 +72,7 @@ private:
     AbstractEdit* mCurrentEditor = nullptr;
     bool mStopRecord = true;
 
-    void insertCursorItem(QWidget* widget, int pos = -1);
+    void insertCursorItem(QWidget* widget, int line = -1, int pos = -1);
 
 signals:
 
