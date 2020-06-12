@@ -135,11 +135,17 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
 ///
 void NavigationHistory::receiveCursorPosChange()
 {
-    if (mCurrentEditor)
+    AbstractEdit *ae = ViewHelper::toCodeEdit(mCurrentTab);
+    TextView *tv = ViewHelper::toTextView(mCurrentTab);
+
+    if (ae)
         insertCursorItem(mCurrentTab,
                          currentEditor()->textCursor().blockNumber(),
                          currentEditor()->textCursor().positionInBlock());
-    else insertCursorItem(mCurrentTab);
+    else if (tv)
+        insertCursorItem(mCurrentTab, tv->position().y(), tv->position().x());
+    else
+        insertCursorItem(mCurrentTab);
 
     emit historyChanged();
 }
@@ -151,9 +157,10 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
     AbstractEdit *ae = ViewHelper::toCodeEdit(newTab);
     TextView *tv = ViewHelper::toTextView(newTab);
 
+    mCurrentTab = newTab;
+
     if (ae || tv) {
         mCurrentEditor = ae ? ae : tv->edit();
-        mCurrentTab = newTab;
 
         // remove connection from old editor
         mCurrentEditor->disconnect(mCurrentEditor, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
