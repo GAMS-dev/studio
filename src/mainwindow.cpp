@@ -1440,6 +1440,7 @@ void MainWindow::activeTabChanged(int index)
     updateEditorMode();
 
     mNavigationHistory->setActiveTab(editWidget);
+    updateCursorHistoryAvailability();
 }
 
 void MainWindow::fileChanged(const FileId fileId)
