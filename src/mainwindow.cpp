@@ -4160,16 +4160,21 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
     if (ui->mainTabs->indexOf(item.tab) > 0) {
         ui->mainTabs->setCurrentWidget(item.tab);
     } else {
-        if (!item.filePath.isEmpty()) openFilePath(item.filePath, true);
+        if (!item.filePath.isEmpty()) {
+            openFilePath(item.filePath, true);
+        }
     }
 
-    // restore text cursor if editor available
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEditor()))
-        ce->jumpTo(item.lineNr, item.col);
-    else if (TextView* tv = ViewHelper::toTextView(item.tab))
-        tv->jumpTo(item.lineNr, item.col, 0, true);
-    else
-        qDebug() << QTime::currentTime() << "there is more to do: " << mNavigationHistory->currentEditor(); // rogo: delete
+    if (item.lineNr >= 0) {
+        // restore text cursor if editor available
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEditor()))
+            ce->jumpTo(item.lineNr, item.col);
+        else if (TextView* tv = ViewHelper::toTextView(mNavigationHistory->currentEditor())) {
+            tv->jumpTo(item.lineNr, item.col, 0, true);
+        }
+        // else: nothing to do
+    }
+
     mNavigationHistory->startRecord();
 }
 
