@@ -3043,6 +3043,8 @@ void MainWindow::initIcons()
     ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
     ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
     ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
+    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
 }
 
 void MainWindow::ensureInScreen()
