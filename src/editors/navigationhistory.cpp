@@ -167,8 +167,8 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
         connect(mCurrentEditor, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
     } else {
         mCurrentEditor = nullptr; // current tab is not an editor with cursor
-        insertCursorItem(newTab); // we only save the tab, no position
     }
+    receiveCursorPosChange();
 }
 
 AbstractEdit *NavigationHistory::currentEditor() const
