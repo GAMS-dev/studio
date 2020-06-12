@@ -169,7 +169,7 @@ void Keys::reset()
 #ifdef __APPLE__
     seq = new KeySeqList("Meta+Shift+Up", "start block edit");
     *seq << QKeySequence("Meta+Shift+Down") << QKeySequence("Meta+Shift+Left")
-         << QKeySequence("Meta+Shift+Right");
+         << QKeySequence("Meta+Shift+Right") << QKeySequence("Alt+Shift+Up") << QKeySequence("Alt+Shift+Down");
     setHotkey(Hotkey::BlockEditStart, seq);
 #else
     seq = new KeySeqList("Shift+Alt+Up","start block edit");
