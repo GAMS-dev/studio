@@ -70,11 +70,12 @@ class SyntaxKeywordBase: public SyntaxAbstract
 public:
     ~SyntaxKeywordBase() override;
     SyntaxKeywordBase(SyntaxKind kind) : SyntaxAbstract(kind) {}
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 
 protected:
     int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false);
     QHash<int, DictList*> mKeywords;
+    QHash<int, int> mFlavors;
 
 private:
     inline QStringList swapStringCase(QStringList list);
@@ -94,13 +95,6 @@ public:
     SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
 };
 
-
-class SyntaxDeclarationTable: public SyntaxKeywordBase
-{
-public:
-    SyntaxDeclarationTable();
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
-};
 
 class SyntaxReserved: public SyntaxKeywordBase
 {
@@ -129,7 +123,7 @@ class SyntaxEmbeddedBody: public SyntaxAbstract
 public:
     SyntaxEmbeddedBody();
     SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 constexpr inline uint qHash(SyntaxKind key, uint seed = 0) noexcept { return uint(key) ^ seed; }

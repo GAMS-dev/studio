@@ -19,6 +19,7 @@
  */
 #include "testblockcode.h"
 #include "syntax/syntaxhighlighter.h"
+#include "syntax/syntaxformats.h"
 #include "logger.h"
 
 #include <QtGlobal>
@@ -30,7 +31,7 @@ void TestBlockCode::testFile()
 {
     BlockCode bc(12);
     QCOMPARE(bc.code(), 12);
-    QCOMPARE(bc.kind(), 12);
+    QCOMPARE(bc.kind(), gams::studio::syntax::SyntaxKind::Semicolon);
     QCOMPARE(bc.depth(), 0);
     QCOMPARE(bc.parser(), 0);
     bc = -5;
@@ -40,16 +41,9 @@ void TestBlockCode::testFile()
     bc = 12;
     bc.setDepth(2);
     bc.setParser(5);
-    QCOMPARE(bc.kind(), 12);
+    QCOMPARE(bc.kind(), gams::studio::syntax::SyntaxKind::Semicolon);
     QCOMPARE(bc.depth(), 2);
     QCOMPARE(bc.parser(), 5);
-
-    QCOMPARE(bc.setKind(16383), true);
-    QCOMPARE(bc.kind(), 16383);
-    QCOMPARE(bc.setKind(16384), false);
-    QCOMPARE(bc.kind(), 16383);
-    QCOMPARE(bc.setKind(-1), false);
-    QCOMPARE(bc.kind(), 0);
 
     QCOMPARE(bc.setFlavor(31), true);
     QCOMPARE(bc.flavor(), 31);
