@@ -9,6 +9,7 @@ Version 1.1.2
 - fixed shortcuts to focus Project Explorer and Editor not working
 - fixed sizes of dock-widgets were not stored in FullScreen or Maximized window (GitHub issue #195)
 - fixed crash when reopening a tab of a file that was removed from Project Explorer
+- added shift-option-up/down modifiers to start block-edit on macOS
 
 Version 1.1.1
 ==================
