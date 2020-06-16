@@ -69,13 +69,7 @@ bool NavigationHistory::canGoBackward()
 void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
 {
     if (mStopRecord) return;
-
-    // remove all future entries if existing
-    if (mStackPosition != mHistory.size()-1) {
-        for (int i = mHistory.size()-1; i > mStackPosition; i--) {
-            mHistory.remove(i);
-        }
-    }
+    if (ViewHelper::location(widget).isEmpty()) return; // do not insert empty path (e.g. welcome page)
 
     // remove oldest entry when limit is reached
     if (mHistory.size() >= MAX_SIZE) {
@@ -83,13 +77,11 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
         mStackPosition--;
     }
 
-    CursorHistoryItem chi;
-    chi.tab = widget;
-    chi.col = pos;
-    chi.lineNr = line;
-    chi.filePath = ViewHelper::location(widget);
-
-    if (chi.filePath.isEmpty()) return; // do not insert empty path (e.g. welcome page)
+    // remove all future entries if existing
+    if (mStackPosition != mHistory.size()-1) {
+        for (int i = mHistory.size()-1; i > mStackPosition; i--)
+            mHistory.remove(i);
+    }
 
     bool replaceLast = false;
     if (mStackPosition > -1) {
@@ -105,7 +97,7 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
             if (lastItem.col == pos+1) replaceLast = true;
 
             // do not save same pos in next/prev line
-            if (mCurrentEditor) {
+            if (mHasCursor) {
                 int hDiff = lastItem.lineNr - line;
                 int vDiff = lastItem.col - pos;
 
@@ -113,11 +105,17 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
             }
         }
     }
+
     if (replaceLast)
         mHistory.removeLast();
     else
         mStackPosition++;
 
+    CursorHistoryItem chi;
+    chi.tab = widget;
+    chi.col = pos;
+    chi.lineNr = line;
+    chi.filePath = ViewHelper::location(widget);
     mHistory.push(chi);
 }
 
@@ -131,8 +129,8 @@ void NavigationHistory::receiveCursorPosChange()
 
     if (ae)
         insertCursorItem(mCurrentTab,
-                         currentEditor()->textCursor().blockNumber(),
-                         currentEditor()->textCursor().positionInBlock());
+                         ae->textCursor().blockNumber(),
+                         ae->textCursor().positionInBlock());
     else if (tv)
         insertCursorItem(mCurrentTab, tv->position().y(), tv->position().x());
     else
@@ -151,20 +149,21 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
     mCurrentTab = newTab;
 
     if (ae || tv) {
-        mCurrentEditor = ae ? ae : tv->edit();
+        mHasCursor = true;
+        AbstractEdit* edit = ae ? ae : tv->edit();
 
         // remove connection from old editor
-        mCurrentEditor->disconnect(mCurrentEditor, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
-        connect(mCurrentEditor, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
+        edit->disconnect(edit, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
+        connect(edit, &AbstractEdit::cursorPositionChanged, this, &NavigationHistory::receiveCursorPosChange);
     } else {
-        mCurrentEditor = nullptr; // current tab is not an editor with cursor
+        mHasCursor = false;
     }
     receiveCursorPosChange();
 }
 
-AbstractEdit *NavigationHistory::currentEditor() const
+QWidget *NavigationHistory::currentTab() const
 {
-    return mCurrentEditor;
+    return mCurrentTab;
 }
 
 bool NavigationHistory::itemValid(CursorHistoryItem item)

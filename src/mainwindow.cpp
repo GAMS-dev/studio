@@ -225,7 +225,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
     on_actionShow_System_Log_triggered();
 
-    mNavigationHistory = new NavigationHistory();
+    mNavigationHistory = new NavigationHistory(); // TODO(RG): look at this
     NavigationHistoryLocator::provide(mNavigationHistory);
     connect(mNavigationHistory, &NavigationHistory::historyChanged, this, &MainWindow::updateCursorHistoryAvailability);
 
@@ -4170,11 +4170,10 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
 
     if (item.lineNr >= 0) {
         // restore text cursor if editor available
-        if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEditor()))
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab()))
             ce->jumpTo(item.lineNr, item.col);
-        else if (TextView* tv = ViewHelper::toTextView(mNavigationHistory->currentEditor())) {
+        else if (TextView* tv = ViewHelper::toTextView(mNavigationHistory->currentTab()))
             tv->jumpTo(item.lineNr, item.col, 0, true);
-        }
         // else: nothing to do
     }
 

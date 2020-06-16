@@ -51,7 +51,7 @@ public:
 
     bool itemValid(CursorHistoryItem item);
     void setActiveTab(QWidget* newTab);
-    AbstractEdit *currentEditor() const;
+    QWidget *currentTab() const;
 
 signals:
     void historyChanged();
@@ -65,14 +65,10 @@ private:
 
     int mStackPosition = -1;
     QWidget* mCurrentTab = nullptr;
-    AbstractEdit* mCurrentEditor = nullptr;
+    bool mHasCursor = false;
     bool mStopRecord = true;
 
     void insertCursorItem(QWidget* widget, int line = -1, int pos = -1);
-
-signals:
-
-
 };
 
 } // namespace studio
