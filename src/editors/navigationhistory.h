@@ -29,19 +29,16 @@ namespace gams {
 namespace studio {
 
 struct CursorHistoryItem {
-    QWidget* tab;
-    int lineNr;
-    int col;
-    QString filePath;
+    QWidget* tab = nullptr;
+    int lineNr = -1;
+    int col = -1;
+    QString filePath = "";
 };
 
 class NavigationHistory : public QObject
 {
     Q_OBJECT
 public:
-    NavigationHistory(QObject *parent = nullptr);
-    ~NavigationHistory();
-
     CursorHistoryItem goBack();
     CursorHistoryItem goForward();
 
@@ -64,7 +61,6 @@ public slots:
 
 private:
     const int MAX_SIZE = 1000;
-    CursorHistoryItem mInvalidItem;
     QStack<CursorHistoryItem> mHistory;
 
     int mStackPosition = -1;

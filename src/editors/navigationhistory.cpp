@@ -26,15 +26,6 @@
 namespace gams {
 namespace studio {
 
-NavigationHistory::NavigationHistory(QObject *parent) : QObject(parent)
-{
-    mInvalidItem.tab = nullptr;
-}
-
-NavigationHistory::~NavigationHistory()
-{
-}
-
 /// Goes back in stack and returns CursorHistoryItem. This is not a simple pop as we need to keep
 /// the items in case the user wants to go forward again!
 /// \brief NavigationHistory::goBack
@@ -47,7 +38,7 @@ CursorHistoryItem NavigationHistory::goBack()
         CursorHistoryItem chi = mHistory.at(mStackPosition);
         return chi;
     } else {
-        return mInvalidItem;
+        return CursorHistoryItem();
     }
 }
 
@@ -58,7 +49,7 @@ CursorHistoryItem NavigationHistory::goBack()
 ///
 CursorHistoryItem NavigationHistory::goForward()
 {
-    if (mStackPosition >= mHistory.size()-1) return mInvalidItem; // reached the end
+    if (mStackPosition >= mHistory.size()-1) return CursorHistoryItem(); // reached the end
 
     mStackPosition++;
     CursorHistoryItem chi = mHistory.at(mStackPosition);
