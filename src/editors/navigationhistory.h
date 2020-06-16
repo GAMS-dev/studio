@@ -63,7 +63,7 @@ public slots:
     void receiveCursorPosChange();
 
 private:
-    int MAX_SIZE = 1000;
+    const int MAX_SIZE = 1000;
     CursorHistoryItem mInvalidItem;
     QStack<CursorHistoryItem> mHistory;
 
