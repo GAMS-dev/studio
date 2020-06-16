@@ -377,7 +377,6 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
         mSubKinds << SyntaxKind::IdentifierTableAssignmentRow;
         break;
     case SyntaxKind::IdentifierTableAssignmentRow:
-//        mSubKinds << SyntaxKind::IdentifierTableAssignmentHead;
         break;
     default:
         Q_ASSERT_X(false, "SyntaxTableAssign", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
@@ -399,7 +398,7 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, const int kindFl
     }
     int end = line.indexOf(';', index);
     if (end < 0)
-        return SyntaxBlock(this, 0, index, line.length(), SyntaxShift::shift);
+        return SyntaxBlock(this, kindFlavor, index, line.length(), SyntaxShift::shift);
     return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 
@@ -409,7 +408,7 @@ SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, int fla
     int end = line.indexOf(';', index);
     if (end < 0)
         return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
-    return SyntaxBlock(this, flavor, index, end, SyntaxShift::out);
+    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 
 } // namespace syntax
