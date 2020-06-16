@@ -105,14 +105,11 @@ SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxKind::Declarati
     mKeywords.insert(int(kind()), new DictList(list));
     for (int i = 0; i < list.size(); ++i) {
         if (list.at(i).first.compare("Table", Qt::CaseInsensitive) == 0) {
-            DEB() << "for iKey_" << i << "added flav_1";
-            mFlavors.insert(i, 1);
+            mFlavors.insert(i, flavorTable);
         } else if (list.at(i).first.compare("Model", Qt::CaseInsensitive) == 0) {
-            DEB() << "for iKey_" << i << "added flav_2";
-            mFlavors.insert(i, 2);
+            mFlavors.insert(i, flavorModel);
         } else if (list.at(i).first.compare("Models", Qt::CaseInsensitive) == 0) {
-            DEB() << "for iKey_" << i << "added flav_2";
-            mFlavors.insert(i, 2);
+            mFlavors.insert(i, flavorModel);
         }
     }
 
@@ -125,9 +122,9 @@ SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxKind::Declarati
                << SyntaxKind::CommentInline << SyntaxKind::Identifier;
 }
 
-SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, const int kindFlavor, const QString& line, int index)
+SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
 {
-    Q_UNUSED(kindFlavor)
+    Q_UNUSED(flavor)
     int start = index;
     int end = -1;
     while (isWhitechar(line, start))
@@ -137,20 +134,20 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, const int kindFl
 
         // search for kind-valid declaration keyword
         end = findEnd(entryKind, line, start, iKey);
-        DEB() << "iKey_" << iKey << " flav_" << mFlavors.value(iKey, 0);
-        if (end > start) return SyntaxBlock(this, mFlavors.value(iKey, 0), start, end, SyntaxShift::shift);
+        if (end > start) return SyntaxBlock(this, mFlavors.value(iKey), start, end, SyntaxShift::shift);
 
         // search for invalid new declaration keyword
         end = findEnd(kind(), line, start, iKey);
-        if (end > start) return SyntaxBlock(this, mFlavors.value(iKey, 0), start, end, true, SyntaxShift::reset);
+        if (end > start) return SyntaxBlock(this, mFlavors.value(iKey), start, end, true, SyntaxShift::reset);
+
         return SyntaxBlock(this);
     }
 
     end = findEnd(kind(), line, start, iKey);
     if (end > start) {
         if (entryKind == SyntaxKind::Declaration)
-            return SyntaxBlock(this, mFlavors.value(iKey, 0), start, end, true, SyntaxShift::reset);
-        return SyntaxBlock(this, mFlavors.value(iKey, 0), start, end, false, SyntaxShift::in, kind());
+            return SyntaxBlock(this, mFlavors.value(iKey), start, end, true, SyntaxShift::reset);
+        return SyntaxBlock(this, mFlavors.value(iKey), start, end, false, SyntaxShift::in, kind());
     }
     return SyntaxBlock(this);
 }
@@ -177,9 +174,9 @@ SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxKind kind) : SyntaxKeywordBase(
 
 }
 
-SyntaxBlock SyntaxPreDeclaration::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxPreDeclaration::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
-    Q_UNUSED(kindFlavor)
+    Q_UNUSED(flavor)
     int start = index;
     int end = -1;
     while (isWhitechar(line, start))
@@ -227,10 +224,10 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind) : SyntaxKeywordBase(kind)
     mKeywords.insert(int(kind), new DictList(list));
 }
 
-SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(kindFlavor)
+    Q_UNUSED(flavor)
     int start = index;
     int end = -1;
     while (isWhitechar(line, start))
@@ -267,10 +264,10 @@ SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind) : SyntaxKeywordBase(kind)
     mKeywords.insert(int(kind), new DictList(list));
 }
 
-SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(kindFlavor)
+    Q_UNUSED(flavor)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -279,7 +276,7 @@ SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, const int kindFlavo
     end = findEnd(kind(), line, start, iKey);
     if (end > start) {
         SyntaxShift kindShift = (kind() == SyntaxKind::Embedded) ? SyntaxShift::in : SyntaxShift::out;
-        return SyntaxBlock(this, kindFlavor, start, end, false, kindShift, kind());
+        return SyntaxBlock(this, flavor, start, end, false, kindShift, kind());
     }
     return SyntaxBlock(this);
 }
@@ -289,10 +286,10 @@ SyntaxEmbeddedBody::SyntaxEmbeddedBody() : SyntaxAbstract(SyntaxKind::EmbeddedBo
     mSubKinds << SyntaxKind::EmbeddedEnd << SyntaxKind::Directive;
 }
 
-SyntaxBlock SyntaxEmbeddedBody::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxEmbeddedBody::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    return SyntaxBlock(this, kindFlavor, index, line.length());
+    return SyntaxBlock(this, flavor, index, line.length());
 }
 
 SyntaxBlock SyntaxEmbeddedBody::validTail(const QString &line, int index, int flavor, bool &hasContent)
@@ -334,10 +331,10 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind) : SyntaxKeywordBase(kind)
 
 }
 
-SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(kindFlavor)
+    Q_UNUSED(flavor)
     int start = index;
     while (isWhitechar(line, start))
         ++start;

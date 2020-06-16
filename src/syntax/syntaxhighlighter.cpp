@@ -88,12 +88,10 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationVariableType), Scheme::Syntax_declaration);
     initKind(new SyntaxDeclaration(), Scheme::Syntax_declaration);
 
-    initKind(new SyntaxIdentifier(SyntaxKind::Identifier), Scheme::Syntax_identifier);
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim1), Scheme::Syntax_identifier);
-    initKind(new SyntaxIdentifierDim(SyntaxKind::IdentifierDim2), Scheme::Syntax_identifier);
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd1), Scheme::Syntax_identifier);
-    initKind(new SyntaxIdentifierDimEnd(SyntaxKind::IdentifierDimEnd2), Scheme::Syntax_identifier);
-    initKind(new SyntaxIdentDescript(SyntaxKind::IdentifierDescription), Scheme::Syntax_description);
+    initKind(new SyntaxIdentifier(), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDim(), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDimEnd(), Scheme::Syntax_identifier);
+    initKind(new SyntaxIdentDescript(), Scheme::Syntax_description);
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), Scheme::Syntax_identifierAssign);
     initKind(new AssignmentLabel(), Scheme::Syntax_assignLabel);
     initKind(new AssignmentValue(), Scheme::Syntax_assignValue);

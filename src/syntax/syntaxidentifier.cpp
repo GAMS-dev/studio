@@ -25,14 +25,13 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-SyntaxIdentifier::SyntaxIdentifier(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentifier::SyntaxIdentifier() : SyntaxAbstract(SyntaxKind::Identifier)
 {
     // sub-kinds to check for all types
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
-              << SyntaxKind::IdentifierDim1 << SyntaxKind::IdentifierDim2
-              << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierTableAssignmentHead
-              << SyntaxKind::CommaIdent;
+              << SyntaxKind::IdentifierDim << SyntaxKind::IdentifierAssignment
+              << SyntaxKind::IdentifierTableAssignmentHead << SyntaxKind::CommaIdent;
 
     mEmptyLineKinds << mSubKinds
                     << SyntaxKind::Identifier
@@ -49,9 +48,8 @@ int SyntaxIdentifier::identChar(const QChar &c) const
     return 0;                                                       // no valid identifier letter
 }
 
-SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const int kindFlavor, const QString& line, int index)
+SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
 {
-    // TODO(JM) ensure only one identifier on flavor=1 (table)
     Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
@@ -60,9 +58,9 @@ SyntaxBlock SyntaxIdentifier::find(const SyntaxKind entryKind, const int kindFla
     int end = start;
     if (identChar(line.at(end++)) != 2) return SyntaxBlock(this);
     while (end < line.length()) {
-        if (!identChar(line.at(end++))) return SyntaxBlock(this, kindFlavor, start, end-1, SyntaxShift::shift);
+        if (!identChar(line.at(end++))) return SyntaxBlock(this, flavor, start, end-1, SyntaxShift::shift);
     }
-    return SyntaxBlock(this, kindFlavor, start, end, SyntaxShift::shift);
+    return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index, int flavor, bool &hasContent)
@@ -74,55 +72,44 @@ SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index, int flav
     return SyntaxBlock(this, flavor, index, start, SyntaxShift::shift);
 }
 
-SyntaxIdentifierDim::SyntaxIdentifierDim(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentifierDim::SyntaxIdentifierDim() : SyntaxAbstract(SyntaxKind::IdentifierDim), mDelimiters("([)]")
 {
-    QHash<int, QChar> delims {
-        {static_cast<int>(SyntaxKind::IdentifierDim1), '('},
-        {static_cast<int>(SyntaxKind::IdentifierDim2), '['},
-    };
     // sub-kinds to check for all types
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
-    mSubKinds << SyntaxKind::IdentifierDimEnd1
-              << SyntaxKind::IdentifierDimEnd2;
+    mSubKinds << SyntaxKind::IdentifierDimEnd;
     mEmptyLineKinds << mSubKinds;
-    if (!delims.contains(static_cast<int>(kind)))
-        Q_ASSERT_X(false, "SyntaxIdentifierDim", QString("missing delimiter for SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
-    mDelimiterIn = delims.value(static_cast<int>(kind));
-    mDelimiterOut = (mDelimiterIn == '(') ? ')' : ']';
 }
 
-SyntaxBlock SyntaxIdentifierDim::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxIdentifierDim::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
     if (start >= line.length()) return SyntaxBlock(this);
-    if (line.at(start) != mDelimiterIn) return SyntaxBlock(this);
-    return SyntaxBlock(this, kindFlavor, start, start+1, SyntaxShift::shift);
+    if (line.at(start) == mDelimiters.at(0))
+        return SyntaxBlock(this, flavor, start, start+1, SyntaxShift::shift);
+    if (line.at(start) == mDelimiters.at(1))
+        return SyntaxBlock(this, flavor+flavorBrace, start, start+1, SyntaxShift::shift);
+    return SyntaxBlock(this);
 }
 
 SyntaxBlock SyntaxIdentifierDim::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
-    const QString invalid("([])");
     int end = index-1;
     // inside valid identifier dimension
     while (++end < line.length()) {
-        if (line.at(end--) == mDelimiterOut) break;
-        if (invalid.indexOf(line.at(++end)) >= 0)
+        if (line.at(end--) == mDelimiters.at(flavor & flavorBrace ? 3 : 2)) break;
+        if (mDelimiters.indexOf(line.at(++end)) >= 0)
             return SyntaxBlock(this, flavor, index, end, SyntaxShift::out, true);
     }
     hasContent = index < end;
     return SyntaxBlock(this, flavor, index, end+1, SyntaxShift::shift);
 }
 
-SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd() : SyntaxAbstract(SyntaxKind::IdentifierDimEnd), mDelimiters(")]")
 {
-    QHash<int, QChar> delims {
-        {static_cast<int>(SyntaxKind::IdentifierDimEnd1), ')'},
-        {static_cast<int>(SyntaxKind::IdentifierDimEnd2), ']'},
-    };
     // sub-kinds to check for all types
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -133,25 +120,23 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SyntaxKind kind) : SyntaxAbstract
                     << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
                     << SyntaxKind::Declaration;
     mSubKinds << SyntaxKind::IdentifierDescription; // must not exist in emptyLineKinds
-
-    if (!delims.contains(static_cast<int>(kind)))
-        Q_ASSERT_X(false, "SyntaxIdentifierDimEnd", QString("missing delimiter for SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
-    mDelimiter = delims.value(static_cast<int>(kind));
 }
 
-SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (start >= line.length() || line.at(start) != mDelimiter)  return SyntaxBlock(this);
-    return SyntaxBlock(this, kindFlavor, index, qMin(start+1, line.length()), SyntaxShift::shift);
+    if (start >= line.length() || line.at(start) != mDelimiters.at(flavor & flavorBrace ? 1 : 0))
+        return SyntaxBlock(this);
+    if (flavor & flavorBrace)
+        flavor = flavor - flavorBrace;
+    return SyntaxBlock(this, flavor, index, qMin(start+1, line.length()), SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
-//    if (index == 0) return SyntaxBlock(this);
     int end = index;
     while (isWhitechar(line, end))
         ++end;
@@ -159,7 +144,7 @@ SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, in
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentDescript::SyntaxIdentDescript() : SyntaxAbstract(SyntaxKind::IdentifierDescription)
 {
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -170,12 +155,11 @@ SyntaxIdentDescript::SyntaxIdentDescript(SyntaxKind kind) : SyntaxAbstract(kind)
     mSubKinds << SyntaxKind::CommaIdent << SyntaxKind::Semicolon << SyntaxKind::IdentifierAssignment;
 }
 
-SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     if (index == 0) return SyntaxBlock(this);
     if (entryKind != SyntaxKind::Identifier
-            && entryKind != SyntaxKind::IdentifierDimEnd1
-            && entryKind != SyntaxKind::IdentifierDimEnd2)
+            && entryKind != SyntaxKind::IdentifierDimEnd)
         return SyntaxBlock(this);
     const QString invalidFirstChar("/([;");
 
@@ -188,12 +172,12 @@ SyntaxBlock SyntaxIdentDescript::find(const SyntaxKind entryKind, const int kind
     int end = start;
     int lastNonWhite = start;
     while (++end < line.length()) {
-        if (line.at(end) == delim) return SyntaxBlock(this, kindFlavor, start, end+(delim=='/'?0:1), SyntaxShift::shift);
+        if (line.at(end) == delim) return SyntaxBlock(this, flavor, start, end+(delim=='/'?0:1), SyntaxShift::shift);
         if (delim == '/' && line.at(end) == ';') break;
         if (delim == '/' && line.at(end) == ',') break;
         if (!isWhitechar(line, end)) lastNonWhite = end;
     }
-    return SyntaxBlock(this, kindFlavor, start, lastNonWhite+1, SyntaxShift::shift, (delim != '/'));
+    return SyntaxBlock(this, flavor, start, lastNonWhite+1, SyntaxShift::shift, (delim != '/'));
 }
 
 SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, int flavor, bool &hasContent)
@@ -225,9 +209,9 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
     }
 }
 
-SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
-    if (kindFlavor == 1) return SyntaxBlock(this);
+    if (flavor & flavorTable) return SyntaxBlock(this);
     int start = index;
     bool inside = (kind() != SyntaxKind::IdentifierAssignmentEnd
                    && (entryKind == SyntaxKind::AssignmentLabel
@@ -236,7 +220,7 @@ SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, const int kindFl
     while (isWhitechar(line, start))
         ++start;
     if (start < line.length() && line.at(start) == delim)
-        return SyntaxBlock(this, kindFlavor, start, start+1, SyntaxShift::shift);
+        return SyntaxBlock(this, flavor, start, start+1, SyntaxShift::shift);
     return SyntaxBlock(this);
 }
 
@@ -260,10 +244,10 @@ AssignmentLabel::AssignmentLabel()
               << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
 }
 
-SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    if (kindFlavor == 1) return SyntaxBlock(this);
+    if (flavor & flavorTable) return SyntaxBlock(this);
     int start = index;
     while (isWhitechar(line, start)) start++;
     if (start >= line.size()) return SyntaxBlock(this);
@@ -326,10 +310,10 @@ AssignmentValue::AssignmentValue()
     mSubKinds << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
 }
 
-SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    if (kindFlavor == 1) return SyntaxBlock(this);
+    if (flavor & flavorTable) return SyntaxBlock(this);
     int start = index+1;
     while (isWhitechar(line, start)) start++;
     if (start >= line.size()) return SyntaxBlock(this);
@@ -383,9 +367,9 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
     }
 }
 
-SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index)
+SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
-    if (kindFlavor != 1) return SyntaxBlock(this);
+    if (!(flavor & flavorTable)) return SyntaxBlock(this);
     if (index > 0) return SyntaxBlock(this);
 
     if (kind() == SyntaxKind::IdentifierTableAssignmentHead
@@ -398,7 +382,7 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, const int kindFl
     }
     int end = line.indexOf(';', index);
     if (end < 0)
-        return SyntaxBlock(this, kindFlavor, index, line.length(), SyntaxShift::shift);
+        return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
     return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 

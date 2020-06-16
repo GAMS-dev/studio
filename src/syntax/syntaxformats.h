@@ -54,13 +54,11 @@ enum class SyntaxKind {
     CommaIdent,
     DeclarationSetType,             // must be followed by Declaration
     DeclarationVariableType,        // must be followed by Declaration
-    Declaration,
+    Declaration,                    // uses flavor bits > 1
 
     Identifier,
-    IdentifierDim1,                 // dimension started with '('
-    IdentifierDim2,                 // dimension started with '['
-    IdentifierDimEnd1,              // dimension started with '(' must end with ')'
-    IdentifierDimEnd2,              // dimension started with '[' must end with ']'
+    IdentifierDim,                  // dimension started with '(' or '[' - uses flavor bit 1
+    IdentifierDimEnd,               // dimension end with ')' or ']' - uses flavor bit 1
     IdentifierDescription,
 
     IdentifierAssignment,
@@ -92,6 +90,12 @@ Q_ENUM_NS(SyntaxKind);
 //inline QTextStream &operator <<(QTextStream &steam, SyntaxKind key) noexcept { return steam << QVariant::fromValue(key).toString(); }
 
 QString syntaxKindName(SyntaxKind kind);
+
+enum FlavorFlag {
+    flavorBrace = 1,
+    flavorTable = 2,
+    flavorModel = 4,
+};
 
 enum class SyntaxShift {
     shift,      ///> replace current-top-kind by this
@@ -148,7 +152,7 @@ public:
     Scheme::ColorSlot colorSlot() const { return mColorSlot; }
 
     /// Finds the begin of this syntax
-    virtual SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) = 0;
+    virtual SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) = 0;
 
     /// Finds the end of valid trailing characters for this syntax
     virtual SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) = 0;
@@ -209,7 +213,7 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard();
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -221,7 +225,7 @@ class SyntaxDirective : public SyntaxAbstract
 {
 public:
     SyntaxDirective(QChar directiveChar = '$');
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
     void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
     void addSubBody(SyntaxFormula *syntax) {mSubSyntaxBody << syntax;}
@@ -245,7 +249,7 @@ class SyntaxDirectiveBody: public SyntaxAbstract
 public:
     SyntaxDirectiveBody(SyntaxKind kind);
     void setCommentChars(QVector<QChar> chars);
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -254,7 +258,7 @@ class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(QChar commentChar = '*');
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 private:
     QChar mCommentChar;
@@ -267,7 +271,7 @@ class SyntaxCommentEndline: public SyntaxAbstract
 public:
     SyntaxCommentEndline(QString commentChars = "!!");
     void setCommentChars(QString commentChars);
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -276,7 +280,7 @@ class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -285,7 +289,7 @@ class SyntaxDelimiter: public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxDelimiter(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -294,7 +298,7 @@ class SyntaxFormula: public SyntaxAbstract
     QVector<QChar> mSpecialDynamicChars;
 public:
     SyntaxFormula(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
     void setSpecialDynamicChars(QVector<QChar> chars);
 };
@@ -303,7 +307,7 @@ class SyntaxString : public SyntaxAbstract
 {
 public:
     SyntaxString();
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -311,7 +315,7 @@ class SyntaxAssign : public SyntaxAbstract
 {
 public:
     SyntaxAssign();
-    SyntaxBlock find(const SyntaxKind entryKind, const int kindFlavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
