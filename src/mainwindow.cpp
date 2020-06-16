@@ -225,7 +225,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
     on_actionShow_System_Log_triggered();
 
-    mNavigationHistory = new NavigationHistory(); // TODO(RG): look at this
+    mNavigationHistory = new NavigationHistory(this);
     NavigationHistoryLocator::provide(mNavigationHistory);
     connect(mNavigationHistory, &NavigationHistory::historyChanged, this, &MainWindow::updateCursorHistoryAvailability);
 

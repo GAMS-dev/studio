@@ -39,6 +39,8 @@ class NavigationHistory : public QObject
 {
     Q_OBJECT
 public:
+    NavigationHistory(QObject *parent = nullptr);
+
     CursorHistoryItem goBack();
     CursorHistoryItem goForward();
 

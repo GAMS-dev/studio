@@ -21,10 +21,11 @@
 #include "navigationhistory.h"
 #include "viewhelper.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
+
+NavigationHistory::NavigationHistory(QObject *parent) : QObject(parent)
+{ }
 
 /// Goes back in stack and returns CursorHistoryItem. This is not a simple pop as we need to keep
 /// the items in case the user wants to go forward again!
