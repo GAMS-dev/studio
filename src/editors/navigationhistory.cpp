@@ -159,7 +159,6 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
     } else {
         mHasCursor = false;
     }
-    receiveCursorPosChange();
 }
 
 QWidget *NavigationHistory::currentTab() const
