@@ -100,7 +100,7 @@ SyntaxBlock SyntaxIdentifierDim::validTail(const QString &line, int index, int f
     int end = index-1;
     // inside valid identifier dimension
     while (++end < line.length()) {
-        if (line.at(end--) == mDelimiters.at(testFlavor(flavor, flavorBrace) ? 3 : 2)) break;
+        if (line.at(end--) == mDelimiters.at(flavor & flavorBrace ? 3 : 2)) break;
         if (mDelimiters.indexOf(line.at(++end)) >= 0)
             return SyntaxBlock(this, flavor, index, end, SyntaxShift::out, true);
     }
@@ -128,9 +128,9 @@ SyntaxBlock SyntaxIdentifierDimEnd::find(const SyntaxKind entryKind, int flavor,
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (start >= line.length() || line.at(start) != mDelimiters.at(testFlavor(flavor, flavorBrace) ? 1 : 0))
+    if (start >= line.length() || line.at(start) != mDelimiters.at(flavor & flavorBrace ? 1 : 0))
         return SyntaxBlock(this);
-    if (testFlavor(flavor, flavorBrace))
+    if (flavor & flavorBrace)
         flavor = flavor - flavorBrace;
     return SyntaxBlock(this, flavor, index, qMin(start+1, line.length()), SyntaxShift::shift);
 }
@@ -211,7 +211,7 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
 
 SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
-    if (testFlavor(flavor, flavorTable)) return SyntaxBlock(this);
+    if (flavor & flavorTable) return SyntaxBlock(this);
     int start = index;
     bool inside = (kind() != SyntaxKind::IdentifierAssignmentEnd
                    && (entryKind == SyntaxKind::AssignmentLabel
@@ -247,7 +247,7 @@ AssignmentLabel::AssignmentLabel()
 SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    if (testFlavor(flavor, flavorTable)) return SyntaxBlock(this);
+    if (flavor & flavorTable) return SyntaxBlock(this);
     int start = index;
     while (isWhitechar(line, start)) start++;
     if (start >= line.size()) return SyntaxBlock(this);
@@ -313,7 +313,7 @@ AssignmentValue::AssignmentValue()
 SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    if (testFlavor(flavor, flavorTable)) return SyntaxBlock(this);
+    if (flavor & flavorTable) return SyntaxBlock(this);
     int start = index+1;
     while (isWhitechar(line, start)) start++;
     if (start >= line.size()) return SyntaxBlock(this);
@@ -369,7 +369,7 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
 
 SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
-    if (!testFlavor(flavor, flavorTable)) return SyntaxBlock(this);
+    if (!(flavor & flavorTable)) return SyntaxBlock(this);
     if (index > 0) return SyntaxBlock(this);
 
     if (kind() == SyntaxKind::IdentifierTableAssignmentHead

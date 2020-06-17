@@ -91,7 +91,7 @@ Q_ENUM_NS(SyntaxKind);
 
 QString syntaxKindName(SyntaxKind kind);
 
-enum FlavorFlag: int {
+enum FlavorFlag {
     flavorBrace = 1,
     flavorTable = 2,
     flavorModel = 4,
@@ -197,10 +197,6 @@ protected:
         if (index >= line.length()) return false;
         const QChar& ch(line.at(index));
         return (ch.category()==QChar::Separator_Space || ch == '\t' || ch == '\n' || ch == '\r');
-    }
-    bool testFlavor(int value, FlavorFlag testFlag) {
-        int test = testFlag;
-        return value & test;
     }
 
 protected:
