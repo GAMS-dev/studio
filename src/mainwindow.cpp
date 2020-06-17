@@ -4162,6 +4162,7 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
     // check if tab is still opened
     if (ui->mainTabs->indexOf(item.tab) > 0) {
         ui->mainTabs->setCurrentWidget(item.tab);
+        item.tab->setFocus();
     } else {
         if (!item.filePath.isEmpty()) {
             openFilePath(item.filePath, true);
