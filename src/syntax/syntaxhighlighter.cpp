@@ -359,7 +359,8 @@ QString SyntaxHighlighter::codeDeb(CodeRelationIndex cri)
     QString res = syntaxKindName(mCodes.at(cri).blockCode.kind());
     while (cri > 0 && cri != mCodes.at(cri).prevCodeRelIndex) {
         cri = mCodes.at(cri).prevCodeRelIndex;
-        res = syntaxKindName(mCodes.at(cri).blockCode.kind()) + "[" + mCodes.at(cri).blockCode.flavor() + "], " + res;
+        res = syntaxKindName(mCodes.at(cri).blockCode.kind()) + "["
+                + QString::number(mCodes.at(cri).blockCode.flavor()) + "], " + res;
     }
     return res;
 }
