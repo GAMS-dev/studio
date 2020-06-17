@@ -69,7 +69,6 @@ bool NavigationHistory::canGoBackward()
 
 void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
 {
-    if (mStopRecord) return;
     if (ViewHelper::location(widget).isEmpty()) return; // do not insert empty path (e.g. welcome page)
 
     // remove oldest entry when limit is reached
@@ -125,6 +124,8 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
 ///
 void NavigationHistory::receiveCursorPosChange()
 {
+    if (mStopRecord) return;
+
     AbstractEdit *ae = ViewHelper::toCodeEdit(mCurrentTab);
     TextView *tv = ViewHelper::toTextView(mCurrentTab);
 
