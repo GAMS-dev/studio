@@ -33,6 +33,8 @@
 #include "exception.h"
 #include "file/dynamicfile.h"
 #include "colors/palettemanager.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "scheme.h"
 
 namespace gams {
@@ -229,6 +231,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     res.insert(skWinSize, KeyData(scSys, {"window","size"}, QString("1024,768")));
     res.insert(skWinPos, KeyData(scSys, {"window","pos"}, QString("0,0")));
     res.insert(skWinState, KeyData(scSys, {"window","state"}, QByteArray("")));
+    res.insert(skWinMaxSizes, KeyData(scSys, {"window","_maxSizes"}, QString("-1,-1,-1,-1")));
+    res.insert(skWinNormSizes, KeyData(scSys, {"window","_normSizes"}, QString("-1,-1,-1,-1")));
     res.insert(skWinMaximized, KeyData(scSys, {"window","maximized"}, false));
     res.insert(skWinFullScreen, KeyData(scSys, {"window","fullScreen"}, false));
 
@@ -364,6 +368,11 @@ QPoint Settings::toPoint(SettingsKey key) const
     return stringToPoint(toString(key));
 }
 
+QList<int> Settings::toIntList(SettingsKey key) const
+{
+    return toIntArray(toString(key));
+}
+
 QByteArray Settings::toByteArray(SettingsKey key) const
 {
     QString str = value(key).toString();
@@ -388,6 +397,16 @@ void Settings::setSize(SettingsKey key, const QSize &value)
 void Settings::setPoint(SettingsKey key, const QPoint &value)
 {
     setValue(key, pointToString(value));
+}
+
+void Settings::setIntList(SettingsKey key, const QList<int> &value)
+{
+    QString stringVal;
+    for (const int &val : value) {
+        if (!stringVal.isEmpty()) stringVal += ',';
+        stringVal += QString::number(val);
+    }
+    setValue(key, stringVal);
 }
 
 bool Settings::setMap(SettingsKey key, QVariantMap value)
@@ -690,7 +709,11 @@ void Settings::exportSettings(const QString &path)
 {
     if (!mSettings.value(scUser)) return;
     QFile originFile(mSettings.value(scUser)->fileName());
-    originFile.copy(path);
+    if (QFile::exists(path))
+        QFile::remove(path);
+    if (!originFile.copy(path)) {
+        SysLogLocator::systemLog()->append("Error exporting settings to " + path, LogMsgType::Error);
+    }
 }
 
 }

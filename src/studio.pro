@@ -432,7 +432,6 @@ OTHER_FILES +=                                      \
     ../platform/linux/gamsstudio.desktop            \
     ../CHANGELOG                                    \
     ../jenkinsfile                                  \
-    ../jenkinsfile-ci                               \
     ../gamsstudio.desktop                           \
     ../CHANGELOG                                    \
     ../version

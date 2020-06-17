@@ -38,7 +38,8 @@ enum class OptionErrorType {
     Override_Option,     // 5
     UserDefined_Error,   // 6
     Invalid_minVersion,  // 7
-    Invalid_maxVersion   // 8
+    Invalid_maxVersion,  // 8
+    Missing_Value        // 9
 };
 
 enum class OptionDefinitionType {

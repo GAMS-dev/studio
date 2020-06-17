@@ -28,6 +28,9 @@
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search simultaneously in all tabs using &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; syntax.&lt;/p&gt;&lt;p&gt;Checking/unchecking the &lt;span style=&quot; font-weight:600;&quot;&gt;Regular Expression &lt;/span&gt;checkbox toggles the used search format between &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;regular expression&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>

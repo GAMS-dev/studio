@@ -81,6 +81,9 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
     case Qt::ToolTipRole:
         QString tooltipText = "";
         switch(mOptionItem.at(index).error) {
+        case OptionErrorType::Missing_Value:
+            tooltipText.append( QString("Missing value for Parameter key '%1'").arg(mOptionItem.at(index).key) );
+            break;
         case OptionErrorType::Invalid_Key:
             tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(index).key) );
             break;
@@ -148,6 +151,9 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
     case Qt::ToolTipRole: {
         QString tooltipText = "";
         switch(mOptionItem.at(row).error) {
+        case OptionErrorType::Missing_Value:
+            tooltipText.append( QString("Missing value for Parameter key '%1'").arg(mOptionItem.at(row).key) );
+            break;
         case OptionErrorType::Invalid_Key:
             tooltipText.append( QString("Unknown parameter '%1'").arg(mOptionItem.at(row).key));
             break;
@@ -196,13 +202,15 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             if (col==GamsParameterTableModel::COLUMN_OPTION_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
+                }  else if (mOptionItem.at(row).value.simplified().isEmpty()) {
+                        return QVariant::fromValue(Scheme::color(Scheme::Active_Gray));
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
             } else { // value
                   switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                      case OptionErrorType::Missing_Value:
                       case OptionErrorType::Incorrect_Value_Type:
-                            return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
                       case OptionErrorType::Value_Out_Of_Range:
                             return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
                       case OptionErrorType::No_Error:

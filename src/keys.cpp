@@ -113,11 +113,11 @@ void Keys::reset()
     setHotkey(Hotkey::MoveViewLineDown, seq);
 
     seq = new KeySeqList("MoveViewPageUp","Move the view one page up");
-    *seq << QKeySequence(QKeySequence::MoveToPreviousPage);
+    *seq << QKeySequence("Ctrl+PgUp");
     setHotkey(Hotkey::MoveViewPageUp, seq);
 
     seq = new KeySeqList("MoveViewPageDown","Move the view one page down");
-    *seq << QKeySequence(QKeySequence::MoveToNextPage);
+    *seq << QKeySequence("Ctrl+PgDown");
     setHotkey(Hotkey::MoveViewPageDown, seq);
 
     seq = new KeySeqList("MoveToEndOfDoc","Move to the end of document");
@@ -130,27 +130,25 @@ void Keys::reset()
 
     seq = new KeySeqList("MoveToEndOfLine","Move to the end of line");
     *seq << QKeySequence(QKeySequence::MoveToEndOfLine) << QKeySequence(QKeySequence::SelectEndOfLine);
+#ifdef __APPLE__
+    *seq << QKeySequence("Ctrl+Right");
+#endif
     setHotkey(Hotkey::MoveToEndOfLine, seq);
 
     seq = new KeySeqList("MoveToStartOfLine","Move to the start of line");
     *seq << QKeySequence(QKeySequence::MoveToStartOfLine) << QKeySequence(QKeySequence::SelectStartOfLine);
+#ifdef __APPLE__
+    *seq << QKeySequence("Ctrl+Left");
+#endif
     setHotkey(Hotkey::MoveToStartOfLine, seq);
 
     seq = new KeySeqList("MoveCharGroupRight","Move to the next char-group");
-    *seq << QKeySequence(QKeySequence::MoveToNextWord);
+    *seq << QKeySequence(QKeySequence::MoveToNextWord) << QKeySequence(QKeySequence::SelectNextWord);
     setHotkey(Hotkey::MoveCharGroupRight, seq);
 
     seq = new KeySeqList("MoveCharGroupLeft","Move to the previous char-group");
-    *seq << QKeySequence(QKeySequence::MoveToPreviousWord);
+    *seq << QKeySequence(QKeySequence::MoveToPreviousWord) << QKeySequence(QKeySequence::SelectPreviousWord);
     setHotkey(Hotkey::MoveCharGroupLeft, seq);
-
-    seq = new KeySeqList("SelectCharGroupRight","Select to the next char-group");
-    *seq << QKeySequence(QKeySequence::SelectNextWord);
-    setHotkey(Hotkey::SelectCharGroupRight, seq);
-
-    seq = new KeySeqList("SelectCharGroupLeft","Select to the previous char-group");
-    *seq << QKeySequence(QKeySequence::SelectPreviousWord);
-    setHotkey(Hotkey::SelectCharGroupLeft, seq);
 
     seq = new KeySeqList("SelectAll","Select all text");
     *seq << QKeySequence("Ctrl+A");
@@ -171,7 +169,7 @@ void Keys::reset()
 #ifdef __APPLE__
     seq = new KeySeqList("Meta+Shift+Up", "start block edit");
     *seq << QKeySequence("Meta+Shift+Down") << QKeySequence("Meta+Shift+Left")
-         << QKeySequence("Meta+Shift+Right");
+         << QKeySequence("Meta+Shift+Right") << QKeySequence("Alt+Shift+Up") << QKeySequence("Alt+Shift+Down");
     setHotkey(Hotkey::BlockEditStart, seq);
 #else
     seq = new KeySeqList("Shift+Alt+Up","start block edit");

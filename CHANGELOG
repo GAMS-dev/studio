@@ -1,4 +1,35 @@
-Version 1.1
+Version 1.2.0
+==================
+- the Model Library Explorer switches to the first non-empty tab in case the current one runs out of results and switches back as soon as the originally selected tab contains results again.
+- copy actions of the GDX Viewer table view contain the labels from the header now. Two additonal entries that allow to copy without the labels are available via the context menu.
+
+Version 1.1.3 (pending)
+==================
+- added shift-option-up/down modifiers to start block-edit on macOS
+
+Version 1.1.2
+==================
+- improved performance of setting bookmarks
+- fixed fullscreen behavior on macOS
+- fixed rare crash when reloading very large lst file
+- fixed behavior of hotkeys to jump to beginning and end of line and page up/down
+- fixed crash in solver option editor when pressing Ctrl+Return repeatedly
+- fixed Goto dialog jumping to beginning of file when entering invalid values
+- fixed shortcuts to focus Project Explorer and Editor not working
+- fixed sizes of dock-widgets were not stored in FullScreen or Maximized window (GitHub issue #195)
+- fixed crash when reopening a tab of a file that was removed from Project Explorer
+
+Version 1.1.1
+==================
+- fixed behavior of `Ctrl - End` combination in process log and lst file view
+- fixed GAMS parameters not updating when changing group (GitHub issue #194)
+- added parameter editor warnings for missing values
+- fixed update of table in GAMS configuration editor when inserting row
+- fixed settings export not working when file already exists
+- fixed numpad not working when running Studio from an AppImage (GitHub issue #191)
+- fixed `Shift+Arrow Key` not working when running Studio from an AppImage (GitHub issue #191)
+
+Version 1.1.0
 ==================
 - **added default GAMS Configuration Editor**
     - created menu entry to generate default GAMS Configuration file: *GAMS > Default GAMS Configuration*
@@ -19,7 +50,7 @@ Version 1.1
 - fixed creation of empty groups after certain drag and drop events
 - fixed inconsistent behavior of text cursor movement shortcuts in Process Log
 
-Version 1.0
+Version 1.0.0
 ==================
 ## General
 - **introduced new settings format.**
@@ -61,126 +92,3 @@ All settings have been reset and are now saved in JSON format. That means that s
 - improved dark theme colors of Studio to make checkboxes clearer to identify
 - improved readability of text highlighted as error
 - improved hard to read text for deactivated menu items in dark mode
-
-Version 0.14.6
-==================
-## General
-- **introduced Dark Theme for Windows and Linux** in Settings > Editor
-- **changed shortcut layout**:
-    - changed focus Project Explorer to: *Ctrl+1*
-    - changed focus Editor to: *Ctrl+2*
-    - changed focus Parameter Editor to: *Ctrl+3*
-    - changed focus Tab Browser to: *Ctrl+4*
-    - changed focus Process Log to: *Ctrl+5*
-    - reverted Model Library Explorer back to: *F6*
-    - reverted Settings back to: *F7*
-    - changed: Run MIRO base mode to: *F8*
-    - changed: Run MIRO hypercube mode to: *Shift+F8*
-    - changed: Run MIRO configuration mode to: *Shift+F7*
-- fixed rendering blurry MIRO icon
-- improved strategy to find GAMS installation on macOS
-- fixed crash in GDX table view when table contained no data
-- added option to change display format of numerical values in GDX Viewer
-- improved GDX value filter widget
-- improved behavior of MIRO Assembly File dialog
-
-Version 0.14.5
-==================
-## General
-- **improved shortcut layout** (more to come later):
-    - changed open Terminal to: *Ctrl+T*
-    - changed Model Library Explorer to: *F2*
-    - changed Settings to: *F4*
-    - new: Run MIRO base mode: *F5*
-    - new: Run MIRO hypercube mode: *F6*
-    - new: Run MIRO configuration mode: *F7*
-- fixed bug where certain labels did not appear in the vertical header of the table view of the GDX Viewer
-- block selection now uses operating system default selection color
-- added option to set default text codec to Edit > Encoding > Select encodings
-- fixed broken link to help document on macOS when pressing F1 in certain views
-- removed unnecessary highlighting of current line in logs
-- improved dark theme colors on macOS for:
-    - word under cursor highlighting
-    - current line highlighting
-    - warning/error colors in parameter editor
-    - errors and search matches
-
-Version 0.14.4
-==================
-## General
-- **introduced macOS Dark Theme support!**
-- fixed behavior of "View this page online" in Help View
-- fixed crash when using focus log shortcut but all logs were closed
-- focus log shotcut now opens system log if no logs open
-- fixed aspect ratio of Project Explorer icons on Windows
-- improved codec handling in Log View
-- fixed log persisted to disk containing overwritten lines (e.g. progress reports)
-
-## Code Editor
-- "Selection to Uppercase/Lowercase" action now keeps selection
-- fixed syntax coloring in declarations
-- fixed behavior of Tab key when in block edit mode
-
-Version 0.14.3
-==================
-
-## General
-- **new icon design**
-- **added filter for numerical columns in GDX Viewer**
-- fixed column width calculation in list view of the GDX Viewer
-- added action to show or hide toolbar to View menu
-- added toolbar restoration to "Reset View" action
-- fixed syntax highlighting for table statements
-- fixed behavior of calling external AppImages on linux (e.g. MIRO)
-
-## Search
-- fixed crash in search that was caused by being able to change parameters while searching
-- added "Abort" button for Find Next/Previous search actions
-
-
-Version 0.14.2
-==================
-
-## General
-- fixed use main model file name instead of group name for MIRO
-- fixed keyboard navigation for MIRO and Tools main menu
-- fixed crash in search when editing search term while search is ongoing
-- fixed ctrl+k not working on linux when code editor focussed
-- fixed system log losing formatting when closing and re-opening
-- fixed selected a valid monospace font on macOS
-- system log lists all process calls including parameters
-- supported file extensions reviewed and unified
-
-Version 0.14.1
-==================
-
-## General
-- fixed crash related to file encodings
-- preserve order of default and command line GAMS parameters; only override multiple non-immediate parameters
-- allow multiple insertion of the same key if parameter is not recurrent (e.g. one instance or immediate parameter)
-- allow immediate GAMS parameters to occur multiple times without a warning (set recurrent flag to false)
-- disable MIRO menu when MIRO is not available
-- show GAMS call MIRO parameters in system log
-- enable wrapping in the Show Decimals field of the GDX Viewer again
-- improved MIRO assembly file dialog
-
-
-Version 0.14.0
-==================
-
-## General
-- **added GDX Diff dialog**
-- **added basic GAMS MIRO integration**
-- fixed `F3` not focussing lst file, breaking functionality after first press
-- improved GDX Viewer layout to optimize used screen space
-- fixed filestem command line parameter breaking path to lst file
-- removed Terminal shortcut because there was a conflict on windows
-- added clear button to filter input field in GDX Viewer and Reference File Viewer
-- adjusted layout of Reference File Viewer to be consistent with other components
-- fixed Select All (`Ctrl+A`) in BlockEdit mode
-- fixed behavior of BlockEdit when clicking outside of selected block
-- added workaround to focus editor in Lxi Viewer when closing search
-- fixed crash when double-clicking in Process Log while GAMS is running
-- fixed Process Log not scrolled to end for certain fonts after GAMS run
-- fixed Command Line Parameter changes getting lost when using search
-- removed empty lines from System Log
