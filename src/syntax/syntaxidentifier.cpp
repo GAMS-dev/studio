@@ -194,7 +194,6 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
 
-    mDelimiter = '/';
     switch (kind) {
     case SyntaxKind::IdentifierAssignment:
         mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::AssignmentLabel;
@@ -216,10 +215,10 @@ SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, int flavor, cons
     bool inside = (kind() != SyntaxKind::IdentifierAssignmentEnd
                    && (entryKind == SyntaxKind::AssignmentLabel
                        || entryKind == SyntaxKind::AssignmentValue));
-    QChar delim = inside ? ',' : mDelimiter;
+    QString delims = inside ? (flavor & flavorModel ? ",+-" : ",") : "/";
     while (isWhitechar(line, start))
         ++start;
-    if (start < line.length() && line.at(start) == delim)
+    if (start < line.length() && delims.contains(line.at(start)))
         return SyntaxBlock(this, flavor, start, start+1, SyntaxShift::shift);
     return SyntaxBlock(this);
 }
@@ -227,10 +226,11 @@ SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, int flavor, cons
 SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     int start = index;
+    QString delims = (flavor & flavorModel) ? ",+-" : ",";
     while (isWhitechar(line, start))
         ++start;
     int end = (line.length() > start) ? start+1 : start;
-    while (isWhitechar(line, end) || (line.length() > end && line.at(end) == ',')) end++;
+    while (isWhitechar(line, end) || (line.length() > end && delims.contains(line.at(end)))) end++;
     hasContent = (end > start);
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
@@ -258,7 +258,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
 
     QString quote("\"\'");
     QString extender(".:*");
-    QString ender("/,");
+    QString ender(flavor & flavorModel ? "/,+-" : "/,");
     QString pPairs("()");
     int end = start;
     bool extended = false;
@@ -278,9 +278,9 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
             } else if (isWhitechar(line, pos)) {
                 while (isWhitechar(line, pos+1)) ++pos;
                 if (!extended && (pos+1 < line.length()) && !extender.contains(line.at(pos+1)))
-                    return SyntaxBlock(this, 0, start, pos, SyntaxShift::shift);
+                    return SyntaxBlock(this, flavor, start, pos, SyntaxShift::shift);
             } else if (ender.contains(line.at(pos))) {
-                return SyntaxBlock(this, 0, start, pos, SyntaxShift::shift);
+                return SyntaxBlock(this, flavor, start, pos, SyntaxShift::shift);
             }
             extended = false;
         }
@@ -288,7 +288,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
     }
 
     if (end > start) {
-        return SyntaxBlock(this, 0, start, end, SyntaxShift::shift);
+        return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
     }
     return SyntaxBlock(this);
 }
@@ -329,7 +329,7 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, int flavor, const 
         QChar ch = quoteKind==3 ? ']' : delim.at(quoteKind-1);
         end = line.indexOf(ch, pos+1);
         if (end < 0)
-            return SyntaxBlock(this, 0, start, pos+1, SyntaxShift::out, true);
+            return SyntaxBlock(this, flavor, start, pos+1, SyntaxShift::out, true);
         pos = end+1;
     } else {
         while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
@@ -338,7 +338,7 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, int flavor, const 
 //    while (isWhitechar(line, pos)) ++pos;
 
     if (end > start) {
-        return SyntaxBlock(this, 0, start, end, SyntaxShift::skip);
+        return SyntaxBlock(this, flavor, start, end, SyntaxShift::skip);
     }
     return SyntaxBlock(this);
 }

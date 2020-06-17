@@ -324,7 +324,6 @@ SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
 SyntaxBlock SyntaxDelimiter::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(flavor)
     int end = index;
     while (isWhitechar(line, end)) end++;
     if (end < line.length() && line.at(end) == mDelimiter) {
@@ -391,7 +390,7 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QS
         if (chKind != 2) skipWord = false;
         else if (!skipWord) break;
     }
-    return SyntaxBlock(this, 0, start, end, SyntaxShift::shift);
+    return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, int flavor, bool &hasContent)
@@ -431,7 +430,7 @@ SyntaxBlock SyntaxString::find(const SyntaxKind entryKind, int flavor, const QSt
     if (start < line.length() && (line.at(start) == '\'' || line.at(start) == '"')) {
         while (++end < line.length() && line.at(end) != line.at(start)) ;
         if (end < line.length() && line.at(end) == line.at(start))
-            return SyntaxBlock(this, 0, start, end+1, SyntaxShift::skip);
+            return SyntaxBlock(this, flavor, start, end+1, SyntaxShift::skip);
     }
     return SyntaxBlock(this);
 }
@@ -452,23 +451,22 @@ SyntaxAssign::SyntaxAssign()
 SyntaxBlock SyntaxAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(flavor)
     int start = index;
     while (isWhitechar(line, start)) start++;
     if (start >= line.length()) return SyntaxBlock(this);
     if (line.at(start) == '.') {
         if (line.length() > start+1 && line.at(start+1) == '.')
-            return SyntaxBlock(this, 0, start, start+2, SyntaxShift::skip);
+            return SyntaxBlock(this, flavor, start, start+2, SyntaxShift::skip);
     } else if (line.at(start) == '=') {
         if (start+1 >= line.length())
-            return SyntaxBlock(this, 0, start, start+1, SyntaxShift::skip);
+            return SyntaxBlock(this, flavor, start, start+1, SyntaxShift::skip);
         if (line.at(start+1) == '=')
-            return SyntaxBlock(this, 0, start, start+2, SyntaxShift::skip);
+            return SyntaxBlock(this, flavor, start, start+2, SyntaxShift::skip);
         if (start+2 >= line.length() || line.at(start+2) != '=')
-            return SyntaxBlock(this, 0, start, start+1, SyntaxShift::skip);
+            return SyntaxBlock(this, flavor, start, start+1, SyntaxShift::skip);
         if (start+2 <= line.length()) {
             bool error = (QString("eglnxcb").indexOf(line.at(start+1), 0, Qt::CaseInsensitive) < 0);
-            return SyntaxBlock(this, 0, start, start+3, error, SyntaxShift::skip);
+            return SyntaxBlock(this, flavor, start, start+3, error, SyntaxShift::skip);
         }
     }
     return SyntaxBlock(this);
@@ -498,12 +496,11 @@ void SyntaxCommentEndline::setCommentChars(QString commentChars)
 SyntaxBlock SyntaxCommentEndline::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(flavor)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
     if (start+2 <= line.length() && line.at(start) == mCommentChars.at(0) && line.at(start+1) == mCommentChars.at(1))
-        return SyntaxBlock(this, 0, start, line.length(), SyntaxShift::skip);
+        return SyntaxBlock(this, flavor, start, line.length(), SyntaxShift::skip);
     return SyntaxBlock(this);
 }
 
