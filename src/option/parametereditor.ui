@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>gams::studio::option::ParameterEditor</class>
  <widget class="QWidget" name="gams::studio::option::ParameterEditor">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
