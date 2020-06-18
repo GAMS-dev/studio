@@ -2667,6 +2667,18 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
     QMainWindow::mouseMoveEvent(event);
 }
 
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    QMouseEvent* me = static_cast<QMouseEvent*>(event);
+    if (me->button() == Qt::ForwardButton) {
+        on_actionGoForward_triggered();
+        event->accept();
+    } else if (me->button() == Qt::BackButton) {
+        on_actionGoBack_triggered();
+        event->accept();
+    }
+}
+
 void MainWindow::customEvent(QEvent *event)
 {
     QMainWindow::customEvent(event);

@@ -329,6 +329,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
