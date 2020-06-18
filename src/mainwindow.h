@@ -264,6 +264,7 @@ private slots:
     void on_actionShow_Welcome_Page_triggered();
     void on_actionFull_Screen_triggered();
     void on_actionShowToolbar_triggered(bool checked);
+    void on_actionDistraction_Free_Mode_toggled(bool checked);
 
     // Other
     void on_mainTabs_tabCloseRequested(int index);
@@ -406,6 +407,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
+    bool mWidgetStates[5];
     std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 
     std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;

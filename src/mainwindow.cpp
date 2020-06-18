@@ -4118,14 +4118,30 @@ void MainWindow::on_actionFull_Screen_triggered()
     }
 }
 
+void MainWindow::on_actionDistraction_Free_Mode_toggled(bool checked)
+{
+    if (checked) { // collapse
+        mWidgetStates[0] = ui->dockProjectView->isVisible();
+        mWidgetStates[1] = mGamsParameterEditor->isEditorExtended();
+        mWidgetStates[2] = ui->dockProcessLog->isVisible();
+        mWidgetStates[3] = ui->dockHelpView->isVisible();
+
+        ui->dockProjectView->setVisible(false);
+        mGamsParameterEditor->setEditorExtended(false);
+        ui->dockProcessLog->setVisible(false);
+        ui->dockHelpView->setVisible(false);
+    } else { // restore
+        ui->dockProjectView->setVisible(mWidgetStates[0]);
+        mGamsParameterEditor->setEditorExtended(mWidgetStates[1]);
+        ui->dockProcessLog->setVisible(mWidgetStates[2]);
+        ui->dockHelpView->setVisible(mWidgetStates[3]);
+    }
+}
+
 void MainWindow::on_actionShowToolbar_triggered(bool checked)
 {
     ui->toolBar->setVisible(checked);
 }
-
-
-
-
 
 }
 }
