@@ -96,7 +96,6 @@ public:
     int setActiveScheme(QString schemeName, Scope scope = Scheme::EditorScope);
     int setActiveScheme(int scheme, Scope scope = Scheme::EditorScope);
     int activeScheme(Scope scope) const;
-    void setIconSet(IconSet iconSet = ThinIcons);
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);

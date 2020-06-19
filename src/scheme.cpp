@@ -17,7 +17,7 @@ const QColor CUndefined(255, 0, 200);
 
 Scheme::Scheme(QObject *parent) : QObject(parent)
 {
-    mIconSet = "solid"; // thin, solid
+    mIconSet = "solid";
     initDefault();
     initSlotTexts();
 }
@@ -205,15 +205,6 @@ int Scheme::setActiveScheme(int scheme, Scope scope)
 int Scheme::activeScheme(Scope scope) const
 {
     return mScopeScheme.value(scope);
-}
-
-void Scheme::setIconSet(Scheme::IconSet iconSet)
-{
-    switch (iconSet) {
-    case ThinIcons: mIconSet = "thin"; break;
-    case SolidIcons: mIconSet = "solid"; break;
-    }
-    invalidate();
 }
 
 QList<Scheme::Scope> Scheme::scopes()
