@@ -407,7 +407,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
-    bool mWidgetStates[5];
+    bool mWidgetStates[4];
     std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 
     std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;
