@@ -89,8 +89,8 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
 
         // do some filtering:
         if (lastItem.tab == widget) {
-            // do not save same pos
-            if (lastItem.col == pos) return;
+            // do not save identical
+            if (lastItem.lineNr == line && lastItem.col == pos) return;
 
             // remove last when being in next/prev position
             if (lastItem.col == pos-1) replaceLast = true;
