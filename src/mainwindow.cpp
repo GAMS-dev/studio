@@ -2466,6 +2466,10 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    // leave distraction free mode before exiting so we do not lose widget states
+    if (ui->actionDistraction_Free_Mode->isChecked())
+        ui->actionDistraction_Free_Mode->setChecked(false);
+
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
