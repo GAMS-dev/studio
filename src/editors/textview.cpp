@@ -511,6 +511,7 @@ void TextView::updateVScrollZone()
 
 void TextView::topLineMoved()
 {
+    bool wasRecording = NavigationHistoryLocator::navigationHistory()->isRecording();
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
     if (!mDocChanging) {
@@ -549,7 +550,7 @@ void TextView::topLineMoved()
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
 
-        NavigationHistoryLocator::navigationHistory()->startRecord();
+        if (wasRecording) NavigationHistoryLocator::navigationHistory()->startRecord();
     }
 }
 
