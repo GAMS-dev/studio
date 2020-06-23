@@ -31,6 +31,7 @@ namespace gams {
 namespace studio {
 
 struct ParenthesesPos;
+typedef int CodeRelationIndex;
 
 namespace syntax {
 
@@ -50,37 +51,34 @@ public slots:
     void syntaxKind(int position, int &intKind);
 
 private:
-    SyntaxAbstract *getSyntax(SyntaxKind kind) const;
-    int getKindIdx(SyntaxKind kind) const;
     void scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind,SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
 
 private:
-    typedef int KindIndex;
-    typedef int CodeIndex;
-    typedef QPair<KindIndex, CodeIndex> KindCode;
-    typedef QList<SyntaxAbstract*> Kinds;
-    typedef QList<KindCode> Codes;
+    struct CodeRelation {
+        CodeRelation(BlockCode code, CodeRelationIndex prevCri) : blockCode(code), prevCodeRelIndex(prevCri) {}
+        bool operator ==(const CodeRelation &other) {
+            return blockCode == other.blockCode && prevCodeRelIndex == other.prevCodeRelIndex; }
+        BlockCode blockCode;
+        CodeRelationIndex prevCodeRelIndex;
+    };
+//    typedef QPair<KindIndex, CodeIndex> KindCodeX;
+    typedef QHash<SyntaxKind, SyntaxAbstract*> Kinds;
+    typedef QList<CodeRelation> CodeRelations;
 
-    /// \brief addKind
-    /// \param syntax The syntax to be added to the stack
-    /// \param ci The index in mKinds of the previous syntax
-    void addKind(SyntaxAbstract* syntax, CodeIndex ci = 0);
-    void xinitKind(int debug, SyntaxAbstract* syntax, QColor color = QColor(), Scheme::FontFlag fMod = Scheme::fNormal);
-    void xinitKind(SyntaxAbstract* syntax, QColor color = QColor(), Scheme::FontFlag fMod = Scheme::fNormal);
     void initKind(int debug, SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
     void initKind(SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
 
-    int addCode(KindIndex si, CodeIndex ci);
-    BlockCode getCode(BlockCode code, SyntaxShift shift, KindIndex kind, KindIndex kindNext, int nest = 0);
-    int purgeCode(int code);
-    QString codeDeb(int code);
+    int addCode(BlockCode code, CodeRelationIndex parentIndex);
+    CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, int nest = 0);
+    int purgeCode(CodeRelationIndex cri);
+    QString codeDeb(CodeRelationIndex cri);
 
 private:
     int mPositionForSyntaxKind = -1;
     int mLastSyntaxKind = 0;
     QVector<SyntaxKind> mSingleLineKinds;
     Kinds mKinds;
-    Codes mCodes;
+    CodeRelations mCodes;
 };
 
 } // namespace syntax
