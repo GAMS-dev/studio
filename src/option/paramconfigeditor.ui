@@ -106,7 +106,7 @@
   <action name="actionInsert">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/plus</normaloff>:/img/plus</iconset>
+     <normaloff>:/solid/plus</normaloff>:/solid/plus</iconset>
    </property>
    <property name="text">
     <string>Insert</string>
@@ -121,7 +121,7 @@
   <action name="actionDelete">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/delete-all</normaloff>:/img/delete-all</iconset>
+     <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
    </property>
    <property name="text">
     <string>Delete</string>
@@ -136,7 +136,7 @@
   <action name="actionMoveUp">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/move-up</normaloff>:/img/move-up</iconset>
+     <normaloff>:/solid/move-up</normaloff>:/solid/move-up</iconset>
    </property>
    <property name="text">
     <string>Move Up</string>
@@ -151,7 +151,7 @@
   <action name="actionMoveDown">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/move-down</normaloff>:/img/move-down</iconset>
+     <normaloff>:/solid/move-down</normaloff>:/solid/move-down</iconset>
    </property>
    <property name="text">
     <string>Move Down</string>
@@ -207,7 +207,7 @@
   <action name="actionAdd_This_Parameter">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/plus</normaloff>:/img/plus</iconset>
+     <normaloff>:/solid/plus</normaloff>:/solid/plus</iconset>
    </property>
    <property name="text">
     <string>Add This Parameter</string>
@@ -219,7 +219,7 @@
   <action name="actionRemove_This_Parameter">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/img/delete-all</normaloff>:/img/delete-all</iconset>
+     <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
    </property>
    <property name="text">
     <string>Remove This Parameter</string>

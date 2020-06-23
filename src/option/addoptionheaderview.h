@@ -40,7 +40,6 @@ protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
 
 private:
-    const QString iconStr = ":/img/plus";
     const double ICON_SCALE_FACTOR = 0.7;
     const double ICON_MARGIN_FACTOR = 0.3;
 
