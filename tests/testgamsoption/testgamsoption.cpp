@@ -164,7 +164,7 @@ void TestGamsOption::testOptionEnumIntValue_data()
 
     QTest::newRow("MultiPass_0")  << "MultiPass"  << true  << 0 << false << 0  << "Standard compilation";
     QTest::newRow("MultiPass_1")  << "MultiPass"  << true  << 1 << false << 1  << "Check-out compilation";
-    QTest::newRow("MultiPass_2")  << "MultiPass"  << true  << 2 << false << 2  << "As 1, and skip $call and ignore missing file errors with $include and $gdxin";
+    QTest::newRow("MultiPass_2")  << "MultiPass"  << true  << 2 << false << 2  << "as 1, and skip $call and ignore missing file errors with $include and $gdxin as well as unknown dimension errors with empty data statements";
 
     QTest::newRow("DumpOpt_0")  << "DumpOpt"  << true  << 0  << false << 0  << "No dumpfile";
     QTest::newRow("DumpOpt_1")  << "DumpOpt"  << true  << 1  << false << 1  << "Extract referenced data from the restart file using original set element names";
