@@ -29,7 +29,7 @@ namespace studio {
 
 QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Gsp, {"gsp" ,"pro"}, "GAMS Studio Project", false),
-    new FileType(FileKind::Gms, {"gms", "inc"}, "GAMS Source Code", false),
+    new FileType(FileKind::Gms, {"gms", "inc", "dmp"}, "GAMS Source Code", false),
     new FileType(FileKind::Txt, {"txt"}, "Text File (editable)", false),
     new FileType(FileKind::TxtRO, {"log"}, "Text File (read only)", false),
     new FileType(FileKind::Lst, {"lst"}, "GAMS List File", true),
