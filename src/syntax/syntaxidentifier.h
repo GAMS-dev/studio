@@ -29,42 +29,38 @@ namespace syntax {
 class SyntaxIdentifier : public SyntaxAbstract
 {
 public:
-    SyntaxIdentifier(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxIdentifier();
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 private:
     int identChar(const QChar &c) const;
 };
 
 class SyntaxIdentifierDim : public SyntaxAbstract
 {
-    QChar mDelimiterIn;
-    QChar mDelimiterOut;
-    bool mTable;
+    const QString mDelimiters;
 public:
-    SyntaxIdentifierDim(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxIdentifierDim();
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
     int maxNesting() override { return 1; }
 };
 
 class SyntaxIdentifierDimEnd : public SyntaxAbstract
 {
-    QChar mDelimiter;
-    bool mTable;
+    const QString mDelimiters;
 public:
-    SyntaxIdentifierDimEnd(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxIdentifierDimEnd();
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 class SyntaxIdentDescript : public SyntaxAbstract
 {
-    bool mTable;
 public:
-    SyntaxIdentDescript(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxIdentDescript();
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 class SyntaxIdentAssign : public SyntaxAbstract
@@ -72,32 +68,32 @@ class SyntaxIdentAssign : public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxIdentAssign(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 class AssignmentLabel: public SyntaxAbstract
 {
 public:
     AssignmentLabel();
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 class AssignmentValue: public SyntaxAbstract
 {
 public:
     AssignmentValue();
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 class SyntaxTableAssign : public SyntaxAbstract
 {
 public:
     SyntaxTableAssign(SyntaxKind kind);
-    SyntaxBlock find(const SyntaxKind entryKind, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 
