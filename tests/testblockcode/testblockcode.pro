@@ -27,7 +27,8 @@ INCLUDEPATH += $$SRCPATH \
 
 HEADERS += \
     testblockcode.h \
-    $$SRCPATH/syntax/blockcode.h
+    $$SRCPATH/syntax/blockcode.h \
+    $$SRCPATH/syntax/syntaxformats.h
 
 SOURCES += \
     testblockcode.cpp \
