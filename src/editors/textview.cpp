@@ -418,7 +418,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         mMapper->moveVisibleTopLine(-1);
     } else if (event == Hotkey::MoveViewLineDown) {
         mMapper->moveVisibleTopLine(1);
-    } else {
+    } else if (!event->modifiers() & Qt::AltModifier){
         switch (event->key()) {
         case Qt::Key_Up:
             if (!cursorIsValid)
