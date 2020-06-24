@@ -31,10 +31,10 @@ namespace syntax {
 class BlockCode
 {
     // in sum the bounds must not use more than 31 bits (to fit in positive integer)
-    static const int b1 = 16384;    // kind bound
-    static const int b2 = 32;       // flavor (sub-kind) bound
-    static const int b3 = 256;      // nesting-depth bound (extended info if depth==255)
-    static const int b4 = 8;        // parser-type bound
+    static const int b1 = 1024;     // [10 bits] kind bound
+    static const int b2 = 1024;     // [10 bits] flavor (sub-kind) bound
+    static const int b3 = 512;      // [ 9 bits] nesting-depth bound (extended info if depth==511)
+    static const int b4 = 4;        // [ 2 bits] parser-type bound
 
     int mCode;
 public:
