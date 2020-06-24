@@ -49,8 +49,8 @@ public:
     explicit HelpWidget(QWidget *parent = nullptr);
     ~HelpWidget();
 
-    QMultiMap<QString, QString> getBookmarkMap() const;
-    void setBookmarkMap(const QMultiMap<QString, QString> &value);
+    QMap<QString, QString> getBookmarkMap() const;
+    void setBookmarkMap(const QMap<QString, QString> &value);
     void clearStatusBar();
 
 public slots:
@@ -106,7 +106,7 @@ private:
 private:
     Ui::HelpWidget *ui;
 
-    QMultiMap<QString, QString> mBookmarkMap;
+    QMap<QString, QString> mBookmarkMap;
     QMenu* mBookmarkMenu;
     QLabel mStatusBarLabel;
     QUrl onlineStartPageUrl;
