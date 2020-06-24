@@ -687,16 +687,6 @@ void FileMeta::rehighlight(int line)
     if (document() && mHighlighter) mHighlighter->rehighlightBlock(document()->findBlockByNumber(line));
 }
 
-void FileMeta::rehighlightBlock(QTextBlock block, QTextBlock endBlock)
-{
-    if (!document() || !mHighlighter) return;
-    while (block.isValid()) {
-        mHighlighter->rehighlightBlock(block);
-        if (!endBlock.isValid() || block == endBlock) break;
-        block = block.next();
-    }
-}
-
 syntax::SyntaxHighlighter *FileMeta::highlighter() const
 {
     return mHighlighter;

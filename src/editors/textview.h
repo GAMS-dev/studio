@@ -138,7 +138,7 @@ private:
 
 private:
 
-    class ChangeKeeper { //
+    class ChangeKeeper {
         int &changeCounter;
     public:
         ChangeKeeper(const int &_changeCounter) : changeCounter(const_cast<int&>(_changeCounter)) {++changeCounter;}
