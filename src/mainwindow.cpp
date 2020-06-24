@@ -343,7 +343,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
 
     QFileInfo fi(filePath);
 
-    ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+    ProjectGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
     ProjectFileNode *node = addNode("", filePath, group);
     openFileNode(node);
 }
@@ -1085,7 +1085,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
         for (ProjectGroupNode *group: groups)
             openFileNode(addNode("", filePath, group));
     } else { // create new group
-        ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+        ProjectGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
         ProjectFileNode* node = addNode("", filePath, group);
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
@@ -2628,7 +2628,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     QFileInfo firstFile(files.first());
 
     // create base group
-    ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
+    ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
             ProjectFileNode *node = addNode("", item, group);
@@ -3112,7 +3112,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                     runGroup = nodes.first()->assignedRunGroup();
             } else {
                 QFileInfo file(fileMeta->location());
-                runGroup = mProjectRepo.createGroup(file.baseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
+                runGroup = mProjectRepo.createGroup(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
             }
         }
