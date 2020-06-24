@@ -36,6 +36,7 @@
 #include "logtabcontextmenu.h"
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
+#include "editors/navigationhistory.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -162,6 +163,7 @@ public slots:
     void showErrorMessage(QString text);
     void parameterRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
+    void updateCursorHistoryAvailability();
     bool eventFilter(QObject*sender, QEvent* event);
 
 private slots:
@@ -317,12 +319,17 @@ private slots:
     void on_actionChangelog_triggered();
 
     void openGdxDiffFile();
+    void on_actionGoBack_triggered();
+
+    void on_actionGoForward_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
@@ -365,6 +372,7 @@ private:
     QFont createEditorFont(const QString &fontFamily, int pointSize);
     bool isMiroAvailable();
     bool validMiroPrerequisites();
+    void restoreCursorPosition(CursorHistoryItem item);
 
 private:
     Ui::MainWindow *ui;
@@ -372,6 +380,7 @@ private:
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
     QStringList mInitialFiles;
+    NavigationHistory* mNavigationHistory;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

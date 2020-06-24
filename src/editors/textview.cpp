@@ -25,6 +25,8 @@
 #include "textviewedit.h"
 #include "keys.h"
 #include "settings.h"
+#include "editors/navigationhistorylocator.h"
+#include "editors/navigationhistory.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -416,7 +418,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         mMapper->moveVisibleTopLine(-1);
     } else if (event == Hotkey::MoveViewLineDown) {
         mMapper->moveVisibleTopLine(1);
-    } else {
+    } else if (!event->modifiers() & Qt::AltModifier){
         switch (event->key()) {
         case Qt::Key_Up:
             if (!cursorIsValid)
@@ -509,6 +511,9 @@ void TextView::updateVScrollZone()
 
 void TextView::topLineMoved()
 {
+    bool wasRecording = NavigationHistoryLocator::navigationHistory()->isRecording();
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
+
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
@@ -544,6 +549,8 @@ void TextView::topLineMoved()
             mEdit->verticalScrollBar()->setSliderPosition(0);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
+
+        if (wasRecording) NavigationHistoryLocator::navigationHistory()->startRecord();
     }
 }
 
