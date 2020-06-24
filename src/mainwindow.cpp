@@ -2477,6 +2477,10 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    // leave distraction free mode before exiting so we do not lose widget states
+    if (ui->actionDistraction_Free_Mode->isChecked())
+        ui->actionDistraction_Free_Mode->setChecked(false);
+
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
@@ -4142,6 +4146,26 @@ void MainWindow::on_actionFull_Screen_triggered()
     } else {
         mMaximizedBeforeFullScreen = isMaximized();
         showFullScreen();
+    }
+}
+
+void MainWindow::on_actionDistraction_Free_Mode_toggled(bool checked)
+{
+    if (checked) { // collapse
+        mWidgetStates[0] = ui->dockProjectView->isVisible();
+        mWidgetStates[1] = mGamsParameterEditor->isEditorExtended();
+        mWidgetStates[2] = ui->dockProcessLog->isVisible();
+        mWidgetStates[3] = ui->dockHelpView->isVisible();
+
+        ui->dockProjectView->setVisible(false);
+        mGamsParameterEditor->setEditorExtended(false);
+        ui->dockProcessLog->setVisible(false);
+        ui->dockHelpView->setVisible(false);
+    } else { // restore
+        ui->dockProjectView->setVisible(mWidgetStates[0]);
+        mGamsParameterEditor->setEditorExtended(mWidgetStates[1]);
+        ui->dockProcessLog->setVisible(mWidgetStates[2]);
+        ui->dockHelpView->setVisible(mWidgetStates[3]);
     }
 }
 

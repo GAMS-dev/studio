@@ -226,6 +226,7 @@
     <addaction name="actionReset_Views"/>
     <addaction name="separator"/>
     <addaction name="actionFull_Screen"/>
+    <addaction name="actionDistraction_Free_Mode"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1402,6 +1403,20 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="actionDistraction_Free_Mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Distraction Free Mode</string>
+   </property>
+   <property name="toolTip">
+    <string>Makes room to concentrate on your work</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Return</string>
    </property>
   </action>
  </widget>
