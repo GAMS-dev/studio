@@ -38,6 +38,7 @@
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
+#include "editors/navigationhistorylocator.h"
 #include "settings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
@@ -108,11 +109,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
 
+    // TODO: this should be moved to the platform switch above, for code consistency
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
         ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
         ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
         ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
     }
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
+    ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
+    ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
+    ui->actionGoForward->shortcuts().append(QKeySequence(Qt::ForwardButton));
+    ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
 
     // Status Bar
     QFont font = ui->statusBar->font();
@@ -218,7 +225,12 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
     on_actionShow_System_Log_triggered();
 
+    mNavigationHistory = new NavigationHistory(this);
+    NavigationHistoryLocator::provide(mNavigationHistory);
+    connect(mNavigationHistory, &NavigationHistory::historyChanged, this, &MainWindow::updateCursorHistoryAvailability);
+
     initTabs();
+    mNavigationHistory->startRecord();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
@@ -228,9 +240,6 @@ MainWindow::MainWindow(QWidget *parent)
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
     ui->mainTabs->setUsesScrollButtons(true);
-
-    // shortcuts
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
@@ -264,6 +273,7 @@ MainWindow::~MainWindow()
     killTimer(mTimerID);
     delete mWp;
     delete ui;
+    delete mNavigationHistory;
     FileType::clear();
 }
 
@@ -284,7 +294,6 @@ void MainWindow::initTabs()
         mWp->hide();
     else
         showWelcomePage();
-
 }
 
 void MainWindow::initToolBar()
@@ -1429,6 +1438,9 @@ void MainWindow::activeTabChanged(int index)
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
+
+    mNavigationHistory->setActiveTab(editWidget);
+    updateCursorHistoryAvailability();
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -2655,6 +2667,18 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
     QMainWindow::mouseMoveEvent(event);
 }
 
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    QMouseEvent* me = static_cast<QMouseEvent*>(event);
+    if (me->button() == Qt::ForwardButton) {
+        on_actionGoForward_triggered();
+        event->accept();
+    } else if (me->button() == Qt::BackButton) {
+        on_actionGoBack_triggered();
+        event->accept();
+    }
+}
+
 void MainWindow::customEvent(QEvent *event)
 {
     QMainWindow::customEvent(event);
@@ -3031,6 +3055,8 @@ void MainWindow::initIcons()
     ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
     ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
     ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
+    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
 }
 
 void MainWindow::ensureInScreen()
@@ -3244,6 +3270,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     mClosedTabs << fm->location();
     int lastIndex = mWp->isVisible() ? 1 : 0;
 
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
@@ -3256,6 +3283,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
+    NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor)
@@ -4123,9 +4151,53 @@ void MainWindow::on_actionShowToolbar_triggered(bool checked)
     ui->toolBar->setVisible(checked);
 }
 
+void MainWindow::on_actionGoBack_triggered()
+{
+    CursorHistoryItem item = mNavigationHistory->goBack();
+    restoreCursorPosition(item);
+    updateCursorHistoryAvailability();
+}
 
+void MainWindow::on_actionGoForward_triggered()
+{
+    CursorHistoryItem item = mNavigationHistory->goForward();
+    restoreCursorPosition(item);
+    updateCursorHistoryAvailability();
+}
 
+void MainWindow::restoreCursorPosition(CursorHistoryItem item)
+{
+    if (!mNavigationHistory->itemValid(item)) return;
 
+    mNavigationHistory->stopRecord();
+
+    // check if tab is still opened
+    if (ui->mainTabs->indexOf(item.tab) > 0) {
+        ui->mainTabs->setCurrentWidget(item.tab);
+        item.tab->setFocus();
+    } else {
+        if (!item.filePath.isEmpty()) {
+            openFilePath(item.filePath, true);
+        }
+    }
+
+    if (item.lineNr >= 0) {
+        // restore text cursor if editor available
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab()))
+            ce->jumpTo(item.lineNr, item.col);
+        else if (TextView* tv = ViewHelper::toTextView(mNavigationHistory->currentTab()))
+            tv->jumpTo(item.lineNr, item.col, 0, true);
+        // else: nothing to do
+    }
+
+    mNavigationHistory->startRecord();
+}
+
+void MainWindow::updateCursorHistoryAvailability()
+{
+    ui->actionGoBack->setEnabled(mNavigationHistory->canGoBackward());
+    ui->actionGoForward->setEnabled(mNavigationHistory->canGoForward());
+}
 
 }
 }

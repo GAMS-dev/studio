@@ -40,29 +40,29 @@ void TestBlockCode::testFile()
     QCOMPARE(bc.parser(), 0);
     bc = 12;
     bc.setDepth(2);
-    bc.setParser(5);
+    bc.setParser(3);
     QCOMPARE(bc.kind(), gams::studio::syntax::SyntaxKind::Semicolon);
     QCOMPARE(bc.depth(), 2);
-    QCOMPARE(bc.parser(), 5);
+    QCOMPARE(bc.parser(), 3);
 
-    QCOMPARE(bc.setFlavor(31), true);
-    QCOMPARE(bc.flavor(), 31);
-    QCOMPARE(bc.setFlavor(32), false);
-    QCOMPARE(bc.flavor(), 31);
+    QCOMPARE(bc.setFlavor(1023), true);
+    QCOMPARE(bc.flavor(), 1023);
+    QCOMPARE(bc.setFlavor(1024), false);
+    QCOMPARE(bc.flavor(), 1023);
     QCOMPARE(bc.setFlavor(-1), false);
     QCOMPARE(bc.flavor(), 0);
 
-    QCOMPARE(bc.setDepth(255), true);
-    QCOMPARE(bc.depth(), 255);
-    QCOMPARE(bc.setDepth(256), false);
-    QCOMPARE(bc.depth(), 255);
+    QCOMPARE(bc.setDepth(511), true);
+    QCOMPARE(bc.depth(), 511);
+    QCOMPARE(bc.setDepth(512), false);
+    QCOMPARE(bc.depth(), 511);
     QCOMPARE(bc.setDepth(-1), false);
     QCOMPARE(bc.depth(), 0);
 
-    QCOMPARE(bc.setParser(7), true);
-    QCOMPARE(bc.parser(), 7);
-    QCOMPARE(bc.setParser(8), false);
-    QCOMPARE(bc.parser(), 7);
+    QCOMPARE(bc.setParser(3), true);
+    QCOMPARE(bc.parser(), 3);
+    QCOMPARE(bc.setParser(4), false);
+    QCOMPARE(bc.parser(), 3);
     QCOMPARE(bc.setParser(-1), false);
     QCOMPARE(bc.parser(), 0);
 }

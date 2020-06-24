@@ -31,6 +31,9 @@
 #include "search/searchlocator.h"
 #include <QPalette>
 
+#include "editors/navigationhistory.h"
+#include "editors/navigationhistorylocator.h"
+
 namespace gams {
 namespace studio {
 
@@ -621,6 +624,8 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
 
 void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
+
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
@@ -631,6 +636,8 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     Qt::CursorShape shape = Qt::ArrowCursor;
     if (!marksAtMouse().isEmpty()) marksAtMouse().first()->cursorShape(&shape, true);
     lineNumberArea()->setCursor(shape);
+
+    NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
 void CodeEdit::wheelEvent(QWheelEvent *e) {

@@ -65,7 +65,6 @@ public:
 
 class SyntaxIdentAssign : public SyntaxAbstract
 {
-    QChar mDelimiter;
 public:
     SyntaxIdentAssign(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;

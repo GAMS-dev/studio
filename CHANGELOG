@@ -1,7 +1,10 @@
-Version 1.2.0
+Version 1.2.0 (pending)
 ==================
+- **added Navigation History**
+    - You can now use Mousebutton 4 and 5 or `Alt+Left/Right` on Windows/Linux and `Ctrl+[/]` on macOS to jump back to your previous text cursor positions or forward again. This is helpful to quickly jump around different locations in the files you are currently working with.
 - the Model Library Explorer switches to the first non-empty tab in case the current one runs out of results and switches back as soon as the originally selected tab contains results again.
 - copy actions of the GDX Viewer table view contain the labels from the header now. Two additonal entries that allow to copy without the labels are available via the context menu.
+- the syntax highlighter now recognizes "+" and "-" in "Model" statement.
 
 Version 1.1.3 (pending)
 ==================
