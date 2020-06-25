@@ -65,13 +65,14 @@ public:
     bool isEmpty() {return mParentheses.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const QVector<ParenthesesPos> &parentheses);
-    bool isFolded() const { return mIsFolded; }
-    void setIsFolded(bool isFolded) { mIsFolded = isFolded; }
+    bool foldCount() const { return mFoldCount; }
+    bool isFolded() const { return mFoldCount; }
+    void setFoldCount(int foldCount) { mFoldCount = foldCount; }
 
 private:
     // if extending the data remember to enhance isEmpty()
     QVector<ParenthesesPos> mParentheses;
-    bool mIsFolded = false;
+    int mFoldCount = 0;
 };
 
 struct BlockEditPos
@@ -124,7 +125,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesesMatch matchParentheses(QTextCursor cursor);
+    ParenthesesMatch matchParentheses(QTextCursor cursor, const bool *fold = nullptr);
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();

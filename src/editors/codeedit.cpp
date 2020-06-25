@@ -589,6 +589,25 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
     setContextMenuPolicy(Qt::DefaultContextMenu);
     if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
         setContextMenuPolicy(Qt::PreventContextMenu);
+    if (showFolding() && e->pos().x() < 0  && e->pos().x() > -iconSize()) {
+        QTextBlock block = cursorForPosition(e->pos()).block();
+        bool folded;
+        int foldPos = foldStart(block.blockNumber(), folded);
+        folded = !folded;
+        if (foldPos >= 0) {
+            BlockData* dat = static_cast<BlockData*>(block.userData());
+            // TODO(JM) modify appearance of folded line
+            QTextCursor cursor(block);
+            cursor.setPosition(cursor.position() + foldPos+1);
+            matchParentheses(cursor, &folded);
+
+//            dat->setFoldCount(!folded);
+            viewport()->repaint();
+            mLineNumberArea->repaint();
+            e->accept();
+            return;
+        }
+    }
     if (e->modifiers() & Qt::AltModifier && mAllowBlockEdit) {
         QTextCursor cursor = cursorForPosition(e->pos());
         QTextCursor anchor = textCursor();
@@ -640,7 +659,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     lineNumberArea()->setCursor(shape);
 
     QPair<int,int> newFoldMark;
-    if (showFolding() && e->pos().x() < 0) {
+    if (showFolding() && e->pos().x() < 0  && e->pos().x() > -iconSize()) {
         QTextBlock block = cursorForPosition(e->pos()).block();
         bool folded;
         int foldPos = foldStart(block.blockNumber(), folded);
@@ -1159,14 +1178,15 @@ int CodeEdit::foldStart(int line, bool &folded)
     return res;
 }
 
-ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor)
+ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, const bool *fold)
 {
     static QString parentheses("{[(/E}])\\e");
     static int pSplit = parentheses.length()/2;
     QTextBlock block = cursor.block();
     if (!block.userData()) return ParenthesesMatch();
+    BlockData *startDat = static_cast<BlockData*>(block.userData());
 //    int state = block.userState();
-    QVector<ParenthesesPos> parList = static_cast<BlockData*>(block.userData())->parentheses();
+    QVector<ParenthesesPos> parList = startDat->parentheses();
     int pos = cursor.positionInBlock();
     int start = -1;
     for (int i = parList.count()-1; i >= 0; --i) {
@@ -1184,6 +1204,8 @@ ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor)
     QStringRef parLeave = parentheses.midRef(back ? 0 : pSplit, pSplit);
     QVector<QChar> parStack;
     parStack << parLeave.at(ci);
+    if (fold && !*fold) startDat->setFoldCount(0);
+    int foldSkip = 0;
     int pi = start;
     while (block.isValid()) {
         // get next parentheses entry
@@ -1191,8 +1213,15 @@ ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor)
             bool isEmpty = true;
             while (block.isValid() && isEmpty) {
                 block = back ? block.previous() : block.next();
+                if (fold && *fold) startDat->setFoldCount(startDat->foldCount()+1);
+                if (foldSkip) --foldSkip;
+                else {
+                    if (fold) block.setVisible(!*fold);
+                }
                 if (block.isValid() && block.userData()) {
-                    parList = static_cast<BlockData*>(block.userData())->parentheses();
+                    BlockData *dat = static_cast<BlockData*>(block.userData());
+                    if (dat->isFolded()) foldSkip = dat->foldCount();
+                    parList = dat->parentheses();
                     if (!parList.isEmpty()) isEmpty = false;
                 }
             }
