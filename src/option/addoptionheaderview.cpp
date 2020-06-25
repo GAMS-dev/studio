@@ -100,7 +100,7 @@ void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int
     QHeaderView::paintSection(painter, rect, logicalIndex);
     painter->restore();
     if (logicalIndex == 0) {
-         QIcon icon(Scheme::icon(iconStr));
+         QIcon icon(Scheme::icon(":/%1/plus"));
          int iconWidth = static_cast<int>(rect.height()*ICON_SCALE_FACTOR);
          int iconMargin = static_cast<int>((rect.height() - iconWidth)*ICON_MARGIN_FACTOR);
          QPixmap pm = icon.pixmap(iconWidth, iconWidth);
