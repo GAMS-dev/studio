@@ -20,7 +20,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <memory>
 #include <QMainWindow>
 
 #include "editors/codeedit.h"
@@ -68,6 +67,7 @@ class GdxDiffDialog;
 }
 namespace miro {
 class MiroDeployDialog;
+class MiroModelAssemblyDialog;
 }
 
 struct HistoryData {
@@ -240,6 +240,7 @@ private slots:
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void on_menuMIRO_aboutToShow();
+    void miroAssemblyDialogFinish(int result);
     void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
@@ -399,7 +400,7 @@ private:
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData mHistory;
-    std::unique_ptr<AutosaveHandler> mAutosaveHandler;
+    QScopedPointer<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
@@ -416,10 +417,12 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
-    bool mWidgetStates[4];
-    std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 
-    std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;
+    bool mWidgetStates[4];
+    QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
+
+    QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
+    QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
 };
 
