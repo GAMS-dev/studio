@@ -62,12 +62,16 @@ public:
     BlockData() {}
     ~BlockData();
     QChar charForPos(int relPos);
-    bool isEmpty() {return mparentheses.isEmpty();}
+    bool isEmpty() {return mParentheses.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const QVector<ParenthesesPos> &parentheses);
+    bool isFolded() const { return mIsFolded; }
+    void setIsFolded(bool isFolded) { mIsFolded = isFolded; }
+
 private:
     // if extending the data remember to enhance isEmpty()
-    QVector<ParenthesesPos> mparentheses;
+    QVector<ParenthesesPos> mParentheses;
+    bool mIsFolded = false;
 };
 
 struct BlockEditPos
@@ -102,6 +106,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     virtual int lineNumberAreaWidth();
+    virtual int foldState(int line, bool &folded);
     int iconSize();
     LineNumberArea* lineNumberArea();
 
@@ -119,7 +124,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesesMatch matchParentheses();
+    ParenthesesMatch matchParentheses(QTextCursor cursor);
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();
@@ -130,6 +135,7 @@ public:
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
     void disconnectTimers() override;
+    int foldStart(int line, bool &folded);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -143,6 +149,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
+    virtual bool showFolding() const;
     void setAllowBlockEdit(bool allow);
     virtual void recalcWordUnderCursor();
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
@@ -269,6 +276,7 @@ private:
     const QString mClosing = ")]}'\"";
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
+    QPair<int,int> mFoldMark;
 };
 
 class LineNumberArea : public QWidget

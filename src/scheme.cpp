@@ -46,6 +46,7 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
+    mSlotText.insert(Edit_linenrAreaFoldBg,     "Foldable lines");
 
     mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
@@ -98,6 +99,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).lighter(115));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(245,245,245));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(225,255,235));
+    mColorSchemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(135,195,255));
     mColorSchemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
 
@@ -154,6 +156,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_matchesBg,           QColor(51,102,51));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,        QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,    QColor(40,40,40));
+    mColorSchemes[sNr].insert(Edit_linenrAreaFoldBg,    QColor(15,75,115));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,    QColor(Qt::white));
     mColorSchemes[sNr].insert(Edit_currentWordBg,       QColor(60,60,60));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,  QColor(Qt::black));

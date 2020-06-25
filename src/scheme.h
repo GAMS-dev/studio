@@ -33,6 +33,7 @@ public:
         Edit_parenthesesInvalidBgBlink,
         Edit_linenrAreaBg,
         Edit_linenrAreaMarkBg,
+        Edit_linenrAreaFoldBg,
         Edit_linenrAreaFg,
         Edit_linenrAreaMarkFg,
 
