@@ -42,6 +42,11 @@ inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySeq
 CodeEdit::CodeEdit(QWidget *parent)
     : AbstractEdit(parent)
 {
+//    QTextOption opt = document()->defaultTextOption();
+//    QTextOption::Flags f = opt.flags();
+//    f.setFlag(QTextOption::Flag::ShowTabsAndSpaces);
+//    opt.setFlags(f);
+//    document()->setDefaultTextOption(opt);
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
     mBlinkBlockEdit.setInterval(500);
@@ -595,13 +600,10 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
         int foldPos = foldStart(block.blockNumber(), folded);
         folded = !folded;
         if (foldPos >= 0) {
-            BlockData* dat = static_cast<BlockData*>(block.userData());
             // TODO(JM) modify appearance of folded line
             QTextCursor cursor(block);
             cursor.setPosition(cursor.position() + foldPos+1);
             matchParentheses(cursor, &folded);
-
-//            dat->setFoldCount(!folded);
             viewport()->repaint();
             mLineNumberArea->repaint();
             e->accept();
@@ -647,16 +649,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
-    if (mBlockEdit) {
-        if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
-            mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
-        }
-    } else {
-        AbstractEdit::mouseMoveEvent(e);
-    }
-    Qt::CursorShape shape = Qt::ArrowCursor;
-    if (!marksAtMouse().isEmpty()) marksAtMouse().first()->cursorShape(&shape, true);
-    lineNumberArea()->setCursor(shape);
+    // TODO(JM) fix drag-up problem (jumps to current cursor)
 
     QPair<int,int> newFoldMark;
     if (showFolding() && e->pos().x() < 0  && e->pos().x() > -iconSize()) {
@@ -666,13 +659,23 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
         if (foldPos >= 0) {
             QTextCursor cursor(block);
             cursor.setPosition(block.position() + foldPos+1);
-            // TODO(JM) show what will be folded
             ParenthesesMatch pm = matchParentheses(cursor);
             if (pm.isValid()) {
                 newFoldMark.first = block.blockNumber();
                 newFoldMark.second = document()->findBlock(pm.match).blockNumber();
             }
         }
+    } else {
+        if (mBlockEdit) {
+            if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
+                mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
+            }
+        } else {
+            AbstractEdit::mouseMoveEvent(e);
+        }
+        Qt::CursorShape shape = Qt::ArrowCursor;
+        if (!marksAtMouse().isEmpty()) marksAtMouse().first()->cursorShape(&shape, true);
+        lineNumberArea()->setCursor(shape);
     }
     if (newFoldMark != mFoldMark) {
         mFoldMark = newFoldMark;
@@ -1220,7 +1223,7 @@ ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, const bool *fold
                 }
                 if (block.isValid() && block.userData()) {
                     BlockData *dat = static_cast<BlockData*>(block.userData());
-                    if (dat->isFolded()) foldSkip = dat->foldCount();
+                    if (dat->isFolded()) foldSkip = dat->foldCount()+1;
                     parList = dat->parentheses();
                     if (!parList.isEmpty()) isEmpty = false;
                 }
@@ -2010,6 +2013,11 @@ void LineNumberArea::mouseReleaseEvent(QMouseEvent *event)
     pos.setX(pos.x()-width());
     QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
     mCodeEditor->mouseReleaseEvent(&e);
+}
+
+void LineNumberArea::wheelEvent(QWheelEvent *event)
+{
+    mCodeEditor->wheelEvent(event);
 }
 
 } // namespace studio
