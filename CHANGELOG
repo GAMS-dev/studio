@@ -1,20 +1,22 @@
-Version 1.2.0 (*)
+Version 1.2.1
+==================
+- fixed Jenkins pipeline deployment issues
+
+Version 1.2.0
 ==================
 - **added Navigation History**
-    - You can now use Mousebutton 4 and 5 or `Alt+Left/Right` on Windows/Linux and `Ctrl+[/]` on macOS to jump back to your previous text cursor positions or forward again. This is helpful to quickly jump around different locations in the files you are currently working with.
-- the Model Library Explorer switches to the first non-empty tab in case the current one runs out of results and switches back as soon as the originally selected tab contains results again.
-- copy actions of the GDX Viewer table view contain the labels from the header now. Two additonal entries that allow to copy without the labels are available via the context menu.
-- the syntax highlighter now recognizes "+" and "-" in "Model" statement.
-- fixed loading LXI-files for GMS-files containing more than one dot in the name
-- fixed creating complete group name for gms-files containing more than one dot in the name
+    - You can now use `Mouse Button 4/5` or `Alt+Left/Right` on Windows/Linux and `Ctrl+[/]` on macOS to jump back to your previous text cursor positions or forward again. This is helpful to quickly jump around different locations in the files you are currently working with.
 - **added Distraction Free Mode**
-    - Distraction Free Mode lets you get everything out of the way quickly to focus on your modelling work. This is especially useful for small screens. When leaving Distraction Free Mode all Studio widgets will be put back where it was. To enable it go to the Menu > View > Distraction Free Mode or press `Ctrl+Alt+Shift`.
+    - Distraction Free Mode lets you get everything out of the way quickly to focus on your modeling work. This is especially useful for small screens. When leaving Distraction Free Mode all Studio widgets will be put back where they were. To switch to and from Distraction Free Mode go to the Menu > View > Distraction Free Mode or press `Ctrl+Alt+Enter` on Windows and Linux or `Cmd+Option+Enter` on macOS.
+- added automatic switch to first non-empty tab when searching the Model Library Explorer. The old tab selection is restored if that tab contains results again.
+- added header labels to copy actions in GDX Viewer table view. Two additional entries that allow to copy without the labels are available via the context menu.
+- fixed syntax highlighter not recognizing "+" and "-" in "Model" statement
+- fixed missing LXI pane for files containing more than one dot
+- fixed group name for gms files containing more than one dot in the name
 - fixed random crash when opening the MIRO Model Assembly File dialog
-
-Version 1.1.3 (*)
-==================
-- added shift-option-up/down modifiers to start block-edit on macOS
-- fixed some icons didn't follow the theme
+- added `Shift+Option+Up/Down` hotkey to start block-edit on macOS
+- fixed some icons not following selected theme
+- added dmp extension to list of executable file types
 
 Version 1.1.2
 ==================
