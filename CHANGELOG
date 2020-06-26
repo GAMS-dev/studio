@@ -1,7 +1,7 @@
 Version 1.2.0
 ==================
 - **added Navigation History**
-    - You can now use Mousebutton 4 and 5 or `Alt+Left/Right` on Windows/Linux and `Ctrl+[/]` on macOS to jump back to your previous text cursor positions or forward again. This is helpful to quickly jump around different locations in the files you are currently working with.
+    - You can now use `Mouse Button 4/5` or `Alt+Left/Right` on Windows/Linux and `Ctrl+[/]` on macOS to jump back to your previous text cursor positions or forward again. This is helpful to quickly jump around different locations in the files you are currently working with.
 - **added Distraction Free Mode**
     - Distraction Free Mode lets you get everything out of the way quickly to focus on your modeling work. This is especially useful for small screens. When leaving Distraction Free Mode all Studio widgets will be put back where they were. To switch to and from Distraction Free Mode go to the Menu > View > Distraction Free Mode or press `Ctrl+Alt+Enter` on Windows and Linux or `Cmd+Option+Enter` on macOS.
 - added automatic switch to first non-empty tab when searching the Model Library Explorer. The old tab selection is restored if that tab contains results again.
