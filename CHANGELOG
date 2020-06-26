@@ -1,3 +1,7 @@
+Version 1.2.1
+==================
+- fixed Jenkins pipeline deployment issues
+
 Version 1.2.0
 ==================
 - **added Navigation History**
