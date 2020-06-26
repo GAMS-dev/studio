@@ -604,6 +604,7 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             QTextCursor cursor(block);
             cursor.setPosition(cursor.position() + foldPos+1);
             matchParentheses(cursor, &folded);
+            if (folded) block.layout()->setText("....");
             viewport()->repaint();
             mLineNumberArea->repaint();
             e->accept();
@@ -653,9 +654,14 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
     QPair<int,int> newFoldMark;
     if (showFolding() && e->pos().x() < 0  && e->pos().x() > -iconSize()) {
-        QTextBlock block = cursorForPosition(e->pos()).block();
         bool folded;
+        QTextBlock block = cursorForPosition(e->pos()).block();
         int foldPos = foldStart(block.blockNumber(), folded);
+//        int count = 0;
+//        while (block.isValid() && foldPos < 0 && count++ < 200) {
+//            block = block.previous();
+//            foldPos = foldStart(block.blockNumber(), folded);
+//        }
         if (foldPos >= 0) {
             QTextCursor cursor(block);
             cursor.setPosition(block.position() + foldPos+1);
@@ -710,6 +716,31 @@ void CodeEdit::paintEvent(QPaintEvent* e)
     AbstractEdit::paintEvent(e);
     if (mBlockEdit) {
         mBlockEdit->paintEvent(e);
+    }
+    if (showFolding()) {
+        QTextBlock block = firstVisibleBlock();
+        int blockNumber = block.blockNumber();
+        QRectF fRect = blockBoundingGeometry(block).translated(contentOffset());
+        int top = static_cast<int>(fRect.top());
+        int bottom = top + static_cast<int>(fRect.height());
+        QPainter painter(viewport());
+        QRect paintRect(e->rect());
+        while (block.isValid() && top <= paintRect.bottom()) {
+            if (block.isVisible() && bottom >= paintRect.top()) {
+                if (showFolding()) {
+                    bool folded = false;
+                    int foldRes = foldState(blockNumber, folded);
+                    if (foldRes % 3 == 2) {
+                        QRect foldRect(0, bottom-1, width(), 1);
+                        painter.fillRect(foldRect, Qt::gray);
+                    }
+              }
+            }
+            block = block.next();
+            top = bottom;
+            bottom = top + static_cast<int>(blockBoundingRect(block).height());
+            ++blockNumber;
+        }
     }
 }
 
@@ -1488,10 +1519,7 @@ int CodeEdit::foldState(int line, bool &folded)
     int res = 0;
     int foldPos = foldStart(line, folded);
     bool marked = (mFoldMark.first < mFoldMark.second && line >= mFoldMark.first && line <= mFoldMark.second);
-    if (foldPos >= 0) {
-        if (line == mFoldMark.first) res = folded ? 1 : 2; // swap for marked state
-        else res = folded ? 2 : 1;
-    }
+    if (foldPos >= 0) res = folded ? 2 : 1;
     if (marked) res += 3;
     return res;
 }
@@ -1516,8 +1544,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 
     QRect paintRect(event->rect());
     painter.fillRect(paintRect, toColor(Scheme::Edit_linenrAreaBg));
-    int widthForNr = mLineNumberArea->width()
-            - (showFolding() ? iconSize() : 0);
+    int widthForNr = mLineNumberArea->width() - (showFolding() ? iconSize() : 0);
 
     QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(fRect.height())+1);
     QRect foldRect(widthForNr, top, paintRect.width()-widthForNr, static_cast<int>(fRect.height())+1);
@@ -1557,6 +1584,10 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                     int iTop = (2+top+bottom-iconSize())/2;
                     QIcon icon = Scheme::icon(foldRes % 3 == 2 ? ":/solid/triangle-right" : ":/solid/triangle-down", true);
                     painter.drawPixmap(widthForNr+1, iTop, icon.pixmap(iconSize()-2,iconSize()-2));
+                    if (foldRes % 3 == 2) {
+                        QRect foldRect(0, bottom-1, width(), 1);
+                        painter.fillRect(foldRect, Qt::gray);
+                    }
                 }
           }
         }
