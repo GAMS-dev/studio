@@ -20,7 +20,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <memory>
 #include <QMainWindow>
 
 #include "editors/codeedit.h"
@@ -36,6 +35,7 @@
 #include "logtabcontextmenu.h"
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
+#include "editors/navigationhistory.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -67,6 +67,7 @@ class GdxDiffDialog;
 }
 namespace miro {
 class MiroDeployDialog;
+class MiroModelAssemblyDialog;
 }
 
 struct HistoryData {
@@ -162,6 +163,7 @@ public slots:
     void showErrorMessage(QString text);
     void parameterRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
+    void updateCursorHistoryAvailability();
     bool eventFilter(QObject*sender, QEvent* event);
 
 private slots:
@@ -238,6 +240,7 @@ private slots:
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void on_menuMIRO_aboutToShow();
+    void miroAssemblyDialogFinish(int result);
     void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
@@ -264,6 +267,7 @@ private slots:
     void on_actionShow_Welcome_Page_triggered();
     void on_actionFull_Screen_triggered();
     void on_actionShowToolbar_triggered(bool checked);
+    void on_actionDistraction_Free_Mode_toggled(bool checked);
 
     // Other
     void on_mainTabs_tabCloseRequested(int index);
@@ -317,12 +321,17 @@ private slots:
     void on_actionChangelog_triggered();
 
     void openGdxDiffFile();
+    void on_actionGoBack_triggered();
+
+    void on_actionGoForward_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
     void customEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
     bool event(QEvent *event);
@@ -365,6 +374,7 @@ private:
     QFont createEditorFont(const QString &fontFamily, int pointSize);
     bool isMiroAvailable();
     bool validMiroPrerequisites();
+    void restoreCursorPosition(CursorHistoryItem item);
 
 private:
     Ui::MainWindow *ui;
@@ -372,6 +382,7 @@ private:
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
     QStringList mInitialFiles;
+    NavigationHistory* mNavigationHistory;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
@@ -389,7 +400,7 @@ private:
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;
     HistoryData mHistory;
-    std::unique_ptr<AutosaveHandler> mAutosaveHandler;
+    QScopedPointer<AutosaveHandler> mAutosaveHandler;
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
@@ -406,9 +417,12 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
-    std::unique_ptr<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 
-    std::unique_ptr<miro::MiroDeployDialog> mMiroDeployDialog;
+    bool mWidgetStates[4];
+    QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
+
+    QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
+    QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
 };
 

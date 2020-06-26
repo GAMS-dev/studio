@@ -25,6 +25,8 @@
 #include "textviewedit.h"
 #include "keys.h"
 #include "settings.h"
+#include "editors/navigationhistorylocator.h"
+#include "editors/navigationhistory.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -316,7 +318,7 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
         }
         if (event->type() == QEvent::MouseMove) {
             QMouseEvent *me = static_cast<QMouseEvent*>(event);
-            if (me->buttons() & Qt::LeftButton && me->y() > verticalScrollBar()->height() - verticalScrollBar()->width())
+            if (me->buttons().testFlag(Qt::LeftButton) && me->y() > verticalScrollBar()->height() - verticalScrollBar()->width())
                 mSliderStartedAtTail = true;
         }
         if (event->type() == QEvent::MouseButtonRelease) {
@@ -396,8 +398,8 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
 {
     QPoint p = mMapper->position(true);
     bool cursorIsValid = p.y() > AbstractTextMapper::cursorInvalid;
-    QTextCursor::MoveMode mode = event->modifiers() & Qt::ShiftModifier ? QTextCursor::KeepAnchor
-                                                                        : QTextCursor::MoveAnchor;
+    QTextCursor::MoveMode mode = event->modifiers().testFlag(Qt::ShiftModifier) ? QTextCursor::KeepAnchor
+                                                                                : QTextCursor::MoveAnchor;
     if (event == Hotkey::MoveToStartOfDoc) {
         mMapper->setVisibleTopLine(0);
         mMapper->setPosToAbsStart(mode);
@@ -416,7 +418,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         mMapper->moveVisibleTopLine(-1);
     } else if (event == Hotkey::MoveViewLineDown) {
         mMapper->moveVisibleTopLine(1);
-    } else {
+    } else if (!event->modifiers().testFlag(Qt::AltModifier)){
         switch (event->key()) {
         case Qt::Key_Up:
             if (!cursorIsValid)
@@ -509,6 +511,9 @@ void TextView::updateVScrollZone()
 
 void TextView::topLineMoved()
 {
+    bool wasRecording = NavigationHistoryLocator::navigationHistory()->isRecording();
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
+
     if (!mDocChanging) {
         ChangeKeeper x(mDocChanging);
         mEdit->protectWordUnderCursor(true);
@@ -544,6 +549,8 @@ void TextView::topLineMoved()
             mEdit->verticalScrollBar()->setSliderPosition(0);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
+
+        if (wasRecording) NavigationHistoryLocator::navigationHistory()->startRecord();
     }
 }
 

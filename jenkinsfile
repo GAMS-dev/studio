@@ -169,9 +169,16 @@ pipeline {
                                 cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                                 call vcvars64.bat
                                 cd %WORKSPACE%\\tmp\\studio
-                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /tr http://timestamp.comodoca.com studio.exe
+                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /t http://timestamp.comodoca.com studio.exe
                             '''
                         }
+                        bat '''
+                            echo Setting up environment for VS2017 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            call vcvars64.bat
+                            cd %WORKSPACE%\\tmp\\studio
+                            signtool verify /v /pa studio.exe
+                        '''
                     }
                 }
                 stage ('macos') {
@@ -218,7 +225,7 @@ pipeline {
         stage('Notarize') {
             agent { label 'macos' }
             when {
-                expression { return env.BRANCH_NAME == "master" || env.BRANCH_NAME ==~ /.*-rc/ || env.BRANCH_NAME ==~ /.*-release/ }
+                expression { return env.BRANCH_NAME == "master" || env.BRANCH_NAME ==~ /.*-rc/ || env.BRANCH_NAME ==~ /.*-release/ || env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/ }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: '4568bda5-894f-4fa1-b9c5-a8d42f6e61ac', passwordVariable: 'APPLE_ID_PASS', usernameVariable: 'APPLE_ID_USER')]) {
@@ -306,6 +313,135 @@ pipeline {
                     steps {
                         archiveArtifacts artifacts: '*.dmg', fingerprint: true
                     }
+                }
+            }
+        }
+        stage('Deploy to GitHub') {
+            agent { label 'master' }
+            when {
+                expression { return currentBuild.currentResult == "SUCCESS" }
+                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
+            }
+            steps {
+                sh '''
+                    mkdir -p artifacts
+                '''
+                copyArtifacts filter: '*.AppImage, *.dmg, *.zip', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}'), target: 'artifacts'
+                withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
+                    sh '''#!/bin/bash -xe
+                        ## get version information for artifact, tag name and description
+                        STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION repo/version | cut -f2 -d"=")
+                        STUDIO_MINOR_VERSION=$(grep ^STUDIO_MINOR_VERSION repo/version | cut -f2 -d"=")
+                        STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL repo/version | cut -f2 -d"=")
+                        export STUDIO_VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
+                        GAMS_DISTRIB_MAJOR_VERSION=$(grep ^GAMS_DISTRIB_MAJOR repo/version | cut -f2 -d"=")
+                        GAMS_DISTRIB_MINOR_VERSION=$(grep ^GAMS_DISTRIB_MINOR repo/version | cut -f2 -d"=")
+                        export GAMS_DISTRIB_VERSION=$GAMS_DISTRIB_MAJOR_VERSION.$GAMS_DISTRIB_MINOR_VERSION
+
+                        CHANGELOG=""
+
+                        foundFirst="false"
+                        while IFS="" read -r line
+                        do
+                            if [[ $line =~ ^Version.* ]] && [[ $foundFirst == "true" ]]; then
+                                break
+                            elif [[ $line =~ ^Version.* ]]; then
+                                CHANGELOG+=$line$'\n'
+                                foundFirst="true"
+                            else
+                                CHANGELOG+=$line$'\n'
+                            fi
+                        done < CHANGELOG
+
+                        ## GitHub parameters
+                        export GITHUB_TOKEN=${GITHUB_TOKEN}
+                        GITHUB_RELEASE_ADDRESS="https://github.com/GAMS-dev/studio/releases/tag/${TAG_NAME}"
+                        GITHUB_ORGA=GAMS-dev
+                        GITHUB_REPO=studio
+
+                        ## delete old release if needed
+                        RELEASE_DELETED=0
+                        github-release delete --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} && RELEASE_DELETED=0 || RELEASE_DELETED=1
+                        if [[ $RELEASE_DELETED -eq 0 ]]; then
+                          echo "Release deleted"
+                        else
+                          echo "No release to delete"
+                        fi
+
+                        ## create a GitHub release
+                        github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} \
+--description "${CHANGELOG}
+
+This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION} or higher. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
+
+                        if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+                            ## upload artifacts to GitHub
+                            cd artifacts
+                            ls -al
+                            parallel github-release upload -R --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --name {} --file {} ::: *.*
+                        fi
+                    '''
+                }
+            }
+        }
+        stage('Deploy to CloudFront') {
+            agent { label 'master' }
+            when {
+                expression { return currentBuild.currentResult == "SUCCESS" }
+                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
+            }
+            steps {
+                withCredentials([string(credentialsId: '53f1d92b-76a0-4484-8aaa-f3ce3bfba010', variable: 'SVN_URL'), string(credentialsId: '82bb4013-cc4c-4b0f-aa86-8dafdf5a02d8', variable: 'S3_URL'), string(credentialsId: '3ca54edd-0357-407f-84bf-317fa1b4c20d', variable: 'S3_ACCESS_KEY'), string(credentialsId: 'f4bd9039-889c-401b-b0c6-455b73147c7c', variable: 'S3_SECRET_KEY'), usernamePassword(credentialsId: '6d541d7f-9fe0-48e2-a6c2-625bccf47a90', passwordVariable: 'SVN_PASSWD', usernameVariable: 'SVN_USER')]) {
+                    sh '''#!/bin/bash -xe
+                        ## get Studio version information for artifact and tag name
+                        STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION version | cut -f2 -d"=")
+                        STUDIO_MINOR_VERSION=$(grep ^STUDIO_MINOR_VERSION version | cut -f2 -d"=")
+                        STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL version | cut -f2 -d"=")
+                        export STUDIO_VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
+
+                        ## change to artifact location
+                        cd artifacts
+
+                        ## folder name which matches the current tag, like v0.10.2 or v0.11.0-rc
+                        FOLDER_NAME="${TAG_NAME}"
+
+                        ## create GAMS Studio version directory
+                        mkdir -p $FOLDER_NAME
+
+                        ## move artifacts to correct location
+                        mv *.dmg *.AppImage *.zip $FOLDER_NAME
+
+                        ## S3 upload to gams.com
+                        s3cmd sync --acl-public ./ ${S3_URL} --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
+
+                        ## S3 content listing
+                        s3cmd ls -r ${S3_URL} --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
+
+                        ## Update gams.com for final releases
+                        if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+                            ## go to WORKSPACE for svn gams.com/studio.txt update
+                            cd ${WORKSPACE}
+
+                            ## prepare GAMS Studio version line
+                            DATE=$(date +"%y%m%d")
+                            LINE="[$STUDIO_MAJOR_VERSION$STUDIO_MINOR_VERSION$STUDIO_PATCH_LEVEL.$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL,$DATE]"
+
+                            ## get Studio svn release list folder
+                            svn checkout --username ${SVN_USER} --password ${SVN_PASSWD} ${SVN_URL} release
+
+                            ## update studio.txt without duplicates
+                            if grep -Fxq $LINE release/studio.txt
+                            then
+                              echo "This version $LINE is already available in studio.txt"
+                            else
+                              echo "$LINE\\n$(cat release/studio.txt)" > release/studio.txt
+                            fi
+
+                            ## upload changed Studio release list
+                            cd release
+                            svn commit --username ${SVN_USER} --password ${SVN_PASSWD} -m "Jenkins GAMS Studio version update."
+                        fi
+                    '''
                 }
             }
         }

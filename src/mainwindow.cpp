@@ -38,6 +38,7 @@
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "logger.h"
+#include "editors/navigationhistorylocator.h"
 #include "settings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
@@ -76,7 +77,8 @@ MainWindow::MainWindow(QWidget *parent)
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
       mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
-      mMiroDeployDialog(new miro::MiroDeployDialog(this))
+      mMiroDeployDialog(new miro::MiroDeployDialog(this)),
+      mMiroAssemblyDialog(new miro::MiroModelAssemblyDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     Settings *settings = Settings::settings();
@@ -108,11 +110,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
 
+    // TODO: this should be moved to the platform switch above, for code consistency
     if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
         ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
         ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
         ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
     }
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
+    ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
+    ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
+    ui->actionGoForward->shortcuts().append(QKeySequence(Qt::ForwardButton));
+    ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
 
     // Status Bar
     QFont font = ui->statusBar->font();
@@ -198,6 +206,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
             this, &MainWindow::miroDeploy);
+    connect(mMiroAssemblyDialog.get(), &miro::MiroModelAssemblyDialog::finished,
+            this, &MainWindow::miroAssemblyDialogFinish);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -218,7 +228,12 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
     on_actionShow_System_Log_triggered();
 
+    mNavigationHistory = new NavigationHistory(this);
+    NavigationHistoryLocator::provide(mNavigationHistory);
+    connect(mNavigationHistory, &NavigationHistory::historyChanged, this, &MainWindow::updateCursorHistoryAvailability);
+
     initTabs();
+    mNavigationHistory->startRecord();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
@@ -228,9 +243,6 @@ MainWindow::MainWindow(QWidget *parent)
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
     ui->mainTabs->setUsesScrollButtons(true);
-
-    // shortcuts
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
 
     // set up services
     search::SearchLocator::provide(mSearchDialog);
@@ -264,6 +276,7 @@ MainWindow::~MainWindow()
     killTimer(mTimerID);
     delete mWp;
     delete ui;
+    delete mNavigationHistory;
     FileType::clear();
 }
 
@@ -284,7 +297,6 @@ void MainWindow::initTabs()
         mWp->hide();
     else
         showWelcomePage();
-
 }
 
 void MainWindow::initToolBar()
@@ -334,7 +346,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
 
     QFileInfo fi(filePath);
 
-    ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+    ProjectGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
     ProjectFileNode *node = addNode("", filePath, group);
     openFileNode(node);
 }
@@ -1076,7 +1088,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
         for (ProjectGroupNode *group: groups)
             openFileNode(addNode("", filePath, group));
     } else { // create new group
-        ProjectGroupNode *group = mProjectRepo.createGroup(fi.baseName(), fi.absolutePath(), "");
+        ProjectGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
         ProjectFileNode* node = addNode("", filePath, group);
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
@@ -1429,6 +1441,9 @@ void MainWindow::activeTabChanged(int index)
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
     updateEditorMode();
+
+    mNavigationHistory->setActiveTab(editWidget);
+    updateCursorHistoryAvailability();
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -2333,15 +2348,10 @@ void MainWindow::on_actionCreate_model_assembly_triggered()
                                                                     mRecent.group()->toRunGroup()->mainModelName(false));
     }
 
-    miro::MiroModelAssemblyDialog dlg(location, this);
-    dlg.setSelectedFiles(checkedFiles);
-    if (dlg.exec() == QDialog::Rejected)
-        return;
-
-    if (!miro::MiroCommon::writeAssemblyFile(assemblyFile, dlg.selectedFiles()))
-        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1").arg(assemblyFile), LogMsgType::Error);
-    else
-        addToGroup(mRecent.group(), assemblyFile);
+    mMiroAssemblyDialog->setAssemblyFileName(assemblyFile);
+    mMiroAssemblyDialog->setWorkingDirectory(location);
+    mMiroAssemblyDialog->setSelectedFiles(checkedFiles);
+    mMiroAssemblyDialog->open();
 }
 
 void MainWindow::on_actionDeploy_triggered()
@@ -2359,6 +2369,20 @@ void MainWindow::on_actionDeploy_triggered()
 void MainWindow::on_menuMIRO_aboutToShow()
 {
     ui->menuMIRO->setEnabled(isMiroAvailable());
+}
+
+void MainWindow::miroAssemblyDialogFinish(int result)
+{
+    if (result != QDialog::Accepted)
+        return;
+
+    if (!miro::MiroCommon::writeAssemblyFile(mMiroAssemblyDialog->assemblyFileName(),
+                                             mMiroAssemblyDialog->selectedFiles()))
+        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1")
+                                           .arg(mMiroAssemblyDialog->assemblyFileName()),
+                                           LogMsgType::Error);
+    else
+        addToGroup(mRecent.group(), mMiroAssemblyDialog->assemblyFileName());
 }
 
 void MainWindow::miroDeployAssemblyFileUpdate()
@@ -2466,6 +2490,10 @@ RecentData *MainWindow::recent()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    // leave distraction free mode before exiting so we do not lose widget states
+    if (ui->actionDistraction_Free_Mode->isChecked())
+        ui->actionDistraction_Free_Mode->setChecked(false);
+
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
@@ -2616,7 +2644,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     QFileInfo firstFile(files.first());
 
     // create base group
-    ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
+    ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     for (QString item: files) {
         if (QFileInfo(item).exists()) {
             ProjectFileNode *node = addNode("", item, group);
@@ -2653,6 +2681,18 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
         Q_UNUSED(child)
     }
     QMainWindow::mouseMoveEvent(event);
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    QMouseEvent* me = static_cast<QMouseEvent*>(event);
+    if (me->button() == Qt::ForwardButton) {
+        on_actionGoForward_triggered();
+        event->accept();
+    } else if (me->button() == Qt::BackButton) {
+        on_actionGoBack_triggered();
+        event->accept();
+    }
 }
 
 void MainWindow::customEvent(QEvent *event)
@@ -3031,6 +3071,8 @@ void MainWindow::initIcons()
     ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
     ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
     ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
+    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
 }
 
 void MainWindow::ensureInScreen()
@@ -3086,7 +3128,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
                     runGroup = nodes.first()->assignedRunGroup();
             } else {
                 QFileInfo file(fileMeta->location());
-                runGroup = mProjectRepo.createGroup(file.baseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
+                runGroup = mProjectRepo.createGroup(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
             }
         }
@@ -3244,6 +3286,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     mClosedTabs << fm->location();
     int lastIndex = mWp->isVisible() ? 1 : 0;
 
+    NavigationHistoryLocator::navigationHistory()->stopRecord();
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
@@ -3256,6 +3299,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
+    NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor)
@@ -4118,14 +4162,78 @@ void MainWindow::on_actionFull_Screen_triggered()
     }
 }
 
+void MainWindow::on_actionDistraction_Free_Mode_toggled(bool checked)
+{
+    if (checked) { // collapse
+        mWidgetStates[0] = ui->dockProjectView->isVisible();
+        mWidgetStates[1] = mGamsParameterEditor->isEditorExtended();
+        mWidgetStates[2] = ui->dockProcessLog->isVisible();
+        mWidgetStates[3] = ui->dockHelpView->isVisible();
+
+        ui->dockProjectView->setVisible(false);
+        mGamsParameterEditor->setEditorExtended(false);
+        ui->dockProcessLog->setVisible(false);
+        ui->dockHelpView->setVisible(false);
+    } else { // restore
+        ui->dockProjectView->setVisible(mWidgetStates[0]);
+        mGamsParameterEditor->setEditorExtended(mWidgetStates[1]);
+        ui->dockProcessLog->setVisible(mWidgetStates[2]);
+        ui->dockHelpView->setVisible(mWidgetStates[3]);
+    }
+}
+
 void MainWindow::on_actionShowToolbar_triggered(bool checked)
 {
     ui->toolBar->setVisible(checked);
 }
 
+void MainWindow::on_actionGoBack_triggered()
+{
+    CursorHistoryItem item = mNavigationHistory->goBack();
+    restoreCursorPosition(item);
+    updateCursorHistoryAvailability();
+}
 
+void MainWindow::on_actionGoForward_triggered()
+{
+    CursorHistoryItem item = mNavigationHistory->goForward();
+    restoreCursorPosition(item);
+    updateCursorHistoryAvailability();
+}
 
+void MainWindow::restoreCursorPosition(CursorHistoryItem item)
+{
+    if (!mNavigationHistory->itemValid(item)) return;
 
+    mNavigationHistory->stopRecord();
+
+    // check if tab is still opened
+    if (ui->mainTabs->indexOf(item.tab) > 0) {
+        ui->mainTabs->setCurrentWidget(item.tab);
+        item.tab->setFocus();
+    } else {
+        if (!item.filePath.isEmpty()) {
+            openFilePath(item.filePath, true);
+        }
+    }
+
+    if (item.lineNr >= 0) {
+        // restore text cursor if editor available
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab()))
+            ce->jumpTo(item.lineNr, item.col);
+        else if (TextView* tv = ViewHelper::toTextView(mNavigationHistory->currentTab()))
+            tv->jumpTo(item.lineNr, item.col, 0, true);
+        // else: nothing to do
+    }
+
+    mNavigationHistory->startRecord();
+}
+
+void MainWindow::updateCursorHistoryAvailability()
+{
+    ui->actionGoBack->setEnabled(mNavigationHistory->canGoBackward());
+    ui->actionGoForward->setEnabled(mNavigationHistory->canGoForward());
+}
 
 }
 }

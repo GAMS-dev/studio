@@ -43,14 +43,13 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     ui->splitter->addWidget(mTextView);
 
     QFileInfo info(lstFile);
-    mLxiFile = info.path() + "/" + info.baseName() + ".lxi";
+    mLxiFile = info.path() + "/" + info.completeBaseName() + ".lxi";
 
     loadLxi();
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
     setFocusProxy(ui->lxiTreeView);
 
-    connect(ui->lxiTreeView, &QTreeView::activated, this, &LxiViewer::jumpToLine);
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
 }

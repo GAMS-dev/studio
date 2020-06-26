@@ -23,7 +23,7 @@ SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, QWidget *parent, bool iconE
     ui->iconEx->setVisible(iconExample);
     ui->textFrame->setVisible(!iconExample);
     if (iconExample) {
-        mIconEng = new SvgEngine(Scheme::name(slotFg).endsWith("_Line") ? ":/thin/user" : ":/solid/user");
+        mIconEng = new SvgEngine(":/solid/user");
         if (Scheme::name(slotFg).startsWith("Disable_")) mIconEng->replaceNormalMode(QIcon::Disabled);
         if (Scheme::name(slotFg).startsWith("Active_")) mIconEng->replaceNormalMode(QIcon::Active);
         if (Scheme::name(slotFg).startsWith("Select_")) mIconEng->replaceNormalMode(QIcon::Selected);

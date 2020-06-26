@@ -50,7 +50,7 @@ public:
 
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable);
-    void copySelectionToClipboard(QString separator);
+    void copySelectionToClipboard(QString separator, bool copyLabels = true);
     void toggleColumnHidden();
 
 public slots:
@@ -70,7 +70,8 @@ private:
     GdxSymbol *mSym = nullptr;
     TableViewModel* mTvModel = nullptr;
     QByteArray mInitialHeaderState;
-    QMenu mContextMenu;
+    QMenu mContextMenuLV;
+    QMenu mContextMenuTV;
 
     void showListView();
     void showTableView();
