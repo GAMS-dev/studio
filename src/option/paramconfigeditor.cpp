@@ -173,13 +173,14 @@ void ParamConfigEditor::initActions()
     ui->actionResize_Columns_To_Contents->setEnabled(false);
 
     ui->actionResize_Columns_To_Contents->setEnabled(true);
-    ui->actionInsert->icon().pixmap( QSize(16, 16), QIcon::Selected, QIcon::Off);
-    ui->actionDelete->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
-    ui->actionMoveUp->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
-    ui->actionDelete->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
 
-    ui->actionAdd_This_Parameter->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
-    ui->actionRemove_This_Parameter->icon().pixmap( QSize(16, 16), QIcon::Disabled, QIcon::Off);
+    ui->actionInsert->setIcon(Scheme::icon(":/%1/plus", true));
+    ui->actionDelete->setIcon(Scheme::icon(":/%1/delete-all", true));
+    ui->actionMoveUp->setIcon(Scheme::icon(":/%1/move-up", true));
+    ui->actionMoveDown->setIcon(Scheme::icon(":/%1/move-down", true));
+
+    ui->actionAdd_This_Parameter->setIcon(Scheme::icon(":/%1/plus", true));
+    ui->actionRemove_This_Parameter->setIcon(Scheme::icon(":/%1/delete-all", true));
 }
 
 bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
