@@ -110,6 +110,8 @@ enum SettingsKey {
 
     // user model library directory
     skUserModelLibraryDir,
+
+    skSettingsKeyCount,
 };
 
 class Settings
@@ -197,6 +199,7 @@ private:
     ~Settings();
     QSettings *newQSettings(QString name);
     QHash<SettingsKey, KeyData> generateKeys();
+    bool safelyAdd(QHash<SettingsKey, KeyData> &hash, SettingsKey key, Scope scope, QStringList jsKey, QVariant defaultValue);
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
     bool canWrite() {return mCanWrite && !mBlock; }
 

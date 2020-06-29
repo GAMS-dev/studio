@@ -273,14 +273,12 @@ QString FileSystemModel::subPath(const QString &path) const
     return QString(path).remove(0, rootDirectory().canonicalPath().size()+1);
 }
 
-MiroModelAssemblyDialog::MiroModelAssemblyDialog(const QString &workingDirectory, QWidget *parent)
-    : QDialog(parent),
-      ui(new Ui::MiroModelAssemblyDialog),
-      mWorkingDirectory(workingDirectory)
+MiroModelAssemblyDialog::MiroModelAssemblyDialog(QWidget *parent)
+    : QDialog(parent)
+    , ui(new Ui::MiroModelAssemblyDialog)
 {
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    setupViewModel();
 }
 
 MiroModelAssemblyDialog::~MiroModelAssemblyDialog()
@@ -293,6 +291,12 @@ QStringList MiroModelAssemblyDialog::selectedFiles()
     if (mFileSystemModel)
         return mFileSystemModel->selectedFiles();
     return QStringList();
+}
+
+void MiroModelAssemblyDialog::setWorkingDirectory(const QString &workingDirectory)
+{
+    mWorkingDirectory = workingDirectory;
+    setupViewModel();
 }
 
 void MiroModelAssemblyDialog::on_createButton_clicked()

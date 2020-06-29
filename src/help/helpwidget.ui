@@ -159,7 +159,7 @@
   <action name="actionHome">
    <property name="icon">
     <iconset resource="../../icons/icons.qrc">
-     <normaloff>:/thin/home</normaloff>:/thin/home</iconset>
+     <normaloff>:/solid/home</normaloff>:/solid/home</iconset>
    </property>
    <property name="text">
     <string/>

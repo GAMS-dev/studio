@@ -602,7 +602,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         if (!group) group = aNode->parentNode();
     } else {
         QFileInfo firstFile(files.first());
-        group = createGroup(firstFile.baseName(), firstFile.absolutePath(), "");
+        group = createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     }
     if (!group) return;
 

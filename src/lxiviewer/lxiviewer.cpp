@@ -43,7 +43,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     ui->splitter->addWidget(mTextView);
 
     QFileInfo info(lstFile);
-    mLxiFile = info.path() + "/" + info.baseName() + ".lxi";
+    mLxiFile = info.path() + "/" + info.completeBaseName() + ".lxi";
 
     loadLxi();
     ui->splitter->setStretchFactor(0, 1);

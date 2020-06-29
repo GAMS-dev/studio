@@ -212,10 +212,43 @@ QSettings *Settings::newQSettings(QString name)
     QSettings *res = nullptr;
     res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
     if (res->status()) {
-        // TODO(JM) convert this to DEB-message after initial tests
+        // TODO(JM) Do we want to exit if the settings couldn't be created?
         FATAL() << (res->status()==1 ? "Access-" : "Format-") << "error in file: " << res->fileName();
     }
     res->sync();
+    return res;
+}
+
+QString settingsKeyName(SettingsKey key) {
+    QString res = '[' + QString::number(key) + ']';
+    return res;
+}
+
+bool Settings::safelyAdd(QHash<SettingsKey, Settings::KeyData> &hash, SettingsKey key, Scope scope, QStringList jsKey, QVariant defaultValue)
+{
+    bool res = true;
+    if (hash.contains(key)) {
+        res = false;
+        DEB() << "WARNING: redefinition of SettingsKey" << settingsKeyName(key);
+    }
+    QHash<SettingsKey, Settings::KeyData>::const_iterator it = hash.constBegin();
+    while (it != hash.constEnd()) {
+        const QStringList &jsKey2 = it.value().keys;
+        if (jsKey.size() == jsKey2.size()) {
+            bool equal = true;
+            for (int i = 0; i < jsKey.length(); ++i) {
+                if (jsKey.at(i) != jsKey2.at(i)) equal = false;
+            }
+            if (equal) {
+                res = false;
+                DEB() << "WARNING: SettingsKey" << settingsKeyName(key) << " reuses json-key " << jsKey.join("/")
+                      << " - previously used by SettingsKey" << settingsKeyName(it.key());
+            }
+        }
+
+        ++it;
+    }
+    hash.insert(key, KeyData(scope, jsKey, defaultValue));
     return res;
 }
 
@@ -223,85 +256,89 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 {
     QHash<SettingsKey, Settings::KeyData> res;
 
-    res.insert(skVersionSysSettings, KeyData(scSys, {"version","studiosettings"}, version(scSys)));
-    res.insert(skVersionGamsStudio, KeyData(scSys, {"version","gamsstudio"}, QString(GAMS_VERSION_STR)));
-    res.insert(skVersionUserSettings, KeyData(scUser, {"version","usersettings"}, version(scUser)));
+    safelyAdd(res, skVersionSysSettings, scSys, {"version","studiosettings"}, version(scSys));
+    safelyAdd(res, skVersionGamsStudio, scSys, {"version","gamsstudio"}, QString(GAMS_VERSION_STR));
+    safelyAdd(res, skVersionUserSettings, scUser, {"version","usersettings"}, version(scUser));
 
     // window settings
-    res.insert(skWinSize, KeyData(scSys, {"window","size"}, QString("1024,768")));
-    res.insert(skWinPos, KeyData(scSys, {"window","pos"}, QString("0,0")));
-    res.insert(skWinState, KeyData(scSys, {"window","state"}, QByteArray("")));
-    res.insert(skWinMaxSizes, KeyData(scSys, {"window","_maxSizes"}, QString("-1,-1,-1,-1")));
-    res.insert(skWinNormSizes, KeyData(scSys, {"window","_normSizes"}, QString("-1,-1,-1,-1")));
-    res.insert(skWinMaximized, KeyData(scSys, {"window","maximized"}, false));
-    res.insert(skWinFullScreen, KeyData(scSys, {"window","fullScreen"}, false));
+    safelyAdd(res, skWinSize, scSys, {"window","size"}, QString("1024,768"));
+    safelyAdd(res, skWinPos, scSys, {"window","pos"}, QString("0,0"));
+    safelyAdd(res, skWinState, scSys, {"window","state"}, QByteArray(""));
+    safelyAdd(res, skWinMaxSizes, scSys, {"window","_maxSizes"}, QString("-1,-1,-1,-1"));
+    safelyAdd(res, skWinNormSizes, scSys, {"window","_normSizes"}, QString("-1,-1,-1,-1"));
+    safelyAdd(res, skWinMaximized, scSys, {"window","maximized"}, false);
+    safelyAdd(res, skWinFullScreen, scSys, {"window","fullScreen"}, false);
 
     // view menu settings
-    res.insert(skViewProject, KeyData(scSys, {"viewMenu","project"}, true));
-    res.insert(skViewOutput, KeyData(scSys, {"viewMenu","output"}, true));
-    res.insert(skViewHelp, KeyData(scSys, {"viewMenu","help"}, false));
-    res.insert(skViewOption, KeyData(scSys, {"viewMenu","optionEdit"}, false));
+    safelyAdd(res, skViewProject, scSys, {"viewMenu","project"}, true);
+    safelyAdd(res, skViewOutput, scSys, {"viewMenu","output"}, true);
+    safelyAdd(res, skViewHelp, scSys, {"viewMenu","help"}, false);
+    safelyAdd(res, skViewOption, scSys, {"viewMenu","optionEdit"}, false);
 
     // general system settings
-    res.insert(skDefaultCodecMib, KeyData(scSys, {"defaultCodecMib"}, 106));
-    res.insert(skEncodingMib, KeyData(scSys, {"encodingMIBs"}, QString("106,0,4,17,2025")));
-    res.insert(skProjects, KeyData(scSys, {"projects"}, QJsonArray()));
-    res.insert(skTabs, KeyData(scSys, {"tabs"}, QJsonObject()));
-    res.insert(skHistory, KeyData(scSys, {"history"}, QJsonArray()));
+    safelyAdd(res, skDefaultCodecMib, scSys, {"defaultCodecMib"}, 106);
+    safelyAdd(res, skEncodingMib, scSys, {"encodingMIBs"}, QString("106,0,4,17,2025"));
+    safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
+    safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
+    safelyAdd(res, skHistory, scSys, {"history"}, QJsonArray());
 
     // user model library directory
-    res.insert(skUserModelLibraryDir, KeyData(scSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir()));
+    safelyAdd(res, skUserModelLibraryDir, scSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir());
 
     // settings of help page
-    res.insert(skHelpBookmarks, KeyData(scSys, {"help","bookmarks"}, QJsonArray()));
-    res.insert(skHelpZoomFactor, KeyData(scSys, {"help","zoom"}, 1.0));
+    safelyAdd(res, skHelpBookmarks, scSys, {"help","bookmarks"}, QJsonArray());
+    safelyAdd(res, skHelpZoomFactor, scSys, {"help","zoom"}, 1.0);
 
     // search widget
-    res.insert(skSearchUseRegex, KeyData(scSys, {"search", "regex"}, false));
-    res.insert(skSearchCaseSens, KeyData(scSys, {"search", "caseSens"}, false));
-    res.insert(skSearchWholeWords, KeyData(scSys, {"search", "wholeWords"}, false));
-    res.insert(skSearchScope, KeyData(scSys, {"search", "scope"}, 0));
+    safelyAdd(res, skSearchUseRegex, scSys, {"search", "regex"}, false);
+    safelyAdd(res, skSearchCaseSens, scSys, {"search", "caseSens"}, false);
+    safelyAdd(res, skSearchWholeWords, scSys, {"search", "wholeWords"}, false);
+    safelyAdd(res, skSearchScope, scSys, {"search", "scope"}, 0);
 
     // general settings page
-    res.insert(skDefaultWorkspace, KeyData(scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir()));
-    res.insert(skSkipWelcomePage, KeyData(scUser, {"skipWelcome"}, false));
-    res.insert(skRestoreTabs, KeyData(scUser, {"restoreTabs"}, true));
-    res.insert(skAutosaveOnRun, KeyData(scUser, {"autosaveOnRun"}, true));
-    res.insert(skOpenLst, KeyData(scUser, {"openLst"}, false));
-    res.insert(skJumpToError, KeyData(scUser, {"jumpToErrors"}, true));
-    res.insert(skForegroundOnDemand, KeyData(scUser, {"foregroundOnDemand"}, true));
-    res.insert(skHistorySize, KeyData(scUser, {"historySize"}, 20));
+    safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir());
+    safelyAdd(res, skSkipWelcomePage, scUser, {"skipWelcome"}, false);
+    safelyAdd(res, skRestoreTabs, scUser, {"restoreTabs"}, true);
+    safelyAdd(res, skAutosaveOnRun, scUser, {"autosaveOnRun"}, true);
+    safelyAdd(res, skOpenLst, scUser, {"openLst"}, false);
+    safelyAdd(res, skJumpToError, scUser, {"jumpToErrors"}, true);
+    safelyAdd(res, skForegroundOnDemand, scUser, {"foregroundOnDemand"}, true);
+    safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
 
     // editor settings page
-    res.insert(skEdAppearance, KeyData(scUser, {"editor","appearance"}, 0));
-    res.insert(skEdFontFamily, KeyData(scUser, {"editor","fontFamily"}, findFixedFont()));
-    res.insert(skEdFontSize, KeyData(scUser, {"editor","fontSize"}, 10));
-    res.insert(skEdShowLineNr, KeyData(scUser, {"editor","showLineNr"}, true));
-    res.insert(skEdTabSize, KeyData(scUser, {"editor","TabSize"}, 4));
-    res.insert(skEdLineWrapEditor, KeyData(scUser, {"editor","lineWrapEditor"}, false));
-    res.insert(skEdLineWrapProcess, KeyData(scUser, {"editor","lineWrapProcess"}, false));
-    res.insert(skEdClearLog, KeyData(scUser, {"editor","clearLog"}, false));
-    res.insert(skEdWordUnderCursor, KeyData(scUser, {"editor","wordUnderCursor"}, false));
-    res.insert(skEdHighlightCurrentLine, KeyData(scUser, {"editor","highlightCurrentLine"}, false));
-    res.insert(skEdAutoIndent, KeyData(scUser, {"editor","autoIndent"}, true));
-    res.insert(skEdWriteLog, KeyData(scUser, {"editor","writeLog"}, true));
-    res.insert(skEdLogBackupCount, KeyData(scUser, {"editor","logBackupCount"}, 3));
-    res.insert(skEdAutoCloseBraces, KeyData(scUser, {"editor","autoCloseBraces"}, true));
-    res.insert(skEdEditableMaxSizeMB, KeyData(scUser, {"editor","editableMaxSizeMB"}, 50));
+    safelyAdd(res, skEdAppearance, scUser, {"editor","appearance"}, 0);
+    safelyAdd(res, skEdFontFamily, scUser, {"editor","fontFamily"}, findFixedFont());
+    safelyAdd(res, skEdFontSize, scUser, {"editor","fontSize"}, 10);
+    safelyAdd(res, skEdShowLineNr, scUser, {"editor","showLineNr"}, true);
+    safelyAdd(res, skEdTabSize, scUser, {"editor","TabSize"}, 4);
+    safelyAdd(res, skEdLineWrapEditor, scUser, {"editor","lineWrapEditor"}, false);
+    safelyAdd(res, skEdLineWrapProcess, scUser, {"editor","lineWrapProcess"}, false);
+    safelyAdd(res, skEdClearLog, scUser, {"editor","clearLog"}, false);
+    safelyAdd(res, skEdWordUnderCursor, scUser, {"editor","wordUnderCursor"}, false);
+    safelyAdd(res, skEdHighlightCurrentLine, scUser, {"editor","highlightCurrentLine"}, false);
+    safelyAdd(res, skEdAutoIndent, scUser, {"editor","autoIndent"}, true);
+    safelyAdd(res, skEdWriteLog, scUser, {"editor","writeLog"}, true);
+    safelyAdd(res, skEdLogBackupCount, scUser, {"editor","logBackupCount"}, 3);
+    safelyAdd(res, skEdAutoCloseBraces, scUser, {"editor","autoCloseBraces"}, true);
+    safelyAdd(res, skEdEditableMaxSizeMB, scUser, {"editor","editableMaxSizeMB"}, 50);
 
     // MIRO settings page
-    res.insert(skMiroInstallPath, KeyData(scUser, {"miro","installationLocation"}, QString()));
+    safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());
 
     // solver option editor settings
-    res.insert(skSoOverrideExisting, KeyData(scUser, {"solverOption","overrideExisting"}, true));
-    res.insert(skSoAddCommentAbove, KeyData(scUser, {"solverOption","addCommentAbove"}, false));
-    res.insert(skSoAddEOLComment, KeyData(scUser, {"solverOption","addEOLComment"}, false));
-    res.insert(skSoDeleteCommentsAbove, KeyData(scUser, {"solverOption","deleteCommentsAbove"}, false));
+    safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);
+    safelyAdd(res, skSoAddCommentAbove, scUser, {"solverOption","addCommentAbove"}, false);
+    safelyAdd(res, skSoAddEOLComment, scUser, {"solverOption","addEOLComment"}, false);
+    safelyAdd(res, skSoDeleteCommentsAbove, scUser, {"solverOption","deleteCommentsAbove"}, false);
+
+    // Check if all enum values of SettingsKey have been assigned
+    for (int i = 0 ; i < skSettingsKeyCount ; ++i) {
+        if (!res.contains(static_cast<SettingsKey>(i))) {
+            DEB() << "WARNING: Unused SettingsKey [" << QString::number(i) << "]";
+        }
+    }
 
     return res;
-
-
-    // TODO(JM) protect against double-usage in the future: check if each key-path is unique
 }
 
 void Settings::initDefault()
@@ -546,8 +583,10 @@ void Settings::saveFile(Scope scope)
     if (!canWrite()) return;
     ScopePair scopes = scopePair(scope);
 
-    // TODO: when can this happen? we should probably print an error if we reach this early return:
-    if (!mSettings.contains(scopes.base)) return; // for safety
+    if (!mSettings.contains(scopes.base)) {
+        DEB() << "WARNING: missing initialization for scope [" << QString::number(scopes.base) << "]";
+        return; // for safety
+    }
     QSettings *settings = mSettings.value(scopes.base);
 
     // store base settings
