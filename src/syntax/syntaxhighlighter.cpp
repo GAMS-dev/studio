@@ -173,8 +173,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                        if (tailBlock.syntax)
 //                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
 //                                  << tailBlock.syntax->kind() << " flav_" << tailBlock.flavor << "  (tail from " << syntax->kind() << ")";
-                        scanParentheses(text, tailBlock.start, tailBlock.length(), syntax->kind(),
-                                        tailBlock.syntax->kind(), tailBlock.next, parPosList);
+                        scanParentheses(text, tailBlock, syntax->kind(), parPosList);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);
                 }
@@ -190,8 +189,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                      << " " << nextBlock.syntax->kind() << " flav_" << nextBlock.flavor << "  (next from " << syntax->kind() << ")";
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
-        scanParentheses(text, nextBlock.start, nextBlock.length(), syntax->kind(),
-                        nextBlock.syntax->kind(), nextBlock.next, parPosList);
+        scanParentheses(text, nextBlock, syntax->kind(), parPosList);
         index = nextBlock.end;
 
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
@@ -246,8 +244,14 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
 const QString validParentheses("{[(}])/");
 const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
 
-void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind, SyntaxKind postKind,  QVector<ParenthesesPos> &parentheses)
+void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, QVector<ParenthesesPos> &parentheses)
 {
+    int start = block.start;
+    int len = block.length();
+    int flavor = block.flavor;
+    SyntaxKind kind = block.syntax->kind();
+    SyntaxKind postKind = block.next;
+
     bool inBlock = false;
     if (kind == SyntaxKind::Embedded || (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody)) {
         parentheses << ParenthesesPos('E', start);
@@ -256,6 +260,14 @@ void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len,
         parentheses << ParenthesesPos('e', start);
         return;
     } else if (kind == SyntaxKind::Directive) {
+        if (flavor == 1) {
+            parentheses << ParenthesesPos('T', start);
+            return;
+        }
+        if (flavor == 2) {
+            parentheses << ParenthesesPos('t', start);
+            return;
+        }
         // TODO (JM) handle ontext and offtext - ignore others
 //        parentheses << ParenthesesPos('T', start);
 //        return;

@@ -51,7 +51,7 @@ public slots:
     void syntaxKind(int position, int &intKind);
 
 private:
-    void scanParentheses(const QString &text, int start, int len, SyntaxKind preKind, SyntaxKind kind,SyntaxKind postKind, QVector<ParenthesesPos> &parentheses);
+    void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, QVector<ParenthesesPos> &parentheses);
 
 private:
     struct CodeRelation {
