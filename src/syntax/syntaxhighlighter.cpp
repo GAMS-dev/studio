@@ -255,6 +255,10 @@ void SyntaxHighlighter::scanParentheses(const QString &text, int start, int len,
     } else if (kind == SyntaxKind::EmbeddedEnd || (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive)) {
         parentheses << ParenthesesPos('e', start);
         return;
+    } else if (kind == SyntaxKind::Directive) {
+        // TODO (JM) handle ontext and offtext - ignore others
+//        parentheses << ParenthesesPos('T', start);
+//        return;
     }
     if (invalidParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {

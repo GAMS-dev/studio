@@ -107,7 +107,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     virtual int lineNumberAreaWidth();
-    virtual int foldState(int line, bool &folded);
+    virtual int foldState(int line, bool &folded, int *start = nullptr, QString *closingSymbol = nullptr);
     int iconSize();
     LineNumberArea* lineNumberArea();
 
@@ -125,7 +125,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesesMatch matchParentheses(QTextCursor cursor, const bool *fold = nullptr);
+    ParenthesesMatch matchParentheses(QTextCursor cursor, bool all = false, const bool *fold = nullptr);
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();
@@ -136,7 +136,7 @@ public:
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
     void disconnectTimers() override;
-    int foldStart(int line, bool &folded);
+    int foldStart(int line, bool &folded, QString *closingSymbol = nullptr);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

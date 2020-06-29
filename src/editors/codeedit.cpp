@@ -603,8 +603,7 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             // TODO(JM) modify appearance of folded line
             QTextCursor cursor(block);
             cursor.setPosition(cursor.position() + foldPos+1);
-            matchParentheses(cursor, &folded);
-            if (folded) block.layout()->setText("....");
+            matchParentheses(cursor, true, &folded);
             viewport()->repaint();
             mLineNumberArea->repaint();
             e->accept();
@@ -649,23 +648,15 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
 void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
-
-    // TODO(JM) fix drag-up problem (jumps to current cursor)
-
     QPair<int,int> newFoldMark;
     if (showFolding() && e->pos().x() < 0  && e->pos().x() > -iconSize()) {
         bool folded;
         QTextBlock block = cursorForPosition(e->pos()).block();
         int foldPos = foldStart(block.blockNumber(), folded);
-//        int count = 0;
-//        while (block.isValid() && foldPos < 0 && count++ < 200) {
-//            block = block.previous();
-//            foldPos = foldStart(block.blockNumber(), folded);
-//        }
         if (foldPos >= 0) {
             QTextCursor cursor(block);
-            cursor.setPosition(block.position() + foldPos+1);
-            ParenthesesMatch pm = matchParentheses(cursor);
+            cursor.setPosition(cursor.position() + foldPos);
+            ParenthesesMatch pm = matchParentheses(cursor, true);
             if (pm.isValid()) {
                 newFoldMark.first = block.blockNumber();
                 newFoldMark.second = document()->findBlock(pm.match).blockNumber();
@@ -728,11 +719,35 @@ void CodeEdit::paintEvent(QPaintEvent* e)
         while (block.isValid() && top <= paintRect.bottom()) {
             if (block.isVisible() && bottom >= paintRect.top()) {
                 if (showFolding()) {
+                    int foldPos = 0;
                     bool folded = false;
-                    int foldRes = foldState(blockNumber, folded);
+                    QString closingSymbol;
+                    int foldRes = foldState(blockNumber, folded, &foldPos, &closingSymbol);
                     if (foldRes % 3 == 2) {
-                        QRect foldRect(0, bottom-1, width(), 1);
-                        painter.fillRect(foldRect, toColor(Scheme::Edit_foldLine));
+                        QString text = QString("... ") + closingSymbol;
+                        // calculate rect
+                        QTextLine lin = block.layout()->lineAt(block.lineCount()-1);
+                        QRectF r = lin.naturalTextRect();
+                        r.moveTop(r.top() + top);
+                        r.moveLeft(r.left() + r.width() + r.height()/2);
+                        QRectF tRect = painter.boundingRect(r, Qt::AlignLeft | Qt::AlignVCenter, text);
+                        r.setWidth(tRect.width()+2);
+
+                        // draw the additional line for folded blocks
+                        QRect foldRect(0, bottom-1, r.left()+r.height(), 1);
+                        painter.fillRect(foldRect, toColor(Scheme::Edit_foldLineBg));
+
+                        // draw folding block
+                        qreal rad = r.height() / 3;
+                        painter.setPen(toColor(Scheme::Edit_foldLineBg));
+                        painter.setBrush(toColor(Scheme::Edit_foldLineBg));
+                        painter.drawRoundedRect(r, rad, rad);
+                        QFont f = painter.font();
+                        f.setBold(true);
+                        painter.setFont(f);
+                        r.setHeight(r.height()-1);
+                        painter.setPen(toColor(Scheme::Edit_foldLineFg));
+                        painter.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, text);
                     }
               }
             }
@@ -1188,10 +1203,11 @@ void CodeEdit::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
     }
 }
 
-int CodeEdit::foldStart(int line, bool &folded)
+int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol)
 {
     int res = -1;
-    static QString parentheses("{[(/E}])\\e");
+    static QString parentheses("{[(/ET}])\\et");
+    static QVector<QString> closingSymbols { "}", "]", ")", "/", "embedded]", "offText]" };
     static int pSplit = parentheses.length()/2;
     QTextBlock block = document()->findBlockByNumber(line);
     if (!block.userData()) return -1;
@@ -1200,22 +1216,31 @@ int CodeEdit::foldStart(int line, bool &folded)
     folded = dat->isFolded();
     QVector<ParenthesesPos> parList = dat->parentheses();
     int depth = 0;
+//    if (parList.count())
+//        DEB() << "parenthesis " << parList.at(0).character << " at " << parList.at(0).relPos;
     for (int i = 0; i < parList.count(); ++i) {
         if (parentheses.indexOf(parList.at(i).character) > pSplit) {
             if (depth) --depth;
             if (!depth) res = -1;
         } else {
             ++depth;
-            if (depth == 1) res = parList.at(i).relPos;
+            if (depth == 1) {
+                res = parList.at(i).relPos;
+                if (closingSymbol) {
+                    int cs = parentheses.indexOf(parList.at(i).character);
+                    *closingSymbol = closingSymbols.at(cs);
+                }
+            }
         }
     }
     return res;
 }
 
-ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, const bool *fold)
+ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, bool all, const bool *fold)
 {
-    static QString parentheses("{[(/E}])\\e");
+    static QString parentheses("{[(/ET}])\\et");
     static int pSplit = parentheses.length()/2;
+    static int pAll = parentheses.indexOf("/");
     QTextBlock block = cursor.block();
     if (!block.userData()) return ParenthesesMatch();
     BlockData *startDat = static_cast<BlockData*>(block.userData());
@@ -1270,7 +1295,7 @@ ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, const bool *fold
             if (parList.at(pi).character == parStack.last()) {
                 parStack.removeLast();
                 if (parStack.isEmpty()) {
-                    if (parentheses.at(ci) == 'E') return ParenthesesMatch(); // only mark embedded on mismatch
+                    if (!all && ci > pAll) return ParenthesesMatch(); // only mark embedded on mismatch
                     result.valid = true;
                     result.match = block.position() + parList.at(pi).relPos;
                     return result;
@@ -1514,10 +1539,11 @@ void CodeEdit::setAllowBlockEdit(bool allow)
     if (mBlockEdit) endBlockEdit();
 }
 
-int CodeEdit::foldState(int line, bool &folded)
+int CodeEdit::foldState(int line, bool &folded, int *start, QString *closingSymbol)
 {
     int res = 0;
-    int foldPos = foldStart(line, folded);
+    int foldPos = foldStart(line, folded, closingSymbol);
+    if (start) *start = foldPos;
     bool marked = (mFoldMark.first < mFoldMark.second && line >= mFoldMark.first && line <= mFoldMark.second);
     if (foldPos >= 0) res = folded ? 2 : 1;
     if (marked) res += 3;
@@ -1581,12 +1607,12 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                     painter.fillRect(foldRect, toColor(Scheme::Edit_linenrAreaFoldBg));
                 }
                 if (foldRes % 3 > 0) {
-                    int iTop = (2+top+bottom-iconSize())/2;
+                    int iTop = top + (4+fontMetrics().height()-iconSize())/2;
                     QIcon icon = Scheme::icon(foldRes % 3 == 2 ? ":/solid/triangle-right" : ":/solid/triangle-down", true);
                     painter.drawPixmap(widthForNr+1, iTop, icon.pixmap(iconSize()-2,iconSize()-2));
                     if (foldRes % 3 == 2) {
                         QRect foldRect(0, bottom-1, width(), 1);
-                        painter.fillRect(foldRect, toColor(Scheme::Edit_foldLine));
+                        painter.fillRect(foldRect, toColor(Scheme::Edit_foldLineBg));
                     }
                 }
           }

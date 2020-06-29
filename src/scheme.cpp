@@ -42,12 +42,12 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
     mSlotText.insert(Edit_matchesBg,            "Matches");
-    mSlotText.insert(Edit_foldLine,             "Fold line");
+    mSlotText.insert(Edit_foldLineBg,             "Fold line");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
-    mSlotText.insert(Edit_linenrAreaFoldBg,     "Foldable lines");
+    mSlotText.insert(Edit_foldLineFg,     "Folded line marker");
 
     mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
@@ -92,9 +92,10 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(22,164,25));
-    mColorSchemes[sNr].insert(Edit_foldLine,                  QColor(200,200,200));
+    mColorSchemes[sNr].insert(Edit_foldLineBg,                QColor(200,200,200));
+    mColorSchemes[sNr].insert(Edit_foldLineFg,                QColor(255,255,255));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
-    mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black)); // TODO: is this unused?
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black));
     mColorSchemes[sNr].insert(Edit_parenthesesValidBg,        QColor(Qt::green).lighter(170));
     mColorSchemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).lighter(150));
     mColorSchemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(Qt::green).lighter(130));
@@ -156,7 +157,8 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_currentLineBg,       QColor(0,73,61));
     mColorSchemes[sNr].insert(Edit_errorBg,             QColor(187,34,51));
     mColorSchemes[sNr].insert(Edit_matchesBg,           QColor(51,102,51));
-    mColorSchemes[sNr].insert(Edit_foldLine,            QColor(60,60,60));
+    mColorSchemes[sNr].insert(Edit_foldLineBg,          QColor(80,80,80));
+    mColorSchemes[sNr].insert(Edit_foldLineFg,          QColor(0,0,0));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,        QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,    QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaFoldBg,    QColor(15,75,115));
