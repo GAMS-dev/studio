@@ -732,7 +732,7 @@ void CodeEdit::paintEvent(QPaintEvent* e)
                     int foldRes = foldState(blockNumber, folded);
                     if (foldRes % 3 == 2) {
                         QRect foldRect(0, bottom-1, width(), 1);
-                        painter.fillRect(foldRect, Qt::gray);
+                        painter.fillRect(foldRect, toColor(Scheme::Edit_foldLine));
                     }
               }
             }
@@ -1586,7 +1586,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                     painter.drawPixmap(widthForNr+1, iTop, icon.pixmap(iconSize()-2,iconSize()-2));
                     if (foldRes % 3 == 2) {
                         QRect foldRect(0, bottom-1, width(), 1);
-                        painter.fillRect(foldRect, Qt::gray);
+                        painter.fillRect(foldRect, toColor(Scheme::Edit_foldLine));
                     }
                 }
           }

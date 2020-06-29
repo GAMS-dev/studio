@@ -25,6 +25,7 @@ public:
         Edit_errorBg,
         Edit_currentWordBg,
         Edit_matchesBg,
+        Edit_foldLine,
         Edit_parenthesesValidFg,
         Edit_parenthesesInvalidFg,
         Edit_parenthesesValidBg,

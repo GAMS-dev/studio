@@ -41,7 +41,8 @@ void Scheme::initSlotTexts()
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
-    mSlotText.insert(Edit_matchesBg,            "matches");
+    mSlotText.insert(Edit_matchesBg,            "Matches");
+    mSlotText.insert(Edit_foldLine,             "Fold line");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
@@ -91,6 +92,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(255, 220, 200));
     mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(210,200,200));
     mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(22,164,25));
+    mColorSchemes[sNr].insert(Edit_foldLine,                  QColor(200,200,200));
     mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::red));
     mColorSchemes[sNr].insert(Edit_parenthesesInvalidFg,      QColor(Qt::black)); // TODO: is this unused?
     mColorSchemes[sNr].insert(Edit_parenthesesValidBg,        QColor(Qt::green).lighter(170));
@@ -154,6 +156,7 @@ void Scheme::initDefault()
     mColorSchemes[sNr].insert(Edit_currentLineBg,       QColor(0,73,61));
     mColorSchemes[sNr].insert(Edit_errorBg,             QColor(187,34,51));
     mColorSchemes[sNr].insert(Edit_matchesBg,           QColor(51,102,51));
+    mColorSchemes[sNr].insert(Edit_foldLine,            QColor(60,60,60));
     mColorSchemes[sNr].insert(Edit_linenrAreaBg,        QColor(16,16,16));
     mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,    QColor(40,40,40));
     mColorSchemes[sNr].insert(Edit_linenrAreaFoldBg,    QColor(15,75,115));

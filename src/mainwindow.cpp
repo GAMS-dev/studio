@@ -3491,14 +3491,16 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 void MainWindow::updateEditorLineWrapping()
 {
     Settings *settings = Settings::settings();
-    QPlainTextEdit::LineWrapMode wrapModeEditor = settings->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
-                                                                                     : QPlainTextEdit::NoWrap;
+    QPlainTextEdit::LineWrapMode wrapModeEditor = settings->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
+                                                                                       : QPlainTextEdit::NoWrap;
     QPlainTextEdit::LineWrapMode wrapModeProcess = settings->toInt(skEdLineWrapProcess) ? QPlainTextEdit::WidgetWidth
                                                                                        : QPlainTextEdit::NoWrap;
     QWidgetList editList = mFileMetaRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
             ed->blockCountChanged(0); // force redraw for line number area
+            DEB() << "setting wrap mode to: " << (ViewHelper::editorType(ed) == EditorType::syslog ? wrapModeProcess
+                                                                                                   : wrapModeEditor);
             ed->setLineWrapMode(ViewHelper::editorType(ed) == EditorType::syslog ? wrapModeProcess
                                                                                  : wrapModeEditor);
         }
