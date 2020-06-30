@@ -33,18 +33,19 @@ namespace gams {
 namespace studio {
 namespace option {
 
-ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aInterrupt, QAction *aStop, MainWindow *parent):
+ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX,
+                                 QAction *aRunNeos, QAction *aInterrupt, QAction *aStop, MainWindow *parent):
     ui(new Ui::ParameterEditor),
     actionRun(aRun), actionRun_with_GDX_Creation(aRunGDX), actionCompile(aCompile), actionCompile_with_GDX_Creation(aCompileGDX),
-    actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
+    actionRunNeos(aRunNeos), actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
 {
     ui->setupUi(this);
 
     addActions();
     mOptionTokenizer = new OptionTokenizer(QString("optgams.def"));
 
-    setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation);
-    setInterruptActionGroup(aInterrupt, actionStop);
+    setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation, actionRunNeos);
+    setInterruptActionGroup(actionInterrupt, actionStop);
 
     setFocusPolicy(Qt::StrongFocus);
 
@@ -175,12 +176,15 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     bool gdxParam = false;
     bool actParam = false;
+    bool xsaveParam = false;
     for (option::OptionItem item : getOptionTokenizer()->tokenize( commandLineStr)) {
         if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
         if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
             (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
             actParam = true;
+        if (QString::compare(item.key, "xsave", Qt::CaseInsensitive) == 0)
+            xsaveParam = true;
     }
 
     if (state == RunActionState::RunWithGDXCreation) {
@@ -195,6 +199,11 @@ QString ParameterEditor::on_runAction(RunActionState state)
         if (!gdxParam) commandLineStr.append("GDX=default ");
         if (!actParam) commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile_with_GDX_Creation );
+
+    } else if (state == RunActionState::RunNeos) {
+        if (!xsaveParam) commandLineStr.append("XSAVE=temp ");
+        if (!actParam) commandLineStr.append("ACTION=C");
+        ui->gamsRunToolButton->setDefaultAction( actionRunNeos );
 
     } else {
         ui->gamsRunToolButton->setDefaultAction( actionRun );
@@ -980,12 +989,13 @@ void ParameterEditor::resizeColumnsToContents()
     }
 }
 
-void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX)
+void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aRunNeos)
 {
     actionRun = aRun;
     actionCompile = aCompile;
     actionRun_with_GDX_Creation = aRunGDX;
     actionCompile_with_GDX_Creation = aCompileGDX;
+    actionRunNeos = aRunNeos;
 
     QMenu* runMenu = new QMenu;
     runMenu->addAction(actionRun);
@@ -993,10 +1003,13 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     runMenu->addSeparator();
     runMenu->addAction(actionCompile);
     runMenu->addAction(actionCompile_with_GDX_Creation);
+    runMenu->addSeparator();
+    runMenu->addAction(actionRunNeos);
     actionRun->setShortcutVisibleInContextMenu(true);
     actionRun_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
     actionCompile->setShortcutVisibleInContextMenu(true);
     actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
+    actionRunNeos->setShortcutVisibleInContextMenu(true);
 
     ui->gamsRunToolButton->setMenu(runMenu);
     ui->gamsRunToolButton->setDefaultAction(actionRun);
@@ -1023,6 +1036,7 @@ void ParameterEditor::setRunActionsEnabled(bool enable)
     actionRun_with_GDX_Creation->setEnabled(enable);
     actionCompile->setEnabled(enable);
     actionCompile_with_GDX_Creation->setEnabled(enable);
+    actionRunNeos->setEnabled(enable);
     ui->gamsRunToolButton->menu()->setEnabled(enable);
 }
 

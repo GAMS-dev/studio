@@ -59,6 +59,7 @@
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
+#include "neos/neosprocess.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -301,10 +302,9 @@ void MainWindow::initTabs()
 
 void MainWindow::initToolBar()
 {
-    mGamsParameterEditor = new option::ParameterEditor(ui->actionRun, ui->actionRun_with_GDX_Creation,
-                                         ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                                         ui->actionInterrupt, ui->actionStop,
-                                         this);
+    mGamsParameterEditor = new option::ParameterEditor(
+                ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
+                ui->actionRunNeos, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionSettings);
@@ -2717,9 +2717,7 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
     return mGamsParameterEditor;
 }
 
-void MainWindow::execute(QString commandLineStr,
-                         std::unique_ptr<AbstractProcess> process,
-                         ProjectFileNode* gmsFileNode)
+void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
 {
     Settings *settings = Settings::settings();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
@@ -2929,6 +2927,16 @@ void MainWindow::on_actionCompile_triggered()
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
     execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
+}
+
+void MainWindow::on_actionRunNeos_triggered()
+{
+    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+
+    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+
 }
 
 void MainWindow::on_actionInterrupt_triggered()
@@ -4237,3 +4245,4 @@ void MainWindow::updateCursorHistoryAvailability()
 
 }
 }
+

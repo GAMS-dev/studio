@@ -259,6 +259,8 @@
     <addaction name="actionCompile"/>
     <addaction name="actionCompile_with_GDX_Creation"/>
     <addaction name="separator"/>
+    <addaction name="actionRunNeos"/>
+    <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
     <addaction name="actionStop"/>
     <addaction name="separator"/>
@@ -745,21 +747,6 @@
     <string>F10</string>
    </property>
   </action>
-  <action name="actionSettings">
-   <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/cog</normaloff>:/solid/cog</iconset>
-   </property>
-   <property name="text">
-    <string>Settings</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::PreferencesRole</enum>
-   </property>
-  </action>
   <action name="actionCompile_with_GDX_Creation">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
@@ -773,6 +760,30 @@
    </property>
    <property name="shortcut">
     <string>Shift+F10</string>
+   </property>
+  </action>
+  <action name="actionRunNeos">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/play</normaloff>:/solid/play</iconset>
+   </property>
+   <property name="text">
+    <string>Run &amp;NEOS</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/cog</normaloff>:/solid/cog</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionSearch">
