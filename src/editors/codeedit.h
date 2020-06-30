@@ -65,7 +65,7 @@ public:
     bool isEmpty() {return mParentheses.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const QVector<ParenthesesPos> &parentheses);
-    bool foldCount() const { return mFoldCount; }
+    int &foldCount() { return mFoldCount; }
     bool isFolded() const { return mFoldCount; }
     void setFoldCount(int foldCount) { mFoldCount = foldCount; }
 
@@ -125,7 +125,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesesMatch matchParentheses(QTextCursor cursor, bool all = false, const bool *fold = nullptr);
+    ParenthesesMatch matchParentheses(QTextCursor cursor, bool all = false, int *foldCount = nullptr);
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();
@@ -301,7 +301,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    void wheelEvent(QWheelEvent *event);
+    void wheelEvent(QWheelEvent *event) override;
 
 private:
     CodeEdit *mCodeEditor;
