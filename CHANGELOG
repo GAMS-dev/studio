@@ -10,6 +10,8 @@ Version 1.2.0 (*)
 - **added Distraction Free Mode**
     - Distraction Free Mode lets you get everything out of the way quickly to focus on your modelling work. This is especially useful for small screens. When leaving Distraction Free Mode all Studio widgets will be put back where it was. To enable it go to the Menu > View > Distraction Free Mode or press `Ctrl+Alt+Shift`.
 - fixed random crash when opening the MIRO Model Assembly File dialog
+- **added Code Folding**
+    - Code folding is realized for pairs of parentheses that exceed one line. Additionally a block of embeddedCode and the multi line on/offText can be folded.
 
 Version 1.1.3 (*)
 ==================
