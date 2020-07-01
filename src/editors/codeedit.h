@@ -125,7 +125,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesesMatch matchParentheses(QTextCursor cursor, bool all = false, int *foldCount = nullptr);
+    ParenthesesMatch matchParentheses(QTextCursor cursor, bool all = false, int *foldCount = nullptr) const;
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();
@@ -136,7 +136,7 @@ public:
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
     void disconnectTimers() override;
-    int foldStart(int line, bool &folded, QString *closingSymbol = nullptr);
+    int foldStart(int line, bool &folded, QString *closingSymbol = nullptr) const;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -180,6 +180,7 @@ protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
 
 private slots:
+    void blockCountHasChanged(int newBlockCount);
     void updateLineNumberAreaWidth(/*int newBlockCount*/);
     void recalcExtraSelections();
     void updateLineNumberArea(const QRect &, int);
@@ -207,6 +208,8 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
+    QPair<int,int> findFoldBlock(int line, bool onlyThisLine = false) const override;
+    QList<QPair<int,int>> findFoldedBlocks(int line) const override;
 
 protected:
     class BlockEdit
@@ -278,6 +281,7 @@ private:
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
     QPair<int,int> mFoldMark;
+    QSet<QTextBlock> mFoldedBlockStarts;
 };
 
 class LineNumberArea : public QWidget
@@ -302,10 +306,12 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private:
     CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
+
 };
 
 

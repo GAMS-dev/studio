@@ -98,6 +98,8 @@ protected:
     virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
+    virtual QPair<int,int> findFoldBlock(int line, bool onlyThisLine = false) const;
+    virtual QList<QPair<int,int>> findFoldedBlocks(int line) const;
 
 private:
     const LineMarks* mMarks = nullptr;

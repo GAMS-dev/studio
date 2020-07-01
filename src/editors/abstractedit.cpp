@@ -225,6 +225,19 @@ QVector<int> AbstractEdit::toolTipLstNumbers(const QPoint &pos)
     return lstLines;
 }
 
+QPair<int, int> AbstractEdit::findFoldBlock(int line, bool onlyThisLine) const
+{
+    Q_UNUSED(line)
+    Q_UNUSED(onlyThisLine)
+    return QPair<int, int>();
+}
+
+QList<QPair<int, int> > AbstractEdit::findFoldedBlocks(int line) const
+{
+    Q_UNUSED(line)
+    return QList<QPair<int, int> >();
+}
+
 void AbstractEdit::internalExtraSelUpdate()
 {
     QList<QTextEdit::ExtraSelection> selections;
