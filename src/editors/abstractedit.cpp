@@ -232,10 +232,10 @@ QPair<int, int> AbstractEdit::findFoldBlock(int line, bool onlyThisLine) const
     return QPair<int, int>();
 }
 
-QList<QPair<int, int> > AbstractEdit::findFoldedBlocks(int line) const
+bool AbstractEdit::ensureUnfolded(int line)
 {
     Q_UNUSED(line)
-    return QList<QPair<int, int> >();
+    return false;
 }
 
 void AbstractEdit::internalExtraSelUpdate()
@@ -388,20 +388,6 @@ void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
     Q_UNUSED(dirtyLines)
 }
 
-
-void AbstractEdit::jumpTo(const QTextCursor &cursor)
-{
-    QTextCursor tc = cursor;
-    tc.clearSelection();
-    setTextCursor(tc);
-    // center line vertically
-    qreal lines = qreal(rect().height()) / cursorRect().height();
-    qreal line = qreal(cursorRect().bottom()) / cursorRect().height();
-    int mv = qRound(line - lines/2);
-    if (qAbs(mv) > lines/3)
-        verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
-}
-
 void AbstractEdit::jumpTo(int line, int column)
 {
     QTextCursor cursor;
@@ -409,7 +395,13 @@ void AbstractEdit::jumpTo(int line, int column)
     cursor = QTextCursor(document()->findBlockByNumber(line));
     cursor.clearSelection();
     cursor.setPosition(cursor.position() + column);
-    jumpTo(cursor);
+    setTextCursor(cursor);
+    // center line vertically
+    qreal visLines = qreal(rect().height()) / cursorRect().height();
+    qreal visLine = qreal(cursorRect().bottom()) / cursorRect().height();
+    int mv = qRound(visLine - visLines/2);
+    if (qAbs(mv) > visLines/3)
+        verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
 }
 
 }

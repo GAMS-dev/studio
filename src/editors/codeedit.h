@@ -137,6 +137,7 @@ public:
     virtual bool hasSelection() const;
     void disconnectTimers() override;
     int foldStart(int line, bool &folded, QString *closingSymbol = nullptr) const;
+    void jumpTo(int line, int column = 0) override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -208,8 +209,9 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
+    bool switchFolding(QTextBlock block);
     QPair<int,int> findFoldBlock(int line, bool onlyThisLine = false) const override;
-    QList<QPair<int,int>> findFoldedBlocks(int line) const override;
+    bool ensureUnfolded(int line) override;
 
 protected:
     class BlockEdit
@@ -281,7 +283,7 @@ private:
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
     QPair<int,int> mFoldMark;
-    QSet<QTextBlock> mFoldedBlockStarts;
+
 };
 
 class LineNumberArea : public QWidget

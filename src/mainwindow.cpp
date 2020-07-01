@@ -2760,7 +2760,7 @@ void MainWindow::execute(QString commandLineStr,
                     try {
                         file->load(file->codecMib());
                     } catch (Exception&) {
-
+                        // TODO(JM) add reaction on exception
                     }
                 }
             doSave = false;

@@ -524,6 +524,39 @@ bool CodeEdit::allowClosing(int chIndex)
     return allowAutoClose && (!prior.isLetterOrNumber() || chIndex < 3);
 }
 
+bool CodeEdit::switchFolding(QTextBlock block)
+{
+    bool folded;
+    int foldPos = foldStart(block.blockNumber(), folded);
+    if (foldPos < 0) return false;
+    QTextCursor cursor(block);
+    cursor.setPosition(cursor.position() + foldPos+1);
+    int foldCount = 0;
+    ParenthesesMatch pm = matchParentheses(cursor, true, &foldCount);
+    if (pm.isValid() && block.userData()) {
+        BlockData *startDat = static_cast<BlockData*>(block.userData());
+        int foldSkip = 0;
+        startDat->setFoldCount(folded ? 0 : foldCount);
+        while (foldCount--) {
+            block = block.next();
+            if (!block.isValid()) break;
+            if (foldSkip) {
+                --foldSkip;
+            } else {
+                block.setVisible(folded);
+                if (block.userData()) {
+                    BlockData *dat = static_cast<BlockData*>(block.userData());
+                    if (dat->isFolded()) foldSkip = dat->foldCount();
+                }
+            }
+        }
+    }
+    document()->adjustSize();
+    viewport()->repaint();
+    mLineNumberArea->repaint();
+    return true;
+}
+
 QPair<int, int> CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
 {
     QPair<int,int> res;
@@ -551,20 +584,26 @@ QPair<int, int> CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
     return res;
 }
 
-QList<QPair<int, int> > CodeEdit::findFoldedBlocks(int line) const
+bool CodeEdit::ensureUnfolded(int line)
 {
-    // TODO returnr QTextBlock instead
-    QList<QPair<int, int>> res;
-
-    QSet<QTextBlock>::const_iterator it = mFoldedBlockStarts.constBegin();
-    while (it != mFoldedBlockStarts.constEnd()) {
-        if (it->blockNumber() > line) continue;
-        if (it->userData() != nullptr) {
-            BlockData *dat = static_cast<BlockData*>(it->userData());
-            if (it->blockNumber() + dat->foldCount() < line) continue;
-            res << QPair<int,int>(it->blockNumber(), it->blockNumber() + dat->foldCount());
+    int lastUnfoldedNr = -1;
+    QTextBlock block = document()->findBlockByNumber(line);
+    // repeatly check the block of the line number until it is visible
+    while (block.isValid() && !block.isVisible()) {
+        // find the first visible previous line, that's the fold-head
+        while (block.isValid() && !block.isVisible())
+            block = block.previous();
+        if (block.blockNumber() != line) {
+            switchFolding(block);
+            if (block.blockNumber() == lastUnfoldedNr) {
+                DEB() << "ERROR on unfolding line " << QString::number(lastUnfoldedNr);
+                break;
+            }
+            lastUnfoldedNr = block.blockNumber();
         }
+        block = document()->findBlockByNumber(line);
     }
+    return  lastUnfoldedNr >= 0;
 }
 
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
@@ -1249,6 +1288,12 @@ int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol) const
         }
     }
     return res;
+}
+
+void CodeEdit::jumpTo(int line, int column)
+{
+    ensureUnfolded(line);
+    AbstractEdit::jumpTo(line, column);
 }
 
 ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
@@ -2065,38 +2110,7 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event)
     QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
     if (mCodeEditor->showFolding() && e.pos().x() < 0  && e.pos().x() > -mCodeEditor->iconSize()) {
         QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
-        bool folded;
-        int foldPos = mCodeEditor->foldStart(block.blockNumber(), folded);
-        if (foldPos >= 0) {
-            QTextCursor cursor(block);
-            cursor.setPosition(cursor.position() + foldPos+1);
-            int foldCount = 0;
-            ParenthesesMatch pm = mCodeEditor->matchParentheses(cursor, true, &foldCount);
-            if (pm.isValid() && block.userData()) {
-                BlockData *startDat = static_cast<BlockData*>(block.userData());
-                int foldSkip = 0;
-                startDat->setFoldCount(folded ? 0 : foldCount);
-                if (startDat->isFolded())
-                    mFoldedBlockStarts << block;
-                else
-                    mFoldedBlockStarts.remove(block);
-                while (foldCount--) {
-                    block = block.next();
-                    if (!block.isValid()) break;
-                    if (foldSkip) {
-                        --foldSkip;
-                    } else {
-                        block.setVisible(folded);
-                        if (block.userData()) {
-                            BlockData *dat = static_cast<BlockData*>(block.userData());
-                            if (dat->isFolded()) foldSkip = dat->foldCount();
-                        }
-                    }
-                }
-            }
-            mCodeEditor->document()->adjustSize();
-            mCodeEditor->viewport()->repaint();
-            repaint();
+        if (mCodeEditor->switchFolding(block)) {
             event->accept();
             return;
         }
@@ -2114,7 +2128,7 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
     QPair<int,int> newFoldMark = mCodeEditor->findFoldBlock(block.blockNumber(), true);
     if (newFoldMark != mCodeEditor->mFoldMark) {
         mCodeEditor->mFoldMark = newFoldMark;
-        repaint(rect());
+        update(rect());
     }
     if (newFoldMark != QPair<int,int>())
         mCodeEditor->mouseMoveEvent(&e);

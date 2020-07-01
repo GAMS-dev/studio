@@ -43,9 +43,7 @@ public:
     void sendToggleBookmark();
     void sendJumpToNextBookmark();
     void sendJumpToPrevBookmark();
-
-    void jumpTo(const QTextCursor &cursor);
-    void jumpTo(int line, int column = 0);
+    virtual void jumpTo(int line, int column = 0);
 
     void updateGroupId();
     virtual void disconnectTimers();
@@ -99,7 +97,7 @@ protected:
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
     virtual QPair<int,int> findFoldBlock(int line, bool onlyThisLine = false) const;
-    virtual QList<QPair<int,int>> findFoldedBlocks(int line) const;
+    virtual bool ensureUnfolded(int line);
 
 private:
     const LineMarks* mMarks = nullptr;
