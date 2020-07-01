@@ -243,6 +243,7 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
 
 const QString validParentheses("{[(}])/");
 const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
+const QString flavorChars("TtCcPpIiOo");
 
 void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, QVector<ParenthesesPos> &parentheses)
 {
@@ -260,17 +261,10 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
         parentheses << ParenthesesPos('e', start);
         return;
     } else if (kind == SyntaxKind::Directive) {
-        if (flavor == 1) {
-            parentheses << ParenthesesPos('T', start);
+        if (flavor > 0 && flavor <= flavorChars.size()) {
+            parentheses << ParenthesesPos(flavorChars.at(flavor-1), start);
             return;
         }
-        if (flavor == 2) {
-            parentheses << ParenthesesPos('t', start);
-            return;
-        }
-        // TODO (JM) handle ontext and offtext - ignore others
-//        parentheses << ParenthesesPos('T', start);
-//        return;
     }
     if (invalidParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {

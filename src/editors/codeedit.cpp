@@ -1259,8 +1259,10 @@ void CodeEdit::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
 int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol) const
 {
     int res = -1;
-    static QString parentheses("{[(/ET}])\\et");
-    static QVector<QString> closingSymbols { "}", "]", ")", "/", "embedded", "offText" };
+    static QString parentheses("{[(/ETCPIO}])\\etcpio");
+    static QVector<QString> closingSymbols {
+        "}", "]", ")", "/", "embedded", "text", "echo", "put", "externalInput", "externalOutput"
+    };
     static int pSplit = parentheses.length()/2;
     QTextBlock block = document()->findBlockByNumber(line);
     if (!block.userData()) return -1;
@@ -1272,7 +1274,7 @@ int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol) const
 //    if (parList.count())
 //        DEB() << "parenthesis " << parList.at(0).character << " at " << parList.at(0).relPos;
     for (int i = 0; i < parList.count(); ++i) {
-        if (parentheses.indexOf(parList.at(i).character) > pSplit) {
+        if (parentheses.indexOf(parList.at(i).character) >= pSplit) {
             if (depth) --depth;
             if (!depth) res = -1;
         } else {
@@ -1298,7 +1300,7 @@ void CodeEdit::jumpTo(int line, int column)
 
 ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
-    static QString parentheses("{[(/ET}])\\et");
+    static QString parentheses("{[(/ETCPIO}])\\etcpio");
     static int pSplit = parentheses.length()/2;
     static int pAll = parentheses.indexOf("/");
     QTextBlock block = cursor.block();

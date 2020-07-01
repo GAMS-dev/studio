@@ -158,9 +158,25 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
             mDescription << list.second;
         }
     }
+
     if (!blockEndingDirectives.isEmpty()) {
         DEB() << "Initialization error in SyntaxDirective. Unknown directive(s): " << blockEndingDirectives.join(",");
     }
+    // !!! Enter flavored names always in lowercase
+    mFlavors.insert(QString("onText").toLower(), 1);
+    mFlavors.insert(QString("offText").toLower(), 2);
+    mFlavors.insert(QString("onEcho").toLower(), 3);
+    mFlavors.insert(QString("onEchoV").toLower(), 3);
+    mFlavors.insert(QString("onEchoS").toLower(), 3);
+    mFlavors.insert(QString("offEcho").toLower(), 4);
+    mFlavors.insert(QString("onPut").toLower(), 5);
+    mFlavors.insert(QString("onPutV").toLower(), 5);
+    mFlavors.insert(QString("onPutS").toLower(), 5);
+    mFlavors.insert(QString("offPut").toLower(), 6);
+    mFlavors.insert(QString("onExternalInput").toLower(), 7);
+    mFlavors.insert(QString("offExternalInput").toLower(), 8);
+    mFlavors.insert(QString("onExternalOutput").toLower(), 9);
+    mFlavors.insert(QString("offExternalOutput").toLower(), 10);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
@@ -180,11 +196,10 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
 {
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
-    if (match.captured(2).compare("ontext", Qt::CaseInsensitive) == 0)
-        flavor = 1;
+    flavor = mFlavors.value(match.captured(2).toLower(), 0);
     if (entryKind == SyntaxKind::CommentBlock) {
         if (match.captured(2).compare("offtext", Qt::CaseInsensitive) == 0)
-            return SyntaxBlock(this, 2, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+            return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
         if (match.captured(2).compare("pauseembeddedcode", Qt::CaseInsensitive) == 0

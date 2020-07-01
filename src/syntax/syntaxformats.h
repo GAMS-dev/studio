@@ -234,6 +234,7 @@ private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
+    QMap<QString,int> mFlavors;
     QHash<QString, SyntaxKind> mSpecialKinds;
     SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
     QVector<SyntaxFormula*> mSubSyntaxBody;
