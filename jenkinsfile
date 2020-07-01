@@ -6,6 +6,13 @@ def artifactVersion() {
     return major + "." + minor + "." + patch
 }
 
+def isDevelopmentArtifact() {
+    return env.BRANCH_NAME != 'master'         &&
+           !(env.BRANCH_NAME ==~ /.*-release/) &&
+           !(env.BRANCH_NAME ==~ /.*-rc/)      &&
+           !(env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/)
+}
+
 pipeline {
     agent none
 
@@ -212,7 +219,7 @@ pipeline {
                         '''
                         script {
                             def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master' && !(env.BRANCH_NAME ==~ /.*-release/)) {
+                            if (isDevelopmentArtifact()) {
                                 sh "mv studio.dmg ${env.BRANCH_NAME}-studio-${versionData}-x86_64.dmg"
                             } else {
                                 sh "mv studio.dmg GAMS_Studio-${versionData}-x86_64.dmg"
@@ -225,7 +232,7 @@ pipeline {
         stage('Notarize') {
             agent { label 'macos' }
             when {
-                expression { return env.BRANCH_NAME == "master" || env.BRANCH_NAME ==~ /.*-rc/ || env.BRANCH_NAME ==~ /.*-release/ || env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/ }
+                expression { return !isDevelopmentArtifact() }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: '4568bda5-894f-4fa1-b9c5-a8d42f6e61ac', passwordVariable: 'APPLE_ID_PASS', usernameVariable: 'APPLE_ID_USER')]) {
@@ -286,7 +293,7 @@ pipeline {
                     steps {
                         script {
                             def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master' && !(env.BRANCH_NAME ==~ /.*-release/)) {
+                            if (isDevelopmentArtifact()) {
                                 sh "mv GAMS_Studio-*.AppImage ${env.BRANCH_NAME}-studio-${versionData}-x86_64.AppImage"
                                 archiveArtifacts artifacts: '*studio*.AppImage', fingerprint: true
                             } else {
@@ -300,7 +307,7 @@ pipeline {
                     steps {
                         script {
                             def versionData = artifactVersion()
-                            if (env.BRANCH_NAME != 'master' && !(env.BRANCH_NAME ==~ /.*-release/)) {
+                            if (isDevelopmentArtifact()) {
                                 zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                             } else {
                                 zip zipFile: "GAMS_Studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
