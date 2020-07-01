@@ -35,7 +35,7 @@ class BookmarkDialog : public QDialog
     Q_OBJECT
 
 public:
-    BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget *parent = nullptr);
+    BookmarkDialog(QMap<QString, QString>& bmMap, QWidget *parent = nullptr);
     ~BookmarkDialog();
 
 protected:
@@ -54,7 +54,7 @@ private slots:
 private:
     Ui::bookmarkDialog ui;
     QStandardItemModel* model;
-    QMultiMap<QString, QString>& bookmarkMap;
+    QMap<QString, QString> &bookmarkMap;
 };
 
 } // namespace help

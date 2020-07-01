@@ -2162,9 +2162,8 @@ void MainWindow::updateAndSaveSettings()
 
 #ifdef QWEBENGINE
     QVariantList joBookmarks;
-    // TODO(JM) Check with Jeed if this can be moved from multimap to map
-    QMultiMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
-    QMultiMap<QString, QString>::const_iterator it = bookmarkMap.constBegin();
+    QMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
+    QMap<QString, QString>::const_iterator it = bookmarkMap.constBegin();
     while (it != bookmarkMap.constEnd()) {
         QVariantMap joBookmark;
         joBookmark.insert("location", it.key());
@@ -2218,7 +2217,7 @@ void MainWindow::restoreFromSettings()
     // help
 #ifdef QWEBENGINE
     QVariantList joHelp = settings->toList(skHelpBookmarks);
-    QMultiMap<QString, QString> bookmarkMap;
+    QMap<QString, QString> bookmarkMap;
     for (QVariant joVal: joHelp) {
         if (!joVal.canConvert(QVariant::Map)) continue;
         QVariantMap entry = joVal.toMap();

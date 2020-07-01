@@ -17,6 +17,7 @@ Version 1.2.0
 - added `Shift+Option+Up/Down` hotkey to start block-edit on macOS
 - fixed some icons not following selected theme
 - added dmp extension to list of executable file types
+- fixed storing help-bookmarks to the settings
 
 Version 1.1.2
 ==================
