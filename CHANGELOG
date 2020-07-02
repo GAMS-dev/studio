@@ -1,3 +1,8 @@
+Version 1.3.0 (*)
+==================
+- use the new GAMS.framework structure on macOS
+- open native macOS Terminal, set the GAMS path and go to the current workspace
+
 Version 1.2.1
 ==================
 - fixed Jenkins pipeline deployment issues
@@ -17,6 +22,7 @@ Version 1.2.0
 - added `Shift+Option+Up/Down` hotkey to start block-edit on macOS
 - fixed some icons not following selected theme
 - added dmp extension to list of executable file types
+- fixed storing help-bookmarks to the settings
 - **added Code Folding**
     - Code folding is realized for pairs of parentheses that exceed one line. Additionally a block of embeddedCode and the multi line on/offText can be folded.
 

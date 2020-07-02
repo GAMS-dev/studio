@@ -556,6 +556,8 @@ bool Settings::addToMap(QVariantMap &group, const QString &key, QVariant value)
     case QMetaType::QString: group[key] = value.toString(); break;
     case QMetaType::QJsonObject: group[key] = value.toJsonObject(); break;
     case QMetaType::QJsonArray: group[key] = value.toJsonArray(); break;
+    case QMetaType::QVariantList: group[key] = value.toList(); break;
+    case QMetaType::QVariantMap: group[key] = value.toMap(); break;
     default: return false;
     }
     return true;
