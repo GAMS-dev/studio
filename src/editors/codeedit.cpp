@@ -2167,6 +2167,7 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event)
             && e.pos().x() > -width() + (mCodeEditor->mIconCols * mCodeEditor->iconSize())) {
         QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
         if (mCodeEditor->switchFolding(block)) {
+            mNoCursorFocus = true;
             event->accept();
             return;
         }
@@ -2186,6 +2187,10 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
         mCodeEditor->mFoldMark = newFoldMark;
         update(rect());
     }
+    if (mNoCursorFocus) {
+        event->accept();
+        return;
+    }
     if (!newFoldMark.isNull())
         mCodeEditor->mouseMoveEvent(&e);
 }
@@ -2193,6 +2198,11 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
 void LineNumberArea::mouseReleaseEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
+    if (mNoCursorFocus) {
+        mNoCursorFocus = false;
+        event->accept();
+        return;
+    }
     pos.setX(pos.x()-width());
     QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
     mCodeEditor->mouseReleaseEvent(&e);

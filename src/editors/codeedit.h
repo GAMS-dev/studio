@@ -306,6 +306,7 @@ protected:
 private:
     CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
+    bool mNoCursorFocus = false;
 
 };
 
