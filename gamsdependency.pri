@@ -29,7 +29,7 @@ GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
 !exists($$PWD/gamsinclude.pri) {
     equals(GAMS_CORE_TMP, "") {
         macx {
-            GAMSINC = GAMS_DISTRIB=/Applications/GAMS'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR'/Resources/sysdir \
+            GAMSINC = GAMS_DISTRIB=/Library/Frameworks/GAMS.framework/Versions/'$$GAMS_DISTRIB_MAJOR'/Resources \
                       GAMS_DISTRIB_C_API=\$$GAMS_DISTRIB/apifiles/C/api   \
                       GAMS_DISTRIB_CPP_API=\$$GAMS_DISTRIB/apifiles/C++/api
         }
