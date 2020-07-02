@@ -1,6 +1,7 @@
-Version 1.3.0
+Version 1.3.0 (*)
 ==================
 - use the new GAMS.framework structure on macOS
+- open native macOS Terminal, set the GAMS path and go to the current workspace
 
 Version 1.2.1
 ==================

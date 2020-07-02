@@ -1908,9 +1908,12 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
 
     QProcess process;
 #if defined(__APPLE__)
-    Q_UNUSED(workingDir)
-    process.setProgram("open");
-    process.setArguments({"-n", CommonPaths::systemDir() + "/../../../GAMS Terminal.app"});
+    QString statement = "tell application \"Terminal\"\n"
+                        "do script \"export PATH=$PATH:\\\"%1\\\" && cd %2\"\n"
+                        "activate \"Terminal\"\n"
+                        "end tell\n";
+    process.setProgram("osascript");
+    process.setArguments({"-e", statement.arg(CommonPaths::systemDir()).arg(workingDir)});
 #elif defined(__unix__)
     QStringList terms = {"gnome-terminal", "konsole", "xfce-terminal", "xterm"};
     for (auto term: terms) {
