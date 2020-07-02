@@ -151,20 +151,22 @@ void Scheme::initDefault()
     QColor dark_unobstrusive(125,125,125);  //QColor(125,125,125)
     QColor dark_neutral(223,224,223);       //QColor(223,224,223);
 
-    mColorSchemes[sNr].insert(Edit_text,                Color(dark_neutral));
-    mColorSchemes[sNr].insert(Syntax_neutral,           Color(dark_neutral));
-    mColorSchemes[sNr].insert(Edit_background,          QColor(30,30,30));
-    mColorSchemes[sNr].insert(Edit_currentLineBg,       QColor(0,73,61));
-    mColorSchemes[sNr].insert(Edit_errorBg,             QColor(187,34,51));
-    mColorSchemes[sNr].insert(Edit_matchesBg,           QColor(51,102,51));
-    mColorSchemes[sNr].insert(Edit_foldLineBg,          QColor(80,80,80));
-    mColorSchemes[sNr].insert(Edit_foldLineFg,          QColor(0,0,0));
-    mColorSchemes[sNr].insert(Edit_linenrAreaBg,        QColor(16,16,16));
-    mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,    QColor(40,40,40));
-    mColorSchemes[sNr].insert(Edit_linenrAreaFoldBg,    QColor(15,75,115));
-    mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,    QColor(Qt::white));
-    mColorSchemes[sNr].insert(Edit_currentWordBg,       QColor(60,60,60));
-    mColorSchemes[sNr].insert(Edit_parenthesesValidFg,  QColor(Qt::black));
+    mColorSchemes[sNr].insert(Edit_text,                      Color(dark_neutral));
+    mColorSchemes[sNr].insert(Syntax_neutral,                 Color(dark_neutral));
+    mColorSchemes[sNr].insert(Edit_background,                QColor(30,30,30));
+    mColorSchemes[sNr].insert(Edit_currentLineBg,             QColor(0,73,61));
+    mColorSchemes[sNr].insert(Edit_errorBg,                   QColor(187,34,51));
+    mColorSchemes[sNr].insert(Edit_matchesBg,                 QColor(51,102,51));
+    mColorSchemes[sNr].insert(Edit_foldLineBg,                QColor(80,80,80));
+    mColorSchemes[sNr].insert(Edit_foldLineFg,                QColor(0,0,0));
+    mColorSchemes[sNr].insert(Edit_linenrAreaBg,              QColor(16,16,16));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkBg,          QColor(40,40,40));
+    mColorSchemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(15,75,115));
+    mColorSchemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::white));
+    mColorSchemes[sNr].insert(Edit_currentWordBg,             QColor(60,60,60));
+    mColorSchemes[sNr].insert(Edit_parenthesesValidFg,        QColor(Qt::black));
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).darker(170));
+    mColorSchemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).darker(115));
 
     mColorSchemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
     mColorSchemes[sNr].insert(Syntax_directive,         QColor(200,60,90));

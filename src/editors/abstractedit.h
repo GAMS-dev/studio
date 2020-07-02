@@ -28,6 +28,18 @@
 namespace gams {
 namespace studio {
 
+struct PositionPair {
+    PositionPair(int _pos = -1, int _match = -1, bool _valid = false)
+        : pos(_pos), match(_match), valid(_valid) {}
+    bool isNull() { return pos < 0; }
+    bool operator==(const PositionPair &other) { return pos==other.pos && match==other.match && valid==other.valid; }
+    bool operator!=(const PositionPair &other) { return !operator==(other); }
+    int pos;
+    int match;
+    bool valid;
+};
+typedef PositionPair LinePair;
+
 class AbstractEdit : public QPlainTextEdit
 {
     Q_OBJECT
@@ -96,7 +108,7 @@ protected:
     virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
-    virtual QPair<int,int> findFoldBlock(int line, bool onlyThisLine = false) const;
+    virtual LinePair findFoldBlock(int line, bool onlyThisLine = false) const;
     virtual bool ensureUnfolded(int line);
 
 private:

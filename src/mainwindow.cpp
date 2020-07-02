@@ -3499,8 +3499,6 @@ void MainWindow::updateEditorLineWrapping()
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
             ed->blockCountChanged(0); // force redraw for line number area
-            DEB() << "setting wrap mode to: " << (ViewHelper::editorType(ed) == EditorType::syslog ? wrapModeProcess
-                                                                                                   : wrapModeEditor);
             ed->setLineWrapMode(ViewHelper::editorType(ed) == EditorType::syslog ? wrapModeProcess
                                                                                  : wrapModeEditor);
         }

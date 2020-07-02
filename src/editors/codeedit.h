@@ -39,15 +39,6 @@ class Settings;
 class LineNumberArea;
 class SearchWidget;
 
-struct ParenthesesMatch {
-    ParenthesesMatch(int _pos = -1, int _match = -1, bool _valid = false)
-        : pos(_pos), match(_match), valid(_valid) {}
-    bool isValid() {return pos>=0;}
-    int pos;
-    int match;
-    bool valid;
-};
-
 struct ParenthesesPos
 {
     ParenthesesPos() : character(QChar()), relPos(-1) {}
@@ -125,7 +116,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesesMatch matchParentheses(QTextCursor cursor, bool all = false, int *foldCount = nullptr) const;
+    PositionPair matchParentheses(QTextCursor cursor, bool all = false, int *foldCount = nullptr) const;
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();
@@ -210,7 +201,7 @@ private:
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
     bool switchFolding(QTextBlock block);
-    QPair<int,int> findFoldBlock(int line, bool onlyThisLine = false) const override;
+    LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
     bool ensureUnfolded(int line) override;
 
 protected:
@@ -271,7 +262,7 @@ private:
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
     QTimer mParenthesesDelay;
-    ParenthesesMatch mParenthesesMatch;
+    PositionPair mParenthesesMatch;
     Settings *mSettings = nullptr;
     int mBlockEditRealPos = -1;
     QString mBlockEditInsText;
@@ -282,7 +273,7 @@ private:
     const QString mClosing = ")]}'\"";
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
-    QPair<int,int> mFoldMark;
+    LinePair mFoldMark;
 
 };
 

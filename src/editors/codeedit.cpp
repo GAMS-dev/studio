@@ -336,7 +336,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     QTextCursor cur = textCursor();
     QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
     if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
-        ParenthesesMatch pm = matchParentheses(textCursor());
+        PositionPair pm = matchParentheses(textCursor());
         bool sel = (e == Hotkey::SelectParentheses);
         if (pm.match >= 0) {
             if (sel) cur.clearSelection();
@@ -532,8 +532,8 @@ bool CodeEdit::switchFolding(QTextBlock block)
     QTextCursor cursor(block);
     cursor.setPosition(cursor.position() + foldPos+1);
     int foldCount = 0;
-    ParenthesesMatch pm = matchParentheses(cursor, true, &foldCount);
-    if (pm.isValid() && block.userData()) {
+    PositionPair pp = matchParentheses(cursor, true, &foldCount);
+    if (!pp.isNull() && pp.valid && block.userData()) {
         BlockData *startDat = static_cast<BlockData*>(block.userData());
         int foldSkip = 0;
         startDat->setFoldCount(folded ? 0 : foldCount);
@@ -557,13 +557,12 @@ bool CodeEdit::switchFolding(QTextBlock block)
     return true;
 }
 
-QPair<int, int> CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
+LinePair CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
 {
-    QPair<int,int> res;
+    LinePair res;
     if (!showFolding()) return res;
 
     // find open marker
-    res.first = -1;
     QTextBlock block = document()->findBlockByNumber(line);
     while (block.isValid()) {
         bool folded;
@@ -571,10 +570,11 @@ QPair<int, int> CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
         if (foldPos >= 0) {
             QTextCursor cursor(block);
             cursor.setPosition(cursor.position() + foldPos);
-            ParenthesesMatch pm = matchParentheses(cursor, true);
-            if (pm.isValid()) {
-                res.first = block.blockNumber();
-                res.second = document()->findBlock(pm.match).blockNumber();
+            PositionPair pp = matchParentheses(cursor, true);
+            if (!pp.isNull()) {
+                res.pos = block.blockNumber();
+                res.match = document()->findBlock(pp.match).blockNumber();
+                res.valid = pp.valid;
                 break;
             }
         }
@@ -878,7 +878,7 @@ void CodeEdit::marksChanged(const QSet<int> dirtyLines)
 void CodeEdit::blockCountHasChanged(int newBlockCount)
 {
     Q_UNUSED(newBlockCount)
-    mFoldMark = QPair<int,int>();
+    mFoldMark = LinePair();
     mLineNumberArea->update();
     updateLineNumberAreaWidth();
 }
@@ -1298,13 +1298,13 @@ void CodeEdit::jumpTo(int line, int column)
     AbstractEdit::jumpTo(line, column);
 }
 
-ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
+PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
     static QString parentheses("{[(/ETCPIO}])\\etcpio");
     static int pSplit = parentheses.length()/2;
     static int pAll = parentheses.indexOf("/");
     QTextBlock block = cursor.block();
-    if (!block.userData()) return ParenthesesMatch();
+    if (!block.userData()) return PositionPair();
     BlockData *startDat = static_cast<BlockData*>(block.userData());
 //    int state = block.userState();
     QVector<ParenthesesPos> parList = startDat->parentheses();
@@ -1315,12 +1315,13 @@ ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *f
             start = i;
         }
     }
-    if (start < 0) return ParenthesesMatch();
+    if (start < 0) return PositionPair();
     // prepare matching search
     int ci = parentheses.indexOf(parList.at(start).character);
     bool back = ci >= pSplit;
     ci = ci % pSplit;
-    ParenthesesMatch result(block.position() + parList.at(start).relPos);
+    PositionPair result(block.position() + parList.at(start).relPos);
+    result.match = result.pos;
     QStringRef parEnter = parentheses.midRef(back ? pSplit : 0, pSplit);
     QStringRef parLeave = parentheses.midRef(back ? 0 : pSplit, pSplit);
     QVector<QChar> parStack;
@@ -1352,7 +1353,7 @@ ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *f
             if (parList.at(pi).character == parStack.last()) {
                 parStack.removeLast();
                 if (parStack.isEmpty()) {
-                    if (!all && ci > pAll) return ParenthesesMatch(); // only mark embedded on mismatch
+                    if (!all && ci > pAll) return PositionPair(); // only mark embedded on mismatch
                     result.valid = true;
                     result.match = block.position() + parList.at(pi).relPos;
                     return result;
@@ -1369,7 +1370,7 @@ ParenthesesMatch CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *f
         }
 
     }
-    return ParenthesesMatch();
+    return result;
 }
 
 void CodeEdit::setOverwriteMode(bool overwrite)
@@ -1414,7 +1415,7 @@ void CodeEdit::recalcWordUnderCursor()
 void CodeEdit::recalcExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
-    mParenthesesMatch = ParenthesesMatch();
+    mParenthesesMatch = PositionPair();
     if (!mBlockEdit) {
         extraSelCurrentLine(selections);
         recalcWordUnderCursor();
@@ -1501,10 +1502,10 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
 
 bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &selections, bool first)
 {
-    if (!mParenthesesMatch.isValid())
+    if (mParenthesesMatch.isNull())
         mParenthesesMatch = matchParentheses(textCursor());
 
-    if (!mParenthesesMatch.isValid()) return false;
+    if (mParenthesesMatch.isNull()) return false;
 
     if (mParenthesesMatch.pos == mParenthesesMatch.match) mParenthesesMatch.valid = false;
     QColor fgColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidFg)
@@ -1601,7 +1602,7 @@ int CodeEdit::foldState(int line, bool &folded, int *start, QString *closingSymb
     int res = 0;
     int foldPos = foldStart(line, folded, closingSymbol);
     if (start) *start = foldPos;
-    bool marked = (mFoldMark.first < mFoldMark.second && line >= mFoldMark.first && line <= mFoldMark.second);
+    bool marked = (mFoldMark.pos <= mFoldMark.match && line >= mFoldMark.pos && line <= mFoldMark.match);
     if (foldPos >= 0) res = folded ? 2 : 1;
     if (marked) res += 3;
     return res;
@@ -1661,7 +1662,11 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 if (foldRes > 2) {
                     foldRect.moveTop(top);
                     foldRect.setHeight(bottom-top);
-                    painter.fillRect(foldRect, toColor(Scheme::Edit_linenrAreaFoldBg));
+                    if (mFoldMark.valid) {
+                        painter.fillRect(foldRect, toColor(Scheme::Edit_linenrAreaFoldBg));
+                    } else {
+                        painter.fillRect(foldRect, toColor(Scheme::Edit_parenthesesInvalidBg));
+                    }
                 }
                 if (foldRes % 3 > 0) {
                     int iTop = top + (4+fontMetrics().height()-iconSize())/2;
@@ -2110,7 +2115,8 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event)
     QPoint pos = event->pos();
     pos.setX(pos.x()-width());
     QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
-    if (mCodeEditor->showFolding() && e.pos().x() < 0  && e.pos().x() > -mCodeEditor->iconSize()) {
+    if (mCodeEditor->showFolding() && e.pos().x() < 0
+            && e.pos().x() > -width() + (mCodeEditor->mIconCols * mCodeEditor->iconSize())) {
         QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
         if (mCodeEditor->switchFolding(block)) {
             event->accept();
@@ -2127,12 +2133,12 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
     pos.setX(pos.x()-width());
     QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
     QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
-    QPair<int,int> newFoldMark = mCodeEditor->findFoldBlock(block.blockNumber(), true);
+    LinePair newFoldMark = mCodeEditor->findFoldBlock(block.blockNumber(), true);
     if (newFoldMark != mCodeEditor->mFoldMark) {
         mCodeEditor->mFoldMark = newFoldMark;
         update(rect());
     }
-    if (newFoldMark != QPair<int,int>())
+    if (!newFoldMark.isNull())
         mCodeEditor->mouseMoveEvent(&e);
 }
 
@@ -2151,7 +2157,7 @@ void LineNumberArea::wheelEvent(QWheelEvent *event)
 
 void LineNumberArea::leaveEvent(QEvent *event)
 {
-    mCodeEditor->mFoldMark = QPair<int,int>();
+    mCodeEditor->mFoldMark = LinePair();
     repaint(rect());
     QWidget::leaveEvent(event);
 }

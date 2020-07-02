@@ -174,13 +174,13 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                     selection.format.setForeground(toColor(Scheme::Edit_text));
                 }
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-                selection.format.setAnchorName(QString::number(m->line()));
+                selection.format.setAnchorNames(QStringList()<<QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
                 selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(m->color());
                 selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
                 selection.format.setAnchor(true);
-                selection.format.setAnchorName(QString::number(m->line()));
+                selection.format.setAnchorNames(QStringList()<<QString::number(m->line()));
             }
             selections << selection;
         }
@@ -225,11 +225,11 @@ QVector<int> AbstractEdit::toolTipLstNumbers(const QPoint &pos)
     return lstLines;
 }
 
-QPair<int, int> AbstractEdit::findFoldBlock(int line, bool onlyThisLine) const
+LinePair AbstractEdit::findFoldBlock(int line, bool onlyThisLine) const
 {
     Q_UNUSED(line)
     Q_UNUSED(onlyThisLine)
-    return QPair<int, int>();
+    return LinePair();
 }
 
 bool AbstractEdit::ensureUnfolded(int line)
@@ -270,7 +270,7 @@ bool AbstractEdit::event(QEvent *e)
     }
     if (e->type() == QEvent::FontChange) {
         QFontMetrics metric(font());
-        setTabStopDistance(Settings::settings()->toInt(skEdTabSize) * metric.width(' '));
+        setTabStopDistance(Settings::settings()->toInt(skEdTabSize) * metric.horizontalAdvance(' '));
     }
     return QPlainTextEdit::event(e);
 }
