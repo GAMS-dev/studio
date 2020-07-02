@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -221,6 +221,9 @@
     <addaction name="separator"/>
     <addaction name="actionGoBack"/>
     <addaction name="actionGoForward"/>
+    <addaction name="separator"/>
+    <addaction name="actionFoldAllTextBlocks"/>
+    <addaction name="actionUnfoldAllTextBlocks"/>
     <addaction name="separator"/>
     <addaction name="menuBookmarks"/>
     <addaction name="actionReset_Views"/>
@@ -1417,6 +1420,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+Return</string>
+   </property>
+  </action>
+  <action name="actionFoldAllTextBlocks">
+   <property name="text">
+    <string>Fold all text blocks</string>
+   </property>
+  </action>
+  <action name="actionUnfoldAllTextBlocks">
+   <property name="text">
+    <string>Unfold all text blocks</string>
    </property>
   </action>
  </widget>

@@ -128,6 +128,8 @@ public:
     virtual bool hasSelection() const;
     void disconnectTimers() override;
     int foldStart(int line, bool &folded, QString *closingSymbol = nullptr) const;
+    void foldAll();
+    void unfoldAll();
     void jumpTo(int line, int column = 0) override;
 
 protected:

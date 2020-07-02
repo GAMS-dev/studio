@@ -4237,5 +4237,19 @@ void MainWindow::updateCursorHistoryAvailability()
     ui->actionGoForward->setEnabled(mNavigationHistory->canGoForward());
 }
 
+void MainWindow::on_actionFoldAllTextBlocks_triggered()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+        ce->foldAll();
+    }
+}
+
+void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+        ce->unfoldAll();
+    }
+}
+
 }
 }

@@ -557,6 +557,54 @@ bool CodeEdit::switchFolding(QTextBlock block)
     return true;
 }
 
+void CodeEdit::foldAll()
+{
+    // TODO(JM) the current implementation could be improved for nested blocks
+//    QList<BlockData*> stack;
+
+    int foldRemain = 0;
+    QTextBlock block = document()->firstBlock();
+    while (block.isValid()) {
+        if (foldRemain-- > 0) block.setVisible(false);
+        bool folded;
+        int foldPos = foldStart(block.blockNumber(), folded);
+        if (foldPos >= 0) {
+//            stack << static_cast<BlockData*>(block.userData());
+            QTextCursor cursor(block);
+            cursor.setPosition(cursor.position() + foldPos+1);
+            int foldCount;
+            PositionPair pp = matchParentheses(cursor, true, &foldCount);
+            if (!pp.isNull() && pp.valid && block.userData()) {
+                BlockData *dat = static_cast<BlockData*>(block.userData());
+                dat->setFoldCount(foldCount);
+                if (foldRemain < foldCount) foldRemain = foldCount;
+            }
+        }
+        block = block.next();
+    }
+    mFoldMark = LinePair();
+    document()->adjustSize();
+    viewport()->repaint();
+    mLineNumberArea->repaint();
+}
+
+void CodeEdit::unfoldAll()
+{
+    QTextBlock block = document()->firstBlock();
+    while (block.isValid()) {
+        if (!block.isVisible()) block.setVisible(true);
+        if (block.userData()) {
+            BlockData *dat = static_cast<BlockData*>(block.userData());
+            dat->setFoldCount(0);
+        }
+        block = block.next();
+    }
+    mFoldMark = LinePair();
+    document()->adjustSize();
+    viewport()->repaint();
+    mLineNumberArea->repaint();
+}
+
 LinePair CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
 {
     LinePair res;
