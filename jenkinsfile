@@ -66,6 +66,10 @@ pipeline {
                     steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
+                        sh '''
+                            GAMS_DISTRIB_MAJOR=$(grep ^GAMS_DISTRIB_MAJOR version | cut -f2 -d"=")
+                            sed -i "" "s/com.gams.studio/com.gams.${GAMS_DISTRIB_MAJOR}.studio/g" platform/macos/info.plist
+                        '''
                         sh 'qmake gams-studio.pro CONFIG+=release && make -j3'
                     }
                     post {
@@ -243,7 +247,7 @@ pipeline {
                                      -u ${APPLE_ID_USER} -p ${APPLE_ID_PASS} &> upload.log || true
 
                         REQUEST_UUID=$(cat upload.log | grep RequestUUID | cut -f2 -d"=" | tr -d '[:space:]')
-                        if [ -z "$REQUEST_UUID"];
+                        if [ -z "$REQUEST_UUID" ];
                         then
                             REQUEST_UUID=$(cat upload.log | grep -e "\\*\\*\\* Error: ERROR ITMS-90732: .*" |   \
                                            sed -nE "s/^[[:digit:]]+.*ID is ([0-9a-z-]+)\\".*/\\1/p")
