@@ -2834,6 +2834,8 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
+    if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc))
+        np->setGmsFile(gmsFilePath);
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     logNode->prepareRun();
@@ -2936,7 +2938,6 @@ void MainWindow::on_actionRunNeos_triggered()
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
-
 }
 
 void MainWindow::on_actionInterrupt_triggered()

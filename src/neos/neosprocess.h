@@ -7,21 +7,22 @@ namespace gams {
 namespace studio {
 namespace neos {
 
-class NeosProcess : public AbstractProcess
+class NeosProcess final : public AbstractGamsProcess
 {
     Q_OBJECT
+
 public:
-    explicit NeosProcess(QObject *parent = nullptr);
+    NeosProcess(QObject *parent = nullptr);
+    void setGmsFile(QString gmsFile);
 
-    virtual void execute() override;
-    virtual QProcess::ProcessState state() const override;
+    void execute() override;
+    void interrupt() override;
 
-signals:
+private:
+    bool prepareNeosParameters();
+    QString rawData(QString runFile, QString parameters);
 
-protected slots:
-    virtual void readStdOut() override;
-    virtual void readStdErr() override;
-
+    QString mRunFile;
 };
 
 } // namespace neos
