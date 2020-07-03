@@ -177,6 +177,10 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mFlavors.insert(QString("offExternalInput").toLower(), 8);
     mFlavors.insert(QString("onExternalOutput").toLower(), 9);
     mFlavors.insert(QString("offExternalOutput").toLower(), 10);
+    mFlavors.insert(QString("ifThen").toLower(), 11);
+    mFlavors.insert(QString("ifThenI").toLower(), 11);
+    mFlavors.insert(QString("ifThenE").toLower(), 11);
+    mFlavors.insert(QString("endIf").toLower(), 12);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
