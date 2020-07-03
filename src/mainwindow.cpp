@@ -2934,9 +2934,8 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 void MainWindow::on_actionRunNeos_triggered()
 {
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
 }
 
@@ -3066,6 +3065,7 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));

@@ -97,10 +97,6 @@ bool NeosProcess::prepareNeosParameters()
 #else
     params.prepend("\""+QDir::toNativeSeparators(neosPath)+"\"");
 #endif
-
-    params.append("action=c");
-    params.append("xsave=temp");
-    if (!params.contains("fw=1")) params.append("fw=1");
     setParameters(params);
     return true;
 }
@@ -110,7 +106,7 @@ QString NeosProcess::rawData(QString runFile, QString parameters)
     QString s1 =
 R"s1(* Create temp.g00
 $call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00
-* Set switches and parameters for NBEOS submission
+* Set switches and parameters for NEOS submission
 $set restartFile temp.g00
 $set priority    short
 $set wantgdx     yes

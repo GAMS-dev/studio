@@ -177,6 +177,7 @@ QString ParameterEditor::on_runAction(RunActionState state)
     bool gdxParam = false;
     bool actParam = false;
     bool xsaveParam = false;
+    bool fwParam = false;
     for (option::OptionItem item : getOptionTokenizer()->tokenize( commandLineStr)) {
         if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
@@ -185,6 +186,8 @@ QString ParameterEditor::on_runAction(RunActionState state)
             actParam = true;
         if (QString::compare(item.key, "xsave", Qt::CaseInsensitive) == 0)
             xsaveParam = true;
+        if (QString::compare(item.key, "fw", Qt::CaseInsensitive) == 0)
+            fwParam = true;
     }
 
     if (state == RunActionState::RunWithGDXCreation) {
@@ -203,6 +206,7 @@ QString ParameterEditor::on_runAction(RunActionState state)
     } else if (state == RunActionState::RunNeos) {
         if (!xsaveParam) commandLineStr.append("XSAVE=temp ");
         if (!actParam) commandLineStr.append("ACTION=C");
+        if (!fwParam) commandLineStr.append("FW=1");
         ui->gamsRunToolButton->setDefaultAction( actionRunNeos );
 
     } else {
