@@ -20,9 +20,13 @@ public:
 
 private:
     bool prepareNeosParameters();
+    bool prepareKill();
     QString rawData(QString runFile, QString parameters);
+    QString rawKill();
 
     QString mRunFile;
+    QString mJobNumber;
+    QString mJobPassword;
 };
 
 } // namespace neos

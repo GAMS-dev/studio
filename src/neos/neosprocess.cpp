@@ -1,7 +1,9 @@
 #include "neosprocess.h"
+#include "logger.h"
+#include "commonpaths.h"
 #include <QStandardPaths>
 #include <QDir>
-#include "logger.h"
+
 
 #ifdef _WIN32
 #include "Windows.h"
@@ -34,28 +36,16 @@ void NeosProcess::execute()
 
 void NeosProcess::interrupt()
 {
-    QString pid = QString::number(mProcess.processId());
-#ifdef _WIN32
-    //IntPtr receiver;
-    COPYDATASTRUCT cds;
-    const char* msgText = "GAMS Message Interrupt";
-
-    QString windowName("___GAMSMSGWINDOW___");
-    windowName += pid;
-    HWND receiver = FindWindowA(nullptr, windowName.toUtf8().constData());
-
-    cds.dwData = (ULONG_PTR) 1;
-    cds.lpData = (PVOID) msgText;
-    cds.cbData = (DWORD) (strlen(msgText) + 1);
-
-    SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
-#else // Linux and Mac OS X
-    QProcess proc;
-    proc.setProgram("/bin/bash");
-    QStringList args { "-c", "kill -2 " + pid};
-    proc.setArguments(args);
-    proc.start();
-    proc.waitForFinished(-1);
+    QProcess proc(this);
+    QStringList params;
+    prepareKill(params);
+    mProcess.setWorkingDirectory(workingDirectory());
+#if defined(__unix__) || defined(__APPLE__)
+    mProcess.start(nativeAppPath(), params);
+#else
+    mProcess.setNativeArguments(params.join(" "));
+    mProcess.setProgram(nativeAppPath());
+    mProcess.start();
 #endif
 }
 
@@ -85,19 +75,49 @@ bool NeosProcess::prepareNeosParameters()
         DEB() << "error opening neos file: " << neosPath;
         return false;
     }
-    DEB() << "neos file opened";
-    QByteArray data = rawData(mRunFile, params.join(" ")).toUtf8();
+
+    QByteArray data = rawData(CommonPaths::nativePathForProcess(mRunFile), params.join(" ")).toUtf8();
+
     neosFile.write(data);
     neosFile.flush();
     neosFile.close();
 
     // prepend parameter with replaced neos run-filename
-#if defined(__unix__) || defined(__APPLE__)
-    params.prepend(QDir::toNativeSeparators(neosPath));
-#else
-    params.prepend("\""+QDir::toNativeSeparators(neosPath)+"\"");
-#endif
+    params.prepend(CommonPaths::nativePathForProcess(neosPath));
     setParameters(params);
+    return true;
+}
+
+bool NeosProcess::prepareKill(QStringList &tempParams)
+{
+    if (mJobNumber.isEmpty()) {
+        DEB() << "Error: No running NEOS process";
+        return false;
+    }
+    if (mRunFile.isEmpty()) {
+        DEB() << "Error: No runable file assigned to the NEOS process";
+        return false;
+    }
+    int lastDot = mRunFile.lastIndexOf('.');
+    QString neosPath = mRunFile.left(lastDot) + ".neosKill";
+    QFile neosFile(neosPath);
+    if (neosFile.exists()) {
+        neosFile.remove();
+    }
+
+    if (!neosFile.open(QFile::WriteOnly)) {
+        DEB() << "error opening neos file: " << neosPath;
+        return false;
+    }
+
+    QByteArray data = rawKill().toUtf8();
+
+    neosFile.write(data);
+    neosFile.flush();
+    neosFile.close();
+
+    // prepend parameter with replaced neos run-filename
+    tempParams.prepend(CommonPaths::nativePathForProcess(neosPath));
     return true;
 }
 
@@ -154,7 +174,7 @@ with open(r'%restartFile%', 'rb') as restartfile:
 #    rf.write(xml)
 
 (jobNumber, password) = neos.submitJob(xml)
-sys.stdout.write("\nJob number = %d\nJob password = %s\n" % (jobNumber, password))
+sys.stdout.write("\n--- Job number = %d\n--- Job password = %s\n" % (jobNumber, password))
 sys.stdout.flush()
 
 if jobNumber == 0:
@@ -185,6 +205,28 @@ $offEmbeddedCode
 $hiddencall rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
 )s2";
     return s1 + s2;
+}
+
+QString NeosProcess::rawKill()
+{
+    QString s1 =
+R"s1($onEmbeddedCode Python:
+try:
+    import xmlrpc.client as xmlrpclib
+except ImportError:
+    import xmlrpclib
+
+neos = xmlrpclib.ServerProxy('https://neos-server.org:3333')
+alive = neos.ping()
+if alive != "NeosServer is alive\n":
+    raise NameError('\n***\n*** Could not make connection to NEOS Server\n***')
+jobNumber = %1
+password = %2
+neos.getIntermediateResults(jobNumber, password)
+
+$offEmbeddedCode
+)s1";
+    return s1.arg(mJobNumber).arg(mJobPassword);
 }
 
 

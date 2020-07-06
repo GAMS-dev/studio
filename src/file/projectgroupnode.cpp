@@ -584,11 +584,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
                      "Use at your own risk!", LogMsgType::Warning);
 
     // prepare gams command
-#if defined(__unix__) || defined(__APPLE__)
-    QStringList output { QDir::toNativeSeparators(gmsLocation) };
-#else
-    QStringList output { "\""+QDir::toNativeSeparators(gmsLocation)+"\"" };
-#endif
+    QStringList output { CommonPaths::nativePathForProcess(gmsLocation) };
     // normalize gams parameter format
     for(QString arg : defaultArgumentList) {
         output.append( arg + "=" + defaultGamsArgs[arg] );

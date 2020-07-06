@@ -180,6 +180,15 @@ QString CommonPaths::absolutPath(const QString &dir)
     return d.absolutePath();
 }
 
+QString CommonPaths::nativePathForProcess(const QString &filePath)
+{
+#if defined(__unix__) || defined(__APPLE__)
+    return QDir::toNativeSeparators(filePath);
+#else
+    return "\""+QDir::toNativeSeparators(filePath)+"\"";
+#endif
+}
+
 QString CommonPaths::configFile()
 {
     QDir configFile(systemDir() + "/" + ConfigFile);
