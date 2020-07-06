@@ -2788,8 +2788,8 @@ void MainWindow::execute(QString commandLineStr,
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
         wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
         if (ViewHelper::toTextView(wid))
-            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toInt(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                                              : AbstractEdit::NoWrap);
+            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                                               : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -2968,8 +2968,8 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
             wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             if (TextView * tv = ViewHelper::toTextView(wid))
-                tv->setLineWrapMode(settings->toInt(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                        : AbstractEdit::NoWrap);
+                tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                          : AbstractEdit::NoWrap);
         }
         if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
             MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -3493,10 +3493,10 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 void MainWindow::updateEditorLineWrapping()
 {
     Settings *settings = Settings::settings();
-    QPlainTextEdit::LineWrapMode wrapModeEditor = settings->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
-                                                                                     : QPlainTextEdit::NoWrap;
-    QPlainTextEdit::LineWrapMode wrapModeProcess = settings->toInt(skEdLineWrapProcess) ? QPlainTextEdit::WidgetWidth
+    QPlainTextEdit::LineWrapMode wrapModeEditor = settings->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
                                                                                        : QPlainTextEdit::NoWrap;
+    QPlainTextEdit::LineWrapMode wrapModeProcess = settings->toBool(skEdLineWrapProcess) ? QPlainTextEdit::WidgetWidth
+                                                                                         : QPlainTextEdit::NoWrap;
     QWidgetList editList = mFileMetaRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
