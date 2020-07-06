@@ -36,7 +36,8 @@ namespace lxiviewer {
 LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent):
     QWidget(parent),
     ui(new Ui::LxiViewer),
-    mTextView(textView)
+    mTextView(textView),
+    mLstFile(lstFile)
 {
     ui->setupUi(this);
 
@@ -65,6 +66,19 @@ LxiViewer::~LxiViewer()
 TextView *LxiViewer::textView() const
 {
     return mTextView;
+}
+
+void LxiViewer::print(QPagedPaintDevice *printer)
+{
+    if(!mTextView) return;
+    QString text;
+    QFile file(mLstFile);
+    if (file.open(QFile::ReadOnly | QFile::Text)){
+        text = file.readAll();
+        file.close();
+    }
+    QTextDocument document(text);
+    document.print(printer);
 }
 
 void LxiViewer::loadLxi()

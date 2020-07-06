@@ -22,7 +22,7 @@
 # which deactivates the studio help view.
 QWEBENGINE=true
 
-QT       += core gui svg concurrent network
+QT       += core gui svg concurrent network printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
