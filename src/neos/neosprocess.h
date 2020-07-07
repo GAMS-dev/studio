@@ -18,9 +18,13 @@ public:
     void execute() override;
     void interrupt() override;
 
+protected:
+    void readStdChannel(QProcess::ProcessChannel channel) override;
+
 private:
     bool prepareNeosParameters();
-    bool prepareKill();
+    bool prepareKill(QStringList &tempParams);
+    void scanForCredentials(const QByteArray &data);
     QString rawData(QString runFile, QString parameters);
     QString rawKill();
 

@@ -20,7 +20,6 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 
 void NeosProcess::execute()
 {
-    TRACE()
     if (!prepareNeosParameters()) return;
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
@@ -36,17 +35,35 @@ void NeosProcess::execute()
 
 void NeosProcess::interrupt()
 {
-    QProcess proc(this);
+    QProcess proc(nullptr);
     QStringList params;
     prepareKill(params);
-    mProcess.setWorkingDirectory(workingDirectory());
+    proc.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), params);
+    proc.start(nativeAppPath(), params);
 #else
-    mProcess.setNativeArguments(params.join(" "));
-    mProcess.setProgram(nativeAppPath());
-    mProcess.start();
+    proc.setNativeArguments(params.join(" "));
+    proc.setProgram(nativeAppPath());
+    proc.start();
 #endif
+}
+
+void NeosProcess::readStdChannel(QProcess::ProcessChannel channel)
+{
+    if (mJobPassword.isNull() && channel == QProcess::StandardOutput) {
+        // scan until jobNumber and password was passed
+        mOutputMutex.lock();
+        mProcess.setReadChannel(channel);
+        int avail = mProcess.bytesAvailable();
+        mOutputMutex.unlock();
+
+        if (avail) {
+            mOutputMutex.lock();
+            scanForCredentials(mProcess.peek(avail).constData());
+            mOutputMutex.unlock();
+        }
+    }
+    AbstractGamsProcess::readStdChannel(channel);
 }
 
 void NeosProcess::setGmsFile(QString gmsPath)
@@ -119,6 +136,42 @@ bool NeosProcess::prepareKill(QStringList &tempParams)
     // prepend parameter with replaced neos run-filename
     tempParams.prepend(CommonPaths::nativePathForProcess(neosPath));
     return true;
+}
+
+const QList<QByteArray> cCredentials{"--- Job ", "number = ", "password = "};
+
+void NeosProcess::scanForCredentials(const QByteArray &data)
+{
+    int p = data.indexOf(cCredentials.at(0));
+    if (p < 0) return;
+    p += cCredentials.at(0).length();
+    int credIndex = mJobNumber.isNull() ? 1 : mJobPassword.isNull() ? 2 : 0;
+    while (credIndex) {
+        QByteArray ba = data.right(data.length()-p);
+        if (ba.startsWith(cCredentials.at(credIndex))) {
+            p += cCredentials.at(credIndex).length();
+            int end = p;
+            for (int i = p; i < data.length(); ++i) {
+                if (data.at(i) == '\n' || data.at(i) == '\r') break;
+                end = i+1;
+            }
+            if (credIndex == 1) {
+                mJobNumber = data.mid(p, end-p);
+                DEB() << "JobNr: " << mJobNumber;
+                p = data.indexOf(cCredentials.at(0), end);
+                if (p < 0) break;
+                p += cCredentials.at(0).length();
+                ++credIndex;
+            } else {
+                mJobPassword = data.mid(p, end-p);
+                DEB() << "JobPw: " << mJobPassword;
+                break;
+            }
+        } else {
+            p = data.indexOf(cCredentials.at(0), p+1);
+            if (p < 0) break;
+        }
+    }
 }
 
 QString NeosProcess::rawData(QString runFile, QString parameters)
