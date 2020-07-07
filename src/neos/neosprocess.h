@@ -21,6 +21,11 @@ public:
 protected:
     void readStdChannel(QProcess::ProcessChannel channel) override;
 
+private slots:
+    void readSubStdOut();
+    void readSubStdErr();
+    void subFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 private:
     bool prepareNeosParameters();
     bool prepareKill(QStringList &tempParams);
@@ -31,6 +36,7 @@ private:
     QString mRunFile;
     QString mJobNumber;
     QString mJobPassword;
+    QProcess *mSubProc;
 };
 
 } // namespace neos

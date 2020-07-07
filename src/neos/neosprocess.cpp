@@ -35,16 +35,21 @@ void NeosProcess::execute()
 
 void NeosProcess::interrupt()
 {
-    QProcess proc(nullptr);
+    mSubProc = new QProcess(nullptr);
     QStringList params;
     prepareKill(params);
-    proc.setWorkingDirectory(workingDirectory());
+    mSubProc->setWorkingDirectory(workingDirectory());
+    connect(mSubProc, &QProcess::readyReadStandardOutput, this, &NeosProcess::readSubStdOut);
+    connect(mSubProc, &QProcess::readyReadStandardError, this, &NeosProcess::readSubStdErr);
 #if defined(__unix__) || defined(__APPLE__)
-    proc.start(nativeAppPath(), params);
+    mSubProc.start(nativeAppPath(), params);
 #else
-    proc.setNativeArguments(params.join(" "));
-    proc.setProgram(nativeAppPath());
-    proc.start();
+    mSubProc->setNativeArguments(params.join(" "));
+    mSubProc->setProgram(nativeAppPath());
+    DEB() << "STARTING: " << nativeAppPath() << " " << params.join(" ");
+    mSubProc->start();
+    connect(mSubProc, qOverload<int,QProcess::ExitStatus>(&QProcess::finished), this, &NeosProcess::subFinished);
+    DEB() << "   - state: " << mSubProc->state();
 #endif
 }
 
@@ -64,6 +69,26 @@ void NeosProcess::readStdChannel(QProcess::ProcessChannel channel)
         }
     }
     AbstractGamsProcess::readStdChannel(channel);
+}
+
+void NeosProcess::readSubStdOut()
+{
+    DEB() << mSubProc->readAllStandardOutput();
+}
+
+void NeosProcess::readSubStdErr()
+{
+    DEB() << mSubProc->readAllStandardError();
+}
+
+void NeosProcess::subFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    Q_UNUSED(exitStatus)
+    DEB() << mSubProc->readAllStandardOutput();
+    DEB() << mSubProc->readAllStandardError();
+    DEB() << "Finished sending kill command. ExitCode: " << QString::number(exitCode);
+    delete mSubProc;
+    mSubProc = nullptr;
 }
 
 void NeosProcess::setGmsFile(QString gmsPath)
@@ -178,7 +203,7 @@ QString NeosProcess::rawData(QString runFile, QString parameters)
 {
     QString s1 =
 R"s1(* Create temp.g00
-$call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00
+$call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 %2
 * Set switches and parameters for NEOS submission
 $set restartFile temp.g00
 $set priority    short
