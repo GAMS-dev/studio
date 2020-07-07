@@ -118,7 +118,8 @@ bool NeosProcess::prepareNeosParameters()
         return false;
     }
 
-    QByteArray data = rawData(CommonPaths::nativePathForProcess(mRunFile), params.join(" ")).toUtf8();
+    QByteArray data = rawData(CommonPaths::nativePathForProcess(mRunFile), params.join(" ")
+                              , mRunFile.left(lastDot)+'/').toUtf8();
 
     neosFile.write(data);
     neosFile.flush();
@@ -199,8 +200,9 @@ void NeosProcess::scanForCredentials(const QByteArray &data)
     }
 }
 
-QString NeosProcess::rawData(QString runFile, QString parameters)
+QString NeosProcess::rawData(QString runFile, QString parameters, QString workdir)
 {
+    QString resultDir = workdir.split('/', Qt::SkipEmptyParts).last();
     QString s1 =
 R"s1(* Create temp.g00
 $call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 %2
@@ -209,8 +211,9 @@ $set restartFile temp.g00
 $set priority    short
 $set wantgdx     yes
 $set parameters  ' %2'
+$set workdir     '%3'
 )s1";
-    s1 = s1.arg(runFile).arg(parameters);
+    s1 = s1.arg(runFile).arg(parameters).arg(workdir);
 
     QString s2 =
 R"s2(
@@ -270,19 +273,21 @@ while status != 'Done':
           s = s.split('Composing results.', 1)[0]
           echo = 0;
        s = re.sub('/var/lib/condor/execute/dir_\d+/gamsexec/', ':filepath:', s)
-       s = s.replace(':filepath:',r'%gams.wdir% '.rstrip())
+       s = s.replace(':filepath:',r'%workdir% '.rstrip())
        sys.stdout.write(s)
        sys.stdout.flush()
 
     status = neos.getJobStatus(jobNumber, password)
 
-msg = neos.getOutputFile(jobNumber, password, 'solver-output.zip')
-with open('solver-output.zip', 'wb') as rf:
+os.makedirs('%workdir%', exist_ok=True)
+msg = neos.getOutputFile(jobNumber, password, '%4/solver-output.zip')
+with open('%4/solver-output.zip', 'wb') as rf:
     rf.write(msg.data)
 $offEmbeddedCode
-$hiddencall rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
+$log WORKDIR: %workdir%
+$call cd %4 && rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
 )s2";
-    return s1 + s2;
+    return s1 + s2.arg(resultDir);
 }
 
 QString NeosProcess::rawKill()
@@ -300,7 +305,7 @@ if alive != "NeosServer is alive\n":
     raise NameError('\n***\n*** Could not make connection to NEOS Server\n***')
 jobNumber = %1
 password = %2
-neos.getIntermediateResults(jobNumber, password)
+neos.killJob(jobNumber, password)
 
 $offEmbeddedCode
 )s1";

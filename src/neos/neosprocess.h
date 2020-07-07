@@ -30,7 +30,7 @@ private:
     bool prepareNeosParameters();
     bool prepareKill(QStringList &tempParams);
     void scanForCredentials(const QByteArray &data);
-    QString rawData(QString runFile, QString parameters);
+    QString rawData(QString runFile, QString parameters, QString workdir);
     QString rawKill();
 
     QString mRunFile;
