@@ -49,7 +49,7 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
-    ui->gamslogo->setPixmap(Scheme::icon(":/img/gams_w24").pixmap(ui->gamslogo->size()));
+    ui->gamslogo->setPixmap(Scheme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
 
     ui->solverTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     auto dataModel = new SolverTableModel(this);
