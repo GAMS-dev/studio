@@ -70,6 +70,12 @@ void NeosProcess::readStdChannel(QProcess::ProcessChannel channel)
     AbstractGamsProcess::readStdChannel(channel);
 }
 
+void NeosProcess::completed(int exitCode)
+{
+    QFile::remove(mRunFile.left(mRunFile.lastIndexOf('.')) + ".neos");
+    AbstractGamsProcess::completed(exitCode);
+}
+
 void NeosProcess::readSubStdOut()
 {
     DEB() << mSubProc->readAllStandardOutput();
@@ -261,7 +267,7 @@ sys.stdout.flush()
 if jobNumber == 0:
     raise NameError('\n***\n*** NEOS Server error:' + password + '\n***')
 
-sys.stdout.write("\n[LS2:\"%1\"]\n")
+sys.stdout.write("\n--- switch to NEOS %2/solve.lst[LS2:\"%1\"]\n")
 sys.stdout.flush()
 
 offset = 0

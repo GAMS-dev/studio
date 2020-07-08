@@ -161,7 +161,9 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
                 // adding a secondary LST file
                 QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
                 mbState.switchLst = fName;
-                posB += 2;
+                ++posB;
+                mbState.marks.setMark(line.mid(start, posB-start));
+                ++posB;
 
                 // LST:
             } else if (line.midRef(posB+1,4) == "LST:" || line.midRef(posB+1,4) == "LS2:") {

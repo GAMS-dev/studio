@@ -21,6 +21,9 @@ public:
 protected:
     void readStdChannel(QProcess::ProcessChannel channel) override;
 
+protected slots:
+    void completed(int exitCode) override;
+
 private slots:
     void readSubStdOut();
     void readSubStdErr();
