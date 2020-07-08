@@ -3,7 +3,6 @@
 #include "commonpaths.h"
 #include <QStandardPaths>
 #include <QDir>
-#include <qnamespace.h>
 
 #ifdef _WIN32
 #include "Windows.h"
@@ -202,7 +201,7 @@ void NeosProcess::scanForCredentials(const QByteArray &data)
 
 QString NeosProcess::rawData(QString runFile, QString parameters, QString workdir)
 {
-    QString resultDir = workdir.split('/', Qt::SkipEmptyParts).last();
+    QString resultDir = workdir.split('/', QString::SkipEmptyParts).last();
     QString s1 =
 R"s1(* Create temp.g00
 $call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 %2
