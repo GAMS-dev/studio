@@ -3,7 +3,7 @@
 #include "commonpaths.h"
 #include <QStandardPaths>
 #include <QDir>
-
+#include <qnamespace.h>
 
 #ifdef _WIN32
 #include "Windows.h"
