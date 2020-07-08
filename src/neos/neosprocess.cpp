@@ -47,7 +47,7 @@ void NeosProcess::interrupt()
     mSubProc->setProgram(nativeAppPath());
     DEB() << "STARTING: " << nativeAppPath() << " " << params.join(" ");
     mSubProc->start();
-    connect(mSubProc, qOverload<int,QProcess::ExitStatus>(&QProcess::finished), this, &NeosProcess::subFinished);
+    connect(mSubProc, QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::subFinished);
     DEB() << "   - state: " << mSubProc->state();
 #endif
 }
