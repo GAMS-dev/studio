@@ -145,19 +145,19 @@ HelpWidget::~HelpWidget()
     delete ui;
 }
 
-QMultiMap<QString, QString> HelpWidget::getBookmarkMap() const
+QMap<QString, QString> HelpWidget::getBookmarkMap() const
 {
     return mBookmarkMap;
 }
 
-void HelpWidget::setBookmarkMap(const QMultiMap<QString, QString> &value)
+void HelpWidget::setBookmarkMap(const QMap<QString, QString> &value)
 {
     mBookmarkMap = value;
 
     if (mBookmarkMap.size() > 0)
         mBookmarkMenu->addSeparator();
 
-    QMultiMap<QString, QString>::iterator i;
+    QMap<QString, QString>::iterator i;
     for (i = mBookmarkMap.begin(); i != mBookmarkMap.end(); ++i) {
         addBookmarkAction(i.key(), i.value());
     }
@@ -247,7 +247,7 @@ void HelpWidget::on_bookmarkNameUpdated(const QString &location, const QString &
                 continue;
             if (QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) {
                 action->setText(name);
-                mBookmarkMap.replace(location, name);
+                mBookmarkMap.insert(location, name);
                 break;
            }
         }
@@ -293,7 +293,7 @@ void HelpWidget::on_bookmarkRemoved(const QString &location, const QString &name
         if ((QString::compare(action->objectName(), location, Qt::CaseInsensitive) == 0) &&
             (QString::compare(action->text(), name, Qt::CaseInsensitive) == 0)
            ) {
-              mBookmarkMap.remove(location, name);
+              mBookmarkMap.remove(location);
               mBookmarkMenu->removeAction( action );
               break;
         }
@@ -371,7 +371,7 @@ void HelpWidget::on_actionAddBookmark_triggered()
         }
     }
     if (!found) {
-       mBookmarkMap.replace(pageUrl, ui->webEngineView->page()->title());
+       mBookmarkMap.insert(pageUrl, ui->webEngineView->page()->title());
        addBookmarkAction(pageUrl, ui->webEngineView->page()->title());
     }
 }

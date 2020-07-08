@@ -23,17 +23,13 @@
 class MacOSPathFinder
 {
 private:
-    MacOSPathFinder();
+    MacOSPathFinder() {};
 
 public:
     static QString systemDir();
 
 private:
-    static QString searchApplications();
-
-private:
-    static const QString Sysdir;
-    static const QString SubPath;
+    static QString systemDir(bool current);
 };
 
 #endif // MACOSPATHFINDER_H

@@ -28,7 +28,7 @@ namespace gams {
 namespace studio {
 namespace help {
 
-BookmarkDialog::BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget* parent):
+BookmarkDialog::BookmarkDialog(QMap<QString, QString> &bmMap, QWidget* parent):
     QDialog(parent), bookmarkMap(bmMap)
 {
     ui.setupUi(this);
@@ -38,7 +38,7 @@ BookmarkDialog::BookmarkDialog(QMultiMap<QString, QString>& bmMap, QWidget* pare
     model->setHeaderData(0, Qt::Horizontal, QString("Name"));
     model->setHeaderData(1, Qt::Horizontal, QString("Location"));
 
-    QMultiMap<QString, QString>::iterator it;
+    QMap<QString, QString>::iterator it;
     int i = 0;
     for (it = bookmarkMap.begin(); it != bookmarkMap.end(); ++it) {
         QStandardItem* firstcol = new QStandardItem(it.value());

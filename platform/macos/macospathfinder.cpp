@@ -21,44 +21,19 @@
 #include <QDir>
 #include <QStandardPaths>
 
-const QString MacOSPathFinder::Sysdir = "/GAMS Terminal.app/Contents/MacOS";
-const QString MacOSPathFinder::SubPath = "/.." + Sysdir;
-
-MacOSPathFinder::MacOSPathFinder()
-{
-
-}
-
 QString MacOSPathFinder::systemDir()
 {
-    auto path = MacOSCocoaBridge::bundlePath() + SubPath;
-    if (QStandardPaths::findExecutable("gams", {path}).isEmpty()) {
-        path = searchApplications();
-        if (QStandardPaths::findExecutable("gams", {path}).isEmpty())
-            path = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    auto sysdir = systemDir(false);
+    if (QStandardPaths::findExecutable("gams", {sysdir}).isEmpty()) {
+        sysdir = systemDir(true);
+        if (QStandardPaths::findExecutable("gams", {sysdir}).isEmpty())
+            return QString();
     }
-    return QDir::cleanPath(path);
+    return QDir::cleanPath(sysdir);
 }
 
-QString MacOSPathFinder::searchApplications()
+QString MacOSPathFinder::systemDir(bool current)
 {
-    QString path = "/Applications/GAMS" GAMS_DISTRIB_VERSION_SHORT + Sysdir;
-    if (!QDir(path).exists()) {
-        QDir applications("/Applications");
-        QRegExp regex("^GAMS(\\d\\d).(\\d)$");
-        for (auto dir : applications.entryList({"GAMS*"}, QDir::Dirs)) {
-           if (!regex.exactMatch(dir))
-               continue;
-           if (regex.cap(1).toInt() > GAMS_DISTRIB_MAJOR) {
-               path = "/Applications/" + dir + Sysdir;
-               break;
-           }
-           if (regex.cap(1).toInt() == GAMS_DISTRIB_MAJOR &&
-               regex.cap(2).toInt() >= GAMS_DISTRIB_MINOR) {
-               path = "/Applications/" + dir + Sysdir;
-               break;
-           }
-        }
-    }
-    return path;
+    QString path = "/Library/Frameworks/GAMS.framework/Versions/%1/Resources";
+    return path.arg(current ? "Current" : QString::number(GAMS_DISTRIB_MAJOR));
 }
