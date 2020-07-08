@@ -1426,10 +1426,16 @@
    <property name="text">
     <string>Fold all text blocks</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+O</string>
+   </property>
   </action>
   <action name="actionUnfoldAllTextBlocks">
    <property name="text">
     <string>Unfold all text blocks</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+O</string>
    </property>
   </action>
  </widget>

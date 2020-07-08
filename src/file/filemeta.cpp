@@ -663,9 +663,8 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int leng
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
-        QTextCursor tc = QTextCursor(block);
-
-        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(column, block.length()-1));
+        edit->jumpTo(line, qMin(column, block.length()-1));
+        QTextCursor tc = edit->textCursor();
         tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, length);
         edit->setTextCursor(tc);
 
