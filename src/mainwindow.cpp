@@ -1720,10 +1720,12 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         }
     }
     if (groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->parameter("lst");
+        QString lstFile = groupNode->parameter("ls2");
+        mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+        lstFile = groupNode->parameter("lst");
         bool doFocus = (groupNode == mRecent.group());
-
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+
         for (QWidget *edit: lstNode->file()->editors())
             if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 
@@ -2794,7 +2796,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     }
     // cleanup bookmarks
     QVector<QString> cleanupKinds;
-    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "lxi" << "ref";
+    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "ls2" << "lxi" << "ref";
     markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
     for (const QString &kind: cleanupKinds) {
         if (runGroup->hasParameter(kind)) {

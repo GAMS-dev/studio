@@ -201,6 +201,7 @@ void NeosProcess::scanForCredentials(const QByteArray &data)
 
 QString NeosProcess::rawData(QString runFile, QString parameters, QString workdir)
 {
+    QString lstName = workdir + "solve.lst";
     QString resultDir = workdir.split('/', QString::SkipEmptyParts).last();
     QString s1 =
 R"s1(* Create temp.g00
@@ -260,6 +261,9 @@ sys.stdout.flush()
 if jobNumber == 0:
     raise NameError('\n***\n*** NEOS Server error:' + password + '\n***')
 
+sys.stdout.write("\n[LS2:\"%1\"]\n")
+sys.stdout.flush()
+
 offset = 0
 echo = 1
 status = ''
@@ -273,20 +277,21 @@ while status != 'Done':
           echo = 0;
        s = re.sub('/var/lib/condor/execute/dir_\d+/gamsexec/', ':filepath:', s)
        s = s.replace(':filepath:',r'%workdir% '.rstrip())
+       s = s.replace('[LST:','[LS2:');
        sys.stdout.write(s)
        sys.stdout.flush()
 
     status = neos.getJobStatus(jobNumber, password)
 
 os.makedirs('%workdir%', exist_ok=True)
-msg = neos.getOutputFile(jobNumber, password, '%4/solver-output.zip')
-with open('%4/solver-output.zip', 'wb') as rf:
+msg = neos.getOutputFile(jobNumber, password, '%2/solver-output.zip')
+with open('%2/solver-output.zip', 'wb') as rf:
     rf.write(msg.data)
 $offEmbeddedCode
 $log WORKDIR: %workdir%
-$call cd %4 && rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
+$call cd %2 && rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
 )s2";
-    return s1 + s2.arg(resultDir);
+    return s1 + s2.arg(lstName).arg(resultDir);
 }
 
 QString NeosProcess::rawKill()
