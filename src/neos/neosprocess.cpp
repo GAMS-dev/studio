@@ -42,7 +42,7 @@ void NeosProcess::interrupt()
     connect(mSubProc, &QProcess::readyReadStandardOutput, this, &NeosProcess::readSubStdOut);
     connect(mSubProc, &QProcess::readyReadStandardError, this, &NeosProcess::readSubStdErr);
 #if defined(__unix__) || defined(__APPLE__)
-    mSubProc.start(nativeAppPath(), params);
+    mSubProc->start(nativeAppPath(), params);
 #else
     mSubProc->setNativeArguments(params.join(" "));
     mSubProc->setProgram(nativeAppPath());
