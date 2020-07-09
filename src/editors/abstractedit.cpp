@@ -319,6 +319,8 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
 {
     QPlainTextEdit::keyReleaseEvent(e);
+    if (e->key() == Qt::Key_Backspace)
+        ensureUnfolded(textCursor().blockNumber());
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (e->modifiers() & Qt::ControlModifier) {
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
