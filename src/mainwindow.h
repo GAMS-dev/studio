@@ -321,6 +321,7 @@ private slots:
     void on_actionChangelog_triggered();
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
+    void on_actionPrint_triggered();
 
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();

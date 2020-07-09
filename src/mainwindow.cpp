@@ -19,7 +19,8 @@
  */
 #include <QtConcurrent>
 #include <QtWidgets>
-
+#include <QPrintDialog>
+#include <QPrinter>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -307,7 +308,6 @@ void MainWindow::initToolBar()
                                          this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
-    ui->toolBar->insertSeparator(ui->actionSettings);
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
     ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsParameterEditor);
     ui->toolBar->insertSeparator(ui->actionProject_View);
@@ -4090,7 +4090,7 @@ QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
 }
 
 bool MainWindow::isMiroAvailable()
-{        
+{
     if (Settings::settings()->toString(skMiroInstallPath).isEmpty())
         return false;
     QFileInfo fileInfo(Settings::settings()->toString(skMiroInstallPath));
@@ -4249,6 +4249,29 @@ void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
         ce->unfoldAll();
     }
 }
+
+void MainWindow::on_actionPrint_triggered()
+{
+    QPrinter printer;
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget()) return;
+    if (focusWidget() == mRecent.editor()) {
+        auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
+        if (!abstractEdit) return;
+        QPrintDialog dialog(&printer, this);
+        if (dialog.exec() == QDialog::Rejected) return;
+        abstractEdit->print(&printer);
+    } else if (ViewHelper::editorType(this->recent()->editor()) == EditorType::lxiLst) {
+        auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
+        if (!lxiViewer) return;
+        QPrintDialog dialog(&printer, this);
+        if (dialog.exec() == QDialog::Rejected) return;
+        lxiViewer->print(&printer);
+    } else {
+        QMessageBox::information(this, "Printing not supported","Printing is not supported for the selected file.");
+    }
+}
+
 
 }
 }
