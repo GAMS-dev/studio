@@ -1,11 +1,14 @@
-Version 1.3.0 (*)
+Version 1.3.0
 ==================
-- use the new GAMS.framework structure on macOS
-- open native macOS Terminal, set the GAMS path and go to the current workspace
-- added shift-option-up/down modifiers to start block-edit on macOS
-- fixed some icons didn't follow the theme
-- fixed line break behavior doesn't follow settings
-- Added print support for text files like "gms" and "txt" as well as "lst" files
+- added usage of new GAMS.framework structure on macOS
+- changed terminal to native macOS Terminal on macOS
+- added `Shift+Option+Up/Down` hotkeys to start block edit mode on macOS
+- fixed some icons not following studio theme
+- fixed line break behavior not following settings
+- added print support for text files (gms, txt, lst, dmp, ...)
+- fixed help view bookmarks not being saved permanently
+- fixed GAMS icon missing in About dialog
+- removed extra seperator in toolbar
 
 Version 1.2.1
 ==================
@@ -26,7 +29,6 @@ Version 1.2.0
 - added `Shift+Option+Up/Down` hotkey to start block-edit on macOS
 - fixed some icons not following selected theme
 - added dmp extension to list of executable file types
-- fixed storing help-bookmarks to the settings
 
 Version 1.1.2
 ==================
