@@ -268,6 +268,8 @@ if jobNumber == 0:
     raise NameError('\n***\n*** NEOS Server error:' + password + '\n***')
 
 sys.stdout.write("\n--- switch to NEOS %2/solve.lst[LS2:\"%1\"]\n")
+if '%priority%' == 'long':
+    sys.stdout.write('--- Priority: long (no intermediate messages)\n')
 sys.stdout.flush()
 
 offset = 0
@@ -275,7 +277,7 @@ echo = 1
 status = ''
 while status != 'Done':
     time.sleep(1)
-    (msg, offset) = neos.getIntermediateResults(jobNumber, password, offset)
+    (msg, offset) = neos.getIntermediateResultsNonBlocking(jobNumber, password, offset)
     if echo == 1:
        s = msg.data.decode()
        if s.find('Composing results.') != -1:
@@ -294,8 +296,7 @@ msg = neos.getOutputFile(jobNumber, password, '%2/solver-output.zip')
 with open('%2/solver-output.zip', 'wb') as rf:
     rf.write(msg.data)
 $offEmbeddedCode
-$log WORKDIR: %workdir%
-$call cd %2 && rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
+$hiddencall cd %2 && rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
 )s2";
     return s1 + s2.arg(lstName).arg(resultDir);
 }
