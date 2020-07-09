@@ -400,6 +400,11 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             e->accept();
             return;
         }
+        if (e == Hotkey::ToggleBlockFolding) {
+            QTextBlock block = textCursor().block();
+            switchFolding(block);
+            return;
+        }
         if (e == Hotkey::Indent) {
             indent(mSettings->toInt(skEdTabSize));
             e->accept();

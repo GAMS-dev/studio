@@ -56,6 +56,7 @@ enum struct Hotkey {
     SearchOpen = 60,
     SearchFindNext = 61,
     SearchFindPrev = 62,
+    ToggleBlockFolding = 63,
 
     // configurable key-sequences > 100
     MinConfigurable = 100,

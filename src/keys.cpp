@@ -193,6 +193,9 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+D","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
 
+    seq = new KeySeqList("Alt+L", "Toggle folding of current block");
+    setHotkey(Hotkey::ToggleBlockFolding, seq);
+
     seq = new KeySeqList("Tab","indent selected lines");
     setHotkey(Hotkey::Indent, seq);
 
