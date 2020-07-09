@@ -308,7 +308,6 @@ void MainWindow::initToolBar()
                                          this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
-    ui->toolBar->insertSeparator(ui->actionSettings);
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
     ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsParameterEditor);
     ui->toolBar->insertSeparator(ui->actionProject_View);
@@ -1747,7 +1746,6 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    DEB() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
