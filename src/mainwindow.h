@@ -317,13 +317,11 @@ private slots:
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
     void on_actionDeleteScratchDirs_triggered();
-
     void on_actionChangelog_triggered();
-
     void openGdxDiffFile();
     void on_actionGoBack_triggered();
-
     void on_actionGoForward_triggered();
+    void on_actionPrint_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
