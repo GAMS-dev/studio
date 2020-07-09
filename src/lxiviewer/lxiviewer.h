@@ -23,6 +23,8 @@
 #include <QWidget>
 #include <QModelIndex>
 
+class QPagedPaintDevice;
+
 namespace gams {
 namespace studio {
 
@@ -44,6 +46,7 @@ public:
     ~LxiViewer();
 
     TextView *textView() const;
+    void print(QPagedPaintDevice *printer);
 
 public slots:
     void loadLxi();
@@ -55,6 +58,7 @@ private slots:
 private:
     Ui::LxiViewer *ui;
     TextView* mTextView;
+    QString mLstFile;
     QString mLxiFile;
 
 };

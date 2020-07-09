@@ -130,6 +130,8 @@
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="separator"/>
+    <addaction name="actionPrint"/>
+    <addaction name="separator"/>
     <addaction name="actionExit_Application"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -769,6 +771,14 @@
    </property>
    <property name="text">
     <string>Run &amp;NEOS</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="text">
+    <string>Print</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="actionSettings">
