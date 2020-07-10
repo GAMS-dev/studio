@@ -41,6 +41,9 @@ public:
     void setDocument(QTextDocument *doc, bool wipe = false);
     QTextDocument *document() const;
 
+signals:
+    void needUnfold(QTextBlock block);
+
 public slots:
     void rehighlight();
     void rehighlightBlock(const QTextBlock &startBlock);

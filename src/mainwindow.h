@@ -311,6 +311,7 @@ private slots:
     void focusProjectExplorer();
     void focusCentralWidget();
     void focusProcessLogs();
+    void openGdxDiffFile();
 
     void on_actionToggleBookmark_triggered();
     void on_actionNextBookmark_triggered();
@@ -318,12 +319,12 @@ private slots:
     void on_actionRemoveBookmarks_triggered();
     void on_actionDeleteScratchDirs_triggered();
     void on_actionChangelog_triggered();
-    void openGdxDiffFile();
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
     void on_actionPrint_triggered();
-
     void on_actionRunNeos_triggered();
+    void on_actionFoldAllTextBlocks_triggered();
+    void on_actionUnfoldAllTextBlocks_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);

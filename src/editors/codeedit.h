@@ -39,15 +39,6 @@ class Settings;
 class LineNumberArea;
 class SearchWidget;
 
-struct ParenthesesMatch {
-    ParenthesesMatch(int _pos = -1, int _match = -1, bool _valid = false)
-        : pos(_pos), match(_match), valid(_valid) {}
-    bool isValid() {return pos>=0;}
-    int pos;
-    int match;
-    bool valid;
-};
-
 struct ParenthesesPos
 {
     ParenthesesPos() : character(QChar()), relPos(-1) {}
@@ -62,12 +53,17 @@ public:
     BlockData() {}
     ~BlockData();
     QChar charForPos(int relPos);
-    bool isEmpty() {return mparentheses.isEmpty();}
+    bool isEmpty() {return mParentheses.isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const QVector<ParenthesesPos> &parentheses);
+    int &foldCount() { return mFoldCount; }
+    bool isFolded() const { return mFoldCount; }
+    void setFoldCount(int foldCount) { mFoldCount = foldCount; }
+
 private:
     // if extending the data remember to enhance isEmpty()
-    QVector<ParenthesesPos> mparentheses;
+    QVector<ParenthesesPos> mParentheses;
+    int mFoldCount = 0;
 };
 
 struct BlockEditPos
@@ -102,6 +98,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     virtual int lineNumberAreaWidth();
+    virtual int foldState(int line, bool &folded, int *start = nullptr, QString *closingSymbol = nullptr) const;
     int iconSize();
     LineNumberArea* lineNumberArea();
 
@@ -119,7 +116,7 @@ public:
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    ParenthesesMatch matchParentheses();
+    PositionPair matchParentheses(QTextCursor cursor, bool all = false, int *foldCount = nullptr) const;
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();
@@ -130,6 +127,10 @@ public:
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
     void disconnectTimers() override;
+    int foldStart(int line, bool &folded, QString *closingSymbol = nullptr) const;
+    void foldAll();
+    void unfoldAll();
+    void jumpTo(int line, int column = 0) override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -143,6 +144,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
+    virtual bool showFolding() const;
     void setAllowBlockEdit(bool allow);
     virtual void recalcWordUnderCursor();
     void extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections);
@@ -151,6 +153,7 @@ protected:
     virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
+    bool ensureUnfolded(int line) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -167,17 +170,20 @@ public slots:
     virtual void selectAllText();
     virtual void pasteClipboard();
     void updateExtraSelections() override;
+    void unfold(QTextBlock block) override;
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
 
 private slots:
+    void blockCountHasChanged(int newBlockCount);
     void updateLineNumberAreaWidth(/*int newBlockCount*/);
     void recalcExtraSelections();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();
     void undoCommandAdded();
+    void switchCurrentFolding();
 
 private:
     friend class BlockEdit;
@@ -199,6 +205,10 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
+    bool switchFolding(QTextBlock block);
+    LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
+    bool unfoldBadBlock(QTextBlock block);
+    void checkCursorAfterFolding();
 
 protected:
     class BlockEdit
@@ -258,7 +268,7 @@ private:
     bool mOverwriteActivated = false;
     QTimer mWordDelay;
     QTimer mParenthesesDelay;
-    ParenthesesMatch mParenthesesMatch;
+    PositionPair mParenthesesMatch;
     Settings *mSettings = nullptr;
     int mBlockEditRealPos = -1;
     QString mBlockEditInsText;
@@ -269,6 +279,8 @@ private:
     const QString mClosing = ")]}'\"";
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
+    LinePair mFoldMark;
+
 };
 
 class LineNumberArea : public QWidget
@@ -292,10 +304,14 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private:
     CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
+    bool mNoCursorFocus = false;
+
 };
 
 

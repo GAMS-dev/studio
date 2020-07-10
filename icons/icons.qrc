@@ -89,6 +89,8 @@
         <file alias="stop">solid/stop.svg</file>
         <file alias="stop2">solid/ban.svg</file>
         <file alias="terminal">solid/terminal.svg</file>
+        <file alias="triangle-down">solid/triangle-down.svg</file>
+        <file alias="triangle-right">solid/triangle-right.svg</file>
         <file alias="truck">solid/truck.svg</file>
         <file alias="undo">solid/undo.svg</file>
         <file alias="update">solid/update.svg</file>

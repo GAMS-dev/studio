@@ -2761,7 +2761,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
                     try {
                         file->load(file->codecMib());
                     } catch (Exception&) {
-
+                        // TODO(JM) add reaction on exception
                     }
                 }
             doSave = false;
@@ -4247,6 +4247,20 @@ void MainWindow::updateCursorHistoryAvailability()
     ui->actionGoForward->setEnabled(mNavigationHistory->canGoForward());
 }
 
+void MainWindow::on_actionFoldAllTextBlocks_triggered()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+        ce->foldAll();
+    }
+}
+
+void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+        ce->unfoldAll();
+    }
+}
+
 void MainWindow::on_actionPrint_triggered()
 {
     QPrinter printer;
@@ -4268,6 +4282,7 @@ void MainWindow::on_actionPrint_triggered()
         QMessageBox::information(this, "Printing not supported","Printing is not supported for the selected file.");
     }
 }
+
 
 }
 }
