@@ -323,6 +323,8 @@ private slots:
     void on_actionGoForward_triggered();
     void on_actionPrint_triggered();
 
+    void on_actionRunNeos_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);

@@ -208,7 +208,7 @@ protected:
     void emitBlockCountChanged();
     void removeChunk(int chunkNr);
     virtual void internalRemoveChunk(int chunkNr);
-    LinePosition topLine() { return mTopLine; }
+    LinePosition topLine() const { return mTopLine; }
 
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;

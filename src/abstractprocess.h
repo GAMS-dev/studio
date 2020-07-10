@@ -107,7 +107,7 @@ public:
     QProcess::ProcessState state() const override;
 
 protected:
-    void readStdChannel(QProcess::ProcessChannel channel);
+    virtual void readStdChannel(QProcess::ProcessChannel channel);
 
 protected slots:
     void readStdOut() override;
