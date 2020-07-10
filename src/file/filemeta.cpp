@@ -262,6 +262,7 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     int toLine = cursor.blockNumber();
     int removedLines = mLineCount-mDocument->lineCount() + toLine-fromLine;
     mChangedLine = fromLine;
+    edit->ensureUnfolded(toLine);
 //    if (charsAdded) --mChangedLine;
 //    if (!column) --mChangedLine;
     if (removedLines > 0)

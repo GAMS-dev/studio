@@ -683,6 +683,10 @@ bool CodeEdit::ensureUnfolded(int line)
 {
     int lastUnfoldedNr = -1;
     QTextBlock block = document()->findBlockByNumber(line);
+    if (block.isValid() && block.isVisible()) {
+        block = block.next();
+        ++line;
+    }
     // repeatly check the block of the line number until it is visible
     while (block.isValid() && !block.isVisible()) {
         // find the first visible previous line, that's the fold-head
