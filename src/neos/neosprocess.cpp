@@ -229,6 +229,7 @@ import sys
 import time
 import base64
 import re
+import ssl
 try:
     import xmlrpc.client as xmlrpclib
 except ImportError:
@@ -248,7 +249,7 @@ xml = r'''<document>
 <wantlst><![CDATA[yes]]></wantlst>
 <wantgdx><![CDATA[%wantgdx%]]></wantgdx>
 </document>'''
-neos = xmlrpclib.ServerProxy('https://neos-server.org:3333')
+neos = xmlrpclib.ServerProxy('https://neos-server.org:3333', verbose=False, use_datetime=True, context=ssl._create_unverified_context())
 alive = neos.ping()
 if alive != "NeosServer is alive\n":
     raise NameError('\n***\n*** Could not make connection to NEOS Server\n***')
