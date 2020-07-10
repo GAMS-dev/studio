@@ -208,6 +208,7 @@ private:
     bool switchFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
     bool unfoldBadBlock(QTextBlock block);
+    void checkCursorAfterFolding();
 
 protected:
     class BlockEdit

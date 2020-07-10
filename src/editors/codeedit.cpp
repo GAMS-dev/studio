@@ -561,14 +561,7 @@ bool CodeEdit::switchFolding(QTextBlock block)
             }
         }
     }
-    if (!textCursor().block().isVisible()) {
-        QTextBlock block = textCursor().block();
-        while (block.isValid() && !block.isVisible())
-            block = block.previous();
-        QTextCursor cur = textCursor();
-        cur.setPosition(block.position() + qMin(block.length()-1, cur.positionInBlock()));
-        setTextCursor(cur);
-    }
+    checkCursorAfterFolding();
     document()->adjustSize();
     viewport()->repaint();
     mLineNumberArea->repaint();
@@ -600,14 +593,7 @@ void CodeEdit::foldAll()
         }
         block = block.next();
     }
-    if (!textCursor().block().isVisible()) {
-        QTextBlock block = textCursor().block();
-        while (block.isValid() && !block.isVisible())
-            block = block.previous();
-        QTextCursor cur = textCursor();
-        cur.setPosition(block.position() + qMin(block.length()-1, cur.positionInBlock()));
-        setTextCursor(cur);
-    }
+    checkCursorAfterFolding();
     mFoldMark = LinePair();
     document()->adjustSize();
     viewport()->repaint();
@@ -675,6 +661,22 @@ bool CodeEdit::unfoldBadBlock(QTextBlock block)
         block = block.next();
     }
     return true;
+}
+
+void CodeEdit::checkCursorAfterFolding()
+{
+    if (!textCursor().block().isVisible()) {
+        QTextBlock block = textCursor().block();
+        while (block.isValid() && !block.isVisible())
+            block = block.previous();
+        QTextCursor cur = textCursor();
+        cur.setPosition(block.position() + qMin(block.length()-1, cur.positionInBlock()));
+        setTextCursor(cur);
+    } else if (hasSelection() && !document()->findBlock(textCursor().anchor()).isVisible()) {
+        QTextCursor cur = textCursor();
+        cur.clearSelection();
+        setTextCursor(cur);
+    }
 }
 
 bool CodeEdit::ensureUnfolded(int line)
