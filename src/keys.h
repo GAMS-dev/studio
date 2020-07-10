@@ -91,7 +91,7 @@ public:
         }
         return false;
     }
-
+    QKeySequence first() const { return mSequence.isEmpty() ? QKeySequence() : mSequence.first(); }
     bool operator ==(KeySeqList other) const;
 private:
     QList<QKeySequence> mSequence;

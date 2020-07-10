@@ -172,6 +172,11 @@ void CodeEdit::undoCommandAdded()
     }
 }
 
+void CodeEdit::switchCurrentFolding()
+{
+    switchFolding(textCursor().block());
+}
+
 void CodeEdit::extendedRedo()
 {
     if (mBlockEdit) endBlockEdit();
@@ -556,6 +561,14 @@ bool CodeEdit::switchFolding(QTextBlock block)
             }
         }
     }
+    if (!textCursor().block().isVisible()) {
+        QTextBlock block = textCursor().block();
+        while (block.isValid() && !block.isVisible())
+            block = block.previous();
+        QTextCursor cur = textCursor();
+        cur.setPosition(block.position() + qMin(block.length()-1, cur.positionInBlock()));
+        setTextCursor(cur);
+    }
     document()->adjustSize();
     viewport()->repaint();
     mLineNumberArea->repaint();
@@ -586,6 +599,14 @@ void CodeEdit::foldAll()
             }
         }
         block = block.next();
+    }
+    if (!textCursor().block().isVisible()) {
+        QTextBlock block = textCursor().block();
+        while (block.isValid() && !block.isVisible())
+            block = block.previous();
+        QTextCursor cur = textCursor();
+        cur.setPosition(block.position() + qMin(block.length()-1, cur.positionInBlock()));
+        setTextCursor(cur);
     }
     mFoldMark = LinePair();
     document()->adjustSize();
@@ -637,6 +658,25 @@ LinePair CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
     return res;
 }
 
+bool CodeEdit::unfoldBadBlock(QTextBlock block)
+{
+    if (!block.isVisible()) return false;
+    block = block.next();
+    int skip = 0;
+    while (block.isValid() && !block.isVisible()) {
+        if (!skip)
+            block.setVisible(true);
+        else
+            --skip;
+        if (block.userData()) {
+            BlockData *dat = static_cast<BlockData*>(block.userData());
+            skip = dat->foldCount();
+        }
+        block = block.next();
+    }
+    return true;
+}
+
 bool CodeEdit::ensureUnfolded(int line)
 {
     int lastUnfoldedNr = -1;
@@ -647,7 +687,9 @@ bool CodeEdit::ensureUnfolded(int line)
         while (block.isValid() && !block.isVisible())
             block = block.previous();
         if (block.blockNumber() != line) {
-            switchFolding(block);
+            bool ok = switchFolding(block);
+            if (!ok)
+                return unfoldBadBlock(block);
             if (block.blockNumber() == lastUnfoldedNr) {
                 DEB() << "ERROR on unfolding line " << QString::number(lastUnfoldedNr);
                 break;
@@ -903,7 +945,17 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         QList<QAction*> ret;
         emit requestAdvancedActions(&ret);
         submenu->addActions(ret);
+        menu->addSeparator();
         emit cloneBookmarkMenu(menu);
+        QAction *act = new QAction("Toggle &folding", menu);
+        act->setShortcut(Keys::instance().keySequence(Hotkey::ToggleBlockFolding).first());
+        connect(act, &QAction::triggered, this, &CodeEdit::switchCurrentFolding);
+        menu->addAction(act);
+        if (textCursor().block().userData()) {
+            bool folded;
+            int foldRes = foldState(textCursor().blockNumber(), folded);
+            act->setEnabled(foldRes % 3 > 0);
+        } else act->setEnabled(false);
     }
     menu->exec(e->globalPos());
     delete menu;
@@ -1650,7 +1702,7 @@ void CodeEdit::setAllowBlockEdit(bool allow)
     if (mBlockEdit) endBlockEdit();
 }
 
-int CodeEdit::foldState(int line, bool &folded, int *start, QString *closingSymbol)
+int CodeEdit::foldState(int line, bool &folded, int *start, QString *closingSymbol) const
 {
     int res = 0;
     int foldPos = foldStart(line, folded, closingSymbol);

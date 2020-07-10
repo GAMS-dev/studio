@@ -98,7 +98,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     virtual int lineNumberAreaWidth();
-    virtual int foldState(int line, bool &folded, int *start = nullptr, QString *closingSymbol = nullptr);
+    virtual int foldState(int line, bool &folded, int *start = nullptr, QString *closingSymbol = nullptr) const;
     int iconSize();
     LineNumberArea* lineNumberArea();
 
@@ -153,6 +153,7 @@ protected:
     virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
+    bool ensureUnfolded(int line) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -181,6 +182,7 @@ private slots:
     void blockEditBlink();
     void checkBlockInsertion();
     void undoCommandAdded();
+    void switchCurrentFolding();
 
 private:
     friend class BlockEdit;
@@ -204,7 +206,7 @@ private:
     bool allowClosing(int chIndex);
     bool switchFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
-    bool ensureUnfolded(int line) override;
+    bool unfoldBadBlock(QTextBlock block);
 
 protected:
     class BlockEdit
