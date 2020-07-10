@@ -348,6 +348,10 @@ void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref, bool readErrorTex
     bool hasError = false;
     LogParser::MarksBlockState mbState;
     QString line = mLogParser->parseLine(data, rawLine, hasError, mbState);
+    if (!mbState.switchLst.isEmpty()) {
+        emit switchLst(mbState.switchLst);
+        mbState.switchLst = QString();
+    }
     LogParser::MarksBlockState mbFollowState = mbState;
     if (readErrorText && mbState.errData.errNr > 0) {
         // compile-time error have descriptions in the following lines
@@ -704,6 +708,10 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
             QByteArray lineData = data.mid(from, len);
 //            QString line = mLogParser->quickParse(lineData, rawLine, hasMark, hasError);
             QString line = mLogParser->parseLine(lineData, rawLine, hasError, mbState);
+            if (!mbState.switchLst.isEmpty()) {
+                emit switchLst(mbState.switchLst);
+                mbState.switchLst = QString();
+            }
             if (debugMode()) {
                 res << rawLine;
                 formats << LineFormat(0, rawLine.length(), mBaseFormat.at(debug));
@@ -723,7 +731,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
 //                    actErrFormat = &formats.last();
                 } else if (mbState.marks.hRef.startsWith("FIL:")) {
                     formats << LineFormat(4, line.length(), mBaseFormat.at(fileLink), mbState.marks.hRef);
-                } else if (mbState.marks.hRef.startsWith("LST:")) {
+                } else if (mbState.marks.hRef.startsWith("LST:") || mbState.marks.hRef.startsWith("LS2:")) {
                     formats << LineFormat(4, line.length(), mBaseFormat.at(lstLink), mbState.marks.hRef);
                 }
             } else if (hasError) {
@@ -786,7 +794,7 @@ QString MemoryMapper::extractLstRef(LineRef lineRef)
     while (firstCh >= lineRef.chunk->lineBytes.at(lineRef.relLine) && lineRef.chunk->bArray.at(firstCh) != '[')
         --firstCh;
     QString res = lineRef.chunk->bArray.mid(firstCh+1, lastCh-firstCh-1);
-    if (!res.startsWith("LST:")) return QString();
+    if (!res.startsWith("LST:") && !res.startsWith("LS2:")) return QString();
     return res;
 }
 

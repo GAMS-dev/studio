@@ -60,6 +60,7 @@
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
+#include "neos/neosprocess.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -302,10 +303,9 @@ void MainWindow::initTabs()
 
 void MainWindow::initToolBar()
 {
-    mGamsParameterEditor = new option::ParameterEditor(ui->actionRun, ui->actionRun_with_GDX_Creation,
-                                         ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                                         ui->actionInterrupt, ui->actionStop,
-                                         this);
+    mGamsParameterEditor = new option::ParameterEditor(
+                ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
+                ui->actionRunNeos, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
@@ -1720,10 +1720,12 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         }
     }
     if (groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->parameter("lst");
+        QString lstFile = groupNode->parameter("ls2");
+        mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+        lstFile = groupNode->parameter("lst");
         bool doFocus = (groupNode == mRecent.group());
-
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+
         for (QWidget *edit: lstNode->file()->editors())
             if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 
@@ -2718,9 +2720,7 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
     return mGamsParameterEditor;
 }
 
-void MainWindow::execute(QString commandLineStr,
-                         std::unique_ptr<AbstractProcess> process,
-                         ProjectFileNode* gmsFileNode)
+void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
 {
     Settings *settings = Settings::settings();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
@@ -2797,7 +2797,7 @@ void MainWindow::execute(QString commandLineStr,
     }
     // cleanup bookmarks
     QVector<QString> cleanupKinds;
-    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "lxi" << "ref";
+    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "ls2" << "lxi" << "ref";
     markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
     for (const QString &kind: cleanupKinds) {
         if (runGroup->hasParameter(kind)) {
@@ -2837,6 +2837,8 @@ void MainWindow::execute(QString commandLineStr,
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
+    if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc))
+        np->setGmsFile(gmsFilePath);
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     logNode->prepareRun();
@@ -2930,6 +2932,14 @@ void MainWindow::on_actionCompile_triggered()
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
     execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
+}
+
+void MainWindow::on_actionRunNeos_triggered()
+{
+    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
 }
 
 void MainWindow::on_actionInterrupt_triggered()
@@ -3058,6 +3068,7 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
@@ -4275,3 +4286,4 @@ void MainWindow::on_actionPrint_triggered()
 
 }
 }
+

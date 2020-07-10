@@ -119,6 +119,7 @@ public slots:
     void hasHRef(const QString &href, bool &exist);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
+    void switchLst(const QString &lstFile);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);

@@ -93,6 +93,13 @@ public:
     static QString absolutPath(const QString &dir);
 
     ///
+    /// \brief Get the native file path prepared to be passed to a gams process.
+    /// \param filePath File to get the native path for.
+    /// \return Returns the native file path, system specific with or without quotes
+    ///
+    static QString nativePathForProcess(const QString &filePath);
+
+    ///
     /// \brief Get GAMS config file name (with path).
     /// \return Returns GAMS config file name.
     ///
