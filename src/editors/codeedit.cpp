@@ -1572,6 +1572,12 @@ void CodeEdit::updateExtraSelections()
     setExtraSelections(selections);
 }
 
+void CodeEdit::unfold(QTextBlock block)
+{
+    if (block.userData() && static_cast<BlockData*>(block.userData())->foldCount())
+        switchFolding(block);
+}
+
 void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
 {
     if (mBlockEdit) {

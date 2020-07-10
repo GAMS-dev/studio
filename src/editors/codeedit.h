@@ -170,6 +170,7 @@ public slots:
     virtual void selectAllText();
     virtual void pasteClipboard();
     void updateExtraSelections() override;
+    void unfold(QTextBlock block) override;
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;

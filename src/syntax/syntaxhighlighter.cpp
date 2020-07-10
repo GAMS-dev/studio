@@ -200,14 +200,18 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             posForSyntaxKind = text.length()+1;
         }
     }
-    // update BlockData
-    if (!parPosList.isEmpty() && !blockData) {
-        blockData = new BlockData();
+    if (blockData->foldCount()) {
+        QVector<ParenthesesPos> blockPars = blockData->parentheses();
+        bool same = (parPosList.size() == blockPars.size());
+        for (int i = 0; i < parPosList.size() && same; ++i) {
+            same = (parPosList.at(i).character == blockPars.at(i).character);
+        }
+        if (!same) emit needUnfold(textBlock);
     }
-    if (blockData) blockData->setParentheses(parPosList);
-    if (blockData && blockData->isEmpty())
+    blockData->setParentheses(parPosList);
+    if (blockData && blockData->isEmpty()) {
         textBlock.setUserData(nullptr);
-    else
+    } else
         textBlock.setUserData(blockData);
     setCurrentBlockState(purgeCode(cri));
 //    DEB() << text << "      _" << codeDeb(cri);

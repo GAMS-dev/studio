@@ -69,6 +69,7 @@ signals:
 
 public slots:
     virtual void updateExtraSelections();
+    virtual void unfold(QTextBlock block);
 
 protected slots:
     virtual void marksChanged(const QSet<int> dirtyLines = QSet<int>());

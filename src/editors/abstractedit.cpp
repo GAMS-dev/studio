@@ -109,6 +109,11 @@ void AbstractEdit::updateExtraSelections()
     //    setExtraSelections(selections);
 }
 
+void AbstractEdit::unfold(QTextBlock block)
+{
+    Q_UNUSED(block)
+}
+
 void AbstractEdit::setMarks(const LineMarks *marks)
 {
     mMarks = marks;

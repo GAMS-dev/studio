@@ -262,7 +262,6 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     int toLine = cursor.blockNumber();
     int removedLines = mLineCount-mDocument->lineCount() + toLine-fromLine;
     mChangedLine = fromLine;
-    edit->ensureUnfolded(toLine+1);
 //    if (charsAdded) --mChangedLine;
 //    if (!column) --mChangedLine;
     if (removedLines > 0)
@@ -391,8 +390,10 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
 
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
-        if (scEdit && mHighlighter)
+        if (scEdit && mHighlighter) {
             connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+            connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
+        }
 
         if (!aEdit->viewport()->hasMouseTracking())
             aEdit->viewport()->setMouseTracking(true);
