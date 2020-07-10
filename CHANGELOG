@@ -9,6 +9,10 @@ Version 1.3.0
 - fixed help view bookmarks not being saved permanently
 - fixed GAMS icon missing in About dialog
 - removed extra seperator in toolbar
+- **added Code Folding**
+    - Shortcut `Alt+L` switches folding state of the current block
+	- Shortcut `Alt+O` folds and `Shift+Alt+O` unfolds all foldable blocks
+    - Code folding is realized for pairs of parentheses that exceed one line. Additionally a block of DollarCommands that always comes in pairs can be folded.
 
 Version 1.2.1
 ==================
@@ -29,8 +33,6 @@ Version 1.2.0
 - added `Shift+Option+Up/Down` hotkey to start block-edit on macOS
 - fixed some icons not following selected theme
 - added dmp extension to list of executable file types
-- **added Code Folding**
-    - Code folding is realized for pairs of parentheses that exceed one line. Additionally a block of embeddedCode and the multi line on/offText can be folded.
 
 Version 1.1.2
 ==================
