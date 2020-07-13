@@ -207,6 +207,7 @@ private:
     bool allowClosing(int chIndex);
     bool switchFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
+    QTextBlock findFoldStart(QTextBlock block) const;
     bool unfoldBadBlock(QTextBlock block);
     void checkCursorAfterFolding();
 

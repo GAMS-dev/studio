@@ -645,6 +645,18 @@ LinePair CodeEdit::findFoldBlock(int line, bool onlyThisLine) const
     return res;
 }
 
+QTextBlock CodeEdit::findFoldStart(QTextBlock block) const
+{
+    int count = 0;
+    int depth = 0;
+    while (block.isValid() && count < 20) {
+        if (block.userData()) {
+
+        }
+    }
+    return QTextBlock();
+}
+
 bool CodeEdit::unfoldBadBlock(QTextBlock block)
 {
     if (!block.isVisible()) return false;
