@@ -2948,7 +2948,7 @@ void MainWindow::on_actionRunNeosL_triggered()
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
     neosProcess->setPriority(neos::prioLong);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeosL);
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
 }
 

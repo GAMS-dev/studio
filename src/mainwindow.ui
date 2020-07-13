@@ -783,7 +783,7 @@
   <action name="actionRunNeosL">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/run-neos</normaloff>:/solid/run-neos</iconset>
+     <normaloff>:/solid/run-neos-l</normaloff>:/solid/run-neos-l</iconset>
    </property>
    <property name="text">
     <string>Run NEOS - long</string>

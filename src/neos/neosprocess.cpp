@@ -288,7 +288,7 @@ while status != 'Done':
           echo = 0;
        s = re.sub('/var/lib/condor/execute/dir_\d+/gamsexec/', ':filepath:', s)
        s = s.replace(':filepath:',r'%workdir% '.rstrip())
-       s = s.replace('[LST:','[LS2:');
+       s = s.replace('[LST:','[LS2:')
        sys.stdout.write(s)
        sys.stdout.flush()
 
@@ -300,6 +300,17 @@ with open('%2/solver-output.zip', 'wb') as rf:
     rf.write(msg.data)
 $offEmbeddedCode
 $hiddencall cd %2 && rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
+$onEmbeddedCode Python:
+if '%priority%' == 'long':
+    with open('%2/solve.log', 'r') as rf:
+        s = rf.read()
+        s = re.sub('/var/lib/condor/execute/dir_\d+/gamsexec/', ':filepath:', s)
+        s = s.replace(':filepath:',r'%workdir% '.rstrip())
+        s = s.replace('[LST:','[LS2:')
+        sys.stdout.write(s)
+        sys.stdout.flush()
+
+$offEmbeddedCode
 )s2";
     return s1 + s2.arg(lstName).arg(resultDir);
 }
