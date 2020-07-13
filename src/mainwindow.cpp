@@ -157,6 +157,7 @@ MainWindow::MainWindow(QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -265,7 +266,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     updateRunState();
 }
-
 
 void MainWindow::watchProjectTree()
 {
@@ -1093,6 +1093,11 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
     }
+}
+
+void MainWindow::on_menuFile_aboutToShow()
+{
+    ui->actionPrint->setEnabled(enabledPrintAction());
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -4272,15 +4277,21 @@ void MainWindow::on_actionPrint_triggered()
         QPrintDialog dialog(&printer, this);
         if (dialog.exec() == QDialog::Rejected) return;
         abstractEdit->print(&printer);
-    } else if (ViewHelper::editorType(this->recent()->editor()) == EditorType::lxiLst) {
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (!lxiViewer) return;
         QPrintDialog dialog(&printer, this);
         if (dialog.exec() == QDialog::Rejected) return;
         lxiViewer->print(&printer);
-    } else {
-        QMessageBox::information(this, "Printing not supported","Printing is not supported for the selected file.");
     }
+}
+
+bool MainWindow::enabledPrintAction()
+{
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget())
+        return false;
+    return focusWidget() == mRecent.editor() || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst;
 }
 
 
