@@ -305,7 +305,7 @@ void MainWindow::initToolBar()
 {
     mGamsParameterEditor = new option::ParameterEditor(
                 ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                ui->actionRunNeos, ui->actionInterrupt, ui->actionStop, this);
+                ui->actionRunNeos, ui->actionRunNeosL, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
@@ -2937,6 +2937,16 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 void MainWindow::on_actionRunNeos_triggered()
 {
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    neosProcess->setPriority(neos::prioShort);
+    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+}
+
+void MainWindow::on_actionRunNeosL_triggered()
+{
+    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    neosProcess->setPriority(neos::prioLong);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
@@ -3069,6 +3079,7 @@ void MainWindow::initIcons()
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
     ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
+    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));

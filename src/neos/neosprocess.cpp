@@ -27,6 +27,7 @@ void NeosProcess::execute()
 #else
     mProcess.setNativeArguments(parameters().join(" "));
     mProcess.setProgram(nativeAppPath());
+    DEB() << "STARTING: " << nativeAppPath() << " " << parameters().join(" ");
     emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start();
 #endif
@@ -43,9 +44,9 @@ void NeosProcess::interrupt()
 #if defined(__unix__) || defined(__APPLE__)
     mSubProc->start(nativeAppPath(), params);
 #else
-    mSubProc->setNativeArguments(params.join(" "));
+    mSubProc->setNativeArguments(params.join(" ") + " lo=3 ide=1 er=99 errmsg=1 pagesize=0");
     mSubProc->setProgram(nativeAppPath());
-    DEB() << "STARTING: " << nativeAppPath() << " " << params.join(" ");
+    DEB() << "STARTING: " << nativeAppPath() << " " << (params.join(" ")  + " lo=3 ide=1 er=99 errmsg=1 pagesize=0");
     mSubProc->start();
     connect(mSubProc, QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::subFinished);
     DEB() << "   - state: " << mSubProc->state();
@@ -209,17 +210,18 @@ QString NeosProcess::rawData(QString runFile, QString parameters, QString workdi
 {
     QString lstName = workdir + "solve.lst";
     QString resultDir = workdir.split('/', QString::SkipEmptyParts).last();
+    QString sPrio = (mPrio == Priority::prioShort ? "short" : "long");
     QString s1 =
 R"s1(* Create temp.g00
 $call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 %2
 * Set switches and parameters for NEOS submission
 $set restartFile temp.g00
-$set priority    short
+$set priority    %4
 $set wantgdx     yes
 $set parameters  ' %2'
 $set workdir     '%3'
 )s1";
-    s1 = s1.arg(runFile).arg(parameters).arg(workdir);
+    s1 = s1.arg(runFile).arg(parameters).arg(workdir).arg(sPrio);
 
     QString s2 =
 R"s2(

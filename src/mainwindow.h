@@ -323,6 +323,7 @@ private slots:
     void on_actionGoForward_triggered();
     void on_actionPrint_triggered();
     void on_actionRunNeos_triggered();
+    void on_actionRunNeosL_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
