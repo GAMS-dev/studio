@@ -211,6 +211,7 @@ private slots:
     void popDockSizes();
 
     // File
+    void on_menuFile_aboutToShow();
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
     void on_actionOpenNew_triggered();
@@ -323,6 +324,7 @@ private slots:
     void on_actionGoForward_triggered();
     void on_actionPrint_triggered();
     void on_actionRunNeos_triggered();
+    void on_actionRunNeosL_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
@@ -376,6 +378,7 @@ private:
     bool isMiroAvailable();
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
+    bool enabledPrintAction();
 
 private:
     Ui::MainWindow *ui;

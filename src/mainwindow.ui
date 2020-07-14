@@ -265,6 +265,7 @@
     <addaction name="actionCompile_with_GDX_Creation"/>
     <addaction name="separator"/>
     <addaction name="actionRunNeos"/>
+    <addaction name="actionRunNeosL"/>
     <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
     <addaction name="actionStop"/>
@@ -770,10 +771,25 @@
   <action name="actionRunNeos">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/play</normaloff>:/solid/play</iconset>
+     <normaloff>:/solid/run-neos</normaloff>:/solid/run-neos</iconset>
    </property>
    <property name="text">
-    <string>Run &amp;NEOS</string>
+    <string>Run &amp;NEOS - short</string>
+   </property>
+   <property name="toolTip">
+    <string>Run NEOS - short (limited to 5 minutes)</string>
+   </property>
+  </action>
+  <action name="actionRunNeosL">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/run-neos-l</normaloff>:/solid/run-neos-l</iconset>
+   </property>
+   <property name="text">
+    <string>Run NEOS - long</string>
+   </property>
+   <property name="toolTip">
+    <string>Run NEOS - long (no intermediate log output)</string>
    </property>
   </action>
   <action name="actionPrint">

@@ -127,6 +127,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     bool emptyLineKinds = true;
 //    DEB() << text;
 
+    NestingImpact nestingImpact;
     while (index < text.length()) {
         CodeRelation codeRel = mCodes.at(cri);
         SyntaxAbstract* syntax = mKinds.value(codeRel.blockCode.kind());
@@ -173,7 +174,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                        if (tailBlock.syntax)
 //                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
 //                                  << tailBlock.syntax->kind() << " flav_" << tailBlock.flavor << "  (tail from " << syntax->kind() << ")";
-                        scanParentheses(text, tailBlock, syntax->kind(), parPosList);
+                        scanParentheses(text, tailBlock, syntax->kind(), parPosList, nestingImpact);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);
                 }
@@ -189,7 +190,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                      << " " << nextBlock.syntax->kind() << " flav_" << nextBlock.flavor << "  (next from " << syntax->kind() << ")";
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
-        scanParentheses(text, nextBlock, syntax->kind(), parPosList);
+        scanParentheses(text, nextBlock, syntax->kind(), parPosList, nestingImpact);
         index = nextBlock.end;
 
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
@@ -208,13 +209,13 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
         if (!same) emit needUnfold(textBlock);
     }
-    blockData->setParentheses(parPosList);
+    blockData->setParentheses(parPosList, nestingImpact);
     if (blockData && blockData->isEmpty()) {
         textBlock.setUserData(nullptr);
     } else
         textBlock.setUserData(blockData);
     setCurrentBlockState(purgeCode(cri));
-//    DEB() << text << "      _" << codeDeb(cri);
+//    DEB() << text << "      _" << codeDeb(cri) << " [nesting " << nestingImpact.impact() << "]";
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind)
@@ -249,7 +250,8 @@ const QString validParentheses("{[(}])/");
 const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
 const QString flavorChars("TtCcPpIiOoFf");
 
-void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, QVector<ParenthesesPos> &parentheses)
+void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind,
+                                        QVector<ParenthesesPos> &parentheses, NestingImpact &nestingImpact)
 {
     int start = block.start;
     int len = block.length();
@@ -258,15 +260,29 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
     SyntaxKind postKind = block.next;
 
     bool inBlock = false;
-    if (kind == SyntaxKind::Embedded || (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody)) {
+    if (kind == SyntaxKind::Embedded) {
         parentheses << ParenthesesPos('E', start);
+        nestingImpact.addOpener();
         return;
-    } else if (kind == SyntaxKind::EmbeddedEnd || (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive)) {
+    } else if (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody) {
+        parentheses << ParenthesesPos('M', start);
+        nestingImpact.addOpener();
+        return;
+    } else if (kind == SyntaxKind::EmbeddedEnd) {
         parentheses << ParenthesesPos('e', start);
+        nestingImpact.addCloser();
+        return;
+    } else if (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive) {
+        parentheses << ParenthesesPos('m', start);
+        nestingImpact.addCloser();
         return;
     } else if (kind == SyntaxKind::Directive) {
         if (flavor > 0 && flavor <= flavorChars.size()) {
             parentheses << ParenthesesPos(flavorChars.at(flavor-1), start);
+            if (flavor%2)
+                nestingImpact.addOpener();
+            else
+                nestingImpact.addCloser();
             return;
         }
     }
@@ -277,11 +293,18 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
         if (iPara == 6) {
             if (kind == SyntaxKind::IdentifierAssignmentEnd) {
                 parentheses << ParenthesesPos('\\', i);
+                nestingImpact.addCloser();
             } else if (kind == SyntaxKind::IdentifierAssignment) {
                 parentheses << ParenthesesPos('/', i);
+                nestingImpact.addOpener();
             }
         } else if (iPara >= 0) {
             parentheses << ParenthesesPos(text.at(i), i);
+            if (iPara<3)
+                nestingImpact.addOpener();
+            else
+                nestingImpact.addCloser();
+
         }
         int blockKind = specialBlocks.indexOf(text.at(i));
         if (!inBlock && blockKind >= 0 && blockKind < specialBlocks.length()/2) {
@@ -292,6 +315,7 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
             inBlock = false;
         }
     }
+    return;
 }
 
 QColor backColor(int index) {

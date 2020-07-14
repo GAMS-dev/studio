@@ -157,6 +157,7 @@ MainWindow::MainWindow(QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -266,7 +267,6 @@ MainWindow::MainWindow(QWidget *parent)
     updateRunState();
 }
 
-
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
@@ -305,7 +305,7 @@ void MainWindow::initToolBar()
 {
     mGamsParameterEditor = new option::ParameterEditor(
                 ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                ui->actionRunNeos, ui->actionInterrupt, ui->actionStop, this);
+                ui->actionRunNeos, ui->actionRunNeosL, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
@@ -1093,6 +1093,11 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
     }
+}
+
+void MainWindow::on_menuFile_aboutToShow()
+{
+    ui->actionPrint->setEnabled(enabledPrintAction());
 }
 
 void MainWindow::on_actionNew_triggered()
@@ -2937,8 +2942,18 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 void MainWindow::on_actionRunNeos_triggered()
 {
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    neosProcess->setPriority(neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+}
+
+void MainWindow::on_actionRunNeosL_triggered()
+{
+    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    neosProcess->setPriority(neos::prioLong);
+    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeosL);
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
 }
 
@@ -3069,6 +3084,7 @@ void MainWindow::initIcons()
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
     ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
+    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
@@ -4272,15 +4288,21 @@ void MainWindow::on_actionPrint_triggered()
         QPrintDialog dialog(&printer, this);
         if (dialog.exec() == QDialog::Rejected) return;
         abstractEdit->print(&printer);
-    } else if (ViewHelper::editorType(this->recent()->editor()) == EditorType::lxiLst) {
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (!lxiViewer) return;
         QPrintDialog dialog(&printer, this);
         if (dialog.exec() == QDialog::Rejected) return;
         lxiViewer->print(&printer);
-    } else {
-        QMessageBox::information(this, "Printing not supported","Printing is not supported for the selected file.");
     }
+}
+
+bool MainWindow::enabledPrintAction()
+{
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget())
+        return false;
+    return focusWidget() == mRecent.editor() || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst;
 }
 
 
