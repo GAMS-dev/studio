@@ -7,6 +7,11 @@ namespace gams {
 namespace studio {
 namespace neos {
 
+enum Priority {
+    prioShort,
+    prioLong
+};
+
 class NeosProcess final : public AbstractGamsProcess
 {
     Q_OBJECT
@@ -14,6 +19,7 @@ class NeosProcess final : public AbstractGamsProcess
 public:
     NeosProcess(QObject *parent = nullptr);
     void setGmsFile(QString gmsFile);
+    void setPriority(Priority prio) { mPrio = prio; }
 
     void execute() override;
     void interrupt() override;
@@ -39,6 +45,8 @@ private:
     QString mRunFile;
     QString mJobNumber;
     QString mJobPassword;
+    Priority mPrio;
+
     QProcess *mSubProc;
 };
 

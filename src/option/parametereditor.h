@@ -46,7 +46,8 @@ enum class RunActionState {
     RunWithGDXCreation,
     Compile,
     CompileWithGDXCreation,
-    RunNeos
+    RunNeos,
+    RunNeosL
 };
 
 class ParameterEditor : public QWidget
@@ -55,7 +56,7 @@ class ParameterEditor : public QWidget
 
 public:
     explicit ParameterEditor(QAction* aRun, QAction* aRunGDX, QAction* aCompile, QAction* aCompileGDX,
-                          QAction*aRunNeos, QAction* aInterrupt, QAction* aStop,
+                          QAction* aRunNeos, QAction* aRunNeosL, QAction* aInterrupt, QAction* aStop,
                           MainWindow *parent = nullptr);
     ~ParameterEditor();
 
@@ -121,7 +122,8 @@ private slots:
     void resizeColumnsToContents();
 
 private:
-    void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aRunNeos);
+    void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aRunNeos,
+                            QAction *aRunNeosL);
     void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
@@ -139,6 +141,7 @@ private:
     QAction* actionCompile;
     QAction* actionCompile_with_GDX_Creation;
     QAction* actionRunNeos;
+    QAction* actionRunNeosL;
 
     QAction* actionInterrupt;
     QAction* actionStop;
