@@ -650,7 +650,8 @@ QTextBlock CodeEdit::findFoldStart(QTextBlock block) const
     syntax::BlockData *dat = syntax::BlockData::fromTextBlock(block);
     if (dat) {
         if (dat->nestingImpact().rightOpen()) return block;
-        depth = dat->nestingImpact().leftOpen() + 1;
+        if (dat->nestingImpact().leftOpen())
+            depth = dat->nestingImpact().leftOpen() + 1;
     }
     while (block.isValid() && count < 1000) {
         block = block.previous();
