@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -129,6 +129,8 @@
     <addaction name="actionClose_All_Except"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionPrint"/>
     <addaction name="separator"/>
     <addaction name="actionExit_Application"/>
    </widget>
@@ -222,6 +224,9 @@
     <addaction name="actionGoBack"/>
     <addaction name="actionGoForward"/>
     <addaction name="separator"/>
+    <addaction name="actionFoldAllTextBlocks"/>
+    <addaction name="actionUnfoldAllTextBlocks"/>
+    <addaction name="separator"/>
     <addaction name="menuBookmarks"/>
     <addaction name="actionReset_Views"/>
     <addaction name="separator"/>
@@ -258,6 +263,9 @@
     <addaction name="separator"/>
     <addaction name="actionCompile"/>
     <addaction name="actionCompile_with_GDX_Creation"/>
+    <addaction name="separator"/>
+    <addaction name="actionRunNeos"/>
+    <addaction name="actionRunNeosL"/>
     <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
     <addaction name="actionStop"/>
@@ -745,21 +753,6 @@
     <string>F10</string>
    </property>
   </action>
-  <action name="actionSettings">
-   <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/cog</normaloff>:/solid/cog</iconset>
-   </property>
-   <property name="text">
-    <string>Settings</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::PreferencesRole</enum>
-   </property>
-  </action>
   <action name="actionCompile_with_GDX_Creation">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
@@ -773,6 +766,53 @@
    </property>
    <property name="shortcut">
     <string>Shift+F10</string>
+   </property>
+  </action>
+  <action name="actionRunNeos">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/run-neos</normaloff>:/solid/run-neos</iconset>
+   </property>
+   <property name="text">
+    <string>Run &amp;NEOS - short</string>
+   </property>
+   <property name="toolTip">
+    <string>Run NEOS - short (limited to 5 minutes)</string>
+   </property>
+  </action>
+  <action name="actionRunNeosL">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/run-neos-l</normaloff>:/solid/run-neos-l</iconset>
+   </property>
+   <property name="text">
+    <string>Run NEOS - long</string>
+   </property>
+   <property name="toolTip">
+    <string>Run NEOS - long (no intermediate log output)</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="text">
+    <string>Print</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/cog</normaloff>:/solid/cog</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionSearch">
@@ -1417,6 +1457,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+Return</string>
+   </property>
+  </action>
+  <action name="actionFoldAllTextBlocks">
+   <property name="text">
+    <string>Fold all text blocks</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+O</string>
+   </property>
+  </action>
+  <action name="actionUnfoldAllTextBlocks">
+   <property name="text">
+    <string>Unfold all text blocks</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+O</string>
    </property>
   </action>
  </widget>

@@ -50,6 +50,7 @@ public:
     struct MarksBlockState {
         MarkData marks;
         ErrorData errData;
+        QString switchLst;
         bool deep = false;
     };
 

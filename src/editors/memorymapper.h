@@ -105,6 +105,7 @@ public:
 signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
+    void switchLst(const QString &lstName) const;
     void updateView();
 
 public slots:

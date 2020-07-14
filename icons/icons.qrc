@@ -78,6 +78,8 @@
         <file alias="reload">solid/redo.svg</file>
         <file alias="remove">solid/remove.svg</file>
         <file alias="run-gdx">solid/play-gdx.svg</file>
+        <file alias="run-neos">solid/play-neos.svg</file>
+        <file alias="run-neos-l">solid/play-neos-l.svg</file>
         <file alias="save">solid/save.svg</file>
         <file alias="scroll">solid/scroll.svg</file>
         <file alias="search">solid/search.svg</file>
@@ -88,6 +90,8 @@
         <file alias="stop">solid/stop.svg</file>
         <file alias="stop2">solid/ban.svg</file>
         <file alias="terminal">solid/terminal.svg</file>
+        <file alias="triangle-down">solid/triangle-down.svg</file>
+        <file alias="triangle-right">solid/triangle-right.svg</file>
         <file alias="truck">solid/truck.svg</file>
         <file alias="undo">solid/undo.svg</file>
         <file alias="update">solid/update.svg</file>

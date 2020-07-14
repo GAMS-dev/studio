@@ -22,7 +22,7 @@
 # which deactivates the studio help view.
 QWEBENGINE=true
 
-QT       += core gui svg concurrent network
+QT       += core gui svg concurrent network printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -153,6 +153,8 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    neos/neosprocess.cpp \
+#    neos/neosxmlrpc.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
     numerics/dtoaLoc.c \
@@ -210,6 +212,7 @@ SOURCES += \
     support/updatedialog.cpp \
     svgengine.cpp \
     syntax/basehighlighter.cpp \
+    syntax/blockdata.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -303,6 +306,8 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    neos/neosprocess.h \
+#    neos/neosxmlrpc.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
     numerics/dtoaLoc.h \
@@ -362,6 +367,7 @@ HEADERS += \
     syntax.h \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
+    syntax/blockdata.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \

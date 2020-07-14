@@ -211,6 +211,7 @@ private slots:
     void popDockSizes();
 
     // File
+    void on_menuFile_aboutToShow();
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
     void on_actionOpenNew_triggered();
@@ -311,19 +312,21 @@ private slots:
     void focusProjectExplorer();
     void focusCentralWidget();
     void focusProcessLogs();
+    void openGdxDiffFile();
 
     void on_actionToggleBookmark_triggered();
     void on_actionNextBookmark_triggered();
     void on_actionPreviousBookmark_triggered();
     void on_actionRemoveBookmarks_triggered();
     void on_actionDeleteScratchDirs_triggered();
-
     void on_actionChangelog_triggered();
-
-    void openGdxDiffFile();
     void on_actionGoBack_triggered();
-
     void on_actionGoForward_triggered();
+    void on_actionPrint_triggered();
+    void on_actionRunNeos_triggered();
+    void on_actionRunNeosL_triggered();
+    void on_actionFoldAllTextBlocks_triggered();
+    void on_actionUnfoldAllTextBlocks_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -375,6 +378,7 @@ private:
     bool isMiroAvailable();
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
+    bool enabledPrintAction();
 
 private:
     Ui::MainWindow *ui;

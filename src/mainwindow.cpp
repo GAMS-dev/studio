@@ -19,7 +19,8 @@
  */
 #include <QtConcurrent>
 #include <QtWidgets>
-
+#include <QPrintDialog>
+#include <QPrinter>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -59,6 +60,7 @@
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
+#include "neos/neosprocess.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -155,6 +157,7 @@ MainWindow::MainWindow(QWidget *parent)
     mCodecGroupSwitch = new QActionGroup(this);
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -264,7 +267,6 @@ MainWindow::MainWindow(QWidget *parent)
     updateRunState();
 }
 
-
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
@@ -301,13 +303,11 @@ void MainWindow::initTabs()
 
 void MainWindow::initToolBar()
 {
-    mGamsParameterEditor = new option::ParameterEditor(ui->actionRun, ui->actionRun_with_GDX_Creation,
-                                         ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                                         ui->actionInterrupt, ui->actionStop,
-                                         this);
+    mGamsParameterEditor = new option::ParameterEditor(
+                ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
+                ui->actionRunNeos, ui->actionRunNeosL, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
-    ui->toolBar->insertSeparator(ui->actionSettings);
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
     ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsParameterEditor);
     ui->toolBar->insertSeparator(ui->actionProject_View);
@@ -1095,6 +1095,11 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
     }
 }
 
+void MainWindow::on_menuFile_aboutToShow()
+{
+    ui->actionPrint->setEnabled(enabledPrintAction());
+}
+
 void MainWindow::on_actionNew_triggered()
 {
     newFileDialog();
@@ -1720,10 +1725,12 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         }
     }
     if (groupNode && runMeta->exists(true)) {
-        QString lstFile = groupNode->parameter("lst");
+        QString lstFile = groupNode->parameter("ls2");
+        mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+        lstFile = groupNode->parameter("lst");
         bool doFocus = (groupNode == mRecent.group());
-
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+
         for (QWidget *edit: lstNode->file()->editors())
             if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 
@@ -1746,7 +1753,6 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    DEB() << "#### " << mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile();
     ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
@@ -1908,9 +1914,12 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
 
     QProcess process;
 #if defined(__APPLE__)
-    Q_UNUSED(workingDir)
-    process.setProgram("open");
-    process.setArguments({"-n", CommonPaths::systemDir() + "/../../../GAMS Terminal.app"});
+    QString statement = "tell application \"Terminal\"\n"
+                        "do script \"export PATH=$PATH:\\\"%1\\\" && cd %2\"\n"
+                        "activate \"Terminal\"\n"
+                        "end tell\n";
+    process.setProgram("osascript");
+    process.setArguments({"-e", statement.arg(CommonPaths::systemDir()).arg(workingDir)});
 #elif defined(__unix__)
     QStringList terms = {"gnome-terminal", "konsole", "xfce-terminal", "xterm"};
     for (auto term: terms) {
@@ -2162,9 +2171,8 @@ void MainWindow::updateAndSaveSettings()
 
 #ifdef QWEBENGINE
     QVariantList joBookmarks;
-    // TODO(JM) Check with Jeed if this can be moved from multimap to map
-    QMultiMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
-    QMultiMap<QString, QString>::const_iterator it = bookmarkMap.constBegin();
+    QMap<QString, QString> bookmarkMap(helpWidget()->getBookmarkMap());
+    QMap<QString, QString>::const_iterator it = bookmarkMap.constBegin();
     while (it != bookmarkMap.constEnd()) {
         QVariantMap joBookmark;
         joBookmark.insert("location", it.key());
@@ -2218,7 +2226,7 @@ void MainWindow::restoreFromSettings()
     // help
 #ifdef QWEBENGINE
     QVariantList joHelp = settings->toList(skHelpBookmarks);
-    QMultiMap<QString, QString> bookmarkMap;
+    QMap<QString, QString> bookmarkMap;
     for (QVariant joVal: joHelp) {
         if (!joVal.canConvert(QVariant::Map)) continue;
         QVariantMap entry = joVal.toMap();
@@ -2717,9 +2725,7 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
     return mGamsParameterEditor;
 }
 
-void MainWindow::execute(QString commandLineStr,
-                         std::unique_ptr<AbstractProcess> process,
-                         ProjectFileNode* gmsFileNode)
+void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
 {
     Settings *settings = Settings::settings();
     ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
@@ -2760,7 +2766,7 @@ void MainWindow::execute(QString commandLineStr,
                     try {
                         file->load(file->codecMib());
                     } catch (Exception&) {
-
+                        // TODO(JM) add reaction on exception
                     }
                 }
             doSave = false;
@@ -2786,8 +2792,8 @@ void MainWindow::execute(QString commandLineStr,
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
         wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
         if (ViewHelper::toTextView(wid))
-            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toInt(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                                              : AbstractEdit::NoWrap);
+            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                                               : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -2796,7 +2802,7 @@ void MainWindow::execute(QString commandLineStr,
     }
     // cleanup bookmarks
     QVector<QString> cleanupKinds;
-    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "lxi" << "ref";
+    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "ls2" << "lxi" << "ref";
     markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
     for (const QString &kind: cleanupKinds) {
         if (runGroup->hasParameter(kind)) {
@@ -2836,6 +2842,8 @@ void MainWindow::execute(QString commandLineStr,
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
+    if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc))
+        np->setGmsFile(gmsFilePath);
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     logNode->prepareRun();
@@ -2931,6 +2939,24 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
     execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
 }
 
+void MainWindow::on_actionRunNeos_triggered()
+{
+    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    neosProcess->setPriority(neos::prioShort);
+    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+}
+
+void MainWindow::on_actionRunNeosL_triggered()
+{
+    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    neosProcess->setPriority(neos::prioLong);
+    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeosL);
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+}
+
 void MainWindow::on_actionInterrupt_triggered()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
@@ -2966,8 +2992,8 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
             wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             if (TextView * tv = ViewHelper::toTextView(wid))
-                tv->setLineWrapMode(settings->toInt(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                        : AbstractEdit::NoWrap);
+                tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                          : AbstractEdit::NoWrap);
         }
         if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
             MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -3057,6 +3083,8 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
+    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
@@ -3491,10 +3519,10 @@ void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
 void MainWindow::updateEditorLineWrapping()
 {
     Settings *settings = Settings::settings();
-    QPlainTextEdit::LineWrapMode wrapModeEditor = settings->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
-                                                                                     : QPlainTextEdit::NoWrap;
-    QPlainTextEdit::LineWrapMode wrapModeProcess = settings->toInt(skEdLineWrapProcess) ? QPlainTextEdit::WidgetWidth
+    QPlainTextEdit::LineWrapMode wrapModeEditor = settings->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
                                                                                        : QPlainTextEdit::NoWrap;
+    QPlainTextEdit::LineWrapMode wrapModeProcess = settings->toBool(skEdLineWrapProcess) ? QPlainTextEdit::WidgetWidth
+                                                                                         : QPlainTextEdit::NoWrap;
     QWidgetList editList = mFileMetaRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
@@ -4089,7 +4117,7 @@ QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
 }
 
 bool MainWindow::isMiroAvailable()
-{        
+{
     if (Settings::settings()->toString(skMiroInstallPath).isEmpty())
         return false;
     QFileInfo fileInfo(Settings::settings()->toString(skMiroInstallPath));
@@ -4235,5 +4263,49 @@ void MainWindow::updateCursorHistoryAvailability()
     ui->actionGoForward->setEnabled(mNavigationHistory->canGoForward());
 }
 
+void MainWindow::on_actionFoldAllTextBlocks_triggered()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+        ce->foldAll();
+    }
+}
+
+void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+        ce->unfoldAll();
+    }
+}
+
+void MainWindow::on_actionPrint_triggered()
+{
+    QPrinter printer;
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget()) return;
+    if (focusWidget() == mRecent.editor()) {
+        auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
+        if (!abstractEdit) return;
+        QPrintDialog dialog(&printer, this);
+        if (dialog.exec() == QDialog::Rejected) return;
+        abstractEdit->print(&printer);
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
+        auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
+        if (!lxiViewer) return;
+        QPrintDialog dialog(&printer, this);
+        if (dialog.exec() == QDialog::Rejected) return;
+        lxiViewer->print(&printer);
+    }
+}
+
+bool MainWindow::enabledPrintAction()
+{
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget())
+        return false;
+    return focusWidget() == mRecent.editor() || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst;
+}
+
+
 }
 }
+

@@ -83,6 +83,7 @@ signals:
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
+    void switchLst(const QString &lstName) const;
 
 public slots:
     void updateExtraSelections();

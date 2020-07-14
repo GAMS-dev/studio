@@ -109,6 +109,11 @@ void AbstractEdit::updateExtraSelections()
     //    setExtraSelections(selections);
 }
 
+void AbstractEdit::unfold(QTextBlock block)
+{
+    Q_UNUSED(block)
+}
+
 void AbstractEdit::setMarks(const LineMarks *marks)
 {
     mMarks = marks;
@@ -174,13 +179,13 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
                     selection.format.setForeground(toColor(Scheme::Edit_text));
                 }
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-                selection.format.setAnchorName(QString::number(m->line()));
+                selection.format.setAnchorNames(QStringList()<<QString::number(m->line()));
             } else if (m->type() == TextMark::link) {
                 selection.format.setForeground(m->color());
                 selection.format.setUnderlineColor(m->color());
                 selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
                 selection.format.setAnchor(true);
-                selection.format.setAnchorName(QString::number(m->line()));
+                selection.format.setAnchorNames(QStringList()<<QString::number(m->line()));
             }
             selections << selection;
         }
@@ -225,6 +230,19 @@ QVector<int> AbstractEdit::toolTipLstNumbers(const QPoint &pos)
     return lstLines;
 }
 
+LinePair AbstractEdit::findFoldBlock(int line, bool onlyThisLine) const
+{
+    Q_UNUSED(line)
+    Q_UNUSED(onlyThisLine)
+    return LinePair();
+}
+
+bool AbstractEdit::ensureUnfolded(int line)
+{
+    Q_UNUSED(line)
+    return false;
+}
+
 void AbstractEdit::internalExtraSelUpdate()
 {
     QList<QTextEdit::ExtraSelection> selections;
@@ -257,7 +275,7 @@ bool AbstractEdit::event(QEvent *e)
     }
     if (e->type() == QEvent::FontChange) {
         QFontMetrics metric(font());
-        setTabStopDistance(Settings::settings()->toInt(skEdTabSize) * metric.width(' '));
+        setTabStopDistance(Settings::settings()->toInt(skEdTabSize) * metric.horizontalAdvance(' '));
     }
     return QPlainTextEdit::event(e);
 }
@@ -306,6 +324,8 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
 {
     QPlainTextEdit::keyReleaseEvent(e);
+    if (e->key() == Qt::Key_Backspace)
+        ensureUnfolded(textCursor().blockNumber());
     Qt::CursorShape shape = Qt::IBeamCursor;
     if (e->modifiers() & Qt::ControlModifier) {
         if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
@@ -375,20 +395,6 @@ void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
     Q_UNUSED(dirtyLines)
 }
 
-
-void AbstractEdit::jumpTo(const QTextCursor &cursor)
-{
-    QTextCursor tc = cursor;
-    tc.clearSelection();
-    setTextCursor(tc);
-    // center line vertically
-    qreal lines = qreal(rect().height()) / cursorRect().height();
-    qreal line = qreal(cursorRect().bottom()) / cursorRect().height();
-    int mv = qRound(line - lines/2);
-    if (qAbs(mv) > lines/3)
-        verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
-}
-
 void AbstractEdit::jumpTo(int line, int column)
 {
     QTextCursor cursor;
@@ -396,7 +402,13 @@ void AbstractEdit::jumpTo(int line, int column)
     cursor = QTextCursor(document()->findBlockByNumber(line));
     cursor.clearSelection();
     cursor.setPosition(cursor.position() + column);
-    jumpTo(cursor);
+    setTextCursor(cursor);
+    // center line vertically
+    qreal visLines = qreal(rect().height()) / cursorRect().height();
+    qreal visLine = qreal(cursorRect().bottom()) / cursorRect().height();
+    int mv = qRound(visLine - visLines/2);
+    if (qAbs(mv) > visLines/3)
+        verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
 }
 
 }

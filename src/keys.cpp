@@ -193,16 +193,15 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+D","duplicate line");
     setHotkey(Hotkey::DuplicateLine, seq);
 
+    seq = new KeySeqList("Alt+L", "Toggle folding of current block");
+    setHotkey(Hotkey::ToggleBlockFolding, seq);
+
     seq = new KeySeqList("Tab","indent selected lines");
     setHotkey(Hotkey::Indent, seq);
 
     seq = new KeySeqList("Shift+Tab","outdent selected lines");
     *seq << QKeySequence("Shift+Backtab");
     setHotkey(Hotkey::Outdent, seq);
-
-    //TODO(JM) This is not in use and overwritten in MainWindow triggering "Redo"
-    seq = new KeySeqList("Ctrl+Y","remove line");
-    setHotkey(Hotkey::RemoveLine, seq);
 
     seq = new KeySeqList("Ctrl+B","goto matching parentheses");
     setHotkey(Hotkey::MatchParentheses, seq);

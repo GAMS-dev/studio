@@ -52,6 +52,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
         connect(this, &TextView::addProcessData, mm, &MemoryMapper::addProcessData);
         connect(mm, &MemoryMapper::createMarks, this, &TextView::createMarks);
         connect(mm, &MemoryMapper::appendLines, this, &TextView::appendLines);
+        connect(mm, &MemoryMapper::switchLst, this, &TextView::switchLst);
 //        connect(mm, &MemoryMapper::appendDisplayLines, this, &TextView::appendedLines);
         connect(mm, &MemoryMapper::updateView, this, &TextView::updateView);
         mMapper = mm;
@@ -418,7 +419,7 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         mMapper->moveVisibleTopLine(-1);
     } else if (event == Hotkey::MoveViewLineDown) {
         mMapper->moveVisibleTopLine(1);
-    } else if (!event->modifiers().testFlag(Qt::AltModifier)){
+    } else if (!event->modifiers().testFlag(Qt::AltModifier)) {
         switch (event->key()) {
         case Qt::Key_Up:
             if (!cursorIsValid)

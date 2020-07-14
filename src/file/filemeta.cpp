@@ -262,6 +262,7 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
     int toLine = cursor.blockNumber();
     int removedLines = mLineCount-mDocument->lineCount() + toLine-fromLine;
     mChangedLine = fromLine;
+    edit->ensureUnfolded(toLine);
 //    if (charsAdded) --mChangedLine;
 //    if (!column) --mChangedLine;
     if (removedLines > 0)
@@ -390,8 +391,10 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
 
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
-        if (scEdit && mHighlighter)
+        if (scEdit && mHighlighter) {
             connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+            connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
+        }
 
         if (!aEdit->viewport()->hasMouseTracking())
             aEdit->viewport()->setMouseTracking(true);
@@ -662,9 +665,8 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int leng
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
-        QTextCursor tc = QTextCursor(block);
-
-        tc.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, qMin(column, block.length()-1));
+        edit->jumpTo(line, qMin(column, block.length()-1));
+        QTextCursor tc = edit->textCursor();
         tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, length);
         edit->setTextCursor(tc);
 
@@ -851,6 +853,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
         connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
         connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);
+        connect(tView, &TextView::switchLst, runGroup, &ProjectRunGroupNode::switchLst);
         tView->setLogParser(parser);
         res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
@@ -891,8 +894,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         codeEdit  = new CodeEdit(tabWidget);
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);
-        edit->setLineWrapMode(Settings::settings()->toInt(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
-                                                                             : QPlainTextEdit::NoWrap);
+        edit->setLineWrapMode(Settings::settings()->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
+                                                                               : QPlainTextEdit::NoWrap);
         edit->setTabChangesFocus(false);
         res = edit;
         if (kind() == FileKind::Log) {

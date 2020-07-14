@@ -262,8 +262,8 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
     if (href.length() < 5) return;
     QStringRef code = href.leftRef(3);
     QVector<QStringRef> parts = href.rightRef(href.length()-4).split(',');
-    if (code.compare(QString("LST")) == 0) {
-        QString lstFile = parameter("lst");
+    if (code.compare(QString("LST")) == 0 || code.compare(QString("LS2")) == 0) {
+        QString lstFile = parameter(code.at(2) == '2' ? "ls2" : "lst");
         exist = QFile(lstFile).exists();
         if (!create || !exist) return;
         line = parts.first().toInt();
@@ -428,6 +428,13 @@ void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
     }
 }
 
+void ProjectRunGroupNode::switchLst(const QString &lstFile)
+{
+    if (mParameterHash.contains("lst")) {
+        setParameter("ls2", lstFile);
+    }
+}
+
 void ProjectRunGroupNode::clearErrorTexts()
 {
     mErrorTexts.clear();
@@ -584,11 +591,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
                      "Use at your own risk!", LogMsgType::Warning);
 
     // prepare gams command
-#if defined(__unix__) || defined(__APPLE__)
-    QStringList output { QDir::toNativeSeparators(gmsLocation) };
-#else
-    QStringList output { "\""+QDir::toNativeSeparators(gmsLocation)+"\"" };
-#endif
+    QStringList output { CommonPaths::nativePathForProcess(gmsLocation) };
     // normalize gams parameter format
     for(QString arg : defaultArgumentList) {
         output.append( arg + "=" + defaultGamsArgs[arg] );
@@ -719,7 +722,7 @@ void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
     if (QFileInfo(fullPath).suffix().isEmpty()) {
         if (kind == "gdx")
             fullPath += ".gdx";
-        else if (kind == "lst")
+        else if (kind == "lst" || kind == "ls2")
         { /* do nothing */ } // gams does not add lst extension. unlike .ref or .gdx
         else if (kind == "ref")
             fullPath += ".ref";
@@ -748,6 +751,8 @@ QString ProjectRunGroupNode::tooltip()
     if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
     if (!parameter("lst").isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());
+    if (!parameter("ls2").isEmpty())
+        res.append("\nadditional output: ").append(QFileInfo(parameter("ls2")).fileName());
     if (debugMode()) {
         res.append("\nNodeId: "+QString::number(id()));
         res.append("\nParent-NodeId: " + (parentNode() ? QString::number(parentNode()->id()) : "?"));

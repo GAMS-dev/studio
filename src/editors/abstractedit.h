@@ -28,6 +28,18 @@
 namespace gams {
 namespace studio {
 
+struct PositionPair {
+    PositionPair(int _pos = -1, int _match = -1, bool _valid = false)
+        : pos(_pos), match(_match), valid(_valid) {}
+    bool isNull() { return pos < 0; }
+    bool operator==(const PositionPair &other) { return pos==other.pos && match==other.match && valid==other.valid; }
+    bool operator!=(const PositionPair &other) { return !operator==(other); }
+    int pos;
+    int match;
+    bool valid;
+};
+typedef PositionPair LinePair;
+
 class AbstractEdit : public QPlainTextEdit
 {
     Q_OBJECT
@@ -43,9 +55,7 @@ public:
     void sendToggleBookmark();
     void sendJumpToNextBookmark();
     void sendJumpToPrevBookmark();
-
-    void jumpTo(const QTextCursor &cursor);
-    void jumpTo(int line, int column = 0);
+    virtual void jumpTo(int line, int column = 0);
 
     void updateGroupId();
     virtual void disconnectTimers();
@@ -59,6 +69,7 @@ signals:
 
 public slots:
     virtual void updateExtraSelections();
+    virtual void unfold(QTextBlock block);
 
 protected slots:
     virtual void marksChanged(const QSet<int> dirtyLines = QSet<int>());
@@ -98,6 +109,8 @@ protected:
     virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
+    virtual LinePair findFoldBlock(int line, bool onlyThisLine = false) const;
+    virtual bool ensureUnfolded(int line);
 
 private:
     const LineMarks* mMarks = nullptr;
