@@ -9,7 +9,7 @@ Version 1.3.0
 - fixed help view bookmarks not being saved permanently
 - fixed GAMS icon missing in About dialog
 - removed extra seperator in toolbar
-- added remote execution on NEOS (with short priority). It's accessible in the GAMS menu and the execute tool button.
+- added remote execution on NEOS. It's accessible in the GAMS menu and the execute tool button.
 - **added Code Folding**
     - Shortcut `Alt+L` switches folding state of the current block
 	- Shortcut `Alt+O` folds and `Shift+Alt+O` unfolds all foldable blocks
