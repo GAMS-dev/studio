@@ -2229,6 +2229,7 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event)
     if (mCodeEditor->showFolding() && e.pos().x() < 0
             && e.pos().x() > -width() + (mCodeEditor->mIconCols * mCodeEditor->iconSize())) {
         QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
+        block = mCodeEditor->findFoldStart(block);
         if (mCodeEditor->toggleFolding(block)) {
             mNoCursorFocus = true;
             event->accept();
@@ -2245,6 +2246,7 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
     pos.setX(pos.x()-width());
     QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
     QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
+    block = mCodeEditor->findFoldStart(block);
     LinePair newFoldMark = mCodeEditor->findFoldBlock(block.blockNumber(), true);
     if (newFoldMark != mCodeEditor->mFoldMark) {
         mCodeEditor->mFoldMark = newFoldMark;
