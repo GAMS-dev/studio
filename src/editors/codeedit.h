@@ -26,6 +26,7 @@
 #include <QTimer>
 #include "editors/abstractedit.h"
 #include "syntax/textmark.h"
+#include "syntax/blockdata.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -38,33 +39,6 @@ namespace studio {
 class Settings;
 class LineNumberArea;
 class SearchWidget;
-
-struct ParenthesesPos
-{
-    ParenthesesPos() : character(QChar()), relPos(-1) {}
-    ParenthesesPos(QChar _character, int _relPos) : character(_character), relPos(_relPos) {}
-    QChar character;
-    int relPos;
-};
-
-class BlockData : public QTextBlockUserData
-{
-public:
-    BlockData() {}
-    ~BlockData();
-    QChar charForPos(int relPos);
-    bool isEmpty() {return mParentheses.isEmpty();}
-    QVector<ParenthesesPos> parentheses() const;
-    void setParentheses(const QVector<ParenthesesPos> &parentheses);
-    int &foldCount() { return mFoldCount; }
-    bool isFolded() const { return mFoldCount; }
-    void setFoldCount(int foldCount) { mFoldCount = foldCount; }
-
-private:
-    // if extending the data remember to enhance isEmpty()
-    QVector<ParenthesesPos> mParentheses;
-    int mFoldCount = 0;
-};
 
 struct BlockEditPos
 {
@@ -205,8 +179,9 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     bool allowClosing(int chIndex);
-    bool switchFolding(QTextBlock block);
+    bool toggleFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
+    QTextBlock findFoldStart(QTextBlock block) const;
     bool unfoldBadBlock(QTextBlock block);
     void checkCursorAfterFolding();
 

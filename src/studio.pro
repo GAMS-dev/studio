@@ -212,6 +212,7 @@ SOURCES += \
     support/updatedialog.cpp \
     svgengine.cpp \
     syntax/basehighlighter.cpp \
+    syntax/blockdata.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -366,6 +367,7 @@ HEADERS += \
     syntax.h \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
+    syntax/blockdata.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \
