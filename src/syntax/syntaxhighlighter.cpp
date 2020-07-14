@@ -258,11 +258,17 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
     SyntaxKind postKind = block.next;
 
     bool inBlock = false;
-    if (kind == SyntaxKind::Embedded || (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody)) {
+    if (kind == SyntaxKind::Embedded) {
         parentheses << ParenthesesPos('E', start);
         return;
-    } else if (kind == SyntaxKind::EmbeddedEnd || (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive)) {
+    } else if (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody) {
+        parentheses << ParenthesesPos('M', start);
+        return;
+    } else if (kind == SyntaxKind::EmbeddedEnd) {
         parentheses << ParenthesesPos('e', start);
+        return;
+    } else if (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive) {
+        parentheses << ParenthesesPos('m', start);
         return;
     } else if (kind == SyntaxKind::Directive) {
         if (flavor > 0 && flavor <= flavorChars.size()) {

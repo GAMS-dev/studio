@@ -328,7 +328,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
     e->ignore();
     if (mBlockEdit) {
-        if (e == Hotkey::SelectAll) {
+        if (e == Hotkey::SelectAll || e == Hotkey::ToggleBlockFolding) {
             endBlockEdit();
         } else if (e->key() == Hotkey::NewLine || e == Hotkey::BlockEditEnd) {
             endBlockEdit();
@@ -570,6 +570,7 @@ bool CodeEdit::switchFolding(QTextBlock block)
 
 void CodeEdit::foldAll()
 {
+    if (mBlockEdit) endBlockEdit();
     // TODO(JM) the current implementation could be improved for nested blocks
 //    QList<BlockData*> stack;
 
@@ -1370,9 +1371,9 @@ void CodeEdit::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
 int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol) const
 {
     int res = -1;
-    static QString parentheses("{[(/ETCPIOF}])\\etcpiof");
+    static QString parentheses("{[(/EMTCPIOF}])\\emtcpiof");
     static QVector<QString> closingSymbols {
-        "}", "]", ")", "/", "embeddedCode", "text", "echo", "put", "externalInput", "externalOutput", "endIf"
+        "}", "]", ")", "/", "embeddedCode", "embeddedCode", "text", "echo", "put", "externalInput", "externalOutput", "endIf"
     };
     static int pSplit = parentheses.length()/2;
     QTextBlock block = document()->findBlockByNumber(line);
@@ -1411,7 +1412,7 @@ void CodeEdit::jumpTo(int line, int column)
 
 PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
-    static QString parentheses("{[(/ETCPIOF}])\\etcpiof");
+    static QString parentheses("{[(/EMTCPIOF}])\\emtcpiof");
     static int pSplit = parentheses.length()/2;
     static int pAll = parentheses.indexOf("/");
     QTextBlock block = cursor.block();
