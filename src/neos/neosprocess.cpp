@@ -119,6 +119,14 @@ bool NeosProcess::prepareNeosParameters()
     QStringList params = parameters();
     params.removeAt(0);
 
+    // TODO(JM) remove when GAMS33 is out (also in pythons gams-compile command)
+    QMutableListIterator<QString> i(params);
+    while (i.hasNext()) {
+        i.next();
+        if (i.value().startsWith("previousWork", Qt::CaseInsensitive)) i.remove();
+    }
+
+
     if (!neosFile.open(QFile::WriteOnly)) {
         DEB() << "error opening neos file: " << neosPath;
         return false;
@@ -213,7 +221,7 @@ QString NeosProcess::rawData(QString runFile, QString parameters, QString workdi
     QString sPrio = (mPrio == Priority::prioShort ? "short" : "long");
     QString s1 =
 R"s1(* Create temp.g00
-$call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 %2
+$call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 previousWork=1 %2
 * Set switches and parameters for NEOS submission
 $set restartFile temp.g00
 $set priority    %4
