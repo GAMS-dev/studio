@@ -341,10 +341,6 @@ pipeline {
                 withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
                     sh '''#!/bin/bash -xe
                         ## get version information for artifact, tag name and description
-                        STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION repo/version | cut -f2 -d"=")
-                        STUDIO_MINOR_VERSION=$(grep ^STUDIO_MINOR_VERSION repo/version | cut -f2 -d"=")
-                        STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL repo/version | cut -f2 -d"=")
-                        export STUDIO_VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
                         GAMS_DISTRIB_MAJOR_VERSION=$(grep ^GAMS_DISTRIB_MAJOR repo/version | cut -f2 -d"=")
                         GAMS_DISTRIB_MINOR_VERSION=$(grep ^GAMS_DISTRIB_MINOR repo/version | cut -f2 -d"=")
                         export GAMS_DISTRIB_VERSION=$GAMS_DISTRIB_MAJOR_VERSION.$GAMS_DISTRIB_MINOR_VERSION
@@ -384,12 +380,12 @@ pipeline {
                             github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} \
 --description "${CHANGELOG}
 
-This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION} or higher. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
+This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
                         elif [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+-rc$ ]]; then
                             github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --pre-release \
 --description "${CHANGELOG}
 
-This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION} or higher. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
+This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
                         fi
 
                         if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
@@ -415,7 +411,6 @@ This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION} or h
                         STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION version | cut -f2 -d"=")
                         STUDIO_MINOR_VERSION=$(grep ^STUDIO_MINOR_VERSION version | cut -f2 -d"=")
                         STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL version | cut -f2 -d"=")
-                        export STUDIO_VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
 
                         ## change to artifact location
                         cd artifacts
@@ -452,7 +447,7 @@ This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION} or h
                             then
                               echo "This version $LINE is already available in studio.txt"
                             else
-                              echo "$LINE\\n$(cat release/studio.txt)" > release/studio.txt
+                              printf "$LINE\\n$(cat release/studio.txt)" > release/studio.txt
                             fi
 
                             ## upload changed Studio release list

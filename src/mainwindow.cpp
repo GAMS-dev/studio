@@ -1740,6 +1740,18 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
         if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
+
+        AbstractProcess* groupProc = groupNode->process();
+        if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc)) {
+            QString runPath = runMeta->location();
+            ProjectFileNode *gdxNode = groupNode->findFile(runPath.left(runPath.lastIndexOf('.'))+"/out.gdx");
+            if (gdxNode && gdxNode->file()->isOpen()) {
+                if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
+                    gv->setHasChanged(true);
+                    gv->reload(runMeta->codec());
+                }
+            }
+        }
     }
 }
 
@@ -2842,8 +2854,14 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
-    if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc))
+    if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc)) {
         np->setGmsFile(gmsFilePath);
+        ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
+        if (gdxNode && gdxNode->file()->isOpen()) {
+            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first()))
+                gv->releaseFile();
+        }
+    }
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     logNode->prepareRun();
