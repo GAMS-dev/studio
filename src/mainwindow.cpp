@@ -1742,7 +1742,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
             openFileNode(lstNode);
 
         AbstractProcess* groupProc = groupNode->process();
-        if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc)) {
+        if (qobject_cast<neos::NeosProcess *>(groupProc)) {
             QString runPath = runMeta->location();
             ProjectFileNode *gdxNode = groupNode->findFile(runPath.left(runPath.lastIndexOf('.'))+"/out.gdx");
             if (gdxNode && gdxNode->file()->isOpen()) {
