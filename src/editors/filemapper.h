@@ -53,6 +53,7 @@ public:
     void startRun() override;
     void endRun() override;
     int lineCount() const override;
+    QString fileName() const;
 
 public slots:
     void peekChunksForLineNrs();
