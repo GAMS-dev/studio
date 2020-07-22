@@ -153,8 +153,10 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    neos/httpmanager.cpp \
+    neos/neosmanager.cpp \
     neos/neosprocess.cpp \
-#    neos/neosxmlrpc.cpp \
+    neos/xmlrpc.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
     numerics/dtoaLoc.c \
@@ -306,8 +308,10 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    neos/httpmanager.h \
+    neos/neosmanager.h \
     neos/neosprocess.h \
-#    neos/neosxmlrpc.h \
+    neos/xmlrpc.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
     numerics/dtoaLoc.h \
