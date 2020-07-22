@@ -36,6 +36,7 @@
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
 #include "editors/navigationhistory.h"
+#include "neos/neosprocess.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -181,6 +182,7 @@ private slots:
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
     void closeGroup(ProjectGroupNode* group);
+    void neosProgress(AbstractProcess *proc, neos::NeosState progress);
     void closeNodeConditionally(ProjectFileNode *node);
     void closeFileEditors(const FileId fileId);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);

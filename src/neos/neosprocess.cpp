@@ -1,4 +1,5 @@
 #include "neosprocess.h"
+#include "neosmanager.h"
 #include "logger.h"
 #include "commonpaths.h"
 #include <QStandardPaths>
@@ -15,11 +16,28 @@ namespace neos {
 
 NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 {
+    connect(&mProcess, &QProcess::stateChanged, this, &NeosProcess::compileStateChanged);
+    connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
+
+    mManager = new NeosManager(this);
+    mManager->setUrl("https://neos-server.org:3333");
+    connect(mManager, &NeosManager::rePing, this, &NeosProcess::rePing);
+
+}
+
+NeosProcess::~NeosProcess()
+{
+    delete mManager;
 }
 
 void NeosProcess::execute()
 {
-    if (!prepareNeosParameters()) return;
+    // 1. compile gms
+    // 2. neos: submitJob
+    // 3. neos: monitor the job
+    // 4. get and unpack result file
+
+    if (!prepareCompileParameters()) return;
     mProcess.setWorkingDirectory(workingDirectory());
 #if defined(__unix__) || defined(__APPLE__)
     emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
@@ -30,8 +48,24 @@ void NeosProcess::execute()
     DEB() << "STARTING: " << nativeAppPath() << " " << parameters().join(" ");
     emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start();
+    setNeosState(NeosCompile);
 #endif
 }
+
+void NeosProcess::compileStateChanged(QProcess::ProcessState state)
+{
+    // TODO(JM)
+}
+
+void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if (exitCode == 0 && exitStatus == QProcess::NormalExit && mNeosState == NeosCompile) {
+        // TODO(JM) submit job to start monitoring
+
+        setNeosState(NeosMonitor);
+    }
+}
+
 
 void NeosProcess::interrupt()
 {
@@ -48,7 +82,7 @@ void NeosProcess::interrupt()
     mSubProc->setProgram(nativeAppPath());
     DEB() << "STARTING: " << nativeAppPath() << " " << (params.join(" ")  + " lo=3 ide=1 er=99 errmsg=1 pagesize=0");
     mSubProc->start();
-    connect(mSubProc, QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::subFinished);
+    connect(mSubProc, QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
     DEB() << "   - state: " << mSubProc->state();
 #endif
 }
@@ -77,6 +111,82 @@ void NeosProcess::completed(int exitCode)
     AbstractGamsProcess::completed(exitCode);
 }
 
+void NeosProcess::rePing(const QString &value)
+{
+    DEB() << "PING: " << value;
+}
+
+void NeosProcess::reVersion(const QString &value)
+{
+    DEB() << "VERSION: " << value;
+}
+
+void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
+{
+    DEB() << "SUBMIT: " << jobNumber << " - pw: " << jobPassword;
+    // TODO(JM) store jobnumber and password for later resuming
+
+    // monitoring starts automatically after successfull submission
+
+    setNeosState(NeosMonitor);
+}
+
+void NeosProcess::reGetJobStatus(const QString &value)
+{
+    if (value.compare("done", Qt::CaseInsensitive) == 0 && mNeosState == NeosMonitor) {
+
+        // TODO(JM) Load result file (for large files this may take a while, check if neos supports progress monitoring)
+
+        setNeosState(NeosGetResult);
+    }
+}
+
+void NeosProcess::reGetCompletionCode(const QString &value)
+{
+
+}
+
+void NeosProcess::reGetJobInfo(const QString &category, const QString &solverName, const QString &input, const QString &status, const QString &completionCode)
+{
+
+}
+
+void NeosProcess::reKillJob()
+{
+
+}
+
+void NeosProcess::reGetIntermediateResults(const QByteArray &data)
+{
+    // TODO(JM) replace "[LST:" by "[LS1:"
+    // TODO(JM) replace neos-path by local path
+}
+
+void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
+{
+
+}
+
+void NeosProcess::reGetOutputFile(const QByteArray &data)
+{
+
+    // TODO(JM) check if neos sends partial files if the result-file is too large
+
+}
+
+void NeosProcess::reError(const QString &errorText)
+{
+    DEB() << "ERROR: " << errorText;
+}
+
+void NeosProcess::setNeosState(NeosState newState)
+{
+    if (newState != NeosNoState && int(newState) != int(mNeosState)+1) {
+        DEB() << "Warning: NeosState jumped from " << mNeosState << " to " << newState;
+    }
+    emit neosStateChanged(this, mNeosState);
+}
+
 void NeosProcess::readSubStdOut()
 {
     DEB() << mSubProc->readAllStandardOutput();
@@ -87,22 +197,12 @@ void NeosProcess::readSubStdErr()
     DEB() << mSubProc->readAllStandardError();
 }
 
-void NeosProcess::subFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    Q_UNUSED(exitStatus)
-    DEB() << mSubProc->readAllStandardOutput();
-    DEB() << mSubProc->readAllStandardError();
-    DEB() << "Finished sending kill command. ExitCode: " << QString::number(exitCode);
-    delete mSubProc;
-    mSubProc = nullptr;
-}
-
 void NeosProcess::setGmsFile(QString gmsPath)
 {
     mRunFile = gmsPath;
 }
 
-bool NeosProcess::prepareNeosParameters()
+bool NeosProcess::prepareCompileParameters()
 {
     if (mRunFile.isEmpty()) {
         DEB() << "Error: No runable file assigned to the NEOS process";

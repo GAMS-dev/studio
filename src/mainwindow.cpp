@@ -60,7 +60,6 @@
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
-#include "neos/neosprocess.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -1740,18 +1739,6 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
         if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
-
-        AbstractProcess* groupProc = groupNode->process();
-        if (qobject_cast<neos::NeosProcess *>(groupProc)) {
-            QString runPath = runMeta->location();
-            ProjectFileNode *gdxNode = groupNode->findFile(runPath.left(runPath.lastIndexOf('.'))+"/out.gdx");
-            if (gdxNode && gdxNode->file()->isOpen()) {
-                if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-                    gv->setHasChanged(true);
-                    gv->reload(runMeta->codec());
-                }
-            }
-        }
     }
 }
 
@@ -2854,14 +2841,6 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     else
         runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
-    if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc)) {
-        np->setGmsFile(gmsFilePath);
-        ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
-        if (gdxNode && gdxNode->file()->isOpen()) {
-            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first()))
-                gv->releaseFile();
-        }
-    }
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     logNode->prepareRun();
@@ -3298,6 +3277,24 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         mProjectRepo.closeGroup(group);
     }
     mProjectRepo.purgeGroup(parentGroup);
+}
+
+void MainWindow::neosProgress(AbstractProcess *proc, neos::NeosState progress)
+{
+    ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
+    if (!runGroup || !runGroup->runnableGms()) return;
+    QString gmsFilePath = runGroup->runnableGms()->location();
+    ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
+    if (gdxNode && gdxNode->file()->isOpen()) {
+        if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
+            if (progress == neos::NeosUnpack) {
+                gv->releaseFile();
+            } else if (progress == neos::NeosFinished) {
+                gv->setHasChanged(true);
+                gv->reload(gdxNode->file()->codec());
+            }
+        }
+    }
 }
 
 /// Asks user for confirmation if a file is modified before calling closeFile

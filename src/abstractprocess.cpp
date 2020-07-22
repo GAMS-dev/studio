@@ -100,10 +100,8 @@ int AbstractProcess::exitCode() const
 AbstractSingleProcess::AbstractSingleProcess(const QString &application, QObject *parent)
     : AbstractProcess(application, parent)
 {
-    connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractSingleProcess::readStdOut);
     connect(&mProcess, &QProcess::readyReadStandardError, this, &AbstractSingleProcess::readStdErr);
-    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 QProcess::ProcessState AbstractSingleProcess::state() const
@@ -140,7 +138,8 @@ void AbstractSingleProcess::readStdErr()
 AbstractGamsProcess::AbstractGamsProcess(const QString &application, QObject *parent)
     : AbstractSingleProcess(application, parent)
 {
-
+    connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
+    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 QString AbstractGamsProcess::nativeAppPath()
