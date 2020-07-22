@@ -123,6 +123,20 @@ bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
     return true;
 }
 
+void TextView::print(QPagedPaintDevice *printer)
+{
+    QString fileName = static_cast<FileMapper*>(mMapper)->fileName();
+    if(fileName.isEmpty()) return;
+    QString text;
+    QFile file(fileName);
+    if (file.open(QFile::ReadOnly | QFile::Text)){
+        text = file.readAll();
+        file.close();
+    }
+    QTextDocument document(text);
+    document.print(printer);
+}
+
 TextView::TextKind TextView::kind() const
 {
     if (mMapper->kind() == AbstractTextMapper::memoryMapper)

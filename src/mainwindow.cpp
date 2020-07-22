@@ -4312,6 +4312,12 @@ void MainWindow::on_actionPrint_triggered()
         QPrintDialog dialog(&printer, this);
         if (dialog.exec() == QDialog::Rejected) return;
         lxiViewer->print(&printer);
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::txtRo) {
+        auto* textViewer = ViewHelper::toTextView(mainTabs()->currentWidget());
+        if (!textViewer) return;
+        QPrintDialog dialog(&printer, this);
+        if (dialog.exec() == QDialog::Rejected) return;
+        textViewer->print(&printer);
     }
 }
 
@@ -4320,7 +4326,9 @@ bool MainWindow::enabledPrintAction()
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget())
         return false;
-    return focusWidget() == mRecent.editor() || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst;
+    return focusWidget() == mRecent.editor()
+            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
+            || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
 }
 
 
