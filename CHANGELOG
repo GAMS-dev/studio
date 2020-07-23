@@ -1,6 +1,7 @@
 Version 1.3.2 (*)
 ==================
 - fixed print support for read only text files
+- removed forcing the option "previousWork=1" giving this responsibility back to the user
 
 Version 1.3.1
 ==================
