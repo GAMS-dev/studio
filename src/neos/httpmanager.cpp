@@ -34,7 +34,7 @@ void HttpManager::prepareReply(QNetworkReply *reply)
     bool isReply = name.isEmpty();
     QVariant result = XmlRpc::parseParams(reply, name);
     if (isReply) name = reply->request().attribute(QNetworkRequest::User).toString();
-    emit received(name, result, isReply);
+    emit received(name, result);
     reply->deleteLater();
 }
 

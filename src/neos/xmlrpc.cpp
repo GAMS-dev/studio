@@ -107,7 +107,12 @@ QByteArray XmlRpc::prepareCall(const QString &method, const QVariantList &params
 
 }
 
-QStringList typeTag {"array","base64","boolean","dateTime.iso8601","double","int","i4","string","struct"};
+const QStringList typeTag {"array","base64","boolean","dateTime.iso8601","double","int","i4","string","struct"};
+int typeTagId(QStringRef ref) { // workaround: currently indexOf(QStringRef) doesn't work on all platforms
+    for (int i = 0; i < typeTag.size(); ++i)
+        if (typeTag.at(i).compare(ref, Qt::CaseInsensitive) == 0) return i;
+    return -1;
+}
 
 QVariantList getVariantList(QXmlStreamReader &xml);
 QVariantHash getVariantHash(QXmlStreamReader &xml);
@@ -117,7 +122,7 @@ QVariant getVariant(QXmlStreamReader &xml)
     if (xml.name().compare(QLatin1String("value")) != 0) return QVariant();
     if (!xml.readNextStartElement()) return QVariant();
     QVariant res;
-    int id = typeTag.indexOf(QStringView(xml.name()));
+    int id = typeTagId(xml.name());
     if (id<0) return QVariant();
     bool ok = true;
     switch (id) {

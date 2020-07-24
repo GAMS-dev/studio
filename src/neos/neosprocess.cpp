@@ -17,10 +17,23 @@ namespace neos {
 NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 {
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
+    connect(&mSubProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::unpackCompleted);
+    connect(&mSubProc, &QProcess::readyReadStandardOutput, this, &NeosProcess::readStdOut);
+    connect(&mSubProc, &QProcess::readyReadStandardError, this, &NeosProcess::readStdErr);
 
     mManager = new NeosManager(this);
     mManager->setUrl("https://neos-server.org:3333");
     connect(mManager, &NeosManager::rePing, this, &NeosProcess::rePing);
+    connect(mManager, &NeosManager::reError, this, &NeosProcess::reError);
+    connect(mManager, &NeosManager::reKillJob, this, &NeosProcess::reKillJob);
+    connect(mManager, &NeosManager::reVersion, this, &NeosProcess::reVersion);
+    connect(mManager, &NeosManager::reSubmitJob, this, &NeosProcess::reSubmitJob);
+    connect(mManager, &NeosManager::reGetJobInfo, this, &NeosProcess::reGetJobInfo);
+    connect(mManager, &NeosManager::reGetJobStatus, this, &NeosProcess::reGetJobStatus);
+    connect(mManager, &NeosManager::reGetOutputFile, this, &NeosProcess::reGetOutputFile);
+    connect(mManager, &NeosManager::reGetCompletionCode, this, &NeosProcess::reGetCompletionCode);
+    connect(mManager, &NeosManager::reGetFinalResultsNonBlocking, this, &NeosProcess::reGetFinalResultsNonBlocking);
+    connect(mManager, &NeosManager::reGetIntermediateResultsNonBlocking, this, &NeosProcess::reGetIntermediateResultsNonBlocking);
 
 }
 
@@ -31,7 +44,6 @@ NeosProcess::~NeosProcess()
 
 void NeosProcess::execute()
 {
-    extractOutputPath();
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
 
@@ -45,15 +57,6 @@ void NeosProcess::execute()
 
     emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     setNeosState(Neos1Compile);
-}
-
-void NeosProcess::extractOutputPath()
-{
-    mOutPath = parameters().size() ? parameters().first() : QString();
-    if (mOutPath.startsWith('"'))
-        mOutPath = mOutPath.mid(1, mOutPath.length()-2);
-    int i = mOutPath.lastIndexOf('.');
-    if (i >= 0) mOutPath = mOutPath.left(i);
 }
 
 QStringList NeosProcess::compileParameters()
@@ -126,9 +129,29 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     }
 }
 
+void NeosProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    Q_UNUSED(exitStatus)
+    emit finished(mGroupId, exitCode);
+}
+
 
 void NeosProcess::interrupt()
 {
+}
+
+void NeosProcess::setParameters(const QStringList &parameters)
+{
+    if (parameters.size()) {
+        mOutPath = parameters.size() ? parameters.first() : QString();
+        if (mOutPath.startsWith('"'))
+            mOutPath = mOutPath.mid(1, mOutPath.length()-2);
+        int i = mOutPath.lastIndexOf('.');
+        if (i >= 0) mOutPath = mOutPath.left(i);
+    } else {
+        mOutPath = QString();
+    }
+    AbstractProcess::setParameters(parameters);
 }
 
 void NeosProcess::rePing(const QString &value)
@@ -176,11 +199,10 @@ void NeosProcess::reKillJob()
 
 }
 
-void NeosProcess::reGetIntermediateResults(const QByteArray &data)
+void NeosProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
 {
-    // TODO(JM) replace "[LST:" by "[LS1:"
-    // TODO(JM) replace neos-path by local path
-
+    QByteArray res = convertReferences(data);
+    emit newStdChannelData(res);
 }
 
 void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
@@ -192,6 +214,12 @@ void NeosProcess::reGetOutputFile(const QByteArray &data)
 {
 
     // TODO(JM) check if neos sends partial files if the result-file is too large
+    QFile res(mOutPath+".zip");
+    if (res.open(QFile::WriteOnly)) {
+        res.write(data);
+        res.flush();
+        res.close();
+    }
 
 }
 
@@ -209,14 +237,25 @@ void NeosProcess::setNeosState(NeosState newState)
     emit neosStateChanged(this, mNeosState);
 }
 
+QString NeosProcess::nativeAppPathX(QString appName)
+{
+    // TODO(JM) extend nativeAppPath by optional appName
+    QString systemDir = CommonPaths::systemDir();
+    if (systemDir.isEmpty())
+        return QString();
+    auto appPath = QDir(systemDir).filePath(QDir::toNativeSeparators(appName));
+    return QDir::toNativeSeparators(appPath);
+
+}
+
 void NeosProcess::readSubStdOut()
 {
-    DEB() << mSubProc->readAllStandardOutput();
+    emit newStdChannelData(mSubProc.readAllStandardOutput());
 }
 
 void NeosProcess::readSubStdErr()
 {
-    DEB() << mSubProc->readAllStandardError();
+    emit newStdChannelData(mSubProc.readAllStandardError());
 }
 
 QByteArray NeosProcess::convertReferences(const QByteArray &data)
@@ -248,8 +287,22 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
         if (lstTag.at(iLT) == data.at(i)) ++iLT;
         else iLT = 0;
         ++iCount;
-        if (iLT || iRP) ; // TODO(JM) paste checked part to res
+        if (iRP == remotePath.size()) {
+            res.append(mOutPath);
+            iRP = 0;
+            iLT = 0;
+            iCount = 0;
+        } else if (iLT == lstTag.size()) {
+            res.append("[LS1:");
+            iRP = 0;
+            iLT = 0;
+            iCount = 0;
+        } else if (!iRP && !iLT) {
+            res.append(data.mid(i+1-iCount, iCount));
+            iCount = 0;
+        }
     }
+    return res;
 }
 
 QString NeosProcess::rawData(QString runFile, QString parameters, QString workdir)
@@ -381,6 +434,25 @@ neos.killJob(jobNumber, password)
 $offEmbeddedCode
 )s1";
     return s1.arg(mJobNumber).arg(mJobPassword);
+}
+
+
+
+void NeosProcess::startUnpacking()
+{
+    mSubProc.setWorkingDirectory(mOutPath);
+    QStringList params;
+    params << "-o solver-output.zip";
+#if defined(__unix__) || defined(__APPLE__)
+    mProcess.start(nativeAppPath(), params);
+#else
+    mProcess.setNativeArguments(params.join(" "));
+    mProcess.setProgram(nativeAppPathX("gmsunzip"));
+    mProcess.start();
+#endif
+
+    // TODO(JM) start unpacking the output file
+
 }
 
 

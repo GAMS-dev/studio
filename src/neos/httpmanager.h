@@ -16,7 +16,7 @@ public:
     void submitCall(const QString &method, const QVariantList &params = QVariantList());
 
 signals:
-    void received(QString name, QVariant data, bool isReply);
+    void received(QString name, QVariant data);
     void sslErrors(const QStringList &errorList);
 
 private slots:

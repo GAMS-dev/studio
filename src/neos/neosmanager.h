@@ -20,7 +20,7 @@ public:
         _getCompletionCode,
         _getJobInfo,
         _killJob,
-        _getIntermediateResults,
+        _getIntermediateResultsNonBlocking,
         _getFinalResultsNonBlocking,
         _getOutputFile
     };
@@ -38,7 +38,7 @@ public:
     void getCompletionCode();
     void getJobInfo();
     void killJob();
-    void getIntermediateResults();
+    void getIntermediateResultsNonBlocking();
     void getFinalResultsNonBlocking();
     void getOutputFile(QString fileName);
 
@@ -53,15 +53,15 @@ signals:
     void reGetJobInfo(const QString &category, const QString &solverName, const QString &input, const QString &status,
                       const QString &completionCode);
     void reKillJob();
-    void reGetIntermediateResults(const QByteArray &data);
+    void reGetIntermediateResultsNonBlocking(const QByteArray &data);
     void reGetFinalResultsNonBlocking(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
 
 private slots:
     void sslErrors(const QStringList &errors);
-    void received(QString name, QVariant data, bool isReply);
-    void debugReceived(QString name, QVariant data, bool isReply);
+    void received(QString name, QVariant data);
+    void debugReceived(QString name, QVariant data);
     void pull();
 private:
     HttpManager mHttp;

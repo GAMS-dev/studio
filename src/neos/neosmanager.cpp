@@ -98,9 +98,9 @@ void NeosManager::killJob()
     mHttp.submitCall("killJob", QVariantList() << mJobNumber << mPassword);
 }
 
-void NeosManager::getIntermediateResults()
+void NeosManager::getIntermediateResultsNonBlocking()
 {
-    mHttp.submitCall("getIntermediateResults", QVariantList() << mJobNumber << mPassword << mLogOffset);
+    mHttp.submitCall("getIntermediateResultsNonBlocking", QVariantList() << mJobNumber << mPassword << mLogOffset);
 }
 
 void NeosManager::getFinalResultsNonBlocking()
@@ -126,24 +126,24 @@ void NeosManager::sslErrors(const QStringList &errors)
     qDebug() << "SSL errors occurred:\n" << errors.join("\n").toLatin1().data();
 }
 
-void NeosManager::received(QString name, QVariant data, bool isReply)
+void NeosManager::received(QString name, QVariant data)
 {
-    Q_UNUSED(isReply)
     NeosCall c = neosCalls.value(name);
     QVariantList list = data.toList();
     switch (c) {
     case _ping:
-        emit rePing(list.size()>0 ? list.at(0).toString() : QString("%1: no data returned").arg(name));
-        break;
+        if (list.size() > 0) {
+            emit rePing(list.at(0).toString());
+        } break;
     case _version:
-        emit reVersion(list.size()>0 ? list.at(0).toString() : QString("%1: no data returned").arg(name));
-        break;
-    case _submitJob: {
+        if (list.size() > 0) {
+            emit reVersion(list.at(0).toString());
+        } break;
+    case _submitJob:
         if (list.size() > 1) {
             watchJob(list.at(0).toInt(), list.at(1).toString());
-        }
-    }   break;
-    case _getJobStatus: {
+        } break;
+    case _getJobStatus:
         if (list.size() > 0) {
             QString status = list.at(0).toString().toLower();
             if (status == "running" || status == "waiting") {
@@ -152,46 +152,44 @@ void NeosManager::received(QString name, QVariant data, bool isReply)
                 if (mPullTimer.isActive()) mPullTimer.stop();
             }
             emit reGetJobStatus(status);
-        }
-    }   break;
+        } break;
     case _getCompletionCode:
-        emit reGetCompletionCode(list.size()>0 ? list.at(0).toString() : QString("%1: no data returned").arg(name));
-        break;
-    case _getJobInfo: {
-        emit reGetJobInfo(list.size()>0 ? list.at(0).toString() : QString("%1: no data returned").arg(name),
-                          list.size()>1 ? list.at(1).toString() : QString("%1: no data returned").arg(name),
-                          list.size()>2 ? list.at(2).toString() : QString("%1: no data returned").arg(name),
-                          list.size()>3 ? list.at(3).toString() : QString("%1: no data returned").arg(name),
-                          list.size()>4 ? list.at(4).toString() : QString("%1: no data returned").arg(name));
-    }   break;
+        if (list.size() > 0) {
+            emit reGetCompletionCode(list.at(0).toString());
+        } break;
+    case _getJobInfo:
+        if (list.size() > 4) {
+            emit reGetJobInfo(list.at(0).toString(), list.at(1).toString(), list.at(2).toString(),
+                              list.at(3).toString(), list.at(4).toString());
+        } break;
     case _killJob:
         emit reKillJob();
         break;
-    case _getIntermediateResults: {
-        if (list.size()>1) mLogOffset = list.at(1).toInt();
-        emit reGetIntermediateResults(list.size()>0 ? list.at(0).toByteArray() : QByteArray());
-    }   break;
+    case _getIntermediateResultsNonBlocking:
+        if (list.size() > 1) {
+            mLogOffset = list.at(1).toInt();
+            emit reGetIntermediateResultsNonBlocking(list.at(0).toByteArray());
+        } break;
     case _getFinalResultsNonBlocking:
-        emit reGetFinalResultsNonBlocking(list.size()>0 ? list.at(0).toByteArray() : QByteArray());
-        break;
-    case _getOutputFile: {
-        emit reGetOutputFile(list.size()>0 ? list.at(0).toByteArray() : QByteArray());
-    }   break;
-    default:
-        break;
+        if (list.size() > 0) {
+            emit reGetFinalResultsNonBlocking(list.at(0).toByteArray());
+        } break;
+    case _getOutputFile:
+        if (list.size() > 0) {
+            emit reGetOutputFile(QByteArray::fromBase64(list.at(0).toByteArray()));
+        } break;
     }
 }
 
 void NeosManager::pull()
 {
-    getIntermediateResults();
+    getIntermediateResultsNonBlocking();
     getJobStatus();
 }
 
-void NeosManager::debugReceived(QString name, QVariant data, bool isReply)
+void NeosManager::debugReceived(QString name, QVariant data)
 {
-    QString kind = isReply ? "Result from " : "Call to ";
-    qDebug() << "\n" << kind.toLatin1().data() << name << ":\n" << data;
+    qDebug() << "\nResult from " << name << ":\n" << data;
 }
 
 
