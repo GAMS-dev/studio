@@ -1,7 +1,7 @@
-Version 1.3.2 (*)
+Version 1.3.2
 ==================
 - fixed print support for read only text files
-- removed forcing the option "previousWork=1" giving this responsibility back to the user
+- removed default option "previousWork=1", giving this responsibility back to the user
 - fixed missing gui reload on changed gdx file
 
 Version 1.3.1
