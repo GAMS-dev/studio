@@ -71,6 +71,7 @@ public:
     void invalidate();
     void jumpToEnd();
     int firstErrorLine();
+    void print(QPagedPaintDevice *printer);
 
 signals:
     void addProcessData(const QByteArray &data);

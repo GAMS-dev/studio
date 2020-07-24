@@ -45,6 +45,7 @@ LxiTreeModel *LxiParser::parseFile(QString lxiFile)
     QString lastIdx = "B";
     while (!in.atEnd()) {
         splitList = in.readLine().split(' ');
+        if (splitList.size() < 2) continue;
         QString idx = splitList.first();
         splitList.removeFirst();
         int lineNr = splitList.first().toInt();
