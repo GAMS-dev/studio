@@ -1508,8 +1508,10 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
     if (file->kind() == FileKind::Log) return 0;
     if (file->kind() == FileKind::Gdx) {
         for (QWidget *e : file->editors()) {
-            gdxviewer::GdxViewer *g = ViewHelper::toGdxViewer(e);
-            if (g) g->setHasChanged(true);
+            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
+                gv->setHasChanged(true);
+                gv->reload(file->codec());
+            }
         }
         return 0;
     }
