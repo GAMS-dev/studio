@@ -8,12 +8,11 @@ namespace studio {
 namespace neos {
 
 enum NeosState {
-    NeosNoState,
-    NeosCompile,
-    NeosMonitor,
-    NeosGetResult,
-    NeosUnpack,
-    NeosFinished
+    NeosIdle,
+    Neos1Compile,
+    Neos2Monitor,
+    Neos3GetResult,
+    Neos4Unpack,
 };
 
 enum Priority {
@@ -22,6 +21,12 @@ enum Priority {
 };
 
 class NeosManager;
+///
+/// \brief The NeosProcess class works in four steps:
+/// 1. compile gms on the local machine
+/// 2. submit the compilation output to Neos
+/// 3. monitor the remote job
+/// 4. get and unpack result file
 
 class NeosProcess final : public AbstractGamsProcess
 {
@@ -30,7 +35,6 @@ class NeosProcess final : public AbstractGamsProcess
 public:
     NeosProcess(QObject *parent = nullptr);
     ~NeosProcess();
-    void setGmsFile(QString gmsFile);
     void setPriority(Priority prio) { mPrio = prio; }
 
     void execute() override;
@@ -39,11 +43,7 @@ public:
 signals:
     void neosStateChanged(AbstractProcess *proc, neos::NeosState progress);
 
-protected:
-    void readStdChannel(QProcess::ProcessChannel channel) override;
-
 protected slots:
-    void completed(int exitCode) override;
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const int &jobNumber, const QString &jobPassword);
@@ -60,25 +60,25 @@ protected slots:
 private slots:
     void readSubStdOut();
     void readSubStdErr();
-    void compileStateChanged(QProcess::ProcessState state);
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
-    void compile();
+    void extractOutputPath();
+
 
     void setNeosState(NeosState newState);
-    bool prepareCompileParameters();
-    bool prepareKill(QStringList &tempParams);
-    void scanForCredentials(const QByteArray &data);
+    QStringList compileParameters();
+    QStringList remoteParameters();
+    QByteArray convertReferences(const QByteArray &data);
     QString rawData(QString runFile, QString parameters, QString workdir);
     QString rawKill();
 
     NeosManager *mManager;
-    QString mRunFile;
+    QString mOutPath;
     QString mJobNumber;
     QString mJobPassword;
     Priority mPrio;
-    NeosState mNeosState = NeosNoState;
+    NeosState mNeosState = NeosIdle;
 
     QProcess *mSubProc;
 };

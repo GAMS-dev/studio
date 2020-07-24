@@ -16,7 +16,6 @@ namespace neos {
 
 NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 {
-    connect(&mProcess, &QProcess::stateChanged, this, &NeosProcess::compileStateChanged);
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
 
     mManager = new NeosManager(this);
@@ -32,83 +31,104 @@ NeosProcess::~NeosProcess()
 
 void NeosProcess::execute()
 {
-    // 1. compile gms
-    // 2. neos: submitJob
-    // 3. neos: monitor the job
-    // 4. get and unpack result file
-
-    if (!prepareCompileParameters()) return;
+    extractOutputPath();
+    QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
+
 #if defined(__unix__) || defined(__APPLE__)
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
-    mProcess.start(nativeAppPath(), parameters());
+    mProcess.start(nativeAppPath(), params);
 #else
-    mProcess.setNativeArguments(parameters().join(" "));
+    mProcess.setNativeArguments(params.join(" "));
     mProcess.setProgram(nativeAppPath());
-    DEB() << "STARTING: " << nativeAppPath() << " " << parameters().join(" ");
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
     mProcess.start();
-    setNeosState(NeosCompile);
 #endif
+
+    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    setNeosState(Neos1Compile);
 }
 
-void NeosProcess::compileStateChanged(QProcess::ProcessState state)
+void NeosProcess::extractOutputPath()
 {
-    // TODO(JM)
+    mOutPath = parameters().size() ? parameters().first() : QString();
+    if (mOutPath.startsWith('"'))
+        mOutPath = mOutPath.mid(1, mOutPath.length()-2);
+    int i = mOutPath.lastIndexOf('.');
+    if (i >= 0) mOutPath = mOutPath.left(i);
+}
+
+QStringList NeosProcess::compileParameters()
+{
+    if (mOutPath.isEmpty()) {
+        DEB() << "Error: No runable file assigned to the NEOS process";
+        return QStringList();
+    }
+    QFileInfo fi(mOutPath);
+    QDir dir(fi.path());
+    dir.mkdir(fi.fileName());
+    QStringList params = parameters();
+    QMutableListIterator<QString> i(params);
+    bool needsXSave = true;
+    bool needsActC = true;
+    while (i.hasNext()) {
+        QString par = i.next();
+        if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
+            needsXSave = false;
+            i.setValue("xsave=" + fi.fileName());
+        } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
+            needsActC = false;
+            i.setValue("action=c");
+        }
+    }
+    if (needsXSave) params << ("xsave=" + fi.fileName());
+    if (needsActC) params << ("action=c");
+    return params;
+}
+
+QStringList NeosProcess::remoteParameters()
+{
+    QStringList params = parameters();
+    if (params.size()) params.removeFirst();
+    QMutableListIterator<QString> i(params);
+    bool needsFw = true;
+    while (i.hasNext()) {
+        QString par = i.next();
+        if (par.startsWith("forcework=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
+            needsFw = false;
+            i.setValue("fw=1");
+        } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
+            i.remove();
+            continue;
+        } else if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
+            i.remove();
+            continue;
+        }
+    }
+    if (needsFw) params << ("fw=1");
+    return params;
 }
 
 void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if (exitCode == 0 && exitStatus == QProcess::NormalExit && mNeosState == NeosCompile) {
+    if (exitStatus == QProcess::CrashExit) {
+        DEB() << "Error on compilation, exitCode " << QString::number(exitCode);
+        return;
+    }
+    if (exitCode) {
+        DEB() << "Compilation errors ";
+        return;
+    }
+    if (exitStatus == QProcess::NormalExit && mNeosState == Neos1Compile) {
         // TODO(JM) submit job to start monitoring
-
-        setNeosState(NeosMonitor);
+        QStringList params = remoteParameters();
+        QString g00 = mOutPath + ".g00";
+        DEB() << "ready to submit:\n" << g00 << "\n    " << params.join(" ");
+        mManager->submitJob(g00, params.join(" "));
     }
 }
 
 
 void NeosProcess::interrupt()
 {
-    mSubProc = new QProcess(nullptr);
-    QStringList params;
-    prepareKill(params);
-    mSubProc->setWorkingDirectory(workingDirectory());
-    connect(mSubProc, &QProcess::readyReadStandardOutput, this, &NeosProcess::readSubStdOut);
-    connect(mSubProc, &QProcess::readyReadStandardError, this, &NeosProcess::readSubStdErr);
-#if defined(__unix__) || defined(__APPLE__)
-    mSubProc->start(nativeAppPath(), params);
-#else
-    mSubProc->setNativeArguments(params.join(" ") + " lo=3 ide=1 er=99 errmsg=1 pagesize=0");
-    mSubProc->setProgram(nativeAppPath());
-    DEB() << "STARTING: " << nativeAppPath() << " " << (params.join(" ")  + " lo=3 ide=1 er=99 errmsg=1 pagesize=0");
-    mSubProc->start();
-    connect(mSubProc, QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
-    DEB() << "   - state: " << mSubProc->state();
-#endif
-}
-
-void NeosProcess::readStdChannel(QProcess::ProcessChannel channel)
-{
-    if (mJobPassword.isNull() && channel == QProcess::StandardOutput) {
-        // scan until jobNumber and password was passed
-        mOutputMutex.lock();
-        mProcess.setReadChannel(channel);
-        int avail = mProcess.bytesAvailable();
-        mOutputMutex.unlock();
-
-        if (avail) {
-            mOutputMutex.lock();
-            scanForCredentials(mProcess.peek(avail).constData());
-            mOutputMutex.unlock();
-        }
-    }
-    AbstractGamsProcess::readStdChannel(channel);
-}
-
-void NeosProcess::completed(int exitCode)
-{
-    QFile::remove(mRunFile.left(mRunFile.lastIndexOf('.')) + ".neos");
-    AbstractGamsProcess::completed(exitCode);
 }
 
 void NeosProcess::rePing(const QString &value)
@@ -123,21 +143,21 @@ void NeosProcess::reVersion(const QString &value)
 
 void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 {
-    DEB() << "SUBMIT: " << jobNumber << " - pw: " << jobPassword;
+    DEB() << "SUBMITED: " << jobNumber << " - pw: " << jobPassword;
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission
 
-    setNeosState(NeosMonitor);
+    setNeosState(Neos2Monitor);
 }
 
 void NeosProcess::reGetJobStatus(const QString &value)
 {
-    if (value.compare("done", Qt::CaseInsensitive) == 0 && mNeosState == NeosMonitor) {
+    if (value.compare("done", Qt::CaseInsensitive) == 0 && mNeosState == Neos2Monitor) {
 
         // TODO(JM) Load result file (for large files this may take a while, check if neos supports progress monitoring)
 
-        setNeosState(NeosGetResult);
+        setNeosState(Neos3GetResult);
     }
 }
 
@@ -160,6 +180,7 @@ void NeosProcess::reGetIntermediateResults(const QByteArray &data)
 {
     // TODO(JM) replace "[LST:" by "[LS1:"
     // TODO(JM) replace neos-path by local path
+
 }
 
 void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
@@ -181,9 +202,10 @@ void NeosProcess::reError(const QString &errorText)
 
 void NeosProcess::setNeosState(NeosState newState)
 {
-    if (newState != NeosNoState && int(newState) != int(mNeosState)+1) {
+    if (newState != NeosIdle && int(newState) != int(mNeosState)+1) {
         DEB() << "Warning: NeosState jumped from " << mNeosState << " to " << newState;
     }
+    mNeosState = newState;
     emit neosStateChanged(this, mNeosState);
 }
 
@@ -197,120 +219,36 @@ void NeosProcess::readSubStdErr()
     DEB() << mSubProc->readAllStandardError();
 }
 
-void NeosProcess::setGmsFile(QString gmsPath)
+QByteArray NeosProcess::convertReferences(const QByteArray &data)
 {
-    mRunFile = gmsPath;
-}
+    QByteArray res;
+    res.reserve(data.size()+mOutPath.length());
+    QByteArray remotePath("/var/lib/condor/execute/dir_+/gamsexec");
+    QByteArray lstTag("[LST:");
+    int iRP = 0;
+    int iLT = 0;
+    int iCount = 0;  // count of chars currently not copied
 
-bool NeosProcess::prepareCompileParameters()
-{
-    if (mRunFile.isEmpty()) {
-        DEB() << "Error: No runable file assigned to the NEOS process";
-        return false;
-    }
-
-    int lastDot = mRunFile.lastIndexOf('.');
-    QString neosPath = mRunFile.left(lastDot) + ".neos";
-    QFile neosFile(neosPath);
-    if (neosFile.exists()) {
-        neosFile.remove();
-    }
-    // remove parameter with original run-filename
-    QStringList params = parameters();
-    params.removeAt(0);
-
-    // TODO(JM) remove when GAMS33 is out (also in pythons gams-compile command)
-    QMutableListIterator<QString> i(params);
-    while (i.hasNext()) {
-        i.next();
-        if (i.value().startsWith("previousWork", Qt::CaseInsensitive)) i.remove();
-    }
-
-
-    if (!neosFile.open(QFile::WriteOnly)) {
-        DEB() << "error opening neos file: " << neosPath;
-        return false;
-    }
-
-    QByteArray data = rawData(CommonPaths::nativePathForProcess(mRunFile), params.join(" ")
-                              , mRunFile.left(lastDot)+'/').toUtf8();
-
-    neosFile.write(data);
-    neosFile.flush();
-    neosFile.close();
-
-    // prepend parameter with replaced neos run-filename
-    params.prepend(CommonPaths::nativePathForProcess(neosPath));
-    setParameters(params);
-    return true;
-}
-
-bool NeosProcess::prepareKill(QStringList &tempParams)
-{
-    if (mJobNumber.isEmpty()) {
-        DEB() << "Error: No running NEOS process";
-        return false;
-    }
-    if (mRunFile.isEmpty()) {
-        DEB() << "Error: No runable file assigned to the NEOS process";
-        return false;
-    }
-    int lastDot = mRunFile.lastIndexOf('.');
-    QString neosPath = mRunFile.left(lastDot) + ".neosKill";
-    QFile neosFile(neosPath);
-    if (neosFile.exists()) {
-        neosFile.remove();
-    }
-
-    if (!neosFile.open(QFile::WriteOnly)) {
-        DEB() << "error opening neos file: " << neosPath;
-        return false;
-    }
-
-    QByteArray data = rawKill().toUtf8();
-
-    neosFile.write(data);
-    neosFile.flush();
-    neosFile.close();
-
-    // prepend parameter with replaced neos run-filename
-    tempParams.prepend(CommonPaths::nativePathForProcess(neosPath));
-    return true;
-}
-
-const QList<QByteArray> cCredentials{"--- Job ", "number = ", "password = "};
-
-void NeosProcess::scanForCredentials(const QByteArray &data)
-{
-    int p = data.indexOf(cCredentials.at(0));
-    if (p < 0) return;
-    p += cCredentials.at(0).length();
-    int credIndex = mJobNumber.isNull() ? 1 : mJobPassword.isNull() ? 2 : 0;
-    while (credIndex) {
-        QByteArray ba = data.right(data.length()-p);
-        if (ba.startsWith(cCredentials.at(credIndex))) {
-            p += cCredentials.at(credIndex).length();
-            int end = p;
-            for (int i = p; i < data.length(); ++i) {
-                if (data.at(i) == '\n' || data.at(i) == '\r') break;
-                end = i+1;
-            }
-            if (credIndex == 1) {
-                mJobNumber = data.mid(p, end-p);
-                DEB() << "JobNr: " << mJobNumber;
-                p = data.indexOf(cCredentials.at(0), end);
-                if (p < 0) break;
-                p += cCredentials.at(0).length();
-                ++credIndex;
-            } else {
-                mJobPassword = data.mid(p, end-p);
-                DEB() << "JobPw: " << mJobPassword;
-                break;
-            }
-        } else {
-            p = data.indexOf(cCredentials.at(0), p+1);
-            if (p < 0) break;
+    for (int i = 0; i < data.size(); ++i) {
+        if (iRP == remotePath.length()) {
+            // add local path
+            iRP = 0;
         }
+        // Check if still in remotePath pattern
+        if (data.at(i) >= '0' && data.at(i) <= '9') {
+            if (remotePath.at(iRP) != '+') iRP = 0;
+        } else {
+            if (remotePath.at(iRP) == '+') ++iRP;
+            if (iRP < remotePath.length()) {
+                if (remotePath.at(iRP) == data.at(i)) ++iRP;
+                else iRP = 0;
+            }
+        }
+        // Check if still in lstTag pattern
+        if (lstTag.at(iLT) == data.at(i)) ++iLT;
+        else iLT = 0;
+        ++iCount;
+        if (iLT || iRP) ; // TODO(JM) paste checked part to res
     }
 }
 

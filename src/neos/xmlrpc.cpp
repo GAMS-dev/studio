@@ -117,7 +117,7 @@ QVariant getVariant(QXmlStreamReader &xml)
     if (xml.name().compare(QLatin1String("value")) != 0) return QVariant();
     if (!xml.readNextStartElement()) return QVariant();
     QVariant res;
-    int id = typeTag.indexOf(xml.name());
+    int id = typeTag.indexOf(QStringView(xml.name()));
     if (id<0) return QVariant();
     bool ok = true;
     switch (id) {

@@ -3287,9 +3287,9 @@ void MainWindow::neosProgress(AbstractProcess *proc, neos::NeosState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == neos::NeosUnpack) {
+            if (progress == neos::Neos4Unpack) {
                 gv->releaseFile();
-            } else if (progress == neos::NeosFinished) {
+            } else if (progress == neos::NeosState::NeosIdle) {
                 gv->setHasChanged(true);
                 gv->reload(gdxNode->file()->codec());
             }
