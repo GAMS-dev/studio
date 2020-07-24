@@ -61,6 +61,7 @@
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
 #include "neos/neosprocess.h"
+#include "fileeventhandler.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -78,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
+      mFileEventHandler(new FileEventHandler(this)),
       mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
       mMiroDeployDialog(new miro::MiroDeployDialog(this)),
       mMiroAssemblyDialog(new miro::MiroModelAssemblyDialog(this))
@@ -1469,38 +1471,7 @@ void MainWindow::fileClosed(const FileId fileId)
     Q_UNUSED(fileId)
 }
 
-int MainWindow::externChangedMessageBox(QString filePath, bool deleted, bool modified, int count)
-{
-    if (mExternFileEventChoice >= 0)
-        return mExternFileEventChoice;
-    QMessageBox box(this);
-    box.setWindowTitle(QString("File %1").arg(deleted ? "vanished" : "changed"));
-    QString text(filePath + (deleted ? "%1 doesn't exist anymore."
-                                     : (count>1 ? "%1 have been modified externally."
-                                                : "%1 has been modified externally.")));
-    text = text.arg(count<2? "" : QString(" and %1 other file%2").arg(count-1).arg(count<3? "" : "s"));
-    text += "\nDo you want to %1?";
-    if (deleted) text = text.arg("keep the file in editor");
-    else if (modified) text = text.arg("reload the file or keep your changes");
-    else text = text.arg("reload the file");
-    box.setText(text);
-    // The button roles define their position. To keep them in order they all get the same value
-    box.setDefaultButton(box.addButton(deleted ? "Close" : "Reload", QMessageBox::AcceptRole));
-    box.setEscapeButton(box.addButton("Keep", QMessageBox::AcceptRole));
-    if (count > 1) {
-        box.addButton(box.buttonText(0) + " all", QMessageBox::AcceptRole);
-        box.addButton(box.buttonText(1) + " all", QMessageBox::AcceptRole);
-    }
-
-    int res = box.exec();
-    if (res > 1) {
-        mExternFileEventChoice = res - 2;
-        return mExternFileEventChoice;
-    }
-    return res;
-}
-
-int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
+int MainWindow::fileChangedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
@@ -1508,8 +1479,10 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
     if (file->kind() == FileKind::Log) return 0;
     if (file->kind() == FileKind::Gdx) {
         for (QWidget *e : file->editors()) {
-            gdxviewer::GdxViewer *g = ViewHelper::toGdxViewer(e);
-            if (g) g->setHasChanged(true);
+            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
+                gv->setHasChanged(true);
+                gv->reload(file->codec());
+            }
         }
         return 0;
     }
@@ -1525,25 +1498,10 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
                guce->setFileChangedExtern(true);
         }
     }
-    int choice;
-
-    if (file->isAutoReload() || file->isReadOnly()) {
-        choice = 0;
-    } else {
-        if (!ask) return (file->isModified() ? 2 : 1);
-        choice = externChangedMessageBox(QDir::toNativeSeparators(file->location()), false, file->isModified(), count);
-    }
-    if (choice == 0) {
-        file->reloadDelayed();
-        file->resetTempReloadState();
-    } else {
-        file->setModified();
-        mFileMetaRepo.unwatch(file);
-    }
-    return 0;
+    return file->isModified() ? 2 : 1;
 }
 
-int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
+int MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return 0;
@@ -1561,23 +1519,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         historyChanged();
         return 0;
     }
-
-    int choice = 0;
-    if (!file->isReadOnly()) {
-        if (!ask) return 3;
-        choice = externChangedMessageBox(QDir::toNativeSeparators(file->location()), true, file->isModified(), count);
-    }
-    if (choice == 0) {
-        if (file->exists(true)) return 0;
-        closeFileEditors(fileId);
-        mHistory.files().removeAll(file->location());
-        historyChanged();
-    } else if (!file->isReadOnly()) {
-        if (file->exists(true)) return 0;
-        file->setModified();
-        mFileMetaRepo.unwatch(file);
-    }
-    return 0;
+    return 3;
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
@@ -1597,17 +1539,15 @@ void MainWindow::fileEvent(const FileEvent &e)
         FileEventData data = e.data();
         if (!mFileEvents.contains(data))
             mFileEvents << data;
-//        for (ProjectFileNode* node : mProjectRepo.fileNodes(data.fileId))
-//            mProjectRepo.update(node);
         mFileTimer.start();
     }
 }
 
 void MainWindow::processFileEvents()
 {
+    static bool active = false;
     if (mFileEvents.isEmpty()) return;
     // Pending events but window is not active: wait and retry
-    static bool active = false;
     if (!isActiveWindow() || active) {
         mFileTimer.start();
         return;
@@ -1624,40 +1564,33 @@ void MainWindow::processFileEvents()
             continue;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
-            remainKind = fileChangedExtern(fm->id(), false);
+            remainKind = fileChangedExtern(fm->id());
             break;
         case FileEventKind::removedExtern:
-            remainKind = fileDeletedExtern(fm->id(), false);
+            remainKind = fileDeletedExtern(fm->id());
             break;
         default: break;
         }
         if (remainKind > 0) {
             if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
             if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
-
         }
     }
 
-    // Then ask what to do with the files of each remainKind
-    mExternFileEventChoice = -1;
-    for (int changeKind = 1; changeKind < 4; ++changeKind) {
-        QVector<FileEventData> eventDataList = remainEvents.value(changeKind);
-        for (const FileEventData &event: eventDataList) {
-            switch (changeKind) {
-            case 1: // changed externally but unmodified internally
-                fileChangedExtern(event.fileId, true, eventDataList.size());
-                break;
-            case 2: // changed externally and modified internally
-                fileChangedExtern(event.fileId, true, eventDataList.size());
-                break;
-            case 3: // removed externally
-                fileDeletedExtern(event.fileId, true, eventDataList.size());
-                break;
-            default: break;
-            }
+    for (auto key: remainEvents.keys()) {
+        switch (key) {
+        case 1: // changed externally but unmodified internally
+        case 2: // changed externally and modified internally
+            mFileEventHandler->process(FileEventHandler::Change, remainEvents.value(key));
+            break;
+        case 3: // removed externally
+            mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
+            break;
+        default:
+            break;
         }
-        mExternFileEventChoice = -1;
     }
+
     active = false;
 }
 
@@ -1683,11 +1616,13 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         mSyslog->append("No group attached to process", LogMsgType::Error);
         return;
     }
+    groupNode->watchFiles();
 
     if (exitCode == GAMSRETRN_TOO_MANY_SCRATCH_DIRS) {
         ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
         QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 
+        // TODO fix QDialog::exec() issue
         QMessageBox msgBox;
         msgBox.setWindowTitle("Delete scratch directories");
         msgBox.setText("GAMS was unable to run because there are too many scratch directories "
@@ -1742,7 +1677,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
             openFileNode(lstNode);
 
         AbstractProcess* groupProc = groupNode->process();
-        if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc)) {
+        if (qobject_cast<neos::NeosProcess *>(groupProc)) {
             QString runPath = runMeta->location();
             ProjectFileNode *gdxNode = groupNode->findFile(runPath.left(runPath.lastIndexOf('.'))+"/out.gdx");
             if (gdxNode && gdxNode->file()->isOpen()) {
@@ -1753,6 +1688,8 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
             }
         }
     }
+
+    groupNode->reloadOpenFiles();
 }
 
 void MainWindow::postGamsLibRun()
@@ -2111,6 +2048,11 @@ void MainWindow::addToOpenedFiles(QString filePath)
         mHistory.files().move(mHistory.files().indexOf(filePath), 0);
     }
     historyChanged();
+}
+
+void MainWindow::clearHistory(FileMeta *file)
+{
+    mHistory.files().removeAll(file->location());
 }
 
 void MainWindow::historyChanged()
@@ -2847,6 +2789,8 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     }
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
 
+    runGroup->unwatchFiles();
+
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize( commandLineStr );
     if (process)
@@ -3344,7 +3288,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     }
     mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
-    if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
+    if (!fm->exists(true)) fileDeletedExtern(fm->id());
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
@@ -4312,6 +4256,12 @@ void MainWindow::on_actionPrint_triggered()
         QPrintDialog dialog(&printer, this);
         if (dialog.exec() == QDialog::Rejected) return;
         lxiViewer->print(&printer);
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::txtRo) {
+        auto* textViewer = ViewHelper::toTextView(mainTabs()->currentWidget());
+        if (!textViewer) return;
+        QPrintDialog dialog(&printer, this);
+        if (dialog.exec() == QDialog::Rejected) return;
+        textViewer->print(&printer);
     }
 }
 
@@ -4320,9 +4270,10 @@ bool MainWindow::enabledPrintAction()
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget())
         return false;
-    return focusWidget() == mRecent.editor() || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst;
+    return focusWidget() == mRecent.editor()
+            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
+            || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
 }
-
 
 }
 }

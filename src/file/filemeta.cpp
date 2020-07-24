@@ -484,6 +484,7 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
+                gdxViewer->setHasChanged(true);
                 gdxViewer->reload(mCodec);
             }
         }

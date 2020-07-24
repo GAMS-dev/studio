@@ -341,8 +341,8 @@ pipeline {
                 withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
                     sh '''#!/bin/bash -xe
                         ## get version information for artifact, tag name and description
-                        GAMS_DISTRIB_MAJOR_VERSION=$(grep ^GAMS_DISTRIB_MAJOR repo/version | cut -f2 -d"=")
-                        GAMS_DISTRIB_MINOR_VERSION=$(grep ^GAMS_DISTRIB_MINOR repo/version | cut -f2 -d"=")
+                        GAMS_DISTRIB_MAJOR_VERSION=$(grep ^GAMS_DISTRIB_MAJOR version | cut -f2 -d"=")
+                        GAMS_DISTRIB_MINOR_VERSION=$(grep ^GAMS_DISTRIB_MINOR version | cut -f2 -d"=")
                         export GAMS_DISTRIB_VERSION=$GAMS_DISTRIB_MAJOR_VERSION.$GAMS_DISTRIB_MINOR_VERSION
 
                         CHANGELOG=""

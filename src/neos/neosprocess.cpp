@@ -116,15 +116,16 @@ bool NeosProcess::prepareNeosParameters()
         neosFile.remove();
     }
     // remove parameter with original run-filename
-    QStringList params = parameters();
-    params.removeAt(0);
+    QStringList localParams = parameters();
+    localParams.removeAt(0);
+    QStringList remoteParams = localParams;
 
     if (!neosFile.open(QFile::WriteOnly)) {
         DEB() << "error opening neos file: " << neosPath;
         return false;
     }
 
-    QByteArray data = rawData(CommonPaths::nativePathForProcess(mRunFile), params.join(" ")
+    QByteArray data = rawData(CommonPaths::nativePathForProcess(mRunFile), localParams.join(" "), remoteParams.join(" ")
                               , mRunFile.left(lastDot)+'/').toUtf8();
 
     neosFile.write(data);
@@ -132,8 +133,8 @@ bool NeosProcess::prepareNeosParameters()
     neosFile.close();
 
     // prepend parameter with replaced neos run-filename
-    params.prepend(CommonPaths::nativePathForProcess(neosPath));
-    setParameters(params);
+    localParams.prepend(CommonPaths::nativePathForProcess(neosPath));
+    setParameters(localParams);
     return true;
 }
 
@@ -206,7 +207,7 @@ void NeosProcess::scanForCredentials(const QByteArray &data)
     }
 }
 
-QString NeosProcess::rawData(QString runFile, QString parameters, QString workdir)
+QString NeosProcess::rawData(QString runFile, QString localParams, QString remoteParams, QString workdir)
 {
     QString lstName = workdir + "solve.lst";
     QString resultDir = workdir.split('/', QString::SkipEmptyParts).last();
@@ -216,12 +217,12 @@ R"s1(* Create temp.g00
 $call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 %2
 * Set switches and parameters for NEOS submission
 $set restartFile temp.g00
-$set priority    %4
+$set priority    %5
 $set wantgdx     yes
-$set parameters  ' %2'
-$set workdir     '%3'
+$set parameters  ' %3'
+$set workdir     '%4'
 )s1";
-    s1 = s1.arg(runFile).arg(parameters).arg(workdir).arg(sPrio);
+    s1 = s1.arg(runFile).arg(localParams).arg(remoteParams).arg(workdir).arg(sPrio);
 
     QString s2 =
 R"s2(
