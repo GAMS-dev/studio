@@ -66,22 +66,22 @@ public:
     /// \brief Get the <c>ProjectGroupNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectGroupNode</c>.
     /// \return The associated <c>ProjectGroupNode</c> or a <c>nullptr</c>.
-    inline ProjectGroupNode* asGroup(const QModelIndex& index) const;
+    ProjectGroupNode* asGroup(const QModelIndex& index) const;
 
     /// Get the <c>ProjectRunGroupNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectGroupNode</c>.
     /// \return The associated <c>ProjectRunGroupNode</c> or a <c>nullptr</c>.
-    inline ProjectRunGroupNode* asRunGroup(NodeId id) const;
+    ProjectRunGroupNode* asRunGroup(NodeId id) const;
 
     /// \brief Get the <c>ProjectRunGroupNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectGroupNode</c>.
     /// \return The associated <c>ProjectRunGroupNode</c> or a <c>nullptr</c>.
-    inline ProjectRunGroupNode* asRunGroup(const QModelIndex& index) const;
+    ProjectRunGroupNode* asRunGroup(const QModelIndex& index) const;
 
     /// Get the <c>ProjectFileNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>ProjectFileNode</c>.
     /// \return The associated <c>ProjectFileNode</c> or a <c>nullptr</c>.
-    inline ProjectFileNode* asFileNode(NodeId id) const;
+    ProjectFileNode* asFileNode(NodeId id) const;
 
     /// \brief Get the <c>ProjectFileNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>ProjectFileNode</c>.

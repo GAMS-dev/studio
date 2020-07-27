@@ -106,7 +106,7 @@ ProjectGroupNode *ProjectRepo::asGroup(NodeId id) const
     return (!res ? nullptr : res->toGroup());
 }
 
-inline ProjectGroupNode*ProjectRepo::asGroup(const QModelIndex& index) const
+ProjectGroupNode*ProjectRepo::asGroup(const QModelIndex& index) const
 {
     return asGroup(NodeId(int(index.internalId())));
 }
@@ -122,7 +122,7 @@ ProjectRunGroupNode *ProjectRepo::asRunGroup(const QModelIndex &index) const
     return asRunGroup(NodeId(int(index.internalId())));
 }
 
-inline ProjectFileNode *ProjectRepo::asFileNode(NodeId id) const
+ProjectFileNode *ProjectRepo::asFileNode(NodeId id) const
 {
     ProjectAbstractNode* res = mNodes.value(id, nullptr);
     return (!res ? nullptr : res->toFile());
