@@ -1,6 +1,7 @@
 Version 1.3.3
 ==================
 - fixed system/user license file discover in about GAMS dialog
+- fixed license info if license is unavailable
 
 Version 1.3.2
 ==================
