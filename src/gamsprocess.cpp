@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamsprocess.h"
+#include "logger.h"
 
 #include <QStandardPaths>
 #include <QDir>
@@ -79,7 +80,8 @@ QString GamsProcess::aboutGAMS()
 {
     QProcess process;
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QStringList args({"/??", "lo=3", "curdir=" + tempDir});
+    process.setWorkingDirectory(tempDir);
+    QStringList args({"/??", "lo=3"});
     QString appPath = nativeAppPath();
     if (appPath.isEmpty())
         return QString();
