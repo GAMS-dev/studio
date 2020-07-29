@@ -37,7 +37,7 @@ public:
     void getJobStatus();
     void getCompletionCode();
     void getJobInfo();
-    void killJob();
+    void killJob(bool &ok);
     void getIntermediateResultsNonBlocking();
     void getFinalResultsNonBlocking();
     void getOutputFile(QString fileName);
@@ -45,14 +45,14 @@ public:
     void setDebug(bool debug = true);
 
 signals:
+    void submitCall(const QString &method, const QVariantList &params = QVariantList());
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const int &jobNumber, const QString &jobPassword);
     void reGetJobStatus(const QString &value);
     void reGetCompletionCode(const QString &value);
-    void reGetJobInfo(const QString &category, const QString &solverName, const QString &input, const QString &status,
-                      const QString &completionCode);
-    void reKillJob();
+    void reGetJobInfo(const QStringList &info);
+    void reKillJob(const QString &text);
     void reGetIntermediateResultsNonBlocking(const QByteArray &data);
     void reGetFinalResultsNonBlocking(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
@@ -62,11 +62,9 @@ private slots:
     void sslErrors(const QStringList &errors);
     void received(QString name, QVariant data);
     void debugReceived(QString name, QVariant data);
-    void pull();
 private:
     HttpManager mHttp;
     QHash<QString, NeosCall> neosCalls;
-    QTimer mPullTimer;
     int mJobNumber = 0;
     QString mPassword;
     int mLogOffset = 0;

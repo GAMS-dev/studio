@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_NEOS_NEOSPROCESS_H
 
 #include "abstractprocess.h"
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -21,17 +22,16 @@ enum Priority {
 };
 
 class NeosManager;
-///
-/// \brief The NeosProcess class works in four steps:
+
+/// \brief The NeosProcess controls all steps to run a job on NEOS
+/// This class works in four process steps:
 /// 1. compile gms on the local machine
 /// 2. monitor the remote job
 /// 3. get result file
 /// 4. unpack result file and finish
-
 class NeosProcess final : public AbstractGamsProcess
 {
     Q_OBJECT
-
 public:
     NeosProcess(QObject *parent = nullptr);
     ~NeosProcess() override;
@@ -40,6 +40,7 @@ public:
     void execute() override;
     void interrupt() override;
     void setParameters(const QStringList &parameters) override;
+    QProcess::ProcessState state() const override;
 
 signals:
     void neosStateChanged(AbstractProcess *proc, neos::NeosState progress);
@@ -48,17 +49,17 @@ protected slots:
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const int &jobNumber, const QString &jobPassword);
-    void reGetJobStatus(const QString &value);
-    void reGetCompletionCode(const QString &value);
-    void reGetJobInfo(const QString &category, const QString &solverName, const QString &input, const QString &status,
-                      const QString &completionCode);
-    void reKillJob();
+    void reGetJobStatus(const QString &status);
+    void reGetCompletionCode(const QString &code);
+    void reGetJobInfo(const QStringList &info);
+    void reKillJob(const QString &text);
     void reGetIntermediateResultsNonBlocking(const QByteArray &data);
     void reGetFinalResultsNonBlocking(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
 
 private slots:
+    void pullStatus();
     void readSubStdOut();
     void readSubStdErr();
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
@@ -66,13 +67,13 @@ private slots:
 
 private:
     void setNeosState(NeosState newState);
-    QString nativeAppPathX(QString appName);
     QStringList compileParameters();
     QStringList remoteParameters();
     QByteArray convertReferences(const QByteArray &data);
-    QString rawData(QString runFile, QString parameters, QString workdir);
-    QString rawKill();
     void startUnpacking();
+
+    QString rawData(QString runFile, QString parameters, QString workdir); // DEPRECATED
+    QString rawKill(); // DEPRECATED
 
     NeosManager *mManager;
     QString mOutPath;
@@ -80,6 +81,7 @@ private:
     QString mJobPassword;
     Priority mPrio;
     NeosState mNeosState = NeosIdle;
+    QTimer mPullTimer;
 
     QProcess mSubProc;
 };

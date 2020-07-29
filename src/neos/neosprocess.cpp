@@ -16,6 +16,7 @@ namespace neos {
 
 NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 {
+    disconnect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
     connect(&mSubProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::unpackCompleted);
     connect(&mSubProc, &QProcess::readyReadStandardOutput, this, &NeosProcess::readStdOut);
@@ -35,6 +36,9 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
     connect(mManager, &NeosManager::reGetFinalResultsNonBlocking, this, &NeosProcess::reGetFinalResultsNonBlocking);
     connect(mManager, &NeosManager::reGetIntermediateResultsNonBlocking, this, &NeosProcess::reGetIntermediateResultsNonBlocking);
 
+    mPullTimer.setInterval(1000);
+    mPullTimer.setSingleShot(true);
+    connect(&mPullTimer, &QTimer::timeout, this, &NeosProcess::pullStatus);
 }
 
 NeosProcess::~NeosProcess()
@@ -95,13 +99,16 @@ QStringList NeosProcess::remoteParameters()
     bool needsFw = true;
     while (i.hasNext()) {
         QString par = i.next();
-        if (par.startsWith("forcework=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
+        if (par.startsWith("forceWork=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
             needsFw = false;
             i.setValue("fw=1");
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
         } else if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
+            i.remove();
+            continue;
+        } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
         }
@@ -121,23 +128,26 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
         return;
     }
     if (exitStatus == QProcess::NormalExit && mNeosState == Neos1Compile) {
-        // TODO(JM) submit job to start monitoring
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        DEB() << "ready to submit:\n" << g00 << "\n    " << params.join(" ");
-        mManager->submitJob(g00, params.join(" "));
+        mManager->submitJob(g00, params.join(" "), mPrio==prioShort);
     }
 }
 
 void NeosProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
     Q_UNUSED(exitStatus)
-    emit finished(mGroupId, exitCode);
+    setNeosState(NeosIdle);
+    completed(exitCode);
 }
-
 
 void NeosProcess::interrupt()
 {
+    bool ok;
+    mManager->killJob(ok);
+    if (!ok) AbstractGamsProcess::interrupt();
+    setNeosState(NeosIdle);
+    completed(-1);
 }
 
 void NeosProcess::setParameters(const QStringList &parameters)
@@ -154,6 +164,11 @@ void NeosProcess::setParameters(const QStringList &parameters)
     AbstractProcess::setParameters(parameters);
 }
 
+QProcess::ProcessState NeosProcess::state() const
+{
+    return mNeosState==NeosIdle ? QProcess::NotRunning : QProcess::Running;
+}
+
 void NeosProcess::rePing(const QString &value)
 {
     DEB() << "PING: " << value;
@@ -167,42 +182,54 @@ void NeosProcess::reVersion(const QString &value)
 void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 {
     DEB() << "SUBMITED: " << jobNumber << " - pw: " << jobPassword;
+
+    QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]\n");
+    QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
+    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath).toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission
-
     setNeosState(Neos2Monitor);
 }
 
-void NeosProcess::reGetJobStatus(const QString &value)
+void NeosProcess::reGetJobStatus(const QString &status)
 {
-    if (value.compare("done", Qt::CaseInsensitive) == 0 && mNeosState == Neos2Monitor) {
+    if (status.compare("done", Qt::CaseInsensitive) == 0 && mNeosState == Neos2Monitor) {
+        mManager->getCompletionCode();
 
-        // TODO(JM) Load result file (for large files this may take a while, check if neos supports progress monitoring)
-
+        if (mPullTimer.isActive()) mPullTimer.stop();
         setNeosState(Neos3GetResult);
+
+    } else if (!mPullTimer.isActive()) {
+        mPullTimer.start();
     }
 }
 
-void NeosProcess::reGetCompletionCode(const QString &value)
+void NeosProcess::reGetCompletionCode(const QString &code)
 {
-
+    if (code.compare("Normal") == 0) {
+        // TODO(JM) Load result file (for large files this may take a while, check if neos supports progress monitoring)
+        mManager->getOutputFile("solver-output.zip");
+    } else {
+        DEB() << "Job completion code: " << code;
+    }
 }
 
-void NeosProcess::reGetJobInfo(const QString &category, const QString &solverName, const QString &input, const QString &status, const QString &completionCode)
+void NeosProcess::reGetJobInfo(const QStringList &info)
 {
-
+    DEB() << "NEOS-INFO: " << info.join(", ");
 }
 
-void NeosProcess::reKillJob()
+void NeosProcess::reKillJob(const QString &text)
 {
-
+    emit newStdChannelData('\n'+text.toUtf8()+'\n');
 }
 
 void NeosProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
 {
     QByteArray res = convertReferences(data);
-    emit newStdChannelData(res);
+    if (!data.isEmpty())
+        emit newStdChannelData(res);
 }
 
 void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
@@ -212,8 +239,7 @@ void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
 
 void NeosProcess::reGetOutputFile(const QByteArray &data)
 {
-
-    // TODO(JM) check if neos sends partial files if the result-file is too large
+    // TODO(JM) check if neos sends partial files when the result-file is too large
     QFile res(mOutPath+".zip");
     if (res.open(QFile::WriteOnly)) {
         res.write(data);
@@ -228,24 +254,20 @@ void NeosProcess::reError(const QString &errorText)
     DEB() << "ERROR: " << errorText;
 }
 
+void NeosProcess::pullStatus()
+{
+    mManager->getIntermediateResultsNonBlocking();
+    mManager->getJobStatus();
+}
+
 void NeosProcess::setNeosState(NeosState newState)
 {
     if (newState != NeosIdle && int(newState) != int(mNeosState)+1) {
         DEB() << "Warning: NeosState jumped from " << mNeosState << " to " << newState;
     }
     mNeosState = newState;
+    emit stateChanged(mNeosState==NeosIdle ? QProcess::NotRunning : QProcess::Running);
     emit neosStateChanged(this, mNeosState);
-}
-
-QString NeosProcess::nativeAppPathX(QString appName)
-{
-    // TODO(JM) extend nativeAppPath by optional appName
-    QString systemDir = CommonPaths::systemDir();
-    if (systemDir.isEmpty())
-        return QString();
-    auto appPath = QDir(systemDir).filePath(QDir::toNativeSeparators(appName));
-    return QDir::toNativeSeparators(appPath);
-
 }
 
 void NeosProcess::readSubStdOut()
@@ -262,7 +284,7 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
 {
     QByteArray res;
     res.reserve(data.size()+mOutPath.length());
-    QByteArray remotePath("/var/lib/condor/execute/dir_+/gamsexec");
+    QByteArray remotePath("/var/lib/condor/execute/dir_+/gamsexec/");
     QByteArray lstTag("[LST:");
     int iRP = 0;
     int iLT = 0;
@@ -288,12 +310,12 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
         else iLT = 0;
         ++iCount;
         if (iRP == remotePath.size()) {
-            res.append(mOutPath);
+            res.append(mOutPath+QDir::separator());
             iRP = 0;
             iLT = 0;
             iCount = 0;
         } else if (iLT == lstTag.size()) {
-            res.append("[LS1:");
+            res.append("[LS2:");
             iRP = 0;
             iLT = 0;
             iCount = 0;
@@ -444,15 +466,12 @@ void NeosProcess::startUnpacking()
     QStringList params;
     params << "-o solver-output.zip";
 #if defined(__unix__) || defined(__APPLE__)
-    mProcess.start(nativeAppPath(), params);
+    mSubProc.start(nativeAppPath("gmsunzip"), params);
 #else
-    mProcess.setNativeArguments(params.join(" "));
-    mProcess.setProgram(nativeAppPathX("gmsunzip"));
-    mProcess.start();
+    mSubProc.setNativeArguments(params.join(" "));
+    mSubProc.setProgram(nativeAppPath("gmsunzip"));
+    mSubProc.start();
 #endif
-
-    // TODO(JM) start unpacking the output file
-
 }
 
 

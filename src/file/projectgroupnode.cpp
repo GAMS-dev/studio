@@ -213,8 +213,7 @@ void ProjectRunGroupNode::setProcess(std::unique_ptr<AbstractProcess> process)
 {
     mGamsProcess->disconnect();
     mGamsProcess = std::move(process);
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this,
-            &ProjectRunGroupNode::onGamsProcessStateChanged);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectRunGroupNode::onGamsProcessStateChanged);
 }
 
 AbstractProcess *ProjectRunGroupNode::process() const

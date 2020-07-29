@@ -153,12 +153,12 @@ void AbstractMiroProcess::executeNext()
     mMiro.start();
 }
 
-QString AbstractMiroProcess::nativeAppPath()
+QString AbstractMiroProcess::nativeAppPath(const QString &alternativeApp)
 {
     QString systemDir = CommonPaths::systemDir();
     if (systemDir.isEmpty())
         return QString();
-    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath());
+    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath(alternativeApp));
     return QDir::toNativeSeparators(appPath);
 }
 

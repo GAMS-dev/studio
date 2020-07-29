@@ -68,7 +68,7 @@ public:
     int exitCode() const;
 
 signals:
-    void finished(NodeId origin, int exitCode);
+    void finished(int nodeId, int exitCode); // translated NodeId to int and back to get it through queued connection
     void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
     void newProcessCall(const QString &text, const QString &call);
@@ -79,8 +79,7 @@ protected slots:
     virtual void readStdErr() = 0;
 
 protected:
-    virtual QString nativeAppPath();
-
+    virtual QString nativeAppPath(const QString &alternativeApp = QString());
     inline QString appCall(const QString &app, const QStringList &args) {
         return app + " " + args.join(" ");
     }
@@ -122,7 +121,7 @@ public:
     AbstractGamsProcess(const QString &application, QObject *parent = nullptr);
 
 protected:
-    QString nativeAppPath() override;
+    QString nativeAppPath(const QString &alternativeApp = QString()) override;
 };
 
 } // namespace studio

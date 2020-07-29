@@ -13,11 +13,13 @@ class HttpManager: public QObject
 public:
     HttpManager(QObject *parent = nullptr);
     void setUrl(const QString &url);
-    void submitCall(const QString &method, const QVariantList &params = QVariantList());
 
 signals:
     void received(QString name, QVariant data);
     void sslErrors(const QStringList &errorList);
+
+public slots:
+    void submitCall(const QString &method, const QVariantList &params = QVariantList());
 
 private slots:
     void prepareReply(QNetworkReply *reply);

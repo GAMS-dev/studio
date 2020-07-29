@@ -16,7 +16,7 @@ R"s1(
 <inputType>GAMS</inputType>
 <model><![CDATA[]]></model>
 <options><![CDATA[]]></options>
-<parameters><![CDATA[fw=1%2]]></parameters>
+<parameters><![CDATA[%2]]></parameters>
 <restart><base64>%1</base64></restart>
 <wantlog><![CDATA[yes]]></wantlog>
 <wantlst><![CDATA[yes]]></wantlst>
@@ -34,12 +34,9 @@ NeosManager::NeosManager(QObject* parent)
         neosCalls.insert(c.right(c.length()-1), NeosCall(meta.value(i)));
     }
 
-    connect(&mHttp, &HttpManager::received, this, &NeosManager::received);
-    connect(&mHttp, &HttpManager::sslErrors, this, &NeosManager::sslErrors);
-
-    mPullTimer.setInterval(1000);
-    mPullTimer.setSingleShot(true);
-    connect(&mPullTimer, &QTimer::timeout, this, &NeosManager::pull);
+    connect(&mHttp, &HttpManager::received, this, &NeosManager::received, Qt::QueuedConnection);
+    connect(&mHttp, &HttpManager::sslErrors, this, &NeosManager::sslErrors, Qt::QueuedConnection);
+    connect(this, &NeosManager::submitCall, &mHttp, &HttpManager::submitCall);
 }
 
 void NeosManager::setUrl(const QString &url)
@@ -49,12 +46,12 @@ void NeosManager::setUrl(const QString &url)
 
 void NeosManager::ping()
 {
-    mHttp.submitCall("ping");
+    emit submitCall("ping");
 }
 
 void NeosManager::version()
 {
-    mHttp.submitCall("version");
+    emit submitCall("version");
 }
 
 void NeosManager::submitJob(QString fileName, QString params, bool prioShort, bool wantGdx)
@@ -67,7 +64,7 @@ void NeosManager::submitJob(QString fileName, QString params, bool prioShort, bo
     QString sData = data.toBase64();
     QString prio = (prioShort?"short":"long");
     QString jobData = rawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"no");
-    mHttp.submitCall("submitJob", QVariantList() << jobData);
+    emit submitCall("submitJob", QVariantList() << jobData);
 }
 
 void NeosManager::watchJob(int jobNumber, QString password)
@@ -80,37 +77,41 @@ void NeosManager::watchJob(int jobNumber, QString password)
 void NeosManager::getJobStatus()
 {
     //  "Done", "Running", "Waiting", "Unknown Job", or "Bad Password"
-    mHttp.submitCall("getJobStatus", QVariantList() << mJobNumber << mPassword);
+    emit submitCall("getJobStatus", QVariantList() << mJobNumber << mPassword);
 }
 
 void NeosManager::getCompletionCode()
 {
-    mHttp.submitCall("getCompletionCode", QVariantList() << mJobNumber << mPassword);
+    // Only if Job is "Done":
+    //  "Normal", "Out of memory", "Timed out", "Disk Space", "Server error", "Unknown Job", "Bad Password"
+    emit submitCall("getCompletionCode", QVariantList() << mJobNumber << mPassword);
 }
 
 void NeosManager::getJobInfo()
 {
-    mHttp.submitCall("getJobInfo", QVariantList() << mJobNumber << mPassword);
+    // tuple (category, solver_name, input, status, completion_code)
+    emit submitCall("getJobInfo", QVariantList() << mJobNumber << mPassword);
 }
 
-void NeosManager::killJob()
+void NeosManager::killJob(bool &ok)
 {
-    mHttp.submitCall("killJob", QVariantList() << mJobNumber << mPassword);
+    if ((ok = mJobNumber))
+        emit submitCall("killJob", QVariantList() << mJobNumber << mPassword);
 }
 
 void NeosManager::getIntermediateResultsNonBlocking()
 {
-    mHttp.submitCall("getIntermediateResultsNonBlocking", QVariantList() << mJobNumber << mPassword << mLogOffset);
+    emit submitCall("getIntermediateResultsNonBlocking", QVariantList() << mJobNumber << mPassword << mLogOffset);
 }
 
 void NeosManager::getFinalResultsNonBlocking()
 {
-    mHttp.submitCall("getFinalResultsNonBlocking", QVariantList() << mJobNumber << mPassword);
+    emit submitCall("getFinalResultsNonBlocking", QVariantList() << mJobNumber << mPassword);
 }
 
 void NeosManager::getOutputFile(QString fileName)
 {
-    mHttp.submitCall("getOutputFile", QVariantList() << mJobNumber << mPassword << fileName);
+    emit submitCall("getOutputFile", QVariantList() << mJobNumber << mPassword << fileName);
 }
 
 void NeosManager::setDebug(bool debug)
@@ -123,7 +124,7 @@ void NeosManager::setDebug(bool debug)
 
 void NeosManager::sslErrors(const QStringList &errors)
 {
-    qDebug() << "SSL errors occurred:\n" << errors.join("\n").toLatin1().data();
+    qDebug() << "SSL errors occurred:\n" << errors.join("\n");
 }
 
 void NeosManager::received(QString name, QVariant data)
@@ -140,17 +141,15 @@ void NeosManager::received(QString name, QVariant data)
             emit reVersion(list.at(0).toString());
         } break;
     case _submitJob:
-        if (list.size() > 1) {
-            watchJob(list.at(0).toInt(), list.at(1).toString());
+        if (list.size() > 0) {
+            QVariantList dat = list.at(0).toList();
+            watchJob(dat.at(0).toInt(), dat.at(1).toString());
+            emit reSubmitJob(dat.at(0).toInt(), dat.at(1).toString());
+            getJobInfo();
         } break;
     case _getJobStatus:
         if (list.size() > 0) {
             QString status = list.at(0).toString().toLower();
-            if (status == "running" || status == "waiting") {
-                if (!mPullTimer.isActive()) mPullTimer.start();
-            } else {
-                if (mPullTimer.isActive()) mPullTimer.stop();
-            }
             emit reGetJobStatus(status);
         } break;
     case _getCompletionCode:
@@ -158,17 +157,27 @@ void NeosManager::received(QString name, QVariant data)
             emit reGetCompletionCode(list.at(0).toString());
         } break;
     case _getJobInfo:
-        if (list.size() > 4) {
-            emit reGetJobInfo(list.at(0).toString(), list.at(1).toString(), list.at(2).toString(),
-                              list.at(3).toString(), list.at(4).toString());
+        if (list.size() > 0) {
+            QStringList dat;
+            for (const QVariant &var : list.at(0).toList()) {
+                dat << var.toString();
+            }
+            if (dat.size() > 4) {
+                emit reGetJobInfo(dat);
+            }
         } break;
     case _killJob:
-        emit reKillJob();
-        break;
+        qDebug() << "result from KillJob " << data;
+        if (list.size() > 0) {
+            emit reKillJob(list.at(0).toString());
+        }   break;
     case _getIntermediateResultsNonBlocking:
-        if (list.size() > 1) {
-            mLogOffset = list.at(1).toInt();
-            emit reGetIntermediateResultsNonBlocking(list.at(0).toByteArray());
+        if (list.size() > 0) {
+            QVariantList dat = list.at(0).toList();
+            if (dat.size() > 1) {
+                mLogOffset = dat.at(1).toInt();
+                emit reGetIntermediateResultsNonBlocking(dat.at(0).toByteArray());
+            }
         } break;
     case _getFinalResultsNonBlocking:
         if (list.size() > 0) {
@@ -179,12 +188,6 @@ void NeosManager::received(QString name, QVariant data)
             emit reGetOutputFile(QByteArray::fromBase64(list.at(0).toByteArray()));
         } break;
     }
-}
-
-void NeosManager::pull()
-{
-    getIntermediateResultsNonBlocking();
-    getJobStatus();
 }
 
 void NeosManager::debugReceived(QString name, QVariant data)

@@ -57,7 +57,7 @@ protected slots:
     void executeNext();
 
 protected:
-    QString nativeAppPath() override;
+    QString nativeAppPath(const QString &alternativeApp = QString()) override;
 
     virtual QProcessEnvironment miroProcessEnvironment() = 0;
 

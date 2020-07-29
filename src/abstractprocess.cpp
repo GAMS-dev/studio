@@ -21,6 +21,7 @@
 #include "commonpaths.h"
 
 #include <QDir>
+#include <QMetaType>
 
 namespace gams {
 namespace studio {
@@ -30,6 +31,10 @@ AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
       mProcess(this),
       mApplication(appName)
 {
+    if (!QMetaType::isRegistered(qMetaTypeId<QProcess::ProcessState>()))
+        qRegisterMetaType<QProcess::ProcessState>();
+    if (!QMetaType::isRegistered(qMetaTypeId<NodeId>()))
+        qRegisterMetaType<NodeId>();
 }
 
 void AbstractProcess::setInputFile(const QString &file)
@@ -77,9 +82,12 @@ void AbstractProcess::completed(int exitCode)
     emit finished(mGroupId, exitCode);
 }
 
-QString AbstractProcess::nativeAppPath()
+QString AbstractProcess::nativeAppPath(const QString &alternativeApp)
 {
-    return QDir::toNativeSeparators(mApplication);
+    if (alternativeApp.isEmpty())
+        return QDir::toNativeSeparators(mApplication);
+    else
+        return QDir::toNativeSeparators(alternativeApp);
 }
 
 NodeId AbstractProcess::groupId() const
@@ -142,12 +150,12 @@ AbstractGamsProcess::AbstractGamsProcess(const QString &application, QObject *pa
     connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
-QString AbstractGamsProcess::nativeAppPath()
+QString AbstractGamsProcess::nativeAppPath(const QString &alternativeApp)
 {
     QString systemDir = CommonPaths::systemDir();
     if (systemDir.isEmpty())
         return QString();
-    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath());
+    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath(alternativeApp));
     return QDir::toNativeSeparators(appPath);
 }
 

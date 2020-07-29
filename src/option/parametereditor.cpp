@@ -994,6 +994,7 @@ void ParameterEditor::resizeColumnsToContents()
 void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX,
                                          QAction *aRunNeos, QAction *aRunNeosL)
 {
+    mHasSSL = QSslSocket::supportsSsl();
     actionRun = aRun;
     actionCompile = aCompile;
     actionRun_with_GDX_Creation = aRunGDX;
@@ -1042,8 +1043,8 @@ void ParameterEditor::setRunActionsEnabled(bool enable)
     actionRun_with_GDX_Creation->setEnabled(enable);
     actionCompile->setEnabled(enable);
     actionCompile_with_GDX_Creation->setEnabled(enable);
-    actionRunNeos->setEnabled(enable);
-    actionRunNeosL->setEnabled(enable);
+    actionRunNeos->setEnabled(enable && mHasSSL);
+    actionRunNeosL->setEnabled(enable && mHasSSL);
     ui->gamsRunToolButton->menu()->setEnabled(enable);
 }
 
