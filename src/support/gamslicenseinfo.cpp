@@ -47,10 +47,11 @@ GamsLicenseInfo::GamsLicenseInfo()
         EXCEPT() << "Could not open About GAMS dialog. " << msg;
     }
     int rc; // additional return code, not used here
-    if (!palLicenseReadU(mPAL,
-                         CommonPaths::gamsLicenseFilePath().toStdString().c_str(),
-                         msg,
-                         &rc))
+    mLicenseAvailable = palLicenseReadU(mPAL,
+                                        CommonPaths::gamsLicenseFilePath().toStdString().c_str(),
+                                        msg,
+                                        &rc);
+    if (!mLicenseAvailable)
         logger->append(msg, LogMsgType::Error);
 }
 
@@ -98,6 +99,8 @@ QString GamsLicenseInfo::solverLicense(const QString &name, int id) const
 {
     int days = -1;
     auto codes = solverCodes(id);
+    if (!mLicenseAvailable)
+        return "None";
     if (palLicenseCheckSubX(mPAL,
                             name.toStdString().c_str(),
                             codes.toStdString().c_str(),
