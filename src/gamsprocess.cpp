@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gamsprocess.h"
-#include "logger.h"
 
 #include <QStandardPaths>
 #include <QDir>
