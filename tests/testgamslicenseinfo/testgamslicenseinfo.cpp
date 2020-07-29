@@ -208,7 +208,8 @@ void TestGamsLicenseInfo::testSolverLicense()
         auto solverName = gamsLicenseInfo.solverName(solverId);
         auto result = gamsLicenseInfo.solverLicense(solverName, solverId);
         test = result.contains("Demo") || result.contains("Full") ||
-                result.contains("Evaluation") || result.contains("Expired");
+                result.contains("Evaluation") || result.contains("Expired") ||
+                result.contains("None");
         if (!test) break;
     }
     QVERIFY(test);

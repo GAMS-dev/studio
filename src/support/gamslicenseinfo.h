@@ -63,6 +63,7 @@ private:
 private:
     SolverConfigInfo mSolverInfo;
     palHandle_t mPAL;
+    bool mLicenseAvailable = false;
 };
 
 }
