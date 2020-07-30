@@ -12,6 +12,7 @@ HttpManager::HttpManager(QObject *parent): QObject(parent)
     mRawRequest.setRawHeader("User-Agent", "neos/1.0");
     mRawRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml");
     mSslConfig.setProtocol(QSsl::AnyProtocol);
+
     mRawRequest.setSslConfiguration(mSslConfig);
 }
 
@@ -45,6 +46,7 @@ void HttpManager::convertSslErrors(QNetworkReply *reply, const QList<QSslError> 
     for (const QSslError &se : errorList) {
         errors << se.errorString();
     }
+    reply->ignoreSslErrors();
     emit sslErrors(errors);
 }
 
