@@ -79,12 +79,19 @@ QString GamsProcess::aboutGAMS()
 {
     QProcess process;
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    process.setWorkingDirectory(tempDir);
-    QStringList args({"/??", "lo=3"});
+    QStringList args({"/??", "lo=3", "curdir=\"" + tempDir + "\""});
     QString appPath = nativeAppPath();
     if (appPath.isEmpty())
         return QString();
-    process.start(appPath, args);
+
+#if defined(__unix__) || defined(__APPLE__)
+    process.start(nativeAppPath(), args);
+#else
+    process.setNativeArguments(args.join(" "));
+    process.setProgram(nativeAppPath());
+    process.start();
+#endif
+
     QString about;
     if (process.waitForFinished()) {
         about = process.readAllStandardOutput();
