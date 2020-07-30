@@ -111,10 +111,6 @@ public:
     AbstractProcess *process() const;
     bool jumpToFirstError(bool focus, ProjectFileNode *lstNode);
 
-    void unwatchFiles();
-    void watchFiles();
-    void reloadOpenFiles();
-
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
 

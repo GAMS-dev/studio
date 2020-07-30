@@ -668,32 +668,6 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     return false;
 }
 
-void ProjectRunGroupNode::unwatchFiles()
-{
-    auto group = toGroup();
-    if (!group) return;
-    for (auto file: group->listFiles(true))
-        root()->fileRepo()->unwatch(file->file());
-}
-
-void ProjectRunGroupNode::watchFiles()
-{
-    auto group = toGroup();
-    if (!group) return;
-    for (auto file: group->listFiles(true))
-        root()->fileRepo()->watch(file->file());
-}
-
-void ProjectRunGroupNode::reloadOpenFiles()
-{
-    auto group = toGroup();
-    if (!group) return;
-    for (auto file: group->listFiles(true)) {
-        if (file->file()->isOpen())
-            file->file()->reloadDelayed();
-    }
-}
-
 void ProjectRunGroupNode::errorTexts(const QVector<int> &lstLines, QStringList &result)
 {
     for (int lstLine: lstLines) {
