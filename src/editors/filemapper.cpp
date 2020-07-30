@@ -253,5 +253,9 @@ void FileMapper::stopPeeking()
     emit selectionChanged();
 }
 
+QString FileMapper::fileName() const {
+    return mFile.fileName();
+}
+
 } // namespace studio
 } // namespace gams

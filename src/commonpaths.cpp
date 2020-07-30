@@ -45,12 +45,12 @@ QString CommonPaths::SystemDir = QString();
 
 #if defined(__APPLE__) || defined(__unix__)
     const QString CommonPaths::ConfigFile = "gmscmpun.txt";
-    const QString CommonPaths::LicensePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    const QString CommonPaths::UserLicensePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
     const QString CommonPaths::GamsConfigPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)  + "/GAMS";
 
 #else
     const QString CommonPaths::ConfigFile = "gmscmpnt.txt";
-    const QString CommonPaths::LicensePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    const QString CommonPaths::UserLicensePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     const QString CommonPaths::GamsConfigPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS";
 #endif
 
@@ -142,7 +142,13 @@ QString CommonPaths::userModelLibraryDir()
 
 QString CommonPaths::gamsLicenseFilePath()
 {
-    return QDir::cleanPath(LicensePath + "/GAMS/" + LicenseFile);
+    const QString userLicenseFile = UserLicensePath + "/GAMS/" + LicenseFile;
+    const QString globalLicenseFile = systemDir() + "/" + LicenseFile;
+    if (QFileInfo::exists(userLicenseFile))
+        return QDir::cleanPath(userLicenseFile);
+    if (QFileInfo::exists(globalLicenseFile))
+        return QDir::cleanPath(globalLicenseFile);
+    return QDir::cleanPath(userLicenseFile);
 }
 
 QString CommonPaths::gamsUserConfigDir()

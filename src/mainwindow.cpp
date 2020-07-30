@@ -1507,8 +1507,10 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
     if (file->kind() == FileKind::Log) return 0;
     if (file->kind() == FileKind::Gdx) {
         for (QWidget *e : file->editors()) {
-            gdxviewer::GdxViewer *g = ViewHelper::toGdxViewer(e);
-            if (g) g->setHasChanged(true);
+            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
+                gv->setHasChanged(true);
+                gv->reload(file->codec());
+            }
         }
         return 0;
     }
@@ -4309,6 +4311,12 @@ void MainWindow::on_actionPrint_triggered()
         QPrintDialog dialog(&printer, this);
         if (dialog.exec() == QDialog::Rejected) return;
         lxiViewer->print(&printer);
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::txtRo) {
+        auto* textViewer = ViewHelper::toTextView(mainTabs()->currentWidget());
+        if (!textViewer) return;
+        QPrintDialog dialog(&printer, this);
+        if (dialog.exec() == QDialog::Rejected) return;
+        textViewer->print(&printer);
     }
 }
 
@@ -4317,7 +4325,9 @@ bool MainWindow::enabledPrintAction()
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget())
         return false;
-    return focusWidget() == mRecent.editor() || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst;
+    return focusWidget() == mRecent.editor()
+            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
+            || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
 }
 
 
