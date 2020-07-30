@@ -327,6 +327,23 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
     return res;
 }
 
+void NeosProcess::startUnpacking()
+{
+    mSubProc.setWorkingDirectory(mOutPath);
+    QStringList params;
+    params << "-o solver-output.zip";
+#if defined(__unix__) || defined(__APPLE__)
+    mSubProc.start(nativeAppPath("gmsunzip"), params);
+#else
+    mSubProc.setNativeArguments(params.join(" "));
+    mSubProc.setProgram(nativeAppPath("gmsunzip"));
+    mSubProc.start();
+#endif
+}
+
+
+
+/*
 QString NeosProcess::rawData(QString runFile, QString parameters, QString workdir)
 {
     QString lstName = workdir + "solve.lst";
@@ -458,21 +475,7 @@ $offEmbeddedCode
     return s1.arg(mJobNumber).arg(mJobPassword);
 }
 
-
-
-void NeosProcess::startUnpacking()
-{
-    mSubProc.setWorkingDirectory(mOutPath);
-    QStringList params;
-    params << "-o solver-output.zip";
-#if defined(__unix__) || defined(__APPLE__)
-    mSubProc.start(nativeAppPath("gmsunzip"), params);
-#else
-    mSubProc.setNativeArguments(params.join(" "));
-    mSubProc.setProgram(nativeAppPath("gmsunzip"));
-    mSubProc.start();
-#endif
-}
+*/
 
 
 } // namespace neos

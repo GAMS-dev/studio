@@ -72,9 +72,6 @@ private:
     QByteArray convertReferences(const QByteArray &data);
     void startUnpacking();
 
-    QString rawData(QString runFile, QString parameters, QString workdir); // DEPRECATED
-    QString rawKill(); // DEPRECATED
-
     NeosManager *mManager;
     QString mOutPath;
     QString mJobNumber;
