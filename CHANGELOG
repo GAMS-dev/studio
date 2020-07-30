@@ -1,8 +1,13 @@
+Version 1.3.3  * 
+==================
+- fixed system/user license file discover in about GAMS dialog
+- fixed license info if license is unavailable
+- reverted fixed crash if files are modified in the background while a dialog is open
+
 Version 1.3.2
 ==================
 - fixed print support for read only text files
 - removed default option "previousWork=1", giving this responsibility back to the user
-- fixed crash if files are modified in the background while a dialog is open
 - fixed missing gui reload on changed gdx file
 
 Version 1.3.1

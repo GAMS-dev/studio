@@ -121,7 +121,7 @@ private:
     static const QString ModlibsPrefixPath;
     static const QString GamsUserConfigFile;
     static const QString LicenseFile;
-    static const QString LicensePath;
+    static const QString UserLicensePath;
     static const QString GamsConfigPath;
 };
 
