@@ -64,6 +64,7 @@ private slots:
     void readSubStdErr();
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
+    void sslErrors(const QStringList &errors);
 
 private:
     void setNeosState(NeosState newState);

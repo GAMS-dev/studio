@@ -24,6 +24,7 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 
     mManager = new NeosManager(this);
     mManager->setUrl("https://neos-server.org:3333");
+    connect(mManager, &NeosManager::sslErrors, this, &NeosProcess::sslErrors);
     connect(mManager, &NeosManager::rePing, this, &NeosProcess::rePing);
     connect(mManager, &NeosManager::reError, this, &NeosProcess::reError);
     connect(mManager, &NeosManager::reKillJob, this, &NeosProcess::reKillJob);
@@ -139,6 +140,12 @@ void NeosProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
     Q_UNUSED(exitStatus)
     setNeosState(NeosIdle);
     completed(exitCode);
+}
+
+void NeosProcess::sslErrors(const QStringList &errors)
+{
+    QString data("\n*** SSL errors:\n%1\n");
+    emit newStdChannelData(data.arg(errors.join("\n")).toUtf8());
 }
 
 void NeosProcess::interrupt()

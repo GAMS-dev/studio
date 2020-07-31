@@ -57,9 +57,9 @@ signals:
     void reGetFinalResultsNonBlocking(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
+    void sslErrors(const QStringList &errors);
 
 private slots:
-    void sslErrors(const QStringList &errors);
     void received(QString name, QVariant data);
     void debugReceived(QString name, QVariant data);
 private:

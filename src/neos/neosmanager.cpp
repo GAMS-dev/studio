@@ -122,11 +122,6 @@ void NeosManager::setDebug(bool debug)
         disconnect(&mHttp, &HttpManager::received, this, &NeosManager::debugReceived);
 }
 
-void NeosManager::sslErrors(const QStringList &errors)
-{
-    qDebug() << "SSL errors occurred:\n" << errors.join("\n");
-}
-
 void NeosManager::received(QString name, QVariant data)
 {
     NeosCall c = neosCalls.value(name);
