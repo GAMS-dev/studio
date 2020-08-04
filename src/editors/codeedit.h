@@ -132,6 +132,7 @@ protected:
     bool existHRef(QString href);
     QString getIncludeFile(int line);
     TextLinkType checkLinks(const QPoint &mousePos, bool greedy) override;
+    void jumpToCurrentLink(const QPoint &mousePos) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);

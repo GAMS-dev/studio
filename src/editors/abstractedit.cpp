@@ -252,8 +252,15 @@ TextLinkType AbstractEdit::checkLinks(const QPoint &mousePos, bool greedy)
     // greedy extends the scope (e.g. when control modifier is pressed)
     if (greedy || mousePos.x() < 0)
         if (mMarks && !mMarks->isEmpty() && !mMarksAtMouse.isEmpty())
-            return mMarksAtMouse.first()->cursorShape() ? linkMarks : linkMiss;
+            return mMarksAtMouse.first()->cursorShape() ? linkMark : linkMiss;
     return linkNone;
+}
+
+void AbstractEdit::jumpToCurrentLink(const QPoint &mousePos)
+{
+    TextLinkType linkType = checkLinks(mousePos, true);
+    if (linkType == linkMark)
+        mMarksAtMouse.first()->jumpToRefMark();
 }
 
 void AbstractEdit::internalExtraSelUpdate()
@@ -366,7 +373,10 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         mTipPos = QPoint();
         QToolTip::hideText();
     }
-    if (mMarks) {
+    bool offClickRegion = !mClickPos.isNull() && (mClickPos-e->pos()).manhattanLength() > 4;
+    bool validLink = (isReadOnly() || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
+
+    if (mMarks && validLink) {
         QTextCursor cursor = cursorForPosition(e->pos());
         QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cursor.blockNumber()));
         mMarksAtMouse.clear();
@@ -375,17 +385,16 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
                 mMarksAtMouse << mark;
         }
     }
-    updateCursorShape(isReadOnly() || e->x() < 0 || e->modifiers() & Qt::ControlModifier);
+    updateCursorShape(validLink);
 }
 
 void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
-    if (!isReadOnly() && e->pos().x() >= 0) return;
-    if (mMarksAtMouse.isEmpty() || !mMarksAtMouse.first()->isValidLink(true)) return;
-    if ((mClickPos-e->pos()).manhattanLength() >= 4) return;
-
-    mMarksAtMouse.first()->jumpToRefMark();
+    bool offClickRegion = !mClickPos.isNull() && (mClickPos-e->pos()).manhattanLength() > 4;
+    bool validLink = (isReadOnly() || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
+    mClickPos = QPoint();
+    if (validLink) jumpToCurrentLink(e->pos());
 }
 
 void AbstractEdit::marksChanged(const QSet<int> dirtyLines)

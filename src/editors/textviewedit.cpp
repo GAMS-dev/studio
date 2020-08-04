@@ -301,7 +301,7 @@ TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy)
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(mousePos);
         if (!cursor.charFormat().anchorHref().isEmpty()) {
-            res = (existHRef(cursor.charFormat().anchorHref())) ? linkMarks : linkMiss;
+            res = (existHRef(cursor.charFormat().anchorHref())) ? linkMark : linkMiss;
         }
     } else {
         res = CodeEdit::checkLinks(mousePos, greedy);

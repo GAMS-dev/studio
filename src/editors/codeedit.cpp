@@ -320,6 +320,11 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
 
 void CodeEdit::keyPressEvent(QKeyEvent* e)
 {
+    if (e->key() == Qt::Key_Control) {
+        QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
+        QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
+        emit mouseMoveEvent(&me);
+    }
     if (!mBlockEdit && mAllowBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
@@ -734,14 +739,12 @@ bool CodeEdit::existHRef(QString href)
 
 QString CodeEdit::getIncludeFile(int line)
 {
-    mIncludeLinkLine = -1;
     QTextBlock block = document()->findBlockByNumber(line);
     if (block.isValid()) {
         QRegularExpression rex;
         rex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape("$")));
         QRegularExpressionMatch match = rex.match(block.text());
         if (match.captured(2).toLower() == "include") {
-            mIncludeLinkLine = line;
             return block.text().mid(match.capturedEnd(), block.text().length());
         }
     }
@@ -751,21 +754,47 @@ QString CodeEdit::getIncludeFile(int line)
 TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy)
 {
     // greedy extends the scope (e.g. when control modifier is pressed)
-    TextLinkType linkType = AbstractEdit::checkLinks(mousePos, greedy);
+    TextLinkType linkType = linkNone;
+    if (!showFolding() || mousePos.x() >= 0 || mousePos.x() < -iconSize())
+        linkType = AbstractEdit::checkLinks(mousePos, greedy);
+    mIncludeLinkLine = -1;
     if (greedy && linkType == linkNone) {
         QTextCursor cur = cursorForPosition(mousePos);
         QString rawFile = getIncludeFile(cur.blockNumber());
-        if (!rawFile.isEmpty() && cur.positionInBlock() >= cur.block().length() - rawFile.length()) {
+        int boundPos = qBound(cur.block().length() - rawFile.length(), cur.positionInBlock(), cur.block().length()-1);
+        if (!rawFile.isEmpty() && cur.positionInBlock() == boundPos) {
             mIncludeLinkLine = cur.blockNumber();
             linkType = existHRef("INC "+rawFile.trimmed()) ? linkDirect : linkMiss;
-        } else mIncludeLinkLine = -1;
+        }
     }
     return linkType;
 
 }
 
+void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
+{
+    TextLinkType linkType = checkLinks(mousePos, true);
+    if (linkType == linkMark)
+        marksAtMouse().first()->jumpToRefMark();
+    if (linkType == linkDirect) {
+        if (mIncludeLinkLine >= 0) {
+            QTextCursor cur = cursorForPosition(mousePos);
+            QString rawFile = getIncludeFile(cur.blockNumber());
+            if (!rawFile.isEmpty() && cur.positionInBlock() >= cur.block().length() - rawFile.length()) {
+                mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
+                emit jumpToHRef("INC "+rawFile.trimmed());
+            }
+        }
+    }
+}
+
 void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 {
+    if (e->key() == Qt::Key_Control) {
+        QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
+        QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
+        emit mouseMoveEvent(&me);
+    }
     // return pressed: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
         e->accept();
@@ -885,16 +914,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
             existInclude = existHRef("INC "+rawFile.trimmed());
         } else mIncludeLinkLine = -1;
     }
-    if (old != mIncludeLinkLine) {
-        recalcExtraSelections();
-        Qt::CursorShape shape = Qt::IBeamCursor;
-        if (atInclude) {
-            if (existInclude)
-                shape = Qt::ArrowCursor;
-            else shape = Qt::ForbiddenCursor;
-        }
-        updateCursorShape(e->modifiers() & Qt::ControlModifier);
-    }
+    if (old != mIncludeLinkLine) recalcExtraSelections();
 
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
@@ -1653,6 +1673,7 @@ void CodeEdit::updateExtraSelections()
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
     extraSelMarks(selections);
+    extraSelIncludeLink(selections);
     setExtraSelections(selections);
 }
 
@@ -2304,8 +2325,7 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event)
     QPoint pos = event->pos();
     pos.setX(pos.x()-width());
     QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
-    if (mCodeEditor->showFolding() && e.pos().x() < 0
-            && e.pos().x() > -width() + (mCodeEditor->mIconCols * mCodeEditor->iconSize())) {
+    if (mCodeEditor->showFolding() && e.pos().x() > -mCodeEditor->iconSize()) {
         QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
         block = mCodeEditor->findFoldStart(block);
         if (mCodeEditor->toggleFolding(block)) {
@@ -2336,10 +2356,8 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
         event->accept();
         return;
     }
-    if (!newFoldMark.isNull() || !mCodeEditor->showFolding() || pos.x() <= -mCodeEditor->iconSize()) {
-        QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
-        mCodeEditor->mouseMoveEvent(&e);
-    }
+    QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
+    mCodeEditor->mouseMoveEvent(&e);
 }
 
 void LineNumberArea::mouseReleaseEvent(QMouseEvent *event)

@@ -40,7 +40,7 @@ struct PositionPair {
 };
 typedef PositionPair LinePair;
 
-enum TextLinkType { linkNone, linkMiss, linkMarks, linkDirect };
+enum TextLinkType { linkNone, linkMiss, linkMark, linkDirect };
 
 class AbstractEdit : public QPlainTextEdit
 {
@@ -114,6 +114,7 @@ protected:
     virtual LinePair findFoldBlock(int line, bool onlyThisLine = false) const;
     virtual bool ensureUnfolded(int line);
     virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy);
+    virtual void jumpToCurrentLink(const QPoint &mousePos);
 
 private:
     const LineMarks* mMarks = nullptr;
