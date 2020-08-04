@@ -40,6 +40,8 @@ struct PositionPair {
 };
 typedef PositionPair LinePair;
 
+enum TextLinkType { linkNone, linkMiss, linkMarks, linkDirect };
+
 class AbstractEdit : public QPlainTextEdit
 {
     Q_OBJECT
@@ -106,11 +108,12 @@ protected:
     virtual int topVisibleLine();
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
-    virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
+    virtual void updateCursorShape(bool greedy);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
     virtual LinePair findFoldBlock(int line, bool onlyThisLine = false) const;
     virtual bool ensureUnfolded(int line);
+    virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy);
 
 private:
     const LineMarks* mMarks = nullptr;

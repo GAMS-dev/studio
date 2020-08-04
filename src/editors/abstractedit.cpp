@@ -195,9 +195,13 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
-void AbstractEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
+void AbstractEdit::updateCursorShape(bool greedy)
 {
-    Qt::CursorShape shape = defaultShape;
+    QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
+    Qt::CursorShape shape = (mousePos.x() < 0) ? Qt::ArrowCursor : Qt::IBeamCursor;
+    TextLinkType linkType = checkLinks(mousePos, greedy);
+    if (linkType == linkMiss) shape = Qt::ForbiddenCursor;
+    else if (linkType != linkNone) shape = Qt::PointingHandCursor;
     viewport()->setCursor(shape);
 }
 
@@ -241,6 +245,15 @@ bool AbstractEdit::ensureUnfolded(int line)
 {
     Q_UNUSED(line)
     return false;
+}
+
+TextLinkType AbstractEdit::checkLinks(const QPoint &mousePos, bool greedy)
+{
+    // greedy extends the scope (e.g. when control modifier is pressed)
+    if (greedy || mousePos.x() < 0)
+        if (mMarks && !mMarks->isEmpty() && !mMarksAtMouse.isEmpty())
+            return mMarksAtMouse.first()->cursorShape() ? linkMarks : linkMiss;
+    return linkNone;
 }
 
 void AbstractEdit::internalExtraSelUpdate()
@@ -314,11 +327,7 @@ void AbstractEdit::keyPressEvent(QKeyEvent *e)
         if ((e->key() & 0x11111110) == Qt::Key_Home)
             emit verticalScrollBar()->valueChanged(verticalScrollBar()->value());
     }
-    Qt::CursorShape shape = Qt::IBeamCursor;
-    if (e->modifiers() & Qt::ControlModifier) {
-        if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
-    }
-    updateCursorShape(shape);
+    updateCursorShape(e->modifiers() & Qt::ControlModifier);
 }
 
 void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
@@ -326,11 +335,7 @@ void AbstractEdit::keyReleaseEvent(QKeyEvent *e)
     QPlainTextEdit::keyReleaseEvent(e);
     if (e->key() == Qt::Key_Backspace)
         ensureUnfolded(textCursor().blockNumber());
-    Qt::CursorShape shape = Qt::IBeamCursor;
-    if (e->modifiers() & Qt::ControlModifier) {
-        if (!mMarksAtMouse.isEmpty()) mMarksAtMouse.first()->cursorShape(&shape, true);
-    }
-    updateCursorShape(shape);
+    updateCursorShape(e->modifiers() & Qt::ControlModifier);
 }
 
 void AbstractEdit::mousePressEvent(QMouseEvent *e)
@@ -361,22 +366,16 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
         mTipPos = QPoint();
         QToolTip::hideText();
     }
-    Qt::CursorShape shape = Qt::IBeamCursor;
-    if (!mMarks || mMarks->isEmpty()) {
-        // No marks or the text is editable
-        updateCursorShape(shape);
-        return;
+    if (mMarks) {
+        QTextCursor cursor = cursorForPosition(e->pos());
+        QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cursor.blockNumber()));
+        mMarksAtMouse.clear();
+        for (TextMark* mark: marks) {
+            if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
+                mMarksAtMouse << mark;
+        }
     }
-    QTextCursor cursor = cursorForPosition(e->pos());
-    QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cursor.blockNumber()));
-    mMarksAtMouse.clear();
-    for (TextMark* mark: marks) {
-        if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
-            mMarksAtMouse << mark;
-    }
-    if (!mMarksAtMouse.isEmpty() && (isReadOnly() || e->x() < 0))
-        shape = mMarksAtMouse.first()->cursorShape(&shape, true);
-    updateCursorShape(shape);
+    updateCursorShape(isReadOnly() || e->x() < 0 || e->modifiers() & Qt::ControlModifier);
 }
 
 void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)

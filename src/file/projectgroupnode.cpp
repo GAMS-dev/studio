@@ -268,6 +268,12 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
         if (!create || !exist) return;
         line = parts.first().toInt();
         node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
+    } else if (code.compare(QString("INC")) == 0) {
+        QString fName = parts.first().toString();
+        fName = location() + '/' + fName;
+        exist = QFile(fName).exists();
+        if (!create || !exist) return;
+        node = projectRepo()->findOrCreateFileNode(fName, this);
     } else if (parts.first().startsWith('"')) {
         QString fName = parts.first().mid(1, parts.first().length()-2).toString();
         exist = QFile(fName).exists();

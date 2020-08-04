@@ -125,9 +125,13 @@ protected:
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
+    void extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
     bool ensureUnfolded(int line) override;
+    bool existHRef(QString href);
+    QString getIncludeFile(int line);
+    TextLinkType checkLinks(const QPoint &mousePos, bool greedy) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -136,6 +140,8 @@ signals:
     void searchFindNextPressed();
     void searchFindPrevPressed();
     void requestAdvancedActions(QList<QAction*>* actions);
+    void hasHRef(const QString &href, bool &exist);
+    void jumpToHRef(const QString &href);
 
 public slots:
     void clearSelection();
@@ -255,7 +261,7 @@ private:
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
     LinePair mFoldMark;
-
+    int mIncludeLinkLine = -1;
 };
 
 class LineNumberArea : public QWidget

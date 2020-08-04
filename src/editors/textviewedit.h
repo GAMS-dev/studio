@@ -33,6 +33,7 @@ class TextViewEdit : public CodeEdit
 public:
     TextViewEdit(AbstractTextMapper &mapper, QWidget *parent = nullptr);
     bool showLineNr() const override { return false; }
+    bool showFolding() const override { return false; }
     void protectWordUnderCursor(bool protect);
     bool hasSelection() const override;
     void disconnectTimers() override;
@@ -41,8 +42,6 @@ public:
 signals:
     void keyPressed(QKeyEvent *event);
     void updatePosAndAnchor();
-    void hasHRef(const QString &href, bool &exist);
-    void jumpToHRef(const QString &href);
     void recalcVisibleLines();
     void topLineMoved();
     void findClosestLstRef(const QTextCursor &cursor);
@@ -65,14 +64,13 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    void updateCursorShape(const Qt::CursorShape &defaultShape) override;
+    TextLinkType checkLinks(const QPoint &mousePos, bool greedy) override;
 //    bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
     void paintEvent(QPaintEvent *e) override;
 
 private:
     int topVisibleLine() override;
-    bool existHRef(QString href);
     int scrollMs(int delta);
 
 private:

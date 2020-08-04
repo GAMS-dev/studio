@@ -294,17 +294,19 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
     }
 }
 
-void TextViewEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
+TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy)
 {
-    Qt::CursorShape shape = defaultShape;
+    Q_UNUSED(greedy)
+    TextLinkType res = linkNone;
     if (!marks() || marks()->isEmpty()) {
-        QPoint pos = mapFromGlobal(QCursor::pos());
-        QTextCursor cursor = cursorForPosition(pos);
+        QTextCursor cursor = cursorForPosition(mousePos);
         if (!cursor.charFormat().anchorHref().isEmpty()) {
-            shape = (existHRef(cursor.charFormat().anchorHref())) ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
+            res = (existHRef(cursor.charFormat().anchorHref())) ? linkMarks : linkMiss;
         }
+    } else {
+        res = CodeEdit::checkLinks(mousePos, greedy);
     }
-    viewport()->setCursor(shape);
+    return res;
 }
 
 //bool TextViewEdit::viewportEvent(QEvent *event)
@@ -333,13 +335,6 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 void TextViewEdit::paintEvent(QPaintEvent *e)
 {
     AbstractEdit::paintEvent(e);
-}
-
-bool TextViewEdit::existHRef(QString href)
-{
-    bool exist = false;
-    emit hasHRef(href, exist);
-    return exist;
 }
 
 int TextViewEdit::topVisibleLine()
