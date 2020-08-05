@@ -76,6 +76,8 @@ public:
     static QString gamsUserConfigDir();
     static QString defaultGamsUserConfigFile();
 
+    static QStringList gamsStandardPaths();
+
     ///
     /// \brief Get the absolut file path.
     /// \param filePath File to get the absolute path for.

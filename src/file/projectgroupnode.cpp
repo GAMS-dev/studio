@@ -255,25 +255,33 @@ void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
 
 void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create)
 {
+    const QStringList tags {"LST","LS2","INC","LIB","SYS"};
+
     exist = false;
     node = nullptr;
     line = 0;
     col = 0;
     if (href.length() < 5) return;
     QStringRef code = href.leftRef(3);
+    int iCode = tags.indexOf(code);
     QVector<QStringRef> parts = href.rightRef(href.length()-4).split(',');
-    if (code.compare(QString("LST")) == 0 || code.compare(QString("LS2")) == 0) {
-        QString lstFile = parameter(code.at(2) == '2' ? "ls2" : "lst");
-        exist = QFile(lstFile).exists();
-        if (!create || !exist) return;
-        line = parts.first().toInt();
-        node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
-    } else if (code.compare(QString("INC")) == 0) {
-        QString fName = parts.first().toString();
-        fName = location() + '/' + fName;
-        exist = QFile(fName).exists();
-        if (!create || !exist) return;
-        node = projectRepo()->findOrCreateFileNode(fName, this);
+    if (iCode >= 0) {
+        if (iCode < 2) {
+            QString lstFile = parameter(code.at(2) == '2' ? "ls2" : "lst");
+            exist = QFile(lstFile).exists();
+            if (!create || !exist) return;
+            line = parts.first().toInt();
+            node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
+        } else {
+            QString fName = parts.first().toString();
+//            QString path = (iCode == 2) ? location()
+//                                        : (iCode == 3) ? CommonPaths::modelLibraryDir()
+//                                                       : CommonPaths::systemDir();
+            fName = location() + '/' + fName;
+            exist = QFile(fName).exists();
+            if (!create || !exist) return;
+            node = projectRepo()->findOrCreateFileNode(fName, this);
+        }
     } else if (parts.first().startsWith('"')) {
         QString fName = parts.first().mid(1, parts.first().length()-2).toString();
         exist = QFile(fName).exists();

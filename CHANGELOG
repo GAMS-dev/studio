@@ -1,3 +1,8 @@
+Version 1.3.4 *
+==================
+- added jumping to included files by holding `Ctrl` and click on the filename. The filename needs to be hardcoded, calculated names are not resolved.
+- fixed several issues of cursor appearance
+
 Version 1.3.3
 ==================
 - fixed system/user license file discovery in About GAMS dialog

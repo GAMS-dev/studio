@@ -268,13 +268,6 @@ void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
     CodeEdit::mouseReleaseEvent(e);
     mScrollDelta = 0;
     mScrollTimer.stop();
-    if (!marks() || marks()->isEmpty()) {
-        // no regular marks, check for temporary hrefs
-        if ((mClickPos-e->pos()).manhattanLength() >= 4 || e->modifiers() & CAnyModifier) return;
-        QTextCursor cursor = cursorForPosition(e->pos());
-        if (!existHRef(cursor.charFormat().anchorHref())) return;
-        emit jumpToHRef(cursor.charFormat().anchorHref());
-    }
 }
 
 void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)

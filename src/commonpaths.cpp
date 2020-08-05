@@ -164,6 +164,15 @@ QString CommonPaths::defaultGamsUserConfigFile()
     return QDir::cleanPath(gamsUserConfigDir() + "/" + GamsUserConfigFile);
 }
 
+QStringList CommonPaths::gamsStandardPaths()
+{
+    QStringList gamsPaths;
+    gamsPaths << systemDir();
+    gamsPaths << UserLicensePath;
+    gamsPaths << GamsConfigPath;
+    return gamsPaths;
+}
+
 QString CommonPaths::defaultWorkingDir()
 {
     QDir defWorkingDir(userDocumentsDir() + "/workspace");

@@ -737,18 +737,41 @@ bool CodeEdit::existHRef(QString href)
     return exist;
 }
 
-QString CodeEdit::getIncludeFile(int line)
+QString CodeEdit::getIncludeFile(int line, int &fileStart)
 {
+    QString res;
     QTextBlock block = document()->findBlockByNumber(line);
+    fileStart = block.length();
     if (block.isValid()) {
         QRegularExpression rex;
         rex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape("$")));
         QRegularExpressionMatch match = rex.match(block.text());
-        if (match.captured(2).toLower() == "include") {
-            return block.text().mid(match.capturedEnd(), block.text().length());
+        if (match.captured(2).length() < block.length()) {
+            QChar endChar(' ');
+            if (match.captured(2).toLower() == "include") {
+                fileStart = match.capturedEnd();
+                endChar = QChar();
+                res = block.text().mid(fileStart, block.text().length()).trimmed();
+            } else if (match.captured(2).toLower().endsWith("include")) { // batInclude, sysInclude, libInclude
+                fileStart = match.capturedEnd();
+                res = block.text().mid(fileStart, block.text().length()).trimmed();
+            }
+            if (!res.isEmpty()) {
+                if (block.text().at(fileStart) == '\"') endChar = '\"';
+                if (block.text().at(fileStart) == '\'') endChar = '\'';
+                if (endChar != QChar()) {
+                    int w = (endChar==' ') ? 0 : 1;
+                    int end = res.indexOf(endChar, 1) + w;
+                    if (end) {
+                        res = res.mid(w, end - 2*w);
+                        fileStart += w;
+                    }
+                }
+            }
         }
     }
-    return QString();
+//    DEB() << "FILE: " << res;
+    return res;
 }
 
 TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy)
@@ -760,11 +783,12 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy)
     mIncludeLinkLine = -1;
     if (greedy && linkType == linkNone) {
         QTextCursor cur = cursorForPosition(mousePos);
-        QString rawFile = getIncludeFile(cur.blockNumber());
-        int boundPos = qBound(cur.block().length() - rawFile.length(), cur.positionInBlock(), cur.block().length()-1);
-        if (!rawFile.isEmpty() && cur.positionInBlock() == boundPos) {
+        int fileStart;
+        QString file = getIncludeFile(cur.blockNumber(), fileStart);
+        int boundPos = qBound(fileStart, cur.positionInBlock(), cur.block().length()-1);
+        if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
             mIncludeLinkLine = cur.blockNumber();
-            linkType = existHRef("INC "+rawFile.trimmed()) ? linkDirect : linkMiss;
+            linkType = existHRef("INC "+file) ? linkDirect : linkMiss;
         }
     }
     return linkType;
@@ -774,15 +798,24 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy)
 void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
 {
     TextLinkType linkType = checkLinks(mousePos, true);
-    if (linkType == linkMark)
-        marksAtMouse().first()->jumpToRefMark();
+    if (linkType == linkMark) {
+        if (!marks() || marks()->isEmpty()) {
+            // no regular marks, check for temporary hrefs
+            QTextCursor cursor = cursorForPosition(mousePos);
+            if (!existHRef(cursor.charFormat().anchorHref())) return;
+            emit jumpToHRef(cursor.charFormat().anchorHref());
+        } else {
+            marksAtMouse().first()->jumpToRefMark();
+        }
+    }
     if (linkType == linkDirect) {
         if (mIncludeLinkLine >= 0) {
             QTextCursor cur = cursorForPosition(mousePos);
-            QString rawFile = getIncludeFile(cur.blockNumber());
-            if (!rawFile.isEmpty() && cur.positionInBlock() >= cur.block().length() - rawFile.length()) {
+            int fileStart;
+            QString file = getIncludeFile(cur.blockNumber(), fileStart);
+            if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
                 mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
-                emit jumpToHRef("INC "+rawFile.trimmed());
+                emit jumpToHRef("INC "+file);
             }
         }
     }
@@ -907,13 +940,14 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     bool existInclude = false;
     if (e->modifiers() & Qt::ControlModifier) {
         QTextCursor cur = cursorForPosition(e->pos());
-        QString rawFile = getIncludeFile(cur.blockNumber());
-        if (!rawFile.isEmpty() && cur.positionInBlock() >= cur.block().length() - rawFile.length()) {
+        int fileStart;
+        QString file = getIncludeFile(cur.blockNumber(), fileStart);
+        if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
             mIncludeLinkLine = cursorForPosition(e->pos()).blockNumber();
             atInclude = true;
-            existInclude = existHRef("INC "+rawFile.trimmed());
+            existInclude = existHRef("INC "+file);
         } else mIncludeLinkLine = -1;
-    }
+    } else mIncludeLinkLine = -1;
     if (old != mIncludeLinkLine) recalcExtraSelections();
 
     if (mBlockEdit) {
@@ -1789,12 +1823,14 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     if (!block.isValid()) return;
     QTextEdit::ExtraSelection selection;
     QTextCursor cur(document());
-    QString rawFile = getIncludeFile(mIncludeLinkLine);
-    cur.setPosition(block.position() + block.length() - rawFile.length());
-    cur.setPosition(block.position() + block.length(), QTextCursor::KeepAnchor);
-    selection.format.setAnchorHref('"'+rawFile.trimmed()+'"');
-    selection.format.setForeground(Scheme::color(Scheme::Normal_Green));
-    selection.format.setUnderlineColor(Scheme::color(Scheme::Normal_Green));
+    int fileStart;
+    QString file = getIncludeFile(mIncludeLinkLine, fileStart);
+    cur.setPosition(block.position() + fileStart);
+    cur.setPosition(cur.position() + file.length(), QTextCursor::KeepAnchor);
+    selection.cursor = cur;
+    selection.format.setAnchorHref('"'+file+'"');
+    selection.format.setForeground(Scheme::color(Scheme::Syntax_directiveBody));
+    selection.format.setUnderlineColor(Scheme::color(Scheme::Syntax_directiveBody));
     selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     selections << selection;
 }
