@@ -262,7 +262,7 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
     line = 0;
     col = 0;
     if (href.length() < 5) return;
-    QStringRef code = href.leftRef(3);
+    QString code = href.left(3);
     int iCode = tags.indexOf(code);
     QVector<QStringRef> parts = href.rightRef(href.length()-4).split(',');
     if (iCode >= 0) {
