@@ -274,11 +274,29 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
             node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
         } else {
             QString fName = parts.first().toString();
-//            QString path = (iCode == 2) ? location()
-//                                        : (iCode == 3) ? CommonPaths::modelLibraryDir()
-//                                                       : CommonPaths::systemDir();
-            fName = location() + '/' + fName;
-            exist = QFile(fName).exists();
+            QStringList locations;
+            if (iCode == 2) locations << location();
+            else if (iCode == 4) {
+                // if (has-option sysIncDir) locations << value-of libIncDir;
+                // else
+                 locations << CommonPaths::systemDir();
+            } else {
+                // if (has-option libIncDir) locations << value-of libIncDir
+                for (QString &path: CommonPaths::gamsStandardPaths()) {
+                    locations << path + "/inclib";
+                }
+            }
+            for (QString loc : locations) {
+                fName = loc + '/' + fName;
+                QFileInfo file(fName);
+                exist = file.exists() && file.isFile();
+                if (!exist) {
+                    file.setFile(file.filePath()+".gms");
+                    exist = file.exists() && file.isFile();
+                    if (exist) fName += ".gms";
+                }
+                if (exist) break;
+            }
             if (!create || !exist) return;
             node = projectRepo()->findOrCreateFileNode(fName, this);
         }

@@ -130,7 +130,7 @@ protected:
     QPoint toolTipPos(const QPoint &mousePos) override;
     bool ensureUnfolded(int line) override;
     bool existHRef(QString href);
-    QString getIncludeFile(int line, int &fileStart);
+    QString getIncludeFile(int line, int &fileStart, QString &code);
     TextLinkType checkLinks(const QPoint &mousePos, bool greedy) override;
     void jumpToCurrentLink(const QPoint &mousePos) override;
 

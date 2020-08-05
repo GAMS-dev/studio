@@ -76,6 +76,7 @@ public:
     static QString gamsUserConfigDir();
     static QString defaultGamsUserConfigFile();
 
+    static void setGamsStandardPaths(QStringList gamsPaths);
     static QStringList gamsStandardPaths();
 
     ///
@@ -118,6 +119,7 @@ private:
 
 private:
     static QString SystemDir;
+    static QStringList GamsStandardPaths;
     static const QString ConfigFile;
     static const QString DocumentationDir;
     static const QString ModlibsPrefixPath;

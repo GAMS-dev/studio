@@ -737,9 +737,10 @@ bool CodeEdit::existHRef(QString href)
     return exist;
 }
 
-QString CodeEdit::getIncludeFile(int line, int &fileStart)
+QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
 {
     QString res;
+    code = "INC";
     QTextBlock block = document()->findBlockByNumber(line);
     fileStart = block.length();
     if (block.isValid()) {
@@ -748,11 +749,13 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart)
         QRegularExpressionMatch match = rex.match(block.text());
         if (match.captured(2).length() < block.length()) {
             QChar endChar(' ');
-            if (match.captured(2).toLower() == "include") {
+            QString command = match.captured(2).toUpper();
+            if (command == "INCLUDE") {
                 fileStart = match.capturedEnd();
                 endChar = QChar();
                 res = block.text().mid(fileStart, block.text().length()).trimmed();
-            } else if (match.captured(2).toLower().endsWith("include")) { // batInclude, sysInclude, libInclude
+            } else if (command.endsWith("INCLUDE")) { // batInclude, sysInclude, libInclude
+                if (command.at(0) != 'B') code = command.left(3);
                 fileStart = match.capturedEnd();
                 res = block.text().mid(fileStart, block.text().length()).trimmed();
             }
@@ -784,11 +787,12 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy)
     if (greedy && linkType == linkNone) {
         QTextCursor cur = cursorForPosition(mousePos);
         int fileStart;
-        QString file = getIncludeFile(cur.blockNumber(), fileStart);
+        QString command;
+        QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
         int boundPos = qBound(fileStart, cur.positionInBlock(), cur.block().length()-1);
         if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
             mIncludeLinkLine = cur.blockNumber();
-            linkType = existHRef("INC "+file) ? linkDirect : linkMiss;
+            linkType = existHRef(command+" "+file) ? linkDirect : linkMiss;
         }
     }
     return linkType;
@@ -812,10 +816,11 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
         if (mIncludeLinkLine >= 0) {
             QTextCursor cur = cursorForPosition(mousePos);
             int fileStart;
-            QString file = getIncludeFile(cur.blockNumber(), fileStart);
+            QString command;
+            QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
             if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
                 mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
-                emit jumpToHRef("INC "+file);
+                emit jumpToHRef(command+" "+file);
             }
         }
     }
@@ -940,12 +945,13 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     bool existInclude = false;
     if (e->modifiers() & Qt::ControlModifier) {
         QTextCursor cur = cursorForPosition(e->pos());
+        QString command;
         int fileStart;
-        QString file = getIncludeFile(cur.blockNumber(), fileStart);
+        QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
         if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
             mIncludeLinkLine = cursorForPosition(e->pos()).blockNumber();
             atInclude = true;
-            existInclude = existHRef("INC "+file);
+            existInclude = existHRef(command+" "+file);
         } else mIncludeLinkLine = -1;
     } else mIncludeLinkLine = -1;
     if (old != mIncludeLinkLine) recalcExtraSelections();
@@ -1823,8 +1829,9 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     if (!block.isValid()) return;
     QTextEdit::ExtraSelection selection;
     QTextCursor cur(document());
+    QString command;
     int fileStart;
-    QString file = getIncludeFile(mIncludeLinkLine, fileStart);
+    QString file = getIncludeFile(mIncludeLinkLine, fileStart, command);
     cur.setPosition(block.position() + fileStart);
     cur.setPosition(cur.position() + file.length(), QTextCursor::KeepAnchor);
     selection.cursor = cur;

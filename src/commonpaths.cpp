@@ -42,6 +42,7 @@ namespace studio {
 #endif
 
 QString CommonPaths::SystemDir = QString();
+QStringList CommonPaths::GamsStandardPaths;
 
 #if defined(__APPLE__) || defined(__unix__)
     const QString CommonPaths::ConfigFile = "gmscmpun.txt";
@@ -164,13 +165,20 @@ QString CommonPaths::defaultGamsUserConfigFile()
     return QDir::cleanPath(gamsUserConfigDir() + "/" + GamsUserConfigFile);
 }
 
+void CommonPaths::setGamsStandardPaths(QStringList gamsPaths)
+{
+    GamsStandardPaths = gamsPaths;
+}
+
 QStringList CommonPaths::gamsStandardPaths()
 {
-    QStringList gamsPaths;
-    gamsPaths << systemDir();
-    gamsPaths << UserLicensePath;
-    gamsPaths << GamsConfigPath;
-    return gamsPaths;
+    if (GamsStandardPaths.isEmpty()) {
+        GamsStandardPaths << SystemDir;
+        GamsStandardPaths << UserLicensePath;
+        GamsStandardPaths << UserLicensePath +"/GAMS";
+        GamsStandardPaths << GamsConfigPath;
+    }
+    return GamsStandardPaths;
 }
 
 QString CommonPaths::defaultWorkingDir()
