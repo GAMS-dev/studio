@@ -497,7 +497,6 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
     connect(this, static_cast<void(ParameterEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&ParameterEditor::commandLineChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
 
     if (history.isEmpty()) {
-        ui->gamsParameterCommandLine->insertItem(0, " ");
         ui->gamsParameterTreeView->clearSelection();
         ui->gamsParameterTreeView->collapseAll();
     }
