@@ -138,6 +138,7 @@ signals:
     void deselect(const QVector<QModelIndex> &declined);
     void select(const QVector<QModelIndex> &selected);
     void closeFileEditors(FileId fileId);
+    void getParameterValue(QString param, QString &value);
 
 public slots:
     void gamsProcessStateChange(ProjectGroupNode* group);

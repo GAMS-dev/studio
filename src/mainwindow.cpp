@@ -61,6 +61,7 @@
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
 #include "neos/neosprocess.h"
+#include "process/gamsinstprocess.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -165,6 +166,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
+    connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -263,7 +265,7 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
-
+    initGamsStandardPaths();
     updateRunState();
 }
 
@@ -413,6 +415,49 @@ int MainWindow::currentLogTab()
 QTabWidget* MainWindow::mainTabs()
 {
     return ui->mainTabs;
+}
+
+void MainWindow::initGamsStandardPaths()
+{
+    mInstProcess = new GamsInstProcess(this);
+    connect(mInstProcess, &GamsInstProcess::finished, this, &MainWindow::gamsInstFinished);
+    connect(mInstProcess, &GamsInstProcess::newProcessCall, this, &MainWindow::newProcessCall);
+    mInstProcess->execute();
+}
+
+void MainWindow::gamsInstFinished(NodeId origin, int exitCode)
+{
+    Q_UNUSED(origin)
+    if (exitCode) return;
+    if (!mInstProcess) return;
+    CommonPaths::setGamsStandardPaths(mInstProcess->configPaths(), CommonPaths::StandardConfigPath);
+    CommonPaths::setGamsStandardPaths(mInstProcess->dataPaths(), CommonPaths::StandardDataPath);
+    mInstProcess->deleteLater();
+    mInstProcess = nullptr;
+}
+
+void MainWindow::getParameterValue(QString param, QString &value)
+{
+    bool joker = param.endsWith('*');
+    if (joker) param.resize(param.size()-1);
+    QString params = mGamsParameterEditor->getCurrentCommandLineData();
+    params = mGamsParameterEditor->getOptionTokenizer()->normalize(params);
+    QList<option::OptionItem> parList = mGamsParameterEditor->getOptionTokenizer()->tokenize(params);
+    for (const option::OptionItem &item : parList) {
+        if (joker) {
+            if (item.key.startsWith(param, Qt::CaseInsensitive)) {
+                value = item.value.trimmed();
+                if (value.startsWith('"') && value.endsWith('"'))
+                    value = value.mid(1, value.size()-2);
+                return;
+            }
+        } else if (item.key.compare(param, Qt::CaseInsensitive) == 0) {
+            value = item.value.trimmed();
+            if (value.startsWith('"') && value.endsWith('"'))
+                value = value.mid(1, value.size()-2);
+            return;
+        }
+    }
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)

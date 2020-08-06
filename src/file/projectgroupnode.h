@@ -113,6 +113,7 @@ public:
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
+    void getParameterValue(QString param, QString &value);
 
 public slots:
     void setErrorText(int lstLine, QString text);

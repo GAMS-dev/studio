@@ -42,7 +42,8 @@ namespace studio {
 #endif
 
 QString CommonPaths::SystemDir = QString();
-QStringList CommonPaths::GamsStandardPaths;
+QStringList CommonPaths::GamsStandardConfigPaths;
+QStringList CommonPaths::GamsStandardDataPaths;
 
 #if defined(__APPLE__) || defined(__unix__)
     const QString CommonPaths::ConfigFile = "gmscmpun.txt";
@@ -165,20 +166,28 @@ QString CommonPaths::defaultGamsUserConfigFile()
     return QDir::cleanPath(gamsUserConfigDir() + "/" + GamsUserConfigFile);
 }
 
-void CommonPaths::setGamsStandardPaths(QStringList gamsPaths)
+void CommonPaths::setGamsStandardPaths(QStringList gamsPaths, StandardPathType pathType)
 {
-    GamsStandardPaths = gamsPaths;
+    switch (pathType) {
+    case StandardConfigPath: GamsStandardConfigPaths = gamsPaths; break;
+    case StandardDataPath: GamsStandardDataPaths = gamsPaths; break;
+    default:
+        EXCEPT() << "Error in setGamsStandardPaths: pathType must be GamsStandardConfigPaths or GamsStandardDataPaths";
+        break;
+    }
 }
 
-QStringList CommonPaths::gamsStandardPaths()
+QStringList CommonPaths::gamsStandardPaths(StandardPathType pathType)
 {
-    if (GamsStandardPaths.isEmpty()) {
-        GamsStandardPaths << SystemDir;
-        GamsStandardPaths << UserLicensePath;
-        GamsStandardPaths << UserLicensePath +"/GAMS";
-        GamsStandardPaths << GamsConfigPath;
+    switch (pathType) {
+    case StandardConfigPath: return GamsStandardConfigPaths;
+    case StandardDataPath: return GamsStandardDataPaths;
+    default: {
+        QStringList res = GamsStandardConfigPaths;
+        for (const QString &path: GamsStandardDataPaths)
+            if (!res.contains(path)) res << path;
+        return res; }
     }
-    return GamsStandardPaths;
 }
 
 QString CommonPaths::defaultWorkingDir()

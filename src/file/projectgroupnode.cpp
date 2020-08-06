@@ -272,22 +272,59 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
             if (!create || !exist) return;
             line = parts.first().toInt();
             node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
+
         } else {
             QString fName = parts.first().toString();
             QStringList locations;
-            if (iCode == 2) locations << location();
-            else if (iCode == 4) {
-                // if (has-option sysIncDir) locations << value-of libIncDir;
-                // else
-                 locations << CommonPaths::systemDir();
-            } else {
-                // if (has-option libIncDir) locations << value-of libIncDir
-                for (QString &path: CommonPaths::gamsStandardPaths()) {
-                    locations << path + "/inclib";
+            if (iCode == 2) { // INC
+                locations << location();
+                QString inDir;
+                emit getParameterValue("InputDir", inDir);
+                if (inDir.isNull()) emit getParameterValue("IDir", inDir);
+                if (!inDir.isNull()) {
+                    // check if there are joined paths
+                    locations << QDir::fromNativeSeparators(inDir).split(QDir::listSeparator(), Qt::SkipEmptyParts);
+                } else {
+                    emit getParameterValue("InputDir*", inDir);
+                    if (inDir.isNull()) emit getParameterValue("IDir*", inDir);
+                    if (!inDir.isNull()) {
+                        // there is at least one inputDir with number -> read all
+                        for (int i = 1; i <= 40 ; ++i) {
+                            QString inDirX;
+                            emit getParameterValue(QString("InputDir%1").arg(i), inDirX);
+                            if (inDirX.isNull()) emit getParameterValue(QString("IDir%1").arg(i), inDirX);
+                            if (!inDirX.isNull()) {
+                                locations << QDir::fromNativeSeparators(inDirX);
+                            }
+                        }
+                    }
                 }
+
+            } else if (iCode == 4) { // SYS
+                QString sysDir;
+                emit getParameterValue("sysIncDir", sysDir);
+                if (sysDir.isNull()) emit getParameterValue("SDir", sysDir);
+
+                if (!sysDir.isNull()) locations << QDir::fromNativeSeparators(sysDir);
+                else locations << CommonPaths::systemDir();
+
+            } else { // LIB
+                QString libDir;
+                emit getParameterValue("libIncDir", libDir);
+                if (libDir.isNull()) emit getParameterValue("LDir", libDir);
+
+                if (!libDir.isNull()) {
+                    for (QString &path: CommonPaths::gamsStandardPaths())
+                        locations << path + "/" + QDir::fromNativeSeparators(libDir);
+                }
+                for (QString &path: CommonPaths::gamsStandardPaths())
+                    locations << path + "/inclib";
             }
+            QString rawName = fName;
             for (QString loc : locations) {
-                fName = loc + '/' + fName;
+                if (!QDir(loc).isAbsolute())
+                    loc = location() + '/' + loc;
+                fName = loc + '/' + rawName;
                 QFileInfo file(fName);
                 exist = file.exists() && file.isFile();
                 if (!exist) {

@@ -329,6 +329,7 @@ ProjectGroupNode* ProjectRepo::createGroup(QString name, QString path, QString r
         group = runGroup;
         connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
         connect(runGroup, &ProjectRunGroupNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
+        connect(runGroup, &ProjectRunGroupNode::getParameterValue, this, &ProjectRepo::getParameterValue);
     } else
         group = new ProjectGroupNode(name, path);
     addToIndex(group);
