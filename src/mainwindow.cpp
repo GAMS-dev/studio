@@ -2223,9 +2223,9 @@ void MainWindow::restoreFromSettings()
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
-        showFullScreen();
+        setWindowState(windowState() ^ Qt::WindowFullScreen);
     } else if (mMaximizedBeforeFullScreen) {
-        showMaximized();
+        setWindowState(windowState() ^ Qt::WindowMaximized);
     }
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
     restoreState(settings->toByteArray(skWinState));
