@@ -2,6 +2,7 @@ Version 1.3.4  *
 ==================
 - fixed single space in command-line option combobox when history is empty
 - fixed missing tab browser button when studio starts in maximized/fullscreen mode
+- fixed search result navigation creating too many cursor history events
 
 Version 1.3.3
 ==================

@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtWidgets>
+#include <QPalette>
+
 #include "editors/codeedit.h"
 #include "settings.h"
 #include "search/searchdialog.h"
@@ -29,8 +31,6 @@
 #include "editorhelper.h"
 #include "viewhelper.h"
 #include "search/searchlocator.h"
-#include <QPalette>
-
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
 
@@ -42,11 +42,6 @@ inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySeq
 CodeEdit::CodeEdit(QWidget *parent)
     : AbstractEdit(parent)
 {
-//    QTextOption opt = document()->defaultTextOption();
-//    QTextOption::Flags f = opt.flags();
-//    f.setFlag(QTextOption::Flag::ShowTabsAndSpaces);
-//    opt.setFlags(f);
-//    document()->setDefaultTextOption(opt);
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
     mBlinkBlockEdit.setInterval(500);
