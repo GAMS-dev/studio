@@ -51,7 +51,9 @@ namespace studio {
 class AbstractProcess;
 class GamsProcess;
 class GamsLibProcess;
+namespace process {
 class GamsInstProcess;
+}
 class WelcomePage;
 class Settings;
 class SearchResultList;
@@ -404,7 +406,7 @@ private:
     QTimer mWinStateTimer;
 
     GamsLibProcess *mLibProcess = nullptr;
-    GamsInstProcess *mInstProcess = nullptr;
+    process::GamsInstProcess *mInstProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;

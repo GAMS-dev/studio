@@ -419,9 +419,11 @@ QTabWidget* MainWindow::mainTabs()
 
 void MainWindow::initGamsStandardPaths()
 {
-    mInstProcess = new GamsInstProcess(this);
-    connect(mInstProcess, &GamsInstProcess::finished, this, &MainWindow::gamsInstFinished);
-    connect(mInstProcess, &GamsInstProcess::newProcessCall, this, &MainWindow::newProcessCall);
+    mInstProcess = new process::GamsInstProcess(this);
+    connect(mInstProcess, &process::GamsInstProcess::finished,
+            this, &MainWindow::gamsInstFinished);
+    connect(mInstProcess, &process::GamsInstProcess::newProcessCall,
+            this, &MainWindow::newProcessCall);
     mInstProcess->execute();
 }
 

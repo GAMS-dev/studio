@@ -2,8 +2,10 @@
 
 namespace gams {
 namespace studio {
+namespace process {
 
-GamsInstProcess::GamsInstProcess(QObject *parent): AbstractGamsProcess("gamsinst", parent)
+GamsInstProcess::GamsInstProcess(QObject *parent)
+    : AbstractGamsProcess("gamsinst", parent)
 {
     setParameters(QStringList() << "-listdirs");
     connect(this, &GamsInstProcess::newStdChannelData, this, &GamsInstProcess::newData);
@@ -22,16 +24,6 @@ void GamsInstProcess::execute()
 #endif
 }
 
-QStringList GamsInstProcess::configPaths()
-{
-    return mConfig;
-}
-
-QStringList GamsInstProcess::dataPaths()
-{
-    return mData;
-}
-
 void GamsInstProcess::newData(const QByteArray &data)
 {
     if (data.startsWith("Config")) isData = false;
@@ -41,10 +33,9 @@ void GamsInstProcess::newData(const QByteArray &data)
         if (line.isEmpty()) return;
         if (isData) mData << line;
         else mConfig << line;
-
     }
 }
 
-
+} // namespace process
 } // namespace studio
 } // namespace gams
