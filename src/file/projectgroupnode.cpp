@@ -283,7 +283,7 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
                 if (inDir.isNull()) emit getParameterValue("IDir", inDir);
                 if (!inDir.isNull()) {
                     // check if there are joined paths
-                    locations << QDir::fromNativeSeparators(inDir).split(QDir::listSeparator(), Qt::SkipEmptyParts);
+                    locations << QDir::fromNativeSeparators(inDir).split(QDir::listSeparator(), QString::SkipEmptyParts);
                 } else {
                     emit getParameterValue("InputDir*", inDir);
                     if (inDir.isNull()) emit getParameterValue("IDir*", inDir);
