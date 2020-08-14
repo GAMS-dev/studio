@@ -101,11 +101,19 @@ QString GamsLicenseInfo::solverLicense(const QString &name, int id) const
     auto codes = solverCodes(id);
     if (!mLicenseAvailable)
         return "None";
+    if (0 == palLicenseLevel(mPAL))
+        return "Demo";
+    if (5 == palLicenseLevel(mPAL))
+        return "Community";
     if (palLicenseCheckSubX(mPAL,
                             name.toStdString().c_str(),
                             codes.toStdString().c_str(),
-                            &days))
+                            &days)) {
+        if (palLicenseIsAcademic(mPAL))
+            return "Community";
         return "Demo";
+    }
+
     if (days == 0)
         return "Full";
     if (days > 0)
