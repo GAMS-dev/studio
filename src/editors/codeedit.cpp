@@ -941,18 +941,15 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
     int old = mIncludeLinkLine;
-    bool atInclude = false;
-    bool existInclude = false;
     if (e->modifiers() & Qt::ControlModifier) {
         QTextCursor cur = cursorForPosition(e->pos());
         QString command;
         int fileStart;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-        if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
+        if (!file.isEmpty() && cur.positionInBlock() >= fileStart)
             mIncludeLinkLine = cursorForPosition(e->pos()).blockNumber();
-            atInclude = true;
-            existInclude = existHRef(command+" "+file);
-        } else mIncludeLinkLine = -1;
+        else
+            mIncludeLinkLine = -1;
     } else mIncludeLinkLine = -1;
     if (old != mIncludeLinkLine) recalcExtraSelections();
 
