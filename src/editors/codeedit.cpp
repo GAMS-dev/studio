@@ -515,20 +515,21 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
 bool CodeEdit::allowClosing(int chIndex)
 {
-    QString allowingChars(",;){}] ");
+    QString allowingChars(",;){}] \x9");
 
     // if next character is in the list of allowing characters
     bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1
         // AND next character is not closing partner of current
             && mClosing.indexOf(document()->characterAt(textCursor().position())) != chIndex;
 
-    bool nextLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
+    bool nextIsLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
     // if char before and after the cursor are a matching pair: allow anyways
     QChar prior = document()->characterAt(textCursor().position() - 1);
-    bool matchingPairExists = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
+
+    bool matchingPairExists = (mOpening.indexOf(prior) != -1) && ( mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position())) );
 
     // insert closing if next char permits or is end of line
-    bool allowAutoClose =  nextAllows || nextLinebreak || matchingPairExists;
+    bool allowAutoClose =  nextAllows || nextIsLinebreak || matchingPairExists;
 
     // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
     return allowAutoClose && (!prior.isLetterOrNumber() || chIndex < 3);
