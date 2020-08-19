@@ -515,7 +515,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
 bool CodeEdit::allowClosing(int chIndex)
 {
-    QString allowingChars(",;){}] \x9");
+    const QString allowingChars(",;)}] \x9");
 
     // if next character is in the list of allowing characters
     bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1
