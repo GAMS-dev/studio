@@ -209,7 +209,7 @@ void TestGamsLicenseInfo::testSolverLicense()
         auto result = gamsLicenseInfo.solverLicense(solverName, solverId);
         test = result.contains("Demo") || result.contains("Full") ||
                 result.contains("Evaluation") || result.contains("Expired") ||
-                result.contains("None");
+                result.contains("Community") || result.contains("None");
         if (!test) break;
     }
     QVERIFY(test);
