@@ -120,14 +120,6 @@ bool NeosProcess::prepareNeosParameters()
     localParams.removeAt(0);
     QStringList remoteParams = localParams;
 
-    // TODO(JM) remove when GAMS33 is out (also in pythons gams-compile command)
-    QMutableListIterator<QString> i(remoteParams);
-    while (i.hasNext()) {
-        i.next();
-        if (i.value().startsWith("previousWork", Qt::CaseInsensitive)) i.remove();
-    }
-
-
     if (!neosFile.open(QFile::WriteOnly)) {
         DEB() << "error opening neos file: " << neosPath;
         return false;
