@@ -2,11 +2,13 @@ Version 1.4.0 *
 ==================
 - added community license type to solver matrix
 
-Version 1.3.4 *
+Version 1.3.4
 ==================
-- fixed single space in command-line option combobox when history is empty
+- removed space character when command-line parameter history should be empty
 - fixed missing tab browser button when studio starts in maximized/fullscreen mode
-- fixed search result navigation creating too many cursor history events
+- added community license type to solver matrix
+- fixed insertion of auto-closing characters in unwanted situations (e.g.
+beginning of a word)
 
 Version 1.3.3
 ==================
