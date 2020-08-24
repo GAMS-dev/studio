@@ -614,7 +614,7 @@ void TestCPLEXOption::testInvalidOption()
 void TestCPLEXOption::testReadOptionFile_data()
 {
     // given
-    QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2"));
+    QFile outputFile(QDir(".").absoluteFilePath("cplex.op2"));
     if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
         QFAIL("expected to open cplex.op2 to write, but failed");
 
@@ -668,7 +668,7 @@ void TestCPLEXOption::testReadOptionFile_data()
     outputFile.close();
 
     //
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op2");
+    QString optFile = QDir(".").absoluteFilePath("cplex.op2");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -1143,7 +1143,7 @@ void TestCPLEXOption::testReadOptionFile()
 void TestCPLEXOption::testNonExistReadOptionFile()
 {
     // when
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op012345");
+    QString optFile = QDir(".").absoluteFilePath("cplex.op012345");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -1179,14 +1179,14 @@ void TestCPLEXOption::testWriteOptionFile_data()
     int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"), QTextCodec::codecForLocale()) );
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("cplex.op4"), QTextCodec::codecForLocale()) );
 
     // clean up
     qDeleteAll(items);
     items.clear();
 
     // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("cplex.op4"));
+    QFile inputFile(QDir(".").absoluteFilePath("cplex.op4"));
     int i = 0;
     QStringList optionItems;
 
