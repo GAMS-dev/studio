@@ -118,11 +118,11 @@ pipeline {
                     agent { label 'macos' }
                     steps {
                         sh '''
-                            #mkdir reports
-                            #cd tests/bin
-                            #for f in *; do
-                            #    ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
-                            #done
+                            mkdir reports
+                            cd tests/bin
+                            for f in *; do
+                                ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
+                            done
                         '''
                     }
                     post {
