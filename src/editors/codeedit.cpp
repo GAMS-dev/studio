@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QtWidgets>
+#include <QPalette>
+
 #include "editors/codeedit.h"
 #include "settings.h"
 #include "search/searchdialog.h"
@@ -29,8 +31,6 @@
 #include "editorhelper.h"
 #include "viewhelper.h"
 #include "search/searchlocator.h"
-#include <QPalette>
-
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
 
@@ -42,11 +42,6 @@ inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySeq
 CodeEdit::CodeEdit(QWidget *parent)
     : AbstractEdit(parent)
 {
-//    QTextOption opt = document()->defaultTextOption();
-//    QTextOption::Flags f = opt.flags();
-//    f.setFlag(QTextOption::Flag::ShowTabsAndSpaces);
-//    opt.setFlags(f);
-//    document()->setDefaultTextOption(opt);
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
     mBlinkBlockEdit.setInterval(500);
@@ -520,20 +515,21 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
 bool CodeEdit::allowClosing(int chIndex)
 {
-    QString allowingChars(",;){}] ");
+    const QString allowingChars(",;)}] \x9");
 
     // if next character is in the list of allowing characters
     bool nextAllows = allowingChars.indexOf(document()->characterAt(textCursor().position())) != -1
         // AND next character is not closing partner of current
             && mClosing.indexOf(document()->characterAt(textCursor().position())) != chIndex;
 
-    bool nextLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
+    bool nextIsLinebreak = textCursor().positionInBlock() == textCursor().block().length()-1;
     // if char before and after the cursor are a matching pair: allow anyways
     QChar prior = document()->characterAt(textCursor().position() - 1);
-    bool matchingPairExists = mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position()));
+
+    bool matchingPairExists = (mOpening.indexOf(prior) != -1) && ( mOpening.indexOf(prior) == mClosing.indexOf(document()->characterAt(textCursor().position())) );
 
     // insert closing if next char permits or is end of line
-    bool allowAutoClose =  nextAllows || nextLinebreak || matchingPairExists;
+    bool allowAutoClose =  nextAllows || nextIsLinebreak || matchingPairExists;
 
     // next is allowed char && if brackets are there and matching && no quotes after letters or numbers
     return allowAutoClose && (!prior.isLetterOrNumber() || chIndex < 3);

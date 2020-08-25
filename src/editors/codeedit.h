@@ -257,8 +257,8 @@ private:
     QVector<BlockEditPos*> mBlockEditPos;
     bool mSmartType = false;
     int mIconCols = 0;
-    const QString mOpening = "([{'\"";
-    const QString mClosing = ")]}'\"";
+    const QString mOpening = "([{'\""; // characters that will be auto closed if mSmartType is true
+    const QString mClosing = ")]}'\""; // and their corresponding partner
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
     LinePair mFoldMark;

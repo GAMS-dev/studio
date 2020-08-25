@@ -30,6 +30,8 @@
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 #include "support/solverconfiginfo.h"
+#include "editors/navigationhistory.h"
+#include "editors/navigationhistorylocator.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -666,9 +668,11 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int leng
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
     if (edit && line < edit->document()->blockCount()) {
         QTextBlock block = edit->document()->findBlockByNumber(line);
+        NavigationHistoryLocator::navigationHistory()->stopRecord();
         edit->jumpTo(line, qMin(column, block.length()-1));
         QTextCursor tc = edit->textCursor();
         tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, length);
+        NavigationHistoryLocator::navigationHistory()->startRecord();
         edit->setTextCursor(tc);
 
         // center line vertically
