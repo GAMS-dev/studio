@@ -185,6 +185,7 @@ private:
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
+    void updateLinkAppearance(QTextCursor cur, bool active = true);
     bool allowClosing(int chIndex);
     bool toggleFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;

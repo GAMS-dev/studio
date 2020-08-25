@@ -389,6 +389,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 
     if (!isReadOnly()) {
+        if (e->key() == Hotkey::JumpToContext) {
+//            updateMarksAtMouse(textCursor());
+            jumpToCurrentLink(cursorRect().topLeft());
+            e->accept();
+            return;
+        }
         if (e->key() == Hotkey::NewLine) {
             QTextCursor cursor = textCursor();
             int pos = cursor.positionInBlock();
@@ -936,19 +942,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
-    int old = mIncludeLinkLine;
-    if (e->modifiers() & Qt::ControlModifier) {
-        QTextCursor cur = cursorForPosition(e->pos());
-        QString command;
-        int fileStart;
-        QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-        if (!file.isEmpty() && cur.positionInBlock() >= fileStart)
-            mIncludeLinkLine = cursorForPosition(e->pos()).blockNumber();
-        else
-            mIncludeLinkLine = -1;
-    } else mIncludeLinkLine = -1;
-    if (old != mIncludeLinkLine) recalcExtraSelections();
-
+    updateLinkAppearance(cursorForPosition(e->pos()), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
@@ -1078,6 +1072,14 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         lastAct = act;
     }
     if (!isReadOnly()) {
+        TextLinkType linkType = checkLinks(e->pos(), true);
+        updateLinkAppearance(cursorForPosition(e->pos()), linkType == linkDirect);
+        QAction *actLink = menu->addAction("Open link", [this, e]() { jumpToCurrentLink(e->pos()); });
+        actLink->setShortcut(Keys::instance().keySequence(Hotkey::JumpToContext).first());
+        if (linkType != linkDirect/* || linkType == linkMark*/) {
+            actLink->setEnabled(false);
+        }
+
         QMenu *submenu = menu->addMenu(tr("Advanced"));
         QList<QAction*> ret;
         emit requestAdvancedActions(&ret);
@@ -1097,6 +1099,23 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     menu->exec(e->globalPos());
     delete menu;
 }
+
+void CodeEdit::updateLinkAppearance(QTextCursor cur, bool active)
+{
+    int old = mIncludeLinkLine;
+    if (active) {
+        QString command;
+        int fileStart;
+        QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
+        if (!file.isEmpty() && cur.positionInBlock() >= fileStart)
+            mIncludeLinkLine = cur.blockNumber();
+        else
+            mIncludeLinkLine = -1;
+    } else mIncludeLinkLine = -1;
+    if (old != mIncludeLinkLine) recalcExtraSelections();
+    lineNumberArea()->setCursor(viewport()->cursor().shape());
+}
+
 
 void CodeEdit::marksChanged(const QSet<int> dirtyLines)
 {
