@@ -115,6 +115,7 @@ protected:
     virtual bool ensureUnfolded(int line);
     virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy);
     virtual void jumpToCurrentLink(const QPoint &mousePos);
+    void updateMarksAtMouse(QTextCursor cursor);
 
 private:
     const LineMarks* mMarks = nullptr;

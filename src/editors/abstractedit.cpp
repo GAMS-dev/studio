@@ -263,6 +263,16 @@ void AbstractEdit::jumpToCurrentLink(const QPoint &mousePos)
         mMarksAtMouse.first()->jumpToRefMark();
 }
 
+void AbstractEdit::updateMarksAtMouse(QTextCursor cursor)
+{
+    QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cursor.blockNumber()));
+    mMarksAtMouse.clear();
+    for (TextMark* mark: marks) {
+        if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
+            mMarksAtMouse << mark;
+    }
+}
+
 void AbstractEdit::internalExtraSelUpdate()
 {
     QList<QTextEdit::ExtraSelection> selections;
@@ -377,13 +387,9 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
     bool validLink = (isReadOnly() || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
 
     if (mMarks && validLink) {
-        QTextCursor cursor = cursorForPosition(e->pos());
-        QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cursor.blockNumber()));
+        updateMarksAtMouse(cursorForPosition(e->pos()));
+    } else {
         mMarksAtMouse.clear();
-        for (TextMark* mark: marks) {
-            if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
-                mMarksAtMouse << mark;
-        }
     }
     updateCursorShape(validLink);
 }
