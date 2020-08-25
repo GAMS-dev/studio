@@ -146,7 +146,7 @@ QIcon TextMark::icon()
 
 
 
-bool TextMark::cursorShape()
+bool TextMark::linkExist()
 {
     if (mType == error || mType == link)
         return mReference;

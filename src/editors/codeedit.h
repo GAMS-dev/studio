@@ -129,9 +129,9 @@ protected:
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
     bool ensureUnfolded(int line) override;
-    bool existHRef(QString href);
+    QString resolveHRef(QString href);
     QString getIncludeFile(int line, int &fileStart, QString &code);
-    TextLinkType checkLinks(const QPoint &mousePos, bool greedy) override;
+    TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr) override;
     void jumpToCurrentLink(const QPoint &mousePos) override;
 
 signals:
@@ -141,7 +141,7 @@ signals:
     void searchFindNextPressed();
     void searchFindPrevPressed();
     void requestAdvancedActions(QList<QAction*>* actions);
-    void hasHRef(const QString &href, bool &exist);
+    void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
 
 public slots:

@@ -113,7 +113,7 @@ protected:
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
     virtual LinePair findFoldBlock(int line, bool onlyThisLine = false) const;
     virtual bool ensureUnfolded(int line);
-    virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy);
+    virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr);
     virtual void jumpToCurrentLink(const QPoint &mousePos);
     void updateMarksAtMouse(QTextCursor cursor);
 

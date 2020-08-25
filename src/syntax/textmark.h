@@ -59,7 +59,7 @@ public:
     QIcon icon();
     inline Type type() const {return mType;}
     inline Type refType() const { return (mReference) ? mReference->type() : none; }
-    bool cursorShape();
+    bool linkExist();
     inline bool isValid() {return mMarkRepo && (mLine>=0) && (mColumn>=0);}
     inline bool isValidLink(bool inIconRegion = false)
     { return mReference && ((mType == error && inIconRegion) || mType == link); }

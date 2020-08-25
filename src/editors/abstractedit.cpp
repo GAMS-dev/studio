@@ -247,12 +247,14 @@ bool AbstractEdit::ensureUnfolded(int line)
     return false;
 }
 
-TextLinkType AbstractEdit::checkLinks(const QPoint &mousePos, bool greedy)
+TextLinkType AbstractEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *fName)
 {
+    Q_UNUSED(fName)
     // greedy extends the scope (e.g. when control modifier is pressed)
     if (greedy || mousePos.x() < 0)
-        if (mMarks && !mMarks->isEmpty() && !mMarksAtMouse.isEmpty())
-            return mMarksAtMouse.first()->cursorShape() ? linkMark : linkMiss;
+        if (mMarks && !mMarks->isEmpty() && !mMarksAtMouse.isEmpty()) {
+            return mMarksAtMouse.first()->linkExist() ? linkMark : linkMiss;
+        }
     return linkNone;
 }
 

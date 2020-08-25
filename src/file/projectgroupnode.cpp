@@ -253,15 +253,16 @@ void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
     }
 }
 
-void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create)
+QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, int &line, int &col, bool create)
 {
     const QStringList tags {"LST","LS2","INC","LIB","SYS"};
+    QString res;
 
-    exist = false;
+    bool exist = false;
     node = nullptr;
     line = 0;
     col = 0;
-    if (href.length() < 5) return;
+    if (href.length() < 5) return res;
     QString code = href.left(3);
     int iCode = tags.indexOf(code);
     QVector<QStringRef> parts = href.rightRef(href.length()-4).split(',');
@@ -269,7 +270,8 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
         if (iCode < 2) {
             QString lstFile = parameter(code.at(2) == '2' ? "ls2" : "lst");
             exist = QFile(lstFile).exists();
-            if (!create || !exist) return;
+            if (exist) res = lstFile;
+            if (!create || !exist) return res;
             line = parts.first().toInt();
             node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
 
@@ -314,6 +316,7 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
                 if (libDir.isNull()) emit getParameterValue("LDir", libDir);
 
                 if (!libDir.isNull()) {
+                    libDir = QDir::fromNativeSeparators(libDir);
                     QDir dir(libDir);
                     if (dir.isAbsolute()) {
                         locations << libDir;
@@ -341,17 +344,20 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
                 }
                 if (exist) break;
             }
-            if (!create || !exist) return;
+            if (exist) res = fName;
+            if (!create || !exist) return res;
             node = projectRepo()->findOrCreateFileNode(fName, this);
         }
     } else if (parts.first().startsWith('"')) {
         QString fName = parts.first().mid(1, parts.first().length()-2).toString();
         exist = QFile(fName).exists();
-        if (!create || !exist) return;
+        if (exist) res = fName;
+        if (!create || !exist) return res;
         node = projectRepo()->findOrCreateFileNode(fName, this);
         if (parts.size() > 1) line = parts.at(1).toInt();
         if (parts.size() > 2) col = parts.at(2).toInt();
     }
+    return res;
 }
 
 ProjectLogNode *ProjectRunGroupNode::logNode()
@@ -460,35 +466,33 @@ void ProjectRunGroupNode::setErrorText(int lstLine, QString text)
     }
 }
 
-void ProjectRunGroupNode::hasHRef(const QString &href, bool &exist)
+void ProjectRunGroupNode::hasHRef(const QString &href, QString &fileName)
 {
     ProjectFileNode *node;
     int line;
     int column;
-    resolveHRef(href, exist, node, line, column);
+    fileName = resolveHRef(href, node, line, column);
 }
 
 void ProjectRunGroupNode::jumpToHRef(const QString &href)
 {
-    bool exist;
     ProjectFileNode *node;
     int line;
     int column;
-    resolveHRef(href, exist, node, line, column, true);
+    resolveHRef(href, node, line, column, true);
     if (node) node->file()->jumpTo(node->runGroupId(), true, line-1, column);
 }
 
 void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
 {
     if (marks.hasErr() && !marks.hRef.isEmpty()) {
-        bool exist;
         int col;
         ProjectFileNode *errNode;
         int errLine;
         ProjectFileNode *lstNode;
         int lstLine;
-        resolveHRef(marks.hRef, exist, lstNode, lstLine, col, true);
-        resolveHRef(marks.errRef, exist, errNode, errLine, col, true);
+        resolveHRef(marks.hRef, lstNode, lstLine, col, true);
+        resolveHRef(marks.errRef, errNode, errLine, col, true);
         TextMark *errMark = nullptr;
         TextMark *lstMark = nullptr;
         if (errNode)

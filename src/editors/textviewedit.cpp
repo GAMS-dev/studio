@@ -227,7 +227,7 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
         QTextCursor cursor = cursorForPosition(e->pos());
         mClickPos = e->pos();
         mClickStart = !(e->modifiers() & Qt::ShiftModifier);
-        if (existHRef(cursor.charFormat().anchorHref()) && !(e->modifiers() & CAnyModifier)) return;
+        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) return;
         if (e->buttons() == Qt::LeftButton) {
             if (!mClickStart) {
                 mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
@@ -282,22 +282,24 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
         CodeEdit::mouseDoubleClickEvent(event);
     } else {
         QTextCursor cursor = cursorForPosition(event->pos());
-        if (existHRef(cursor.charFormat().anchorHref())) return;
+        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty()) return;
         emit findClosestLstRef(cursor);
     }
 }
 
-TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy)
+TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *fName)
 {
     Q_UNUSED(greedy)
     TextLinkType res = linkNone;
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(mousePos);
         if (!cursor.charFormat().anchorHref().isEmpty()) {
-            res = (existHRef(cursor.charFormat().anchorHref())) ? linkMark : linkMiss;
+            QString fileName = resolveHRef(cursor.charFormat().anchorHref());
+            res = (fileName.isEmpty()) ? linkMiss : linkMark;
+            if (fName) *fName = fileName;
         }
     } else {
-        res = CodeEdit::checkLinks(mousePos, greedy);
+        res = CodeEdit::checkLinks(mousePos, greedy, fName);
     }
     return res;
 }

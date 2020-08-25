@@ -732,11 +732,11 @@ bool CodeEdit::ensureUnfolded(int line)
     return  lastUnfoldedNr >= 0;
 }
 
-bool CodeEdit::existHRef(QString href)
+QString CodeEdit::resolveHRef(QString href)
 {
-    bool exist = false;
-    emit hasHRef(href, exist);
-    return exist;
+    QString fileName;
+    emit hasHRef(href, fileName);
+    return fileName;
 }
 
 QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
@@ -779,12 +779,12 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
     return res;
 }
 
-TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy)
+TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *fName)
 {
     // greedy extends the scope (e.g. when control modifier is pressed)
     TextLinkType linkType = linkNone;
     if (!showFolding() || mousePos.x() >= 0 || mousePos.x() < -iconSize())
-        linkType = AbstractEdit::checkLinks(mousePos, greedy);
+        linkType = AbstractEdit::checkLinks(mousePos, greedy, fName);
     mIncludeLinkLine = -1;
     if (greedy && linkType == linkNone) {
         QTextCursor cur = cursorForPosition(mousePos);
@@ -794,7 +794,9 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy)
         int boundPos = qBound(fileStart, cur.positionInBlock(), cur.block().length()-1);
         if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
             mIncludeLinkLine = cur.blockNumber();
-            linkType = existHRef(command+" "+file) ? linkDirect : linkMiss;
+            QString fileName = resolveHRef(command+" "+file);
+            linkType = fileName.isEmpty() ? linkMiss : linkDirect;
+            if (fName) *fName = fileName;
         }
     }
     return linkType;
@@ -808,7 +810,7 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
         if (!marks() || marks()->isEmpty()) {
             // no regular marks, check for temporary hrefs
             QTextCursor cursor = cursorForPosition(mousePos);
-            if (!existHRef(cursor.charFormat().anchorHref())) return;
+            if (resolveHRef(cursor.charFormat().anchorHref()).isEmpty()) return;
             emit jumpToHRef(cursor.charFormat().anchorHref());
         } else {
             marksAtMouse().first()->jumpToRefMark();
@@ -942,6 +944,16 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
+    if (!e->modifiers().testFlag(Qt::ControlModifier)) {
+        QString fileName;
+        checkLinks(e->pos(), true, &fileName);
+        if (fileName.isEmpty())
+            QToolTip::hideText();
+        else if (fileName != QToolTip::text())
+            QToolTip::showText(mapToGlobal(e->pos()), QDir::toNativeSeparators(fileName), this);
+        // TODO(JM) redure flicker on holding ctrl
+    }
+
     updateLinkAppearance(cursorForPosition(e->pos()), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
@@ -1072,8 +1084,10 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         lastAct = act;
     }
     if (!isReadOnly()) {
-        TextLinkType linkType = checkLinks(e->pos(), true);
+        QString fileName;
+        TextLinkType linkType = checkLinks(e->pos(), true, &fileName);
         updateLinkAppearance(cursorForPosition(e->pos()), linkType == linkDirect);
+
         QAction *actLink = menu->addAction("Open link", [this, e]() { jumpToCurrentLink(e->pos()); });
         actLink->setShortcut(Keys::instance().keySequence(Hotkey::JumpToContext).first());
         if (linkType != linkDirect/* || linkType == linkMark*/) {

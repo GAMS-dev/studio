@@ -64,7 +64,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    TextLinkType checkLinks(const QPoint &mousePos, bool greedy) override;
+    TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr) override;
 //    bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
     void paintEvent(QPaintEvent *e) override;
