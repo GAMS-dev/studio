@@ -314,8 +314,15 @@ void ProjectRunGroupNode::resolveHRef(QString href, bool &exist, ProjectFileNode
                 if (libDir.isNull()) emit getParameterValue("LDir", libDir);
 
                 if (!libDir.isNull()) {
-                    for (QString &path: CommonPaths::gamsStandardPaths())
-                        locations << path + "/" + QDir::fromNativeSeparators(libDir);
+                    QDir dir(libDir);
+                    if (dir.isAbsolute()) {
+                        locations << libDir;
+                    } else {
+                        for (QString &path: CommonPaths::gamsStandardPaths())
+                            locations << path + "/" + QDir::fromNativeSeparators(libDir);
+                        // TODO(JM) ... Or should it be just:
+//                        libDir = CommonPaths::systemDir() + '/' + libDir;
+                    }
                 }
                 for (QString &path: CommonPaths::gamsStandardPaths())
                     locations << path + "/inclib";
