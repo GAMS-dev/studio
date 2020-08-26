@@ -842,7 +842,7 @@ QString ProjectRunGroupNode::tooltip()
 
 void ProjectRunGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
-    Q_UNUSED(newState);
+    Q_UNUSED(newState)
     emit gamsProcessStateChanged(this);
 }
 
@@ -854,7 +854,7 @@ ProjectRootNode::ProjectRootNode(ProjectRepo* repo)
 
 void ProjectRootNode::setParentNode(ProjectGroupNode *parent)
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     EXCEPT() << "The root node has no parent";
 }
 

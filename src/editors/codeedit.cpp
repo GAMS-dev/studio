@@ -944,16 +944,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
-    if (!e->modifiers().testFlag(Qt::ControlModifier)) {
-        QString fileName;
-        checkLinks(e->pos(), true, &fileName);
-        if (fileName.isEmpty())
-            QToolTip::hideText();
-        else if (fileName != QToolTip::text())
-            QToolTip::showText(mapToGlobal(e->pos()), QDir::toNativeSeparators(fileName), this);
-        // TODO(JM) redure flicker on holding ctrl
-    }
-
+    updateToolTip(e->pos());
     updateLinkAppearance(cursorForPosition(e->pos()), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
@@ -1876,6 +1867,15 @@ QPoint CodeEdit::toolTipPos(const QPoint &mousePos)
     else
         pos.setX(pos.x() + mLineNumberArea->width()+2);
     return pos;
+}
+
+QString CodeEdit::getToolTipText(const QPoint &pos)
+{
+    QString res = AbstractEdit::getToolTipText(pos);
+    if (!res.isEmpty()) return res;
+    QString fileName;
+    checkLinks(pos, true, &fileName);
+    return fileName;
 }
 
 QString CodeEdit::lineNrText(int blockNr)

@@ -128,6 +128,7 @@ protected:
     void extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
+    QString getToolTipText(const QPoint &pos) override;
     bool ensureUnfolded(int line) override;
     QString resolveHRef(QString href);
     QString getIncludeFile(int line, int &fileStart, QString &code);

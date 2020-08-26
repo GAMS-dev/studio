@@ -81,7 +81,9 @@ protected:
 
     AbstractEdit(QWidget *parent);
 //    void showToolTip(const QList<TextMark *> &marks, const QPoint &pos);
-    void showToolTip(const QVector<int> &lstNumbers, const QPoint &pos);
+    virtual QString getToolTipText(const QPoint &pos);
+    void updateToolTip(const QPoint &pos);
+    bool isToolTipValid(QString text, const QPoint &pos);
     QMimeData* createMimeDataFromSelection() const override;
     bool event(QEvent *event) override;
     bool eventFilter(QObject *o, QEvent *e) override;
