@@ -37,6 +37,9 @@ AbstractEdit::AbstractEdit(QWidget *parent)
     mSelUpdater.setSingleShot(true);
     mSelUpdater.setInterval(10);
     connect(&mSelUpdater, &QTimer::timeout, this, &AbstractEdit::internalExtraSelUpdate);
+    mToolTipUpdater.setSingleShot(true);
+    mToolTipUpdater.setInterval(500);
+    connect(&mToolTipUpdater, &QTimer::timeout, this, &AbstractEdit::internalToolTipUpdate);
 }
 
 AbstractEdit::~AbstractEdit()
@@ -282,14 +285,10 @@ void AbstractEdit::internalExtraSelUpdate()
     setExtraSelections(selections);
 }
 
-//void AbstractEdit::showToolTip(const QList<TextMark*> &marks, const QPoint &pos)
-//{
-//    if (marks.size() > 0) {
-//        QStringList tips;
-//        emit requestMarkTexts(groupId(), marks, tips);
-//        QToolTip::showText(mapToGlobal(pos), tips.join("\n"), this);
-//    }
-//}
+void AbstractEdit::internalToolTipUpdate()
+{
+    updateToolTip(mTipPos, true);
+}
 
 QString AbstractEdit::getToolTipText(const QPoint &pos)
 {
@@ -300,16 +299,19 @@ QString AbstractEdit::getToolTipText(const QPoint &pos)
     return tips.join("\n");
 }
 
-void AbstractEdit::updateToolTip(const QPoint &pos)
+void AbstractEdit::updateToolTip(const QPoint &pos, bool direct)
 {
     QString text = getToolTipText(pos);
     if (!isToolTipValid(text, pos)) {
         if (text.isEmpty() || pos.isNull()) {
             mTipPos = QPoint();
-            if (QToolTip::isVisible()) QToolTip::hideText();
+            if (!QToolTip::text().isEmpty()) QToolTip::hideText();
         } else {
             mTipPos = pos;
-            QToolTip::showText(mapToGlobal(toolTipPos(pos)), text, this);
+            if (direct || !QToolTip::text().isEmpty())
+                QToolTip::showText(mapToGlobal(toolTipPos(pos)), text, this);
+            else
+                mToolTipUpdater.start();
         }
     }
 }
@@ -319,7 +321,7 @@ bool AbstractEdit::isToolTipValid(QString text, const QPoint &pos)
     if (!text.isEmpty() && !pos.isNull()) {
         return (mTipPos-pos).manhattanLength() < 5 && text == QToolTip::text();
     }
-    return !QToolTip::isVisible() && mTipPos.isNull();
+    return QToolTip::text().isEmpty() && mTipPos.isNull();
 }
 
 bool AbstractEdit::event(QEvent *e)
@@ -390,7 +392,7 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseMoveEvent(e);
     bool offClickRegion = !mClickPos.isNull() && (mClickPos-e->pos()).manhattanLength() > 4;
-    bool validLink = (isReadOnly() || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
+    bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
 
     if (mMarks /*&& validLink*/) {
         updateMarksAtMouse(cursorForPosition(e->pos()));
@@ -405,7 +407,7 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
     bool offClickRegion = !mClickPos.isNull() && (mClickPos-e->pos()).manhattanLength() > 4;
-    bool validLink = (isReadOnly() || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
+    bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
     mClickPos = QPoint();
     if (validLink) jumpToCurrentLink(e->pos());
 }

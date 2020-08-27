@@ -61,6 +61,11 @@ void TextViewEdit::disconnectTimers()
     CodeEdit::disconnectTimers();
 }
 
+AbstractEdit::EditorType TextViewEdit::type()
+{
+    return LstView;
+}
+
 int TextViewEdit::lineCount()
 {
     QFontMetricsF metric(font());

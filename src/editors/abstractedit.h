@@ -47,7 +47,7 @@ class AbstractEdit : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    enum EditorType { CodeEdit, ProcessLog, SystemLog };
+    enum EditorType { CodeEditor, ProcessLog, SystemLog, LstView };
 
 public:
     virtual ~AbstractEdit() override;
@@ -80,9 +80,8 @@ protected:
     friend class FileMeta;
 
     AbstractEdit(QWidget *parent);
-//    void showToolTip(const QList<TextMark *> &marks, const QPoint &pos);
     virtual QString getToolTipText(const QPoint &pos);
-    void updateToolTip(const QPoint &pos);
+    void updateToolTip(const QPoint &pos, bool direct = false);
     bool isToolTipValid(QString text, const QPoint &pos);
     QMimeData* createMimeDataFromSelection() const override;
     bool event(QEvent *event) override;
@@ -124,9 +123,11 @@ private:
     QPoint mClickPos;
     QPoint mTipPos;
     QTimer mSelUpdater;
+    QTimer mToolTipUpdater;
 
 private slots:
     void internalExtraSelUpdate();
+    void internalToolTipUpdate();
 };
 
 }

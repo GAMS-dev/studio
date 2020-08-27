@@ -265,6 +265,7 @@ private:
     int mLnAreaWidth = 0;
     LinePair mFoldMark;
     int mIncludeLinkLine = -1;
+    bool mLinkActive = false;
 };
 
 class LineNumberArea : public QWidget

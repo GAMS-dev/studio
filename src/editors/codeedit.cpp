@@ -944,7 +944,8 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
-    updateToolTip(e->pos());
+    bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0 || type() != CodeEditor;
+    updateToolTip(e->pos(), direct);
     updateLinkAppearance(e->pos(), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
@@ -1118,7 +1119,8 @@ void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
         else
             mIncludeLinkLine = -1;
     } else mIncludeLinkLine = -1;
-    if (old != mIncludeLinkLine) recalcExtraSelections();
+    if (old != mIncludeLinkLine || mLinkActive != active) recalcExtraSelections();
+    mLinkActive = active;
     lineNumberArea()->setCursor(viewport()->cursor().shape());
 }
 
@@ -1487,7 +1489,7 @@ void CodeEdit::rawKeyPressEvent(QKeyEvent *e)
 
 AbstractEdit::EditorType CodeEdit::type()
 {
-    return EditorType::CodeEdit;
+    return EditorType::CodeEditor;
 }
 
 void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intKind)
