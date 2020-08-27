@@ -40,7 +40,7 @@ struct PositionPair {
 };
 typedef PositionPair LinePair;
 
-enum TextLinkType { linkNone, linkMiss, linkMark, linkDirect };
+enum TextLinkType { linkNone, linkHide, linkMiss, linkMark, linkDirect };
 
 class AbstractEdit : public QPlainTextEdit
 {
@@ -86,7 +86,6 @@ protected:
     bool isToolTipValid(QString text, const QPoint &pos);
     QMimeData* createMimeDataFromSelection() const override;
     bool event(QEvent *event) override;
-    bool eventFilter(QObject *o, QEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
     void keyReleaseEvent(QKeyEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;

@@ -1077,7 +1077,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     if (!isReadOnly()) {
         QString fileName;
         TextLinkType linkType = checkLinks(e->pos(), true, &fileName);
-        updateLinkAppearance(e->pos(), linkType == linkDirect);
+        updateLinkAppearance(e->pos(), false);
 
         QAction *actLink = menu->addAction("Open link", [this, e]() { jumpToCurrentLink(e->pos()); });
         actLink->setShortcut(Keys::instance().keySequence(Hotkey::JumpToContext).first());
@@ -1876,6 +1876,9 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     if (!res.isEmpty()) return res;
     QString fileName;
     checkLinks(pos, true, &fileName);
+    if (!fileName.isEmpty()) {
+        fileName = "<p style='white-space:pre'>"+fileName+" [<b>Ctrl-click</b> to open]</p>";
+    }
     return fileName;
 }
 
