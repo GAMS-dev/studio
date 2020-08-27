@@ -791,7 +791,7 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
         int fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-        int boundPos = qBound(fileStart, cur.positionInBlock(), cur.block().length()-1);
+        int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
         if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
             mIncludeLinkLine = cur.blockNumber();
             QString fileName = resolveHRef(command+" "+file);
@@ -945,7 +945,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
     updateToolTip(e->pos());
-    updateLinkAppearance(cursorForPosition(e->pos()), e->modifiers() & Qt::ControlModifier);
+    updateLinkAppearance(e->pos(), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
@@ -1077,7 +1077,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     if (!isReadOnly()) {
         QString fileName;
         TextLinkType linkType = checkLinks(e->pos(), true, &fileName);
-        updateLinkAppearance(cursorForPosition(e->pos()), linkType == linkDirect);
+        updateLinkAppearance(e->pos(), linkType == linkDirect);
 
         QAction *actLink = menu->addAction("Open link", [this, e]() { jumpToCurrentLink(e->pos()); });
         actLink->setShortcut(Keys::instance().keySequence(Hotkey::JumpToContext).first());
@@ -1105,8 +1105,9 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     delete menu;
 }
 
-void CodeEdit::updateLinkAppearance(QTextCursor cur, bool active)
+void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
 {
+    QTextCursor cur = cursorForPosition(pos);
     int old = mIncludeLinkLine;
     if (active) {
         QString command;
