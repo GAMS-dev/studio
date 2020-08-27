@@ -317,7 +317,7 @@ void AbstractEdit::updateToolTip(const QPoint &pos)
 bool AbstractEdit::isToolTipValid(QString text, const QPoint &pos)
 {
     if (!text.isEmpty() && !pos.isNull()) {
-        return QToolTip::isVisible() && (mTipPos-pos).manhattanLength() < 5 && text == QToolTip::text();
+        return (mTipPos-pos).manhattanLength() < 5 && text == QToolTip::text();
     }
     return !QToolTip::isVisible() && mTipPos.isNull();
 }
