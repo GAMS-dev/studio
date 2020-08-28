@@ -75,7 +75,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
     colors/palettemanager.cpp \
@@ -114,8 +113,6 @@ SOURCES += \
     file/projecttreeview.cpp \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
-    gamslibprocess.cpp  \
-    gamsprocess.cpp     \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
@@ -184,6 +181,9 @@ SOURCES += \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
+    process/abstractprocess.cpp \
+    process/gamslibprocess.cpp  \
+    process/gamsprocess.cpp     \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -228,7 +228,6 @@ SOURCES += \
     wplabel.cpp
 
 HEADERS += \
-    abstractprocess.h \
     application.h \
     autosavehandler.h \
     colors/palettemanager.h \
@@ -270,8 +269,6 @@ HEADERS += \
     file/projecttreeview.h \
     file/recentdata.h \
     file/treeitemdelegate.h \
-    gamslibprocess.h \
-    gamsprocess.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \
@@ -339,6 +336,10 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
+	process.h \
+    process/abstractprocess.h \
+    process/gamslibprocess.h \
+    process/gamsprocess.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \

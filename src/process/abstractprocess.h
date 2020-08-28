@@ -24,7 +24,7 @@
 #include <QProcess>
 #include <QMutex>
 
-#include "common.h"
+#include "../common.h"
 
 namespace gams {
 namespace studio {
@@ -79,7 +79,7 @@ protected slots:
     virtual void readStdErr() = 0;
 
 protected:
-    virtual QString nativeAppPath(const QString &alternativeApp = QString());
+    virtual QString nativeAppPath();
     inline QString appCall(const QString &app, const QStringList &args) {
         return app + " " + args.join(" ");
     }
@@ -121,7 +121,7 @@ public:
     AbstractGamsProcess(const QString &application, QObject *parent = nullptr);
 
 protected:
-    QString nativeAppPath(const QString &alternativeApp = QString()) override;
+    QString nativeAppPath() override;
 };
 
 } // namespace studio

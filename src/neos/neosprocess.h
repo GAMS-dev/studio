@@ -1,7 +1,7 @@
 #ifndef GAMS_STUDIO_NEOS_NEOSPROCESS_H
 #define GAMS_STUDIO_NEOS_NEOSPROCESS_H
 
-#include "abstractprocess.h"
+#include "process.h"
 #include <QTimer>
 
 namespace gams {

@@ -20,7 +20,7 @@
 #ifndef ABSTRACTMIROPROCESS_H
 #define ABSTRACTMIROPROCESS_H
 
-#include "abstractprocess.h"
+#include "process/abstractprocess.h"
 
 namespace gams {
 namespace studio {
@@ -57,7 +57,7 @@ protected slots:
     void executeNext();
 
 protected:
-    QString nativeAppPath(const QString &alternativeApp = QString()) override;
+    QString nativeAppPath() override;
 
     virtual QProcessEnvironment miroProcessEnvironment() = 0;
 

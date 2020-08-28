@@ -21,7 +21,7 @@
 #include <QDir>
 #include <QByteArray>
 #include <QApplication>
-#include "abstractprocess.h"
+#include "process/abstractprocess.h"
 #include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
 #include "editors/sysloglocator.h"

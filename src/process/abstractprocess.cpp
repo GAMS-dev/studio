@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "abstractprocess.h"
-#include "commonpaths.h"
+#include "../commonpaths.h"
 
 #include <QDir>
 #include <QMetaType>
@@ -82,12 +82,9 @@ void AbstractProcess::completed(int exitCode)
     emit finished(mGroupId, exitCode);
 }
 
-QString AbstractProcess::nativeAppPath(const QString &alternativeApp)
+QString AbstractProcess::nativeAppPath()
 {
-    if (alternativeApp.isEmpty())
-        return QDir::toNativeSeparators(mApplication);
-    else
-        return QDir::toNativeSeparators(alternativeApp);
+    return QDir::toNativeSeparators(mApplication);
 }
 
 NodeId AbstractProcess::groupId() const
@@ -150,12 +147,12 @@ AbstractGamsProcess::AbstractGamsProcess(const QString &application, QObject *pa
     connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
-QString AbstractGamsProcess::nativeAppPath(const QString &alternativeApp)
+QString AbstractGamsProcess::nativeAppPath()
 {
     QString systemDir = CommonPaths::systemDir();
     if (systemDir.isEmpty())
         return QString();
-    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath(alternativeApp));
+    auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath());
     return QDir::toNativeSeparators(appPath);
 }
 

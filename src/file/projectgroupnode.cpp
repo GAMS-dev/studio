@@ -25,7 +25,7 @@
 #include "filemetarepo.h"
 #include "exception.h"
 #include "editors/systemlogedit.h"
-#include "gamsprocess.h"
+#include "process.h"
 #include "commonpaths.h"
 #include "logger.h"
 #include "syntax.h"

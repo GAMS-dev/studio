@@ -19,7 +19,7 @@
  */
 #include "aboutgamsdialog.h"
 #include "ui_aboutgamsdialog.h"
-#include "gamsprocess.h"
+#include "process.h"
 #include "checkforupdatewrapper.h"
 #include "solvertablemodel.h"
 #include "commonpaths.h"

@@ -26,7 +26,7 @@
 #include "logger.h"
 #include "commonpaths.h"
 #include "filemetarepo.h"
-#include "abstractprocess.h"
+#include "process/abstractprocess.h"
 #include "projecttreeview.h"
 #include "viewhelper.h"
 #include "settings.h"

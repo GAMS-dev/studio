@@ -336,16 +336,16 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
 
 void NeosProcess::startUnpacking()
 {
-    mSubProc.setWorkingDirectory(mOutPath);
-    QStringList params;
-    params << "-o solver-output.zip";
-#if defined(__unix__) || defined(__APPLE__)
-    mSubProc.start(nativeAppPath("gmsunzip"), params);
-#else
-    mSubProc.setNativeArguments(params.join(" "));
-    mSubProc.setProgram(nativeAppPath("gmsunzip"));
-    mSubProc.start();
-#endif
+//    mSubProc.setWorkingDirectory(mOutPath);
+//    QStringList params;
+//    params << "-o solver-output.zip";
+//#if defined(__unix__) || defined(__APPLE__)
+//    mSubProc.start(nativeAppPath("gmsunzip"), params);
+//#else
+//    mSubProc.setNativeArguments(params.join(" "));
+//    mSubProc.setProgram(nativeAppPath("gmsunzip"));
+//    mSubProc.start();
+//#endif
 }
 
 

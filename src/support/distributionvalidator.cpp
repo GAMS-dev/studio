@@ -19,7 +19,7 @@
  */
 #include "distributionvalidator.h"
 #include "commonpaths.h"
-#include "gamsprocess.h"
+#include "process.h"
 
 #include <QStringList>
 #include <QFileInfo>

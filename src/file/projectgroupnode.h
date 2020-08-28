@@ -23,7 +23,7 @@
 #include <QProcess>
 #include <QFileInfoList>
 #include <memory>
-#include "abstractprocess.h"
+#include "process/abstractprocess.h"
 #include "editors/logparser.h"
 #include "projectabstractnode.h"
 #include "syntax/textmark.h"
