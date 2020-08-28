@@ -396,7 +396,7 @@ void TestGUROBIOption::testOptionGroup()
 void TestGUROBIOption::testReadOptionFile_data()
 {
     // given
-    QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op2"));
+    QFile outputFile(QDir(".").absoluteFilePath("gurobi.op2"));
     if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
         QFAIL("expected to open gurobi.op2 to write, but failed");
 
@@ -411,7 +411,7 @@ void TestGUROBIOption::testReadOptionFile_data()
     outputFile.close();
 
     // when
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op2");
+    QString optFile = QDir(".").absoluteFilePath("gurobi.op2");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -505,7 +505,7 @@ void TestGUROBIOption::testReadOptionFile()
 void TestGUROBIOption::testNonExistReadOptionFile()
 {
     // when
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op012345");
+    QString optFile = QDir(".").absoluteFilePath("gurobi.op012345");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -526,14 +526,14 @@ void TestGUROBIOption::testWriteOptionFile_data()
     int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op4"), QTextCodec::codecForLocale()) );
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("gurobi.op4"), QTextCodec::codecForLocale()) );
 
     // clean up
     qDeleteAll(items);
     items.clear();
 
     // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("gurobi.op4"));
+    QFile inputFile(QDir(".").absoluteFilePath("gurobi.op4"));
     int i = 0;
     QStringList optionItems;
 

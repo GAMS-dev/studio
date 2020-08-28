@@ -359,7 +359,7 @@ void TestMINOSOption::testInvalidOption()
 void TestMINOSOption::testReadOptionFile_data()
 {
     // given
-    QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op2"));
+    QFile outputFile(QDir(".").absoluteFilePath("minos.op2"));
     if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
         QFAIL("expected to open cplex.op2 to write, but failed");
 
@@ -384,7 +384,7 @@ void TestMINOSOption::testReadOptionFile_data()
     outputFile.close();
 
     // when
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op2");
+    QString optFile = QDir(".").absoluteFilePath("minos.op2");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -557,7 +557,7 @@ void TestMINOSOption::testReadOptionFile()
 void TestMINOSOption::testNonExistReadOptionFile()
 {
     // when
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op012345");
+    QString optFile = QDir(".").absoluteFilePath("minos.op012345");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -585,14 +585,14 @@ void TestMINOSOption::testWriteOptionFile_data()
     int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op4"), QTextCodec::codecForLocale()) );
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("minos.op4"), QTextCodec::codecForLocale()) );
 
     // clean up
     qDeleteAll(items);
     items.clear();
 
     // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("minos.op4"));
+    QFile inputFile(QDir(".").absoluteFilePath("minos.op4"));
     int i = 0;
     QStringList optionItems;
 

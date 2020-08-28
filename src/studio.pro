@@ -442,8 +442,6 @@ OTHER_FILES +=                                      \
     ../platform/macos/studio.entitlements.plist     \
     ../platform/macos/webengine.entitlements.plist  \
     ../platform/linux/gamsstudio.desktop            \
-    ../CHANGELOG                                    \
     ../jenkinsfile                                  \
-    ../gamsstudio.desktop                           \
     ../CHANGELOG                                    \
     ../version
