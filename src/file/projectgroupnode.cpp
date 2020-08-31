@@ -321,14 +321,11 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                     if (dir.isAbsolute()) {
                         locations << libDir;
                     } else {
-                        for (QString &path: CommonPaths::gamsStandardPaths())
-                            locations << path + "/" + QDir::fromNativeSeparators(libDir);
-                        // TODO(JM) ... Or should it be just:
-//                        libDir = CommonPaths::systemDir() + '/' + libDir;
+                        libDir = CommonPaths::systemDir() + '/' + libDir;
                     }
                 }
                 for (QString &path: CommonPaths::gamsStandardPaths())
-                    locations << path + "/inclib";
+                    locations << QDir::fromNativeSeparators(path) + "/inclib";
             }
             QString rawName = fName;
             for (QString loc : locations) {

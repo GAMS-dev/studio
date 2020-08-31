@@ -19,6 +19,7 @@
  */
 #include <QtWidgets>
 #include <QPalette>
+#include <QDir>
 
 #include "editors/codeedit.h"
 #include "settings.h"
@@ -1879,7 +1880,8 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     QString fileName;
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
-        fileName = "<p style='white-space:pre'>"+fileName+" [<b>Ctrl-click</b> to open]</p>";
+        fileName = QDir::toNativeSeparators(fileName);
+        fileName = "<p style='white-space:pre'>"+fileName+"<br>[<b>Ctrl-click</b> to open]</p>";
     }
     return fileName;
 }
