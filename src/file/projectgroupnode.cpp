@@ -306,9 +306,8 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                 QString sysDir;
                 emit getParameterValue("sysIncDir", sysDir);
                 if (sysDir.isNull()) emit getParameterValue("SDir", sysDir);
-
                 if (!sysDir.isNull()) locations << QDir::fromNativeSeparators(sysDir);
-                else locations << CommonPaths::systemDir();
+                locations << CommonPaths::systemDir();
 
             } else { // LIB
                 QString libDir;
@@ -324,7 +323,7 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                         locations << CommonPaths::systemDir() + '/' + libDir;
                     }
                 }
-                for (QString &path: CommonPaths::gamsStandardPaths())
+                for (QString &path: CommonPaths::gamsStandardPaths(CommonPaths::StandardDataPath))
                     locations << QDir::fromNativeSeparators(path) + "/inclib";
             }
             QString rawName = fName;
