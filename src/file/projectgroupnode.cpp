@@ -321,7 +321,7 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                     if (dir.isAbsolute()) {
                         locations << libDir;
                     } else {
-                        libDir = CommonPaths::systemDir() + '/' + libDir;
+                        locations << CommonPaths::systemDir() + '/' + libDir;
                     }
                 }
                 for (QString &path: CommonPaths::gamsStandardPaths())
