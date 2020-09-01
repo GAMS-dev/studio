@@ -306,8 +306,15 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                 QString sysDir;
                 emit getParameterValue("sysIncDir", sysDir);
                 if (sysDir.isNull()) emit getParameterValue("SDir", sysDir);
-                if (!sysDir.isNull()) locations << QDir::fromNativeSeparators(sysDir);
-                locations << CommonPaths::systemDir();
+                QDir dir(sysDir);
+                if (!sysDir.isNull()) {
+                    if (dir.isAbsolute()) {
+                        locations << QDir::fromNativeSeparators(sysDir);
+                    } else {
+                        locations << CommonPaths::systemDir() + '/' + sysDir;
+                    }
+                } else
+                    locations << CommonPaths::systemDir();
 
             } else { // LIB
                 QString libDir;
