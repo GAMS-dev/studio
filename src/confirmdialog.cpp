@@ -6,11 +6,14 @@
 namespace gams {
 namespace studio {
 
-ConfirmDialog::ConfirmDialog(QWidget *parent) :
+ConfirmDialog::ConfirmDialog(QString title, QString text, QString checkText, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ConfirmDialog)
 {
     ui->setupUi(this);
+    setWindowTitle(title);
+    ui->text->setText(text);
+    ui->checkBox->setText(checkText);
     ui->buttonBox->setEnabled(false);
     ui->buttonAlwaysOk->setEnabled(false);
 }

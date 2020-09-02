@@ -2960,20 +2960,27 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
     execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
 }
 
+const QString CNeosConfirmTitle = "Submitting data to NEOS";
+const QString CNeosConfirmText = "You are about to submit your data to the NEOS Server. "
+                                 "This service does not guarantee any confidentiality of the data or the model. "
+                                 "Please ensure you have read the terms of use at "
+                                 "<a href=https://neos-server.org/neos/termofuse.html>NEOS Server</a>";
+const QString CNeosConfirmCheckText = "I agree to the terms of use of NEOS";
+
 void MainWindow::on_actionRunNeos_triggered()
 {
-    ConfirmDialog *dialog = new ConfirmDialog(this);
+    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
     connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::rejected, this, &MainWindow::neosExecute);
+    connect(dialog, &ConfirmDialog::accept, this, &MainWindow::neosExecute);
     dialog->setProperty("prioLong", false);
     dialog->show();
 }
 
 void MainWindow::on_actionRunNeosL_triggered()
 {
-    ConfirmDialog *dialog = new ConfirmDialog(this);
+    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
     connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::rejected, this, &MainWindow::neosExecute);
+    connect(dialog, &ConfirmDialog::accept, this, &MainWindow::neosExecute);
     dialog->setProperty("prioLong", true);
     dialog->show();
 }

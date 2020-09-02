@@ -328,6 +328,8 @@ private slots:
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
+    void neosExecute();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);

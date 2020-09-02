@@ -15,7 +15,7 @@ class ConfirmDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ConfirmDialog(QWidget *parent = nullptr);
+    explicit ConfirmDialog(QString title, QString text, QString checkText, QWidget *parent = nullptr);
     ~ConfirmDialog();
     bool confirm() const { return mConfirm; }
 
