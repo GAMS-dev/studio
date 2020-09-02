@@ -877,8 +877,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">
@@ -968,7 +968,7 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="confirmNeosCheckBox">
             <property name="text">
              <string>Confirm submitting NEOS jobs</string>
             </property>
