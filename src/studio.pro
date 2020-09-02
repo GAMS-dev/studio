@@ -81,6 +81,7 @@ SOURCES += \
     colors/palettemanager.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
+    confirmdialog.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/codeedit.cpp \
@@ -233,6 +234,7 @@ HEADERS += \
     commandlineparser.h \
     common.h \
     commonpaths.h \
+    confirmdialog.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
@@ -382,6 +384,7 @@ HEADERS += \
     wplabel.h
 
 FORMS += \
+    confirmdialog.ui \
     encodingsdialog.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \

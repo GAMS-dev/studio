@@ -39,7 +39,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -864,8 +864,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>523</width>
-            <height>68</height>
+            <width>521</width>
+            <height>69</height>
            </rect>
           </property>
           <attribute name="label">
@@ -906,13 +906,6 @@
           <string>Miscellaneous Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
-          <item row="0" column="0">
-           <widget class="QLabel" name="lbl_openModLib">
-            <property name="text">
-             <string>User model library: </string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="lbl_wpHistory">
             <property name="text">
@@ -920,30 +913,10 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="btn_resetView">
+          <item row="1" column="1">
+           <widget class="QPushButton" name="btn_resetHistory">
             <property name="text">
-             <string>Reset Window</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>1</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="lbl_resetView">
-            <property name="text">
-             <string>Reset window size, position and states: </string>
+             <string>Reset History</string>
             </property>
            </widget>
           </item>
@@ -960,10 +933,44 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="btn_resetHistory">
+          <item row="0" column="2">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>1</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="btn_resetView">
             <property name="text">
-             <string>Reset History</string>
+             <string>Reset Window</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lbl_resetView">
+            <property name="text">
+             <string>Reset window size, position and states: </string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lbl_openModLib">
+            <property name="text">
+             <string>User model library: </string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="checkBox">
+            <property name="text">
+             <string>Confirm submitting NEOS jobs</string>
             </property>
            </widget>
           </item>

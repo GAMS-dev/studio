@@ -61,6 +61,7 @@
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
 #include "neos/neosprocess.h"
+#include "confirmdialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -2961,21 +2962,37 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 
 void MainWindow::on_actionRunNeos_triggered()
 {
-    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setPriority(neos::prioShort);
-    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+    ConfirmDialog *dialog = new ConfirmDialog(this);
+    connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
+    connect(dialog, &ConfirmDialog::rejected, this, &MainWindow::neosExecute);
+    dialog->setProperty("prioLong", false);
+    dialog->show();
 }
 
 void MainWindow::on_actionRunNeosL_triggered()
 {
+    ConfirmDialog *dialog = new ConfirmDialog(this);
+    connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
+    connect(dialog, &ConfirmDialog::rejected, this, &MainWindow::neosExecute);
+    dialog->setProperty("prioLong", true);
+    dialog->show();
+}
+
+void MainWindow::neosExecute()
+{
+    ConfirmDialog *dialog = qobject_cast<ConfirmDialog*>(sender());
+    if (dialog) Settings::settings()->setBool(SettingsKey::skNeosConfirm, dialog->confirm());
+    bool pLong = sender()->property("prioLong").toBool();
+    sender()->deleteLater();
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setPriority(neos::prioLong);
+    neosProcess->setPriority(pLong ? neos::prioLong : neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeosL);
+    mGamsParameterEditor->on_runAction(pLong ? option::RunActionState::RunNeosL
+                                             : option::RunActionState::RunNeos);
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
 }
+
+
 
 void MainWindow::on_actionInterrupt_triggered()
 {
