@@ -2961,8 +2961,8 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 }
 
 const QString CNeosConfirmTitle = "Submitting data to NEOS";
-const QString CNeosConfirmText = "You are about to submit your data to the NEOS Server. "
-                                 "This service does not guarantee any confidentiality of the data or the model. "
+const QString CNeosConfirmText = "You are about to submit your data to the NEOS Server. This service is offered "
+                                 "with no expectation or guarantee of confidentiality for the data or the model. "
                                  "Please ensure you have read the terms of use at "
                                  "<a href=https://neos-server.org/neos/termofuse.html>NEOS Server</a>";
 const QString CNeosConfirmCheckText = "I agree to the terms of use of NEOS";
