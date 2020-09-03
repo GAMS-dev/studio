@@ -208,6 +208,10 @@ void Keys::reset()
 
     seq = new KeySeqList("Ctrl+Shift+B","select to matching parentheses");
     setHotkey(Hotkey::SelectParentheses, seq);
+
+    seq = new KeySeqList("F2","jump to context");
+    setHotkey(Hotkey::JumpToContext, seq);
+
 }
 
 void Keys::read(const QVariantMap& keys)

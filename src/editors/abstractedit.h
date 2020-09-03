@@ -40,12 +40,14 @@ struct PositionPair {
 };
 typedef PositionPair LinePair;
 
+enum TextLinkType { linkNone, linkHide, linkMiss, linkMark, linkDirect };
+
 class AbstractEdit : public QPlainTextEdit
 {
     Q_OBJECT
 
 public:
-    enum EditorType { CodeEdit, ProcessLog, SystemLog };
+    enum EditorType { CodeEditor, ProcessLog, SystemLog, LstView };
 
 public:
     virtual ~AbstractEdit() override;
@@ -78,11 +80,11 @@ protected:
     friend class FileMeta;
 
     AbstractEdit(QWidget *parent);
-//    void showToolTip(const QList<TextMark *> &marks, const QPoint &pos);
-    void showToolTip(const QVector<int> &lstNumbers, const QPoint &pos);
+    virtual QString getToolTipText(const QPoint &pos);
+    void updateToolTip(const QPoint &pos, bool direct = false);
+    bool isToolTipValid(QString text, const QPoint &pos);
     QMimeData* createMimeDataFromSelection() const override;
     bool event(QEvent *event) override;
-    bool eventFilter(QObject *o, QEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
     void keyReleaseEvent(QKeyEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
@@ -106,11 +108,14 @@ protected:
     virtual int topVisibleLine();
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
-    virtual void updateCursorShape(const Qt::CursorShape &defaultShape);
+    virtual void updateCursorShape(bool greedy);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
     virtual LinePair findFoldBlock(int line, bool onlyThisLine = false) const;
     virtual bool ensureUnfolded(int line);
+    virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr);
+    virtual void jumpToCurrentLink(const QPoint &mousePos);
+    void updateMarksAtMouse(QTextCursor cursor);
 
 private:
     const LineMarks* mMarks = nullptr;
@@ -118,9 +123,11 @@ private:
     QPoint mClickPos;
     QPoint mTipPos;
     QTimer mSelUpdater;
+    QTimer mToolTipUpdater;
 
 private slots:
     void internalExtraSelUpdate();
+    void internalToolTipUpdate();
 };
 
 }

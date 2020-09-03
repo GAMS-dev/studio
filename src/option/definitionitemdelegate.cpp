@@ -24,6 +24,7 @@
 #include <QStylePainter>
 #include <QApplication>
 #include <QTreeView>
+#include <QPainterPath>
 
 namespace gams {
 namespace studio {

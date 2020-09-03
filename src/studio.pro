@@ -182,6 +182,7 @@ SOURCES += \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
+    process/gamsinstprocess.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -335,6 +336,7 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
+    process/gamsinstprocess.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \

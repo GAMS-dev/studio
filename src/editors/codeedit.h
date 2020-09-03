@@ -125,9 +125,15 @@ protected:
     virtual void extraSelCurrentWord(QList<QTextEdit::ExtraSelection>& selections);
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
+    void extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections);
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
+    QString getToolTipText(const QPoint &pos) override;
     bool ensureUnfolded(int line) override;
+    QString resolveHRef(QString href);
+    QString getIncludeFile(int line, int &fileStart, QString &code);
+    TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr) override;
+    void jumpToCurrentLink(const QPoint &mousePos) override;
 
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
@@ -136,6 +142,8 @@ signals:
     void searchFindNextPressed();
     void searchFindPrevPressed();
     void requestAdvancedActions(QList<QAction*>* actions);
+    void hasHRef(const QString &href, QString &fileName);
+    void jumpToHRef(const QString &href);
 
 public slots:
     void clearSelection();
@@ -178,6 +186,7 @@ private:
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
+    void updateLinkAppearance(QPoint pos, bool active = true);
     bool allowClosing(int chIndex);
     bool toggleFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
@@ -255,7 +264,8 @@ private:
     bool mAllowBlockEdit = true;
     int mLnAreaWidth = 0;
     LinePair mFoldMark;
-
+    int mIncludeLinkLine = -1;
+    bool mLinkActive = false;
 };
 
 class LineNumberArea : public QWidget

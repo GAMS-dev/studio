@@ -38,7 +38,9 @@ namespace studio {
 class CommonPaths
 {
 public:
+    enum StandardPathType { StandardPathAll, StandardConfigPath, StandardDataPath };
 
+public:
     static const QString& documentationDir();
     static QString modelLibraryDir(const QString &libname);
 
@@ -75,6 +77,9 @@ public:
 
     static QString gamsUserConfigDir();
     static QString defaultGamsUserConfigFile();
+
+    static void setGamsStandardPaths(QStringList gamsPaths, StandardPathType pathType);
+    static QStringList gamsStandardPaths(StandardPathType pathType = StandardPathAll);
 
     ///
     /// \brief Get the absolut file path.
@@ -116,6 +121,8 @@ private:
 
 private:
     static QString SystemDir;
+    static QStringList GamsStandardConfigPaths;
+    static QStringList GamsStandardDataPaths;
     static const QString ConfigFile;
     static const QString DocumentationDir;
     static const QString ModlibsPrefixPath;

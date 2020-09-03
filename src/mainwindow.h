@@ -51,6 +51,9 @@ namespace studio {
 class AbstractProcess;
 class GamsProcess;
 class GamsLibProcess;
+namespace process {
+class GamsInstProcess;
+}
 class WelcomePage;
 class Settings;
 class SearchResultList;
@@ -232,6 +235,8 @@ private slots:
     void on_actionInterrupt_triggered();
     void on_actionStop_triggered();
     void on_actionGAMS_Library_triggered();
+    void gamsInstFinished(NodeId origin, int exitCode);
+    void getParameterValue(QString param, QString &value);
 
     // MIRO
     void on_actionBase_mode_triggered();
@@ -343,6 +348,7 @@ protected:
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();
+    void initGamsStandardPaths();
 
 private:
     void initTabs();
@@ -400,6 +406,7 @@ private:
     QTimer mWinStateTimer;
 
     GamsLibProcess *mLibProcess = nullptr;
+    process::GamsInstProcess *mInstProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;

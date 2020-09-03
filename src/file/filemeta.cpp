@@ -870,25 +870,25 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
     } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
-              // Guc Editor ignore other encoding scheme than UTF-8
-              mCodec = QTextCodec::codecForName("utf-8");
-              res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
-                                                                             id(), tabWidget));
+        // Guc Editor ignore other encoding scheme than UTF-8
+        mCodec = QTextCodec::codecForName("utf-8");
+        res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
+                                                                       id(), tabWidget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
-            QFileInfo fileInfo(name());
-            support::SolverConfigInfo solverConfigInfo;
-            QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
-            if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
-                 res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
-                                                                                  id(), mCodec, tabWidget));
-            } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
-                        QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
-                        res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
-                                                                                         id(), mCodec, tabWidget));
-            } else {
-                    SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
-                    forcedAsTextEdit = true;
-            }
+        QFileInfo fileInfo(name());
+        support::SolverConfigInfo solverConfigInfo;
+        QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
+        if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
+            res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
+                                                                             id(), mCodec, tabWidget));
+        } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
+                    QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
+            res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
+                                                                             id(), mCodec, tabWidget));
+        } else {
+            SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
+            forcedAsTextEdit = true;
+        }
     } else {
         forcedAsTextEdit = true;
     }
@@ -906,6 +906,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         if (kind() == FileKind::Log) {
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+        } else {
+            connect(codeEdit, &CodeEdit::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
+            connect(codeEdit, &CodeEdit::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
         }
     }
     ViewHelper::setFileId(res, id());

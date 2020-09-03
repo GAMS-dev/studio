@@ -53,7 +53,7 @@ SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 
 QTextCharFormat SyntaxAbstract::charFormatError()
 {
-    QTextCharFormat errorFormat(charFormat());
+    QTextCharFormat errorFormat;
     errorFormat.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
     errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     return errorFormat;
@@ -181,6 +181,7 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mFlavors.insert(QString("ifThenI").toLower(), 11);
     mFlavors.insert(QString("ifThenE").toLower(), 11);
     mFlavors.insert(QString("endIf").toLower(), 12);
+    mFlavors.insert(QString("include").toLower(), 13);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
