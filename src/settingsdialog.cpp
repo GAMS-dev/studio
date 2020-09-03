@@ -43,6 +43,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    ui->tabWidget->setCurrentIndex(0);
 
     // Themes
 #ifdef _WIN32
