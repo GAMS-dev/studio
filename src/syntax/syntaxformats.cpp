@@ -53,7 +53,7 @@ SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 
 QTextCharFormat SyntaxAbstract::charFormatError()
 {
-    QTextCharFormat errorFormat(charFormat());
+    QTextCharFormat errorFormat;
     errorFormat.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
     errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     return errorFormat;
