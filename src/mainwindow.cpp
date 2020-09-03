@@ -2969,37 +2969,50 @@ const QString CNeosConfirmCheckText = "I agree to the terms of use of NEOS";
 
 void MainWindow::on_actionRunNeos_triggered()
 {
-    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
-    connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::accept, this, &MainWindow::neosExecute);
-    dialog->setProperty("prioLong", false);
-    dialog->show();
+    mNeosLong = false;
+    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
+            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
+        showNeosConfirmDialog();
+    else
+        emit neosExecute();
 }
 
 void MainWindow::on_actionRunNeosL_triggered()
 {
+    mNeosLong = true;
+    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
+            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
+        showNeosConfirmDialog();
+    else
+        emit neosExecute();
+}
+
+void MainWindow::showNeosConfirmDialog()
+{
     ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
+    dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
     connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::accept, this, &MainWindow::neosExecute);
-    dialog->setProperty("prioLong", true);
+    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::neosExecute);
+    connect(dialog, &ConfirmDialog::accepted, dialog, &ConfirmDialog::deleteLater);
+    connect(dialog, &ConfirmDialog::autoConfirm, [] {
+        Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
+    });
+    connect(dialog, &ConfirmDialog::setAcceptBox, [] (bool accept) {
+        Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, accept);
+    });
     dialog->show();
 }
 
 void MainWindow::neosExecute()
 {
-    ConfirmDialog *dialog = qobject_cast<ConfirmDialog*>(sender());
-    if (dialog) Settings::settings()->setBool(SettingsKey::skNeosConfirm, dialog->confirm());
-    bool pLong = sender()->property("prioLong").toBool();
-    sender()->deleteLater();
+    updateAndSaveSettings();
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setPriority(pLong ? neos::prioLong : neos::prioShort);
+    neosProcess->setPriority(mNeosLong ? neos::prioLong : neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(pLong ? option::RunActionState::RunNeosL
-                                             : option::RunActionState::RunNeos);
+    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL
+                                                 : option::RunActionState::RunNeos);
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
 }
-
-
 
 void MainWindow::on_actionInterrupt_triggered()
 {

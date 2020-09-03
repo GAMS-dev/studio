@@ -103,7 +103,8 @@ enum SettingsKey {
     skMiroInstallPath,
 
     // misc page
-    skNeosConfirm,
+    skNeosAutoConfirm,
+    skNeosAcceptTerms,
 
     // solver option editor settings
     skSoOverrideExisting,

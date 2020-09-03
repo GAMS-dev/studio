@@ -326,7 +326,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());
 
     // misc page
-    safelyAdd(res, skNeosConfirm, scUser, {"neos","confirm"}, true);
+    safelyAdd(res, skNeosAutoConfirm, scUser, {"neos","autoConfirm"}, false);
+    safelyAdd(res, skNeosAcceptTerms, scUser, {"neos","acceptTerms"}, false);
 
     // solver option editor settings
     safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);

@@ -136,7 +136,7 @@ void SettingsDialog::loadSettings()
     }
 
     // misc page
-    ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosConfirm));
+    ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -217,7 +217,7 @@ void SettingsDialog::saveSettings()
 //    mSettings->saveScheme();
 
     // misc page
-    mSettings->setBool(skNeosConfirm, ui->confirmNeosCheckBox->isChecked());
+    mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
 
     // solver option editor
 

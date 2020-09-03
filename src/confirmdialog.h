@@ -17,7 +17,11 @@ class ConfirmDialog : public QDialog
 public:
     explicit ConfirmDialog(QString title, QString text, QString checkText, QWidget *parent = nullptr);
     ~ConfirmDialog();
-    bool confirm() const { return mConfirm; }
+    void setBoxAccepted(bool accept);
+
+signals:
+    void autoConfirm();
+    void setAcceptBox(bool accept);
 
 private slots:
     void on_checkBox_stateChanged(int state);
@@ -25,7 +29,6 @@ private slots:
 
 private:
     Ui::ConfirmDialog *ui;
-    bool mConfirm = true;
 };
 
 }
