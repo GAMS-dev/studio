@@ -1,6 +1,7 @@
 Version 1.3.5 *
 ==================
 - fixed file codec selection for model assembly dialog
+- added dialog for confidentiality and terms of user confirmation before starting NEOS
 - darkened color for matching parentheses in dark mode to enhance contrast to cursor
 
 Version 1.3.4

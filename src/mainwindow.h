@@ -328,6 +328,9 @@ private slots:
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
+    void neosExecute();
+    void showNeosConfirmDialog();
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *e);
@@ -428,6 +431,7 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
+    bool mNeosLong = false;
 };
 
 }
