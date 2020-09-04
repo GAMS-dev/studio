@@ -1,11 +1,15 @@
+Version 1.3.5
+==================
+- fixed file codec selection for model assembly dialog
+- added dialog for confidentiality and terms of use confirmation before starting NEOS
+- darkened color for matching parentheses in dark mode to enhance contrast to cursor
+
 Version 1.3.4
 ==================
 - removed space character when command-line parameter history should be empty
 - fixed missing tab browser button when studio starts in maximized/fullscreen mode
 - added community license type to solver matrix
-- fixed insertion of auto-closing characters in unwanted situations (e.g.
-beginning of a word)
-- fixed search result navigation creating too many cursor history events
+- fixed insertion of auto-closing characters in unwanted situations (e.g. beginning of a word)
 
 Version 1.3.3
 ==================
@@ -35,8 +39,6 @@ Version 1.3.0
     - Models can be executed remotely via the menu GAMS > Run NEOS or the execute button located in the toolbar
 - added usage of new GAMS.framework structure on macOS
 - changed terminal to native macOS Terminal on macOS
-- added `Shift+Option+Up/Down` hotkeys to start block edit mode on macOS
-- fixed some icons not following studio theme
 - fixed line break behavior not following settings
 - added print support for text files (gms, txt, lst, dmp, ...)
 - fixed help view bookmarks not being saved permanently

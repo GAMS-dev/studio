@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QSet>
+#include <QTextCodec>
 #include <QTextStream>
 
 namespace gams {
@@ -68,8 +69,10 @@ QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile,
     if (fileInfo.exists(assemblyFile)) {
         QFile file(assemblyFile);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            while (!file.atEnd()) {
-                auto line = file.readLine().trimmed();
+            QTextStream stream(&file);
+            stream.setCodec(QTextCodec::codecForName("UTF-8"));
+            while (!stream.atEnd()) {
+                auto line = stream.readLine().trimmed();
                 if (line.isEmpty())
                     continue;
                 selectedFiles << line;
@@ -91,6 +94,7 @@ bool MiroCommon::writeAssemblyFile(const QString &assemblyFile,
     QFile file(assemblyFile);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&file);
+        stream.setCodec(QTextCodec::codecForName("UTF-8"));
         for (auto selectedFile: selectedFiles)
             stream << selectedFile << "\n";
         file.close();
