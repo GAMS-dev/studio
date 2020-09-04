@@ -2997,10 +2997,11 @@ void MainWindow::showNeosConfirmDialog()
     connect(dialog, &ConfirmDialog::autoConfirm, [] {
         Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
     });
-    connect(dialog, &ConfirmDialog::setAcceptBox, [] (bool accept) {
+    connect(dialog, &ConfirmDialog::setAcceptBox, [this] (bool accept) {
         Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, accept);
+        updateAndSaveSettings();
     });
-    dialog->show();
+    dialog->open();
 }
 
 void MainWindow::neosExecute()
