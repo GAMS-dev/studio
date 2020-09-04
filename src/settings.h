@@ -102,6 +102,10 @@ enum SettingsKey {
     // MIRO settings page
     skMiroInstallPath,
 
+    // misc page
+    skNeosAutoConfirm,
+    skNeosAcceptTerms,
+
     // solver option editor settings
     skSoOverrideExisting,
     skSoAddCommentAbove,

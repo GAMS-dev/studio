@@ -2,9 +2,11 @@ Version 1.4.0 *
 ==================
 - added jump to included files by context menu, F2 shortcut, or holding `Ctrl` and click on the filename. The filename needs to be hardcoded, calculated names are not resolved.
 
-Version 1.3.5 *
+Version 1.3.5
 ==================
 - fixed file codec selection for model assembly dialog
+- added dialog for confidentiality and terms of use confirmation before starting NEOS
+- darkened color for matching parentheses in dark mode to enhance contrast to cursor
 
 Version 1.3.4
 ==================

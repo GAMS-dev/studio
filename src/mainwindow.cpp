@@ -62,6 +62,7 @@
 #include "miro/miromodelassemblydialog.h"
 #include "neos/neosprocess.h"
 #include "process/gamsinstprocess.h"
+#include "confirmdialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -3006,21 +3007,58 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
     execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
 }
 
+const QString CNeosConfirmTitle = "Submitting data to NEOS";
+const QString CNeosConfirmText = "You are about to submit your data to the NEOS Server. This service is offered "
+                                 "with no expectation or guarantee of confidentiality for the data or the model. "
+                                 "Please ensure you have read the terms of use at "
+                                 "<a href=https://neos-server.org/neos/termofuse.html>NEOS Server</a>";
+const QString CNeosConfirmCheckText = "I agree to the terms of use of NEOS";
+
 void MainWindow::on_actionRunNeos_triggered()
 {
-    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setPriority(neos::prioShort);
-    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+    mNeosLong = false;
+    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
+            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
+        showNeosConfirmDialog();
+    else
+        emit neosExecute();
 }
 
 void MainWindow::on_actionRunNeosL_triggered()
 {
+    mNeosLong = true;
+    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
+            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
+        showNeosConfirmDialog();
+    else
+        emit neosExecute();
+}
+
+void MainWindow::showNeosConfirmDialog()
+{
+    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
+    dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
+    connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
+    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::neosExecute);
+    connect(dialog, &ConfirmDialog::accepted, dialog, &ConfirmDialog::deleteLater);
+    connect(dialog, &ConfirmDialog::autoConfirm, [] {
+        Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
+    });
+    connect(dialog, &ConfirmDialog::setAcceptBox, [this] (bool accept) {
+        Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, accept);
+        updateAndSaveSettings();
+    });
+    dialog->open();
+}
+
+void MainWindow::neosExecute()
+{
+    updateAndSaveSettings();
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setPriority(neos::prioLong);
+    neosProcess->setPriority(mNeosLong ? neos::prioLong : neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeosL);
+    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL
+                                                 : option::RunActionState::RunNeos);
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
 }
 

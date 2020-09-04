@@ -43,6 +43,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    ui->tabWidget->setCurrentIndex(0);
 
     // Themes
 #ifdef _WIN32
@@ -87,6 +88,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_writeLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -133,6 +135,9 @@ void SettingsDialog::loadSettings()
         ui->miroEdit->setText(path);
         mSettings->setString(skMiroInstallPath, path);
     }
+
+    // misc page
+    ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -212,7 +217,14 @@ void SettingsDialog::saveSettings()
     // colors page
 //    mSettings->saveScheme();
 
+    // misc page
+    mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
+
     // solver option editor
+
+    // TODO(JM) is it wanted that the following line was missing?
+//    mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
+
     mSettings->setBool(skSoAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
     mSettings->setBool(skSoAddEOLComment, ui->addEOLCommentCheckBox->isChecked());
     mSettings->setBool(skSoDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
