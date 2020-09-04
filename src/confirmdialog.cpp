@@ -8,7 +8,7 @@ namespace gams {
 namespace studio {
 
 ConfirmDialog::ConfirmDialog(QString title, QString text, QString checkText, QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent, Qt::WindowCloseButtonHint | Qt::WindowTitleHint),
     ui(new Ui::ConfirmDialog)
 {
     ui->setupUi(this);
