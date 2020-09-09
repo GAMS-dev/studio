@@ -2,6 +2,7 @@
 #include "neosmanager.h"
 #include "logger.h"
 #include "commonpaths.h"
+#include "process/gmsunzipprocess.h"
 #include <QStandardPaths>
 #include <QDir>
 
@@ -18,9 +19,6 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 {
     disconnect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
-    connect(&mSubProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::unpackCompleted);
-    connect(&mSubProc, &QProcess::readyReadStandardOutput, this, &NeosProcess::readStdOut);
-    connect(&mSubProc, &QProcess::readyReadStandardError, this, &NeosProcess::readStdErr);
 
     mManager = new NeosManager(this);
     mManager->setUrl("https://neos-server.org:3333");
@@ -146,6 +144,21 @@ void NeosProcess::sslErrors(const QStringList &errors)
 {
     QString data("\n*** SSL errors:\n%1\n");
     emit newStdChannelData(data.arg(errors.join("\n")).toUtf8());
+}
+
+void NeosProcess::parseUnzipStdOut(const QByteArray &data)
+{
+    todo
+}
+
+void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
+{
+    if (newState == QProcess::NotRunning) {
+        setNeosState(NeosIdle);
+        mSubProc->deleteLater();
+        completed(exitCode);
+    }
+
 }
 
 void NeosProcess::interrupt()
@@ -277,16 +290,6 @@ void NeosProcess::setNeosState(NeosState newState)
     emit neosStateChanged(this, mNeosState);
 }
 
-void NeosProcess::readSubStdOut()
-{
-    emit newStdChannelData(mSubProc.readAllStandardOutput());
-}
-
-void NeosProcess::readSubStdErr()
-{
-    emit newStdChannelData(mSubProc.readAllStandardError());
-}
-
 QByteArray NeosProcess::convertReferences(const QByteArray &data)
 {
     QByteArray res;
@@ -336,9 +339,18 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
 
 void NeosProcess::startUnpacking()
 {
-//    mSubProc.setWorkingDirectory(mOutPath);
-//    QStringList params;
-//    params << "-o solver-output.zip";
+    mSubProc = new GmsunzipProcess(this);
+    mSubProc->setWorkingDirectory(mOutPath);
+    QStringList params;
+    params << "-o solver-output.zip";
+    mSubProc->setParameters(params);
+    connect(mSubProc, &GmsunzipProcess::stateChanged, this, &NeosProcess::unzipStateChanged);
+    connect(mSubProc, &AbstractGamsProcess::stateChanged, this, &NeosProcess::unpackCompleted);
+    connect(mSubProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &NeosProcess::unpackCompleted);
+    connect(mSubProc, &GmsunzipProcess::newStdChannelData, this, &NeosProcess::parseUnzipStdOut);
+
+    mSubProc->execute();
+
 //#if defined(__unix__) || defined(__APPLE__)
 //    mSubProc.start(nativeAppPath("gmsunzip"), params);
 //#else

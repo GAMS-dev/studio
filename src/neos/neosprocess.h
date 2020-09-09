@@ -6,6 +6,9 @@
 
 namespace gams {
 namespace studio {
+
+class GmsunzipProcess;
+
 namespace neos {
 
 enum NeosState {
@@ -60,11 +63,11 @@ protected slots:
 
 private slots:
     void pullStatus();
-    void readSubStdOut();
-    void readSubStdErr();
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void sslErrors(const QStringList &errors);
+    void parseUnzipStdOut(const QByteArray &data);
+    void unzipStateChanged(QProcess::ProcessState newState);
 
 private:
     void setNeosState(NeosState newState);
@@ -81,7 +84,7 @@ private:
     NeosState mNeosState = NeosIdle;
     QTimer mPullTimer;
 
-    QProcess mSubProc;
+    GmsunzipProcess *mSubProc = nullptr;
 };
 
 } // namespace neos
