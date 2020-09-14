@@ -33,11 +33,11 @@ pipeline {
                             qmake gams-studio.pro CONFIG+=release && make -j3
                         '''
                     }
-                    post {
-                        always {
-                            recordIssues aggregatingResults: true, enabledForFailure: true, tools: [gcc4(reportEncoding: 'UTF-8')]
-                            recordIssues enabledForFailure: true, tools: [taskScanner(ignoreCase: true, includePattern: '**/*.c, **/*.cpp, **/*.h, **/*.pro, **/*.pri', normalTags: 'TODO')]
-                        }
+                    //post {
+                    //    always {
+                    //        recordIssues aggregatingResults: true, enabledForFailure: true, tools: [gcc4(reportEncoding: 'UTF-8')]
+                    //        recordIssues enabledForFailure: true, tools: [taskScanner(ignoreCase: true, includePattern: '**/*.c, **/*.cpp, **/*.h, **/*.pro, **/*.pri', normalTags: 'TODO')]
+                    //    }
                     }
                 }
                 stage ('windowsX64') {
@@ -55,11 +55,11 @@ pipeline {
                             nmake
                         '''
                     }
-                    post {
-                        always {
-                            recordIssues aggregatingResults: true, enabledForFailure: true, tools: [msBuild(id: 'windowsX64', name: 'MSBuild-x64', reportEncoding: 'UTF-8')]
-                        }
-                    }
+                    //post {
+                    //    always {
+                    //        recordIssues aggregatingResults: true, enabledForFailure: true, tools: [msBuild(id: 'windowsX64', name: 'MSBuild-x64', reportEncoding: 'UTF-8')]
+                    //    }
+                    //}
                 }
                 stage ('macos') {
                     agent { label 'macos' }
@@ -72,11 +72,11 @@ pipeline {
                         '''
                         sh 'qmake gams-studio.pro CONFIG+=release && make -j3'
                     }
-                    post {
-                        always {
-                            recordIssues aggregatingResults: true, enabledForFailure: true, tools: [clang(reportEncoding: 'UTF-8')]
-                        }
-                    }
+                    //post {
+                    //    always {
+                    //        recordIssues aggregatingResults: true, enabledForFailure: true, tools: [clang(reportEncoding: 'UTF-8')]
+                    //    }
+                    //}
                 }
             }
         }
