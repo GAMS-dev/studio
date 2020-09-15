@@ -36,6 +36,7 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+class Reference;
 class ReferenceTabStyle;
 class ReferenceViewer : public QWidget
 {

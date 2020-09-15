@@ -100,7 +100,7 @@ bool Reference::isEmpty() const
 
 bool Reference::isValid() const
 {
-    return mValid;
+    return (mState == SuccessfullyLoaded);
 }
 
 int Reference::size() const
@@ -144,9 +144,8 @@ void Reference::loadReferenceFile(QTextCodec* codec)
     mCodec = codec;
     mState = ReferenceState::Loading;
     clear();
-    mValid = parseFile(mReferenceFile);
-    mState = ReferenceState::Loaded;
-    emit loadFinished(mValid ? LoadedState::SuccesffullyLoaded : LoadedState::UnsuccesffullyLoaded);
+    mState = (parseFile(mReferenceFile) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
+    emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
 }
 
 bool Reference::parseFile(QString referenceFile)
@@ -162,10 +161,14 @@ bool Reference::parseFile(QString referenceFile)
     QString idx;
     while (!in.atEnd()) {
         QString line = in.readLine();
-        recordList = line.split(' ');
+        recordList = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (recordList.size() <= 0)
+            return false;
         idx = recordList.first();
-        if (idx.toInt()== 0)
+        if (idx.toInt()== 0)         // start of symboltable
             break;
+        if (recordList.size() < 11)  // unexpected size of elements
+            return false;
         recordList.removeFirst();
         QString id = recordList.at(0);
         QString symbolName = recordList.at(1);
@@ -184,10 +187,16 @@ bool Reference::parseFile(QString referenceFile)
     if (in.atEnd())
         return false;
 
+
+    // start of symboltable
+    if (recordList.size() < 2)   // only the first two elements are used
+        return false;
     recordList.removeFirst();
     int size = recordList.first().toInt();
     while (!in.atEnd()) {
-        recordList = in.readLine().split(' ');
+        recordList = in.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (recordList.size() <= 0 || recordList.size() < 6)   // unexpected size of elements
+            return false;
         idx = recordList.first();
         QString id = recordList.at(0);
 
@@ -213,6 +222,7 @@ bool Reference::parseFile(QString referenceFile)
         ref->setDomain(domain);
         ref->setNumberOfElements(numberOfElements.toInt());
         QStringList text;
+        // last element (explanatory text) may contains whitespaces
         for (int idx=6+dimension.toInt(); idx< recordList.size(); idx++)
             text << recordList.at(idx);
         ref->setExplanatoryText(text.join(' '));

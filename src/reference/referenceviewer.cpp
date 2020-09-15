@@ -28,6 +28,8 @@
 #include "referencetabstyle.h"
 #include "symbolreferenceitem.h"
 #include "symbolreferencewidget.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -43,38 +45,45 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     ui->setupUi(this);
     ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
 
+    bool problemLoaded = (mReference->state() == Reference::UnsuccessfullyLoaded);
+    if (problemLoaded) {
+        SysLogLocator::systemLog()->append(
+                    QString("Error while loading: %1, the file content might be corrupted or incorrectly overwritten").arg(mReference->getFileLocation()),
+                    LogMsgType::Error);
+    }
+
     SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unknown, this);
-    ui->tabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg(mReference->size()));
+    ui->tabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg( problemLoaded ? "?" : QString::number(mReference->size())) );
 
     SymbolReferenceWidget* setRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Set, this);
-    ui->tabWidget->addTab(setRefWidget, QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
+    ui->tabWidget->addTab(setRefWidget, QString("Set (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Set).size())) );
 
     SymbolReferenceWidget* acronymRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Acronym, this);
-    ui->tabWidget->addTab(acronymRefWidget, QString("Acronym (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Acronym).size()));
+    ui->tabWidget->addTab(acronymRefWidget, QString("Acronym (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Acronym).size())) );
 
     SymbolReferenceWidget* varRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Variable, this);
-    ui->tabWidget->addTab(varRefWidget, QString("Variable (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Variable).size()));
+    ui->tabWidget->addTab(varRefWidget, QString("Variable (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Variable).size()) ));
 
     SymbolReferenceWidget* parRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Parameter, this);
-    ui->tabWidget->addTab(parRefWidget, QString("Parameter (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Parameter).size()));
+    ui->tabWidget->addTab(parRefWidget, QString("Parameter (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Parameter).size())) );
 
     SymbolReferenceWidget* equRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Equation, this);
-    ui->tabWidget->addTab(equRefWidget, QString("Equation (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Equation).size()));
+    ui->tabWidget->addTab(equRefWidget, QString("Equation (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Equation).size())) );
 
     SymbolReferenceWidget* modelRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Model, this);
-    ui->tabWidget->addTab(modelRefWidget, QString("Model (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Model).size()));
+    ui->tabWidget->addTab(modelRefWidget, QString("Model (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Model).size())) );
 
     SymbolReferenceWidget* fileRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::File, this);
-    ui->tabWidget->addTab(fileRefWidget, QString("File (%1)").arg(mReference->findReferenceFromType(SymbolDataType::File).size()));
+    ui->tabWidget->addTab(fileRefWidget, QString("File (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::File).size())) );
 
     SymbolReferenceWidget* functRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Funct, this);
-    ui->tabWidget->addTab(functRefWidget, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
+    ui->tabWidget->addTab(functRefWidget, QString("Function (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Funct).size())) );
 
     SymbolReferenceWidget* unusedRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unused, this);
-    ui->tabWidget->addTab(unusedRefWidget, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
+    ui->tabWidget->addTab(unusedRefWidget, QString("Unused (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Unused).size())) );
 
     SymbolReferenceWidget* fileusedRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::FileUsed, this);
-    ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
+    ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : QString::number(mReference->getFileUsed().size())) );
 
     ui->tabWidget->setCurrentIndex(0);
     allSymbolsRefWidget->initModel();
@@ -114,20 +123,34 @@ void ReferenceViewer::on_tabBarClicked(int index)
 
 void ReferenceViewer::updateView(bool status)
 {
-    if (status == Reference::LoadedState::UnsuccesffullyLoaded)
-        return;
-
-    ui->tabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));
-    ui->tabWidget->setTabText(1, QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
-    ui->tabWidget->setTabText(2, QString("Acronym (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Acronym).size()));
-    ui->tabWidget->setTabText(3, QString("Variable (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Variable).size()));
-    ui->tabWidget->setTabText(4, QString("Parameter (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Parameter).size()));
-    ui->tabWidget->setTabText(5, QString("Equation (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Equation).size()));
-    ui->tabWidget->setTabText(6, QString("Model (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Model).size()));
-    ui->tabWidget->setTabText(7, QString("File (%1)").arg(mReference->findReferenceFromType(SymbolDataType::File).size()));
-    ui->tabWidget->setTabText(8, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
-    ui->tabWidget->setTabText(9, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
-    ui->tabWidget->setTabText(10, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
+    if (status) {
+        ui->tabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));
+        ui->tabWidget->setTabText(1, QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
+        ui->tabWidget->setTabText(2, QString("Acronym (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Acronym).size()));
+        ui->tabWidget->setTabText(3, QString("Variable (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Variable).size()));
+        ui->tabWidget->setTabText(4, QString("Parameter (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Parameter).size()));
+        ui->tabWidget->setTabText(5, QString("Equation (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Equation).size()));
+        ui->tabWidget->setTabText(6, QString("Model (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Model).size()));
+        ui->tabWidget->setTabText(7, QString("File (%1)").arg(mReference->findReferenceFromType(SymbolDataType::File).size()));
+        ui->tabWidget->setTabText(8, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
+        ui->tabWidget->setTabText(9, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
+        ui->tabWidget->setTabText(10, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
+    } else {
+        SysLogLocator::systemLog()->append(
+                    QString("Error while reloading: %1, the file content might be corrupted or incorrectly overwritten").arg(mReference->getFileLocation()),
+                    LogMsgType::Error);
+        ui->tabWidget->setTabText(0, QString("All Symbols (?)"));
+        ui->tabWidget->setTabText(1, QString("Set (?)"));
+        ui->tabWidget->setTabText(2, QString("Acronym (?)"));
+        ui->tabWidget->setTabText(3, QString("Variable (?)"));
+        ui->tabWidget->setTabText(4, QString("Parameter (?)"));
+        ui->tabWidget->setTabText(5, QString("Equation (?)"));
+        ui->tabWidget->setTabText(6, QString("Model (?)"));
+        ui->tabWidget->setTabText(7, QString("File (?)"));
+        ui->tabWidget->setTabText(8, QString("Function (?)"));
+        ui->tabWidget->setTabText(9, QString("Unused (?)"));
+        ui->tabWidget->setTabText(10, QString("File Used (?)"));
+    }
 }
 
 } // namespace reference
