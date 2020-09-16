@@ -126,25 +126,14 @@ void SymbolReferenceWidget::expandResetModel()
 
 void SymbolReferenceWidget::resetModel()
 {
+    ui->referenceView->clearSelection();
+    ui->symbolView->clearSelection();
+
     mSymbolTableModel->resetModel();
     mReferenceTreeModel->resetModel();
 
     if (mCurrentSymbolSelection.isEmpty() && mCurrentSymbolID==-1)
         return;
-
-    QModelIndex idx = (mType==SymbolDataType::FileUsed ?
-        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_FILEUSED_NAME):
-        mSymbolTableModel->index(0, SymbolTableModel::COLUMN_SYMBOL_NAME) );
-    QModelIndexList items = mSymbolTableModel->match(idx, Qt::DisplayRole,
-                                                     mCurrentSymbolSelection, 1,
-                                                     Qt::MatchExactly);
-    for(QModelIndex itemIdx : items) {
-        ui->symbolView->selectionModel()->select(
-                    QItemSelection(
-                        mSymbolTableModel->index(itemIdx.row(),0),
-                        mSymbolTableModel->index(itemIdx.row(),mSymbolTableModel->columnCount()- 1)),
-                    QItemSelectionModel::ClearAndSelect);
-    }
 }
 
 void SymbolReferenceWidget::initModel()

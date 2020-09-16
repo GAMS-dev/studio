@@ -86,6 +86,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : QString::number(mReference->getFileUsed().size())) );
 
     ui->tabWidget->setCurrentIndex(0);
+    ui->tabWidget->setEnabled(!problemLoaded);
     allSymbolsRefWidget->initModel();
     setFocusProxy(ui->tabWidget);
 
@@ -108,6 +109,12 @@ void ReferenceViewer::selectSearchField() const
 void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
 {
     mReference->loadReferenceFile(codec);
+    if (mReference->state() == Reference::UnsuccessfullyLoaded) {
+        SysLogLocator::systemLog()->append(
+                    QString("Error while reloading: %1, the file content might be corrupted or incorrectly overwritten").arg(mReference->getFileLocation()),
+                    LogMsgType::Error);
+    }
+    updateView(mReference->state() == Reference::SuccessfullyLoaded);
     for(int i=0; i<ui->tabWidget->count(); i++) {
         SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(i));
         refWidget->resetModel();
@@ -136,9 +143,6 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(9, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
         ui->tabWidget->setTabText(10, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
     } else {
-        SysLogLocator::systemLog()->append(
-                    QString("Error while reloading: %1, the file content might be corrupted or incorrectly overwritten").arg(mReference->getFileLocation()),
-                    LogMsgType::Error);
         ui->tabWidget->setTabText(0, QString("All Symbols (?)"));
         ui->tabWidget->setTabText(1, QString("Set (?)"));
         ui->tabWidget->setTabText(2, QString("Acronym (?)"));
@@ -151,6 +155,8 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(9, QString("Unused (?)"));
         ui->tabWidget->setTabText(10, QString("File Used (?)"));
     }
+    ui->tabWidget->setCurrentIndex(0);
+    ui->tabWidget->setEnabled(status);
 }
 
 } // namespace reference
