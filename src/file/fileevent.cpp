@@ -55,11 +55,11 @@ FileEventKind FileEvent::kind() const
 }
 
 FileEventData::FileEventData()
-    : fileId(FileId()), kind(FileEventKind::invalid)
+    : fileId(FileId()), kind(FileEventKind::invalid), time(QTime().currentTime())
 {}
 
 FileEventData::FileEventData(FileId _fileId, FileEventKind _kind)
-    : fileId(_fileId), kind(_kind)
+    : fileId(_fileId), kind(_kind), time(QTime().currentTime())
 {}
 
 FileEventData::FileEventData(const FileEventData &other)
@@ -71,6 +71,7 @@ FileEventData &FileEventData::operator=(const FileEventData &other)
 {
     fileId = other.fileId;
     kind = other.kind;
+    time = other.time;
     return *this;
 }
 

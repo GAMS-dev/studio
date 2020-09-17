@@ -1,3 +1,7 @@
+Version 1.3.6  *
+==================
+- delay reload GDX on file change: check for full read/write access
+
 Version 1.3.5
 ==================
 - fixed file codec selection for model assembly dialog

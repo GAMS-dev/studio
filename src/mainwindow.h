@@ -412,6 +412,7 @@ private:
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
 
+    QMutex mFileMutex;
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     int mExternFileEventChoice = -1;

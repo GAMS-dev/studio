@@ -174,17 +174,26 @@ void GdxSymbolView::showColumnFilter(QPoint p)
 {
     int column = ui->tvListView->horizontalHeader()->logicalIndexAt(p);
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
+        mColumnFilterMenu = new QMenu(this);
+        connect(mColumnFilterMenu, &QMenu::close, this, &GdxSymbolView::freeColumnFilterMenu);
         if (column<mSym->dim()) {
-            QMenu m(this);
-            ColumnFilter cf(mSym, column, this);
-            m.addAction(&cf);
-            m.exec(ui->tvListView->mapToGlobal(p));
+            ColumnFilter *cf = new ColumnFilter(mSym, column, this);
+            mColumnFilterMenu->addAction(cf);
+            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
         } else {
-            QMenu m(this);
             ValueFilter* vf = mSym->valueFilter(column-mSym->dim());
-            m.addAction(vf);
-            m.exec(ui->tvListView->mapToGlobal(p));
+            mColumnFilterMenu->addAction(vf);
+            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
         }
+    }
+}
+
+void GdxSymbolView::freeColumnFilterMenu()
+{
+    if (mColumnFilterMenu) {
+        mColumnFilterMenu->actions().first()->deleteLater();
+        mColumnFilterMenu->deleteLater();
+        mColumnFilterMenu = nullptr;
     }
 }
 
