@@ -59,6 +59,7 @@ public slots:
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
     void showColumnFilter(QPoint p);
+    void freeColumnFilterMenu();
     void autoResizeColumns();
 
 private slots:
@@ -72,6 +73,7 @@ private:
     QByteArray mInitialHeaderState;
     QMenu mContextMenuLV;
     QMenu mContextMenuTV;
+    QMenu *mColumnFilterMenu = nullptr;
 
     void showListView();
     void showTableView();

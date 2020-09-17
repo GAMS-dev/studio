@@ -99,6 +99,18 @@ QStringList FileMeta::pathList(QList<QUrl> urls)
     return res;
 }
 
+void FileMeta::invalidate()
+{
+    if (kind() == FileKind::Gdx) {
+        for (QWidget *wid: mEditors) {
+            if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
+                gdxViewer->invalidate();
+            }
+        }
+        return;
+    }
+}
+
 void FileMeta::takeEditsFrom(FileMeta *other)
 {
     if (mDocument) return;
@@ -306,11 +318,11 @@ void FileMeta::reload()
     load(mCodec->mibEnum(), false);
 }
 
-void FileMeta::invalidate()
+void FileMeta::updateView()
 {
     for (QWidget *wid: mEditors) {
         if (TextView* tv = ViewHelper::toTextView(wid)) {
-            tv->invalidate();
+            tv->recalcVisibleLines();
         }
     }
 }
@@ -486,7 +498,7 @@ void FileMeta::load(int codecMib, bool init)
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: mEditors) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
-                gdxViewer->setHasChanged(true);
+                gdxViewer->setHasChanged(init);
                 gdxViewer->reload(mCodec);
             }
         }
@@ -658,6 +670,11 @@ FileMeta::FileDifferences FileMeta::compare(QString fileName)
     if (!fileName.isEmpty() && !FileMetaRepo::equals(QFileInfo(fileName), QFileInfo(location())))
         res.setFlag(FdName);
     return res;
+}
+
+void FileMeta::refreshMetaData()
+{
+    mData = Data(location(), mData.type);
 }
 
 void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int length)
