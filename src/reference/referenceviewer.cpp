@@ -47,8 +47,10 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
 
     bool problemLoaded = (mReference->state() == Reference::UnsuccessfullyLoaded);
     if (problemLoaded) {
+        QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         SysLogLocator::systemLog()->append(
-                    QString("Error while loading: %1, the file content might be corrupted or incorrectly overwritten").arg(mReference->getFileLocation()),
+                    QString("Error while loading: %1%2, the file content might be corrupted or incorrectly overwritten")
+                              .arg(mReference->getFileLocation()).arg(errorLine),
                     LogMsgType::Error);
     }
 
@@ -110,8 +112,10 @@ void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
 {
     mReference->loadReferenceFile(codec);
     if (mReference->state() == Reference::UnsuccessfullyLoaded) {
+        QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         SysLogLocator::systemLog()->append(
-                    QString("Error while reloading: %1, the file content might be corrupted or incorrectly overwritten").arg(mReference->getFileLocation()),
+                    QString("Error while reloading: %1%2, the file content might be corrupted or incorrectly overwritten")
+                               .arg(mReference->getFileLocation()).arg(errorLine),
                     LogMsgType::Error);
     }
     updateView(mReference->state() == Reference::SuccessfullyLoaded);

@@ -24,7 +24,7 @@ namespace studio {
 namespace reference {
 
 Reference::Reference(QString referenceFile, QTextCodec* codec, QObject *parent) :
-    QObject(parent), mCodec(codec), mReferenceFile(QDir::toNativeSeparators(referenceFile))
+    QObject(parent), mCodec(codec),  mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
     loadReferenceFile(mCodec);
 }
@@ -133,6 +133,11 @@ Reference::ReferenceState Reference::state() const
     return mState;
 }
 
+int Reference::errorLine() const
+{
+    return  mLastErrorLine;
+}
+
 QTextCodec *Reference::codec() const
 {
     return mCodec;
@@ -140,18 +145,23 @@ QTextCodec *Reference::codec() const
 
 void Reference::loadReferenceFile(QTextCodec* codec)
 {
+    mLastErrorLine = -1;
     emit loadStarted();
     mCodec = codec;
     mState = ReferenceState::Loading;
     clear();
     mState = (parseFile(mReferenceFile) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
+    if (mState == ReferenceState::UnsuccessfullyLoaded)
+        mReference.clear();
     emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
 }
 
 bool Reference::parseFile(QString referenceFile)
 {
     QFile file(referenceFile);
+    int lineread = 0;
     if(!file.open(QIODevice::ReadOnly)) {
+        mLastErrorLine=lineread;
         return false;
     }
     QTextStream in(&file);
@@ -161,14 +171,19 @@ bool Reference::parseFile(QString referenceFile)
     QString idx;
     while (!in.atEnd()) {
         QString line = in.readLine();
+        lineread++;
         recordList = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        if (recordList.size() <= 0)
+        if (recordList.size() <= 0) {
+            mLastErrorLine=lineread;
             return false;
+        }
         idx = recordList.first();
         if (idx.toInt()== 0)         // start of symboltable
             break;
-        if (recordList.size() < 11)  // unexpected size of elements
+        if (recordList.size() < 11)  { // unexpected size of elements
+            mLastErrorLine=lineread;
             return false;
+        }
         recordList.removeFirst();
         QString id = recordList.at(0);
         QString symbolName = recordList.at(1);
@@ -184,19 +199,25 @@ bool Reference::parseFile(QString referenceFile)
         SymbolReferenceItem* ref = mReference[id.toInt()];
         addReferenceInfo(ref, referenceType, lineNumber.toInt(), columnNumber.toInt(), location);
     }
-    if (in.atEnd())
+    if (in.atEnd()) {
+        mLastErrorLine=lineread;
         return false;
-
+    }
 
     // start of symboltable
-    if (recordList.size() < 2)   // only the first two elements are used
+    if (recordList.size() < 2)  { // only the first two elements are used
+        mLastErrorLine=lineread;
         return false;
+    }
     recordList.removeFirst();
     int size = recordList.first().toInt();
     while (!in.atEnd()) {
         recordList = in.readLine().split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        if (recordList.size() <= 0 || recordList.size() < 6)   // unexpected size of elements
+        lineread++;
+        if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
+            mLastErrorLine=lineread;
             return false;
+        }
         idx = recordList.first();
         QString id = recordList.at(0);
 
@@ -228,9 +249,10 @@ bool Reference::parseFile(QString referenceFile)
         ref->setExplanatoryText(text.join(' '));
     }
 
-    if (idx.toInt()!=size)
+     if (idx.toInt()!=size) {
+        mLastErrorLine=lineread;
         return false;
-
+     }
      QMap<SymbolId, SymbolReferenceItem*>::const_iterator it = mReference.constBegin();
      while (it != mReference.constEnd()) {
          SymbolReferenceItem* ref = it.value();

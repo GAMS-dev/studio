@@ -148,6 +148,12 @@ public:
     Reference::ReferenceState state() const;
 
     ///
+    /// \brief Get the line number last read when encountering an error
+    /// \return Returns the line number last read if there is a read error, -1 otherwise.
+    ///
+    int errorLine() const;
+
+    ///
     /// \brief Get pointer to the codec.
     /// \return Returns pointer to the codec
     ///
@@ -181,6 +187,7 @@ private:
     QTextCodec* mCodec;
     QString mReferenceFile;
     ReferenceState mState = Initializing;
+    int mLastErrorLine = -1;
 
     QStringList mFileUsed;
 
