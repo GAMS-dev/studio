@@ -221,10 +221,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
 
     // solver option editor
-
-    // TODO(JM) is it wanted that the following line was missing?
-//    mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
-
+    mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
     mSettings->setBool(skSoAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
     mSettings->setBool(skSoAddEOLComment, ui->addEOLCommentCheckBox->isChecked());
     mSettings->setBool(skSoDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());

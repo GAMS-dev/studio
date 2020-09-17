@@ -110,16 +110,13 @@ MainWindow::MainWindow(QWidget *parent)
     MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
     MacOSCocoaBridge::setFullScreenMenuItemEverywhere(false);
     ui->actionFull_Screen->setShortcut(QKeySequence::FullScreen);
+    ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
+    ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
+    ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
 #else
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
 
-    // TODO: this should be moved to the platform switch above, for code consistency
-    if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
-        ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
-        ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
-        ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
-    }
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
     ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
     ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
