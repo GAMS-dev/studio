@@ -88,8 +88,12 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : QString::number(mReference->getFileUsed().size())) );
 
     ui->tabWidget->setCurrentIndex(0);
-    ui->tabWidget->setEnabled(!problemLoaded);
-    allSymbolsRefWidget->initModel();
+    if (!problemLoaded) {
+        ui->tabWidget->setEnabled(true);
+        allSymbolsRefWidget->initModel();
+    } else {
+        ui->tabWidget->setEnabled(false);
+    }
     setFocusProxy(ui->tabWidget);
 
     connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &ReferenceViewer::on_tabBarClicked);
@@ -118,11 +122,6 @@ void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
                                .arg(mReference->getFileLocation()).arg(errorLine),
                     LogMsgType::Error);
     }
-    updateView(mReference->state() == Reference::SuccessfullyLoaded);
-    for(int i=0; i<ui->tabWidget->count(); i++) {
-        SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(i));
-        refWidget->resetModel();
-    }
 }
 
 void ReferenceViewer::on_tabBarClicked(int index)
@@ -134,6 +133,13 @@ void ReferenceViewer::on_tabBarClicked(int index)
 
 void ReferenceViewer::updateView(bool status)
 {
+    for(int i=0; i<ui->tabWidget->count(); i++) {
+        SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(i));
+        if (refWidget) {
+            refWidget->initModel(mReference.data());
+            refWidget->resetModel();
+        }
+    }
     if (status) {
         ui->tabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));
         ui->tabWidget->setTabText(1, QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
@@ -146,9 +152,6 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(8, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
         ui->tabWidget->setTabText(9, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
         ui->tabWidget->setTabText(10, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
-         SymbolReferenceWidget* widget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
-         if (widget)
-             widget->updateSymbolSelection();
     } else {
         ui->tabWidget->setTabText(0, QString("All Symbols (?)"));
         ui->tabWidget->setTabText(1, QString("Set (?)"));
