@@ -44,6 +44,7 @@ enum class SyntaxKind {
     String,
     Formula,
     Assignment,
+    Call,
 
     CommentLine,
     CommentBlock,
@@ -281,6 +282,16 @@ class SyntaxCommentBlock: public SyntaxAbstract
 {
 public:
     SyntaxCommentBlock();
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+};
+
+/// \brief Defines the syntax for a multi-line comment block.
+class SyntaxCall: public SyntaxAbstract
+{
+    QStringList mSubDirective;
+public:
+    SyntaxCall();
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
