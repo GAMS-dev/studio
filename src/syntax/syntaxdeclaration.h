@@ -109,6 +109,7 @@ class SyntaxSubsetKey: public SyntaxKeywordBase
 public:
     SyntaxSubsetKey(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 class SyntaxEmbedded: public SyntaxKeywordBase
