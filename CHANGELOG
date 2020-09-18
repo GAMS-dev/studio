@@ -2,6 +2,7 @@ Version 1.3.6  *
 ==================
 - delay reload GDX on file change: check for full read/write access
 - fixed disappearing toolbar parts on opening settings dialog
+- fixed crash in reference file viewer when reading the corrupt reference file
 
 Version 1.3.5
 ==================
