@@ -1,6 +1,7 @@
 Version 1.3.6  *
 ==================
 - delay reload GDX on file change: check for full read/write access
+- fixed disappearing toolbar parts on opening settings dialog
 
 Version 1.3.5
 ==================
