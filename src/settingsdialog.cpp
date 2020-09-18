@@ -47,9 +47,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 
     // Themes
 #ifdef _WIN32
-    ui->combo_appearance->blockSignals(true);
     ui->combo_appearance->insertItem(0, "Follow Operating System");
-    ui->combo_appearance->blockSignals(false);
 #elif __APPLE__
     ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
     ui->combo_appearance->setVisible(false);
@@ -75,6 +73,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -270,7 +269,7 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
     emit editorFontChanged(ui->fontComboBox->currentFont().family(), size);
 }
 
-void SettingsDialog::on_combo_appearance_currentIndexChanged(int index)
+void SettingsDialog::appearanceIndexChanged(int index)
 {
 #ifndef __APPLE__
     ViewHelper::changeAppearance(index);
