@@ -1550,8 +1550,7 @@ void CodeEdit::recalcExtraSelections()
         mWordDelay.start(wordDelay);
     }
     extraSelBlockEdit(selections);
-    if (!document()->isEmpty())
-        setExtraSelections(selections);
+    setExtraSelections(selections);
 }
 
 void CodeEdit::updateExtraSelections()

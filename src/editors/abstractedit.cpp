@@ -39,6 +39,8 @@ AbstractEdit::AbstractEdit(QWidget *parent)
     mSelUpdater.setSingleShot(true);
     mSelUpdater.setInterval(10);
     connect(&mSelUpdater, &QTimer::timeout, this, &AbstractEdit::internalExtraSelUpdate);
+    connect(this, &AbstractEdit::cursorPositionChanged, this, &AbstractEdit::ensureCursorVisible);
+
 }
 
 AbstractEdit::~AbstractEdit()
