@@ -22,6 +22,8 @@
 #include <QStandardPaths>
 #include <QDir>
 
+#include <QDebug>
+
 #ifdef _WIN32
 #include "Windows.h"
 #endif
@@ -102,6 +104,7 @@ QString GamsProcess::aboutGAMS()
         lines.removeLast();
         lines.removeLast();
     }
+
     return lines.join("\n");
 }
 

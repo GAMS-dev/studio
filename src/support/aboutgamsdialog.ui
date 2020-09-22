@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>519</width>
-    <height>487</height>
+    <width>720</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,49 +72,80 @@
           </layout>
          </item>
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QScrollArea" name="scrollArea">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAsNeeded</enum>
            </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
+           <property name="sizeAdjustPolicy">
+            <enum>QAbstractScrollArea::AdjustToContents</enum>
            </property>
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Plain</enum>
-           </property>
-           <property name="lineWidth">
-            <number>1</number>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="textFormat">
-            <enum>Qt::RichText</enum>
-           </property>
-           <property name="scaledContents">
+           <property name="widgetResizable">
             <bool>true</bool>
            </property>
-           <property name="alignment">
-            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-           <property name="textInteractionFlags">
-            <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_5">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>582</width>
+              <height>363</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+               </property>
+               <property name="lineWidth">
+                <number>1</number>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+               <property name="scaledContents">
+                <bool>true</bool>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -193,7 +224,7 @@
           <bool>false</bool>
          </property>
          <attribute name="verticalHeaderDefaultSectionSize">
-          <number>23</number>
+          <number>24</number>
          </attribute>
         </widget>
        </item>
