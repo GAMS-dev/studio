@@ -47,6 +47,7 @@ public:
 
 signals:
     void neosStateChanged(AbstractProcess *proc, neos::NeosState progress);
+    void jobAborted(const QString &state);
 
 protected slots:
     void rePing(const QString &value);

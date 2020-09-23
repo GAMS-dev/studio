@@ -10,10 +10,10 @@
 #include "Windows.h"
 #endif
 
-
 namespace gams {
 namespace studio {
 namespace neos {
+
 
 NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
 {
@@ -148,7 +148,7 @@ void NeosProcess::sslErrors(const QStringList &errors)
 
 void NeosProcess::parseUnzipStdOut(const QByteArray &data)
 {
-    todo
+    emit newStdChannelData(data);
 }
 
 void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
@@ -156,9 +156,8 @@ void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
     if (newState == QProcess::NotRunning) {
         setNeosState(NeosIdle);
         mSubProc->deleteLater();
-        completed(exitCode);
+        completed(mSubProc->exitCode());
     }
-
 }
 
 void NeosProcess::interrupt()
@@ -212,26 +211,59 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
     setNeosState(Neos2Monitor);
 }
 
+
+enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};
+
+static const QHash<QString, JobStatusEnum> CJobStatus {
+    {"Invalid", jsInvalid}, {"Done", jsDone}, {"Running", jsRunning}, {"Waiting", jsWaiting},
+    {"Unknown Job", jsUnknownJob}, {"Bad Password", jsBadPassword}
+};
+
 void NeosProcess::reGetJobStatus(const QString &status)
 {
-    if (status.compare("done", Qt::CaseInsensitive) == 0 && mNeosState == Neos2Monitor) {
-        mManager->getCompletionCode();
-
-        if (mPullTimer.isActive()) mPullTimer.stop();
-        setNeosState(Neos3GetResult);
-
-    } else if (!mPullTimer.isActive()) {
-        mPullTimer.start();
+    switch (CJobStatus.value(status, jsInvalid)) {
+    case jsDone:
+        if (mNeosState == Neos2Monitor) {
+            mManager->getCompletionCode();
+            if (mPullTimer.isActive()) mPullTimer.stop();
+            setNeosState(Neos3GetResult);
+        }
+        break;
+    case jsRunning:
+    case jsWaiting:
+        if (!mPullTimer.isActive()) mPullTimer.start();
+        break;
+    case jsUnknownJob:
+    case jsBadPassword:
+    case jsInvalid:
+        emit jobAborted(status);
+        break;
     }
 }
 
+
+enum CompletionCodeEnum {ccInvalid, ccNormal, ccOutOfMemory, ccTimedOut, ccDiskSpace, ccServerError, ccUnknownJob, ccBadPassword};
+
+static const QHash<QString, CompletionCodeEnum> CCompletionCodes {
+    {"Invalid", ccInvalid}, {"Normal", ccNormal}, {"Out of memory", ccOutOfMemory}, {"Timed out", ccTimedOut},
+    {"Disk Space", ccDiskSpace}, {"Server error", ccServerError}, {"Unknown Job", ccUnknownJob}, {"Bad Password", ccBadPassword}
+};
+
 void NeosProcess::reGetCompletionCode(const QString &code)
 {
-    if (code.compare("Normal") == 0) {
+    DEB() << "CompletionCode: " << code;
+
+    switch (CCompletionCodes.value(code, ccInvalid)) {
+    case ccNormal: {
+        if (mPrio == prioLong)
+            mManager->getFinalResultsNonBlocking();
+
         // TODO(JM) Load result file (for large files this may take a while, check if neos supports progress monitoring)
         mManager->getOutputFile("solver-output.zip");
-    } else {
-        DEB() << "Job completion code: " << code;
+    }   break;
+    default:
+        emit jobAborted(code);
+        break;
     }
 }
 
@@ -248,13 +280,15 @@ void NeosProcess::reKillJob(const QString &text)
 void NeosProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
 {
     QByteArray res = convertReferences(data);
-    if (!data.isEmpty())
+    if (!res.isEmpty())
         emit newStdChannelData(res);
 }
 
 void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
 {
-
+    QByteArray res = convertReferences(data);
+    if (!res.isEmpty())
+        emit newStdChannelData(res);
 }
 
 void NeosProcess::reGetOutputFile(const QByteArray &data)
@@ -276,7 +310,8 @@ void NeosProcess::reError(const QString &errorText)
 
 void NeosProcess::pullStatus()
 {
-    mManager->getIntermediateResultsNonBlocking();
+    if (mPrio == prioShort)
+        mManager->getIntermediateResultsNonBlocking();
     mManager->getJobStatus();
 }
 
@@ -345,7 +380,6 @@ void NeosProcess::startUnpacking()
     params << "-o solver-output.zip";
     mSubProc->setParameters(params);
     connect(mSubProc, &GmsunzipProcess::stateChanged, this, &NeosProcess::unzipStateChanged);
-    connect(mSubProc, &AbstractGamsProcess::stateChanged, this, &NeosProcess::unpackCompleted);
     connect(mSubProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &NeosProcess::unpackCompleted);
     connect(mSubProc, &GmsunzipProcess::newStdChannelData, this, &NeosProcess::parseUnzipStdOut);
 
