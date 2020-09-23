@@ -36,6 +36,7 @@ struct FileEventData
     FileEventData(const FileEventData &other);
     FileEventData &operator= (const FileEventData &other);
     bool operator==(const FileEventData &other) const;
+    bool operator!=(const FileEventData &other) const;
     FileId fileId;
     FileEventKind kind;
 };
