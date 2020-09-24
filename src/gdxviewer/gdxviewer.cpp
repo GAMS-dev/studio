@@ -77,14 +77,14 @@ GdxViewer::~GdxViewer()
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
-    if (selected.indexes().size()>0) {
+    if (selected.indexes().size() > 0) {
         int selectedIdx = mSymbolTableProxyModel->mapToSource(selected.indexes().at(0)).row();
         if (deselected.indexes().size()>0) {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(deselected.indexes().at(0)).row());
             QtConcurrent::run(deselectedSymbol, &GdxSymbol::stopLoadingData);
         }
 
-        if (!reload(mCodec))
+        if (reload(mCodec) != 0)
             return;
 
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
@@ -122,16 +122,15 @@ GdxSymbol *GdxViewer::selectedSymbol()
     return selected;
 }
 
-bool GdxViewer::reload(QTextCodec* codec)
+int GdxViewer::reload(QTextCodec* codec, bool quiet)
 {
     if (mHasChanged || codec != mCodec) {
         mCodec = codec;
-        if (ui->splitter->widget(1) != ui->widget)
-            ui->splitter->replaceWidget(1, ui->widget);
-        freeSymbols();
-        bool initSuccess = init();
-        if (initSuccess) {
+        releaseFile();
+        int initError = init(quiet);
+        if (!initError) {
             mHasChanged = false;
+            setEnabled(true);
             //QMessageBox msgBox;
             //msgBox.setWindowTitle("GDX File Reloaded");
             //msgBox.setText("GDX file has been modified and was reloaded.");
@@ -139,10 +138,11 @@ bool GdxViewer::reload(QTextCodec* codec)
             //msgBox.setIcon(QMessageBox::Information);
             //msgBox.exec();
         }
-        emit ui->lineEdit->textChanged(ui->lineEdit->text());
-        return initSuccess;
+        mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
+        mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
+        return initError;
     }
-    return true;
+    return 0;
 }
 
 void GdxViewer::setHasChanged(bool value)
@@ -183,6 +183,14 @@ void GdxViewer::releaseFile()
     freeSymbols();
 }
 
+void GdxViewer::invalidate()
+{
+    if (isEnabled()) {
+        setEnabled(false);
+        releaseFile();
+    }
+}
+
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
@@ -206,7 +214,7 @@ void GdxViewer::copySelectionToClipboard()
     clip->setText(text);
 }
 
-bool GdxViewer::init()
+int GdxViewer::init(bool quiet)
 {
     int errNr = 0;
     gdxOpenRead(mGdx, mGdxFile.toLocal8Bit(), &errNr);
@@ -216,17 +224,21 @@ bool GdxViewer::init()
         char msg[GMS_SSSIZE];
         gdxErrorStr(mGdx,errNr, msg);
 
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Unable to Open GDX File");
-        msgBox.setText("Unable to open GDX file: " + mGdxFile + "\nError: " + msg);
-        msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        if (QMessageBox::Retry == msgBox.exec()) {
-            mHasChanged = true;
-            reload(mCodec);
+        if (!quiet) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Unable to Open GDX File");
+            msgBox.setText("Unable to open GDX file: " + mGdxFile + "\nError: " + msg);
+            msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Warning);
+            if (QMessageBox::Retry == msgBox.exec()) {
+                mHasChanged = true;
+                invalidate();
+                reload(mCodec);
+            }
         }
-        return false;
+        return errNr;
     }
+    setEnabled(true);
 
     ui->splitter->widget(0)->hide();
     ui->splitter->widget(1)->hide();
@@ -259,7 +271,7 @@ bool GdxViewer::init()
     this->hideUniverseSymbol(); //first entry is the universe which we do not want to show
     ui->tvSymbols->setColumnHidden(5,true); //hide the "Loaded" column
     mIsInitialized = true;
-    return true;
+    return errNr;
 }
 
 void GdxViewer::freeSymbols()
@@ -282,8 +294,10 @@ void GdxViewer::freeSymbols()
     locker.unlock();
 
     for (GdxSymbolView* view : mSymbolViews) {
-        if(view)
+        if(view) {
+            view->freeColumnFilterMenu();
             delete view;
+        }
     }
     mSymbolViews.clear();
     mIsInitialized = false;

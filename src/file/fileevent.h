@@ -22,6 +22,7 @@
 
 #include <QEvent>
 #include <QString>
+#include <QTime>
 #include "common.h"
 
 namespace gams {
@@ -39,6 +40,7 @@ struct FileEventData
     bool operator!=(const FileEventData &other) const;
     FileId fileId;
     FileEventKind kind;
+    QTime time;
 };
 
 class FileEvent : public QEvent
