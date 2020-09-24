@@ -148,7 +148,13 @@ void NeosProcess::sslErrors(const QStringList &errors)
 
 void NeosProcess::parseUnzipStdOut(const QByteArray &data)
 {
-    emit newStdChannelData(data);
+    if (data.startsWith(" extracting: ")) {
+        QByteArray fName = data.trimmed();
+        fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
+
+        emit newStdChannelData("--- extracting: ."+ fName +"[FIL:\""+mOutPath.toUtf8()+fName+",0,0]\n");
+    } else
+        emit newStdChannelData(data);
 }
 
 void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
@@ -215,28 +221,33 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};
 
 static const QHash<QString, JobStatusEnum> CJobStatus {
-    {"Invalid", jsInvalid}, {"Done", jsDone}, {"Running", jsRunning}, {"Waiting", jsWaiting},
+    {"invalid", jsInvalid}, {"done", jsDone}, {"running", jsRunning}, {"waiting", jsWaiting},
     {"Unknown Job", jsUnknownJob}, {"Bad Password", jsBadPassword}
 };
 
 void NeosProcess::reGetJobStatus(const QString &status)
 {
-    switch (CJobStatus.value(status, jsInvalid)) {
-    case jsDone:
+    switch (int iStatus = CJobStatus.value(status, jsInvalid)) {
+    case jsDone: {
+        DEB() << "finish state from: " << mNeosState;
         if (mNeosState == Neos2Monitor) {
             mManager->getCompletionCode();
             if (mPullTimer.isActive()) mPullTimer.stop();
             setNeosState(Neos3GetResult);
         }
-        break;
+    }   break;
     case jsRunning:
     case jsWaiting:
-        if (!mPullTimer.isActive()) mPullTimer.start();
+        if (!mPullTimer.isActive()) {
+            DEB() << "intermediate status: " << status;
+            mPullTimer.start();
+        }
         break;
     case jsUnknownJob:
     case jsBadPassword:
     case jsInvalid:
-        emit jobAborted(status);
+        emit newStdChannelData("\n*** Neos error-status: "+status.toUtf8()+'\n');
+        completed(-1);
         break;
     }
 }
@@ -251,10 +262,9 @@ static const QHash<QString, CompletionCodeEnum> CCompletionCodes {
 
 void NeosProcess::reGetCompletionCode(const QString &code)
 {
-    DEB() << "CompletionCode: " << code;
-
     switch (CCompletionCodes.value(code, ccInvalid)) {
     case ccNormal: {
+        DEB() << "Normal completion - getting output";
         if (mPrio == prioLong)
             mManager->getFinalResultsNonBlocking();
 
@@ -262,7 +272,9 @@ void NeosProcess::reGetCompletionCode(const QString &code)
         mManager->getOutputFile("solver-output.zip");
     }   break;
     default:
-        emit jobAborted(code);
+        emit newStdChannelData("\n*** Neos error-exit: "+code.toUtf8()+'\n');
+        completed(-1);
+        setNeosState(NeosIdle);
         break;
     }
 }
@@ -294,13 +306,13 @@ void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
 void NeosProcess::reGetOutputFile(const QByteArray &data)
 {
     // TODO(JM) check if neos sends partial files when the result-file is too large
-    QFile res(mOutPath+".zip");
+    QFile res(mOutPath+"/solver-output.zip");
     if (res.open(QFile::WriteOnly)) {
         res.write(data);
         res.flush();
         res.close();
     }
-
+    startUnpacking();
 }
 
 void NeosProcess::reError(const QString &errorText)

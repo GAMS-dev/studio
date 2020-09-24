@@ -1684,7 +1684,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         return;
     }
 
-    if (exitCode == GAMSRETRN_TOO_MANY_SCRATCH_DIRS) {
+    if (exitCode == ecTooManyScratchDirs) {
         ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
         QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 

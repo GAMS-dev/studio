@@ -180,7 +180,7 @@ void NeosManager::received(QString name, QVariant data)
         } break;
     case _getOutputFile:
         if (list.size() > 0) {
-            emit reGetOutputFile(QByteArray::fromBase64(list.at(0).toByteArray()));
+            emit reGetOutputFile(list.at(0).toByteArray());
         } break;
     }
 }
