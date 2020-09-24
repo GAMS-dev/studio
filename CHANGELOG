@@ -2,6 +2,7 @@ Version 1.4.0 *
 ==================
 - highlight the subcommands of execute, $call, and $hiddencall: These are async, asnycNC, asyncIC, and checkErrorLevel. Execute additionally provides sync and embedded
 - added jump to included files by context menu, F2 shortcut, or holding `Ctrl` and click on the filename. The filename needs to be hardcoded, calculated names are not resolved.
+- fixed always use lowercase directory names for MIRO directories, e.g. data_mymodel instead of data_myModel
 - fixed cut off text in About GAMS dialog
 
 Version 1.3.5
