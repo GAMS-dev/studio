@@ -104,6 +104,9 @@ QStringList NeosProcess::remoteParameters()
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
+        } else if (par.startsWith("reference=", Qt::CaseInsensitive) || par.startsWith("rf=", Qt::CaseInsensitive)) {
+            i.remove();
+            continue;
         } else if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
@@ -152,7 +155,7 @@ void NeosProcess::parseUnzipStdOut(const QByteArray &data)
         QByteArray fName = data.trimmed();
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
 
-        emit newStdChannelData("--- extracting: ."+ fName +"[FIL:\""+mOutPath.toUtf8()+fName+",0,0]\n");
+        emit newStdChannelData("--- extracting: ."+ fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]\n");
     } else
         emit newStdChannelData(data);
 }
