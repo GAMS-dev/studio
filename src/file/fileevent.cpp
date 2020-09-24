@@ -79,5 +79,10 @@ bool FileEventData::operator==(const FileEventData &other) const
     return (fileId == other.fileId) && (kind == other.kind);
 }
 
+bool FileEventData::operator!=(const FileEventData &other) const
+{
+    return !(*this == other);
+}
+
 } // namespace studio
 } // namespace gams

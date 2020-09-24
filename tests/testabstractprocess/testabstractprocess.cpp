@@ -139,6 +139,7 @@ void TestAbstractProcess::testExitCode()
 
 void TestAbstractProcess::testFinishConnectable()
 {
+    qRegisterMetaType<QProcess::ProcessState>();
     QSignalSpy spy(process, &gams::studio::AbstractProcess::finished);
     QVERIFY(spy.isValid());
 }

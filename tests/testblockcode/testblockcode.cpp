@@ -29,19 +29,17 @@ using gams::studio::syntax::BlockCode;
 
 void TestBlockCode::testFile()
 {
-    BlockCode bc(12);
-    QCOMPARE(bc.code(), 12);
-    QCOMPARE(bc.kind(), gams::studio::syntax::SyntaxKind::Semicolon);
+    BlockCode bc(13);
+    QCOMPARE(bc.code(), 13);
     QCOMPARE(bc.depth(), 0);
     QCOMPARE(bc.parser(), 0);
     bc = -5;
     QCOMPARE(bc.code(), -1);
     QCOMPARE(bc.depth(), 0);
     QCOMPARE(bc.parser(), 0);
-    bc = 12;
+    bc = 13;
     bc.setDepth(2);
     bc.setParser(3);
-    QCOMPARE(bc.kind(), gams::studio::syntax::SyntaxKind::Semicolon);
     QCOMPARE(bc.depth(), 2);
     QCOMPARE(bc.parser(), 3);
 

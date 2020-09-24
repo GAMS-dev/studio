@@ -33,6 +33,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
+#include <QFontDatabase>
 
 namespace gams {
 namespace studio {
@@ -50,7 +51,6 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
     ui->gamslogo->setPixmap(Scheme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
-
     ui->solverTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     auto dataModel = new SolverTableModel(this);
     auto sortModel = new QSortFilterProxyModel(this);
@@ -86,9 +86,9 @@ QString AboutGAMSDialog::gamsLicense()
         if (line.contains("__")) {
             --licenseLines;
             if (4 == licenseLines)
-                about << "<pre>" << line + "\n";
+                about << "<pre style=\"font-family:'Courier New',monospace\">" << line + "\n";
             else if (0 == licenseLines)
-                about << line + "\n" << "</pre>";
+                about << line + "\n" << "</pre>" " \r""<br/>";
             else
                 about << line + "\n";
         } else if (line.startsWith("#L")) {

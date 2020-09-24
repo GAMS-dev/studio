@@ -80,6 +80,7 @@ SOURCES += \
     colors/palettemanager.cpp \
     commandlineparser.cpp \
     commonpaths.cpp \
+    confirmdialog.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/codeedit.cpp \
@@ -113,6 +114,7 @@ SOURCES += \
     file/projecttreeview.cpp \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
+    fileeventhandler.cpp \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
@@ -182,6 +184,7 @@ SOURCES += \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
     process/abstractprocess.cpp \
+    process/gamsinstprocess.cpp \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
@@ -235,6 +238,7 @@ HEADERS += \
     commandlineparser.h \
     common.h \
     commonpaths.h \
+    confirmdialog.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
@@ -270,6 +274,7 @@ HEADERS += \
     file/projecttreeview.h \
     file/recentdata.h \
     file/treeitemdelegate.h \
+    fileeventhandler.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \
@@ -337,8 +342,9 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
-	process.h \
+    process.h \
     process/abstractprocess.h \
+    process/gamsinstprocess.h \
     process/gamslibprocess.h \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \
@@ -389,6 +395,7 @@ HEADERS += \
     wplabel.h
 
 FORMS += \
+    confirmdialog.ui \
     encodingsdialog.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
@@ -447,8 +454,7 @@ OTHER_FILES +=                                      \
     ../platform/macos/studio.entitlements.plist     \
     ../platform/macos/webengine.entitlements.plist  \
     ../platform/linux/gamsstudio.desktop            \
-    ../CHANGELOG                                    \
     ../jenkinsfile                                  \
-    ../gamsstudio.desktop                           \
+    ../jenkinsfile-debug                             \
     ../CHANGELOG                                    \
     ../version

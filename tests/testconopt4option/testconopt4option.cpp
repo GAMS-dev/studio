@@ -292,7 +292,7 @@ void TestConopt4Option::testInvalidOption()
 void TestConopt4Option::testReadOptionFile_data()
 {
     // given
-    QFile outputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op2"));
+    QFile outputFile(QDir(".").absoluteFilePath("conopt4.op2"));
     if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
         QFAIL("expected to open conopt4.op2 to write, but failed");
 
@@ -309,7 +309,7 @@ void TestConopt4Option::testReadOptionFile_data()
     outputFile.close();
 
     // when
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op2");
+    QString optFile = QDir(".").absoluteFilePath("conopt4.op2");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -425,7 +425,7 @@ void TestConopt4Option::testReadOptionFile()
 void TestConopt4Option::testNonExistReadOptionFile()
 {
     // when
-    QString optFile = QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op012345");
+    QString optFile = QDir(".").absoluteFilePath("conopt4.op012345");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
@@ -445,14 +445,14 @@ void TestConopt4Option::testWriteOptionFile_data()
     int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op4"), QTextCodec::codecForLocale()) );
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("conopt4.op4"), QTextCodec::codecForLocale()) );
 
     // clean up
     qDeleteAll(items);
     items.clear();
 
     // then
-    QFile inputFile(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("conopt4.op4"));
+    QFile inputFile(QDir(".").absoluteFilePath("conopt4.op4"));
     int i = 0;
     QStringList optionItems;
 

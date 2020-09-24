@@ -61,6 +61,11 @@ void TextViewEdit::disconnectTimers()
     CodeEdit::disconnectTimers();
 }
 
+AbstractEdit::EditorType TextViewEdit::type()
+{
+    return LstView;
+}
+
 int TextViewEdit::lineCount()
 {
     QFontMetricsF metric(font());
@@ -227,7 +232,7 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
         QTextCursor cursor = cursorForPosition(e->pos());
         mClickPos = e->pos();
         mClickStart = !(e->modifiers() & Qt::ShiftModifier);
-        if (existHRef(cursor.charFormat().anchorHref()) && !(e->modifiers() & CAnyModifier)) return;
+        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) return;
         if (e->buttons() == Qt::LeftButton) {
             if (!mClickStart) {
                 mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
@@ -268,13 +273,6 @@ void TextViewEdit::mouseReleaseEvent(QMouseEvent *e)
     CodeEdit::mouseReleaseEvent(e);
     mScrollDelta = 0;
     mScrollTimer.stop();
-    if (!marks() || marks()->isEmpty()) {
-        // no regular marks, check for temporary hrefs
-        if ((mClickPos-e->pos()).manhattanLength() >= 4 || e->modifiers() & CAnyModifier) return;
-        QTextCursor cursor = cursorForPosition(e->pos());
-        if (!existHRef(cursor.charFormat().anchorHref())) return;
-        emit jumpToHRef(cursor.charFormat().anchorHref());
-    }
 }
 
 void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
@@ -289,22 +287,26 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
         CodeEdit::mouseDoubleClickEvent(event);
     } else {
         QTextCursor cursor = cursorForPosition(event->pos());
-        if (existHRef(cursor.charFormat().anchorHref())) return;
+        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty()) return;
         emit findClosestLstRef(cursor);
     }
 }
 
-void TextViewEdit::updateCursorShape(const Qt::CursorShape &defaultShape)
+TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *fName)
 {
-    Qt::CursorShape shape = defaultShape;
+    Q_UNUSED(greedy)
+    TextLinkType res = linkNone;
     if (!marks() || marks()->isEmpty()) {
-        QPoint pos = mapFromGlobal(QCursor::pos());
-        QTextCursor cursor = cursorForPosition(pos);
+        QTextCursor cursor = cursorForPosition(mousePos);
         if (!cursor.charFormat().anchorHref().isEmpty()) {
-            shape = (existHRef(cursor.charFormat().anchorHref())) ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
+            QString fileName = resolveHRef(cursor.charFormat().anchorHref());
+            res = (fileName.isEmpty()) ? linkMiss : linkMark;
+            if (fName) *fName = fileName;
         }
+    } else {
+        res = CodeEdit::checkLinks(mousePos, greedy, fName);
     }
-    viewport()->setCursor(shape);
+    return res;
 }
 
 //bool TextViewEdit::viewportEvent(QEvent *event)
@@ -333,13 +335,6 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 void TextViewEdit::paintEvent(QPaintEvent *e)
 {
     AbstractEdit::paintEvent(e);
-}
-
-bool TextViewEdit::existHRef(QString href)
-{
-    bool exist = false;
-    emit hasHRef(href, exist);
-    return exist;
 }
 
 int TextViewEdit::topVisibleLine()

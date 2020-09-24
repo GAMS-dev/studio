@@ -53,7 +53,7 @@ SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 
 QTextCharFormat SyntaxAbstract::charFormatError()
 {
-    QTextCharFormat errorFormat(charFormat());
+    QTextCharFormat errorFormat;
     errorFormat.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
     errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     return errorFormat;
@@ -181,6 +181,7 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mFlavors.insert(QString("ifThenI").toLower(), 11);
     mFlavors.insert(QString("ifThenE").toLower(), 11);
     mFlavors.insert(QString("endIf").toLower(), 12);
+    mFlavors.insert(QString("include").toLower(), 13);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
@@ -194,6 +195,11 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mSpecialKinds.insert(QString("onEmbeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("onEmbeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("hidden").toLower(), SyntaxKind::DirectiveComment);
+    mSpecialKinds.insert(QString("call").toLower(), SyntaxKind::Call);
+//    mSpecialKinds.insert(QString("callAsync").toLower(), SyntaxKind::Call);
+//    mSpecialKinds.insert(QString("callAsyncIC").toLower(), SyntaxKind::Call);
+//    mSpecialKinds.insert(QString("callAsyncNC").toLower(), SyntaxKind::Call);
+    mSpecialKinds.insert(QString("hiddenCall").toLower(), SyntaxKind::Call);
 }
 
 SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
@@ -383,7 +389,7 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
         break;
     case SyntaxKind::ExecuteBody:
-        mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
+        mSubKinds << SyntaxKind::ExecuteBody;
         break;
     default:
         Q_ASSERT_X(false, "SyntaxFormula", ("Invalid SyntaxKind:"+syntaxKindName(kind)).toLatin1());
@@ -465,8 +471,7 @@ SyntaxBlock SyntaxString::validTail(const QString &line, int index, int flavor, 
     return SyntaxBlock(this);
 }
 
-SyntaxAssign::SyntaxAssign()
-    : SyntaxAbstract(SyntaxKind::Assignment)
+SyntaxAssign::SyntaxAssign() : SyntaxAbstract(SyntaxKind::Assignment)
 {}
 
 SyntaxBlock SyntaxAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
@@ -531,6 +536,43 @@ SyntaxBlock SyntaxCommentEndline::validTail(const QString &line, int index, int 
     Q_UNUSED(index)
     Q_UNUSED(flavor)
     Q_UNUSED(hasContent)
+    return SyntaxBlock(this);
+}
+
+SyntaxCall::SyntaxCall(): SyntaxAbstract(SyntaxKind::Call)
+{
+    QList<QPair<QString, QString>> list = SyntaxData::execute();
+    for (const QPair<QString,QString> &entry : list) {
+        if (entry.first != "sync" && entry.first != "embedded")
+            mSubDirective << entry.first;
+    }
+    mSubKinds << SyntaxKind::Call << SyntaxKind::DirectiveBody;
+}
+
+SyntaxBlock SyntaxCall::find(const gams::studio::syntax::SyntaxKind entryKind, int flavor, const QString &line, int index)
+{
+    Q_UNUSED(entryKind)
+    int start = index;
+    while (isWhitechar(line, start)) ++start;
+    if (start < line.length() && line.at(start) == '.') ++start;
+    while (isWhitechar(line, start)) ++start;
+    for (const QString &sub : mSubDirective) {
+        if (line.length() >= start+sub.length() && sub.compare(line.midRef(start, sub.length()), Qt::CaseInsensitive) == 0) {
+            SyntaxShift shift = (line.length() == start+sub.length()) ? SyntaxShift::skip : SyntaxShift::shift;
+            return SyntaxBlock(this, flavor, index, start+sub.length(), shift);
+        }
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock SyntaxCall::validTail(const QString &line, int index, int flavor, bool &hasContent)
+{
+    hasContent = false;
+    int end = index;
+    while (isWhitechar(line, end)) ++end;
+    // TODO(JM) review: add silly additional condition, trying to calm down the compiler
+    if (end >= index && end < line.length()-1) return SyntaxBlock(this, flavor, index, end, SyntaxKind::DirectiveBody);
+    if (end > index) return SyntaxBlock(this, flavor, index, end, SyntaxShift::out);
     return SyntaxBlock(this);
 }
 
