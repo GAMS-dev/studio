@@ -1587,28 +1587,17 @@ void MainWindow::fileEvent(const FileEvent &e)
         fm->invalidate();
 
         // file handling with user-interaction are delayed
-        FileEventData data = e.data();
-        if (!mFileEvents.contains(data))
+        {
+            QMutexLocker locker(&mFileMutex);
+            FileEventData data = e.data();
+            if (mFileEvents.contains(data))
+                mFileEvents.removeAll(data);
             mFileEvents << data;
-        mFileTimer.start();
-
-//        >>>>>>> 1.3.0-release
-//        {
-//            QMutexLocker locker(&mFileMutex);
-//            FileEventData data = e.data();
-//            if (mFileEvents.contains(data))
-//                mFileEvents.removeAll(data);
-//            mFileEvents << data;
-//        }
-
-        //TODO(JM) review with Alex for side-effects. If none, remove commented lines
-//        for (ProjectFileNode* node : mProjectRepo.fileNodes(data.fileId))
-//            mProjectRepo.update(node);
+        }
 
         // prevent delaying file processing of events from other files
-//        if (!mFileTimer.isActive())
-//            mFileTimer.start();
-//        >>>>>>> 1.3.0-release
+        if (!mFileTimer.isActive())
+            mFileTimer.start();
     }
 }
 
