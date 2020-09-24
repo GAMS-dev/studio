@@ -1646,6 +1646,7 @@ void MainWindow::processFileEvents()
         }
     }
 
+    // Then ask what to do with the files of each remainKind
     for (auto key: remainEvents.keys()) {
         switch (key) {
         case 1: // changed externally but unmodified internally
@@ -1655,11 +1656,15 @@ void MainWindow::processFileEvents()
         case 3: // removed externally
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
+        case 4: // file is locked: reschedule event
+            // TODO (AF) this was never executed... see below
+            //scheduledEvents << data;
+            break;
         default:
             break;
+        }
+    }
 //        >>>>>>> 1.3.0-release
-    // Then ask what to do with the files of each remainKind
-//    mExternFileEventChoice = -1;
 //    for (int changeKind = 1; changeKind < 4; ++changeKind) {
 //        QVector<FileEventData> eventDataList = remainEvents.value(changeKind);
 //        for (const FileEventData &data: eventDataList) {
@@ -1674,13 +1679,12 @@ void MainWindow::processFileEvents()
 //                fileDeletedExtern(data.fileId, true, eventDataList.size());
 //                break;
 //            case 4: // file is locked: reschedule event
+                  // TODO (AF) this will never hit... hangeKind < 4 ???
 //                scheduledEvents << data;
 //                break;
 //            default: break;
 //            }
 //        >>>>>>> 1.3.0-release
-        }
-    }
 
     // add events that have been skipped due too early processing
     if (!scheduledEvents.isEmpty()) {
