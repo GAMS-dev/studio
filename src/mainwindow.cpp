@@ -1657,34 +1657,13 @@ void MainWindow::processFileEvents()
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
         case 4: // file is locked: reschedule event
-            // TODO (AF) this was never executed... see below
-            //scheduledEvents << data;
+            // TODO (JM) Is this needed... my guess is no
+            //scheduledEvents << remainEvents.value(key);
             break;
         default:
             break;
         }
     }
-//        >>>>>>> 1.3.0-release
-//    for (int changeKind = 1; changeKind < 4; ++changeKind) {
-//        QVector<FileEventData> eventDataList = remainEvents.value(changeKind);
-//        for (const FileEventData &data: eventDataList) {
-//            switch (changeKind) {
-//            case 1: // changed externally but unmodified internally
-//                fileChangedExtern(data.fileId, true, eventDataList.size());
-//                break;
-//            case 2: // changed externally and modified internally
-//                fileChangedExtern(data.fileId, true, eventDataList.size());
-//                break;
-//            case 3: // removed externally
-//                fileDeletedExtern(data.fileId, true, eventDataList.size());
-//                break;
-//            case 4: // file is locked: reschedule event
-                  // TODO (AF) this will never hit... hangeKind < 4 ???
-//                scheduledEvents << data;
-//                break;
-//            default: break;
-//            }
-//        >>>>>>> 1.3.0-release
 
     // add events that have been skipped due too early processing
     if (!scheduledEvents.isEmpty()) {
@@ -1783,18 +1762,6 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
         if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
-
-//        AbstractProcess* groupProc = groupNode->process();
-//        if (qobject_cast<neos::NeosProcess *>(groupProc)) {
-//            QString runPath = runMeta->location();
-//            ProjectFileNode *gdxNode = groupNode->findFile(runPath.left(runPath.lastIndexOf('.'))+"/out.gdx");
-//            if (gdxNode && gdxNode->file()->isOpen()) {
-//                if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-//                    gv->setHasChanged(true);
-//                    gv->reload(runMeta->codec());
-//                }
-//            }
-//        }
     }
 }
 
