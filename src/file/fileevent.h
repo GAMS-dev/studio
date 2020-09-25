@@ -42,6 +42,10 @@ struct FileEventData
     QTime time;
 };
 
+uint qHash(const FileEventData &key) {
+    return (key.fileId << 3) + int(key.kind);
+}
+
 class FileEvent : public QEvent
 {
 public:

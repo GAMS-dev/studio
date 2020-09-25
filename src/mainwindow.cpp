@@ -1633,7 +1633,7 @@ void MainWindow::processFileEvents()
     active = true;
 
     // First process all events that need no user decision. For the others: remember the kind of change
-    QVector<FileEventData> scheduledEvents;
+    QSet<FileEventData> scheduledEvents;
     QMap<int, QVector<FileEventData>> remainEvents;
     while (true) {
         FileEventData fileEvent;
@@ -1647,7 +1647,11 @@ void MainWindow::processFileEvents()
             continue;
         int elapsed = fileEvent.time.msecsTo(QTime().currentTime());
         if (elapsed < 100) {
-            scheduledEvents << fileEvent;
+            // always add latest event
+            QSet<FileEventData>::const_iterator it = scheduledEvents.find(fileEvent);
+            if (it != scheduledEvents.constEnd() && it->time < fileEvent.time)
+                scheduledEvents -= fileEvent;
+            scheduledEvents += fileEvent;
             continue;
         }
         int remainKind = 0;
@@ -1669,7 +1673,7 @@ void MainWindow::processFileEvents()
 
     // Then ask what to do with the files of each remainKind
     mExternFileEventChoice = -1;
-    for (int changeKind = 1; changeKind < 4; ++changeKind) {
+    for (int changeKind = 1; changeKind < 5; ++changeKind) {
         QVector<FileEventData> eventDataList = remainEvents.value(changeKind);
         for (const FileEventData &data: eventDataList) {
             switch (changeKind) {
