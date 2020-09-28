@@ -1613,7 +1613,7 @@ void MainWindow::processFileEvents()
     active = true;
 
     // First process all events that need no user decision. For the others: remember the kind of change
-    QSet<FileEventData> scheduledEvents;
+    QVector<FileEventData> scheduledEvents;
     QMap<int, QVector<FileEventData>> remainEvents;
     while (true) {
         FileEventData fileEvent;
@@ -1657,12 +1657,8 @@ void MainWindow::processFileEvents()
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
         case 4: // file is locked: reschedule event
-            for (auto value: remainEvents.value(key)) {
-                // required to override time stamp
-                if (scheduledEvents.contains(value))
-                    scheduledEvents.remove(value);
-                scheduledEvents << value;
-            }
+            // TODO (JM) Is this needed... my guess is no
+            //scheduledEvents << remainEvents.value(key);
             break;
         default:
             break;
