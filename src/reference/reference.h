@@ -41,17 +41,10 @@ public:
     enum ReferenceState {
         Initializing, ///< The Reference object is initializing.
         Loading,      ///< The Reference object is loading from the reference file.
-        Loaded        ///< The Reference object has been loaded from the reference file.
+        SuccessfullyLoaded,       ///< The Reference object has been successfully loaded from the reference file.
+        UnsuccessfullyLoaded      ///< The Reference object has NOT been successfully loaded from the reference file.
     };
     Q_ENUM(ReferenceState)
-
-    /// \brief This enum describes the different states of loading Reference object
-    ///        from the reference file.
-    enum LoadedState {
-        SuccesffullyLoaded,    ///< The Reference object has been successfully loaded.
-        UnsuccesffullyLoaded   ///< The Reference object  has been successfully loaded.
-    };
-    Q_ENUM(LoadedState)
 
     ///
     /// \brief Constructs a Reference object with the given reference file and parent.
@@ -155,6 +148,12 @@ public:
     Reference::ReferenceState state() const;
 
     ///
+    /// \brief Get the line number last read when encountering an error
+    /// \return Returns the line number last read if there is a read error, -1 otherwise.
+    ///
+    int errorLine() const;
+
+    ///
     /// \brief Get pointer to the codec.
     /// \return Returns pointer to the codec
     ///
@@ -188,7 +187,7 @@ private:
     QTextCodec* mCodec;
     QString mReferenceFile;
     ReferenceState mState = Initializing;
-    bool mValid = false;
+    int mLastErrorLine = -1;
 
     QStringList mFileUsed;
 

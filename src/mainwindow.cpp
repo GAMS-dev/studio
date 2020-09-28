@@ -1523,10 +1523,15 @@ int MainWindow::fileChangedExtern(FileId fileId)
     if (!file->isOpen()) return 0;
     if (file->kind() == FileKind::Log) return 0;
     if (file->kind() == FileKind::Gdx) {
+        QFile f(file->location());
+        if (!f.exists()) return 4;
+        bool resized = file->compare().testFlag(FileMeta::FdSize);
+        file->refreshMetaData();
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
-                gv->reload(file->codec());
+                int gdxErr = gv->reload(file->codec(), resized);
+                if (gdxErr) return 4;
             }
         }
         return 0;
@@ -1579,12 +1584,20 @@ void MainWindow::fileEvent(const FileEvent &e)
         fileClosed(e.fileId());
     else {
         fileChanged(e.fileId()); // First update display kind
+        fm->invalidate();
 
         // file handling with user-interaction are delayed
-        FileEventData data = e.data();
-        if (!mFileEvents.contains(data))
+        {
+            QMutexLocker locker(&mFileMutex);
+            FileEventData data = e.data();
+            if (mFileEvents.contains(data))
+                mFileEvents.removeAll(data);
             mFileEvents << data;
-        mFileTimer.start();
+        }
+
+        // prevent delaying file processing of events from other files
+        if (!mFileTimer.isActive())
+            mFileTimer.start();
     }
 }
 
@@ -1600,13 +1613,28 @@ void MainWindow::processFileEvents()
     active = true;
 
     // First process all events that need no user decision. For the others: remember the kind of change
+    QSet<FileEventData> scheduledEvents;
     QMap<int, QVector<FileEventData>> remainEvents;
-    while (!mFileEvents.isEmpty()) {
-        FileEventData fileEvent = mFileEvents.takeFirst();
+    while (true) {
+        FileEventData fileEvent;
+        { // lock only while accessing mFileEvents
+            QMutexLocker locker(&mFileMutex);
+            if (mFileEvents.isEmpty()) break;
+            fileEvent = mFileEvents.takeFirst();
+        }
         FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.fileId);
-        int remainKind = 0;
         if (!fm || fm->kind() == FileKind::Log)
             continue;
+        int elapsed = fileEvent.time.msecsTo(QTime().currentTime());
+        if (elapsed < 100) {
+            // always add latest event
+            QSet<FileEventData>::const_iterator it = scheduledEvents.find(fileEvent);
+            if (it != scheduledEvents.constEnd() && it->time < fileEvent.time)
+                scheduledEvents -= fileEvent;
+            scheduledEvents += fileEvent;
+            continue;
+        }
+        int remainKind = 0;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
             remainKind = fileChangedExtern(fm->id());
@@ -1622,6 +1650,7 @@ void MainWindow::processFileEvents()
         }
     }
 
+    // Then ask what to do with the files of each remainKind
     for (auto key: remainEvents.keys()) {
         switch (key) {
         case 1: // changed externally but unmodified internally
@@ -1631,10 +1660,29 @@ void MainWindow::processFileEvents()
         case 3: // removed externally
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
+        case 4: // file is locked: reschedule event
+            for (auto event: remainEvents.value(key))
+                scheduledEvents << event;
+            break;
         default:
             break;
         }
     }
+
+    // add events that have been skipped due too early processing
+    if (!scheduledEvents.isEmpty()) {
+        QMutexLocker locker(&mFileMutex);
+        for (FileEventData data : scheduledEvents) {
+            int i = mFileEvents.indexOf(data);
+            if (i >= 0) {
+                if (mFileEvents.at(i).time > data.time) continue;
+                mFileEvents.removeAt(i);
+            }
+            mFileEvents << data;
+        }
+        mFileTimer.start();
+    }
+
     active = false;
 }
 
@@ -1718,18 +1766,6 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
         if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
-
-        AbstractProcess* groupProc = groupNode->process();
-        if (qobject_cast<neos::NeosProcess *>(groupProc)) {
-            QString runPath = runMeta->location();
-            ProjectFileNode *gdxNode = groupNode->findFile(runPath.left(runPath.lastIndexOf('.'))+"/out.gdx");
-            if (gdxNode && gdxNode->file()->isOpen()) {
-                if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-                    gv->setHasChanged(true);
-                    gv->reload(runMeta->codec());
-                }
-            }
-        }
     }
 }
 

@@ -442,7 +442,7 @@ void GdxSymbol::registerValueFilter(int valueColumn, ValueFilter *valueFilter)
 void GdxSymbol::unregisterValueFilter(int valueColumn)
 {
     if (mValueFilters[valueColumn] != nullptr) {
-        delete mValueFilters[valueColumn];
+        mValueFilters[valueColumn]->deleteLater();
         mValueFilters[valueColumn] = nullptr;
     }
     mFilterActive.at(mDim+valueColumn) = false;

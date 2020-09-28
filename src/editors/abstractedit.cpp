@@ -40,6 +40,7 @@ AbstractEdit::AbstractEdit(QWidget *parent)
     mToolTipUpdater.setSingleShot(true);
     mToolTipUpdater.setInterval(500);
     connect(&mToolTipUpdater, &QTimer::timeout, this, &AbstractEdit::internalToolTipUpdate);
+    connect(this, &AbstractEdit::cursorPositionChanged, this, &AbstractEdit::ensureCursorVisible);
 }
 
 AbstractEdit::~AbstractEdit()

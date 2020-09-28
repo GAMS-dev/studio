@@ -292,10 +292,10 @@ QModelIndex SymbolTableModel::index(int row, int column, const QModelIndex &pare
 void SymbolTableModel::resetModel()
 {
     beginResetModel();
+    resetSizeAndIndices();
     if (rowCount() > 0) {
         removeRows(0, rowCount(), QModelIndex());
     }
-    resetSizeAndIndices();
     sort(mCurrentSortedColumn, mCurrentAscendingSort);
     endResetModel();
 }
