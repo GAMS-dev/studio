@@ -121,18 +121,17 @@ QStringList NeosProcess::remoteParameters()
 
 void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if (exitStatus == QProcess::CrashExit) {
+    if (exitStatus == QProcess::CrashExit || exitCode) {
         DEB() << "Error on compilation, exitCode " << QString::number(exitCode);
+        completed(-1);
         return;
     }
-    if (exitCode) {
-        DEB() << "Compilation errors ";
-        return;
-    }
-    if (exitStatus == QProcess::NormalExit && mNeosState == Neos1Compile) {
+    if (mNeosState == Neos1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
         mManager->submitJob(g00, params.join(" "), mPrio==prioShort);
+    } else {
+        DEB() << "Wrong step order: step 1 expected, step " << mNeosState << " faced.";
     }
 }
 
@@ -335,8 +334,10 @@ void NeosProcess::setNeosState(NeosState newState)
     if (newState != NeosIdle && int(newState) != int(mNeosState)+1) {
         DEB() << "Warning: NeosState jumped from " << mNeosState << " to " << newState;
     }
+    QProcess::ProcessState stateBefore = state();
     mNeosState = newState;
-    emit stateChanged(mNeosState==NeosIdle ? QProcess::NotRunning : QProcess::Running);
+    if (stateBefore != state())
+        emit stateChanged(mNeosState==NeosIdle ? QProcess::NotRunning : QProcess::Running);
     emit neosStateChanged(this, mNeosState);
 }
 
@@ -408,143 +409,6 @@ void NeosProcess::startUnpacking()
 //    mSubProc.start();
 //#endif
 }
-
-
-
-/*
-QString NeosProcess::rawData(QString runFile, QString parameters, QString workdir)
-{
-    QString lstName = workdir + "solve.lst";
-    QString resultDir = workdir.split('/', QString::SkipEmptyParts).last();
-    QString sPrio = (mPrio == Priority::prioShort ? "short" : "long");
-    QString s1 =
-R"s1(* Create temp.g00
-$call.checkErrorLevel gams %1 lo=%gams.lo% er=99 ide=1 a=c xs=temp.g00 previousWork=1 %2
-* Set switches and parameters for NEOS submission
-$set restartFile temp.g00
-$set priority    %4
-$set wantgdx     yes
-$set parameters  ' %2'
-$set workdir     '%3'
-)s1";
-    s1 = s1.arg(runFile).arg(parameters).arg(workdir).arg(sPrio);
-
-    QString s2 =
-R"s2(
-$onEmbeddedCode Python:
-import os
-import sys
-import time
-import base64
-import re
-import ssl
-try:
-    import xmlrpc.client as xmlrpclib
-except ImportError:
-    import xmlrpclib
-
-# NEOS XML Template (to be filled)
-xml = r'''<document>
-<category>lp</category>
-<solver>BDMLP</solver>
-<priority>%priority%</priority>
-<inputType>GAMS</inputType>
-<model><![CDATA[]]></model>
-<options><![CDATA[]]></options>
-<parameters><![CDATA[fw=1%parameters%]]></parameters>
-<restart><base64>:restartb64:</base64></restart>
-<wantlog><![CDATA[yes]]></wantlog>
-<wantlst><![CDATA[yes]]></wantlst>
-<wantgdx><![CDATA[%wantgdx%]]></wantgdx>
-</document>'''
-neos = xmlrpclib.ServerProxy('https://neos-server.org:3333', verbose=False, use_datetime=True, context=ssl._create_unverified_context())
-alive = neos.ping()
-if alive != "NeosServer is alive\n":
-    raise NameError('\n***\n*** Could not make connection to NEOS Server\n***')
-with open(r'%restartFile%', 'rb') as restartfile:
-    restart = restartfile.read()
-    xml = xml.replace(":restartb64:", base64.b64encode(restart).decode('utf-8'))
-
-
-#with open('dryRun.xml, 'w') as rf:
-#    rf.write(xml)
-
-(jobNumber, password) = neos.submitJob(xml)
-sys.stdout.write("\n--- Job number = %d\n--- Job password = %s\n" % (jobNumber, password))
-sys.stdout.flush()
-
-if jobNumber == 0:
-    raise NameError('\n***\n*** NEOS Server error:' + password + '\n***')
-
-sys.stdout.write("\n--- switch to NEOS %2/solve.lst[LS2:\"%1\"]\n")
-if '%priority%' == 'long':
-    sys.stdout.write('--- Priority: long (no intermediate messages)\n')
-sys.stdout.flush()
-
-offset = 0
-echo = 1
-status = ''
-while status != 'Done':
-    time.sleep(1)
-    (msg, offset) = neos.getIntermediateResultsNonBlocking(jobNumber, password, offset)
-    if echo == 1:
-       s = msg.data.decode()
-       if s.find('Composing results.') != -1:
-          s = s.split('Composing results.', 1)[0]
-          echo = 0;
-       s = re.sub('/var/lib/condor/execute/dir_\d+/gamsexec/', ':filepath:', s)
-       s = s.replace(':filepath:',r'%workdir% '.rstrip())
-       s = s.replace('[LST:','[LS2:')
-       sys.stdout.write(s)
-       sys.stdout.flush()
-
-    status = neos.getJobStatus(jobNumber, password)
-
-os.makedirs('%workdir%', exist_ok=True)
-msg = neos.getOutputFile(jobNumber, password, '%2/solver-output.zip')
-with open('%2/solver-output.zip', 'wb') as rf:
-    rf.write(msg.data)
-$offEmbeddedCode
-$hiddencall cd %2 && rm -f solve.log solve.lst solve.lxi out.gdx && gmsunzip -o solver-output.zip
-$onEmbeddedCode Python:
-if '%priority%' == 'long':
-    with open('%2/solve.log', 'r') as rf:
-        s = rf.read()
-        s = re.sub('/var/lib/condor/execute/dir_\d+/gamsexec/', ':filepath:', s)
-        s = s.replace(':filepath:',r'%workdir% '.rstrip())
-        s = s.replace('[LST:','[LS2:')
-        sys.stdout.write(s)
-        sys.stdout.flush()
-
-$offEmbeddedCode
-)s2";
-    return s1 + s2.arg(lstName).arg(resultDir);
-}
-
-QString NeosProcess::rawKill()
-{
-    QString s1 =
-R"s1($onEmbeddedCode Python:
-try:
-    import xmlrpc.client as xmlrpclib
-except ImportError:
-    import xmlrpclib
-
-neos = xmlrpclib.ServerProxy('https://neos-server.org:3333')
-alive = neos.ping()
-if alive != "NeosServer is alive\n":
-    raise NameError('\n***\n*** Could not make connection to NEOS Server\n***')
-jobNumber = %1
-password = %2
-neos.killJob(jobNumber, password)
-
-$offEmbeddedCode
-)s1";
-    return s1.arg(mJobNumber).arg(mJobPassword);
-}
-
-*/
-
 
 } // namespace neos
 } // namespace studio

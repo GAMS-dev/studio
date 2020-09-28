@@ -2817,7 +2817,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
 
     // prepare the options and process and run it
-    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize( commandLineStr );
+    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (process)
         runGroup->setProcess(std::move(process));
     else
