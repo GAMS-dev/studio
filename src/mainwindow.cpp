@@ -1613,7 +1613,7 @@ void MainWindow::processFileEvents()
     active = true;
 
     // First process all events that need no user decision. For the others: remember the kind of change
-    QVector<FileEventData> scheduledEvents;
+    QSet<FileEventData> scheduledEvents;
     QMap<int, QVector<FileEventData>> remainEvents;
     while (true) {
         FileEventData fileEvent;
@@ -1627,7 +1627,11 @@ void MainWindow::processFileEvents()
             continue;
         int elapsed = fileEvent.time.msecsTo(QTime().currentTime());
         if (elapsed < 100) {
-            scheduledEvents << fileEvent;
+            // always add latest event
+            QSet<FileEventData>::const_iterator it = scheduledEvents.find(fileEvent);
+            if (it != scheduledEvents.constEnd() && it->time < fileEvent.time)
+                scheduledEvents -= fileEvent;
+            scheduledEvents += fileEvent;
             continue;
         }
         int remainKind = 0;
@@ -1657,8 +1661,8 @@ void MainWindow::processFileEvents()
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
         case 4: // file is locked: reschedule event
-            // TODO (JM) Is this needed... my guess is no
-            //scheduledEvents << remainEvents.value(key);
+            for (auto event: remainEvents.value(key))
+                scheduledEvents << event;
             break;
         default:
             break;

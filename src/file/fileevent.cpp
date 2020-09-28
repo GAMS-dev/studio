@@ -85,5 +85,9 @@ bool FileEventData::operator!=(const FileEventData &other) const
     return !(*this == other);
 }
 
+uint qHash(const FileEventData &key) {
+    return (key.fileId << 3) + int(key.kind);
+}
+
 } // namespace studio
 } // namespace gams
