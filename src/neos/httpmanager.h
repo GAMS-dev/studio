@@ -13,6 +13,7 @@ class HttpManager: public QObject
 public:
     HttpManager(QObject *parent = nullptr);
     void setUrl(const QString &url);
+    void setIgnoreSslErrors();
 
 signals:
     void received(QString name, QVariant data);
@@ -28,7 +29,7 @@ private slots:
 private:
     QNetworkRequest mRawRequest;
     QNetworkAccessManager mManager;
-    QSslConfiguration mSslConfig;
+    bool mIgnoreSslErrors = false;
 };
 
 } // namespace neos

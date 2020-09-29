@@ -11,14 +11,16 @@ HttpManager::HttpManager(QObject *parent): QObject(parent)
     connect(&mManager, &QNetworkAccessManager::sslErrors, this, &HttpManager::convertSslErrors);
     mRawRequest.setRawHeader("User-Agent", "neos/1.0");
     mRawRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml");
-    mSslConfig.setProtocol(QSsl::AnyProtocol);
-
-    mRawRequest.setSslConfiguration(mSslConfig);
 }
 
 void HttpManager::setUrl(const QString &url)
 {
     mRawRequest.setUrl(url);
+}
+
+void HttpManager::setIgnoreSslErrors()
+{
+    mIgnoreSslErrors = true;
 }
 
 void HttpManager::submitCall(const QString &method, const QVariantList &params)
@@ -46,7 +48,8 @@ void HttpManager::convertSslErrors(QNetworkReply *reply, const QList<QSslError> 
     for (const QSslError &se : errorList) {
         errors << se.errorString();
     }
-    reply->ignoreSslErrors();
+    if (mIgnoreSslErrors)
+        reply->ignoreSslErrors();
     emit sslErrors(errors);
 }
 

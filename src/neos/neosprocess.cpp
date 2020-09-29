@@ -5,6 +5,7 @@
 #include "process/gmsunzipprocess.h"
 #include <QStandardPaths>
 #include <QDir>
+#include <QDialog>
 
 #ifdef _WIN32
 #include "Windows.h"
@@ -38,6 +39,7 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
     connect(&mPullTimer, &QTimer::timeout, this, &NeosProcess::pullStatus);
+    mManager->ping();
 }
 
 NeosProcess::~NeosProcess()
@@ -146,6 +148,17 @@ void NeosProcess::sslErrors(const QStringList &errors)
 {
     QString data("\n*** SSL errors:\n%1\n");
     emit newStdChannelData(data.arg(errors.join("\n")).toUtf8());
+    if (mAskOnSslError) {
+        QDialog *dialog = new QDialog();
+        connect(dialog, &QDialog::finished, this, &NeosProcess::sslErrorDialogFinished);
+        // TODO open dialog
+    }
+}
+
+void NeosProcess::sslErrorDialogFinished(int result)
+{
+//    sender()
+    mManager->setIgnoreSslErrors();
 }
 
 void NeosProcess::parseUnzipStdOut(const QByteArray &data)

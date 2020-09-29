@@ -68,6 +68,7 @@ private slots:
     void sslErrors(const QStringList &errors);
     void parseUnzipStdOut(const QByteArray &data);
     void unzipStateChanged(QProcess::ProcessState newState);
+    void sslErrorDialogFinished(int result);
 
 private:
     void setNeosState(NeosState newState);
@@ -83,6 +84,7 @@ private:
     Priority mPrio;
     NeosState mNeosState = NeosIdle;
     QTimer mPullTimer;
+    bool mAskOnSslError = true;
 
     GmsunzipProcess *mSubProc = nullptr;
 };

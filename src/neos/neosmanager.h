@@ -29,6 +29,7 @@ public:
 public:
     NeosManager(QObject *parent = nullptr);
     void setUrl(const QString &url);
+    void setIgnoreSslErrors();
 
     void ping();
     void version();

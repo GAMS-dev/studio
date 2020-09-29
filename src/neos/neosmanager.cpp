@@ -44,6 +44,11 @@ void NeosManager::setUrl(const QString &url)
     mHttp.setUrl(url);
 }
 
+void NeosManager::setIgnoreSslErrors()
+{
+    mHttp.setIgnoreSslErrors();
+}
+
 void NeosManager::ping()
 {
     emit submitCall("ping");
