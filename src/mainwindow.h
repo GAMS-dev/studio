@@ -50,6 +50,7 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
+class GoToDialog;
 class AbstractProcess;
 class FileEventHandler;
 class GamsProcess;
@@ -400,9 +401,11 @@ private:
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
     void checkGamsLicense();
+    void goToLine(int result);
 
 private:
     Ui::MainWindow *ui;
+    GoToDialog *mGotoDialog;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;

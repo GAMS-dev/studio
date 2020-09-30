@@ -73,6 +73,7 @@ namespace studio {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
+      mGotoDialog(new GoToDialog(this)),
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(this),
@@ -183,6 +184,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::openTerminal, this, &MainWindow::actionTerminalTriggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::openGdxDiffDialog, this, &MainWindow::actionGDX_Diff_triggered);
+    connect(mGotoDialog, &QDialog::finished, this, &MainWindow::goToLine);
 
     ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mainTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
@@ -3747,22 +3749,26 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         tabData.insert("mainTabRecent", "WELCOME_PAGE");
 }
 
-void MainWindow::on_actionGo_To_triggered()
+void MainWindow::goToLine(int result)
 {
-    if ((ui->mainTabs->currentWidget() == mWp)) return;
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
-    if (!codeEdit && !tv) return;
-
-    int maxLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
-    GoToDialog dialog(this, maxLines, bool(tv));
-    int result = dialog.exec();
-    if (QDialog::Rejected == result)
-        return;
-    if (codeEdit)
-        codeEdit->jumpTo(dialog.lineNumber());
-    if (tv)
-        tv->jumpTo(dialog.lineNumber(), 0);
+    if (result) {
+        if (codeEdit)
+            codeEdit->jumpTo(mGotoDialog->lineNumber());
+        if (tv)
+            tv->jumpTo(mGotoDialog->lineNumber(), 0);
+    }
+}
+void MainWindow::on_actionGo_To_triggered()
+{
+    if (ui->mainTabs->currentWidget() == mWp) return;
+    CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
+    TextView *tv = ViewHelper::toTextView(mRecent.editor());
+    if (!tv && !codeEdit) return;
+    int numberLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
+    mGotoDialog->maxLineCount(numberLines);
+    mGotoDialog->open();
 }
 
 void MainWindow::on_actionRedo_triggered()
