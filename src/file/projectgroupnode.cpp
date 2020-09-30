@@ -211,6 +211,7 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
 
 void ProjectRunGroupNode::setProcess(std::unique_ptr<AbstractProcess> process)
 {
+    if (mGamsProcess == process) return;
     mGamsProcess->disconnect();
     mGamsProcess = std::move(process);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectRunGroupNode::onGamsProcessStateChanged);

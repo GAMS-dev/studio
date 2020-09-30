@@ -342,6 +342,9 @@ private slots:
 
     void neosExecute();
     void showNeosConfirmDialog();
+    void createNeosProcess();
+    void sslValidation(QString errorMessage);
+    void sslUserDecision(QAbstractButton *button);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -437,6 +440,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
+    bool mIgnoreSslErrors = false;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

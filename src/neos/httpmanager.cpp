@@ -23,6 +23,11 @@ void HttpManager::setIgnoreSslErrors()
     mIgnoreSslErrors = true;
 }
 
+bool HttpManager::ignoreSslErrors()
+{
+    return mIgnoreSslErrors;
+}
+
 void HttpManager::submitCall(const QString &method, const QVariantList &params)
 {
     QByteArray xml = XmlRpc::prepareCall(method, params);

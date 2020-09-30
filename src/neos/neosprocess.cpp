@@ -5,7 +5,7 @@
 #include "process/gmsunzipprocess.h"
 #include <QStandardPaths>
 #include <QDir>
-#include <QDialog>
+#include <QMessageBox>
 
 #ifdef _WIN32
 #include "Windows.h"
@@ -16,7 +16,7 @@ namespace studio {
 namespace neos {
 
 
-NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
+NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent), mNeosState(NeosCheck)
 {
     disconnect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
@@ -39,7 +39,6 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent)
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
     connect(&mPullTimer, &QTimer::timeout, this, &NeosProcess::pullStatus);
-    mManager->ping();
 }
 
 NeosProcess::~NeosProcess()
@@ -148,17 +147,9 @@ void NeosProcess::sslErrors(const QStringList &errors)
 {
     QString data("\n*** SSL errors:\n%1\n");
     emit newStdChannelData(data.arg(errors.join("\n")).toUtf8());
-    if (mAskOnSslError) {
-        QDialog *dialog = new QDialog();
-        connect(dialog, &QDialog::finished, this, &NeosProcess::sslErrorDialogFinished);
-        // TODO open dialog
+    if (mNeosState == NeosCheck) {
+        emit sslValidation(errors.join("\n").toUtf8());
     }
-}
-
-void NeosProcess::sslErrorDialogFinished(int result)
-{
-//    sender()
-    mManager->setIgnoreSslErrors();
 }
 
 void NeosProcess::parseUnzipStdOut(const QByteArray &data)
@@ -206,16 +197,35 @@ void NeosProcess::setParameters(const QStringList &parameters)
 
 QProcess::ProcessState NeosProcess::state() const
 {
-    return mNeosState==NeosIdle ? QProcess::NotRunning : QProcess::Running;
+    return (mNeosState <= NeosIdle) ? QProcess::NotRunning : QProcess::Running;
+}
+
+void NeosProcess::validate()
+{
+    mManager->ping();
+}
+
+void NeosProcess::setIgnoreSslErrors()
+{
+    mManager->setIgnoreSslErrors();
+    if (mNeosState == NeosCheck) {
+        setNeosState(NeosIdle);
+    }
 }
 
 void NeosProcess::rePing(const QString &value)
 {
-    DEB() << "PING: " << value;
+    TRACE()
+    Q_UNUSED(value)
+    if (mNeosState == NeosCheck) {
+        emit sslValidation(QString());
+        setNeosState(NeosIdle);
+    }
 }
 
 void NeosProcess::reVersion(const QString &value)
 {
+    Q_UNUSED(value)
     DEB() << "VERSION: " << value;
 }
 

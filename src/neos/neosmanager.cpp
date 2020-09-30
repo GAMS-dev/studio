@@ -49,6 +49,11 @@ void NeosManager::setIgnoreSslErrors()
     mHttp.setIgnoreSslErrors();
 }
 
+bool NeosManager::ignoreSslErrors()
+{
+    return mHttp.ignoreSslErrors();
+}
+
 void NeosManager::ping()
 {
     emit submitCall("ping");

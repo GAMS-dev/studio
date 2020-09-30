@@ -14,6 +14,7 @@ public:
     HttpManager(QObject *parent = nullptr);
     void setUrl(const QString &url);
     void setIgnoreSslErrors();
+    bool ignoreSslErrors();
 
 signals:
     void received(QString name, QVariant data);

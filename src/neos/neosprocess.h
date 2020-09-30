@@ -12,6 +12,7 @@ class GmsunzipProcess;
 namespace neos {
 
 enum NeosState {
+    NeosCheck,
     NeosIdle,
     Neos1Compile,
     Neos2Monitor,
@@ -44,9 +45,13 @@ public:
     void interrupt() override;
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
+    void validate();
+    void setIgnoreSslErrors();
 
 signals:
     void neosStateChanged(AbstractProcess *proc, neos::NeosState progress);
+    void requestAcceptSslErrors();
+    void sslValidation(QString errorMessage);
 
 protected slots:
     void rePing(const QString &value);
@@ -68,7 +73,6 @@ private slots:
     void sslErrors(const QStringList &errors);
     void parseUnzipStdOut(const QByteArray &data);
     void unzipStateChanged(QProcess::ProcessState newState);
-    void sslErrorDialogFinished(int result);
 
 private:
     void setNeosState(NeosState newState);
@@ -82,9 +86,8 @@ private:
     QString mJobNumber;
     QString mJobPassword;
     Priority mPrio;
-    NeosState mNeosState = NeosIdle;
+    NeosState mNeosState;
     QTimer mPullTimer;
-    bool mAskOnSslError = true;
 
     GmsunzipProcess *mSubProc = nullptr;
 };

@@ -2820,8 +2820,6 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (process)
         runGroup->setProcess(std::move(process));
-    else
-        runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
@@ -2900,22 +2898,22 @@ void MainWindow::openInitialFiles()
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Run) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Run), std::make_unique<GamsProcess>());
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation), std::make_unique<GamsProcess>());
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Compile) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), std::make_unique<GamsProcess>());
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), std::make_unique<GamsProcess>());
 }
 
 const QString CNeosConfirmTitle = "Submitting data to NEOS";
@@ -2932,7 +2930,7 @@ void MainWindow::on_actionRunNeos_triggered()
             || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
         showNeosConfirmDialog();
     else
-        emit neosExecute();
+        emit createNeosProcess();
 }
 
 void MainWindow::on_actionRunNeosL_triggered()
@@ -2942,7 +2940,7 @@ void MainWindow::on_actionRunNeosL_triggered()
             || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
         showNeosConfirmDialog();
     else
-        emit neosExecute();
+        emit createNeosProcess();
 }
 
 void MainWindow::showNeosConfirmDialog()
@@ -2950,7 +2948,7 @@ void MainWindow::showNeosConfirmDialog()
     ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
     dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
     connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::neosExecute);
+    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::createNeosProcess);
     connect(dialog, &ConfirmDialog::accepted, dialog, &ConfirmDialog::deleteLater);
     connect(dialog, &ConfirmDialog::autoConfirm, [] {
         Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
@@ -2962,7 +2960,7 @@ void MainWindow::showNeosConfirmDialog()
     dialog->open();
 }
 
-void MainWindow::neosExecute()
+void MainWindow::createNeosProcess()
 {
     updateAndSaveSettings();
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
@@ -2970,15 +2968,65 @@ void MainWindow::neosExecute()
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL
                                                  : option::RunActionState::RunNeos);
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    if (!runGroup) return;
+    runGroup->setProcess(std::move(neosProcess));
+    if (!mIgnoreSslErrors) {
+        neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
+        connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
+        neosPtr->validate();
+    } else {
+        neosExecute();
+    }
+}
+
+void MainWindow::sslValidation(QString errorMessage)
+{
+    if (mIgnoreSslErrors || errorMessage.isEmpty()) {
+        neosExecute();
+    } else {
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setWindowTitle("SSL Error");
+        msgBox->setText("The following SSL error occurred");
+        msgBox->setInformativeText(errorMessage);
+        msgBox->setStandardButtons(QMessageBox::Ignore | QMessageBox::Abort);
+        msgBox->setDefaultButton(QMessageBox::Abort);
+        connect(msgBox, &QMessageBox::buttonClicked, this, &MainWindow::sslUserDecision);
+        msgBox->setModal(true);
+        msgBox->open();
+    }
+}
+
+void MainWindow::sslUserDecision(QAbstractButton *button)
+{
+    QMessageBox *msgBox = qobject_cast<QMessageBox*>(sender());
+
+    if (msgBox && msgBox->standardButton(button) == QMessageBox::Ignore) {
+        ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+        ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+        if (!runGroup) return;
+        if (neos::NeosProcess *neosProc = static_cast<neos::NeosProcess*>(runGroup->process())) {
+            neosProc->setIgnoreSslErrors();
+            mIgnoreSslErrors = true;
+            neosExecute();
+        }
+    } else {
+        // TODO: remove process
+    }
+}
+
+void MainWindow::neosExecute()
+{
+    updateAndSaveSettings();
+    execute(mGamsParameterEditor->getCurrentCommandLineData());
 }
 
 void MainWindow::on_actionInterrupt_triggered()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
-    if (!group)
-        return;
+    if (!group) return;
     mGamsParameterEditor->on_interruptAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &AbstractProcess::interrupt);
@@ -2988,8 +3036,7 @@ void MainWindow::on_actionStop_triggered()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
-    if (!group)
-        return;
+    if (!group) return;
     mGamsParameterEditor->on_stopAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &GamsProcess::terminate);
