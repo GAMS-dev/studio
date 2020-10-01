@@ -1,5 +1,5 @@
-#ifndef GAMS_STUDIO_NEOS_NEOSPROCESS_H
-#define GAMS_STUDIO_NEOS_NEOSPROCESS_H
+#ifndef GAMS_STUDIO_ENGINE_ENGINEPROCESS_H
+#define GAMS_STUDIO_ENGINE_ENGINEPROCESS_H
 
 #include "process.h"
 #include <QTimer>
@@ -9,7 +9,7 @@ namespace studio {
 
 class GmsunzipProcess;
 
-namespace neos {
+namespace engine {
 
 enum ProcState {
     ProcCheck,
@@ -20,26 +20,20 @@ enum ProcState {
     Proc4Unpack,
 };
 
-enum Priority {
-    prioShort,
-    prioLong
-};
+class EngineManager;
 
-class NeosManager;
-
-/// \brief The NeosProcess controls all steps to run a job on NEOS
+/// \brief The EngineProcess controls all steps to run a job on GAMS Engine
 /// This class works in four process steps:
 /// 1. compile gms on the local machine
 /// 2. monitor the remote job
 /// 3. get result file
 /// 4. unpack result file and finish
-class NeosProcess final : public AbstractGamsProcess
+class EngineProcess final : public AbstractGamsProcess
 {
     Q_OBJECT
 public:
-    NeosProcess(QObject *parent = nullptr);
-    ~NeosProcess() override;
-    void setPriority(Priority prio) { mPrio = prio; }
+    EngineProcess(QObject *parent = nullptr);
+    ~EngineProcess() override;
 
     void execute() override;
     void interrupt() override;
@@ -49,7 +43,7 @@ public:
     void setIgnoreSslErrors();
 
 signals:
-    void procStateChanged(AbstractProcess *proc, neos::ProcState progress);
+    void procStateChanged(AbstractProcess *proc, ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
 
@@ -81,19 +75,18 @@ private:
     QByteArray convertReferences(const QByteArray &data);
     void startUnpacking();
 
-    NeosManager *mManager;
+    EngineManager *mManager;
     QString mOutPath;
     QString mJobNumber;
     QString mJobPassword;
-    Priority mPrio;
     ProcState mProcState;
     QTimer mPullTimer;
 
     GmsunzipProcess *mSubProc = nullptr;
 };
 
-} // namespace neos
+} // namespace engine
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_NEOS_NEOSPROCESS_H
+#endif // GAMS_STUDIO_ENGINE_ENGINEPROCESS_H

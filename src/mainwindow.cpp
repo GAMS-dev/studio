@@ -3393,7 +3393,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     mProjectRepo.purgeGroup(parentGroup);
 }
 
-void MainWindow::neosProgress(AbstractProcess *proc, neos::NeosState progress)
+void MainWindow::neosProgress(AbstractProcess *proc, neos::ProcState progress)
 {
     ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
     if (!runGroup || !runGroup->runnableGms()) return;
@@ -3401,9 +3401,9 @@ void MainWindow::neosProgress(AbstractProcess *proc, neos::NeosState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == neos::Neos4Unpack) {
+            if (progress == neos::Proc4Unpack) {
                 gv->releaseFile();
-            } else if (progress == neos::NeosState::NeosIdle) {
+            } else if (progress == neos::ProcState::ProcIdle) {
                 gv->setHasChanged(true);
                 gv->reload(gdxNode->file()->codec());
             }

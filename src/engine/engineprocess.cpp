@@ -1,5 +1,5 @@
-#include "neosprocess.h"
-#include "neosmanager.h"
+#include "engineprocess.h"
+#include "enginemanager.h"
 #include "logger.h"
 #include "commonpaths.h"
 #include "process/gmsunzipprocess.h"
@@ -13,40 +13,40 @@
 
 namespace gams {
 namespace studio {
-namespace neos {
+namespace engine {
 
 
-NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent), mProcState(ProcCheck)
+EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", parent), mProcState(ProcCheck)
 {
     disconnect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
-    connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &NeosProcess::compileCompleted);
+    connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &EngineProcess::compileCompleted);
 
-    mManager = new NeosManager(this);
+    mManager = new EngineManager(this);
     mManager->setUrl("https://neos-server.org:3333");
-    connect(mManager, &NeosManager::sslErrors, this, &NeosProcess::sslErrors);
-    connect(mManager, &NeosManager::rePing, this, &NeosProcess::rePing);
-    connect(mManager, &NeosManager::reError, this, &NeosProcess::reError);
-    connect(mManager, &NeosManager::reKillJob, this, &NeosProcess::reKillJob);
-    connect(mManager, &NeosManager::reVersion, this, &NeosProcess::reVersion);
-    connect(mManager, &NeosManager::reSubmitJob, this, &NeosProcess::reSubmitJob);
-    connect(mManager, &NeosManager::reGetJobInfo, this, &NeosProcess::reGetJobInfo);
-    connect(mManager, &NeosManager::reGetJobStatus, this, &NeosProcess::reGetJobStatus);
-    connect(mManager, &NeosManager::reGetOutputFile, this, &NeosProcess::reGetOutputFile);
-    connect(mManager, &NeosManager::reGetCompletionCode, this, &NeosProcess::reGetCompletionCode);
-    connect(mManager, &NeosManager::reGetFinalResultsNonBlocking, this, &NeosProcess::reGetFinalResultsNonBlocking);
-    connect(mManager, &NeosManager::reGetIntermediateResultsNonBlocking, this, &NeosProcess::reGetIntermediateResultsNonBlocking);
+    connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
+    connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
+    connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
+    connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob);
+    connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
+    connect(mManager, &EngineManager::reSubmitJob, this, &EngineProcess::reSubmitJob);
+    connect(mManager, &EngineManager::reGetJobInfo, this, &EngineProcess::reGetJobInfo);
+    connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
+    connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
+    connect(mManager, &EngineManager::reGetCompletionCode, this, &EngineProcess::reGetCompletionCode);
+    connect(mManager, &EngineManager::reGetFinalResultsNonBlocking, this, &EngineProcess::reGetFinalResultsNonBlocking);
+    connect(mManager, &EngineManager::reGetIntermediateResultsNonBlocking, this, &EngineProcess::reGetIntermediateResultsNonBlocking);
 
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
-    connect(&mPullTimer, &QTimer::timeout, this, &NeosProcess::pullStatus);
+    connect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
 }
 
-NeosProcess::~NeosProcess()
+EngineProcess::~EngineProcess()
 {
     delete mManager;
 }
 
-void NeosProcess::execute()
+void EngineProcess::execute()
 {
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
@@ -63,10 +63,10 @@ void NeosProcess::execute()
     setProcState(Proc1Compile);
 }
 
-QStringList NeosProcess::compileParameters()
+QStringList EngineProcess::compileParameters()
 {
     if (mOutPath.isEmpty()) {
-        DEB() << "Error: No runable file assigned to the NEOS process";
+        DEB() << "Error: No runable file assigned to the GAMS Engine process";
         return QStringList();
     }
     QFileInfo fi(mOutPath);
@@ -91,7 +91,7 @@ QStringList NeosProcess::compileParameters()
     return params;
 }
 
-QStringList NeosProcess::remoteParameters()
+QStringList EngineProcess::remoteParameters()
 {
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
@@ -120,7 +120,7 @@ QStringList NeosProcess::remoteParameters()
     return params;
 }
 
-void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus)
+void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitStatus == QProcess::CrashExit || exitCode) {
         DEB() << "Error on compilation, exitCode " << QString::number(exitCode);
@@ -130,20 +130,20 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        mManager->submitJob(g00, params.join(" "), mPrio==prioShort);
+        mManager->submitJob(g00, params.join(" "));
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
     }
 }
 
-void NeosProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
+void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
     Q_UNUSED(exitStatus)
     setProcState(ProcIdle);
     completed(exitCode);
 }
 
-void NeosProcess::sslErrors(const QStringList &errors)
+void EngineProcess::sslErrors(const QStringList &errors)
 {
     QString data("\n*** SSL errors:\n%1\n");
     emit newStdChannelData(data.arg(errors.join("\n")).toUtf8());
@@ -152,7 +152,7 @@ void NeosProcess::sslErrors(const QStringList &errors)
     }
 }
 
-void NeosProcess::parseUnzipStdOut(const QByteArray &data)
+void EngineProcess::parseUnzipStdOut(const QByteArray &data)
 {
     if (data.startsWith(" extracting: ")) {
         QByteArray fName = data.trimmed();
@@ -163,7 +163,7 @@ void NeosProcess::parseUnzipStdOut(const QByteArray &data)
         emit newStdChannelData(data);
 }
 
-void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
+void EngineProcess::unzipStateChanged(QProcess::ProcessState newState)
 {
     if (newState == QProcess::NotRunning) {
         setProcState(ProcIdle);
@@ -172,7 +172,7 @@ void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
     }
 }
 
-void NeosProcess::interrupt()
+void EngineProcess::interrupt()
 {
     bool ok;
     mManager->killJob(ok);
@@ -181,7 +181,7 @@ void NeosProcess::interrupt()
     completed(-1);
 }
 
-void NeosProcess::setParameters(const QStringList &parameters)
+void EngineProcess::setParameters(const QStringList &parameters)
 {
     if (parameters.size()) {
         mOutPath = parameters.size() ? parameters.first() : QString();
@@ -195,17 +195,17 @@ void NeosProcess::setParameters(const QStringList &parameters)
     AbstractProcess::setParameters(parameters);
 }
 
-QProcess::ProcessState NeosProcess::state() const
+QProcess::ProcessState EngineProcess::state() const
 {
     return (mProcState <= ProcIdle) ? QProcess::NotRunning : QProcess::Running;
 }
 
-void NeosProcess::validate()
+void EngineProcess::validate()
 {
     mManager->ping();
 }
 
-void NeosProcess::setIgnoreSslErrors()
+void EngineProcess::setIgnoreSslErrors()
 {
     mManager->setIgnoreSslErrors();
     if (mProcState == ProcCheck) {
@@ -213,7 +213,7 @@ void NeosProcess::setIgnoreSslErrors()
     }
 }
 
-void NeosProcess::rePing(const QString &value)
+void EngineProcess::rePing(const QString &value)
 {
     Q_UNUSED(value)
     if (mProcState == ProcCheck) {
@@ -222,17 +222,17 @@ void NeosProcess::rePing(const QString &value)
     }
 }
 
-void NeosProcess::reVersion(const QString &value)
+void EngineProcess::reVersion(const QString &value)
 {
     Q_UNUSED(value)
     DEB() << "VERSION: " << value;
 }
 
-void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
+void EngineProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 {
     DEB() << "SUBMITED: " << jobNumber << " - pw: " << jobPassword;
 
-    QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]\n");
+    QString newLstEntry("\n--- switch to Engine .%1%2%1solve.lst[LS2:\"%3\"]\n");
     QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
     emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath).toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
@@ -249,7 +249,7 @@ static const QHash<QString, JobStatusEnum> CJobStatus {
     {"Unknown Job", jsUnknownJob}, {"Bad Password", jsBadPassword}
 };
 
-void NeosProcess::reGetJobStatus(const QString &status)
+void EngineProcess::reGetJobStatus(const QString &status)
 {
     switch (int iStatus = CJobStatus.value(status, jsInvalid)) {
     case jsDone: {
@@ -268,7 +268,7 @@ void NeosProcess::reGetJobStatus(const QString &status)
     case jsUnknownJob:
     case jsBadPassword:
     case jsInvalid:
-        emit newStdChannelData("\n*** Neos error-status: "+status.toUtf8()+'\n');
+        emit newStdChannelData("\n*** Engine error-status: "+status.toUtf8()+'\n');
         completed(-1);
         break;
     }
@@ -282,51 +282,50 @@ static const QHash<QString, CompletionCodeEnum> CCompletionCodes {
     {"Disk Space", ccDiskSpace}, {"Server error", ccServerError}, {"Unknown Job", ccUnknownJob}, {"Bad Password", ccBadPassword}
 };
 
-void NeosProcess::reGetCompletionCode(const QString &code)
+void EngineProcess::reGetCompletionCode(const QString &code)
 {
     switch (CCompletionCodes.value(code, ccInvalid)) {
     case ccNormal: {
-        if (mPrio == prioLong)
-            mManager->getFinalResultsNonBlocking();
+        mManager->getFinalResultsNonBlocking();
 
-        // TODO(JM) for large result-file this may take a while, check if neos supports progress monitoring
+        // TODO(JM) for large result-file this may take a while, check if engine supports progress monitoring
         mManager->getOutputFile("solver-output.zip");
     }   break;
     default:
-        emit newStdChannelData("\n*** Neos error-exit: "+code.toUtf8()+'\n');
+        emit newStdChannelData("\n*** Engine error-exit: "+code.toUtf8()+'\n');
         completed(-1);
         setProcState(ProcIdle);
         break;
     }
 }
 
-void NeosProcess::reGetJobInfo(const QStringList &info)
+void EngineProcess::reGetJobInfo(const QStringList &info)
 {
-    DEB() << "NEOS-INFO: " << info.join(", ");
+    DEB() << "Engine-Info: " << info.join(", ");
 }
 
-void NeosProcess::reKillJob(const QString &text)
+void EngineProcess::reKillJob(const QString &text)
 {
     emit newStdChannelData('\n'+text.toUtf8()+'\n');
 }
 
-void NeosProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
+void EngineProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
 {
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
         emit newStdChannelData(res);
 }
 
-void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
+void EngineProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
 {
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
         emit newStdChannelData(res);
 }
 
-void NeosProcess::reGetOutputFile(const QByteArray &data)
+void EngineProcess::reGetOutputFile(const QByteArray &data)
 {
-    // TODO(JM) check if neos sends partial files when the result-file is too large
+    // TODO(JM) check if engine sends partial files when the result-file is too large
     QFile res(mOutPath+"/solver-output.zip");
     if (res.open(QFile::WriteOnly)) {
         res.write(data);
@@ -336,23 +335,22 @@ void NeosProcess::reGetOutputFile(const QByteArray &data)
     startUnpacking();
 }
 
-void NeosProcess::reError(const QString &errorText)
+void EngineProcess::reError(const QString &errorText)
 {
     DEB() << "ERROR: " << errorText;
     completed(-1);
 }
 
-void NeosProcess::pullStatus()
+void EngineProcess::pullStatus()
 {
-    if (mPrio == prioShort)
-        mManager->getIntermediateResultsNonBlocking();
+    mManager->getIntermediateResultsNonBlocking();
     mManager->getJobStatus();
 }
 
-void NeosProcess::setProcState(ProcState newState)
+void EngineProcess::setProcState(ProcState newState)
 {
     if (newState != ProcIdle && int(newState) != int(mProcState)+1) {
-        DEB() << "Warning: NeosState jumped from " << mProcState << " to " << newState;
+        DEB() << "Warning: ProcState jumped from " << mProcState << " to " << newState;
     }
     QProcess::ProcessState stateBefore = state();
     mProcState = newState;
@@ -361,7 +359,7 @@ void NeosProcess::setProcState(ProcState newState)
     emit procStateChanged(this, mProcState);
 }
 
-QByteArray NeosProcess::convertReferences(const QByteArray &data)
+QByteArray EngineProcess::convertReferences(const QByteArray &data)
 {
     QByteArray res;
     res.reserve(data.size()+mOutPath.length());
@@ -408,19 +406,19 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
     return res;
 }
 
-void NeosProcess::startUnpacking()
+void EngineProcess::startUnpacking()
 {
     mSubProc = new GmsunzipProcess(this);
-    connect(mSubProc, &GmsunzipProcess::stateChanged, this, &NeosProcess::unzipStateChanged);
-    connect(mSubProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &NeosProcess::unpackCompleted);
-    connect(mSubProc, &GmsunzipProcess::newStdChannelData, this, &NeosProcess::parseUnzipStdOut);
-    connect(mSubProc, &GmsunzipProcess::newProcessCall, this, &NeosProcess::newProcessCall);
+    connect(mSubProc, &GmsunzipProcess::stateChanged, this, &EngineProcess::unzipStateChanged);
+    connect(mSubProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &EngineProcess::unpackCompleted);
+    connect(mSubProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnzipStdOut);
+    connect(mSubProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
 
     mSubProc->setWorkingDirectory(mOutPath);
     mSubProc->setParameters(QStringList() << "-o" << "solver-output.zip");
     mSubProc->execute();
 }
 
-} // namespace neos
+} // namespace engine
 } // namespace studio
 } // namespace gams
