@@ -4,6 +4,7 @@ Version 1.4.0 *
 - added jump to included files by context menu, F2 shortcut, or holding `Ctrl` and click on the filename. The filename needs to be hardcoded, calculated names are not resolved.
 - fixed cut off text in About GAMS dialog
 - fixed crash if files are modified in the background while a dialog is open
+- natively implemented NEOS processing, enabling to kill submitted active jobs
 
 Version 1.3.6  *
 ==================
