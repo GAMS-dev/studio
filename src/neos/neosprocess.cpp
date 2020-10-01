@@ -215,11 +215,10 @@ void NeosProcess::setIgnoreSslErrors()
 
 void NeosProcess::rePing(const QString &value)
 {
-    TRACE()
     Q_UNUSED(value)
     if (mNeosState == NeosCheck) {
-        emit sslValidation(QString());
         setNeosState(NeosIdle);
+        emit sslValidation(QString());
     }
 }
 
@@ -254,7 +253,6 @@ void NeosProcess::reGetJobStatus(const QString &status)
 {
     switch (int iStatus = CJobStatus.value(status, jsInvalid)) {
     case jsDone: {
-        DEB() << "finish state from: " << mNeosState;
         if (mNeosState == Neos2Monitor) {
             mManager->getCompletionCode();
             if (mPullTimer.isActive()) mPullTimer.stop();
@@ -264,7 +262,6 @@ void NeosProcess::reGetJobStatus(const QString &status)
     case jsRunning:
     case jsWaiting:
         if (!mPullTimer.isActive()) {
-            DEB() << "intermediate status: " << status;
             mPullTimer.start();
         }
         break;
@@ -289,11 +286,10 @@ void NeosProcess::reGetCompletionCode(const QString &code)
 {
     switch (CCompletionCodes.value(code, ccInvalid)) {
     case ccNormal: {
-        DEB() << "Normal completion - getting output";
         if (mPrio == prioLong)
             mManager->getFinalResultsNonBlocking();
 
-        // TODO(JM) Load result file (for large files this may take a while, check if neos supports progress monitoring)
+        // TODO(JM) for large result-file this may take a while, check if neos supports progress monitoring
         mManager->getOutputFile("solver-output.zip");
     }   break;
     default:
@@ -343,6 +339,7 @@ void NeosProcess::reGetOutputFile(const QByteArray &data)
 void NeosProcess::reError(const QString &errorText)
 {
     DEB() << "ERROR: " << errorText;
+    completed(-1);
 }
 
 void NeosProcess::pullStatus()
@@ -360,7 +357,7 @@ void NeosProcess::setNeosState(NeosState newState)
     QProcess::ProcessState stateBefore = state();
     mNeosState = newState;
     if (stateBefore != state())
-        emit stateChanged(mNeosState==NeosIdle ? QProcess::NotRunning : QProcess::Running);
+        emit stateChanged(mNeosState == NeosIdle ? QProcess::NotRunning : QProcess::Running);
     emit neosStateChanged(this, mNeosState);
 }
 
