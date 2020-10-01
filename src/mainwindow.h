@@ -428,6 +428,7 @@ private:
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
 
+    QMutex mFileMutex;
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;

@@ -145,6 +145,7 @@ void SymbolReferenceWidget::resetModel()
                         mSymbolTableModel->index(itemIdx.row(),mSymbolTableModel->columnCount()- 1)),
                     QItemSelectionModel::ClearAndSelect);
     }
+
 }
 
 void SymbolReferenceWidget::initModel()
@@ -155,6 +156,14 @@ void SymbolReferenceWidget::initModel()
     }
 
     mReferenceTreeModel->resetModel();
+}
+
+void SymbolReferenceWidget::initModel(Reference *ref)
+{
+    if (!ref)
+       return;
+    mReference = ref;
+    initModel();
 }
 
 void SymbolReferenceWidget::jumpToFile(const QModelIndex &index)

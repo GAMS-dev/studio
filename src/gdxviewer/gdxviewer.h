@@ -52,12 +52,13 @@ public:
     ~GdxViewer();
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
-    bool reload(QTextCodec* codec);
+    int reload(QTextCodec* codec, bool quiet = false);
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
     void selectSearchField();
     void releaseFile();
+    void invalidate();
 
 private slots:
     void hideUniverseSymbol();
@@ -66,7 +67,7 @@ private slots:
 private:
     void loadSymbol(GdxSymbol* selectedSymbol);
     void copySelectionToClipboard();
-    bool init();
+    int init(bool quiet = false);
     void freeSymbols();
     bool mIsInitialized = false;
 
