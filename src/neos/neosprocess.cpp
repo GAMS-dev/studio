@@ -411,23 +411,14 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
 void NeosProcess::startUnpacking()
 {
     mSubProc = new GmsunzipProcess(this);
-    mSubProc->setWorkingDirectory(mOutPath);
-    QStringList params;
-    params << "-o solver-output.zip";
-    mSubProc->setParameters(params);
     connect(mSubProc, &GmsunzipProcess::stateChanged, this, &NeosProcess::unzipStateChanged);
     connect(mSubProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &NeosProcess::unpackCompleted);
     connect(mSubProc, &GmsunzipProcess::newStdChannelData, this, &NeosProcess::parseUnzipStdOut);
+    connect(mSubProc, &GmsunzipProcess::newProcessCall, this, &NeosProcess::newProcessCall);
 
+    mSubProc->setWorkingDirectory(mOutPath);
+    mSubProc->setParameters(QStringList() << "-o" << "solver-output.zip");
     mSubProc->execute();
-
-//#if defined(__unix__) || defined(__APPLE__)
-//    mSubProc.start(nativeAppPath("gmsunzip"), params);
-//#else
-//    mSubProc.setNativeArguments(params.join(" "));
-//    mSubProc.setProgram(nativeAppPath("gmsunzip"));
-//    mSubProc.start();
-//#endif
 }
 
 } // namespace neos
