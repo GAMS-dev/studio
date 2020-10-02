@@ -61,7 +61,9 @@
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
 #include "neos/neosprocess.h"
+#include "process/gamsinstprocess.h"
 #include "confirmdialog.h"
+#include "fileeventhandler.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -79,6 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
+      mFileEventHandler(new FileEventHandler(this)),
       mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
       mMiroDeployDialog(new miro::MiroDeployDialog(this)),
       mMiroAssemblyDialog(new miro::MiroModelAssemblyDialog(this))
@@ -109,16 +112,13 @@ MainWindow::MainWindow(QWidget *parent)
     MacOSCocoaBridge::setAllowsAutomaticWindowTabbing(false);
     MacOSCocoaBridge::setFullScreenMenuItemEverywhere(false);
     ui->actionFull_Screen->setShortcut(QKeySequence::FullScreen);
+    ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
+    ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
+    ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
 #else
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
 
-    // TODO: this should be moved to the platform switch above, for code consistency
-    if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS) {
-        ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
-        ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
-        ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
-    }
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
     ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
     ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
@@ -166,6 +166,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
+    connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -264,7 +265,7 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
     connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
     invalidateScheme();
-
+    initGamsStandardPaths();
     updateRunState();
 }
 
@@ -414,6 +415,51 @@ int MainWindow::currentLogTab()
 QTabWidget* MainWindow::mainTabs()
 {
     return ui->mainTabs;
+}
+
+void MainWindow::initGamsStandardPaths()
+{
+    mInstProcess = new process::GamsInstProcess(this);
+    connect(mInstProcess, &process::GamsInstProcess::finished,
+            this, &MainWindow::gamsInstFinished);
+    connect(mInstProcess, &process::GamsInstProcess::newProcessCall,
+            this, &MainWindow::newProcessCall);
+    mInstProcess->execute();
+}
+
+void MainWindow::gamsInstFinished(NodeId origin, int exitCode)
+{
+    Q_UNUSED(origin)
+    if (exitCode) return;
+    if (!mInstProcess) return;
+    CommonPaths::setGamsStandardPaths(mInstProcess->configPaths(), CommonPaths::StandardConfigPath);
+    CommonPaths::setGamsStandardPaths(mInstProcess->dataPaths(), CommonPaths::StandardDataPath);
+    mInstProcess->deleteLater();
+    mInstProcess = nullptr;
+}
+
+void MainWindow::getParameterValue(QString param, QString &value)
+{
+    bool joker = param.endsWith('*');
+    if (joker) param.resize(param.size()-1);
+    QString params = mGamsParameterEditor->getCurrentCommandLineData();
+    params = mGamsParameterEditor->getOptionTokenizer()->normalize(params);
+    QList<option::OptionItem> parList = mGamsParameterEditor->getOptionTokenizer()->tokenize(params);
+    for (const option::OptionItem &item : parList) {
+        if (joker) {
+            if (item.key.startsWith(param, Qt::CaseInsensitive)) {
+                value = item.value.trimmed();
+                if (value.startsWith('"') && value.endsWith('"'))
+                    value = value.mid(1, value.size()-2);
+                return;
+            }
+        } else if (item.key.compare(param, Qt::CaseInsensitive) == 0) {
+            value = item.value.trimmed();
+            if (value.startsWith('"') && value.endsWith('"'))
+                value = value.mid(1, value.size()-2);
+            return;
+        }
+    }
 }
 
 void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
@@ -1470,48 +1516,22 @@ void MainWindow::fileClosed(const FileId fileId)
     Q_UNUSED(fileId)
 }
 
-int MainWindow::externChangedMessageBox(QString filePath, bool deleted, bool modified, int count)
-{
-    if (mExternFileEventChoice >= 0)
-        return mExternFileEventChoice;
-    QMessageBox box(this);
-    box.setWindowTitle(QString("File %1").arg(deleted ? "vanished" : "changed"));
-    QString text(filePath + (deleted ? "%1 doesn't exist anymore."
-                                     : (count>1 ? "%1 have been modified externally."
-                                                : "%1 has been modified externally.")));
-    text = text.arg(count<2? "" : QString(" and %1 other file%2").arg(count-1).arg(count<3? "" : "s"));
-    text += "\nDo you want to %1?";
-    if (deleted) text = text.arg("keep the file in editor");
-    else if (modified) text = text.arg("reload the file or keep your changes");
-    else text = text.arg("reload the file");
-    box.setText(text);
-    // The button roles define their position. To keep them in order they all get the same value
-    box.setDefaultButton(box.addButton(deleted ? "Close" : "Reload", QMessageBox::AcceptRole));
-    box.setEscapeButton(box.addButton("Keep", QMessageBox::AcceptRole));
-    if (count > 1) {
-        box.addButton(box.buttonText(0) + " all", QMessageBox::AcceptRole);
-        box.addButton(box.buttonText(1) + " all", QMessageBox::AcceptRole);
-    }
-
-    int res = box.exec();
-    if (res > 1) {
-        mExternFileEventChoice = res - 2;
-        return mExternFileEventChoice;
-    }
-    return res;
-}
-
-int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
+int MainWindow::fileChangedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
     if (!file->isOpen()) return 0;
     if (file->kind() == FileKind::Log) return 0;
     if (file->kind() == FileKind::Gdx) {
+        QFile f(file->location());
+        if (!f.exists()) return 4;
+        bool resized = file->compare().testFlag(FileMeta::FdSize);
+        file->refreshMetaData();
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
-                gv->reload(file->codec());
+                int gdxErr = gv->reload(file->codec(), resized);
+                if (gdxErr) return 4;
             }
         }
         return 0;
@@ -1528,25 +1548,10 @@ int MainWindow::fileChangedExtern(FileId fileId, bool ask, int count)
                guce->setFileChangedExtern(true);
         }
     }
-    int choice;
-
-    if (file->isAutoReload() || file->isReadOnly()) {
-        choice = 0;
-    } else {
-        if (!ask) return (file->isModified() ? 2 : 1);
-        choice = externChangedMessageBox(QDir::toNativeSeparators(file->location()), false, file->isModified(), count);
-    }
-    if (choice == 0) {
-        file->reloadDelayed();
-        file->resetTempReloadState();
-    } else {
-        file->setModified();
-        mFileMetaRepo.unwatch(file);
-    }
-    return 0;
+    return file->isModified() ? 2 : 1;
 }
 
-int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
+int MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return 0;
@@ -1564,23 +1569,7 @@ int MainWindow::fileDeletedExtern(FileId fileId, bool ask, int count)
         historyChanged();
         return 0;
     }
-
-    int choice = 0;
-    if (!file->isReadOnly()) {
-        if (!ask) return 3;
-        choice = externChangedMessageBox(QDir::toNativeSeparators(file->location()), true, file->isModified(), count);
-    }
-    if (choice == 0) {
-        if (file->exists(true)) return 0;
-        closeFileEditors(fileId);
-        mHistory.files().removeAll(file->location());
-        historyChanged();
-    } else if (!file->isReadOnly()) {
-        if (file->exists(true)) return 0;
-        file->setModified();
-        mFileMetaRepo.unwatch(file);
-    }
-    return 0;
+    return 3;
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
@@ -1595,22 +1584,28 @@ void MainWindow::fileEvent(const FileEvent &e)
         fileClosed(e.fileId());
     else {
         fileChanged(e.fileId()); // First update display kind
+        fm->invalidate();
 
         // file handling with user-interaction are delayed
-        FileEventData data = e.data();
-        if (!mFileEvents.contains(data))
+        {
+            QMutexLocker locker(&mFileMutex);
+            FileEventData data = e.data();
+            if (mFileEvents.contains(data))
+                mFileEvents.removeAll(data);
             mFileEvents << data;
-//        for (ProjectFileNode* node : mProjectRepo.fileNodes(data.fileId))
-//            mProjectRepo.update(node);
-        mFileTimer.start();
+        }
+
+        // prevent delaying file processing of events from other files
+        if (!mFileTimer.isActive())
+            mFileTimer.start();
     }
 }
 
 void MainWindow::processFileEvents()
 {
+    static bool active = false;
     if (mFileEvents.isEmpty()) return;
     // Pending events but window is not active: wait and retry
-    static bool active = false;
     if (!isActiveWindow() || active) {
         mFileTimer.start();
         return;
@@ -1618,49 +1613,76 @@ void MainWindow::processFileEvents()
     active = true;
 
     // First process all events that need no user decision. For the others: remember the kind of change
+    QSet<FileEventData> scheduledEvents;
     QMap<int, QVector<FileEventData>> remainEvents;
-    while (!mFileEvents.isEmpty()) {
-        FileEventData fileEvent = mFileEvents.takeFirst();
+    while (true) {
+        FileEventData fileEvent;
+        { // lock only while accessing mFileEvents
+            QMutexLocker locker(&mFileMutex);
+            if (mFileEvents.isEmpty()) break;
+            fileEvent = mFileEvents.takeFirst();
+        }
         FileMeta *fm = mFileMetaRepo.fileMeta(fileEvent.fileId);
-        int remainKind = 0;
         if (!fm || fm->kind() == FileKind::Log)
             continue;
+        int elapsed = fileEvent.time.msecsTo(QTime().currentTime());
+        if (elapsed < 100) {
+            // always add latest event
+            QSet<FileEventData>::const_iterator it = scheduledEvents.find(fileEvent);
+            if (it != scheduledEvents.constEnd() && it->time < fileEvent.time)
+                scheduledEvents -= fileEvent;
+            scheduledEvents += fileEvent;
+            continue;
+        }
+        int remainKind = 0;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
-            remainKind = fileChangedExtern(fm->id(), false);
+            remainKind = fileChangedExtern(fm->id());
             break;
         case FileEventKind::removedExtern:
-            remainKind = fileDeletedExtern(fm->id(), false);
+            remainKind = fileDeletedExtern(fm->id());
             break;
         default: break;
         }
         if (remainKind > 0) {
             if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
             if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
-
         }
     }
 
     // Then ask what to do with the files of each remainKind
-    mExternFileEventChoice = -1;
-    for (int changeKind = 1; changeKind < 4; ++changeKind) {
-        QVector<FileEventData> eventDataList = remainEvents.value(changeKind);
-        for (const FileEventData &event: eventDataList) {
-            switch (changeKind) {
-            case 1: // changed externally but unmodified internally
-                fileChangedExtern(event.fileId, true, eventDataList.size());
-                break;
-            case 2: // changed externally and modified internally
-                fileChangedExtern(event.fileId, true, eventDataList.size());
-                break;
-            case 3: // removed externally
-                fileDeletedExtern(event.fileId, true, eventDataList.size());
-                break;
-            default: break;
-            }
+    for (auto key: remainEvents.keys()) {
+        switch (key) {
+        case 1: // changed externally but unmodified internally
+        case 2: // changed externally and modified internally
+            mFileEventHandler->process(FileEventHandler::Change, remainEvents.value(key));
+            break;
+        case 3: // removed externally
+            mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
+            break;
+        case 4: // file is locked: reschedule event
+            for (auto event: remainEvents.value(key))
+                scheduledEvents << event;
+            break;
+        default:
+            break;
         }
-        mExternFileEventChoice = -1;
     }
+
+    // add events that have been skipped due too early processing
+    if (!scheduledEvents.isEmpty()) {
+        QMutexLocker locker(&mFileMutex);
+        for (FileEventData data : scheduledEvents) {
+            int i = mFileEvents.indexOf(data);
+            if (i >= 0) {
+                if (mFileEvents.at(i).time > data.time) continue;
+                mFileEvents.removeAt(i);
+            }
+            mFileEvents << data;
+        }
+        mFileTimer.start();
+    }
+
     active = false;
 }
 
@@ -1691,6 +1713,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
         QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 
+        // TODO fix QDialog::exec() issue
         QMessageBox msgBox;
         msgBox.setWindowTitle("Delete scratch directories");
         msgBox.setText("GAMS was unable to run because there are too many scratch directories "
@@ -1743,18 +1766,6 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
         if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
-
-        AbstractProcess* groupProc = groupNode->process();
-        if (qobject_cast<neos::NeosProcess *>(groupProc)) {
-            QString runPath = runMeta->location();
-            ProjectFileNode *gdxNode = groupNode->findFile(runPath.left(runPath.lastIndexOf('.'))+"/out.gdx");
-            if (gdxNode && gdxNode->file()->isOpen()) {
-                if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-                    gv->setHasChanged(true);
-                    gv->reload(runMeta->codec());
-                }
-            }
-        }
     }
 }
 
@@ -2114,6 +2125,11 @@ void MainWindow::addToOpenedFiles(QString filePath)
         mHistory.files().move(mHistory.files().indexOf(filePath), 0);
     }
     historyChanged();
+}
+
+void MainWindow::clearHistory(FileMeta *file)
+{
+    mHistory.files().removeAll(file->location());
 }
 
 void MainWindow::historyChanged()
@@ -3384,7 +3400,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     }
     mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
-    if (!fm->exists(true)) fileDeletedExtern(fm->id(), true);
+    if (!fm->exists(true)) fileDeletedExtern(fm->id());
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
@@ -4370,7 +4386,6 @@ bool MainWindow::enabledPrintAction()
             || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
             || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
 }
-
 
 }
 }

@@ -115,6 +115,7 @@ SOURCES += \
     file/projecttreeview.cpp \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
+    fileeventhandler.cpp \
     gamslibprocess.cpp  \
     gamsprocess.cpp     \
     gdxdiffdialog/filepathlineedit.cpp \
@@ -183,6 +184,7 @@ SOURCES += \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
+    process/gamsinstprocess.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -270,6 +272,7 @@ HEADERS += \
     file/projecttreeview.h \
     file/recentdata.h \
     file/treeitemdelegate.h \
+    fileeventhandler.h \
     gamslibprocess.h \
     gamsprocess.h \
     gdxdiffdialog/filepathlineedit.h \
@@ -337,6 +340,7 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
+    process/gamsinstprocess.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \
@@ -443,8 +447,7 @@ OTHER_FILES +=                                      \
     ../platform/macos/studio.entitlements.plist     \
     ../platform/macos/webengine.entitlements.plist  \
     ../platform/linux/gamsstudio.desktop            \
-    ../CHANGELOG                                    \
     ../jenkinsfile                                  \
-    ../gamsstudio.desktop                           \
+    ../jenkinsfile-debug                             \
     ../CHANGELOG                                    \
     ../version

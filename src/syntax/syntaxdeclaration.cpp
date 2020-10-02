@@ -230,7 +230,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
     while (isWhitechar(line, start))
         ++start;
     int iKey;
-    end = findEnd(kind(), line, start, iKey);
+    end = findEnd(kind(), line, start, iKey, kind() == SyntaxKind::Execute);
     if (end > start) {
         switch (kind()) {
         case SyntaxKind::Reserved:
@@ -240,7 +240,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
         case SyntaxKind::Option:
             return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
         case SyntaxKind::Execute:
-            return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::ExecuteBody);
+            return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::ExecuteKey);
         default:
             break;
         }
@@ -334,6 +334,13 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, int flavor, const 
     int start = index;
     while (isWhitechar(line, start))
         ++start;
+    if (entryKind == SyntaxKind::ExecuteKey) {
+        if (start < line.length() && line.at(start) == '.')
+            ++start;
+        while (isWhitechar(line, start))
+            ++start;
+        if (start == index) return SyntaxBlock(this);
+    }
     if (start >= line.length()) return SyntaxBlock(this);
     int end = -1;
     int iKey;
@@ -349,6 +356,19 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, int flavor, const 
         return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::shift, kind());
     }
     return SyntaxBlock(this);
+}
+
+SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, int flavor, bool &hasContent)
+{
+    if (kind() == SyntaxKind::ExecuteKey) {
+        hasContent = false;
+        int end = index;
+        while (isWhitechar(line, end)) end++;
+        if (end < line.length() && line.at(end) == '.') ++end;
+        while (isWhitechar(line, end)) end++;
+        return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
+    }
+    return SyntaxKeywordBase::validTail(line, index, flavor, hasContent);
 }
 
 

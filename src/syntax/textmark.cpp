@@ -146,11 +146,11 @@ QIcon TextMark::icon()
 
 
 
-Qt::CursorShape& TextMark::cursorShape(Qt::CursorShape* shape, bool inIconRegion)
+bool TextMark::linkExist()
 {
-    if (shape && ((mType == error && inIconRegion) || mType == link))
-        *shape = mReference ? Qt::PointingHandCursor : Qt::ForbiddenCursor;
-    return *shape;
+    if (mType == error || mType == link)
+        return mReference;
+    return false;
 }
 
 void TextMark::rehighlight()

@@ -189,7 +189,6 @@ void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 void FileMetaRepo::unwatch(const QString &filePath)
 {
     if (filePath.isEmpty()) return;
-
     mWatcher.removePath(filePath);
     mMissList.removeAll(filePath);
     if (mMissList.isEmpty()) mMissCheckTimer.stop();
@@ -261,10 +260,11 @@ void FileMetaRepo::fileChanged(const QString &path)
     } else {
         // changedExternally
         if (file->compare(path)) {
+            //TODO(JM) review with Rogo for side-effects. If none, remove commented lines
 //            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
 //                                                                      : FileEventKind::changedExtern;
             FileEvent e(file->id(), FileEventKind::changedExtern);
-            file->invalidate();
+            file->updateView();
             emit fileEvent(e);
         }
     }
@@ -285,7 +285,7 @@ void FileMetaRepo::reviewRemoved()
                 FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
                                                                           : FileEventKind::changedExtern;
                 FileEvent e(file->id(), feKind);
-                file->invalidate();
+                file->updateView();
                 emit fileEvent(e);
             }
         } else {
@@ -311,7 +311,7 @@ void FileMetaRepo::checkMissing()
             FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
                                                                       : FileEventKind::changedExtern;
             FileEvent e(file->id(), feKind);
-            file->invalidate();
+            file->updateView();
             emit fileEvent(e);
         } else {
             remainMissList << fileName;

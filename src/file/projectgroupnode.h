@@ -113,10 +113,11 @@ public:
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
+    void getParameterValue(QString param, QString &value);
 
 public slots:
     void setErrorText(int lstLine, QString text);
-    void hasHRef(const QString &href, bool &exist);
+    void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
@@ -134,7 +135,7 @@ protected:
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
     void removeChild(ProjectAbstractNode *child);
-    void resolveHRef(QString href, bool &exist, ProjectFileNode *&node, int &line, int &col, bool create = false);
+    QString resolveHRef(QString href, ProjectFileNode *&node, int &line, int &col, bool create = false);
 
 private:
     std::unique_ptr<AbstractProcess> mGamsProcess;

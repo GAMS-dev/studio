@@ -80,7 +80,7 @@ signals:
     void selectionChanged();
     void searchFindNextPressed();
     void searchFindPrevPressed();
-    void hasHRef(const QString &href, bool &exist);
+    void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines, bool overwritePreviousLine);

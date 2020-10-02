@@ -164,12 +164,12 @@ QString AbstractMiroProcess::nativeAppPath()
 
 QString AbstractMiroProcess::confFolder() const
 {
-    return ConfFolderPrefix + modelName();
+    return ConfFolderPrefix + modelName().toLower();
 }
 
 QString AbstractMiroProcess::dataFolder() const
 {
-    return DataFolderPrefix + modelName();
+    return DataFolderPrefix + modelName().toLower();
 }
 
 void AbstractMiroProcess::readStdChannel(QProcess &process, QProcess::ProcessChannel channel)
