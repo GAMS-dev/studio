@@ -23,7 +23,7 @@ TEMPLATE = subdirs
 SUBDIRS +=                              \
            testabstractprocess          \
            testblockcode                \
-           testcheckforupdatewrapper    \
+#           testcheckforupdatewrapper    \
            testcommonpaths              \
            testconopt4option            \
            testcplexoption              \
