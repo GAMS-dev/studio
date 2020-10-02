@@ -1,7 +1,7 @@
 Version 1.4.0
 ==================
 - highlight the subcommands of execute, $call, and $hiddencall
-    - subcommands are are async, asnycNC, asyncIC, and checkErrorLevel. Execute additionally provides sync and embedded
+    - subcommands are async, asnycNC, asyncIC, and checkErrorLevel. Execute additionally provides sync and embedded
 - added jump to included files by context menu, F2 shortcut, or holding `Ctrl` and click on the filename.
 - fixed cut off text in About GAMS dialog
 - fixed crash if files are modified in the background while a dialog is open
