@@ -8,28 +8,36 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-QString rawJob =
-R"s1(
-<document>
-<category>lp</category>
-<solver>BDMLP</solver>
-<priority>%3</priority>
-<inputType>GAMS</inputType>
-<model><![CDATA[]]></model>
-<options><![CDATA[]]></options>
-<parameters><![CDATA[%2]]></parameters>
-<restart><base64>%1</base64></restart>
-<wantlog><![CDATA[yes]]></wantlog>
-<wantlst><![CDATA[yes]]></wantlst>
-<wantgdx><![CDATA[%4]]></wantgdx>
-</document>
-)s1";
-
-
 EngineManager::EngineManager(QObject* parent)
-    : QObject(parent), mHttp(new OpenAPI::OAIJobsApi())
+    : QObject(parent), mJobsApi(new OpenAPI::OAIJobsApi())
 {
-    mHttp->setScheme("https");
+    mJobsApi->setScheme("https");
+    mJobsApi->setHost("https://miro.gams.com/engine/api");
+    mJobsApi->setScheme("studiotests");
+    mUser = "studiotests";
+    mPassword = "rercud-qinRa9-wagbew";
+
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::createJobSignal, [this](OpenAPI::OAIMessage_and_token summary) {
+        reCreateJob(summary.getMessage(), summary.getToken());
+    });
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::getJobSignal, [this](OpenAPI::OAIJob summary) {
+        reGetJobStatus(summary.getStatus());
+    });
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::getJobZipSignalFull, [this](OpenAPI::OAIHttpRequestWorker *worker) {
+        reGetOutputFile(worker->response);
+    });
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::getJobZipSignalE, this, &EngineManager::getJobZipSignalE);
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::killJobSignal, [this](OpenAPI::OAIMessage summary) {
+        reKillJob(summary.getMessage());
+    });
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::popStreamEntrySignal, [this](OpenAPI::OAIStream_entry summary) {
+        reGetIntermediateResultsNonBlocking(summary.getEntryValue().toUtf8());
+    });
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::popJobLogsSignal, [this](OpenAPI::OAILog_piece summary) {
+        reGetIntermediateResultsNonBlocking(summary.getMessage().toUtf8());
+    });
+    connect(mJobsApi, &OpenAPI::OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
+
     QMetaEnum meta = QMetaEnum::fromType<ProcCall>();
     for (int i = 0; i < meta.keyCount(); ++i) {
         QString c = QString(meta.key(i));
@@ -40,7 +48,7 @@ EngineManager::EngineManager(QObject* parent)
 
 void EngineManager::setUrl(const QString &url)
 {
-    mHttp->setHost(url);
+    mJobsApi->setHost(url);
 }
 
 void EngineManager::setIgnoreSslErrors()
@@ -56,15 +64,15 @@ bool EngineManager::ignoreSslErrors()
 
 void EngineManager::ping()
 {
-    emit submitCall("ping");
+//    emit submitCall("ping");
 }
 
 void EngineManager::version()
 {
-    emit submitCall("version");
+//    emit submitCall("version");
 }
 
-void EngineManager::submitJob(QString fileName, QString params, bool prioShort, bool wantGdx)
+void EngineManager::submitJob(QString fileName, QString params)
 {
     QFile f(fileName);
     if (!f.exists() || !f.open(QFile::ReadOnly)) return;
@@ -72,9 +80,8 @@ void EngineManager::submitJob(QString fileName, QString params, bool prioShort, 
     f.close();
     mLogOffset = 0;
     QString sData = data.toBase64();
-    QString prio = (prioShort?"short":"long");
-    QString jobData = rawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"no");
-    emit submitCall("submitJob", QVariantList() << jobData);
+
+//    emit submitCall("submitJob", QVariantList() << jobData);
 }
 
 void EngineManager::watchJob(int jobNumber, QString password)
@@ -87,41 +94,41 @@ void EngineManager::watchJob(int jobNumber, QString password)
 void EngineManager::getJobStatus()
 {
     //  "Done", "Running", "Waiting", "Unknown Job", or "Bad Password"
-    emit submitCall("getJobStatus", QVariantList() << mJobNumber << mPassword);
+//    emit submitCall("getJobStatus", QVariantList() << mJobNumber << mPassword);
 }
 
 void EngineManager::getCompletionCode()
 {
     // Only if Job is "Done":
     //  "Normal", "Out of memory", "Timed out", "Disk Space", "Server error", "Unknown Job", "Bad Password"
-    emit submitCall("getCompletionCode", QVariantList() << mJobNumber << mPassword);
+//    emit submitCall("getCompletionCode", QVariantList() << mJobNumber << mPassword);
 }
 
 void EngineManager::getJobInfo()
 {
     // tuple (category, solver_name, input, status, completion_code)
-    emit submitCall("getJobInfo", QVariantList() << mJobNumber << mPassword);
+//    emit submitCall("getJobInfo", QVariantList() << mJobNumber << mPassword);
 }
 
 void EngineManager::killJob(bool &ok)
 {
-    if ((ok = mJobNumber))
-        emit submitCall("killJob", QVariantList() << mJobNumber << mPassword);
+//    if ((ok = mJobNumber))
+//        emit submitCall("killJob", QVariantList() << mJobNumber << mPassword);
 }
 
 void EngineManager::getIntermediateResultsNonBlocking()
 {
-    emit submitCall("getIntermediateResultsNonBlocking", QVariantList() << mJobNumber << mPassword << mLogOffset);
+//    emit submitCall("getIntermediateResultsNonBlocking", QVariantList() << mJobNumber << mPassword << mLogOffset);
 }
 
 void EngineManager::getFinalResultsNonBlocking()
 {
-    emit submitCall("getFinalResultsNonBlocking", QVariantList() << mJobNumber << mPassword);
+//    emit submitCall("getFinalResultsNonBlocking", QVariantList() << mJobNumber << mPassword);
 }
 
 void EngineManager::getOutputFile(QString fileName)
 {
-    emit submitCall("getOutputFile", QVariantList() << mJobNumber << mPassword << fileName);
+//    emit submitCall("getOutputFile", QVariantList() << mJobNumber << mPassword << fileName);
 }
 
 void EngineManager::setDebug(bool debug)
@@ -133,74 +140,26 @@ void EngineManager::setDebug(bool debug)
 //        disconnect(&mHttp, &HttpManager::received, this, &EngineManager::debugReceived);
 }
 
-void EngineManager::received(QString name, QVariant data)
-{
-    ProcCall c = procCalls.value(name);
-    QVariantList list = data.toList();
-    switch (c) {
-    case _ping:
-        if (list.size() > 0) {
-            emit rePing(list.at(0).toString());
-        } break;
-    case _version:
-        if (list.size() > 0) {
-            emit reVersion(list.at(0).toString());
-        } break;
-    case _submitJob:
-        if (list.size() > 0) {
-            QVariantList dat = list.at(0).toList();
-            watchJob(dat.at(0).toInt(), dat.at(1).toString());
-            emit reSubmitJob(dat.at(0).toInt(), dat.at(1).toString());
-            getJobInfo();
-        } break;
-    case _getJobStatus:
-        if (list.size() > 0) {
-            QString status = list.at(0).toString().toLower();
-            emit reGetJobStatus(status);
-        } break;
-    case _getCompletionCode:
-        if (list.size() > 0) {
-            emit reGetCompletionCode(list.at(0).toString());
-        } break;
-    case _getJobInfo:
-        if (list.size() > 0) {
-            QStringList dat;
-            for (const QVariant &var : list.at(0).toList()) {
-                dat << var.toString();
-            }
-            if (dat.size() > 4) {
-                emit reGetJobInfo(dat);
-            }
-        } break;
-    case _killJob:
-        qDebug() << "result from KillJob " << data;
-        if (list.size() > 0) {
-            emit reKillJob(list.at(0).toString());
-        }   break;
-    case _getIntermediateResultsNonBlocking:
-        if (list.size() > 0) {
-            QVariantList dat = list.at(0).toList();
-            if (dat.size() > 1) {
-                mLogOffset = dat.at(1).toInt();
-                emit reGetIntermediateResultsNonBlocking(dat.at(0).toByteArray());
-            }
-        } break;
-    case _getFinalResultsNonBlocking:
-        if (list.size() > 0) {
-            emit reGetFinalResultsNonBlocking(list.at(0).toByteArray());
-        } break;
-    case _getOutputFile:
-        if (list.size() > 0) {
-            emit reGetOutputFile(list.at(0).toByteArray());
-        } break;
-    }
-}
 
 void EngineManager::debugReceived(QString name, QVariant data)
 {
     qDebug() << "\nResult from " << name << ":\n" << data;
 }
 
+void EngineManager::getJobZipSignalE(QNetworkReply::NetworkError error_type, QString error_str)
+{
+
+}
+
+void EngineManager::abortRequestsSignal()
+{
+
+}
+
+void EngineManager::reCreateJob(QString message, QString token)
+{
+
+}
 
 } // namespace engine
 } // namespace studio

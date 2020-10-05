@@ -410,15 +410,16 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
 
 void NeosProcess::startUnpacking()
 {
-    mSubProc = new GmsunzipProcess(this);
-    connect(mSubProc, &GmsunzipProcess::stateChanged, this, &NeosProcess::unzipStateChanged);
-    connect(mSubProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &NeosProcess::unpackCompleted);
-    connect(mSubProc, &GmsunzipProcess::newStdChannelData, this, &NeosProcess::parseUnzipStdOut);
-    connect(mSubProc, &GmsunzipProcess::newProcessCall, this, &NeosProcess::newProcessCall);
+    GmsunzipProcess *subProc = new GmsunzipProcess(this);
+    connect(subProc, &GmsunzipProcess::stateChanged, this, &NeosProcess::unzipStateChanged);
+    connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &NeosProcess::unpackCompleted);
+    connect(subProc, &GmsunzipProcess::newStdChannelData, this, &NeosProcess::parseUnzipStdOut);
+    connect(subProc, &GmsunzipProcess::newProcessCall, this, &NeosProcess::newProcessCall);
 
-    mSubProc->setWorkingDirectory(mOutPath);
-    mSubProc->setParameters(QStringList() << "-o" << "solver-output.zip");
-    mSubProc->execute();
+    mSubProc = subProc;
+    subProc->setWorkingDirectory(mOutPath);
+    subProc->setParameters(QStringList() << "-o" << "solver-output.zip");
+    subProc->execute();
 }
 
 } // namespace neos

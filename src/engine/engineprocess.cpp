@@ -1,8 +1,10 @@
 #include "engineprocess.h"
+#include "client/OAIJobsApi.h"
 #include "enginemanager.h"
 #include "logger.h"
 #include "commonpaths.h"
 #include "process/gmsunzipprocess.h"
+#include "process/gmszipprocess.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
@@ -15,6 +17,12 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+/*
+url: https://miro.gams.com/engine/api
+namespace: studiotests
+user: studiotests
+password: rercud-qinRa9-wagbew
+*/
 
 EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", parent), mProcState(ProcCheck)
 {
@@ -22,7 +30,6 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &EngineProcess::compileCompleted);
 
     mManager = new EngineManager(this);
-    mManager->setUrl("https://neos-server.org:3333");
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
@@ -130,9 +137,19 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        mManager->submitJob(g00, params.join(" "));
+
+//        mManager->submitJob(g00, params.join(" "));
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
+    }
+}
+
+void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if (mProcState == Proc1Compile) {
+        QStringList params = remoteParameters();
+        QString zip = mOutPath + "/" + QFileInfo(mOutPath).baseName() + ".zip";
+        mManager->submitJob(zip, params.join(" "));
     }
 }
 
@@ -152,7 +169,7 @@ void EngineProcess::sslErrors(const QStringList &errors)
     }
 }
 
-void EngineProcess::parseUnzipStdOut(const QByteArray &data)
+void EngineProcess::parseUnZipStdOut(const QByteArray &data)
 {
     if (data.startsWith(" extracting: ")) {
         QByteArray fName = data.trimmed();
@@ -163,7 +180,7 @@ void EngineProcess::parseUnzipStdOut(const QByteArray &data)
         emit newStdChannelData(data);
 }
 
-void EngineProcess::unzipStateChanged(QProcess::ProcessState newState)
+void EngineProcess::subProcStateChanged(QProcess::ProcessState newState)
 {
     if (newState == QProcess::NotRunning) {
         setProcState(ProcIdle);
@@ -228,9 +245,9 @@ void EngineProcess::reVersion(const QString &value)
     DEB() << "VERSION: " << value;
 }
 
-void EngineProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
+void EngineProcess::reSubmitJob(const QString &message, const QString &token)
 {
-    DEB() << "SUBMITED: " << jobNumber << " - pw: " << jobPassword;
+    DEB() << "SUBMITED: " << token << " - message: " << message;
 
     QString newLstEntry("\n--- switch to Engine .%1%2%1solve.lst[LS2:\"%3\"]\n");
     QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
@@ -238,7 +255,7 @@ void EngineProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission
-    setProcState(Proc2Monitor);
+    setProcState(Proc3Monitor);
 }
 
 
@@ -249,29 +266,11 @@ static const QHash<QString, JobStatusEnum> CJobStatus {
     {"Unknown Job", jsUnknownJob}, {"Bad Password", jsBadPassword}
 };
 
-void EngineProcess::reGetJobStatus(const QString &status)
+void EngineProcess::reGetJobStatus(const qint32 &status)
 {
-    switch (int iStatus = CJobStatus.value(status, jsInvalid)) {
-    case jsDone: {
-        if (mProcState == Proc2Monitor) {
-            mManager->getCompletionCode();
-            if (mPullTimer.isActive()) mPullTimer.stop();
-            setProcState(Proc3GetResult);
-        }
-    }   break;
-    case jsRunning:
-    case jsWaiting:
-        if (!mPullTimer.isActive()) {
-            mPullTimer.start();
-        }
-        break;
-    case jsUnknownJob:
-    case jsBadPassword:
-    case jsInvalid:
-        emit newStdChannelData("\n*** Engine error-status: "+status.toUtf8()+'\n');
-        completed(-1);
-        break;
-    }
+    DEB() << "Job-Status: " << status;
+//    emit newStdChannelData("\n*** Engine error-status: "+status.toUtf8()+'\n');
+//    completed(-1);
 }
 
 
@@ -406,17 +405,48 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
     return res;
 }
 
+void EngineProcess::startPacking()
+{
+    GmszipProcess *subProc = new GmszipProcess(this);
+    connect(subProc, &GmszipProcess::stateChanged, this, &EngineProcess::subProcStateChanged);
+    connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmszipProcess::finished), this, &EngineProcess::packCompleted);
+    connect(subProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnZipStdOut);
+    connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
+
+    QFileInfo path(mOutPath);
+    QFile file(mOutPath+'/'+path.baseName()+".gms");
+    if (!file.open(QFile::WriteOnly)) {
+        emit newStdChannelData("\n*** Can't create file: "+file.fileName().toUtf8()+'\n');
+        completed(-1);
+        return;
+    }
+    file.write("*dummy");
+    file.close();
+    file.setFileName(mOutPath+".g00");
+    if (!file.rename(mOutPath+'/'+path.baseName()+".g00")) {
+        emit newStdChannelData("\n*** Can't move file to subdirectory: "+file.fileName().toUtf8()+'\n');
+        completed(-1);
+        return;
+    }
+
+    mSubProc = subProc;
+    subProc->setWorkingDirectory(mOutPath);
+    subProc->setParameters(QStringList() << "input.zip" << "-i" << path.baseName()+".gms" << path.baseName()+".g00");
+    subProc->execute();
+}
+
 void EngineProcess::startUnpacking()
 {
-    mSubProc = new GmsunzipProcess(this);
-    connect(mSubProc, &GmsunzipProcess::stateChanged, this, &EngineProcess::unzipStateChanged);
-    connect(mSubProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &EngineProcess::unpackCompleted);
-    connect(mSubProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnzipStdOut);
-    connect(mSubProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
+    GmsunzipProcess *subProc = new GmsunzipProcess(this);
+    connect(subProc, &GmsunzipProcess::stateChanged, this, &EngineProcess::subProcStateChanged);
+    connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &EngineProcess::unpackCompleted);
+    connect(subProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnZipStdOut);
+    connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
 
-    mSubProc->setWorkingDirectory(mOutPath);
-    mSubProc->setParameters(QStringList() << "-o" << "solver-output.zip");
-    mSubProc->execute();
+    mSubProc = subProc;
+    subProc->setWorkingDirectory(mOutPath);
+    subProc->setParameters(QStringList() << "-o" << "solver-output.zip");
+    subProc->execute();
 }
 
 } // namespace engine

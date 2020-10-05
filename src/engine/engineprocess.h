@@ -4,20 +4,22 @@
 #include "process.h"
 #include <QTimer>
 
+namespace OpenAPI {
+    class OAIJobsApi;
+}
+
 namespace gams {
 namespace studio {
-
-class GmsunzipProcess;
-
 namespace engine {
 
 enum ProcState {
     ProcCheck,
     ProcIdle,
     Proc1Compile,
-    Proc2Monitor,
-    Proc3GetResult,
-    Proc4Unpack,
+    Proc2Pack,
+    Proc3Monitor,
+    Proc4GetResult,
+    Proc5Unpack,
 };
 
 class EngineManager;
@@ -50,8 +52,8 @@ signals:
 protected slots:
     void rePing(const QString &value);
     void reVersion(const QString &value);
-    void reSubmitJob(const int &jobNumber, const QString &jobPassword);
-    void reGetJobStatus(const QString &status);
+    void reSubmitJob(const QString &message, const QString &token);
+    void reGetJobStatus(const qint32 &status);
     void reGetCompletionCode(const QString &code);
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
@@ -63,26 +65,33 @@ protected slots:
 private slots:
     void pullStatus();
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
+    void packCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void sslErrors(const QStringList &errors);
-    void parseUnzipStdOut(const QByteArray &data);
-    void unzipStateChanged(QProcess::ProcessState newState);
+    void parseUnZipStdOut(const QByteArray &data);
+    void subProcStateChanged(QProcess::ProcessState newState);
 
 private:
     void setProcState(ProcState newState);
     QStringList compileParameters();
     QStringList remoteParameters();
     QByteArray convertReferences(const QByteArray &data);
+    void startPacking();
     void startUnpacking();
 
+    OpenAPI::OAIJobsApi *mJobsApi;
     EngineManager *mManager;
+    QString mUser;
+    QString mPassword;
     QString mOutPath;
+    QString mToken;
+
     QString mJobNumber;
     QString mJobPassword;
     ProcState mProcState;
     QTimer mPullTimer;
 
-    GmsunzipProcess *mSubProc = nullptr;
+    AbstractGamsProcess *mSubProc = nullptr;
 };
 
 } // namespace engine

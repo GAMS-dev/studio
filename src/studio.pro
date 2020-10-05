@@ -202,6 +202,7 @@ SOURCES += \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
+    process/gmszipprocess.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -378,6 +379,7 @@ HEADERS += \
     process/gamslibprocess.h \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \
+    process/gmszipprocess.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \

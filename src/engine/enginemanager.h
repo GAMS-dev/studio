@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QObject>
 #include <QMetaEnum>
+#include <QNetworkReply>
 //#include "httpmanager.h"
 
 namespace OpenAPI {
@@ -40,7 +41,7 @@ public:
 
     void ping();
     void version();
-    void submitJob(QString fileName, QString params = QString(), bool prioShort = true, bool wantGdx = true);
+    void submitJob(QString fileName, QString params = QString());
     void watchJob(int jobNumber, QString password);
     void getJobStatus();
     void getCompletionCode();
@@ -53,11 +54,10 @@ public:
     void setDebug(bool debug = true);
 
 signals:
-    void submitCall(const QString &method, const QVariantList &params = QVariantList());
     void rePing(const QString &value);
     void reVersion(const QString &value);
-    void reSubmitJob(const int &jobNumber, const QString &jobPassword);
-    void reGetJobStatus(const QString &value);
+    void reSubmitJob(const QString &message, const QString &token);
+    void reGetJobStatus(qint32 status);
     void reGetCompletionCode(const QString &value);
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
@@ -68,12 +68,25 @@ signals:
     void sslErrors(const QStringList &errors);
 
 private slots:
-    void received(QString name, QVariant data);
     void debugReceived(QString name, QVariant data);
+
+    void getJobZipSignalE(QNetworkReply::NetworkError error_type, QString error_str);
+    void abortRequestsSignal();
+
+private:
+    void reCreateJob(QString message, QString token);
+
+//    void getJobTextEntrySignal(OpenAPI::OAIText_entry summary);
+//    void getJobTextEntryInfoSignal();
+//    void getJobZipInfoSignal();
+//    void getStatusCodesSignal(QList<OpenAPI::OAIStatus_code_meaning> summary);
+//    void listJobsSignal(QList<OpenAPI::OAIJob> summary);
+
 private:
     QHash<QString, ProcCall> procCalls;
-    OpenAPI::OAIJobsApi *mHttp;
+    OpenAPI::OAIJobsApi *mJobsApi;
     int mJobNumber = 0;
+    QString mUser;
     QString mPassword;
     int mLogOffset = 0;
 };

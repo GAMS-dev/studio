@@ -6,9 +6,6 @@
 
 namespace gams {
 namespace studio {
-
-class GmsunzipProcess;
-
 namespace neos {
 
 enum ProcState {
@@ -89,7 +86,7 @@ private:
     ProcState mProcState;
     QTimer mPullTimer;
 
-    GmsunzipProcess *mSubProc = nullptr;
+    AbstractGamsProcess *mSubProc = nullptr;
 };
 
 } // namespace neos
