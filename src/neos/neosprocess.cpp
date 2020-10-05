@@ -306,6 +306,13 @@ void NeosProcess::reGetCompletionCode(const QString &code)
     }   break;
     default:
         emit newStdChannelData("\n*** Neos error-exit: "+code.toUtf8()+'\n');
+        bool hasPrevWork = false;
+        for (const QString &param : parameters()) {
+            if (param.startsWith("PreviousWork", Qt::CaseInsensitive))
+                hasPrevWork = true;
+        }
+        if (!hasPrevWork)
+            emit newStdChannelData("    (you may try adding the parameter \"PreviousWork=1\")\n");
         completed(-1);
         setNeosState(NeosIdle);
         break;
