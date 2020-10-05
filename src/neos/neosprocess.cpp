@@ -124,6 +124,7 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
 {
     if (exitStatus == QProcess::CrashExit || exitCode) {
         DEB() << "Error on compilation, exitCode " << QString::number(exitCode);
+        setNeosState(NeosIdle);
         completed(-1);
         return;
     }
@@ -175,6 +176,15 @@ void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
 }
 
 void NeosProcess::interrupt()
+{
+    bool ok;
+    mManager->killJob(ok);
+    if (!ok) AbstractGamsProcess::interrupt();
+    setNeosState(NeosIdle);
+    completed(-1);
+}
+
+void NeosProcess::terminate()
 {
     bool ok;
     mManager->killJob(ok);
@@ -236,7 +246,7 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 
     QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]\n");
     QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
-    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath).toUtf8());
+    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath+"/solve.lst").toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission

@@ -3014,14 +3014,14 @@ void MainWindow::createNeosProcess()
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
     neosProcess->setPriority(mNeosLong ? neos::prioLong : neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL
-                                                 : option::RunActionState::RunNeos);
+    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL : option::RunActionState::RunNeos);
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
     if (!runGroup) return;
     runGroup->setProcess(std::move(neosProcess));
+    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
+    connect(neosPtr, &neos::NeosProcess::neosStateChanged, this, &MainWindow::neosProgress);
     if (!mIgnoreSslErrors) {
-        neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
         neosPtr->validate();
     } else {
@@ -3401,7 +3401,7 @@ void MainWindow::neosProgress(AbstractProcess *proc, neos::NeosState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == neos::Neos4Unpack) {
+            if (progress == neos::Neos3GetResult) {
                 gv->releaseFile();
             } else if (progress == neos::NeosState::NeosIdle) {
                 gv->setHasChanged(true);

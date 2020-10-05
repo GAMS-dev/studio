@@ -43,6 +43,7 @@ public:
 
     void execute() override;
     void interrupt() override;
+    void terminate() override;
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
     void validate();
