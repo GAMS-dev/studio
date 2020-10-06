@@ -41,7 +41,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
     connect(mManager, &EngineManager::reGetCompletionCode, this, &EngineProcess::reGetCompletionCode);
     connect(mManager, &EngineManager::reGetFinalResultsNonBlocking, this, &EngineProcess::reGetFinalResultsNonBlocking);
-    connect(mManager, &EngineManager::reGetIntermediateResultsNonBlocking, this, &EngineProcess::reGetIntermediateResultsNonBlocking);
+    connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetIntermediateResultsNonBlocking);
 
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
@@ -137,6 +137,7 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
+        startPacking();
 
 //        mManager->submitJob(g00, params.join(" "));
     } else {
@@ -146,10 +147,15 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
 
 void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if (mProcState == Proc1Compile) {
+    if (exitCode || exitStatus == QProcess::CrashExit) {
+        emit newStdChannelData("\nErrors while packing. exitCode: " + QString::number(exitCode).toUtf8());
+        completed(exitCode);
+    } else if (mProcState == Proc2Pack) {
         QStringList params = remoteParameters();
         QString zip = mOutPath + "/" + QFileInfo(mOutPath).baseName() + ".zip";
         mManager->submitJob(zip, params.join(" "));
+        setProcState(Proc3Monitor);
+        pullStatus();
     }
 }
 
@@ -192,7 +198,14 @@ void EngineProcess::subProcStateChanged(QProcess::ProcessState newState)
 void EngineProcess::interrupt()
 {
     bool ok;
-    mManager->killJob(ok);
+    mManager->killJob(false, ok);
+    if (!ok) AbstractGamsProcess::interrupt();
+}
+
+void EngineProcess::terminate()
+{
+    bool ok;
+    mManager->killJob(true, ok);
     if (!ok) AbstractGamsProcess::interrupt();
     setProcState(ProcIdle);
     completed(-1);
@@ -266,8 +279,9 @@ static const QHash<QString, JobStatusEnum> CJobStatus {
     {"Unknown Job", jsUnknownJob}, {"Bad Password", jsBadPassword}
 };
 
-void EngineProcess::reGetJobStatus(const qint32 &status)
+void EngineProcess::reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode)
 {
+    // TODO(JM) convert status to EngineManager::Status
     DEB() << "Job-Status: " << status;
 //    emit newStdChannelData("\n*** Engine error-status: "+status.toUtf8()+'\n');
 //    completed(-1);
@@ -342,7 +356,7 @@ void EngineProcess::reError(const QString &errorText)
 
 void EngineProcess::pullStatus()
 {
-    mManager->getIntermediateResultsNonBlocking();
+    mManager->getLog();
     mManager->getJobStatus();
 }
 

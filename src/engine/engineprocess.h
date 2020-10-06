@@ -4,10 +4,6 @@
 #include "process.h"
 #include <QTimer>
 
-namespace OpenAPI {
-    class OAIJobsApi;
-}
-
 namespace gams {
 namespace studio {
 namespace engine {
@@ -39,6 +35,7 @@ public:
 
     void execute() override;
     void interrupt() override;
+    void terminate() override;
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
     void validate();
@@ -53,7 +50,7 @@ protected slots:
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const QString &message, const QString &token);
-    void reGetJobStatus(const qint32 &status);
+    void reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode);
     void reGetCompletionCode(const QString &code);
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
@@ -79,7 +76,6 @@ private:
     void startPacking();
     void startUnpacking();
 
-    OpenAPI::OAIJobsApi *mJobsApi;
     EngineManager *mManager;
     QString mUser;
     QString mPassword;

@@ -4,45 +4,65 @@
 #include <iostream>
 #include <QFile>
 
+using namespace OpenAPI;
+
 namespace gams {
 namespace studio {
 namespace engine {
 
 EngineManager::EngineManager(QObject* parent)
-    : QObject(parent), mJobsApi(new OpenAPI::OAIJobsApi())
+    : QObject(parent), mJobsApi(new OAIJobsApi())
 {
     mJobsApi->setScheme("https");
     mJobsApi->setHost("https://miro.gams.com/engine/api");
-    mJobsApi->setScheme("studiotests");
+    mJobsApi->setPort(443);
+    mJobsApi->setBasePath("studiotests");
     mUser = "studiotests";
     mPassword = "rercud-qinRa9-wagbew";
 
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::createJobSignal, [this](OpenAPI::OAIMessage_and_token summary) {
+    connect(mJobsApi, &OAIJobsApi::createJobSignal,
+            [this](OAIMessage_and_token summary) {
         reCreateJob(summary.getMessage(), summary.getToken());
     });
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::getJobSignal, [this](OpenAPI::OAIJob summary) {
-        reGetJobStatus(summary.getStatus());
+    connect(mJobsApi, &OAIJobsApi::createJobSignalE,
+            [this](OAIMessage_and_token, QNetworkReply::NetworkError, QString error_str) {
+        reError(error_str);
     });
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::getJobZipSignalFull, [this](OpenAPI::OAIHttpRequestWorker *worker) {
+
+    connect(mJobsApi, &OAIJobsApi::getJobSignal, [this](OAIJob summary) {
+        reGetJobStatus(summary.getStatus(), summary.getProcessStatus());
+    });
+    connect(mJobsApi, &OAIJobsApi::getJobSignalE,
+            [this](OAIJob, QNetworkReply::NetworkError, QString error_str) {
+        reError(error_str);
+    });
+
+    connect(mJobsApi, &OAIJobsApi::getJobZipSignalFull, [this](OAIHttpRequestWorker *worker) {
         reGetOutputFile(worker->response);
     });
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::getJobZipSignalE, this, &EngineManager::getJobZipSignalE);
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::killJobSignal, [this](OpenAPI::OAIMessage summary) {
+    connect(mJobsApi, &OAIJobsApi::getJobZipSignalE,
+            [this](QNetworkReply::NetworkError, QString error_str) {
+        reError(error_str);
+    });
+
+    connect(mJobsApi, &OAIJobsApi::killJobSignal, [this](OAIMessage summary) {
         reKillJob(summary.getMessage());
     });
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::popStreamEntrySignal, [this](OpenAPI::OAIStream_entry summary) {
-        reGetIntermediateResultsNonBlocking(summary.getEntryValue().toUtf8());
+    connect(mJobsApi, &OAIJobsApi::killJobSignalE,
+            [this](OAIMessage, QNetworkReply::NetworkError, QString error_str) {
+        reError(error_str);
     });
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::popJobLogsSignal, [this](OpenAPI::OAILog_piece summary) {
-        reGetIntermediateResultsNonBlocking(summary.getMessage().toUtf8());
-    });
-    connect(mJobsApi, &OpenAPI::OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
 
-    QMetaEnum meta = QMetaEnum::fromType<ProcCall>();
-    for (int i = 0; i < meta.keyCount(); ++i) {
-        QString c = QString(meta.key(i));
-        procCalls.insert(c.right(c.length()-1), ProcCall(meta.value(i)));
-    }
+    connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, [this](OAILog_piece summary) {
+        // -> jobs/{token}/unread-logs
+        reGetLog(summary.getMessage().toUtf8());
+    });
+    connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
+            [this](OAILog_piece, QNetworkReply::NetworkError, QString error_str) {
+        reError(error_str);
+    });
+
+    connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
 
 }
 
@@ -53,24 +73,21 @@ void EngineManager::setUrl(const QString &url)
 
 void EngineManager::setIgnoreSslErrors()
 {
-//    mHttp.setIgnoreSslErrors();
 }
 
 bool EngineManager::ignoreSslErrors()
 {
-//    return mHttp.ignoreSslErrors();
     return false;
 }
 
 void EngineManager::ping()
 {
-//    emit submitCall("ping");
+    mJobsApi->getJob("", "status");
 }
 
-void EngineManager::version()
-{
-//    emit submitCall("version");
-}
+//void EngineManager::version()
+//{
+//}
 
 void EngineManager::submitJob(QString fileName, QString params)
 {
@@ -93,32 +110,21 @@ void EngineManager::watchJob(int jobNumber, QString password)
 
 void EngineManager::getJobStatus()
 {
-    //  "Done", "Running", "Waiting", "Unknown Job", or "Bad Password"
-//    emit submitCall("getJobStatus", QVariantList() << mJobNumber << mPassword);
+    if (!mToken.isEmpty())
+        mJobsApi->getJob(mToken, "status process_status");
 }
 
-void EngineManager::getCompletionCode()
+void EngineManager::killJob(bool hard, bool &ok)
 {
-    // Only if Job is "Done":
-    //  "Normal", "Out of memory", "Timed out", "Disk Space", "Server error", "Unknown Job", "Bad Password"
-//    emit submitCall("getCompletionCode", QVariantList() << mJobNumber << mPassword);
+    ok = !mToken.isEmpty();
+    if (ok)
+        mJobsApi->killJob(mToken, hard);
 }
 
-void EngineManager::getJobInfo()
+void EngineManager::getLog()
 {
-    // tuple (category, solver_name, input, status, completion_code)
-//    emit submitCall("getJobInfo", QVariantList() << mJobNumber << mPassword);
-}
-
-void EngineManager::killJob(bool &ok)
-{
-//    if ((ok = mJobNumber))
-//        emit submitCall("killJob", QVariantList() << mJobNumber << mPassword);
-}
-
-void EngineManager::getIntermediateResultsNonBlocking()
-{
-//    emit submitCall("getIntermediateResultsNonBlocking", QVariantList() << mJobNumber << mPassword << mLogOffset);
+    if (!mToken.isEmpty())
+        mJobsApi->popJobLogs(mToken);
 }
 
 void EngineManager::getFinalResultsNonBlocking()
@@ -159,6 +165,16 @@ void EngineManager::abortRequestsSignal()
 void EngineManager::reCreateJob(QString message, QString token)
 {
 
+}
+
+QString EngineManager::getToken() const
+{
+    return mToken;
+}
+
+void EngineManager::setToken(const QString &token)
+{
+    mToken = token;
 }
 
 } // namespace engine

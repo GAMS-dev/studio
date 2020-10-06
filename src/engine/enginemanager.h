@@ -19,35 +19,32 @@ class EngineManager: public QObject
 {
     Q_OBJECT
 public:
-    enum ProcCall {
-        _ping,
-        _version,
-        _submitJob,
-        _getJobStatus,
-        _getCompletionCode,
-        _getJobInfo,
-        _killJob,
-        _getIntermediateResultsNonBlocking,
-        _getFinalResultsNonBlocking,
-        _getOutputFile
+    enum StatusCodes {
+        Cancelled   = -3,
+        Cancelling  = -2,
+        Corrupted   = -1,
+        Queued      =  0,
+        Running     =  1,
+        Outputting  =  2,
+        Finished    = 10,
     };
-    Q_ENUM(ProcCall)
+    Q_ENUM(StatusCodes)
 
 public:
     EngineManager(QObject *parent = nullptr);
     void setUrl(const QString &url);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
+    QString getToken() const;
+    void setToken(const QString &token);
 
     void ping();
-    void version();
+//    void version();
     void submitJob(QString fileName, QString params = QString());
     void watchJob(int jobNumber, QString password);
     void getJobStatus();
-    void getCompletionCode();
-    void getJobInfo();
-    void killJob(bool &ok);
-    void getIntermediateResultsNonBlocking();
+    void killJob(bool hard, bool &ok);
+    void getLog();
     void getFinalResultsNonBlocking();
     void getOutputFile(QString fileName);
 
@@ -57,11 +54,11 @@ signals:
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const QString &message, const QString &token);
-    void reGetJobStatus(qint32 status);
+    void reGetJobStatus(qint32 status, qint32 processStatus);
     void reGetCompletionCode(const QString &value);
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
-    void reGetIntermediateResultsNonBlocking(const QByteArray &data);
+    void reGetLog(const QByteArray &data);
     void reGetFinalResultsNonBlocking(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
@@ -83,11 +80,11 @@ private:
 //    void listJobsSignal(QList<OpenAPI::OAIJob> summary);
 
 private:
-    QHash<QString, ProcCall> procCalls;
     OpenAPI::OAIJobsApi *mJobsApi;
     int mJobNumber = 0;
     QString mUser;
     QString mPassword;
+    QString mToken;
     int mLogOffset = 0;
 };
 
