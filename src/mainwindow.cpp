@@ -86,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     Settings *settings = Settings::settings();
+    initEnvironment();
 
     ui->setupUi(this);
 
@@ -299,6 +300,60 @@ void MainWindow::initTabs()
         mWp->hide();
     else
         showWelcomePage();
+}
+
+void MainWindow::initEnvironment()
+{
+    auto environment = QProcessEnvironment::systemEnvironment();
+    auto gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
+    QString pathEnv(gamsDir + QDir::listSeparator()
+                    + gamsDir + QDir::separator() + "gbin" + QDir::listSeparator()
+                    + qgetenv("PATH"));
+    qputenv("PATH", pathEnv.toLatin1());
+}
+
+void MainWindow::initIcons()
+{
+    setWindowIcon(Scheme::icon(":/img/gams-w"));
+    ui->actionCompile->setIcon(Scheme::icon(":/%1/code"));
+    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
+    ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
+    ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
+    ui->actionClose->setIcon(Scheme::icon(":/%1/remove"));
+    ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
+    ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
+    ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
+    ui->actionHelp_View->setIcon(Scheme::icon(":/%1/question"));
+    ui->actionInterrupt->setIcon(Scheme::icon(":/%1/stop"));
+    ui->actionNew->setIcon(Scheme::icon(":/%1/file"));
+    ui->actionNextBookmark->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionOpen->setIcon(Scheme::icon(":/%1/folder-open-bw"));
+    ui->actionPaste->setIcon(Scheme::icon(":/%1/paste"));
+    ui->actionPreviousBookmark->setIcon(Scheme::icon(":/%1/backward"));
+    ui->actionProcess_Log->setIcon(Scheme::icon(":/%1/output"));
+    ui->actionProject_View->setIcon(Scheme::icon(":/%1/project"));
+    ui->actionRedo->setIcon(Scheme::icon(":/%1/redo"));
+    ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
+    ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
+    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
+    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
+    ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
+    ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
+    ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
+    ui->actionStop->setIcon(Scheme::icon(":/%1/kill"));
+    ui->actionTerminal->setIcon(Scheme::icon(":/%1/terminal"));
+    ui->actionToggleBookmark->setIcon(Scheme::icon(":/%1/bookmark"));
+    ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show"));
+    ui->actionUndo->setIcon(Scheme::icon(":/%1/undo"));
+    ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
+    ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
+    ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
+    ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
+    ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
+    ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
+    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
 }
 
 void MainWindow::initToolBar()
@@ -3168,50 +3223,6 @@ void MainWindow::invalidateScheme()
         fm->invalidateScheme();
 
     repaint();
-}
-
-void MainWindow::initIcons()
-{
-    setWindowIcon(Scheme::icon(":/img/gams-w"));
-    ui->actionCompile->setIcon(Scheme::icon(":/%1/code"));
-    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
-    ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
-    ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
-    ui->actionClose->setIcon(Scheme::icon(":/%1/remove"));
-    ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
-    ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
-    ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
-    ui->actionHelp_View->setIcon(Scheme::icon(":/%1/question"));
-    ui->actionInterrupt->setIcon(Scheme::icon(":/%1/stop"));
-    ui->actionNew->setIcon(Scheme::icon(":/%1/file"));
-    ui->actionNextBookmark->setIcon(Scheme::icon(":/%1/forward"));
-    ui->actionOpen->setIcon(Scheme::icon(":/%1/folder-open-bw"));
-    ui->actionPaste->setIcon(Scheme::icon(":/%1/paste"));
-    ui->actionPreviousBookmark->setIcon(Scheme::icon(":/%1/backward"));
-    ui->actionProcess_Log->setIcon(Scheme::icon(":/%1/output"));
-    ui->actionProject_View->setIcon(Scheme::icon(":/%1/project"));
-    ui->actionRedo->setIcon(Scheme::icon(":/%1/redo"));
-    ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
-    ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
-    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
-    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
-    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
-    ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
-    ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
-    ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
-    ui->actionStop->setIcon(Scheme::icon(":/%1/kill"));
-    ui->actionTerminal->setIcon(Scheme::icon(":/%1/terminal"));
-    ui->actionToggleBookmark->setIcon(Scheme::icon(":/%1/bookmark"));
-    ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show"));
-    ui->actionUndo->setIcon(Scheme::icon(":/%1/undo"));
-    ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
-    ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
-    ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
-    ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
-    ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
-    ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
-    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
-    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
 }
 
 void MainWindow::ensureInScreen()

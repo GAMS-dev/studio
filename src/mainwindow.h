@@ -366,6 +366,7 @@ protected:
 private:
     void initTabs();
     void initIcons();
+    void initEnvironment();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId);
     int fileDeletedExtern(FileId fileId);
