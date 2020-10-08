@@ -53,6 +53,8 @@ public:
 
     QString solverLicense(const QString &name, int id) const;
 
+    QStringList licenseFromClipboard();
+
     bool isLicenseValid(const QStringList &license);
 
 private:

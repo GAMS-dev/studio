@@ -142,6 +142,16 @@ QString CommonPaths::userModelLibraryDir()
     return userModelLibraryDir.path();
 }
 
+
+// Windows
+// 1. QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS"
+// 2. QStandardPaths::standardLocations(QStandardPaths::DataLocation) + "/GAMS"
+// 3. systemDir()/gamslice.txt
+//
+// Linux
+// 1. QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/GAMS"
+// 2. QStandardPaths::standardLocations(QStandardPaths::DataLocation) + "/GAMS"
+// 3. systemDir()/gamslice.txt
 QString CommonPaths::gamsLicenseFilePath()
 {
     const QString userLicenseFile = UserLicensePath + "/GAMS/" + LicenseFile;
