@@ -2022,7 +2022,7 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setArguments({"/k", "title", "GAMS Terminal"});
     process.setWorkingDirectory(workingDir);
     auto gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
-    environment.insert("PATH", gamsDir + ";" + gamsDir + "\gbin;" + environment.value("PATH"));
+    environment.insert("PATH", gamsDir + ";" + gamsDir + "\\gbin;" + environment.value("PATH"));
     process.setProcessEnvironment(environment);
     process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
     {
@@ -3081,7 +3081,7 @@ void MainWindow::createNeosProcess()
     mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL : option::RunActionState::RunNeos);
     runGroup->setProcess(std::move(neosProcess));
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
-    connect(neosPtr, &neos::NeosProcess::neosStateChanged, this, &MainWindow::neosProgress);
+    connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::neosProgress);
     if (!mIgnoreSslErrors) {
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
         neosPtr->validate();

@@ -124,7 +124,7 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
 {
     if (exitStatus == QProcess::CrashExit || exitCode) {
         DEB() << "Error on compilation, exitCode " << QString::number(exitCode);
-        setNeosState(NeosIdle);
+        setProcState(ProcIdle);
         completed(-1);
         return;
     }
@@ -189,7 +189,7 @@ void NeosProcess::terminate()
     bool ok;
     mManager->killJob(ok);
     if (!ok) AbstractGamsProcess::interrupt();
-    setNeosState(NeosIdle);
+    setProcState(ProcIdle);
     completed(-1);
 }
 
