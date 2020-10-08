@@ -177,15 +177,12 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     bool gdxParam = false;
     bool actParam = false;
-    bool fwParam = false;
     for (option::OptionItem item : getOptionTokenizer()->tokenize( commandLineStr)) {
         if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
         if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
             (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
             actParam = true;
-        if (QString::compare(item.key, "fw", Qt::CaseInsensitive) == 0)
-            fwParam = true;
     }
 
     if (state == RunActionState::RunWithGDXCreation) {

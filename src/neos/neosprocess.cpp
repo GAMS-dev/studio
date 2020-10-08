@@ -263,7 +263,8 @@ static const QHash<QString, JobStatusEnum> CJobStatus {
 
 void NeosProcess::reGetJobStatus(const QString &status)
 {
-    switch (int iStatus = CJobStatus.value(status, jsInvalid)) {
+    int iStatus = CJobStatus.value(status, jsInvalid);
+    switch (iStatus) {
     case jsDone: {
         if (mNeosState == Neos2Monitor) {
             mManager->getCompletionCode();
