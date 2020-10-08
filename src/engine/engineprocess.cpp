@@ -31,6 +31,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
 
     mManager = new EngineManager(this);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
+    connect(mManager, &EngineManager::reAuth, this, &EngineProcess::authenticated);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob);
@@ -40,7 +41,6 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
     connect(mManager, &EngineManager::reGetCompletionCode, this, &EngineProcess::reGetCompletionCode);
-    connect(mManager, &EngineManager::reGetFinalResultsNonBlocking, this, &EngineProcess::reGetFinalResultsNonBlocking);
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetIntermediateResultsNonBlocking);
 
     mPullTimer.setInterval(1000);
@@ -137,11 +137,11 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
+        setProcState(Proc2Pack);
         startPacking();
-
-//        mManager->submitJob(g00, params.join(" "));
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
+        completed(-1);
     }
 }
 
@@ -152,10 +152,14 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         completed(exitCode);
     } else if (mProcState == Proc2Pack) {
         QStringList params = remoteParameters();
+        QString gms = mOutPath + "/" + QFileInfo(mOutPath).baseName() + ".gms";
         QString zip = mOutPath + "/" + QFileInfo(mOutPath).baseName() + ".zip";
-        mManager->submitJob(zip, params.join(" "));
-        setProcState(Proc3Monitor);
-        pullStatus();
+
+        DEB() << "TESTSTATE reached. Abort for now.";
+        completed(-1);
+//        mManager->submitJob(gms, zip, params);
+//        setProcState(Proc3Monitor);
+//        pullStatus();
     }
 }
 
@@ -230,6 +234,17 @@ QProcess::ProcessState EngineProcess::state() const
     return (mProcState <= ProcIdle) ? QProcess::NotRunning : QProcess::Running;
 }
 
+void EngineProcess::authenticate(const QString &host, const QString &user, const QString &password)
+{
+    mManager->setHost(host);
+    mManager->authenticate(user, password);
+}
+
+void EngineProcess::setNamespace(const QString &nSpace)
+{
+    mNamespace = nSpace;
+}
+
 void EngineProcess::validate()
 {
     mManager->ping();
@@ -299,10 +314,10 @@ void EngineProcess::reGetCompletionCode(const QString &code)
 {
     switch (CCompletionCodes.value(code, ccInvalid)) {
     case ccNormal: {
-        mManager->getFinalResultsNonBlocking();
+        mManager->getLog();
 
         // TODO(JM) for large result-file this may take a while, check if engine supports progress monitoring
-        mManager->getOutputFile("solver-output.zip");
+        mManager->getOutputFile();
     }   break;
     default:
         emit newStdChannelData("\n*** Engine error-exit: "+code.toUtf8()+'\n');
@@ -329,16 +344,8 @@ void EngineProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
         emit newStdChannelData(res);
 }
 
-void EngineProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
-{
-    QByteArray res = convertReferences(data);
-    if (!res.isEmpty())
-        emit newStdChannelData(res);
-}
-
 void EngineProcess::reGetOutputFile(const QByteArray &data)
 {
-    // TODO(JM) check if engine sends partial files when the result-file is too large
     QFile res(mOutPath+"/solver-output.zip");
     if (res.open(QFile::WriteOnly)) {
         res.write(data);

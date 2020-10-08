@@ -1,4 +1,5 @@
 #include "enginemanager.h"
+#include "client/OAIAuthApi.h"
 #include "client/OAIJobsApi.h"
 #include <QString>
 #include <iostream>
@@ -13,36 +14,47 @@ namespace engine {
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), mJobsApi(new OAIJobsApi())
 {
+    mAuthApi->setScheme("https");
+    mAuthApi->setPort(443);
+    mAuthApi->setBasePath("/engine/api");
+    connect(mAuthApi, &OAIAuthApi::postWSignal,
+            [this](OAIModel_auth_token summary) {
+        emit reAuth(summary.getToken());
+    });
+    connect(mAuthApi, &OAIAuthApi::postWSignalE,
+            [this](OAIModel_auth_token , QNetworkReply::NetworkError , QString error_str) {
+        emit reError(error_str);
+    });
+
     mJobsApi->setScheme("https");
-    mJobsApi->setHost("https://miro.gams.com/engine/api");
+    mJobsApi->setHost("miro.gams.com");
     mJobsApi->setPort(443);
-    mJobsApi->setBasePath("studiotests");
-    mUser = "studiotests";
-    mPassword = "rercud-qinRa9-wagbew";
+    mJobsApi->setBasePath("/engine/api");
+    // namespace = studiotests
 
     connect(mJobsApi, &OAIJobsApi::createJobSignal,
             [this](OAIMessage_and_token summary) {
-        reCreateJob(summary.getMessage(), summary.getToken());
+        emit reCreateJob(summary.getMessage(), summary.getToken());
     });
     connect(mJobsApi, &OAIJobsApi::createJobSignalE,
             [this](OAIMessage_and_token, QNetworkReply::NetworkError, QString error_str) {
-        reError(error_str);
+        emit reError(error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobSignal, [this](OAIJob summary) {
-        reGetJobStatus(summary.getStatus(), summary.getProcessStatus());
+        emit reGetJobStatus(summary.getStatus(), summary.getProcessStatus());
     });
     connect(mJobsApi, &OAIJobsApi::getJobSignalE,
             [this](OAIJob, QNetworkReply::NetworkError, QString error_str) {
-        reError(error_str);
+        emit reError(error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobZipSignalFull, [this](OAIHttpRequestWorker *worker) {
-        reGetOutputFile(worker->response);
+        emit reGetOutputFile(worker->response);
     });
     connect(mJobsApi, &OAIJobsApi::getJobZipSignalE,
             [this](QNetworkReply::NetworkError, QString error_str) {
-        reError(error_str);
+        emit reError(error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::killJobSignal, [this](OAIMessage summary) {
@@ -50,7 +62,7 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::killJobSignalE,
             [this](OAIMessage, QNetworkReply::NetworkError, QString error_str) {
-        reError(error_str);
+        emit reError(error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, [this](OAILog_piece summary) {
@@ -59,16 +71,16 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
             [this](OAILog_piece, QNetworkReply::NetworkError, QString error_str) {
-        reError(error_str);
+        emit reError(error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
 
 }
 
-void EngineManager::setUrl(const QString &url)
+void EngineManager::setHost(const QString &host)
 {
-    mJobsApi->setHost(url);
+    mJobsApi->setHost(host);
 }
 
 void EngineManager::setIgnoreSslErrors()
@@ -80,8 +92,16 @@ bool EngineManager::ignoreSslErrors()
     return false;
 }
 
+void EngineManager::authenticate(const QString &user, const QString &password)
+{
+    mUser = user;
+    mPassword = password;
+    mAuthApi->postW(mUser, mPassword);
+}
+
 void EngineManager::ping()
 {
+
     mJobsApi->getJob("", "status");
 }
 
@@ -89,23 +109,13 @@ void EngineManager::ping()
 //{
 //}
 
-void EngineManager::submitJob(QString fileName, QString params)
+void EngineManager::submitJob(QString fileName, QString zipFile, QStringList params)
 {
-    QFile f(fileName);
-    if (!f.exists() || !f.open(QFile::ReadOnly)) return;
-    QByteArray data = f.readAll();
-    f.close();
-    mLogOffset = 0;
-    QString sData = data.toBase64();
-
-//    emit submitCall("submitJob", QVariantList() << jobData);
-}
-
-void EngineManager::watchJob(int jobNumber, QString password)
-{
-    mJobNumber = jobNumber;
-    mPassword = password;
-    getJobStatus();
+    OAIHttpFileElement model;
+    model.setMimeType("application/zip");
+    model.setFileName(zipFile);
+    OAIHttpFileElement dummy;
+    mJobsApi->createJob(fileName, "studiotests", "solver.log", QStringList(), QStringList(), params, model, dummy, dummy);
 }
 
 void EngineManager::getJobStatus()
@@ -127,14 +137,10 @@ void EngineManager::getLog()
         mJobsApi->popJobLogs(mToken);
 }
 
-void EngineManager::getFinalResultsNonBlocking()
+void EngineManager::getOutputFile()
 {
-//    emit submitCall("getFinalResultsNonBlocking", QVariantList() << mJobNumber << mPassword);
-}
-
-void EngineManager::getOutputFile(QString fileName)
-{
-//    emit submitCall("getOutputFile", QVariantList() << mJobNumber << mPassword << fileName);
+    if (!mToken.isEmpty())
+        mJobsApi->getJobZip(mToken);
 }
 
 void EngineManager::setDebug(bool debug)

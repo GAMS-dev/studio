@@ -8,7 +8,8 @@
 //#include "httpmanager.h"
 
 namespace OpenAPI {
-    class OAIJobsApi;
+class OAIAuthApi;
+class OAIJobsApi;
 }
 
 namespace gams {
@@ -32,25 +33,25 @@ public:
 
 public:
     EngineManager(QObject *parent = nullptr);
-    void setUrl(const QString &url);
+    void setHost(const QString &host);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
     QString getToken() const;
     void setToken(const QString &token);
 
+    void authenticate(const QString &user, const QString &password);
     void ping();
 //    void version();
-    void submitJob(QString fileName, QString params = QString());
-    void watchJob(int jobNumber, QString password);
+    void submitJob(QString fileName, QString zipFile, QStringList params);
     void getJobStatus();
     void killJob(bool hard, bool &ok);
     void getLog();
-    void getFinalResultsNonBlocking();
-    void getOutputFile(QString fileName);
+    void getOutputFile();
 
     void setDebug(bool debug = true);
 
 signals:
+    void reAuth(const QString &token);
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const QString &message, const QString &token);
@@ -59,7 +60,6 @@ signals:
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
-    void reGetFinalResultsNonBlocking(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
     void sslErrors(const QStringList &errors);
@@ -73,19 +73,13 @@ private slots:
 private:
     void reCreateJob(QString message, QString token);
 
-//    void getJobTextEntrySignal(OpenAPI::OAIText_entry summary);
-//    void getJobTextEntryInfoSignal();
-//    void getJobZipInfoSignal();
-//    void getStatusCodesSignal(QList<OpenAPI::OAIStatus_code_meaning> summary);
-//    void listJobsSignal(QList<OpenAPI::OAIJob> summary);
-
 private:
+    OpenAPI::OAIAuthApi *mAuthApi;
     OpenAPI::OAIJobsApi *mJobsApi;
     int mJobNumber = 0;
     QString mUser;
     QString mPassword;
     QString mToken;
-    int mLogOffset = 0;
 };
 
 } // namespace engine

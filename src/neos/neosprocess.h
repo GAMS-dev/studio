@@ -8,6 +8,7 @@ namespace gams {
 namespace studio {
 namespace neos {
 
+// TODO(JM) join ProcState from neos and engine
 enum ProcState {
     ProcCheck,
     ProcIdle,

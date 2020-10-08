@@ -8,6 +8,7 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+// TODO(JM) join ProcState from neos and engine
 enum ProcState {
     ProcCheck,
     ProcIdle,
@@ -38,10 +39,13 @@ public:
     void terminate() override;
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
+    void authenticate(const QString &host, const QString &user, const QString &password);
+    void setNamespace(const QString &nSpace);
     void validate();
     void setIgnoreSslErrors();
 
 signals:
+    void authenticated(QString token);
     void procStateChanged(AbstractProcess *proc, ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
@@ -55,7 +59,6 @@ protected slots:
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
     void reGetIntermediateResultsNonBlocking(const QByteArray &data);
-    void reGetFinalResultsNonBlocking(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
 
@@ -79,6 +82,7 @@ private:
     EngineManager *mManager;
     QString mUser;
     QString mPassword;
+    QString mNamespace;
     QString mOutPath;
     QString mToken;
 
