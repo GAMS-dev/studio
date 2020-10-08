@@ -124,6 +124,7 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
 {
     if (exitStatus == QProcess::CrashExit || exitCode) {
         DEB() << "Error on compilation, exitCode " << QString::number(exitCode);
+        setNeosState(NeosIdle);
         completed(-1);
         return;
     }
@@ -157,8 +158,10 @@ void NeosProcess::parseUnzipStdOut(const QByteArray &data)
     if (data.startsWith(" extracting: ")) {
         QByteArray fName = data.trimmed();
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
-
-        emit newStdChannelData("--- extracting: ."+ fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]\n");
+        QByteArray folder = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last().toUtf8();
+        folder.prepend(QDir::separator().toLatin1());
+        emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
+        if (data.endsWith("\n")) emit newStdChannelData("\n");
     } else
         emit newStdChannelData(data);
 }
@@ -178,6 +181,15 @@ void NeosProcess::interrupt()
     mManager->killJob(ok);
     if (!ok) AbstractGamsProcess::interrupt();
     setProcState(ProcIdle);
+    completed(-1);
+}
+
+void NeosProcess::terminate()
+{
+    bool ok;
+    mManager->killJob(ok);
+    if (!ok) AbstractGamsProcess::interrupt();
+    setNeosState(NeosIdle);
     completed(-1);
 }
 
@@ -234,7 +246,7 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 
     QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]\n");
     QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
-    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath).toUtf8());
+    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath+"/solve.lst").toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission
@@ -251,7 +263,8 @@ static const QHash<QString, JobStatusEnum> CJobStatus {
 
 void NeosProcess::reGetJobStatus(const QString &status)
 {
-    switch (int iStatus = CJobStatus.value(status, jsInvalid)) {
+    int iStatus = CJobStatus.value(status, jsInvalid);
+    switch (iStatus) {
     case jsDone: {
         if (mProcState == Proc2Monitor) {
             mManager->getCompletionCode();
@@ -294,6 +307,13 @@ void NeosProcess::reGetCompletionCode(const QString &code)
     }   break;
     default:
         emit newStdChannelData("\n*** Neos error-exit: "+code.toUtf8()+'\n');
+        bool hasPrevWork = false;
+        for (const QString &param : parameters()) {
+            if (param.startsWith("PreviousWork", Qt::CaseInsensitive))
+                hasPrevWork = true;
+        }
+        if (!hasPrevWork)
+            emit newStdChannelData("    (you may try adding the parameter \"PreviousWork=1\")\n");
         completed(-1);
         setProcState(ProcIdle);
         break;
