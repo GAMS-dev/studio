@@ -2021,8 +2021,6 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setArguments({"/k", "title", "GAMS Terminal"});
     process.setWorkingDirectory(workingDir);
     auto gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
-    environment.insert("PATH", gamsDir + ";" + gamsDir + "\gbin;" + environment.value("PATH"));
-    process.setProcessEnvironment(environment);
     process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
     {
         args->flags |= CREATE_NEW_CONSOLE;
