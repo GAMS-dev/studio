@@ -90,11 +90,7 @@ pipeline {
                     steps {
                         script {
                             def versionData = artifactVersion()
-                            if (isDevelopmentArtifact()) {
-                                zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
-                            } else {
-                                zip zipFile: "GAMS_Studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
-                            }
+                            zip zipFile: "${env.BRANCH_NAME}-studio-${versionData}-x86_64.zip", archive: true, dir: 'tmp'
                         }
                     }
                 }
