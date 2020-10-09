@@ -11,6 +11,12 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
+#ifdef _DEBUG
+    ui->edHost->setText("miro.gams.com");
+    ui->edNamespace->setText("studiotests");
+    ui->edUser->setText("studiotests");
+    ui->edPassword->setText("rercud-qinRa9-wagbew");
+#endif
 }
 
 EngineStartDialog::~EngineStartDialog()

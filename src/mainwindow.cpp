@@ -339,6 +339,7 @@ void MainWindow::initIcons()
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
     ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
     ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
+    ui->actionRunEngine->setIcon(Scheme::icon(":/%1/run-engine"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
@@ -3160,16 +3161,16 @@ void MainWindow::createEngineProcess(QString host, QString nSpace, QString user,
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
     engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
+    engineProcess->setNamespace(nSpace);
+    engineProcess->authenticate(host, user, password);
     runGroup->setProcess(std::move(engineProcess));
-    if (!mIgnoreSslErrors) {
-        engine::EngineProcess *enginePtr = static_cast<engine::EngineProcess*>(runGroup->process());
-        connect(enginePtr, &engine::EngineProcess::sslValidation, this, &MainWindow::sslValidation);
-        enginePtr->setNamespace(nSpace);
-        enginePtr->authenticate(host, user, password);
-    } else {
-        updateAndSaveSettings();
-        execute(mGamsParameterEditor->getCurrentCommandLineData());
-    }
+//    if (!mIgnoreSslErrors) {
+//        engine::EngineProcess *enginePtr = static_cast<engine::EngineProcess*>(runGroup->process());
+//        connect(enginePtr, &engine::EngineProcess::sslValidation, this, &MainWindow::sslValidation);
+//    } else {
+//    }
+    updateAndSaveSettings();
+    execute(mGamsParameterEditor->getCurrentCommandLineData());
 }
 
 void MainWindow::on_actionInterrupt_triggered()

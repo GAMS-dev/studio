@@ -36,12 +36,11 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
-    connect(mManager, &EngineManager::reSubmitJob, this, &EngineProcess::reSubmitJob);
+    connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
     connect(mManager, &EngineManager::reGetJobInfo, this, &EngineProcess::reGetJobInfo);
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
-    connect(mManager, &EngineManager::reGetCompletionCode, this, &EngineProcess::reGetCompletionCode);
-    connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetIntermediateResultsNonBlocking);
+    connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
 
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
@@ -104,11 +103,15 @@ QStringList EngineProcess::remoteParameters()
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
     bool needsFw = true;
+    bool needsRestart = true;
     while (i.hasNext()) {
         QString par = i.next();
         if (par.startsWith("forceWork=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
             needsFw = false;
             i.setValue("fw=1");
+        } else if (par.startsWith("restart=", Qt::CaseInsensitive)) {
+            needsRestart = false;
+            continue;
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
@@ -124,6 +127,7 @@ QStringList EngineProcess::remoteParameters()
         }
     }
     if (needsFw) params << ("fw=1");
+    if (needsRestart) params << ("restart=trnsport");
     return params;
 }
 
@@ -136,7 +140,6 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
     }
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
-        QString g00 = mOutPath + ".g00";
         setProcState(Proc2Pack);
         startPacking();
     } else {
@@ -151,16 +154,15 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         emit newStdChannelData("\nErrors while packing. exitCode: " + QString::number(exitCode).toUtf8());
         completed(exitCode);
     } else if (mProcState == Proc2Pack) {
-        QStringList params = remoteParameters();
-        QString gms = mOutPath + "/" + QFileInfo(mOutPath).baseName() + ".gms";
-        QString zip = mOutPath + "/" + QFileInfo(mOutPath).baseName() + ".zip";
+        QString modelName = QFileInfo(mOutPath).completeBaseName();
+        QString zip = mOutPath + QDir::separator() + modelName + ".zip";
 
-        DEB() << "TESTSTATE reached. Abort for now.";
-        completed(-1);
-//        mManager->submitJob(gms, zip, params);
-//        setProcState(Proc3Monitor);
-//        pullStatus();
+        mManager->submitJob(modelName, mNamespace, zip, remoteParameters());
+        setProcState(Proc3Monitor);
+        pullStatus();
     }
+    mSubProc->deleteLater();
+    mSubProc = nullptr;
 }
 
 void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
@@ -245,17 +247,18 @@ void EngineProcess::setNamespace(const QString &nSpace)
     mNamespace = nSpace;
 }
 
-void EngineProcess::validate()
-{
-    mManager->ping();
-}
-
 void EngineProcess::setIgnoreSslErrors()
 {
     mManager->setIgnoreSslErrors();
     if (mProcState == ProcCheck) {
         setProcState(ProcIdle);
     }
+}
+
+void EngineProcess::completed(int exitCode)
+{
+    setProcState(ProcIdle);
+    AbstractGamsProcess::completed(exitCode);
 }
 
 void EngineProcess::rePing(const QString &value)
@@ -273,15 +276,14 @@ void EngineProcess::reVersion(const QString &value)
     DEB() << "VERSION: " << value;
 }
 
-void EngineProcess::reSubmitJob(const QString &message, const QString &token)
+void EngineProcess::reCreateJob(const QString &message, const QString &token)
 {
     DEB() << "SUBMITED: " << token << " - message: " << message;
-
+    mManager->setToken(token);
     QString newLstEntry("\n--- switch to Engine .%1%2%1solve.lst[LS2:\"%3\"]\n");
     QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
     emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath).toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
-
     // monitoring starts automatically after successfull submission
     setProcState(Proc3Monitor);
 }
@@ -297,34 +299,14 @@ static const QHash<QString, JobStatusEnum> CJobStatus {
 void EngineProcess::reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode)
 {
     // TODO(JM) convert status to EngineManager::Status
-    DEB() << "Job-Status: " << status;
-//    emit newStdChannelData("\n*** Engine error-status: "+status.toUtf8()+'\n');
-//    completed(-1);
-}
-
-
-enum CompletionCodeEnum {ccInvalid, ccNormal, ccOutOfMemory, ccTimedOut, ccDiskSpace, ccServerError, ccUnknownJob, ccBadPassword};
-
-static const QHash<QString, CompletionCodeEnum> CCompletionCodes {
-    {"Invalid", ccInvalid}, {"Normal", ccNormal}, {"Out of memory", ccOutOfMemory}, {"Timed out", ccTimedOut},
-    {"Disk Space", ccDiskSpace}, {"Server error", ccServerError}, {"Unknown Job", ccUnknownJob}, {"Bad Password", ccBadPassword}
-};
-
-void EngineProcess::reGetCompletionCode(const QString &code)
-{
-    switch (CCompletionCodes.value(code, ccInvalid)) {
-    case ccNormal: {
+    EngineManager::StatusCode code = EngineManager::StatusCode(status);
+    if (code == EngineManager::Finished) {
+        DEB() << "GAMS exit code from Engine: " << gamsExitCode;
         mManager->getLog();
-
-        // TODO(JM) for large result-file this may take a while, check if engine supports progress monitoring
+        setProcState(Proc4GetResult);
         mManager->getOutputFile();
-    }   break;
-    default:
-        emit newStdChannelData("\n*** Engine error-exit: "+code.toUtf8()+'\n');
-        completed(-1);
-        setProcState(ProcIdle);
-        break;
     }
+    DEB() << "Job-Status: " << status;
 }
 
 void EngineProcess::reGetJobInfo(const QStringList &info)
@@ -337,8 +319,9 @@ void EngineProcess::reKillJob(const QString &text)
     emit newStdChannelData('\n'+text.toUtf8()+'\n');
 }
 
-void EngineProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
+void EngineProcess::reGetLog(const QByteArray &data)
 {
+    DEB() << "reGetLog";
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
         emit newStdChannelData(res);
@@ -346,18 +329,34 @@ void EngineProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
 
 void EngineProcess::reGetOutputFile(const QByteArray &data)
 {
+    disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
+    mPullTimer.stop();
+    if (data.isEmpty()) {
+        emit newStdChannelData("\nEmpty result received\n");
+        completed(-1);
+        return;
+    }
     QFile res(mOutPath+"/solver-output.zip");
+    if (res.exists() && !res.remove()) {
+        emit newStdChannelData("\nError on removing file "+res.fileName().toUtf8()+"\n");
+        completed(-1);
+    }
     if (res.open(QFile::WriteOnly)) {
         res.write(data);
         res.flush();
         res.close();
+        startUnpacking();
+        return;
     }
-    startUnpacking();
+    emit newStdChannelData("\nError writing file "+res.fileName().toUtf8()+"\n");
+    completed(-1);
 }
 
 void EngineProcess::reError(const QString &errorText)
 {
-    DEB() << "ERROR: " << errorText;
+    disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
+    mPullTimer.stop();
+    emit newStdChannelData("\nError: "+errorText.toUtf8()+"\n");
     completed(-1);
 }
 
@@ -365,6 +364,7 @@ void EngineProcess::pullStatus()
 {
     mManager->getLog();
     mManager->getJobStatus();
+    mPullTimer.start();
 }
 
 void EngineProcess::setProcState(ProcState newState)
@@ -429,13 +429,14 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
 void EngineProcess::startPacking()
 {
     GmszipProcess *subProc = new GmszipProcess(this);
-    connect(subProc, &GmszipProcess::stateChanged, this, &EngineProcess::subProcStateChanged);
+//    connect(subProc, &GmszipProcess::stateChanged, this, &EngineProcess::subProcStateChanged);
     connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmszipProcess::finished), this, &EngineProcess::packCompleted);
     connect(subProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnZipStdOut);
     connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
 
     QFileInfo path(mOutPath);
-    QFile file(mOutPath+'/'+path.baseName()+".gms");
+    QString baseName = path.completeBaseName();
+    QFile file(mOutPath+'/'+baseName+".gms");
     if (!file.open(QFile::WriteOnly)) {
         emit newStdChannelData("\n*** Can't create file: "+file.fileName().toUtf8()+'\n');
         completed(-1);
@@ -443,8 +444,14 @@ void EngineProcess::startPacking()
     }
     file.write("*dummy");
     file.close();
+    file.setFileName(mOutPath+'/'+baseName+".g00");
+    if (file.exists() && !file.remove()) {
+        emit newStdChannelData("\n*** Can't remove file from subdirectory: "+file.fileName().toUtf8()+'\n');
+        completed(-1);
+        return;
+    }
     file.setFileName(mOutPath+".g00");
-    if (!file.rename(mOutPath+'/'+path.baseName()+".g00")) {
+    if (!file.rename(mOutPath+'/'+baseName+".g00")) {
         emit newStdChannelData("\n*** Can't move file to subdirectory: "+file.fileName().toUtf8()+'\n');
         completed(-1);
         return;
@@ -452,7 +459,7 @@ void EngineProcess::startPacking()
 
     mSubProc = subProc;
     subProc->setWorkingDirectory(mOutPath);
-    subProc->setParameters(QStringList() << "input.zip" << "-i" << path.baseName()+".gms" << path.baseName()+".g00");
+    subProc->setParameters(QStringList() << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00");
     subProc->execute();
 }
 

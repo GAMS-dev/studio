@@ -20,7 +20,7 @@ class EngineManager: public QObject
 {
     Q_OBJECT
 public:
-    enum StatusCodes {
+    enum StatusCode {
         Cancelled   = -3,
         Cancelling  = -2,
         Corrupted   = -1,
@@ -29,7 +29,7 @@ public:
         Outputting  =  2,
         Finished    = 10,
     };
-    Q_ENUM(StatusCodes)
+    Q_ENUM(StatusCode)
 
 public:
     EngineManager(QObject *parent = nullptr);
@@ -42,7 +42,7 @@ public:
     void authenticate(const QString &user, const QString &password);
     void ping();
 //    void version();
-    void submitJob(QString fileName, QString zipFile, QStringList params);
+    void submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params);
     void getJobStatus();
     void killJob(bool hard, bool &ok);
     void getLog();
@@ -54,9 +54,8 @@ signals:
     void reAuth(const QString &token);
     void rePing(const QString &value);
     void reVersion(const QString &value);
-    void reSubmitJob(const QString &message, const QString &token);
+    void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 processStatus);
-    void reGetCompletionCode(const QString &value);
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
@@ -67,11 +66,7 @@ signals:
 private slots:
     void debugReceived(QString name, QVariant data);
 
-    void getJobZipSignalE(QNetworkReply::NetworkError error_type, QString error_str);
     void abortRequestsSignal();
-
-private:
-    void reCreateJob(QString message, QString token);
 
 private:
     OpenAPI::OAIAuthApi *mAuthApi;

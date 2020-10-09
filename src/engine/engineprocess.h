@@ -41,7 +41,6 @@ public:
     QProcess::ProcessState state() const override;
     void authenticate(const QString &host, const QString &user, const QString &password);
     void setNamespace(const QString &nSpace);
-    void validate();
     void setIgnoreSslErrors();
 
 signals:
@@ -51,14 +50,14 @@ signals:
     void sslValidation(QString errorMessage);
 
 protected slots:
+    void completed(int exitCode) override;
     void rePing(const QString &value);
     void reVersion(const QString &value);
-    void reSubmitJob(const QString &message, const QString &token);
+    void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode);
-    void reGetCompletionCode(const QString &code);
     void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
-    void reGetIntermediateResultsNonBlocking(const QByteArray &data);
+    void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
 
@@ -84,7 +83,6 @@ private:
     QString mPassword;
     QString mNamespace;
     QString mOutPath;
-    QString mToken;
 
     QString mJobNumber;
     QString mJobPassword;
