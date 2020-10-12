@@ -118,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
 #else
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
+    ui->actionDistraction_Free_Mode->setShortcuts({QKeySequence("Ctrl+Alt+Enter"), QKeySequence("Ctrl+Alt+Return")});
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
     ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
