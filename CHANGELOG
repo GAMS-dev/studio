@@ -4,6 +4,7 @@ Version 1.4.1 *
 - reworded Distraction Free Mode shortcut for better consistency with other shortcuts
 - added Arrow Up/Down as shortcuts to jump to search results when Results View is focussed
 - fixed Results View not always updating when navigating search results
+- fixed empty history on Welcome Page when starting Studio with no tabs open
 
 Version 1.4.0
 ==================
