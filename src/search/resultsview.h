@@ -60,6 +60,7 @@ signals:
     void updateMatchLabel(int row, int max);
 
 private slots:
+    void on_tableView_clicked(const QModelIndex &index);
     void on_tableView_doubleClicked(const QModelIndex &index);
 
 protected:

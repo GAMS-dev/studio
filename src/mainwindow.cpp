@@ -3547,7 +3547,6 @@ void MainWindow::showResults(search::SearchResultList* results)
 {
     int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
-    // only update if new results available
     searchDialog()->setResultsView(new search::ResultsView(results, this));
     connect(searchDialog()->resultsView(), &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
 

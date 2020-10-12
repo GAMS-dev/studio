@@ -2,7 +2,8 @@ Version 1.4.1 *
 ==================
 - added tooltips to search options in search dialog
 - reworded Distraction Free Mode shortcut for better consistency with other shortcuts
-
+- added Arrow Up/Down as shortcuts to jump to search results when Results View is focussed
+- fixed Results View not always updating when navigating search results
 
 Version 1.4.0
 ==================
