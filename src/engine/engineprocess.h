@@ -77,6 +77,7 @@ private:
     QByteArray convertReferences(const QByteArray &data);
     void startPacking();
     void startUnpacking();
+    QString modelName();
 
     EngineManager *mManager;
     QString mUser;

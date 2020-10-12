@@ -34,7 +34,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reAuth, this, &EngineProcess::authenticated);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
-    connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob);
+    connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
     connect(mManager, &EngineManager::reGetJobInfo, this, &EngineProcess::reGetJobInfo);
@@ -127,7 +127,7 @@ QStringList EngineProcess::remoteParameters()
         }
     }
     if (needsFw) params << ("fw=1");
-    if (needsRestart) params << ("restart=trnsport");
+    if (needsRestart) params << ("restart="+modelName());
     return params;
 }
 
@@ -154,10 +154,10 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         emit newStdChannelData("\nErrors while packing. exitCode: " + QString::number(exitCode).toUtf8());
         completed(exitCode);
     } else if (mProcState == Proc2Pack) {
-        QString modelName = QFileInfo(mOutPath).completeBaseName();
-        QString zip = mOutPath + QDir::separator() + modelName + ".zip";
+        QString modlName = modelName();
+        QString zip = mOutPath + QDir::separator() + modlName + ".zip";
 
-        mManager->submitJob(modelName, mNamespace, zip, remoteParameters());
+        mManager->submitJob(modlName, mNamespace, zip, remoteParameters());
         setProcState(Proc3Monitor);
         pullStatus();
     }
@@ -203,18 +203,22 @@ void EngineProcess::subProcStateChanged(QProcess::ProcessState newState)
 
 void EngineProcess::interrupt()
 {
-    bool ok;
-    mManager->killJob(false, ok);
-    if (!ok) AbstractGamsProcess::interrupt();
+    bool ok = !mManager->getToken().isEmpty();
+    if (ok)
+        emit mManager->syncKillJob(false);
+    else
+        AbstractGamsProcess::interrupt();
 }
 
 void EngineProcess::terminate()
 {
-    bool ok;
-    mManager->killJob(true, ok);
-    if (!ok) AbstractGamsProcess::interrupt();
-    setProcState(ProcIdle);
-    completed(-1);
+    bool ok = !mManager->getToken().isEmpty();
+    if (ok)
+        emit mManager->syncKillJob(true);
+    else
+        AbstractGamsProcess::interrupt();
+//    setProcState(ProcIdle);
+//    completed(-1);
 }
 
 void EngineProcess::setParameters(const QStringList &parameters)
@@ -278,12 +282,12 @@ void EngineProcess::reVersion(const QString &value)
 
 void EngineProcess::reCreateJob(const QString &message, const QString &token)
 {
-    DEB() << "SUBMITED: " << token << " - message: " << message;
+    Q_UNUSED(message)
     mManager->setToken(token);
-    QString newLstEntry("\n--- switch to Engine .%1%2%1solve.lst[LS2:\"%3\"]\n");
-    QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
-    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath).toUtf8());
-    // TODO(JM) store jobnumber and password for later resuming
+    QString newLstEntry("\n--- switch to Engine .%1%2%1%2.lst[LS2:\"%3\"]\nTOKEN: %4\n\n");
+    QString lstPath = mOutPath+"/"+modelName()+".lst";
+    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(modelName()).arg(lstPath).arg(token).toUtf8());
+    // TODO(JM) store token for later resuming
     // monitoring starts automatically after successfull submission
     setProcState(Proc3Monitor);
 }
@@ -306,7 +310,6 @@ void EngineProcess::reGetJobStatus(const qint32 &status, const qint32 &gamsExitC
         setProcState(Proc4GetResult);
         mManager->getOutputFile();
     }
-    DEB() << "Job-Status: " << status;
 }
 
 void EngineProcess::reGetJobInfo(const QStringList &info)
@@ -316,12 +319,12 @@ void EngineProcess::reGetJobInfo(const QStringList &info)
 
 void EngineProcess::reKillJob(const QString &text)
 {
+    DEB() << "reKill: " << text;
     emit newStdChannelData('\n'+text.toUtf8()+'\n');
 }
 
 void EngineProcess::reGetLog(const QByteArray &data)
 {
-    DEB() << "reGetLog";
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
         emit newStdChannelData(res);
@@ -354,6 +357,7 @@ void EngineProcess::reGetOutputFile(const QByteArray &data)
 
 void EngineProcess::reError(const QString &errorText)
 {
+    DEB() << errorText;
     disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
     mPullTimer.stop();
     emit newStdChannelData("\nError: "+errorText.toUtf8()+"\n");
@@ -435,7 +439,7 @@ void EngineProcess::startPacking()
     connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
 
     QFileInfo path(mOutPath);
-    QString baseName = path.completeBaseName();
+    QString baseName = modelName();
     QFile file(mOutPath+'/'+baseName+".gms");
     if (!file.open(QFile::WriteOnly)) {
         emit newStdChannelData("\n*** Can't create file: "+file.fileName().toUtf8()+'\n');
@@ -475,6 +479,11 @@ void EngineProcess::startUnpacking()
     subProc->setWorkingDirectory(mOutPath);
     subProc->setParameters(QStringList() << "-o" << "solver-output.zip");
     subProc->execute();
+}
+
+QString EngineProcess::modelName()
+{
+    return QFileInfo(mOutPath).completeBaseName();
 }
 
 } // namespace engine

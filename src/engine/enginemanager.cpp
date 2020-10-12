@@ -59,7 +59,7 @@ EngineManager::EngineManager(QObject* parent)
     });
 
     connect(mJobsApi, &OAIJobsApi::killJobSignal, [this](OAIMessage summary) {
-        reKillJob(summary.getMessage());
+        emit reKillJob(summary.getMessage());
     });
     connect(mJobsApi, &OAIJobsApi::killJobSignalE,
             [this](OAIMessage, QNetworkReply::NetworkError, QString error_str) {
@@ -68,14 +68,15 @@ EngineManager::EngineManager(QObject* parent)
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, [this](OAILog_piece summary) {
         // -> jobs/{token}/unread-logs
-        reGetLog(summary.getMessage().toUtf8());
+        emit reGetLog(summary.getMessage().toUtf8());
     });
-    connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
-            [this](OAILog_piece, QNetworkReply::NetworkError, QString error_str) {
-        emit reError("From popJobLogs: "+error_str);
-    });
+//    connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
+//            [this](OAILog_piece, QNetworkReply::NetworkError, QString error_str) {
+//        emit reGetLog(error_str.toUtf8());
+//    });
 
     connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
+    connect(this, &EngineManager::syncKillJob, this, &EngineManager::killJob, Qt::QueuedConnection);
 
 }
 
@@ -131,16 +132,16 @@ void EngineManager::getJobStatus()
         mJobsApi->getJob(mToken, "status process_status");
 }
 
-void EngineManager::killJob(bool hard, bool &ok)
+void EngineManager::killJob(bool hard)
 {
-    ok = !mToken.isEmpty();
-    if (ok)
+    bool ok = !mToken.isEmpty();
+    if (ok) {
         mJobsApi->killJob(mToken, hard);
+    }
 }
 
 void EngineManager::getLog()
 {
-    DEB() << "requesting log";
     if (!mToken.isEmpty()) {
         mJobsApi->popJobLogs(mToken);
     }

@@ -44,13 +44,14 @@ public:
 //    void version();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params);
     void getJobStatus();
-    void killJob(bool hard, bool &ok);
     void getLog();
     void getOutputFile();
 
     void setDebug(bool debug = true);
 
 signals:
+    void syncKillJob(bool hard);
+
     void reAuth(const QString &token);
     void rePing(const QString &value);
     void reVersion(const QString &value);
@@ -64,6 +65,7 @@ signals:
     void sslErrors(const QStringList &errors);
 
 private slots:
+    void killJob(bool hard);
     void debugReceived(QString name, QVariant data);
 
     void abortRequestsSignal();
