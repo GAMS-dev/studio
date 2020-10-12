@@ -67,10 +67,9 @@ void WelcomePage::historyChanged()
     int j = 0;
     for (int i = 0; i < Settings::settings()->toInt(skHistorySize); i++) {
         if (i >= history.size()) break;
-
-        QFileInfo file(history.at(i));
         if (history.at(i) == "") continue;
 
+        QFileInfo file(history.at(i));
         if (file.exists()) {
             tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
                                   + "<small>" + file.filePath() + "</small>", file.filePath(), this);

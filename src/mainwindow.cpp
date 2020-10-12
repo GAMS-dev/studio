@@ -238,7 +238,12 @@ MainWindow::MainWindow(QWidget *parent)
     NavigationHistoryLocator::provide(mNavigationHistory);
     connect(mNavigationHistory, &NavigationHistory::historyChanged, this, &MainWindow::updateCursorHistoryAvailability);
 
-    initTabs();
+    initWelcomePage();
+
+    QPalette pal = ui->projectView->palette();
+    pal.setColor(QPalette::Highlight, Qt::transparent);
+    ui->projectView->setPalette(pal);
+
     mNavigationHistory->startRecord();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
@@ -290,12 +295,8 @@ void MainWindow::setInitialFiles(QStringList files)
     mInitialFiles = files;
 }
 
-void MainWindow::initTabs()
+void MainWindow::initWelcomePage()
 {
-    QPalette pal = ui->projectView->palette();
-    pal.setColor(QPalette::Highlight, Qt::transparent);
-    ui->projectView->setPalette(pal);
-
     mWp = new WelcomePage(this);
     connect(mWp, &WelcomePage::openFilePath, this, &MainWindow::openFilePath);
     if (Settings::settings()->toBool(skSkipWelcomePage))
@@ -2955,6 +2956,7 @@ void MainWindow::openInitialFiles()
     watchProjectTree();
     ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
+    historyChanged();
 }
 
 void MainWindow::on_actionRun_triggered()

@@ -359,7 +359,7 @@ protected:
     void initGamsStandardPaths();
 
 private:
-    void initTabs();
+    void initWelcomePage();
     void initIcons();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId);
