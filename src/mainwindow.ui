@@ -1468,9 +1468,6 @@
    <property name="toolTip">
     <string>Makes room to concentrate on your work</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+Alt+Return</string>
-   </property>
   </action>
   <action name="actionFoldAllTextBlocks">
    <property name="text">

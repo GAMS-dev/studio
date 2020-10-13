@@ -118,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
 #else
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
+    ui->actionDistraction_Free_Mode->setShortcuts({QKeySequence("Ctrl+Alt+Enter"), QKeySequence("Ctrl+Alt+Return")});
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
     ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
@@ -237,7 +238,12 @@ MainWindow::MainWindow(QWidget *parent)
     NavigationHistoryLocator::provide(mNavigationHistory);
     connect(mNavigationHistory, &NavigationHistory::historyChanged, this, &MainWindow::updateCursorHistoryAvailability);
 
-    initTabs();
+    initWelcomePage();
+
+    QPalette pal = ui->projectView->palette();
+    pal.setColor(QPalette::Highlight, Qt::transparent);
+    ui->projectView->setPalette(pal);
+
     mNavigationHistory->startRecord();
     QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
@@ -289,12 +295,8 @@ void MainWindow::setInitialFiles(QStringList files)
     mInitialFiles = files;
 }
 
-void MainWindow::initTabs()
+void MainWindow::initWelcomePage()
 {
-    QPalette pal = ui->projectView->palette();
-    pal.setColor(QPalette::Highlight, Qt::transparent);
-    ui->projectView->setPalette(pal);
-
     mWp = new WelcomePage(this);
     connect(mWp, &WelcomePage::openFilePath, this, &MainWindow::openFilePath);
     if (Settings::settings()->toBool(skSkipWelcomePage))
@@ -2997,6 +2999,7 @@ void MainWindow::openInitialFiles()
     watchProjectTree();
     ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
+    historyChanged();
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -3679,7 +3682,6 @@ void MainWindow::showResults(search::SearchResultList* results)
 {
     int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
-    // only update if new results available
     searchDialog()->setResultsView(new search::ResultsView(results, this));
     connect(searchDialog()->resultsView(), &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
 

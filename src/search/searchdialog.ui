@@ -76,6 +76,9 @@
        <property name="enabled">
         <bool>true</bool>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked the search ignores partial matches. A word can contain letters and numbers, while all other characters are considered a word boundaries. A notetable exception is the dollar sign ($) which is also treated as part of the word to better distinguish GAMS dollar commands from other matches.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Whole Words</string>
        </property>
@@ -89,6 +92,9 @@
        <property name="enabled">
         <bool>true</bool>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked the search respects case sensitivity.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Case Sensitivity</string>
        </property>
@@ -101,6 +107,9 @@
       <widget class="QCheckBox" name="cb_regex">
        <property name="enabled">
         <bool>true</bool>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activates the usage of regular expressions. Regular expressions are a method of describing a pattern to search for instead of a literal search term. Further information can be found on the internet:&lt;br/&gt;www.regular-expressions.info&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Use Regex</string>

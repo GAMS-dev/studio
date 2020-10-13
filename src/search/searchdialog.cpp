@@ -450,7 +450,6 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
 ///
 /// \brief SearchDialog::selectNextMatch steps through words in a document
 /// \param direction
-/// \param second is second time entering this function, to avoid too deep recursion
 ///
 void SearchDialog::selectNextMatch(SearchDirection direction)
 {
