@@ -269,7 +269,7 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked the search ignores partial matches. A word can contain letters and numbers, while all other characters are considered a word boundaries. A notetable exception is the dollar sign ($) which is also treated as part of the word to better distinguish GAMS dollar commands from other matches.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked the search ignores partial matches. A word can contain letters and numbers, while all other characters are considered a word boundaries.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Whole Words</string>
