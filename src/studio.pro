@@ -56,7 +56,7 @@ macx {
     QMAKE_INFO_PLIST = ../platform/macos/info.plist
 }
 unix {
-    LIBS += -ldl
+    LIBS += -ldl -lpthread
 }
 win32 {
     RC_FILE += ../platform/windows/studio.rc
