@@ -1,17 +1,14 @@
-Version 1.4.1 *
-==================
-- added tooltips to search options in search dialog
-- reworded Distraction Free Mode shortcut for better consistency with other shortcuts
-- added Arrow Up/Down as shortcuts to jump to search results when Results View is focussed
-- fixed Results View not always updating when navigating search results
-- fixed empty history on Welcome Page when starting Studio with no tabs open
-
-Version 1.4.0
+Version 1.4.0 *
 ==================
 - highlight the subcommands of execute, $call, and $hiddencall
 - added jump to included files by context menu, F2 shortcut, or holding `Ctrl` and click on the filename.
 - fixed cut off text in About GAMS dialog
 - fixed crash if files are modified in the background while a dialog is open
+- added tooltips to search options in search dialog
+- reworded Distraction Free Mode shortcut for better consistency with other shortcuts
+- added Arrow Up/Down as shortcuts to jump to search results when Results View is focussed
+- fixed Results View not always updating when navigating search results
+- fixed empty history on Welcome Page when starting Studio with no tabs open
 - natively implemented NEOS processing, enabling to kill submitted active jobs
 
 Version 1.3.6  
