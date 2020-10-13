@@ -306,12 +306,20 @@ void MainWindow::initWelcomePage()
 
 void MainWindow::initEnvironment()
 {
-    auto environment = QProcessEnvironment::systemEnvironment();
-    auto gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
-    QString pathEnv(gamsDir + QDir::listSeparator()
-                    + gamsDir + QDir::separator() + "gbin" + QDir::listSeparator()
-                    + qgetenv("PATH"));
-    qputenv("PATH", pathEnv.toLatin1());
+    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+    QString gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
+    QByteArray gamsArr = (gamsDir + QDir::listSeparator() + gamsDir + QDir::separator() + "gbin").toLatin1();
+
+    QByteArray curPath = qgetenv("PATH");
+    qputenv("PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+
+#ifndef _WIN32
+    curPath = qgetenv("LD_LIBRARY_PATH");
+    qputenv("LD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+
+    curPath = qgetenv("DYLD_LIBRARY_PATH");
+    qputenv("DYLD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+#endif
 }
 
 void MainWindow::initIcons()
