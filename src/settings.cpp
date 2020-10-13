@@ -335,6 +335,13 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skSoAddEOLComment, scUser, {"solverOption","addEOLComment"}, false);
     safelyAdd(res, skSoDeleteCommentsAbove, scUser, {"solverOption","deleteCommentsAbove"}, false);
 
+    // GAMS Engine settings
+    safelyAdd(res, skEngineHost, scSys, {"engine","page"}, "miro.gams.com");
+    safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");
+    safelyAdd(res, skEngineUser, scSys, {"engine","user"}, "");
+    safelyAdd(res, skEngineUserToken, scSys, {"engine","userToken"}, "");
+    safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);
+
     // Check if all enum values of SettingsKey have been assigned
     for (int i = 0 ; i < skSettingsKeyCount ; ++i) {
         if (!res.contains(static_cast<SettingsKey>(i))) {

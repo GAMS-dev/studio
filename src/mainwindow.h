@@ -456,6 +456,7 @@ private:
     QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
     bool mNeosLong = false;
+    QString mEngineTempPassword;
 };
 
 }

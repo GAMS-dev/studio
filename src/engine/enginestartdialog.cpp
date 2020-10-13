@@ -1,5 +1,6 @@
 #include "enginestartdialog.h"
 #include "ui_enginestartdialog.h"
+#include "settings.h"
 
 namespace gams {
 namespace studio {
@@ -11,12 +12,16 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
-#ifdef _DEBUG
-    ui->edHost->setText("miro.gams.com");
-    ui->edNamespace->setText("studiotests");
-    ui->edUser->setText("studiotests");
-    ui->edPassword->setText("rercud-qinRa9-wagbew");
-#endif
+    ui->edHost->setText(Settings::settings()->toString(SettingsKey::skEngineHost));
+    ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
+    ui->edUser->setText(Settings::settings()->toString(SettingsKey::skEngineUser));
+
+//#ifdef _DEBUG
+//    ui->edHost->setText("miro.gams.com");
+//    ui->edNamespace->setText("studiotests");
+//    ui->edUser->setText("studiotests");
+//    ui->edPassword->setText("rercud-qinRa9-wagbew");
+//#endif
 }
 
 EngineStartDialog::~EngineStartDialog()
@@ -42,6 +47,11 @@ QString EngineStartDialog::user() const
 QString EngineStartDialog::password() const
 {
     return ui->edPassword->text();
+}
+
+void EngineStartDialog::setLastPassword(QString lastPassword)
+{
+    ui->edPassword->setText(lastPassword);
 }
 
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const

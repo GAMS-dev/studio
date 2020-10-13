@@ -25,6 +25,7 @@ public:
     QString nSpace() const;
     QString user() const;
     QString password() const;
+    void setLastPassword(QString lastPassword);
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 

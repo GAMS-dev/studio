@@ -17,7 +17,7 @@ EngineManager::EngineManager(QObject* parent)
 {
     mAuthApi->setScheme("https");
     mAuthApi->setPort(443);
-    mAuthApi->setBasePath("/engine/api/studiotests");
+    mAuthApi->setBasePath("/engine/api");
     connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignal,
             [this](OAIModel_auth_token summary) {
         emit reAuth(summary.getToken());
@@ -70,10 +70,11 @@ EngineManager::EngineManager(QObject* parent)
         // -> jobs/{token}/unread-logs
         emit reGetLog(summary.getMessage().toUtf8());
     });
-//    connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
-//            [this](OAILog_piece, QNetworkReply::NetworkError, QString error_str) {
-//        emit reGetLog(error_str.toUtf8());
-//    });
+    connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
+            [this](OAILog_piece, QNetworkReply::NetworkError error_type, QString error_str) {
+        if (error_type != QNetworkReply::ServiceUnavailableError)
+            emit reGetLog(error_str.toUtf8());
+    });
 
     connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
     connect(this, &EngineManager::syncKillJob, this, &EngineManager::killJob, Qt::QueuedConnection);

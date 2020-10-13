@@ -3132,6 +3132,7 @@ void MainWindow::showEngineStartDialog()
 {
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
     connect(dialog, &engine::EngineStartDialog::buttonClicked, this, &MainWindow::engineDialogDecision);
+    dialog->setLastPassword(mEngineTempPassword);
     dialog->setModal(true);
     dialog->open();
 }
@@ -3140,7 +3141,10 @@ void MainWindow::engineDialogDecision(QAbstractButton *button)
 {
     engine::EngineStartDialog *dialog = qobject_cast<engine::EngineStartDialog*>(sender());
     if (dialog && dialog->standardButton(button) == QDialogButtonBox::Ok) {
-        // TODO(JM) store entries
+        Settings::settings()->setString(SettingsKey::skEngineHost, dialog->host());
+        Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
+        Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
+        mEngineTempPassword = dialog->password();
 //        mUser = "studiotests";
 //        mPassword = "rercud-qinRa9-wagbew";
         createEngineProcess(dialog->host(), dialog->nSpace(), dialog->user(), dialog->password());
@@ -3161,6 +3165,7 @@ void MainWindow::createEngineProcess(QString host, QString nSpace, QString user,
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
     engineProcess->setNamespace(nSpace);
     engineProcess->authenticate(host, user, password);
+    // TODO(JM) create token for the user and store it (if the user allowed it)
     runGroup->setProcess(std::move(engineProcess));
 //    if (!mIgnoreSslErrors) {
 //        engine::EngineProcess *enginePtr = static_cast<engine::EngineProcess*>(runGroup->process());
