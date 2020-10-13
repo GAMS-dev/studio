@@ -161,12 +161,14 @@ bool Application::event(QEvent *event)
         for (auto window : allWindows()) {
             if (!window->isVisible())
                 continue;
-#ifdef __APPLE__
-            if (window->windowState() & Qt::WindowMinimized) {
+            if (window->windowState() & Qt::WindowMinimized
+#ifndef __APPLE__
+                    || true
+#endif
+                    ) {
                 window->show();
                 window->raise();
             }
-#endif
         }
     }
     return QApplication::event(event);
