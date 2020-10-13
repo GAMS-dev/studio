@@ -23,6 +23,7 @@
 #include "searchresultlist.h"
 #include "result.h"
 #include "common.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
@@ -71,9 +72,16 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
     if (!node) EXCEPT() << "File not found: " << r.filepath();
 
     // jump to line
-    node->file()->jumpTo(node->runGroupId(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+    node->file()->jumpTo(node->runGroupId(), focus, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     emit updateMatchLabel(selectedRow+1, mResultList.size());
-    if (!focus) setFocus();
+    selectItem(selectedRow);
+    if (!focus) setFocus(); // focus stays in results view
+}
+
+void ResultsView::on_tableView_clicked(const QModelIndex &index)
+{
+    Q_UNUSED(index)
+    setFocus();
 }
 
 void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
@@ -87,10 +95,12 @@ void ResultsView::keyPressEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
         e->accept();
-    } else if ((e->modifiers() & Qt::ShiftModifier) && (e->key() == Qt::Key_F3)) {
+    } else if (e == Hotkey::SearchFindPrev || e->key() == Qt::Key_Up) {
         jumpToResult(selectNextItem(true), false);
-    } else if (e->key() == Qt::Key_F3) {
+        e->accept();
+    } else if (e == Hotkey::SearchFindNext || e->key() == Qt::Key_Down) {
         jumpToResult(selectNextItem(), false);
+        e->accept();
     }
     QWidget::keyPressEvent(e);
 }
@@ -107,7 +117,6 @@ int ResultsView::selectNextItem(bool backwards)
     else if (newIndex > mResultList.size()-1)
         newIndex = 0;
 
-    selectItem(newIndex);
     return newIndex;
 }
 

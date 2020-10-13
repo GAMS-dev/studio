@@ -269,19 +269,19 @@ void TestCPLEXOption::testOptionDoubleType_data()
     QTest::addColumn<double>("defaultValue");
 
     QTest::newRow("barepcomp")   << "barepcomp"     << true  << 1e-012 << 1e+075 << 1e-008;
-    QTest::newRow("bttol")       << "bttol"         << true  << 0.0  << 1.0    << 0.9999;
-    QTest::newRow("cutsfactor")  << "cutsfactor"    << true  << -1.0 << 1e+075 << -1.0;
+    QTest::newRow("bttol")       << "bttol"         << true  << 0.0  << 1.0      << 1.0;
+    QTest::newRow("cutsfactor")  << "cutsfactor"    << true  << -1.0 << 1e+075   << -1.0;
     QTest::newRow("divfltlo")    << "divfltlo"      << true  << gams::studio::option::OPTION_VALUE_MINDOUBLE << gams::studio::option::OPTION_VALUE_MAXDOUBLE << gams::studio::option::OPTION_VALUE_MINDOUBLE;
     QTest::newRow("epgap")       << "epgap"         << true  << 0.0  << 1.0    << 0.0001;
     QTest::newRow(".feaspref")   << ".feaspref"     << true  << 0.0  << 1e+020 << 1.0;
-    QTest::newRow("miptracetime") << "miptracetime" << true  << 0.0  << gams::studio::option::OPTION_VALUE_MAXDOUBLE  << 1.0;
+    QTest::newRow("miptracetime") << "miptracetime" << false  << 0.0  << gams::studio::option::OPTION_VALUE_MAXDOUBLE  << 1.0;
     QTest::newRow("neteprhs")    << "neteprhs"    << true  << 1e-011 << 0.1 <<  1e-006;
     QTest::newRow("objllim")     << "objllim"     << true  << gams::studio::option::OPTION_VALUE_MINDOUBLE << gams::studio::option::OPTION_VALUE_MAXDOUBLE << -1e+075;
-    QTest::newRow("polishafterepgap")  << "polishafterepgap" << true << 0.0 << 1.0    << 0.0;
-    QTest::newRow("rampuptimelimit")   << "rampuptimelimit"  << true << 0.0 << 1e+075 << 1e+075;
-    QTest::newRow("solnpoolgap")       << "solnpoolgap"      << true << 0.0 << 1e+075 << 1e+075;
-    QTest::newRow("tuningdettilim")    << "tuningdettilim"   << true << 1.0 << 1e+075 << 1e+007;
-    QTest::newRow("workmem")           << "workmem"          << true << 0.0 << 1e+075 << 128.0;
+    QTest::newRow("polishafterepgap")  << "polishafterepgap" << true << 0.0 << 1.0      << 0.0;
+    QTest::newRow("rampuptimelimit")   << "rampuptimelimit"  << true << 0.0 << 1e+075   << 1e+075;
+    QTest::newRow("solnpoolgap")       << "solnpoolgap"      << true << 0.0 << 1e+075   << 1e+075;
+    QTest::newRow("tuningdettilim")    << "tuningdettilim"   << true << 0.0 << 1.0e+75  << 1.0e+75;
+    QTest::newRow("workmem")           << "workmem"          << true << 0.0 << 1.0e+75  << 2048.0;
 }
 
 void TestCPLEXOption::testOptionDoubleType()
@@ -308,9 +308,8 @@ void TestCPLEXOption::testOptionIntegerType_data()
     QTest::addColumn<int>("defaultValue");
 
     QTest::newRow("mipstart")          << "mipstart"          << true  << 0  << 6                                 << 0;
-    QTest::newRow("miptracenode")      << "miptracenode"      << true  << 0  << gams::studio::option::OPTION_VALUE_MAXINT << 100;
     QTest::newRow("perlim")            << "perlim"            << true  << 0  << 2100000000                        << 0;
-    QTest::newRow("polishafterintsol") << "polishafterintsol" << true  << 0  << 2100000000                        << 2100000000;
+    QTest::newRow("polishafterintsol") << "polishafterintsol" << true  << 1  << 2147483647                        << 2147483647;
     QTest::newRow("populatelim")       << "populatelim"       << true  << 1  << 2100000000                        << 20;
     QTest::newRow("prepass")           << "prepass"           << true  << -1 << 2100000000                        << -1;
 }
@@ -413,7 +412,6 @@ void TestCPLEXOption::testHiddenOption_data()
     QTest::addColumn<QString>("description");
     QTest::addColumn<QString>("optionType");
 
-    QTest::newRow("fixoptfile")    << "fixoptfile"   << true  << "name of option file which is read just before solving the fixed problem"  << "string";
     QTest::newRow("dtprefix")      << "dtprefix"     << true  << "prefix for the GDX file for the open nodes"                               << "string";
     QTest::newRow("iafile")        << "iafile"       << true  << "options for interactive option setting come from a file"                  << "string";
     QTest::newRow("secret")        << "secret"       << true  << "pass on secret CPLEX options"                                             << "strlist";

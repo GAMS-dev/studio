@@ -140,7 +140,7 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
 
     QTest::newRow("COINBONMIN")  << "COINBONMIN"  << "optbonmin.def"   << true;
     QTest::newRow("COINCBC")     << "COINCBC"     << "optcbc.def"      << true;
-    QTest::newRow("COINCOUENNE") << "COINCOUENNE" << "optcouenne.def"  << true;
+    QTest::newRow("COINCOUENNE") << "COINCOUENNE" << ""                << false;
     QTest::newRow("COINIPOPT")   << "COINIPOPT"   << "optipopt.def"    << true;
     QTest::newRow("COINSCIP")    << "COINSCIP"    << "optcoinscip.def" << true;
 
@@ -153,11 +153,11 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
 
     QTest::newRow("CONVERTD") << "CONVERTD"  << "optconvert.def"   << true;
 
-    QTest::newRow("COUENNE")  << "COUENNE"   << "optcouenne.def"   << false;
+    QTest::newRow("COUENNE")  << "COUENNE"   << ""                 << false;
     QTest::newRow("CPLEX")    << "CPLEX"     << "optcplex.def"     << false;
     QTest::newRow("cPleX")    << "cPleX"     << "optcplex.def"     << false;
 
-    QTest::newRow("CPLEXD")   << "CPLEXD"    << "optcplex.def"     << true;
+    QTest::newRow("CPLEXD")   << "CPLEXD"    << "optcplexd.def"    << true;
 
     QTest::newRow("DE")       << "DE"        << "optde.def"        << false;
     QTest::newRow("DECIS")    << "DECIS"     << "optdecis.def"     << false;
@@ -227,7 +227,7 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("SCIP")         << "SCIP"           << "optscip.def"          << false;
     QTest::newRow("SELKIE")       << "SELKIE"         << "optselkie.def"        << false;
     QTest::newRow("SNOPT")        << "SNOPT"          << "optsnopt.def"         << false;
-    QTest::newRow("SOLVEENGINE")  << "SOLVEENGINE"    << "optsolveengine.def"   << false;
+    QTest::newRow("SOLVEENGINE")  << "SOLVEENGINE"    << ""                     << false;
     QTest::newRow("SOPLEX")       << "SOPLEX"         << "optsoplex.def"        << false;
 #ifdef __APPLE__
     QTest::newRow("XA")           << "XA"             << ""                    << false;

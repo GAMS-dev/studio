@@ -39,7 +39,6 @@ class MainWindow;
 class WelcomePage : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit WelcomePage(MainWindow *parent = nullptr);
     ~WelcomePage();
@@ -67,7 +66,6 @@ protected:
 
 private:
     Ui::WelcomePage *ui;
-    QList<QLabel*> mFileHistory;
     MainWindow *mMain;
     bool mOutputVisible;
 };

@@ -364,7 +364,7 @@ protected:
     void initGamsStandardPaths();
 
 private:
-    void initTabs();
+    void initWelcomePage();
     void initIcons();
     void initEnvironment();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
