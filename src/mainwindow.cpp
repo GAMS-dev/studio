@@ -316,7 +316,8 @@ void MainWindow::initEnvironment()
 #ifndef _WIN32
     curPath = qgetenv("LD_LIBRARY_PATH");
     qputenv("LD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
-
+#endif
+#ifdef __APPLE__
     curPath = qgetenv("DYLD_LIBRARY_PATH");
     qputenv("DYLD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
 #endif
