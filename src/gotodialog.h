@@ -34,9 +34,14 @@ class GoToDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit GoToDialog(QWidget *parent = nullptr, int maxLines = 1000000, bool wait = false);
+    explicit GoToDialog(QWidget *parent = nullptr, int maxLines = 1000000);
     ~GoToDialog();
     int lineNumber() const;
+
+    void maxLineCount(int maxLines);
+
+public slots:
+    void open() override;
 
 private slots:
     void on_goToButton_clicked();
@@ -45,7 +50,6 @@ private:
     Ui::GoToDialog *ui;
     int mLineNumber = -1;
     int mMaxLines = -1;
-    bool mWait = false;
 };
 
 }
