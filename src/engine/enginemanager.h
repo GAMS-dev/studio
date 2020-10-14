@@ -77,6 +77,7 @@ private:
     QString mUser;
     QString mPassword;
     QString mToken;
+    bool mQueueFinished = false;
 };
 
 } // namespace engine

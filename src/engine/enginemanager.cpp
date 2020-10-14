@@ -13,7 +13,7 @@ namespace studio {
 namespace engine {
 
 EngineManager::EngineManager(QObject* parent)
-    : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mJobsApi(new OAIJobsApi())
+    : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mJobsApi(new OAIJobsApi()), mQueueFinished(false)
 {
 //    mAuthApi->setScheme("https");
 //    mAuthApi->setPort(443);
@@ -67,8 +67,10 @@ EngineManager::EngineManager(QObject* parent)
     });
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, [this](OAILog_piece summary) {
-        // -> jobs/{token}/unread-logs
-        emit reGetLog(summary.getMessage().toUtf8());
+        if (!mQueueFinished) {
+            mQueueFinished = summary.isQueueFinished();
+            emit reGetLog(summary.getMessage().toUtf8());
+        }
     });
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
             [this](OAILog_piece, QNetworkReply::NetworkError error_type, QString error_str) {
