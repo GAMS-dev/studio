@@ -9,6 +9,7 @@ Version 1.4.0 *
 - added Arrow Up/Down as shortcuts to jump to search results when Results View is focussed
 - fixed Results View not always updating when navigating search results
 - fixed empty history on Welcome Page when starting Studio with no tabs open
+- natively implemented NEOS processing, enabling to kill submitted active jobs
 
 Version 1.3.6  
 ==================

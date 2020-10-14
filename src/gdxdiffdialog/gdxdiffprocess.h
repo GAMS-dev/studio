@@ -18,7 +18,7 @@
 #ifndef GDXDIFFPROCESS_H
 #define GDXDIFFPROCESS_H
 
-#include "abstractprocess.h"
+#include "process/abstractprocess.h"
 
 namespace gams {
 namespace studio {

@@ -25,7 +25,7 @@
 #include "filemetarepo.h"
 #include "exception.h"
 #include "editors/systemlogedit.h"
-#include "gamsprocess.h"
+#include "process.h"
 #include "commonpaths.h"
 #include "logger.h"
 #include "syntax.h"
@@ -211,10 +211,10 @@ ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* r
 
 void ProjectRunGroupNode::setProcess(std::unique_ptr<AbstractProcess> process)
 {
+    if (mGamsProcess == process) return;
     mGamsProcess->disconnect();
     mGamsProcess = std::move(process);
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this,
-            &ProjectRunGroupNode::onGamsProcessStateChanged);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectRunGroupNode::onGamsProcessStateChanged);
 }
 
 AbstractProcess *ProjectRunGroupNode::process() const

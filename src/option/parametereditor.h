@@ -135,6 +135,7 @@ private:
 
     Ui::ParameterEditor *ui;
     QDockWidget *mExtendedEditor = nullptr;
+    bool mHasSSL = false;
 
     QAction* actionRun;
     QAction* actionRun_with_GDX_Creation;

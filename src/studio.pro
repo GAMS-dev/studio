@@ -75,7 +75,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
     colors/palettemanager.cpp \
@@ -116,8 +115,6 @@ SOURCES += \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
     fileeventhandler.cpp \
-    gamslibprocess.cpp  \
-    gamsprocess.cpp     \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
@@ -155,8 +152,10 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    neos/httpmanager.cpp \
+    neos/neosmanager.cpp \
     neos/neosprocess.cpp \
-#    neos/neosxmlrpc.cpp \
+    neos/xmlrpc.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
     numerics/dtoaLoc.c \
@@ -184,7 +183,11 @@ SOURCES += \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
+    process/abstractprocess.cpp \
     process/gamsinstprocess.cpp \
+    process/gamslibprocess.cpp  \
+    process/gamsprocess.cpp     \
+    process/gmsunzipprocess.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -229,7 +232,6 @@ SOURCES += \
     wplabel.cpp
 
 HEADERS += \
-    abstractprocess.h \
     application.h \
     autosavehandler.h \
     colors/palettemanager.h \
@@ -273,8 +275,6 @@ HEADERS += \
     file/recentdata.h \
     file/treeitemdelegate.h \
     fileeventhandler.h \
-    gamslibprocess.h \
-    gamsprocess.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \
@@ -311,8 +311,10 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    neos/httpmanager.h \
+    neos/neosmanager.h \
     neos/neosprocess.h \
-#    neos/neosxmlrpc.h \
+    neos/xmlrpc.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
     numerics/dtoaLoc.h \
@@ -340,7 +342,12 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
+    process.h \
+    process/abstractprocess.h \
     process/gamsinstprocess.h \
+    process/gamslibprocess.h \
+    process/gamsprocess.h \
+    process/gmsunzipprocess.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \

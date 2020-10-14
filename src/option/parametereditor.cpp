@@ -177,18 +177,12 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     bool gdxParam = false;
     bool actParam = false;
-    bool xsaveParam = false;
-    bool fwParam = false;
     for (option::OptionItem item : getOptionTokenizer()->tokenize( commandLineStr)) {
         if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
         if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
             (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
             actParam = true;
-        if (QString::compare(item.key, "xsave", Qt::CaseInsensitive) == 0)
-            xsaveParam = true;
-        if (QString::compare(item.key, "fw", Qt::CaseInsensitive) == 0)
-            fwParam = true;
     }
 
     if (state == RunActionState::RunWithGDXCreation) {
@@ -205,15 +199,9 @@ QString ParameterEditor::on_runAction(RunActionState state)
         ui->gamsRunToolButton->setDefaultAction( actionCompile_with_GDX_Creation );
 
     } else if (state == RunActionState::RunNeos) {
-        if (!xsaveParam) commandLineStr.append("XSAVE=temp ");
-        if (!actParam) commandLineStr.append("ACTION=C");
-        if (!fwParam) commandLineStr.append("FW=1");
         ui->gamsRunToolButton->setDefaultAction( actionRunNeos );
 
     } else if (state == RunActionState::RunNeosL) {
-        if (!xsaveParam) commandLineStr.append("XSAVE=temp ");
-        if (!actParam) commandLineStr.append("ACTION=C");
-        if (!fwParam) commandLineStr.append("FW=1");
         ui->gamsRunToolButton->setDefaultAction( actionRunNeosL );
 
     } else {
@@ -1002,6 +990,7 @@ void ParameterEditor::resizeColumnsToContents()
 void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX,
                                          QAction *aRunNeos, QAction *aRunNeosL)
 {
+    mHasSSL = QSslSocket::supportsSsl();
     actionRun = aRun;
     actionCompile = aCompile;
     actionRun_with_GDX_Creation = aRunGDX;
@@ -1050,8 +1039,8 @@ void ParameterEditor::setRunActionsEnabled(bool enable)
     actionRun_with_GDX_Creation->setEnabled(enable);
     actionCompile->setEnabled(enable);
     actionCompile_with_GDX_Creation->setEnabled(enable);
-    actionRunNeos->setEnabled(enable);
-    actionRunNeosL->setEnabled(enable);
+    actionRunNeos->setEnabled(enable && mHasSSL);
+    actionRunNeosL->setEnabled(enable && mHasSSL);
     ui->gamsRunToolButton->menu()->setEnabled(enable);
 }
 

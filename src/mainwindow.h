@@ -37,6 +37,7 @@
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
 #include "editors/navigationhistory.h"
+#include "neos/neosprocess.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -190,6 +191,7 @@ private slots:
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
+    void neosProgress(AbstractProcess *proc, neos::NeosState progress);
     void closeNodeConditionally(ProjectFileNode *node);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
@@ -340,6 +342,9 @@ private slots:
 
     void neosExecute();
     void showNeosConfirmDialog();
+    void createNeosProcess();
+    void sslValidation(QString errorMessage);
+    void sslUserDecision(QAbstractButton *button);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -361,6 +366,7 @@ protected:
 private:
     void initWelcomePage();
     void initIcons();
+    void initEnvironment();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId);
     int fileDeletedExtern(FileId fileId);
@@ -436,6 +442,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
+    bool mIgnoreSslErrors = false;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

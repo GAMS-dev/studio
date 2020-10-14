@@ -24,7 +24,7 @@
 #include <QProcess>
 #include <QMutex>
 
-#include "common.h"
+#include "../common.h"
 
 namespace gams {
 namespace studio {
@@ -53,7 +53,7 @@ public:
     }
 
     QStringList parameters() const;
-    void setParameters(const QStringList &parameters);
+    virtual void setParameters(const QStringList &parameters);
 
     virtual QStringList defaultParameters() const {
         return QStringList();
@@ -68,7 +68,7 @@ public:
     int exitCode() const;
 
 signals:
-    void finished(NodeId origin, int exitCode);
+    void finished(int nodeId, int exitCode); // translated NodeId to int and back to get it through queued connection
     void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
     void newProcessCall(const QString &text, const QString &call);
@@ -80,7 +80,6 @@ protected slots:
 
 protected:
     virtual QString nativeAppPath();
-
     inline QString appCall(const QString &app, const QStringList &args) {
         return app + " " + args.join(" ");
     }

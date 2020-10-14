@@ -32,8 +32,7 @@
 #include "modeldialog/modeldialog.h"
 #include "exception.h"
 #include "commonpaths.h"
-#include "gamsprocess.h"
-#include "gamslibprocess.h"
+#include "process.h"
 #include "lxiviewer/lxiviewer.h"
 #include "gdxviewer/gdxviewer.h"
 #include "editors/sysloglocator.h"
@@ -60,7 +59,6 @@
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
 #include "miro/miromodelassemblydialog.h"
-#include "neos/neosprocess.h"
 #include "process/gamsinstprocess.h"
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
@@ -88,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     Settings *settings = Settings::settings();
+    initEnvironment();
 
     ui->setupUi(this);
 
@@ -303,6 +302,68 @@ void MainWindow::initWelcomePage()
         mWp->hide();
     else
         showWelcomePage();
+}
+
+void MainWindow::initEnvironment()
+{
+    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+    QString gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
+    QByteArray gamsArr = (gamsDir + QDir::listSeparator() + gamsDir + QDir::separator() + "gbin").toLatin1();
+
+    QByteArray curPath = qgetenv("PATH");
+    qputenv("PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+
+#ifndef _WIN32
+    curPath = qgetenv("LD_LIBRARY_PATH");
+    qputenv("LD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+
+    curPath = qgetenv("DYLD_LIBRARY_PATH");
+    qputenv("DYLD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
+#endif
+}
+
+void MainWindow::initIcons()
+{
+    setWindowIcon(Scheme::icon(":/img/gams-w"));
+    ui->actionCompile->setIcon(Scheme::icon(":/%1/code"));
+    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
+    ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
+    ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
+    ui->actionClose->setIcon(Scheme::icon(":/%1/remove"));
+    ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
+    ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
+    ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
+    ui->actionHelp_View->setIcon(Scheme::icon(":/%1/question"));
+    ui->actionInterrupt->setIcon(Scheme::icon(":/%1/stop"));
+    ui->actionNew->setIcon(Scheme::icon(":/%1/file"));
+    ui->actionNextBookmark->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionOpen->setIcon(Scheme::icon(":/%1/folder-open-bw"));
+    ui->actionPaste->setIcon(Scheme::icon(":/%1/paste"));
+    ui->actionPreviousBookmark->setIcon(Scheme::icon(":/%1/backward"));
+    ui->actionProcess_Log->setIcon(Scheme::icon(":/%1/output"));
+    ui->actionProject_View->setIcon(Scheme::icon(":/%1/project"));
+    ui->actionRedo->setIcon(Scheme::icon(":/%1/redo"));
+    ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
+    ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
+    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
+    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
+    ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
+    ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
+    ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
+    ui->actionStop->setIcon(Scheme::icon(":/%1/kill"));
+    ui->actionTerminal->setIcon(Scheme::icon(":/%1/terminal"));
+    ui->actionToggleBookmark->setIcon(Scheme::icon(":/%1/bookmark"));
+    ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show"));
+    ui->actionUndo->setIcon(Scheme::icon(":/%1/undo"));
+    ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
+    ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
+    ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
+    ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
+    ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
+    ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
+    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
+    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
 }
 
 void MainWindow::initToolBar()
@@ -1711,7 +1772,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         return;
     }
 
-    if (exitCode == GAMSRETRN_TOO_MANY_SCRATCH_DIRS) {
+    if (exitCode == ecTooManyScratchDirs) {
         ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
         QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 
@@ -1970,8 +2031,6 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setArguments({"/k", "title", "GAMS Terminal"});
     process.setWorkingDirectory(workingDir);
     auto gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
-    environment.insert("PATH", gamsDir + ";" + gamsDir + "\\gbin;" + environment.value("PATH"));
-    process.setProcessEnvironment(environment);
     process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
     {
         args->flags |= CREATE_NEW_CONSOLE;
@@ -2869,20 +2928,10 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
 
     // prepare the options and process and run it
-    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize( commandLineStr );
+    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (process)
         runGroup->setProcess(std::move(process));
-    else
-        runGroup->setProcess(std::make_unique<GamsProcess>(new GamsProcess));
     AbstractProcess* groupProc = runGroup->process();
-    if (neos::NeosProcess *np = qobject_cast<neos::NeosProcess *>(groupProc)) {
-        np->setGmsFile(gmsFilePath);
-        ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
-        if (gdxNode && gdxNode->file()->isOpen()) {
-            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first()))
-                gv->releaseFile();
-        }
-    }
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
 
     logNode->prepareRun();
@@ -2961,22 +3010,22 @@ void MainWindow::openInitialFiles()
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Run) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Run), std::make_unique<GamsProcess>());
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation), std::make_unique<GamsProcess>());
 }
 
 void MainWindow::on_actionCompile_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::Compile) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), std::make_unique<GamsProcess>());
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    execute( mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation) );
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), std::make_unique<GamsProcess>());
 }
 
 const QString CNeosConfirmTitle = "Submitting data to NEOS";
@@ -2993,7 +3042,7 @@ void MainWindow::on_actionRunNeos_triggered()
             || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
         showNeosConfirmDialog();
     else
-        emit neosExecute();
+        emit createNeosProcess();
 }
 
 void MainWindow::on_actionRunNeosL_triggered()
@@ -3003,7 +3052,7 @@ void MainWindow::on_actionRunNeosL_triggered()
             || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
         showNeosConfirmDialog();
     else
-        emit neosExecute();
+        emit createNeosProcess();
 }
 
 void MainWindow::showNeosConfirmDialog()
@@ -3011,7 +3060,7 @@ void MainWindow::showNeosConfirmDialog()
     ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
     dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
     connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::neosExecute);
+    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::createNeosProcess);
     connect(dialog, &ConfirmDialog::accepted, dialog, &ConfirmDialog::deleteLater);
     connect(dialog, &ConfirmDialog::autoConfirm, [] {
         Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
@@ -3023,23 +3072,73 @@ void MainWindow::showNeosConfirmDialog()
     dialog->open();
 }
 
-void MainWindow::neosExecute()
+void MainWindow::createNeosProcess()
 {
     updateAndSaveSettings();
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
     neosProcess->setPriority(mNeosLong ? neos::prioLong : neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL
-                                                 : option::RunActionState::RunNeos);
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(neosProcess));
+    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL : option::RunActionState::RunNeos);
+    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    if (!runGroup) return;
+    runGroup->setProcess(std::move(neosProcess));
+    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
+    connect(neosPtr, &neos::NeosProcess::neosStateChanged, this, &MainWindow::neosProgress);
+    if (!mIgnoreSslErrors) {
+        connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
+        neosPtr->validate();
+    } else {
+        neosExecute();
+    }
+}
+
+void MainWindow::sslValidation(QString errorMessage)
+{
+    if (mIgnoreSslErrors || errorMessage.isEmpty()) {
+        neosExecute();
+    } else {
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setWindowTitle("SSL Error");
+        msgBox->setText("The following SSL error occurred");
+        msgBox->setInformativeText(errorMessage);
+        msgBox->setStandardButtons(QMessageBox::Ignore | QMessageBox::Abort);
+        msgBox->setDefaultButton(QMessageBox::Abort);
+        connect(msgBox, &QMessageBox::buttonClicked, this, &MainWindow::sslUserDecision);
+        msgBox->setModal(true);
+        msgBox->open();
+    }
+}
+
+void MainWindow::sslUserDecision(QAbstractButton *button)
+{
+    QMessageBox *msgBox = qobject_cast<QMessageBox*>(sender());
+
+    if (msgBox && msgBox->standardButton(button) == QMessageBox::Ignore) {
+        ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+        ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+        if (!runGroup) return;
+        if (neos::NeosProcess *neosProc = static_cast<neos::NeosProcess*>(runGroup->process())) {
+            neosProc->setIgnoreSslErrors();
+            mIgnoreSslErrors = true;
+            neosExecute();
+        }
+    } else {
+        // TODO: remove process
+    }
+}
+
+void MainWindow::neosExecute()
+{
+    updateAndSaveSettings();
+    execute(mGamsParameterEditor->getCurrentCommandLineData());
 }
 
 void MainWindow::on_actionInterrupt_triggered()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
-    if (!group)
-        return;
+    if (!group) return;
     mGamsParameterEditor->on_interruptAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &AbstractProcess::interrupt);
@@ -3049,8 +3148,7 @@ void MainWindow::on_actionStop_triggered()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
-    if (!group)
-        return;
+    if (!group) return;
     mGamsParameterEditor->on_stopAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &GamsProcess::terminate);
@@ -3134,50 +3232,6 @@ void MainWindow::invalidateScheme()
         fm->invalidateScheme();
 
     repaint();
-}
-
-void MainWindow::initIcons()
-{
-    setWindowIcon(Scheme::icon(":/img/gams-w"));
-    ui->actionCompile->setIcon(Scheme::icon(":/%1/code"));
-    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
-    ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
-    ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
-    ui->actionClose->setIcon(Scheme::icon(":/%1/remove"));
-    ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
-    ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
-    ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
-    ui->actionHelp_View->setIcon(Scheme::icon(":/%1/question"));
-    ui->actionInterrupt->setIcon(Scheme::icon(":/%1/stop"));
-    ui->actionNew->setIcon(Scheme::icon(":/%1/file"));
-    ui->actionNextBookmark->setIcon(Scheme::icon(":/%1/forward"));
-    ui->actionOpen->setIcon(Scheme::icon(":/%1/folder-open-bw"));
-    ui->actionPaste->setIcon(Scheme::icon(":/%1/paste"));
-    ui->actionPreviousBookmark->setIcon(Scheme::icon(":/%1/backward"));
-    ui->actionProcess_Log->setIcon(Scheme::icon(":/%1/output"));
-    ui->actionProject_View->setIcon(Scheme::icon(":/%1/project"));
-    ui->actionRedo->setIcon(Scheme::icon(":/%1/redo"));
-    ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
-    ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
-    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
-    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
-    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
-    ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
-    ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
-    ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
-    ui->actionStop->setIcon(Scheme::icon(":/%1/kill"));
-    ui->actionTerminal->setIcon(Scheme::icon(":/%1/terminal"));
-    ui->actionToggleBookmark->setIcon(Scheme::icon(":/%1/bookmark"));
-    ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show"));
-    ui->actionUndo->setIcon(Scheme::icon(":/%1/undo"));
-    ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
-    ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
-    ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
-    ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
-    ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
-    ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
-    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
-    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
 }
 
 void MainWindow::ensureInScreen()
@@ -3357,6 +3411,24 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         mProjectRepo.closeGroup(group);
     }
     mProjectRepo.purgeGroup(parentGroup);
+}
+
+void MainWindow::neosProgress(AbstractProcess *proc, neos::NeosState progress)
+{
+    ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
+    if (!runGroup || !runGroup->runnableGms()) return;
+    QString gmsFilePath = runGroup->runnableGms()->location();
+    ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
+    if (gdxNode && gdxNode->file()->isOpen()) {
+        if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
+            if (progress == neos::Neos3GetResult) {
+                gv->releaseFile();
+            } else if (progress == neos::NeosState::NeosIdle) {
+                gv->setHasChanged(true);
+                gv->reload(gdxNode->file()->codec());
+            }
+        }
+    }
 }
 
 /// Asks user for confirmation if a file is modified before calling closeFile
