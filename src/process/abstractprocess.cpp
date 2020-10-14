@@ -18,9 +18,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "abstractprocess.h"
-#include "commonpaths.h"
+#include "../commonpaths.h"
 
 #include <QDir>
+#include <QMetaType>
 
 namespace gams {
 namespace studio {
@@ -30,6 +31,10 @@ AbstractProcess::AbstractProcess(const QString &appName, QObject *parent)
       mProcess(this),
       mApplication(appName)
 {
+    if (!QMetaType::isRegistered(qMetaTypeId<QProcess::ProcessState>()))
+        qRegisterMetaType<QProcess::ProcessState>();
+    if (!QMetaType::isRegistered(qMetaTypeId<NodeId>()))
+        qRegisterMetaType<NodeId>();
 }
 
 void AbstractProcess::setInputFile(const QString &file)
@@ -100,10 +105,8 @@ int AbstractProcess::exitCode() const
 AbstractSingleProcess::AbstractSingleProcess(const QString &application, QObject *parent)
     : AbstractProcess(application, parent)
 {
-    connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractSingleProcess::readStdOut);
     connect(&mProcess, &QProcess::readyReadStandardError, this, &AbstractSingleProcess::readStdErr);
-    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 QProcess::ProcessState AbstractSingleProcess::state() const
@@ -140,7 +143,8 @@ void AbstractSingleProcess::readStdErr()
 AbstractGamsProcess::AbstractGamsProcess(const QString &application, QObject *parent)
     : AbstractSingleProcess(application, parent)
 {
-
+    connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
+    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 QString AbstractGamsProcess::nativeAppPath()

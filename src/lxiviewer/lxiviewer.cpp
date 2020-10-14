@@ -19,7 +19,7 @@
  */
 #include <QDir>
 #include "file.h"
-#include "gamsprocess.h"
+#include "process.h"
 #include "lxiviewer.h"
 #include "lxiparser.h"
 #include "lxitreemodel.h"
