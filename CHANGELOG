@@ -10,6 +10,8 @@ Version 1.4.0 *
 - fixed Results View not always updating when navigating search results
 - fixed empty history on Welcome Page when starting Studio with no tabs open
 - natively implemented NEOS processing, enabling to kill submitted active jobs
+- renamed GAMS About dialog to GAMS Licensing dialog
+- improved GAMS license detection during Studio start and in GAMS Licensing dialog. Additionally the user gets more information about the current license via the system log.
 
 Version 1.3.6  
 ==================

@@ -168,8 +168,9 @@ public slots:
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
-    void appendSystemLog(const QString &text);
-    void showErrorMessage(QString text);
+    void appendSystemLogInfo(const QString &text) const;
+    void appendSystemLogError(const QString &text) const;
+    void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
@@ -264,10 +265,10 @@ private slots:
     void on_actionTerminal_triggered();
     void actionTerminalTriggered(const QString &workingDir);
 
-    // About
+    // Help
     void on_actionHelp_triggered();
     void on_actionAbout_Studio_triggered();
-    void on_actionAbout_GAMS_triggered();
+    void on_gamsLicensing_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
 
@@ -398,6 +399,7 @@ private:
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
+    void checkGamsLicense();
 
 private:
     Ui::MainWindow *ui;

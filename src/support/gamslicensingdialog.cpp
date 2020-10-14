@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "aboutgamsdialog.h"
-#include "ui_aboutgamsdialog.h"
+#include "gamslicensingdialog.h"
+#include "ui_gamslicensingdialog.h"
 #include "process.h"
 #include "checkforupdatewrapper.h"
 #include "solvertablemodel.h"
@@ -39,9 +39,9 @@ namespace gams {
 namespace studio {
 namespace support {
 
-AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
+GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::AboutGAMSDialog)
+    ui(new Ui::GamsLicensingDialog)
 {
     ui->setupUi(this);
 
@@ -60,12 +60,12 @@ AboutGAMSDialog::AboutGAMSDialog(const QString &title, QWidget *parent) :
     ui->solverTable->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 }
 
-AboutGAMSDialog::~AboutGAMSDialog()
+GamsLicensingDialog::~GamsLicensingDialog()
 {
     delete ui;
 }
 
-QString AboutGAMSDialog::studioInfo()
+QString GamsLicensingDialog::studioInfo()
 {
     QString ret = "Release: GAMS Studio " + QApplication::applicationVersion() + " ";
     ret += QString(sizeof(void*)==8 ? "64" : "32") + " bit<br/>";
@@ -73,7 +73,7 @@ QString AboutGAMSDialog::studioInfo()
     return ret;
 }
 
-QString AboutGAMSDialog::gamsLicense()
+QString GamsLicensingDialog::gamsLicense()
 {
     QStringList about;
     about << "<b><big>GAMS Distribution ";
@@ -81,18 +81,21 @@ QString AboutGAMSDialog::gamsLicense()
     about << "</big></b><br/><br/>";
 
     GamsProcess gproc;
-    int licenseLines = 5;
+    bool licenseLines = false;
     for (auto line : gproc.aboutGAMS().split("\n")) {
-        if (line.contains("__")) {
-            --licenseLines;
-            if (4 == licenseLines)
-                about << "<pre style=\"font-family:'Courier New',monospace\">" << line + "\n";
-            else if (0 == licenseLines)
-                about << line + "\n" << "</pre>" " \r""<br/>";
-            else
+        if (licenseLines) {
+            if (line.startsWith("#L")) {
+                continue;
+            } else if (line.startsWith("Licensed platform:")) {
+                licenseLines = false;
+                about << "</pre>" " \r""<br/>" << line << "<br/>";
+            } else {
                 about << line + "\n";
-        } else if (line.startsWith("#L")) {
-            continue;
+            }
+        } else if (line.startsWith("License ")) {
+            about << line << "<br/>";
+            licenseLines = true;
+            about << "<pre style=\"font-family:'Courier New',monospace\">";
         } else if (line.contains("License file not found")) {
             about << "<br/>" << line  << "<br/>";
         } else if (line.contains("gamslice.txt")) {
@@ -105,17 +108,11 @@ QString AboutGAMSDialog::gamsLicense()
     return about.join("");
 }
 
-void AboutGAMSDialog::createLicenseFile(QWidget *parent)
+void GamsLicensingDialog::createLicenseFile(QWidget *parent)
 {
-    QClipboard* clipboard = QGuiApplication::clipboard();
-    QStringList licenseLines = clipboard->text().split('\n', QString::SkipEmptyParts);
-    if (licenseLines.isEmpty()) return;
-
-    for (int i=0; i<licenseLines.size(); ++i)
-        licenseLines[i] = licenseLines[i].trimmed();
-
     GamsLicenseInfo licenseInfo;
-    if (!licenseInfo.isLicenseValid(licenseLines))
+    auto license = licenseInfo.licenseFromClipboard();
+    if (license.isEmpty() || !licenseInfo.isLicenseValid(license))
         return;
 
     QFile licenseFile(CommonPaths::gamsLicenseFilePath());
@@ -144,7 +141,7 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
 
     if (licenseFile.open(QFile::WriteOnly | QFile::Text)) {
         QTextStream stream(&licenseFile);
-        stream << licenseLines.join("\n");
+        stream << license.join("\n");
         licenseFile.close();
     } else {
         QMessageBox::critical(parent,
@@ -155,19 +152,19 @@ void AboutGAMSDialog::createLicenseFile(QWidget *parent)
     }
 }
 
-void AboutGAMSDialog::on_copylicense_clicked()
+void GamsLicensingDialog::on_copylicense_clicked()
 {
     GamsProcess gproc;
     QClipboard *clip = QGuiApplication::clipboard();
     clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS().replace("#L", ""));
 }
 
-QString AboutGAMSDialog::header()
+QString GamsLicensingDialog::header()
 {
     return "<b><big>GAMS Studio " + QApplication::applicationVersion() + "</big></b>";
 }
 
-QString AboutGAMSDialog::aboutStudio()
+QString GamsLicensingDialog::aboutStudio()
 {
     QString about = studioInfo();
     about += "Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com><br/>";

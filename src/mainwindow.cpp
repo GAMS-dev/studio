@@ -53,7 +53,7 @@
 #include "tabdialog.h"
 #include "colors/palettemanager.h"
 #include "help/helpdata.h"
-#include "support/aboutgamsdialog.h"
+#include "support/gamslicensingdialog.h"
 #include "viewhelper.h"
 #include "miro/miroprocess.h"
 #include "miro/mirodeploydialog.h"
@@ -272,6 +272,8 @@ MainWindow::MainWindow(QWidget *parent)
     invalidateScheme();
     initGamsStandardPaths();
     updateRunState();
+
+    checkGamsLicense();
 }
 
 void MainWindow::watchProjectTree()
@@ -726,7 +728,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
 
     // This log is passed to the system-wide log
     connect(mLibProcess, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
-    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendSystemLog);
+    connect(mLibProcess, &GamsProcess::newStdChannelData, this, &MainWindow::appendSystemLogInfo);
     connect(mLibProcess, &GamsProcess::finished, this, &MainWindow::postGamsLibRun);
 
     mLibProcess->execute();
@@ -1750,26 +1752,30 @@ void MainWindow::processFileEvents()
     active = false;
 }
 
-void MainWindow::appendSystemLog(const QString &text)
+void MainWindow::appendSystemLogInfo(const QString &text) const
 {
     mSyslog->append(text, LogMsgType::Info);
 }
 
-void MainWindow::showErrorMessage(QString text)
+void MainWindow::appendSystemLogError(const QString &text) const
 {
-    QMessageBox::critical(this, tr("error"), text);
     mSyslog->append(text, LogMsgType::Error);
+}
+
+void MainWindow::appendSystemLogWarning(const QString &text) const
+{
+    mSyslog->append(text, LogMsgType::Warning);
 }
 
 void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
     if (origin == -1) {
-        mSyslog->append("No fileId set to process", LogMsgType::Error);
+        appendSystemLogError("No fileId set to process");
         return;
     }
     ProjectRunGroupNode* groupNode = mProjectRepo.findRunGroup(origin);
     if (!groupNode) {
-        mSyslog->append("No group attached to process", LogMsgType::Error);
+        appendSystemLogError("No group attached to process");
         return;
     }
 
@@ -1796,7 +1802,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
 
     FileMeta *runMeta = groupNode->runnableGms();
     if (!runMeta) {
-        mSyslog->append("Invalid runable attached to process", LogMsgType::Error);
+        appendSystemLogError("Invalid runable attached to process");
         return;
     }
     if (groupNode && groupNode->hasLogNode()) {
@@ -1949,16 +1955,16 @@ void MainWindow::on_actionAbout_Studio_triggered()
     QMessageBox about(this);
     about.setWindowTitle(ui->actionAbout_Studio->text());
     about.setTextFormat(Qt::RichText);
-    about.setText(support::AboutGAMSDialog::header());
-    about.setInformativeText(support::AboutGAMSDialog::aboutStudio());
+    about.setText(support::GamsLicensingDialog::header());
+    about.setInformativeText(support::GamsLicensingDialog::aboutStudio());
     about.setIconPixmap(Scheme::icon(":/img/gams-w24").pixmap(QSize(64, 64)));
     about.addButton(QMessageBox::Ok);
     about.exec();
 }
 
-void MainWindow::on_actionAbout_GAMS_triggered()
+void MainWindow::on_gamsLicensing_triggered()
 {
-    support::AboutGAMSDialog dialog(ui->actionAbout_GAMS->text(), this);
+    support::GamsLicensingDialog dialog(ui->gamsLicensing->text(), this);
     dialog.exec();
 }
 
@@ -2039,7 +2045,7 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     });
 #endif
     if (!process.startDetached())
-        mSyslog->append("Error opening terminal: " + process.errorString(), LogMsgType::Error);
+        appendSystemLogError("Error opening terminal: " + process.errorString());
 }
 
 void MainWindow::on_mainTabs_tabCloseRequested(int index)
@@ -2915,7 +2921,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
     if (gmsFilePath == "") {
-        mSyslog->append("No runnable GMS file found in group ["+runGroup->name()+"].", LogMsgType::Warning);
+        appendSystemLogWarning("No runnable GMS file found in group ["+runGroup->name()+"].");
         ui->actionShow_System_Log->trigger();
         return;
     }
@@ -3296,7 +3302,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, runGroup, codecMib, forcedAsTextEditor);
         } catch (Exception &e) {
-            mSyslog->append(e.what(), LogMsgType::Error);
+            appendSystemLogError(e.what());
             return;
         }
         if (!edit) {
@@ -4460,6 +4466,17 @@ bool MainWindow::enabledPrintAction()
     return focusWidget() == mRecent.editor()
             || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
             || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
+}
+
+void MainWindow::checkGamsLicense()
+{
+    support::GamsLicensingDialog::createLicenseFile(this);
+    auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath());
+    if (QFileInfo::exists(licenseFile)) {
+        appendSystemLogInfo("GAMS license found at " + licenseFile);
+    } else {
+        appendSystemLogError("No GAMS license found. You can install your license by copying the license information from the email you received after purchasing GAMS into your clipboard, and then open the license dialogue (Help / GAMS licensing). The license will be recognized and installed automatically. For more options, please check the GAMS documentation.");
+    }
 }
 
 }

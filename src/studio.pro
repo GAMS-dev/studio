@@ -209,10 +209,10 @@ SOURCES += \
     settings.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
-    support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
     support/distributionvalidator.cpp \
     support/gamslicenseinfo.cpp         \
+    support/gamslicensingdialog.cpp \
     support/solverconfiginfo.cpp        \
     support/solvertablemodel.cpp        \
     support/updatedialog.cpp \
@@ -369,10 +369,10 @@ HEADERS += \
     settings.h \
     settingsdialog.h \
     statuswidgets.h \
-    support/aboutgamsdialog.h       \
     support/checkforupdatewrapper.h \
     support/distributionvalidator.h \
     support/gamslicenseinfo.h       \
+    support/gamslicensingdialog.h \
     support/solverconfiginfo.h      \
     support/solvertablemodel.h      \
     support/updatedialog.h \
@@ -419,7 +419,7 @@ FORMS += \
     search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
-    support/aboutgamsdialog.ui \
+    support/gamslicensingdialog.ui \
     support/updatedialog.ui \
     tabdialog.ui \
     welcomepage.ui

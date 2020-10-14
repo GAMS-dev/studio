@@ -26,6 +26,9 @@
 #include "palmcc.h"
 #include "gclgms.h"
 
+#include <QClipboard>
+#include <QGuiApplication>
+
 namespace gams {
 namespace studio {
 namespace support {
@@ -44,15 +47,13 @@ GamsLicenseInfo::GamsLicenseInfo()
                     msg,
                     sizeof(msg))) {
         logger->append(msg, LogMsgType::Error);
-        EXCEPT() << "Could not open About GAMS dialog. " << msg;
+        EXCEPT() << "Could not create PAL object. " << msg;
     }
     int rc; // additional return code, not used here
     mLicenseAvailable = palLicenseReadU(mPAL,
                                         CommonPaths::gamsLicenseFilePath().toStdString().c_str(),
                                         msg,
                                         &rc);
-    if (!mLicenseAvailable)
-        logger->append(msg, LogMsgType::Error);
 }
 
 GamsLicenseInfo::~GamsLicenseInfo()
@@ -119,6 +120,18 @@ QString GamsLicenseInfo::solverLicense(const QString &name, int id) const
     if (days > 0)
         return "Evaluation";
     return "Expired";
+}
+
+QStringList GamsLicenseInfo::licenseFromClipboard()
+{
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    QStringList licenseLines = clipboard->text().split('\n', QString::SkipEmptyParts);
+    if (licenseLines.isEmpty())
+        QStringList();
+
+    for (int i=0; i<licenseLines.size(); ++i)
+        licenseLines[i] = licenseLines[i].trimmed();
+    return licenseLines;
 }
 
 bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
