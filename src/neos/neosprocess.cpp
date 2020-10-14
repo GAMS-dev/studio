@@ -244,9 +244,14 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 {
     DEB() << "SUBMITED: " << jobNumber << " - pw: " << jobPassword;
 
-    QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]\n");
+    QString credentials;
+    if (mPrio == prioLong) {
+        credentials = QString("\nJob %1 dispatched\npassword: %2").arg(jobNumber).arg(jobPassword);
+    }
+    QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]%4\n");
     QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
-    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath+"/solve.lst").toUtf8());
+    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath+"/solve.lst")
+                           .arg(credentials).toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission
