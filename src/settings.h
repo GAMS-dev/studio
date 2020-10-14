@@ -113,7 +113,7 @@ enum SettingsKey {
     skSoDeleteCommentsAbove,
 
     // GAMS Engine settings
-    skEngineHost,
+    skEngineUrl,
     skEngineNamespace,
     skEngineUser,
     skEngineUserToken,

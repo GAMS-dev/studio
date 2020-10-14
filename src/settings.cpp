@@ -336,7 +336,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skSoDeleteCommentsAbove, scUser, {"solverOption","deleteCommentsAbove"}, false);
 
     // GAMS Engine settings
-    safelyAdd(res, skEngineHost, scSys, {"engine","page"}, "miro.gams.com");
+    safelyAdd(res, skEngineUrl, scSys, {"engine","page"}, "miro.gams.com");
     safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");
     safelyAdd(res, skEngineUser, scSys, {"engine","user"}, "");
     safelyAdd(res, skEngineUserToken, scSys, {"engine","userToken"}, "");

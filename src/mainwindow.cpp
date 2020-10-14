@@ -3142,30 +3142,32 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 void MainWindow::showEngineStartDialog()
 {
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
+    DEB() << dialog->windowFlags();
     connect(dialog, &engine::EngineStartDialog::buttonClicked, this, &MainWindow::engineDialogDecision);
     dialog->setLastPassword(mEngineTempPassword);
     dialog->setModal(true);
     dialog->open();
+    dialog->focusEmptyField();
 }
 
 void MainWindow::engineDialogDecision(QAbstractButton *button)
 {
     engine::EngineStartDialog *dialog = qobject_cast<engine::EngineStartDialog*>(sender());
     if (dialog && dialog->standardButton(button) == QDialogButtonBox::Ok) {
-        Settings::settings()->setString(SettingsKey::skEngineHost, dialog->host());
+        Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         mEngineTempPassword = dialog->password();
 //        mUser = "studiotests";
 //        mPassword = "rercud-qinRa9-wagbew";
-        createEngineProcess(dialog->host(), dialog->nSpace(), dialog->user(), dialog->password());
+        createEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());
     } else {
         dialog->close();
     }
     dialog->deleteLater();
 }
 
-void MainWindow::createEngineProcess(QString host, QString nSpace, QString user, QString password)
+void MainWindow::createEngineProcess(QString url, QString nSpace, QString user, QString password)
 {
     updateAndSaveSettings();
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
@@ -3175,7 +3177,7 @@ void MainWindow::createEngineProcess(QString host, QString nSpace, QString user,
     engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
     engineProcess->setNamespace(nSpace);
-    engineProcess->authenticate(host, user, password);
+    engineProcess->authenticate(url, user, password);
     // TODO(JM) create token for the user and store it (if the user allowed it)
     runGroup->setProcess(std::move(engineProcess));
 //    if (!mIgnoreSslErrors) {

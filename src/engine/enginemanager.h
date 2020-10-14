@@ -33,13 +33,14 @@ public:
 
 public:
     EngineManager(QObject *parent = nullptr);
-    void setHost(const QString &host);
+    void setUrl(const QString &url);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
     QString getToken() const;
     void setToken(const QString &token);
 
     void authenticate(const QString &user, const QString &password);
+    void authenticate(const QString &userToken);
     void ping();
 //    void version();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params);
@@ -57,7 +58,6 @@ signals:
     void reVersion(const QString &value);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 processStatus);
-    void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
@@ -71,7 +71,7 @@ private slots:
     void abortRequestsSignal();
 
 private:
-    OpenAPI::OAIAuthApi *mAuthApi;
+//    OpenAPI::OAIAuthApi *mAuthApi;
     OpenAPI::OAIJobsApi *mJobsApi;
     int mJobNumber = 0;
     QString mUser;

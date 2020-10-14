@@ -347,7 +347,7 @@ private slots:
     void createNeosProcess();
     void showEngineStartDialog();
     void engineDialogDecision(QAbstractButton *button);
-    void createEngineProcess(QString host, QString nSpace, QString user, QString password);
+    void createEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
 

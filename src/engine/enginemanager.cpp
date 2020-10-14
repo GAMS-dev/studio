@@ -13,19 +13,19 @@ namespace studio {
 namespace engine {
 
 EngineManager::EngineManager(QObject* parent)
-    : QObject(parent), mAuthApi(new OAIAuthApi()), mJobsApi(new OAIJobsApi())
+    : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mJobsApi(new OAIJobsApi())
 {
-    mAuthApi->setScheme("https");
-    mAuthApi->setPort(443);
-    mAuthApi->setBasePath("/engine/api");
-    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignal,
-            [this](OAIModel_auth_token summary) {
-        emit reAuth(summary.getToken());
-    });
-    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignalE,
-            [this](OAIModel_auth_token , QNetworkReply::NetworkError , QString error_str) {
-        emit reError("From postW: "+error_str);
-    });
+//    mAuthApi->setScheme("https");
+//    mAuthApi->setPort(443);
+//    mAuthApi->setBasePath("/engine/api");
+//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignal,
+//            [this](OAIModel_auth_token summary) {
+//        emit reAuth(summary.getToken());
+//    });
+//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignalE,
+//            [this](OAIModel_auth_token , QNetworkReply::NetworkError , QString error_str) {
+//        emit reError("From postW: "+error_str);
+//    });
 
     mJobsApi->setScheme("https");
     mJobsApi->setHost("miro.gams.com");
@@ -38,32 +38,32 @@ EngineManager::EngineManager(QObject* parent)
         emit reCreateJob(summary.getMessage(), summary.getToken());
     });
     connect(mJobsApi, &OAIJobsApi::createJobSignalE,
-            [this](OAIMessage_and_token, QNetworkReply::NetworkError, QString error_str) {
-        emit reError("From createJob: "+error_str);
+            [this](OAIMessage_and_token, QNetworkReply::NetworkError error_type, QString error_str) {
+        emit reError("Code "+QString::number(error_type).toLatin1()+" from createJob: "+error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobSignal, [this](OAIJob summary) {
         emit reGetJobStatus(summary.getStatus(), summary.getProcessStatus());
     });
     connect(mJobsApi, &OAIJobsApi::getJobSignalE,
-            [this](OAIJob, QNetworkReply::NetworkError, QString error_str) {
-        emit reError("From getJob: "+error_str);
+            [this](OAIJob, QNetworkReply::NetworkError error_type, QString error_str) {
+        emit reError("Code "+QString::number(error_type).toLatin1()+" from getJob: "+error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobZipSignal, [this](OAIHttpFileElement summary) {
         emit reGetOutputFile(summary.asByteArray());
     });
     connect(mJobsApi, &OAIJobsApi::getJobZipSignalE,
-            [this](OAIHttpFileElement, QNetworkReply::NetworkError, QString error_str) {
-        emit reError("From getJobZip: "+error_str);
+            [this](OAIHttpFileElement, QNetworkReply::NetworkError error_type, QString error_str) {
+        emit reError("Code "+QString::number(error_type).toLatin1()+" from getJobZip: "+error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::killJobSignal, [this](OAIMessage summary) {
         emit reKillJob(summary.getMessage());
     });
     connect(mJobsApi, &OAIJobsApi::killJobSignalE,
-            [this](OAIMessage, QNetworkReply::NetworkError, QString error_str) {
-        emit reError("From killJob: "+error_str);
+            [this](OAIMessage, QNetworkReply::NetworkError error_type, QString error_str) {
+        emit reError("Code "+QString::number(error_type).toLatin1()+" from killJob: "+error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, [this](OAILog_piece summary) {
@@ -73,7 +73,7 @@ EngineManager::EngineManager(QObject* parent)
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
             [this](OAILog_piece, QNetworkReply::NetworkError error_type, QString error_str) {
         if (error_type != QNetworkReply::ServiceUnavailableError)
-            emit reGetLog(error_str.toUtf8());
+            emit reGetLog("Code "+QString::number(error_type).toLatin1()+" from popLog: "+error_str.toUtf8());
     });
 
     connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
@@ -81,9 +81,14 @@ EngineManager::EngineManager(QObject* parent)
 
 }
 
-void EngineManager::setHost(const QString &host)
+void EngineManager::setUrl(const QString &url)
 {
-    mJobsApi->setHost(host);
+    int sp1 = url.indexOf("//")+1;
+    if (sp1) sp1++;
+    int sp2 = url.indexOf('/', sp1);
+    if (sp2 < 0) sp2 = url.length();
+    mJobsApi->setHost(url.mid(sp1, sp2-sp1));
+    mJobsApi->setBasePath(url.right(url.length()-sp2));
 }
 
 void EngineManager::setIgnoreSslErrors()
@@ -102,9 +107,13 @@ void EngineManager::authenticate(const QString &user, const QString &password)
 
     QByteArray auth = "Basic " + (user + ":" + password).toLatin1().toBase64();
     mJobsApi->addHeaders("Authorization", auth);
+}
 
-
-//    mAuthApi->postW(mUser, mPassword);
+void EngineManager::authenticate(const QString &userToken)
+{
+    Q_UNUSED(userToken)
+    DEB() << "Authentication by token not implementet yet.";
+    // TODO(JM) prepared authentication by user-token
 }
 
 void EngineManager::ping()
@@ -122,7 +131,6 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);
-    qDebug() << "zip name: " << zipFile;
     OAIHttpFileElement dummy;
     mJobsApi->createJob(modelName, nSpace, "solver.log", QStringList(), QStringList(), params, model, dummy, dummy);
 }

@@ -84,22 +84,22 @@
        <number>0</number>
       </property>
       <item row="1" column="0">
-       <widget class="QLabel" name="laHost">
+       <widget class="QLabel" name="laUrl">
         <property name="toolTip">
          <string>Enter the bare host, like &quot;miro.gams.com&quot;</string>
         </property>
         <property name="text">
-         <string>Engine host</string>
+         <string>Engine URL</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="edHost">
+       <widget class="QLineEdit" name="edUrl">
         <property name="toolTip">
          <string/>
         </property>
         <property name="placeholderText">
-         <string>miro.gams.com</string>
+         <string>miro.gams.com/engine/api</string>
         </property>
        </widget>
       </item>
@@ -141,10 +141,7 @@
       <item row="4" column="1">
        <widget class="QLineEdit" name="edPassword">
         <property name="echoMode">
-         <enum>QLineEdit::PasswordEchoOnEdit</enum>
-        </property>
-        <property name="placeholderText">
-         <string>*******</string>
+         <enum>QLineEdit::Password</enum>
         </property>
        </widget>
       </item>

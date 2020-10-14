@@ -21,16 +21,20 @@ public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
     ~EngineStartDialog();
 
-    QString host() const;
+    QString url() const;
     QString nSpace() const;
     QString user() const;
     QString password() const;
     void setLastPassword(QString lastPassword);
+    void focusEmptyField();
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
     void buttonClicked(QAbstractButton *button);
+
+private slots:
+    void textChanged(const QString &text);
 
 private:
     Ui::EngineStartDialog *ui;

@@ -37,7 +37,6 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
-    connect(mManager, &EngineManager::reGetJobInfo, this, &EngineProcess::reGetJobInfo);
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
@@ -159,7 +158,6 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 
         mManager->submitJob(modlName, mNamespace, zip, remoteParameters());
         setProcState(Proc3Monitor);
-        pullStatus();
     }
     mSubProc->deleteLater();
     mSubProc = nullptr;
@@ -218,9 +216,10 @@ void EngineProcess::terminate()
     if (ok)
         emit mManager->syncKillJob(true);
     else
-        AbstractGamsProcess::interrupt();
-//    setProcState(ProcIdle);
-//    completed(-1);
+        AbstractGamsProcess::terminate();
+    // ensure termination
+    setProcState(ProcIdle);
+    completed(-1);
 }
 
 void EngineProcess::setParameters(const QStringList &parameters)
@@ -244,9 +243,15 @@ QProcess::ProcessState EngineProcess::state() const
 
 void EngineProcess::authenticate(const QString &host, const QString &user, const QString &password)
 {
-    mManager->setHost(host);
+    mManager->setUrl(host);
     mManager->authenticate(user, password);
+    setProcState(ProcIdle);
 }
+
+//void EngineProcess::authenticate(const QString &host, const QString &token)
+//{
+
+//}
 
 void EngineProcess::setNamespace(const QString &nSpace)
 {
@@ -291,7 +296,7 @@ void EngineProcess::reCreateJob(const QString &message, const QString &token)
     emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(modelName()).arg(lstPath).arg(token).toUtf8());
     // TODO(JM) store token for later resuming
     // monitoring starts automatically after successfull submission
-    setProcState(Proc3Monitor);
+    pullStatus();
 }
 
 
@@ -306,22 +311,21 @@ void EngineProcess::reGetJobStatus(const qint32 &status, const qint32 &gamsExitC
 {
     // TODO(JM) convert status to EngineManager::Status
     EngineManager::StatusCode code = EngineManager::StatusCode(status);
-    if (code == EngineManager::Finished) {
-        DEB() << "GAMS exit code from Engine: " << gamsExitCode;
+    if (code == EngineManager::Finished && mProcState == Proc3Monitor) {
         mManager->getLog();
+        if (gamsExitCode) {
+            QByteArray code = QString::number(gamsExitCode).toLatin1();
+            emit newStdChannelData("\nGAMS terminated with exit code " +code+ "\n");
+            completed(-1);
+            return;
+        }
         setProcState(Proc4GetResult);
         mManager->getOutputFile();
     }
 }
 
-void EngineProcess::reGetJobInfo(const QStringList &info)
-{
-    DEB() << "Engine-Info: " << info.join(", ");
-}
-
 void EngineProcess::reKillJob(const QString &text)
 {
-    DEB() << "reKill: " << text;
     emit newStdChannelData('\n'+text.toUtf8()+'\n');
 }
 
@@ -359,7 +363,6 @@ void EngineProcess::reGetOutputFile(const QByteArray &data)
 
 void EngineProcess::reError(const QString &errorText)
 {
-    DEB() << errorText;
     disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
     mPullTimer.stop();
     emit newStdChannelData("\nError: "+errorText.toUtf8()+"\n");

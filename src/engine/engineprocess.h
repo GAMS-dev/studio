@@ -40,6 +40,7 @@ public:
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
     void authenticate(const QString &host, const QString &user, const QString &password);
+//    void authenticate(const QString &host, const QString &token);
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrors();
 
@@ -55,7 +56,6 @@ protected slots:
     void reVersion(const QString &value);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode);
-    void reGetJobInfo(const QStringList &info);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
