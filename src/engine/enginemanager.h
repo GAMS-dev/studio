@@ -33,6 +33,7 @@ public:
 
 public:
     EngineManager(QObject *parent = nullptr);
+    void setWorkingDirectory(const QString &dir);
     void setUrl(const QString &url);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();

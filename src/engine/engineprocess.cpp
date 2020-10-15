@@ -55,6 +55,7 @@ void EngineProcess::execute()
 {
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
+    mManager->setWorkingDirectory(workingDirectory());
 
 #if defined(__unix__) || defined(__APPLE__)
     mProcess.start(nativeAppPath(), params);

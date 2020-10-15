@@ -17,7 +17,6 @@ EngineManager::EngineManager(QObject* parent)
 {
 //    mAuthApi->setScheme("https");
 //    mAuthApi->setPort(443);
-//    mAuthApi->setBasePath("/engine/api");
 //    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignal,
 //            [this](OAIModel_auth_token summary) {
 //        emit reAuth(summary.getToken());
@@ -28,10 +27,7 @@ EngineManager::EngineManager(QObject* parent)
 //    });
 
     mJobsApi->setScheme("https");
-//    mJobsApi->setHost("miro.gams.com");
     mJobsApi->setPort(443);
-//    mJobsApi->setBasePath("/engine/api");
-    // namespace = studiotests
 
     connect(mJobsApi, &OAIJobsApi::createJobSignal,
             [this](OAIMessage_and_token summary) {
@@ -81,6 +77,11 @@ EngineManager::EngineManager(QObject* parent)
     connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
     connect(this, &EngineManager::syncKillJob, this, &EngineManager::killJob, Qt::QueuedConnection);
 
+}
+
+void EngineManager::setWorkingDirectory(const QString &dir)
+{
+    mJobsApi->setWorkingDirectory(dir);
 }
 
 void EngineManager::setUrl(const QString &url)

@@ -3133,9 +3133,7 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
             execute(mGamsParameterEditor->getCurrentCommandLineData());
         }
     } else {
-        if (neos::NeosProcess *neosProc = static_cast<neos::NeosProcess*>(runGroup->process())) {
-            runGroup->setProcess(nullptr);
-        }
+        runGroup->setProcess(nullptr);
     }
 }
 
