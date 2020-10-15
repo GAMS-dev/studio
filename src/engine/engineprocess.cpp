@@ -269,6 +269,8 @@ void EngineProcess::setIgnoreSslErrors()
 
 void EngineProcess::completed(int exitCode)
 {
+    disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
+    mPullTimer.stop();
     setProcState(ProcIdle);
     AbstractGamsProcess::completed(exitCode);
 }

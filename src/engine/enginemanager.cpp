@@ -86,12 +86,15 @@ void EngineManager::setWorkingDirectory(const QString &dir)
 
 void EngineManager::setUrl(const QString &url)
 {
-    int sp1 = url.indexOf("//")+1;
-    if (sp1) sp1++;
+    int sp1 = url.indexOf("://")+1;
+    if (sp1) sp1 += 2;
     int sp2 = url.indexOf('/', sp1);
     if (sp2 < 0) sp2 = url.length();
     mJobsApi->setHost(url.mid(sp1, sp2-sp1));
-    mJobsApi->setBasePath(url.right(url.length()-sp2));
+    QStringList paths = url.right(url.length()-sp2).split('/', Qt::SkipEmptyParts);
+//    DEB() << "host: " << url.mid(sp1, sp2-sp1);
+    mJobsApi->setBasePath(paths.join('/'));
+//    DEB() << "path: " << paths.join('/');
 }
 
 void EngineManager::setIgnoreSslErrors()
