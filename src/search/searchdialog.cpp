@@ -217,13 +217,10 @@ void SearchDialog::findInDoc(FileMeta* fm, SearchResultList* collection)
 QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
 {
     QList<FileMeta*> files;
-    QRegExp fileFilter(ui->combo_filePattern->currentText().trimmed());
-    fileFilter.setPatternSyntax(QRegExp::Wildcard);
-
     switch (ui->combo_scope->currentIndex()) {
     case SearchScope::ThisFile:
         if (mMain->recent()->editor())
-            files.append(mMain->fileRepo()->fileMeta(mMain->recent()->editor()));
+            return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
         break;
     case SearchScope::ThisGroup:
     {
@@ -246,18 +243,28 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     }
 
     // apply filter
+    QStringList filter = ui->combo_filePattern->currentText().split(',', QString::SkipEmptyParts);
+    // convert user input to wildcard list
+    QList<QRegExp> filterList;
+    for (QString s : filter)
+        filterList.append(QRegExp(s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+
+    // filter files
     FileMeta* current = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     QList<FileMeta*> res;
     for (FileMeta* fm : files) {
-        if ((ui->combo_scope->currentIndex() == SearchScope::ThisFile || fileFilter.indexIn(fm->location()) != -1) && (!ignoreReadOnly || !fm->isReadOnly())) {
+        bool matchesWildcard = false;
 
-            if (fm == current)
-                res.insert(0, fm);
-            else
-                res.append(fm);
+        for (QRegExp wildcard : filterList) {
+            matchesWildcard = wildcard.indexIn(fm->location()) != -1;
+            if (matchesWildcard) break; // one match is enough, dont overwrite result
+        }
+
+        if (matchesWildcard && (!ignoreReadOnly || !fm->isReadOnly())) {
+            if (fm == current) res.insert(0, fm); // search current file first
+            else res.append(fm);
         }
     }
-
     return res;
 }
 

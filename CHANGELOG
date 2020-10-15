@@ -9,6 +9,8 @@ Version 1.4.0 *
 - added Arrow Up/Down as shortcuts to jump to search results when Results View is focussed
 - fixed Results View not always updating when navigating search results
 - fixed empty history on Welcome Page when starting Studio with no tabs open
+- added support for comma seperated list as file filter in search
+- adjusted search dialog size and resize behavior
 - natively implemented NEOS processing, enabling to kill submitted active jobs
 - renamed GAMS About dialog to GAMS Licensing dialog
 - improved GAMS license detection during Studio start and in GAMS Licensing dialog. Additionally the user gets more information about the current license via the system log.
