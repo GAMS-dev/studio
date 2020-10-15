@@ -22,13 +22,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     emit textChanged("");
-
-//#ifdef _DEBUG
-//    ui->edHost->setText("miro.gams.com");
-//    ui->edNamespace->setText("studiotests");
-//    ui->edUser->setText("studiotests");
-//    ui->edPassword->setText("rercud-qinRa9-wagbew");
-//#endif
 }
 
 EngineStartDialog::~EngineStartDialog()
