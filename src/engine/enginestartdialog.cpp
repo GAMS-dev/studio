@@ -12,7 +12,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui(new Ui::EngineStartDialog)
 {
     ui->setupUi(this);
-    setFixedSize(size());
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
@@ -64,6 +63,12 @@ void EngineStartDialog::focusEmptyField()
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const
 {
     return ui->buttonBox->standardButton(button);
+}
+
+void EngineStartDialog::showEvent(QShowEvent *event)
+{
+    QDialog::showEvent(event);
+    setFixedSize(size());
 }
 
 void EngineStartDialog::textChanged(const QString &text)

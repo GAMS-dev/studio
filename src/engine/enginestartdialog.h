@@ -33,6 +33,9 @@ public:
 signals:
     void buttonClicked(QAbstractButton *button);
 
+protected:
+    void showEvent(QShowEvent *event);
+
 private slots:
     void textChanged(const QString &text);
 
