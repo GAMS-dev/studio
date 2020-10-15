@@ -8,10 +8,11 @@ namespace studio {
 namespace engine {
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::EngineStartDialog)
 {
     ui->setupUi(this);
+    setFixedSize(size());
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
