@@ -91,10 +91,7 @@ void EngineManager::setUrl(const QString &url)
     int sp2 = url.indexOf('/', sp1);
     if (sp2 < 0) sp2 = url.length();
     mJobsApi->setHost(url.mid(sp1, sp2-sp1));
-    QStringList paths = url.right(url.length()-sp2).split('/', QString::SkipEmptyParts);
-//    DEB() << "host: " << url.mid(sp1, sp2-sp1);
-    mJobsApi->setBasePath(paths.join('/'));
-//    DEB() << "path: " << paths.join('/');
+    mJobsApi->setBasePath(url.right(url.length()-sp2));
 }
 
 void EngineManager::setIgnoreSslErrors()
