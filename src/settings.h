@@ -112,6 +112,13 @@ enum SettingsKey {
     skSoAddEOLComment,
     skSoDeleteCommentsAbove,
 
+    // GAMS Engine settings
+    skEngineUrl,
+    skEngineNamespace,
+    skEngineUser,
+    skEngineUserToken,
+    skEngineStoreUserToken,
+
     // user model library directory
     skUserModelLibraryDir,
 

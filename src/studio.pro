@@ -97,6 +97,23 @@ SOURCES += \
     editors/textview.cpp \
     editors/textviewedit.cpp \
     encodingsdialog.cpp \
+    engine/client/OAIAuthApi.cpp \
+    engine/client/OAIHelpers.cpp \
+    engine/client/OAIHttpFileElement.cpp \
+    engine/client/OAIHttpRequest.cpp \
+    engine/client/OAIJob.cpp \
+    engine/client/OAIJobsApi.cpp \
+    engine/client/OAILog_piece.cpp \
+    engine/client/OAIMessage.cpp \
+    engine/client/OAIMessage_and_token.cpp \
+    engine/client/OAIModel_auth_token.cpp \
+    engine/client/OAIResult_user.cpp \
+    engine/client/OAIStatus_code_meaning.cpp \
+    engine/client/OAIStream_entry.cpp \
+    engine/client/OAIText_entry.cpp \
+    engine/enginemanager.cpp \
+    engine/engineprocess.cpp \
+    engine/enginestartdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
     file/fileevent.cpp \
@@ -188,6 +205,7 @@ SOURCES += \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
+    process/gmszipprocess.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -256,6 +274,25 @@ HEADERS += \
     editors/textview.h \
     editors/textviewedit.h \
     encodingsdialog.h \
+    engine/client/OAIAuthApi.h \
+    engine/client/OAIEnum.h \
+    engine/client/OAIHelpers.h \
+    engine/client/OAIHttpFileElement.h \
+    engine/client/OAIHttpRequest.h \
+    engine/client/OAIJob.h \
+    engine/client/OAIJobsApi.h \
+    engine/client/OAILog_piece.h \
+    engine/client/OAIMessage.h \
+    engine/client/OAIMessage_and_token.h \
+    engine/client/OAIModel_auth_token.h \
+    engine/client/OAIObject.h \
+    engine/client/OAIResult_user.h \
+    engine/client/OAIStatus_code_meaning.h \
+    engine/client/OAIStream_entry.h \
+    engine/client/OAIText_entry.h \
+    engine/enginemanager.h \
+    engine/engineprocess.h \
+    engine/enginestartdialog.h \
     exception.h \
     file.h \
     file/dynamicfile.h \
@@ -348,6 +385,7 @@ HEADERS += \
     process/gamslibprocess.h \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \
+    process/gmszipprocess.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \
@@ -397,6 +435,7 @@ HEADERS += \
 FORMS += \
     confirmdialog.ui \
     encodingsdialog.ui \
+    engine/enginestartdialog.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \

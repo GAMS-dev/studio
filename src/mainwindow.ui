@@ -266,6 +266,7 @@
     <addaction name="separator"/>
     <addaction name="actionRunNeos"/>
     <addaction name="actionRunNeosL"/>
+    <addaction name="actionRunEngine"/>
     <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
     <addaction name="actionStop"/>
@@ -790,6 +791,18 @@
    </property>
    <property name="toolTip">
     <string>Run NEOS - long (no intermediate log output)</string>
+   </property>
+  </action>
+  <action name="actionRunEngine">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/run-engine</normaloff>:/solid/run-engine</iconset>
+   </property>
+   <property name="text">
+    <string>Run &amp;Engine</string>
+   </property>
+   <property name="toolTip">
+    <string>Run remote GAMS Engine process</string>
    </property>
   </action>
   <action name="actionPrint">

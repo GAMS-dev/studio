@@ -38,6 +38,7 @@
 #include "miro/mirocommon.h"
 #include "editors/navigationhistory.h"
 #include "neos/neosprocess.h"
+#include "engine/engineprocess.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -193,7 +194,8 @@ private slots:
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
-    void neosProgress(AbstractProcess *proc, neos::NeosState progress);
+    void neosProgress(AbstractProcess *proc, neos::ProcState progress);
+    void engineProgress(AbstractProcess *proc, engine::ProcState progress);
     void closeNodeConditionally(ProjectFileNode *node);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
@@ -339,12 +341,15 @@ private slots:
     void on_actionPrint_triggered();
     void on_actionRunNeos_triggered();
     void on_actionRunNeosL_triggered();
+    void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
-    void neosExecute();
     void showNeosConfirmDialog();
     void createNeosProcess();
+    void showEngineStartDialog();
+    void engineDialogDecision(QAbstractButton *button);
+    void createEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
 
@@ -456,6 +461,7 @@ private:
     QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
     bool mNeosLong = false;
+    QString mEngineTempPassword;
 };
 
 }
