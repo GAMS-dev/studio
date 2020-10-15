@@ -85,9 +85,6 @@
       </property>
       <item row="1" column="0">
        <widget class="QLabel" name="laUrl">
-        <property name="toolTip">
-         <string>Enter the bare host, like &quot;miro.gams.com&quot;</string>
-        </property>
         <property name="text">
          <string>Engine URL</string>
         </property>

@@ -28,9 +28,9 @@ EngineManager::EngineManager(QObject* parent)
 //    });
 
     mJobsApi->setScheme("https");
-    mJobsApi->setHost("miro.gams.com");
+//    mJobsApi->setHost("miro.gams.com");
     mJobsApi->setPort(443);
-    mJobsApi->setBasePath("/engine/api");
+//    mJobsApi->setBasePath("/engine/api");
     // namespace = studiotests
 
     connect(mJobsApi, &OAIJobsApi::createJobSignal,
