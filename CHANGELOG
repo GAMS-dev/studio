@@ -1,4 +1,4 @@
-Version 1.4.0 *
+Version 1.4.0
 ==================
 - highlight the subcommands of execute, $call, and $hiddencall
 - added jump to included files by context menu, F2 shortcut, or holding `Ctrl` and click on the filename.
