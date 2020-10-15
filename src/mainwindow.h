@@ -37,6 +37,8 @@
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
 #include "editors/navigationhistory.h"
+#include "neos/neosprocess.h"
+#include "engine/engineprocess.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -49,6 +51,7 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
+class GoToDialog;
 class AbstractProcess;
 class FileEventHandler;
 class GamsProcess;
@@ -167,8 +170,9 @@ public slots:
     void setMainGms(ProjectFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
-    void appendSystemLog(const QString &text);
-    void showErrorMessage(QString text);
+    void appendSystemLogInfo(const QString &text) const;
+    void appendSystemLogError(const QString &text) const;
+    void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
@@ -190,6 +194,8 @@ private slots:
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
+    void neosProgress(AbstractProcess *proc, neos::ProcState progress);
+    void engineProgress(AbstractProcess *proc, engine::ProcState progress);
     void closeNodeConditionally(ProjectFileNode *node);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
@@ -262,10 +268,10 @@ private slots:
     void on_actionTerminal_triggered();
     void actionTerminalTriggered(const QString &workingDir);
 
-    // About
+    // Help
     void on_actionHelp_triggered();
     void on_actionAbout_Studio_triggered();
-    void on_actionAbout_GAMS_triggered();
+    void on_gamsLicensing_triggered();
     void on_actionAbout_Qt_triggered();
     void on_actionUpdate_triggered();
 
@@ -335,11 +341,17 @@ private slots:
     void on_actionPrint_triggered();
     void on_actionRunNeos_triggered();
     void on_actionRunNeosL_triggered();
+    void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
-    void neosExecute();
     void showNeosConfirmDialog();
+    void createNeosProcess();
+    void showEngineStartDialog();
+    void engineDialogDecision(QAbstractButton *button);
+    void createEngineProcess(QString url, QString nSpace, QString user, QString password);
+    void sslValidation(QString errorMessage);
+    void sslUserDecision(QAbstractButton *button);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -359,8 +371,9 @@ protected:
     void initGamsStandardPaths();
 
 private:
-    void initTabs();
+    void initWelcomePage();
     void initIcons();
+    void initEnvironment();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
     int fileChangedExtern(FileId fileId);
     int fileDeletedExtern(FileId fileId);
@@ -392,9 +405,12 @@ private:
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
+    void checkGamsLicense();
+    void goToLine(int result);
 
 private:
     Ui::MainWindow *ui;
+    GoToDialog *mGotoDialog;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
@@ -436,6 +452,7 @@ private:
     QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
+    bool mIgnoreSslErrors = false;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
@@ -444,6 +461,7 @@ private:
     QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
     bool mNeosLong = false;
+    QString mEngineTempPassword;
 };
 
 }

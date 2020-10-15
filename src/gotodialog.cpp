@@ -26,18 +26,16 @@
 namespace gams {
 namespace studio {
 
-GoToDialog::GoToDialog(QWidget *parent, int maxLines, bool wait)
-    : QDialog(parent),
-      ui(new Ui::GoToDialog),
-      mMaxLines(qAbs(maxLines)),
-      mWait(wait)
+GoToDialog::GoToDialog(QWidget *parent, int maxLines)
+    : QDialog(parent)
+    , ui(new Ui::GoToDialog)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
-    ui->lineEdit->setPlaceholderText(QString::number(maxLines));
-    int min = parent->fontMetrics().width(QString::number(maxLines)+"0");
+    maxLineCount(maxLines);
+    int min = parent->fontMetrics().width(QString::number(mMaxLines)+"0");
     ui->lineEdit->setMinimumWidth(min);
-    connect(ui->lineEdit, &QLineEdit::editingFinished, this, &GoToDialog::on_goToButton_clicked);
+    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &GoToDialog::on_goToButton_clicked);
 }
 
 GoToDialog::~GoToDialog()
@@ -50,17 +48,28 @@ int GoToDialog::lineNumber() const
     return mLineNumber;
 }
 
+void GoToDialog::maxLineCount(int maxLines)
+{
+    mMaxLines = maxLines;
+    ui->lineEdit->setPlaceholderText(QString::number(mMaxLines));
+}
+
+void GoToDialog::open()
+{
+    ui->lineEdit->clear();
+    QDialog::open();
+}
+
 void GoToDialog::on_goToButton_clicked()
 {
     mLineNumber = (ui->lineEdit->text().toInt())-1;
 
-    if (!mWait && mLineNumber > mMaxLines)
+    if (mLineNumber > mMaxLines)
         ui->lineEdit->setText(QString::number(mMaxLines));
     if (mLineNumber >= 0 && mLineNumber <= mMaxLines)
         accept();
     else
         reject();
-    mWait = false;
 }
 
 }

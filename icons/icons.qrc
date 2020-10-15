@@ -5,6 +5,7 @@
         <file alias="err-ref">err-ref.svg</file>
         <file alias="err-ref-missing">err-ref-missing.svg</file>
         <file alias="exclam-circle-r">exclam-circle-r.svg</file>
+        <file alias="engine">engine-logo.svg</file>
         <file alias="file-alt">file-alt.svg</file>
         <file alias="file-edit">file-edit.svg</file>
         <file alias="filter">filter.svg</file>
@@ -80,6 +81,7 @@
         <file alias="run-gdx">solid/play-gdx.svg</file>
         <file alias="run-neos">solid/play-neos.svg</file>
         <file alias="run-neos-l">solid/play-neos-l.svg</file>
+        <file alias="run-engine">solid/play-engine.svg</file>
         <file alias="save">solid/save.svg</file>
         <file alias="scroll">solid/scroll.svg</file>
         <file alias="search">solid/search.svg</file>

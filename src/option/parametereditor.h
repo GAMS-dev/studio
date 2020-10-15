@@ -47,7 +47,8 @@ enum class RunActionState {
     Compile,
     CompileWithGDXCreation,
     RunNeos,
-    RunNeosL
+    RunNeosL,
+    RunEngine
 };
 
 class ParameterEditor : public QWidget
@@ -56,8 +57,8 @@ class ParameterEditor : public QWidget
 
 public:
     explicit ParameterEditor(QAction* aRun, QAction* aRunGDX, QAction* aCompile, QAction* aCompileGDX,
-                          QAction* aRunNeos, QAction* aRunNeosL, QAction* aInterrupt, QAction* aStop,
-                          MainWindow *parent = nullptr);
+                             QAction* aRunNeos, QAction* aRunNeosL, QAction *aRunEngine,
+                             QAction* aInterrupt, QAction* aStop, MainWindow *parent = nullptr);
     ~ParameterEditor();
 
     QString on_runAction(RunActionState state);
@@ -123,7 +124,7 @@ private slots:
 
 private:
     void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aRunNeos,
-                            QAction *aRunNeosL);
+                            QAction *aRunNeosL, QAction *aRunEngine);
     void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
@@ -135,6 +136,7 @@ private:
 
     Ui::ParameterEditor *ui;
     QDockWidget *mExtendedEditor = nullptr;
+    bool mHasSSL = false;
 
     QAction* actionRun;
     QAction* actionRun_with_GDX_Creation;
@@ -142,6 +144,7 @@ private:
     QAction* actionCompile_with_GDX_Creation;
     QAction* actionRunNeos;
     QAction* actionRunNeosL;
+    QAction* actionRunEngine;
 
     QAction* actionInterrupt;
     QAction* actionStop;

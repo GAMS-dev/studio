@@ -56,7 +56,7 @@ macx {
     QMAKE_INFO_PLIST = ../platform/macos/info.plist
 }
 unix {
-    LIBS += -ldl
+    LIBS += -ldl -lpthread
 }
 win32 {
     RC_FILE += ../platform/windows/studio.rc
@@ -75,7 +75,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    abstractprocess.cpp \
     application.cpp \
     autosavehandler.cpp \
     colors/palettemanager.cpp \
@@ -98,6 +97,23 @@ SOURCES += \
     editors/textview.cpp \
     editors/textviewedit.cpp \
     encodingsdialog.cpp \
+    engine/client/OAIAuthApi.cpp \
+    engine/client/OAIHelpers.cpp \
+    engine/client/OAIHttpFileElement.cpp \
+    engine/client/OAIHttpRequest.cpp \
+    engine/client/OAIJob.cpp \
+    engine/client/OAIJobsApi.cpp \
+    engine/client/OAILog_piece.cpp \
+    engine/client/OAIMessage.cpp \
+    engine/client/OAIMessage_and_token.cpp \
+    engine/client/OAIModel_auth_token.cpp \
+    engine/client/OAIResult_user.cpp \
+    engine/client/OAIStatus_code_meaning.cpp \
+    engine/client/OAIStream_entry.cpp \
+    engine/client/OAIText_entry.cpp \
+    engine/enginemanager.cpp \
+    engine/engineprocess.cpp \
+    engine/enginestartdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
     file/fileevent.cpp \
@@ -116,8 +132,6 @@ SOURCES += \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
     fileeventhandler.cpp \
-    gamslibprocess.cpp  \
-    gamsprocess.cpp     \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
@@ -155,8 +169,10 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    neos/httpmanager.cpp \
+    neos/neosmanager.cpp \
     neos/neosprocess.cpp \
-#    neos/neosxmlrpc.cpp \
+    neos/xmlrpc.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
     numerics/dtoaLoc.c \
@@ -184,7 +200,12 @@ SOURCES += \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
+    process/abstractprocess.cpp \
     process/gamsinstprocess.cpp \
+    process/gamslibprocess.cpp  \
+    process/gamsprocess.cpp     \
+    process/gmsunzipprocess.cpp \
+    process/gmszipprocess.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -206,10 +227,10 @@ SOURCES += \
     settings.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
-    support/aboutgamsdialog.cpp         \
     support/checkforupdatewrapper.cpp \
     support/distributionvalidator.cpp \
     support/gamslicenseinfo.cpp         \
+    support/gamslicensingdialog.cpp \
     support/solverconfiginfo.cpp        \
     support/solvertablemodel.cpp        \
     support/updatedialog.cpp \
@@ -229,7 +250,6 @@ SOURCES += \
     wplabel.cpp
 
 HEADERS += \
-    abstractprocess.h \
     application.h \
     autosavehandler.h \
     colors/palettemanager.h \
@@ -254,6 +274,25 @@ HEADERS += \
     editors/textview.h \
     editors/textviewedit.h \
     encodingsdialog.h \
+    engine/client/OAIAuthApi.h \
+    engine/client/OAIEnum.h \
+    engine/client/OAIHelpers.h \
+    engine/client/OAIHttpFileElement.h \
+    engine/client/OAIHttpRequest.h \
+    engine/client/OAIJob.h \
+    engine/client/OAIJobsApi.h \
+    engine/client/OAILog_piece.h \
+    engine/client/OAIMessage.h \
+    engine/client/OAIMessage_and_token.h \
+    engine/client/OAIModel_auth_token.h \
+    engine/client/OAIObject.h \
+    engine/client/OAIResult_user.h \
+    engine/client/OAIStatus_code_meaning.h \
+    engine/client/OAIStream_entry.h \
+    engine/client/OAIText_entry.h \
+    engine/enginemanager.h \
+    engine/engineprocess.h \
+    engine/enginestartdialog.h \
     exception.h \
     file.h \
     file/dynamicfile.h \
@@ -273,8 +312,6 @@ HEADERS += \
     file/recentdata.h \
     file/treeitemdelegate.h \
     fileeventhandler.h \
-    gamslibprocess.h \
-    gamsprocess.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \
@@ -311,8 +348,10 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    neos/httpmanager.h \
+    neos/neosmanager.h \
     neos/neosprocess.h \
-#    neos/neosxmlrpc.h \
+    neos/xmlrpc.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
     numerics/dtoaLoc.h \
@@ -340,7 +379,13 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
+    process.h \
+    process/abstractprocess.h \
     process/gamsinstprocess.h \
+    process/gamslibprocess.h \
+    process/gamsprocess.h \
+    process/gmsunzipprocess.h \
+    process/gmszipprocess.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \
@@ -362,10 +407,10 @@ HEADERS += \
     settings.h \
     settingsdialog.h \
     statuswidgets.h \
-    support/aboutgamsdialog.h       \
     support/checkforupdatewrapper.h \
     support/distributionvalidator.h \
     support/gamslicenseinfo.h       \
+    support/gamslicensingdialog.h \
     support/solverconfiginfo.h      \
     support/solvertablemodel.h      \
     support/updatedialog.h \
@@ -390,6 +435,7 @@ HEADERS += \
 FORMS += \
     confirmdialog.ui \
     encodingsdialog.ui \
+    engine/enginestartdialog.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
@@ -412,7 +458,7 @@ FORMS += \
     search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
-    support/aboutgamsdialog.ui \
+    support/gamslicensingdialog.ui \
     support/updatedialog.ui \
     tabdialog.ui \
     welcomepage.ui

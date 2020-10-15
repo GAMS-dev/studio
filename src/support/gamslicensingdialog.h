@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ABOUTGAMSDIALOG_H
-#define ABOUTGAMSDIALOG_H
+#ifndef GAMSLICENSINGDIALOG_H
+#define GAMSLICENSINGDIALOG_H
 
 #include <QDialog>
 
@@ -27,33 +27,33 @@ namespace studio {
 namespace support {
 
 namespace Ui {
-class AboutGAMSDialog;
+class GamsLicensingDialog;
 }
 
-class AboutGAMSDialog : public QDialog
+class GamsLicensingDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit AboutGAMSDialog(const QString &title, QWidget *parent = nullptr);
-    ~AboutGAMSDialog();
+    explicit GamsLicensingDialog(const QString &title, QWidget *parent = nullptr);
+    ~GamsLicensingDialog();
 
     static QString studioInfo();
     static QString aboutStudio();
     static QString header();
+    static void createLicenseFile(QWidget *parent);
 
 private:
     QString gamsLicense();
-    void createLicenseFile(QWidget *parent);
 
 private slots:
     void on_copylicense_clicked();
 
 private:
-    Ui::AboutGAMSDialog *ui;
+    Ui::GamsLicensingDialog *ui;
 };
 
 }
 }
 }
-#endif // ABOUTGAMSDIALOG_H
+#endif // GAMSLICENSINGDIALOG_H

@@ -20,7 +20,7 @@
 #ifndef ABSTRACTMIROPROCESS_H
 #define ABSTRACTMIROPROCESS_H
 
-#include "abstractprocess.h"
+#include "process/abstractprocess.h"
 
 namespace gams {
 namespace studio {

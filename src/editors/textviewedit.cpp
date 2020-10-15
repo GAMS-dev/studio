@@ -172,6 +172,7 @@ void TextViewEdit::contextMenuEvent(QContextMenuEvent *e)
             menu->removeAction(act);
             act->disconnect();
             act->setEnabled(mMapper.hasSelection());
+            act->setShortcut(QKeySequence("Ctrl+C"));
             connect(act, &QAction::triggered, this, &TextViewEdit::copySelection);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-delete") {

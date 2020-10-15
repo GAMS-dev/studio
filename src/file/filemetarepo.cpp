@@ -260,9 +260,6 @@ void FileMetaRepo::fileChanged(const QString &path)
     } else {
         // changedExternally
         if (file->compare(path)) {
-            //TODO(JM) review with Rogo for side-effects. If none, remove commented lines
-//            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
-//                                                                      : FileEventKind::changedExtern;
             FileEvent e(file->id(), FileEventKind::changedExtern);
             file->updateView();
             emit fileEvent(e);

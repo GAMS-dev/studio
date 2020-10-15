@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QTextStream>
 #include <QMetaEnum>
+#include <QMetaType>
 
 namespace gams {
 namespace studio {
@@ -36,6 +37,8 @@ class PhantomInt
     int mValue;
 public:
     PhantomInt (int value = -1) : mValue(value) { }
+    PhantomInt (const PhantomInt<PHANTOM_TYPE> &value) : mValue(value.mValue) { }
+    virtual ~PhantomInt() {}
     inline operator int() const {return mValue;}
     inline bool isValid() const {return mValue>=0;}
     inline PhantomInt<PHANTOM_TYPE>& operator++() {
@@ -136,9 +139,17 @@ operator<<(QTextStream &dbg, T enumValue)
 const int MAX_SEARCH_RESULTS = 50000;
 const double TABLE_ROW_HEIGHT = 1.6;
 
-const int GAMSRETRN_TOO_MANY_SCRATCH_DIRS = 110;
+enum ProcessExitCode {
+    ecTooManyScratchDirs = 110,
+    ecNeosExitWithErrors = 111,
+};
+
 
 }
 }
+
+Q_DECLARE_METATYPE(gams::studio::FileId);
+Q_DECLARE_METATYPE(gams::studio::NodeId);
+Q_DECLARE_METATYPE(gams::studio::TextMarkId);
 
 #endif // COMMON_H

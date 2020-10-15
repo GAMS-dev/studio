@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -242,10 +242,10 @@
     </property>
     <addaction name="actionHelp"/>
     <addaction name="separator"/>
-    <addaction name="actionAbout_GAMS"/>
-    <addaction name="separator"/>
     <addaction name="actionAbout_Qt"/>
     <addaction name="actionAbout_Studio"/>
+    <addaction name="separator"/>
+    <addaction name="gamsLicensing"/>
     <addaction name="separator"/>
     <addaction name="actionChangelog"/>
     <addaction name="separator"/>
@@ -266,6 +266,7 @@
     <addaction name="separator"/>
     <addaction name="actionRunNeos"/>
     <addaction name="actionRunNeosL"/>
+    <addaction name="actionRunEngine"/>
     <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
     <addaction name="actionStop"/>
@@ -792,6 +793,18 @@
     <string>Run NEOS - long (no intermediate log output)</string>
    </property>
   </action>
+  <action name="actionRunEngine">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/run-engine</normaloff>:/solid/run-engine</iconset>
+   </property>
+   <property name="text">
+    <string>Run &amp;Engine</string>
+   </property>
+   <property name="toolTip">
+    <string>Run remote GAMS Engine process</string>
+   </property>
+  </action>
   <action name="actionPrint">
    <property name="text">
     <string>Print</string>
@@ -1154,12 +1167,12 @@
     <string>Ctrl+Shift+O</string>
    </property>
   </action>
-  <action name="actionAbout_GAMS">
+  <action name="gamsLicensing">
    <property name="text">
-    <string>About GAMS</string>
+    <string>GAMS Licensing</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::ApplicationSpecificRole</enum>
+    <enum>QAction::TextHeuristicRole</enum>
    </property>
   </action>
   <action name="actionToggleBookmark">
@@ -1454,9 +1467,6 @@
    </property>
    <property name="toolTip">
     <string>Makes room to concentrate on your work</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Alt+Return</string>
    </property>
   </action>
   <action name="actionFoldAllTextBlocks">

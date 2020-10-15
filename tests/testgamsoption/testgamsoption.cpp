@@ -129,8 +129,8 @@ void TestGamsOption::testOptionEnumIntType_data()
     QTest::addColumn<int>("numberOfEnumint");
     QTest::addColumn<int>("defaultValue");
 
-    QTest::newRow("PageContr")  << "PageContr"   << true  << 4  << 3;
-    QTest::newRow("LogOption")  << "LogOption"   << true  << 5  << 1;
+    QTest::newRow("PageContr")  << "PageContr"   << true  << 4  << 2;
+    QTest::newRow("LogOption")  << "LogOption"   << true  << 5  << 3;
     QTest::newRow("AppendLog")  << "AppendLog"   << true  << 2  << 0;
     QTest::newRow("MultiPass")  << "MultiPass"   << true  << 3  << 0;
     QTest::newRow("DFormat")    << "DFormat"     << true  << 3  << 0;
@@ -210,9 +210,9 @@ void TestGamsOption::testOptionDoubleType_data()
     QTest::addColumn<double>("upperBound");
     QTest::addColumn<double>("defaultValue");
 
-    QTest::newRow("ResLim")  <<  "ResLim"  << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1000.0;
-    QTest::newRow("OptCR")   << "OptCR"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.10;
-    QTest::newRow("OptCA")   << "OptCA"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.0;
+    QTest::newRow("ResLim")  <<  "ResLim"  << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE <<  10000000000.00;
+    QTest::newRow("OptCR")   << "OptCR"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 1.000000000000000E-4;
+    QTest::newRow("OptCA")   << "OptCA"    << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.00;
     QTest::newRow("Bratio")  << "Bratio"   << true  << 0.0 << 1.0                                  << 0.25;
     QTest::newRow("FDDelta") << "FDDelta"  << true  << 1.000000000000000E-9 << 1.0                 << 1.000000000000000E-5;
     QTest::newRow("ZeroRes") << "ZeroRes"  << true  << 0.0 << gams::studio::option::OPTION_VALUE_MAXDOUBLE << 0.0;
@@ -241,11 +241,11 @@ void TestGamsOption::testOptionIntegerType_data()
     QTest::addColumn<int>("upperBound");
     QTest::addColumn<int>("defaultValue");
 
-    QTest::newRow("PageWidth")   << "PageWidth"   << true   << 72  << 32767                              << 255;
+    QTest::newRow("PageWidth")   << "PageWidth"   << true   << 72  << 32767                                      << 32767;
     QTest::newRow("PoolUse")     << "PoolUse"     << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
     QTest::newRow("CErr")        << "CErr"        << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
     QTest::newRow("Opt")         << "Opt"         << false  << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 0;
-    QTest::newRow("IterLim")     << "IterLim"     << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 2000000000;
+    QTest::newRow("IterLim")     << "IterLim"     << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 2147483647;
     QTest::newRow("Seed")        << "Seed"        << true   << 0   << gams::studio::option::OPTION_VALUE_MAXINT  << 3141;
 }
 

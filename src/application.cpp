@@ -39,7 +39,7 @@ Application::Application(int& argc, char** argv)
 {
     parseCmdArgs();
     QString userName;
-#ifdef unix
+#ifdef __unix__
     userName = qgetenv("USER");
 #else
     userName = qEnvironmentVariable("USERNAME", QString());
@@ -161,7 +161,11 @@ bool Application::event(QEvent *event)
         for (auto window : allWindows()) {
             if (!window->isVisible())
                 continue;
-            if (window->windowState() & Qt::WindowMinimized || QOperatingSystemVersion::currentType() != QOperatingSystemVersion::MacOS) {
+            if (window->windowState() & Qt::WindowMinimized
+#ifndef __APPLE__
+                    || true
+#endif
+                    ) {
                 window->show();
                 window->raise();
             }
