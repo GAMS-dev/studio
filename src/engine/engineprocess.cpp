@@ -330,6 +330,7 @@ void EngineProcess::reGetJobStatus(const qint32 &status, const qint32 &gamsExitC
 void EngineProcess::reKillJob(const QString &text)
 {
     emit newStdChannelData('\n'+text.toUtf8()+'\n');
+    // TODO(JM) set completed HERE
 }
 
 void EngineProcess::reGetLog(const QByteArray &data)
