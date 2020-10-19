@@ -18,6 +18,7 @@ public:
 
 signals:
     void received(QString name, QVariant data);
+    void error(QString errorString, QNetworkReply::NetworkError error);
     void sslErrors(const QStringList &errorList);
 
 public slots:

@@ -1841,6 +1841,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
     }
+    updateRunState();
 }
 
 void MainWindow::postGamsLibRun()
@@ -2140,7 +2141,7 @@ bool MainWindow::isRecentGroupRunning()
     if (!mRecent.group()) return false;
     ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
     if (!runGroup) return false;
-    return (runGroup->gamsProcessState() == QProcess::Running);
+    return (runGroup->gamsProcessState() != QProcess::NotRunning);
 }
 
 void MainWindow::on_actionShow_System_Log_triggered()
@@ -2830,14 +2831,21 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
 
 void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
 {
-    Settings *settings = Settings::settings();
-    ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    ProjectFileNode* fileNode = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
+    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
     if (!runGroup) {
         DEB() << "Nothing to be executed.";
         return;
     }
+    bool ready = executePrepare(fileNode, runGroup, commandLineStr, std::move(process), gmsFileNode);
+    if (ready) execution(runGroup);
+}
 
+
+bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* runGroup, QString commandLineStr,
+                                std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
+{
+    Settings *settings = Settings::settings();
     runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     runGroup->clearErrorTexts();
 
@@ -2862,7 +2870,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
         int ret = msgBox.exec();
 
         if (ret == QMessageBox::Cancel) {
-            return;
+            return false;
         } else if (msgBox.clickedButton() == discardButton) {
             for (FileMeta *file: modifiedFiles)
                 if (file->kind() != FileKind::Log) {
@@ -2927,10 +2935,10 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     if (gmsFilePath == "") {
         appendSystemLogWarning("No runnable GMS file found in group ["+runGroup->name()+"].");
         ui->actionShow_System_Log->trigger();
-        return;
+        return false;
     }
     if (gmsFileNode)
-        logNode->file()->setCodecMib(fc->file()->codecMib());
+        logNode->file()->setCodecMib(fileNode->file()->codecMib());
     else {
         FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
         ProjectFileNode *runNode = runGroup->findFile(runMeta);
@@ -2959,12 +2967,19 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
     connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 
+    logNode->linkToProcess(groupProc);
+    return true;
+}
+
+void MainWindow::execution(ProjectRunGroupNode *runGroup)
+{
+    AbstractProcess* groupProc = runGroup->process();
     groupProc->execute();
     ui->toolBar->repaint();
 
-    logNode->linkToProcess(groupProc);
     ui->dockProcessLog->raise();
 }
+
 
 void MainWindow::updateRunState()
 {
@@ -3091,8 +3106,8 @@ void MainWindow::showNeosConfirmDialog()
 void MainWindow::createNeosProcess()
 {
     updateAndSaveSettings();
-    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
     if (!runGroup) return;
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
     neosProcess->setPriority(mNeosLong ? neos::prioLong : neos::prioShort);
@@ -3101,12 +3116,14 @@ void MainWindow::createNeosProcess()
     runGroup->setProcess(std::move(neosProcess));
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
     connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::neosProgress);
+    neosPtr->setStarting();
+    executePrepare(fileNode, runGroup, mGamsParameterEditor->getCurrentCommandLineData());
     if (!mIgnoreSslErrors) {
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
         neosPtr->validate();
     } else {
         updateAndSaveSettings();
-        execute(mGamsParameterEditor->getCurrentCommandLineData());
+        execution(runGroup);
     }
 }
 
@@ -3114,7 +3131,10 @@ void MainWindow::sslValidation(QString errorMessage)
 {
     if (mIgnoreSslErrors || errorMessage.isEmpty()) {
         updateAndSaveSettings();
-        execute(mGamsParameterEditor->getCurrentCommandLineData());
+        ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+        ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+        if (!runGroup) return;
+        execution(runGroup);
     } else {
         QMessageBox *msgBox = new QMessageBox(this);
         msgBox->setWindowTitle("SSL Error");
@@ -3130,8 +3150,8 @@ void MainWindow::sslValidation(QString errorMessage)
 
 void MainWindow::sslUserDecision(QAbstractButton *button)
 {
-    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
     if (!runGroup) return;
     QMessageBox *msgBox = qobject_cast<QMessageBox*>(sender());
     if (msgBox && msgBox->standardButton(button) == QMessageBox::Ignore) {
@@ -3139,7 +3159,7 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
             neosProc->setIgnoreSslErrors();
             mIgnoreSslErrors = true;
             updateAndSaveSettings();
-            execute(mGamsParameterEditor->getCurrentCommandLineData());
+            execution(runGroup);
         }
     } else {
         runGroup->setProcess(nullptr);

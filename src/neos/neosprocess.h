@@ -46,13 +46,16 @@ public:
     QProcess::ProcessState state() const override;
     void validate();
     void setIgnoreSslErrors();
+    void setStarting();
 
 signals:
     void procStateChanged(AbstractProcess *proc, neos::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
 
+
 protected slots:
+    void completed(int exitCode) override;
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const int &jobNumber, const QString &jobPassword);
@@ -87,6 +90,7 @@ private:
     Priority mPrio;
     ProcState mProcState;
     QTimer mPullTimer;
+    QProcess::ProcessState mPreparationState;
 
     AbstractGamsProcess *mSubProc = nullptr;
 };
