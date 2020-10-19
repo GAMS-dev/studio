@@ -18,8 +18,6 @@ Version 1.4.0
 - renamed GAMS About dialog to GAMS Licensing dialog
 - improved GAMS license detection during Studio start and in GAMS Licensing dialog. Additionally the user gets more information about the current license via the system log.
 - updated GoTo dialog to avoid unexpected crashes on macOS and to follow the macOS dialog behavior rules
-- added tooltips to search options in search dialog
-- reworded Distraction Free Mode shortcut for better consistency with other shortcuts
 - changed behavior of "Whole Words" search option: $ is now considered a word boundary
 
 Version 1.3.6
