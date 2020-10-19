@@ -15,6 +15,7 @@ Version 1.4.0
 - added support for comma separated list as file filter in search
 - adjusted search dialog size and resize behavior
 - natively implemented NEOS processing, enabling to kill submitted active jobs
+- added support to submit processing to a GAMS Engine server
 - renamed GAMS About dialog to GAMS Licensing dialog
 - improved GAMS license detection during Studio start and in GAMS Licensing dialog. Additionally the user gets more information about the current license via the system log.
 - updated GoTo dialog to avoid unexpected crashes on macOS and to follow the macOS dialog behavior rules
