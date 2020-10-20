@@ -1,5 +1,6 @@
 Version 1.4.1 *
 ==================
+- Improve handling of network errors on running NEOS jobs
 
 Version 1.4.0
 ==================
