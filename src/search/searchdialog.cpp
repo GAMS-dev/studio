@@ -533,7 +533,30 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         }
     }
 
-    if (!res) {
+    qDebug() /*rogo: delete*/ << "matchNr" << matchNr;
+    if (!res && (matchNr >= MAX_SEARCH_RESULTS-1 || matchNr == 0)) {
+        QTextDocument::FindFlags flags;
+        if (backwards) flags = flags | QTextDocument::FindBackward;
+
+        int x = 0;
+        int y = 0;
+        if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+            qDebug() /*rogo: delete*/ << "a";
+            e->setTextCursor(e->document()->find(createRegex(), e->textCursor(), flags));
+            x = e->textCursor().positionInBlock();
+            y = e->textCursor().blockNumber();
+            e->jumpTo(y, x);
+        } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
+            qDebug() /*rogo: delete*/ << "b";
+            t->findText(createRegex(), flags, mSplitSearchContinue);
+            x = t->position().x()-1;
+            y = t->position().y();
+        }
+        updateFindNextLabel(y, x);
+        return;
+
+    } else if (!res) {
+        qDebug() /*rogo: delete*/ << "!res";
         if (backwards) res = &resultList.last();
         else res = &resultList.first();
 
@@ -873,7 +896,7 @@ void SearchDialog::updateNrMatches(int current, int max)
         else
             ui->lbl_nrResults->setText(QString::number(size) + " matches");
 
-        if (list->size() > MAX_SEARCH_RESULTS-1) {
+        if (list->size() >= MAX_SEARCH_RESULTS) {
             ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
             ui->lbl_nrResults->setToolTip("Search is limited to " + QString::number(MAX_SEARCH_RESULTS) + " matches.");
         } else {
