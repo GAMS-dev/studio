@@ -62,6 +62,8 @@ void EngineStartDialog::focusEmptyField()
 
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const
 {
+    if (button == ui->bAlways)
+        return QDialogButtonBox::YesToAll;
     return ui->buttonBox->standardButton(button);
 }
 
@@ -69,6 +71,13 @@ void EngineStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
     setFixedSize(size());
+}
+
+void EngineStartDialog::buttonClicked(QAbstractButton *button)
+{
+    bool always = button == ui->bAlways;
+    bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
+    emit ready(start, always);
 }
 
 void EngineStartDialog::textChanged(const QString &text)
@@ -80,6 +89,13 @@ void EngineStartDialog::textChanged(const QString &text)
             && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
     if (enabled != bOk->isEnabled())
         bOk->setEnabled(enabled);
+    if (enabled != ui->bAlways->isEnabled())
+        ui->bAlways->setEnabled(enabled);
+}
+
+void EngineStartDialog::on_bAlways_clicked()
+{
+    emit buttonClicked(ui->bAlways);
 }
 
 } // namespace engine

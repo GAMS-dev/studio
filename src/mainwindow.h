@@ -346,7 +346,7 @@ private slots:
     void showNeosConfirmDialog();
     void createNeosProcess();
     void showEngineStartDialog();
-    void engineDialogDecision(QAbstractButton *button);
+    void engineDialogDecision(bool start, bool always);
     void createEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
@@ -457,6 +457,7 @@ private:
     bool mMiroRunning = false;
     bool mNeosLong = false;
     QString mEngineTempPassword;
+    bool mEngineNoDialog = false;
 };
 
 }

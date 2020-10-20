@@ -31,13 +31,15 @@ public:
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
-    void buttonClicked(QAbstractButton *button);
+    void ready(bool start, bool always);
 
 protected:
     void showEvent(QShowEvent *event);
+    void buttonClicked(QAbstractButton *button);
 
 private slots:
     void textChanged(const QString &text);
+    void on_bAlways_clicked();
 
 private:
     Ui::EngineStartDialog *ui;

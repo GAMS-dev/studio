@@ -3139,23 +3139,29 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 
 void MainWindow::showEngineStartDialog()
 {
-    engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
-    DEB() << dialog->windowFlags();
-    connect(dialog, &engine::EngineStartDialog::buttonClicked, this, &MainWindow::engineDialogDecision);
-    dialog->setLastPassword(mEngineTempPassword);
-    dialog->setModal(true);
-    dialog->open();
-    dialog->focusEmptyField();
+    if (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
+        createEngineProcess(Settings::settings()->toString(SettingsKey::skEngineUrl),
+                            Settings::settings()->toString(SettingsKey::skEngineNamespace),
+                            Settings::settings()->toString(SettingsKey::skEngineUser), mEngineTempPassword);
+    } else {
+        engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
+        connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
+        dialog->setLastPassword(mEngineTempPassword);
+        dialog->setModal(true);
+        dialog->open();
+        dialog->focusEmptyField();
+    }
 }
 
-void MainWindow::engineDialogDecision(QAbstractButton *button)
+void MainWindow::engineDialogDecision(bool start, bool always)
 {
     engine::EngineStartDialog *dialog = qobject_cast<engine::EngineStartDialog*>(sender());
-    if (dialog && dialog->standardButton(button) == QDialogButtonBox::Ok) {
+    if (dialog && start) {
         Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         mEngineTempPassword = dialog->password();
+        mEngineNoDialog = always;
 //        mUser = "studiotests";
 //        mPassword = "rercud-qinRa9-wagbew";
         createEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());
