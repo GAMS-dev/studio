@@ -21,9 +21,9 @@ EngineManager::EngineManager(QObject* parent)
 //            [this](OAIModel_auth_token summary) {
 //        emit reAuth(summary.getToken());
 //    });
-//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignalE,
-//            [this](OAIModel_auth_token , QNetworkReply::NetworkError , QString error_str) {
-//        emit reError("From postW: "+error_str);
+//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignalEFull,
+//            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString) {
+//        emit reError("From postW: "+worker->error_str);
 //    });
 
     mJobsApi->setScheme("https");
@@ -33,33 +33,33 @@ EngineManager::EngineManager(QObject* parent)
             [this](OAIMessage_and_token summary) {
         emit reCreateJob(summary.getMessage(), summary.getToken());
     });
-    connect(mJobsApi, &OAIJobsApi::createJobSignalE,
-            [this](OAIMessage_and_token, QNetworkReply::NetworkError error_type, QString error_str) {
-        emit reError("Code "+QString::number(error_type).toLatin1()+" from createJob: "+error_str);
+    connect(mJobsApi, &OAIJobsApi::createJobSignalEFull,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
+        emit reError("Network error "+QString::number(error_type).toLatin1()+" from createJob: "+worker->error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobSignal, [this](OAIJob summary) {
         emit reGetJobStatus(summary.getStatus(), summary.getProcessStatus());
     });
-    connect(mJobsApi, &OAIJobsApi::getJobSignalE,
-            [this](OAIJob, QNetworkReply::NetworkError error_type, QString error_str) {
-        emit reError("Code "+QString::number(error_type).toLatin1()+" from getJob: "+error_str);
+    connect(mJobsApi, &OAIJobsApi::getJobSignalEFull,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
+        emit reError("Network error "+QString::number(error_type).toLatin1()+" from getJob: "+worker->error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobZipSignal, [this](OAIHttpFileElement summary) {
         emit reGetOutputFile(summary.asByteArray());
     });
-    connect(mJobsApi, &OAIJobsApi::getJobZipSignalE,
-            [this](OAIHttpFileElement, QNetworkReply::NetworkError error_type, QString error_str) {
-        emit reError("Code "+QString::number(error_type).toLatin1()+" from getJobZip: "+error_str);
+    connect(mJobsApi, &OAIJobsApi::getJobZipSignalEFull,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
+        emit reError("Network error "+QString::number(error_type).toLatin1()+" from getJobZip: "+worker->error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::killJobSignal, [this](OAIMessage summary) {
         emit reKillJob(summary.getMessage());
     });
-    connect(mJobsApi, &OAIJobsApi::killJobSignalE,
-            [this](OAIMessage, QNetworkReply::NetworkError error_type, QString error_str) {
-        emit reError("Code "+QString::number(error_type).toLatin1()+" from killJob: "+error_str);
+    connect(mJobsApi, &OAIJobsApi::killJobSignalEFull,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
+        emit reError("Network error "+QString::number(error_type).toLatin1()+" from killJob: "+worker->error_str);
     });
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, [this](OAILog_piece summary) {
@@ -68,10 +68,10 @@ EngineManager::EngineManager(QObject* parent)
             emit reGetLog(summary.getMessage().toUtf8());
         }
     });
-    connect(mJobsApi, &OAIJobsApi::popJobLogsSignalE,
-            [this](OAILog_piece, QNetworkReply::NetworkError error_type, QString error_str) {
+    connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
         if (error_type != QNetworkReply::ServiceUnavailableError)
-            emit reGetLog("Code "+QString::number(error_type).toLatin1()+" from popLog: "+error_str.toUtf8());
+            emit reGetLog("Network error "+QString::number(error_type).toLatin1()+" from popLog: "+worker->error_str.toUtf8());
     });
 
     connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);

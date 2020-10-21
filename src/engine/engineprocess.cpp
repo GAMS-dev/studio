@@ -368,7 +368,7 @@ void EngineProcess::reError(const QString &errorText)
 {
     disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
     mPullTimer.stop();
-    emit newStdChannelData("\nError: "+errorText.toUtf8()+"\n");
+    emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
 }
 
