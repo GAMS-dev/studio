@@ -145,6 +145,7 @@ private:
     QThread mThread;
     bool mSearching = false;
     QMutex mMutex;
+    bool mOutsideOfList = false;
 };
 
 }

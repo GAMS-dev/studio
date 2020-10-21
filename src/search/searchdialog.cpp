@@ -533,30 +533,29 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         }
     }
 
-    qDebug() /*rogo: delete*/ << "matchNr" << matchNr;
-    if (!res && (matchNr >= MAX_SEARCH_RESULTS-1 || matchNr == 0)) {
+    if (matchNr >= MAX_SEARCH_RESULTS-1) {
+        mOutsideOfList = true;
         QTextDocument::FindFlags flags;
         if (backwards) flags = flags | QTextDocument::FindBackward;
 
         int x = 0;
         int y = 0;
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-            qDebug() /*rogo: delete*/ << "a";
-            e->setTextCursor(e->document()->find(createRegex(), e->textCursor(), flags));
+            QTextCursor tc = e->textCursor();
+            QTextCursor ntc= e->document()->find(createRegex(), backwards ? tc.position()-1 : tc.position(), flags);
+            e->setTextCursor(ntc);
             x = e->textCursor().positionInBlock();
             y = e->textCursor().blockNumber();
             e->jumpTo(y, x);
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-            qDebug() /*rogo: delete*/ << "b";
             t->findText(createRegex(), flags, mSplitSearchContinue);
             x = t->position().x()-1;
             y = t->position().y();
         }
         updateFindNextLabel(y, x);
         return;
-
-    } else if (!res) {
-        qDebug() /*rogo: delete*/ << "!res";
+    // TODO(RG): fix overflow/start over
+    } else if (!res && !mOutsideOfList) {
         if (backwards) res = &resultList.last();
         else res = &resultList.first();
 
@@ -564,10 +563,11 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     }
 
     // jump to
-    ProjectFileNode *node = mMain->projectRepo()->findFile(res->filepath());
-    if (!node) EXCEPT() << "File not found: " << res->filepath();
-    node->file()->jumpTo(node->runGroupId(), true, res->lineNr()-1, qMax(res->colNr(), 0), res->length());
-
+    if (res) {
+        ProjectFileNode *node = mMain->projectRepo()->findFile(res->filepath());
+        if (!node) EXCEPT() << "File not found: " << res->filepath();
+        node->file()->jumpTo(node->runGroupId(), true, res->lineNr()-1, qMax(res->colNr(), 0), res->length());
+    }
     // update ui
     if (resultsView() && !resultsView()->isOutdated()) resultsView()->selectItem(matchNr);
     updateNrMatches(matchNr+1);
@@ -705,6 +705,7 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
             updateNrMatches(list.indexOf(match) + 1);
+            mOutsideOfList = false;
 
             if (resultsView() && !mHasChanged)
                 resultsView()->selectItem(i);
