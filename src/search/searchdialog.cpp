@@ -554,8 +554,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         }
         updateFindNextLabel(y, x);
         return;
-    // TODO(RG): fix overflow/start over
     } else if (!res && !mOutsideOfList) {
+        // TODO(RG): fix overflow/start over
         if (backwards) res = &resultList.last();
         else res = &resultList.first();
 
@@ -621,23 +621,6 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         on_btn_FindAll_clicked();
     }
     QDialog::keyPressEvent(e);
-}
-
-void SearchDialog::searchResume()
-{
-    if (mSplitSearchView && mSplitSearchView == ViewHelper::toTextView(mMain->recent()->editor())) {
-        bool found = mSplitSearchView->findText(createRegex(), mSplitSearchFlags, mSplitSearchContinue);
-        if (found) updateFindNextLabel(mSplitSearchView->position().y()+1, mSplitSearchView->position().x());
-
-        if (mSplitSearchContinue) {
-            setSearchStatus(SearchStatus::Searching);
-            QTimer::singleShot(50, this, &SearchDialog::searchResume);
-        } else {
-            if (!found) setSearchStatus(SearchStatus::NoResults);
-            mSplitSearchView = nullptr;
-        }
-    }
-    setSearchOngoing(false);
 }
 
 void SearchDialog::on_combo_scope_currentIndexChanged(int)
@@ -713,6 +696,7 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
             return;
         }
     }
+    resultsView()->selectItem(-1);
     updateNrMatches();
 }
 

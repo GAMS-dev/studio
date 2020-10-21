@@ -50,11 +50,8 @@ void SearchWorker::findInFiles()
 
             while (!in.atEnd()) { // read file
 
-                // abort: too many results
-                if (mMatches->size() > MAX_SEARCH_RESULTS-1) break;
-
                 lineCounter++;
-                if (lineCounter % 1000 == 0 && thread()->isInterruptionRequested()) break;
+                if (lineCounter % 500 == 0 && thread()->isInterruptionRequested()) break;
 
                 QString line = in.readLine();
 
@@ -62,6 +59,8 @@ void SearchWorker::findInFiles()
                 QRegularExpressionMatchIterator i = mMatches->searchRegex().globalMatch(line);
                 while (i.hasNext()) {
                     match = i.next();
+                    // abort: too many results
+                    if (mMatches->size() > MAX_SEARCH_RESULTS-1) break;
                     mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
                                        file.fileName(), line.trimmed());
                 }

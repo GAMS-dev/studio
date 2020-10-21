@@ -76,9 +76,6 @@ public slots:
     void intermediateUpdate();
     void updateNrMatches(int current = 0, int max = -1);
 
-protected slots:
-    void searchResume();
-
 private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
