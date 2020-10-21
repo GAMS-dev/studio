@@ -3,6 +3,8 @@
 #include "logger.h"
 #include "commonpaths.h"
 #include "process/gmsunzipprocess.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
@@ -39,6 +41,7 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent),
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
     connect(&mPullTimer, &QTimer::timeout, this, &NeosProcess::pullStatus);
+    mPreparationState = QProcess::NotRunning;
 }
 
 NeosProcess::~NeosProcess()
@@ -209,7 +212,7 @@ void NeosProcess::setParameters(const QStringList &parameters)
 
 QProcess::ProcessState NeosProcess::state() const
 {
-    return (mProcState <= ProcIdle) ? QProcess::NotRunning : QProcess::Running;
+    return (mProcState <= ProcIdle) ? mPreparationState : QProcess::Running;
 }
 
 void NeosProcess::validate()
@@ -223,6 +226,20 @@ void NeosProcess::setIgnoreSslErrors()
     if (mProcState == ProcCheck) {
         setProcState(ProcIdle);
     }
+}
+
+void NeosProcess::setStarting()
+{
+    if (mPreparationState == QProcess::NotRunning) {
+        mPreparationState = QProcess::Starting;
+        emit stateChanged(QProcess::Starting);
+    }
+}
+
+void NeosProcess::completed(int exitCode)
+{
+    mPreparationState = QProcess::NotRunning;
+    AbstractGamsProcess::completed(exitCode);
 }
 
 void NeosProcess::rePing(const QString &value)
@@ -363,7 +380,7 @@ void NeosProcess::reGetOutputFile(const QByteArray &data)
 
 void NeosProcess::reError(const QString &errorText)
 {
-    DEB() << "ERROR: " << errorText;
+    emit newStdChannelData("Network error: " + errorText.toUtf8() +'\n');
     completed(-1);
 }
 
@@ -382,7 +399,7 @@ void NeosProcess::setProcState(ProcState newState)
     QProcess::ProcessState stateBefore = state();
     mProcState = newState;
     if (stateBefore != state())
-        emit stateChanged(mProcState == ProcIdle ? QProcess::NotRunning : QProcess::Running);
+        emit stateChanged(mProcState == ProcIdle ? mPreparationState : QProcess::Running);
     emit procStateChanged(this, mProcState);
 }
 

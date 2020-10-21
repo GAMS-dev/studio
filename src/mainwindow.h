@@ -141,8 +141,7 @@ public:
     void openSearchDialog();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
     void execute(QString commandLineStr,
-                 std::unique_ptr<AbstractProcess> process = nullptr,
-                 ProjectFileNode *gmsFileNode = nullptr);
+                 std::unique_ptr<AbstractProcess> process = nullptr, ProjectFileNode *gmsFileNode = nullptr);
 
     void resetHistory();
     void clearHistory(FileMeta *file);
@@ -383,6 +382,9 @@ private:
     void updateAndSaveSettings();
     void restoreFromSettings();
     QString currentPath();
+    bool executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode *runGroup, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
+                 ProjectFileNode *gmsFileNode = nullptr);
+    void execution(ProjectRunGroupNode *runGroup);
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
