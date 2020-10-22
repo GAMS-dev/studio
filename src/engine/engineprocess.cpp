@@ -267,6 +267,11 @@ void EngineProcess::setIgnoreSslErrors()
     }
 }
 
+void EngineProcess::getVersions()
+{
+    mManager->getVersion();
+}
+
 void EngineProcess::completed(int exitCode)
 {
     disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
@@ -284,10 +289,21 @@ void EngineProcess::rePing(const QString &value)
     }
 }
 
-void EngineProcess::reVersion(const QString &value)
+void EngineProcess::reVersion(const QString &engineVersion, const QString &gamsVersion)
 {
-    Q_UNUSED(value)
-    DEB() << "VERSION: " << value;
+    // TODO(JM) compare GAMS version
+    if (mProcState == ProcCheck) {
+        setProcState(ProcIdle);
+//        emit sslValidation(QString());
+    }
+    mEngineVersion = engineVersion;
+    mGamsVersion = gamsVersion;
+    GAMS_DISTRIB_VERSION_SHORT;
+}
+
+void EngineProcess::reVersionError()
+{
+
 }
 
 void EngineProcess::reCreateJob(const QString &message, const QString &token)
@@ -369,7 +385,7 @@ void EngineProcess::reError(const QString &errorText)
 {
     disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
     mPullTimer.stop();
-    emit newStdChannelData("\nError: "+errorText.toUtf8()+"\n");
+    emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
 }
 

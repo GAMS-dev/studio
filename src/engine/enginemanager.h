@@ -5,10 +5,10 @@
 #include <QObject>
 #include <QMetaEnum>
 #include <QNetworkReply>
-//#include "httpmanager.h"
 
 namespace OpenAPI {
 class OAIAuthApi;
+class OAIDefaultApi;
 class OAIJobsApi;
 }
 
@@ -42,8 +42,7 @@ public:
 
     void authenticate(const QString &user, const QString &password);
     void authenticate(const QString &userToken);
-    void ping();
-//    void version();
+    void getVersion();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params);
     void getJobStatus();
     void getLog();
@@ -56,7 +55,8 @@ signals:
 
     void reAuth(const QString &token);
     void rePing(const QString &value);
-    void reVersion(const QString &value);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersionError(QString errorText);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 processStatus);
     void reKillJob(const QString &text);
@@ -72,8 +72,13 @@ private slots:
     void abortRequestsSignal();
 
 private:
+    bool parseVersions(QByteArray json, QString &vEngine, QString &vGams);
+
+private:
 //    OpenAPI::OAIAuthApi *mAuthApi;
+    OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
+    QNetworkAccessManager *mNetworkManager;
     int mJobNumber = 0;
     QString mUser;
     QString mPassword;

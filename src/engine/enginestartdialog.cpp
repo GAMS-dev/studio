@@ -16,6 +16,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
     ui->edUser->setText(Settings::settings()->toString(SettingsKey::skEngineUser));
+    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::urlChanged);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
@@ -60,8 +61,15 @@ void EngineStartDialog::focusEmptyField()
     else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
 }
 
+void EngineStartDialog::setEngineVersion(QString version)
+{
+    ui->laEngineVersion->setText(version);
+}
+
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const
 {
+    if (button == ui->bAlways)
+        return QDialogButtonBox::YesToAll;
     return ui->buttonBox->standardButton(button);
 }
 
@@ -69,6 +77,13 @@ void EngineStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
     setFixedSize(size());
+}
+
+void EngineStartDialog::buttonClicked(QAbstractButton *button)
+{
+    bool always = button == ui->bAlways;
+    bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
+    emit ready(start, always);
 }
 
 void EngineStartDialog::textChanged(const QString &text)
@@ -80,6 +95,13 @@ void EngineStartDialog::textChanged(const QString &text)
             && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
     if (enabled != bOk->isEnabled())
         bOk->setEnabled(enabled);
+    if (enabled != ui->bAlways->isEnabled())
+        ui->bAlways->setEnabled(enabled);
+}
+
+void EngineStartDialog::on_bAlways_clicked()
+{
+    emit buttonClicked(ui->bAlways);
 }
 
 } // namespace engine

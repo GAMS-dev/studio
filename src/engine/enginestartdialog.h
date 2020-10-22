@@ -27,17 +27,21 @@ public:
     QString password() const;
     void setLastPassword(QString lastPassword);
     void focusEmptyField();
+    void setEngineVersion(QString version);
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
-    void buttonClicked(QAbstractButton *button);
+    void ready(bool start, bool always);
+    void urlChanged(const QString &url);
 
 protected:
     void showEvent(QShowEvent *event);
+    void buttonClicked(QAbstractButton *button);
 
 private slots:
     void textChanged(const QString &text);
+    void on_bAlways_clicked();
 
 private:
     Ui::EngineStartDialog *ui;
