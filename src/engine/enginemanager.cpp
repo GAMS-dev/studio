@@ -144,9 +144,9 @@ void EngineManager::authenticate(const QString &userToken)
     // TODO(JM) prepared authentication by user-token
 }
 
-void EngineManager::version()
+void EngineManager::getVersion()
 {
-    // TODO(JM) request version
+    mDefaultApi->getVersion();
 }
 
 void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params)

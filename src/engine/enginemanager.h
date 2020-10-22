@@ -42,7 +42,7 @@ public:
 
     void authenticate(const QString &user, const QString &password);
     void authenticate(const QString &userToken);
-    void version();
+    void getVersion();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params);
     void getJobStatus();
     void getLog();

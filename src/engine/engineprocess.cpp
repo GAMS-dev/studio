@@ -269,7 +269,7 @@ void EngineProcess::setIgnoreSslErrors()
 
 void EngineProcess::getVersions()
 {
-
+    mManager->getVersion();
 }
 
 void EngineProcess::completed(int exitCode)
