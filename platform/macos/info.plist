@@ -68,6 +68,8 @@
         <string>studio</string>
         <key>CFBundleName</key>
         <string>Studio</string>
+        <key>CFBundleVersion</key>
+        <key>x.y.z</key>
         <key>CFBundleDisplayName</key>
         <string>Studio</string>
         <key>CFBundleGetInfoString</key>

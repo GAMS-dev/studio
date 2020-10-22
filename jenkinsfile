@@ -70,6 +70,12 @@ pipeline {
                             GAMS_DISTRIB_MAJOR=$(grep ^GAMS_DISTRIB_MAJOR version | cut -f2 -d"=")
                             sed -i "" "s/com.gams.studio/com.gams.${GAMS_DISTRIB_MAJOR}.studio/g" platform/macos/info.plist
                         '''
+                        script {
+                            def versionData = artifactVersion()
+                            sh """
+                                sed -i "" "s/x.y.z/${versionData}/g" platform/macos/info.plist
+                            """
+                        }
                         sh 'qmake gams-studio.pro CONFIG+=release && make -j3'
                     }
                     post {
