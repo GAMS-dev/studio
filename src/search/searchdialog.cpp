@@ -488,6 +488,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     int start = backwards ? resultList.size()-1 : 0;
     bool allowJumping = false;
     int matchNr = -1;
+    bool found = false;
 
     // skip to next entry if file is opened in solver option edit
     if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
@@ -517,23 +518,26 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
                 if (backwards) {
                     if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
                         res = &r;
+                        found = true;
                         break;
                     }
                 } else {
                     if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
                         res = &r;
+                        found = true;
                         break;
                     }
                 }
             } else if (file != r.filepath() && allowJumping) {
                 // first match in next file
                 res = &r;
+                found = true;
                 break;
             }
         }
     }
 
-    // activate navigation outside of cache because limit was reached
+    // navigation outside of cache when limit was reached
     if (matchNr >= MAX_SEARCH_RESULTS-1) {
         mOutsideOfList = true;
         QTextDocument::FindFlags flags;
@@ -544,39 +548,45 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
             QTextCursor tc = e->textCursor();
             QTextCursor ntc= e->document()->find(createRegex(), backwards ? tc.position()-1 : tc.position(), flags);
+            found = !ntc.isNull();
             e->setTextCursor(ntc);
             x = e->textCursor().positionInBlock();
             y = e->textCursor().blockNumber();
-            e->jumpTo(y, x);
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-            t->findText(createRegex(), flags, mSplitSearchContinue);
+            found = t->findText(createRegex(), flags, mSplitSearchContinue);
             x = t->position().x();
             y = t->position().y()+1;
         }
         updateFindNextLabel(y, x);
-        return;
-    } else if (!res) { // still no results, start over
+        if (found) return; // exit early, all done
+    }
+     // still no results, jump to start/end of file
+    if (!found) {
         if (mOutsideOfList || resultList.size() == MAX_SEARCH_RESULTS) {
             if (backwards) {
-                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor()))
-                    e->textCursor().setPosition(QTextCursor::End);
-                else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
-                    t->jumpTo(t->knownLines(), 0);
-            } else {
-                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor()))
-                    e->textCursor().setPosition(QTextCursor::Start);
-                else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
+                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+                    QTextCursor tc = e->textCursor();
+                    tc.movePosition(QTextCursor::End);
+                    e->setTextCursor(tc);
+                } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
+                    t->jumpTo(t->knownLines()-1, 0, 0, true);
+            } else { // forwards
+                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+                    QTextCursor tc = e->textCursor();
+                    tc.movePosition(QTextCursor::Start);
+                    e->setTextCursor(tc);
+                } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
                     t->jumpTo(0, 0, 0, true);
             }
-        } else {
+
+        } else { // startover in available cache
             if (backwards) res = &resultList.last();
             else res = &resultList.first();
             matchNr = resultList.indexOf(*res);
         }
     }
 
-    // jump to
-    if (res) {
+    if (res) { // result from cache available
         ProjectFileNode *node = mMain->projectRepo()->findFile(res->filepath());
         if (!node) EXCEPT() << "File not found: " << res->filepath();
         node->file()->jumpTo(node->runGroupId(), true, res->lineNr()-1, qMax(res->colNr(), 0), res->length());
