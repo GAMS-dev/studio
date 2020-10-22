@@ -322,7 +322,7 @@ void AbstractTextMapper::scrollToPosition()
     if (mPosition.chunkNr < 0) return;
     double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / size();
     setVisibleTopLine(region);
-    moveVisibleTopLine(-5);
+    moveVisibleTopLine(0);
 }
 
 int AbstractTextMapper::visibleTopLine() const

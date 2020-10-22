@@ -533,6 +533,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         }
     }
 
+    // activate navigation outside of cache because limit was reached
     if (matchNr >= MAX_SEARCH_RESULTS-1) {
         mOutsideOfList = true;
         QTextDocument::FindFlags flags;
@@ -549,17 +550,29 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
             e->jumpTo(y, x);
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             t->findText(createRegex(), flags, mSplitSearchContinue);
-            x = t->position().x()-1;
-            y = t->position().y();
+            x = t->position().x();
+            y = t->position().y()+1;
         }
         updateFindNextLabel(y, x);
         return;
-    } else if (!res && !mOutsideOfList) {
-        // TODO(RG): fix overflow/start over
-        if (backwards) res = &resultList.last();
-        else res = &resultList.first();
-
-        matchNr = resultList.indexOf(*res);
+    } else if (!res) { // still no results, start over
+        if (mOutsideOfList || resultList.size() == MAX_SEARCH_RESULTS) {
+            if (backwards) {
+                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor()))
+                    e->textCursor().setPosition(QTextCursor::End);
+                else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
+                    t->jumpTo(t->knownLines(), 0);
+            } else {
+                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor()))
+                    e->textCursor().setPosition(QTextCursor::Start);
+                else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
+                    t->jumpTo(0, 0, 0, true);
+            }
+        } else {
+            if (backwards) res = &resultList.last();
+            else res = &resultList.first();
+            matchNr = resultList.indexOf(*res);
+        }
     }
 
     // jump to
