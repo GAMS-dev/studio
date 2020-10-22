@@ -40,6 +40,10 @@ public:
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
     void setUrl(const QString &url);
+    void setHost(const QString &_host);
+    QString host() const;
+    void setBasePath(const QString &path);
+    QString basePath() const;
     void authenticate(const QString &user, const QString &password);
 //    void authenticate(const QString &host, const QString &token);
     void setNamespace(const QString &nSpace);
@@ -51,12 +55,12 @@ signals:
     void procStateChanged(AbstractProcess *proc, ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersionError(const QString &errorText);
 
 protected slots:
     void completed(int exitCode) override;
     void rePing(const QString &value);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion);
-    void reVersionError();
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode);
     void reKillJob(const QString &text);
@@ -83,6 +87,8 @@ private:
     QString modelName();
 
     EngineManager *mManager;
+    QString mHost;
+    QString mBasePath;
     QString mUser;
     QString mPassword;
     QString mNamespace;

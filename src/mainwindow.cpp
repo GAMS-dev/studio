@@ -3210,11 +3210,14 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     updateAndSaveSettings();
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (!runGroup) return nullptr;
+    if (!runGroup) {
+        DEB() << "Could not create GAMS Engine process";
+        return nullptr;
+    }
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
     engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     runGroup->setProcess(std::move(engineProcess));
-    return engineProcess.get();
+    return qobject_cast<engine::EngineProcess*>(runGroup->process());
     //indirect    prepareEngineProcess()
 }
 

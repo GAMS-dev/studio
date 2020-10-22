@@ -34,7 +34,8 @@ public:
 public:
     EngineManager(QObject *parent = nullptr);
     void setWorkingDirectory(const QString &dir);
-    void setUrl(const QString &url);
+    void setHost(const QString &host);
+    void setBasePath(const QString &path);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
     QString getToken() const;
@@ -56,7 +57,7 @@ signals:
     void reAuth(const QString &token);
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
-    void reVersionError(QString errorText);
+    void reVersionError(const QString &errorText);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 processStatus);
     void reKillJob(const QString &text);

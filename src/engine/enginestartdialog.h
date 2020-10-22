@@ -37,19 +37,23 @@ public:
 
 signals:
     void ready(bool start, bool always);
-    void urlChanged(const QString &url);
 
 protected:
     void showEvent(QShowEvent *event);
     void buttonClicked(QAbstractButton *button);
 
 private slots:
-    void textChanged(const QString &text);
+    void textEdited(const QString &);
+    void textChanged(const QString &);
     void on_bAlways_clicked();
+    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersionError(const QString &errorText);
 
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
+    QString mGamsVersion;
+    QString mUrl;
 };
 
 } // namespace engine

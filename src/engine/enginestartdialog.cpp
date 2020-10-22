@@ -1,12 +1,15 @@
 #include "enginestartdialog.h"
 #include "ui_enginestartdialog.h"
 #include "settings.h"
+#include "logger.h"
 #include <QPushButton>
 #include "engineprocess.h"
 
 namespace gams {
 namespace studio {
 namespace engine {
+
+const QString CUnavailable("-unavailable-");
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
@@ -17,7 +20,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
     ui->edUser->setText(Settings::settings()->toString(SettingsKey::skEngineUser));
-    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::urlChanged);
+    connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::textEdited);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
@@ -33,6 +36,8 @@ EngineStartDialog::~EngineStartDialog()
 void EngineStartDialog::setProcess(EngineProcess *process)
 {
     mProc = process;
+    connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
+    connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -97,13 +102,32 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     emit ready(start, always);
 }
 
-void EngineStartDialog::textChanged(const QString &text)
+void EngineStartDialog::textEdited(const QString &/*text*/)
 {
-    Q_UNUSED(text);
+    mUrl = ui->edUrl->text();
+    ui->laEngineVersion->setText(CUnavailable);
+    if (mProc) {
+        mProc->setUrl(mUrl);
+        mProc->setNamespace(ui->edNamespace->text());
+        mProc->authenticate(ui->edUser->text(), ui->edPassword->text());
+        mProc->getVersions();
+    }
+}
+
+void EngineStartDialog::textChanged(const QString &/*text*/)
+{
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
     bool enabled = !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty()
+            && ui->laEngineVersion->text() != CUnavailable;
+    if (enabled && ui->laEngineVersion->text() == CUnavailable) {
+        mProc->setUrl(mUrl);
+        mProc->setNamespace(ui->edNamespace->text());
+        mProc->authenticate(ui->edUser->text(), ui->edPassword->text());
+        mProc->getVersions();
+        enabled = false;
+    }
     if (enabled != bOk->isEnabled())
         bOk->setEnabled(enabled);
     if (enabled != ui->bAlways->isEnabled())
@@ -113,6 +137,29 @@ void EngineStartDialog::textChanged(const QString &text)
 void EngineStartDialog::on_bAlways_clicked()
 {
     emit buttonClicked(ui->bAlways);
+}
+
+void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
+{
+    ui->laEngineVersion->setText(engineVersion);
+    ui->laUrl->setText(mUrl);
+    mGamsVersion = gamsVersion;
+}
+
+void EngineStartDialog::reVersionError(const QString &errorText)
+{
+    DEB() << "Network error: " << errorText;
+    if (mUrl == ui->edUrl->text()) {
+        mUrl += (mUrl.endsWith('/') ? "api" : "/api");
+        mProc->setUrl(mUrl);
+        mProc->setNamespace(ui->edNamespace->text());
+        mProc->authenticate(ui->edUser->text(), ui->edPassword->text());
+        mProc->getVersions();
+        return;
+    }
+    ui->laEngineVersion->setText(CUnavailable);
+    mGamsVersion = QString();
+    textChanged("");
 }
 
 } // namespace engine

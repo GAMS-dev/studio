@@ -109,14 +109,16 @@ void EngineManager::setWorkingDirectory(const QString &dir)
     mJobsApi->setWorkingDirectory(dir);
 }
 
-void EngineManager::setUrl(const QString &url)
+void EngineManager::setHost(const QString &host)
 {
-    int sp1 = url.indexOf("://")+1;
-    if (sp1) sp1 += 2;
-    int sp2 = url.indexOf('/', sp1);
-    if (sp2 < 0) sp2 = url.length();
-    mJobsApi->setHost(url.mid(sp1, sp2-sp1));
-    mJobsApi->setBasePath(url.right(url.length()-sp2));
+    mJobsApi->setHost(host);
+    mDefaultApi->setHost(host);
+}
+
+void EngineManager::setBasePath(const QString &path)
+{
+    mJobsApi->setBasePath(path);
+    mDefaultApi->setBasePath(path);
 }
 
 void EngineManager::setIgnoreSslErrors()
@@ -135,6 +137,7 @@ void EngineManager::authenticate(const QString &user, const QString &password)
 
     QByteArray auth = "Basic " + (user + ":" + password).toLatin1().toBase64();
     mJobsApi->addHeaders("Authorization", auth);
+    mDefaultApi->addHeaders("Authorization", auth);
 }
 
 void EngineManager::authenticate(const QString &userToken)

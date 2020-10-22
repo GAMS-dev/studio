@@ -30,12 +30,13 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &EngineProcess::compileCompleted);
 
     mManager = new EngineManager(this);
+    connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
+    connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
     connect(mManager, &EngineManager::reAuth, this, &EngineProcess::authenticated);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
-    connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
@@ -244,7 +245,34 @@ QProcess::ProcessState EngineProcess::state() const
 
 void EngineProcess::setUrl(const QString &url)
 {
-    mManager->setUrl(url);
+    int sp1 = url.indexOf("://")+1;
+    if (sp1) sp1 += 2;
+    int sp2 = url.indexOf('/', sp1);
+    if (sp2 < 0) sp2 = url.length();
+    setHost(url.mid(sp1, sp2-sp1));
+    setBasePath(url.right(url.length()-sp2));
+}
+
+void EngineProcess::setHost(const QString &_host)
+{
+    mHost = _host;
+    mManager->setHost(_host);
+}
+
+QString EngineProcess::host() const
+{
+    return mHost;
+}
+
+void EngineProcess::setBasePath(const QString &path)
+{
+    mBasePath = path;
+    mManager->setBasePath(path);
+}
+
+QString EngineProcess::basePath() const
+{
+    return mBasePath;
 }
 
 void EngineProcess::authenticate(const QString &user, const QString &password)
@@ -291,23 +319,6 @@ void EngineProcess::rePing(const QString &value)
         setProcState(ProcIdle);
         emit sslValidation(QString());
     }
-}
-
-void EngineProcess::reVersion(const QString &engineVersion, const QString &gamsVersion)
-{
-    // TODO(JM) compare GAMS version
-    if (mProcState == ProcCheck) {
-        setProcState(ProcIdle);
-//        emit sslValidation(QString());
-    }
-    mEngineVersion = engineVersion;
-    mGamsVersion = gamsVersion;
-    GAMS_DISTRIB_VERSION_SHORT;
-}
-
-void EngineProcess::reVersionError()
-{
-
 }
 
 void EngineProcess::reCreateJob(const QString &message, const QString &token)
