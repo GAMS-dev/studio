@@ -39,7 +39,8 @@ public:
     void terminate() override;
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
-    void authenticate(const QString &host, const QString &user, const QString &password);
+    void setUrl(const QString &url);
+    void authenticate(const QString &user, const QString &password);
 //    void authenticate(const QString &host, const QString &token);
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrors();

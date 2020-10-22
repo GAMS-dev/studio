@@ -242,9 +242,13 @@ QProcess::ProcessState EngineProcess::state() const
     return (mProcState <= ProcIdle) ? QProcess::NotRunning : QProcess::Running;
 }
 
-void EngineProcess::authenticate(const QString &host, const QString &user, const QString &password)
+void EngineProcess::setUrl(const QString &url)
 {
-    mManager->setUrl(host);
+    mManager->setUrl(url);
+}
+
+void EngineProcess::authenticate(const QString &user, const QString &password)
+{
     mManager->authenticate(user, password);
     setProcState(ProcIdle);
 }

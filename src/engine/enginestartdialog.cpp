@@ -2,6 +2,7 @@
 #include "ui_enginestartdialog.h"
 #include "settings.h"
 #include <QPushButton>
+#include "engineprocess.h"
 
 namespace gams {
 namespace studio {
@@ -9,7 +10,7 @@ namespace engine {
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
-    ui(new Ui::EngineStartDialog)
+    ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
     ui->setupUi(this);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
@@ -27,6 +28,16 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 EngineStartDialog::~EngineStartDialog()
 {
     delete ui;
+}
+
+void EngineStartDialog::setProcess(EngineProcess *process)
+{
+    mProc = process;
+}
+
+EngineProcess *EngineStartDialog::process() const
+{
+    return mProc;
 }
 
 QString EngineStartDialog::url() const

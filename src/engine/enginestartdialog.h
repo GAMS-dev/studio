@@ -9,6 +9,8 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+class EngineProcess;
+
 namespace Ui {
 class EngineStartDialog;
 }
@@ -21,6 +23,8 @@ public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
     ~EngineStartDialog();
 
+    void setProcess(EngineProcess *process);
+    EngineProcess *process() const;
     QString url() const;
     QString nSpace() const;
     QString user() const;
@@ -45,6 +49,7 @@ private slots:
 
 private:
     Ui::EngineStartDialog *ui;
+    EngineProcess *mProc;
 };
 
 } // namespace engine
