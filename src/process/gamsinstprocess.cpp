@@ -7,19 +7,19 @@ namespace process {
 GamsInstProcess::GamsInstProcess(QObject *parent)
     : AbstractGamsProcess("gamsinst", parent)
 {
-    setParameters(QStringList() << "-listdirs");
     connect(this, &GamsInstProcess::newStdChannelData, this, &GamsInstProcess::newData);
 }
 
 void GamsInstProcess::execute()
 {
+    auto params = defaultParameters() + parameters();
 #if defined(__unix__) || defined(__APPLE__)
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
-    mProcess.start(nativeAppPath(), parameters());
+    emit newProcessCall("Running:", appCall(nativeAppPath(), params));
+    mProcess.start(nativeAppPath(), params);
 #else
-    mProcess.setNativeArguments(parameters().join(" "));
+    mProcess.setNativeArguments(params.join(" "));
     mProcess.setProgram(nativeAppPath());
-    emit newProcessCall("Running:", appCall(nativeAppPath(), parameters()));
+    emit newProcessCall("Running:", appCall(nativeAppPath(), params));
     mProcess.start();
 #endif
 }

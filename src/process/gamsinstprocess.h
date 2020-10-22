@@ -23,6 +23,10 @@ public:
         return mData;
     }
 
+    QStringList defaultParameters() const override {
+        return {"-listdirs"};
+    }
+
 private slots:
     void newData(const QByteArray &data);
 
