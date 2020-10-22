@@ -43,6 +43,7 @@ public:
 //    void authenticate(const QString &host, const QString &token);
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrors();
+    void getVersions();
 
 signals:
     void authenticated(QString token);
@@ -53,7 +54,8 @@ signals:
 protected slots:
     void completed(int exitCode) override;
     void rePing(const QString &value);
-    void reVersion(const QString &value);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersionError();
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode);
     void reKillJob(const QString &text);
@@ -84,6 +86,8 @@ private:
     QString mPassword;
     QString mNamespace;
     QString mOutPath;
+    QString mEngineVersion;
+    QString mGamsVersion;
 
     QString mJobNumber;
     QString mJobPassword;

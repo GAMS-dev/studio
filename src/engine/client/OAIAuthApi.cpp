@@ -117,7 +117,7 @@ void OAIAuthApi::createJWTTokenCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIAuthApi::postLoginInterface(const QString &username, const QString &password) {
+void OAIAuthApi::postW(const QString &username, const QString &password) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -144,12 +144,12 @@ void OAIAuthApi::postLoginInterface(const QString &username, const QString &pass
 
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
-    connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIAuthApi::postLoginInterfaceCallback);
+    connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIAuthApi::postWCallback);
     connect(this, &OAIAuthApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
 }
 
-void OAIAuthApi::postLoginInterfaceCallback(OAIHttpRequestWorker *worker) {
+void OAIAuthApi::postWCallback(OAIHttpRequestWorker *worker) {
     QString msg;
     QString error_str = worker->error_str;
     QNetworkReply::NetworkError error_type = worker->error_type;
@@ -164,11 +164,11 @@ void OAIAuthApi::postLoginInterfaceCallback(OAIHttpRequestWorker *worker) {
     worker->deleteLater();
 
     if (worker->error_type == QNetworkReply::NoError) {
-        emit postLoginInterfaceSignal(output);
-        emit postLoginInterfaceSignalFull(worker, output);
+        emit postWSignal(output);
+        emit postWSignalFull(worker, output);
     } else {
-        emit postLoginInterfaceSignalE(output, error_type, error_str);
-        emit postLoginInterfaceSignalEFull(worker, error_type, error_str);
+        emit postWSignalE(output, error_type, error_str);
+        emit postWSignalEFull(worker, error_type, error_str);
     }
 }
 

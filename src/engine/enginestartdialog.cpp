@@ -16,6 +16,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
     ui->edUser->setText(Settings::settings()->toString(SettingsKey::skEngineUser));
+    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::urlChanged);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
@@ -58,6 +59,11 @@ void EngineStartDialog::focusEmptyField()
     if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
     else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
     else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
+}
+
+void EngineStartDialog::setEngineVersion(QString version)
+{
+    ui->laEngineVersion->setText(version);
 }
 
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const

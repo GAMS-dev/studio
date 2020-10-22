@@ -27,11 +27,13 @@ public:
     QString password() const;
     void setLastPassword(QString lastPassword);
     void focusEmptyField();
+    void setEngineVersion(QString version);
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
     void ready(bool start, bool always);
+    void urlChanged(const QString &url);
 
 protected:
     void showEvent(QShowEvent *event);

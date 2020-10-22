@@ -1,7 +1,9 @@
 #include "enginemanager.h"
 #include "logger.h"
 #include "client/OAIAuthApi.h"
+#include "client/OAIDefaultApi.h"
 #include "client/OAIJobsApi.h"
+#include "client/OAIHelpers.h"
 #include <QString>
 #include <iostream>
 #include <QFile>
@@ -13,7 +15,8 @@ namespace studio {
 namespace engine {
 
 EngineManager::EngineManager(QObject* parent)
-    : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mJobsApi(new OAIJobsApi()), mQueueFinished(false)
+    : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
+      mNetworkManager(new QNetworkAccessManager(this)), mQueueFinished(false)
 {
 //    mAuthApi->setScheme("https");
 //    mAuthApi->setPort(443);
@@ -26,6 +29,28 @@ EngineManager::EngineManager(QObject* parent)
 //        emit reError("From postW: "+worker->error_str);
 //    });
 
+
+    mDefaultApi->setNetworkAccessManager(mNetworkManager);
+    mDefaultApi->setScheme("https");
+    mDefaultApi->setPort(443);
+
+    connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull,
+            [this](OAIHttpRequestWorker *worker) {
+        QString vEngine;
+        QString vGams;
+        if (parseVersions(worker->response, vEngine, vGams)) {
+            emit reVersion(vEngine, vGams);
+        } else {
+            emit reVersionError("Could not parse versions");
+        }
+    });
+    connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString ) {
+        emit reVersionError(worker->error_str);
+    });
+
+
+    mJobsApi->setNetworkAccessManager(mNetworkManager);
     mJobsApi->setScheme("https");
     mJobsApi->setPort(443);
 
@@ -119,15 +144,10 @@ void EngineManager::authenticate(const QString &userToken)
     // TODO(JM) prepared authentication by user-token
 }
 
-void EngineManager::ping()
+void EngineManager::version()
 {
-
-    mJobsApi->getJob("", "status");
+    // TODO(JM) request version
 }
-
-//void EngineManager::version()
-//{
-//}
 
 void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params)
 {
@@ -183,6 +203,17 @@ void EngineManager::debugReceived(QString name, QVariant data)
 void EngineManager::abortRequestsSignal()
 {
 
+}
+
+bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams)
+{
+    QJsonDocument jDoc = QJsonDocument::fromJson(json);
+    QJsonObject jObj = jDoc.object();
+    if (!::OpenAPI::fromJsonValue(vEngine, jObj[QString("version")])) return false;
+    if (jObj[QString("version")].isNull()) return false;
+    if (!::OpenAPI::fromJsonValue(vGams, jObj[QString("gams_version")])) return false;
+    if (jObj[QString("gams_version")].isNull()) return false;
+    return true;
 }
 
 QString EngineManager::getToken() const
