@@ -4567,12 +4567,22 @@ bool MainWindow::enabledPrintAction()
 
 void MainWindow::checkGamsLicense()
 {
-    support::GamsLicensingDialog::createLicenseFile(this);
-    auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath());
-    if (QFileInfo::exists(licenseFile)) {
-        appendSystemLogInfo("GAMS license found at " + licenseFile);
-    } else {
-        appendSystemLogError("No GAMS license found. You can install your license by copying the license information from the email you received after purchasing GAMS into your clipboard, and then open the license dialogue (Help / GAMS licensing). The license will be recognized and installed automatically. For more options, please check the GAMS documentation.");
+    const QString errorText = "No GAMS license found. You can install your license by"
+                              " copying the license information from the email you"
+                              " received after purchasing GAMS into your clipboard, and"
+                              " then open the license dialogue (Help / GAMS licensing)."
+                              " The license will be recognized and installed automatically."
+                              " For more options, please check the GAMS documentation.";
+    try {
+        support::GamsLicensingDialog::createLicenseFile(this);
+        auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath());
+        if (QFileInfo::exists(licenseFile)) {
+            appendSystemLogInfo("GAMS license found at " + licenseFile);
+        } else {
+            appendSystemLogError(errorText);
+        }
+    }  catch (Exception e) {
+        appendSystemLogError(e.what());
     }
 }
 
