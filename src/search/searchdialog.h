@@ -114,7 +114,7 @@ private:
     void replaceAll();
     void findInFiles(SearchResultList* collection, QList<FileMeta *> fml);
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
-    void updateFindNextLabel(int lineNr = 0, int colNr = 0);
+    void updateLabelByCursorPos(int lineNr = 0, int colNr = 0);
     void selectNextMatch(SearchDirection direction);
     void insertHistory();
     void searchParameterChanged();

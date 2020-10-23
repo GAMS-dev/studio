@@ -128,7 +128,7 @@ void SearchDialog::finalUpdate()
     updateEditHighlighting();
 
     if (mCachedResults && !mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
-    else updateFindNextLabel();
+    else updateLabelByCursorPos();
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
@@ -558,7 +558,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
             x = t->position().x();
             y = t->position().y()+1;
         }
-        updateFindNextLabel(y, x);
+        updateLabelByCursorPos(y, x);
         if (found) return; // exit early, all done
     }
      // still no results, jump to start/end of file
@@ -592,7 +592,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     }
     // update ui
     if (resultsView() && !resultsView()->isOutdated()) resultsView()->selectItem(matchNr);
-    updateFindNextLabel();
+    updateLabelByCursorPos();
 }
 
 void SearchDialog::showEvent(QShowEvent *event)
@@ -684,7 +684,7 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 /// \brief SearchDialog::updateFindNextLabel calculates match number from cursor position and updates label
 /// \param matchSelection cursor position to calculate result number
 ///
-void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
+void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 {
     setSearchOngoing(false);
 
@@ -695,8 +695,8 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
     if (lineNr == 0 || colNr == 0) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
-        QTextCursor tc;
         if (edit) {
+            QTextCursor tc = edit->textCursor();
             lineNr = tc.blockNumber()+1;
             colNr = tc.columnNumber();
         } else if (tv) {
@@ -711,12 +711,12 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
         Result match = list.at(i);
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
-            updateNrMatches(list.indexOf(match) + 1);
             mOutsideOfList = false;
 
             if (resultsView() && !mHasChanged)
                 resultsView()->selectItem(i);
 
+            updateNrMatches(list.indexOf(match) + 1);
             return;
         }
     }
