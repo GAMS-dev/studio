@@ -20,7 +20,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
     ui->edUser->setText(Settings::settings()->toString(SettingsKey::skEngineUser));
-    connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::textEdited);
+    connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::urlEdited);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
@@ -38,6 +38,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     mProc = process;
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
+    emit urlEdited(ui->edUrl->text());
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -102,16 +103,32 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     emit ready(start, always);
 }
 
-void EngineStartDialog::textEdited(const QString &/*text*/)
+void EngineStartDialog::getVersion()
 {
-    mUrl = ui->edUrl->text();
     ui->laEngineVersion->setText(CUnavailable);
+    if (mPendingRequest) return;
     if (mProc) {
+        mPendingRequest = true;
+        mUrlChanged = false;
         mProc->setUrl(mUrl);
-        mProc->setNamespace(ui->edNamespace->text());
-        mProc->authenticate(ui->edUser->text(), ui->edPassword->text());
         mProc->getVersions();
     }
+}
+
+void EngineStartDialog::urlEdited(const QString &text)
+{
+    if (mOldUrl.endsWith("api", Qt::CaseInsensitive) && !text.endsWith("api", Qt::CaseInsensitive)
+            && mOldUrl.length()-2 > text.length() && text.length() > 0) {
+        mOldUrl = text.left(text.length()-1);
+    } else {
+        mOldUrl = text;
+    }
+    mUrl = mOldUrl;
+    int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
+    ui->edUrl->setText(mUrl);
+    ui->edUrl->setCursorPosition(pos);
+    mUrlChanged = true;
+    getVersion();
 }
 
 void EngineStartDialog::textChanged(const QString &/*text*/)
@@ -119,13 +136,9 @@ void EngineStartDialog::textChanged(const QString &/*text*/)
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
     bool enabled = !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty()
-            && ui->laEngineVersion->text() != CUnavailable;
+            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
     if (enabled && ui->laEngineVersion->text() == CUnavailable) {
-        mProc->setUrl(mUrl);
-        mProc->setNamespace(ui->edNamespace->text());
-        mProc->authenticate(ui->edUser->text(), ui->edPassword->text());
-        mProc->getVersions();
+        getVersion();
         enabled = false;
     }
     if (enabled != bOk->isEnabled())
@@ -141,20 +154,39 @@ void EngineStartDialog::on_bAlways_clicked()
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
 {
+    mPendingRequest = false;
+    if (mUrlChanged) {
+        getVersion();
+        return;
+    }
     ui->laEngineVersion->setText(engineVersion);
-    ui->laUrl->setText(mUrl);
+    if (mUrl != ui->edUrl->text()) {
+        int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
+        int len = ui->edUrl->text().length();
+        ui->edUrl->selectAll();
+        ui->edUrl->insert(mUrl);
+        if (pos < len) {
+            ui->edUrl->setCursorPosition(len);
+        } else {
+            len = mUrl.length();
+            ui->edUrl->setSelection(len, pos-len);
+        }
+    }
     mGamsVersion = gamsVersion;
 }
 
 void EngineStartDialog::reVersionError(const QString &errorText)
 {
     DEB() << "Network error: " << errorText;
+    mPendingRequest = false;
+    if (mUrlChanged) {
+        getVersion();
+        return;
+    }
     if (mUrl == ui->edUrl->text()) {
         mUrl += (mUrl.endsWith('/') ? "api" : "/api");
-        mProc->setUrl(mUrl);
-        mProc->setNamespace(ui->edNamespace->text());
-        mProc->authenticate(ui->edUser->text(), ui->edPassword->text());
-        mProc->getVersions();
+        mUrlChanged = false;
+        getVersion();
         return;
     }
     ui->laEngineVersion->setText(CUnavailable);

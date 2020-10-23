@@ -3117,7 +3117,8 @@ void MainWindow::createNeosProcess()
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
     connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::neosProgress);
     neosPtr->setStarting();
-    executePrepare(fileNode, runGroup, mGamsParameterEditor->getCurrentCommandLineData());
+    if (!executePrepare(fileNode, runGroup, mGamsParameterEditor->getCurrentCommandLineData()))
+        return;
     if (!mIgnoreSslErrors) {
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
         neosPtr->validate();
@@ -3168,14 +3169,20 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 
 void MainWindow::showEngineStartDialog()
 {
+
     if (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
-        createEngineProcess();
+        engine::EngineProcess *proc = createEngineProcess();
+        proc->setUrl(Settings::settings()->toString(SettingsKey::skEngineUrl));
+        proc->getVersions();
         prepareEngineProcess(Settings::settings()->toString(SettingsKey::skEngineUrl),
                             Settings::settings()->toString(SettingsKey::skEngineNamespace),
                             Settings::settings()->toString(SettingsKey::skEngineUser), mEngineTempPassword);
     } else {
         engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
         dialog->setProcess(createEngineProcess());
+
+        // TODO(JM) always create dialog / analyse gams version in dialog
+
         connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
 
         dialog->setLastPassword(mEngineTempPassword);
@@ -3197,7 +3204,6 @@ void MainWindow::engineDialogDecision(bool start, bool always)
         mEngineNoDialog = always;
 //        mUser = "studiotests";
 //        mPassword = "rercud-qinRa9-wagbew";
-        getEngineVersion(dialog->url(), dialog->nSpace());
         prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());
     } else {
         dialog->close();
@@ -3216,21 +3222,14 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     }
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
     engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
+    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+    for (const option::OptionItem &item : itemList) {
+        if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0 && item.value.compare("1") == 0)
+            engineProcess->setHasPreviousWorkOption(true);
+    }
     runGroup->setProcess(std::move(engineProcess));
     return qobject_cast<engine::EngineProcess*>(runGroup->process());
-    //indirect    prepareEngineProcess()
-}
-
-void MainWindow::getEngineVersion(QString url, QString nSpace)
-{
-    ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
-    if (!group) return;
-    AbstractProcess* process = group->process();
-    engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
-    if (!engineProcess) return;
-    engineProcess->setUrl(url);
-    engineProcess->setNamespace(nSpace);
 }
 
 void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user, QString password)
@@ -3252,7 +3251,8 @@ void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user,
 //    } else {
 //    }
     updateAndSaveSettings();
-    execute(mGamsParameterEditor->getCurrentCommandLineData());
+    executePrepare(node, group, mGamsParameterEditor->getCurrentCommandLineData());
+    execution(group);
 }
 
 void MainWindow::on_actionInterrupt_triggered()

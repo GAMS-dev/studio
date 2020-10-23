@@ -29,6 +29,7 @@ public:
     QString nSpace() const;
     QString user() const;
     QString password() const;
+    QString gamsVersion() const { return mGamsVersion; }
     void setLastPassword(QString lastPassword);
     void focusEmptyField();
     void setEngineVersion(QString version);
@@ -41,9 +42,10 @@ signals:
 protected:
     void showEvent(QShowEvent *event);
     void buttonClicked(QAbstractButton *button);
+    void getVersion();
 
 private slots:
-    void textEdited(const QString &);
+    void urlEdited(const QString &text);
     void textChanged(const QString &);
     void on_bAlways_clicked();
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
@@ -54,6 +56,9 @@ private:
     EngineProcess *mProc;
     QString mGamsVersion;
     QString mUrl;
+    QString mOldUrl;
+    bool mUrlChanged = false;
+    bool mPendingRequest = false;
 };
 
 } // namespace engine

@@ -31,6 +31,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
 
     mManager = new EngineManager(this);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
+    connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
     connect(mManager, &EngineManager::reAuth, this, &EngineProcess::authenticated);
@@ -203,6 +204,12 @@ void EngineProcess::subProcStateChanged(QProcess::ProcessState newState)
     }
 }
 
+void EngineProcess::reVersionIntern(const QString &engineVersion, const QString &gamsVersion)
+{
+    Q_UNUSED(engineVersion)
+    mGamsVersion = gamsVersion;
+}
+
 void EngineProcess::interrupt()
 {
     bool ok = !mManager->getToken().isEmpty();
@@ -236,6 +243,11 @@ void EngineProcess::setParameters(const QStringList &parameters)
         mOutPath = QString();
     }
     AbstractProcess::setParameters(parameters);
+}
+
+void EngineProcess::setHasPreviousWorkOption(bool value)
+{
+    mHasPreviousWorkOption = value;
 }
 
 QProcess::ProcessState EngineProcess::state() const

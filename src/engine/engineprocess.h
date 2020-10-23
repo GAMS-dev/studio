@@ -38,6 +38,8 @@ public:
     void interrupt() override;
     void terminate() override;
     void setParameters(const QStringList &parameters) override;
+    void setHasPreviousWorkOption(bool value);
+    bool hasPreviousWorkOption() const { return mHasPreviousWorkOption; }
     QProcess::ProcessState state() const override;
     void setUrl(const QString &url);
     void setHost(const QString &_host);
@@ -76,6 +78,7 @@ private slots:
     void sslErrors(const QStringList &errors);
     void parseUnZipStdOut(const QByteArray &data);
     void subProcStateChanged(QProcess::ProcessState newState);
+    void reVersionIntern(const QString &engineVersion, const QString &gamsVersion);
 
 private:
     void setProcState(ProcState newState);
@@ -95,6 +98,7 @@ private:
     QString mOutPath;
     QString mEngineVersion;
     QString mGamsVersion;
+    bool mHasPreviousWorkOption = false;
 
     QString mJobNumber;
     QString mJobPassword;

@@ -349,7 +349,6 @@ private slots:
     void showEngineStartDialog();
     void engineDialogDecision(bool start, bool always);
     engine::EngineProcess *createEngineProcess();
-    void getEngineVersion(QString url, QString nSpace);
     void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
