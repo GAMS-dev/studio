@@ -74,7 +74,7 @@ public slots:
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate();
-    void updateNrMatches(int current = 0, int max = -1);
+    void updateNrMatches(int current = 0);
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -114,7 +114,7 @@ private:
     void replaceAll();
     void findInFiles(SearchResultList* collection, QList<FileMeta *> fml);
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
-    void updateFindNextLabel(int lineNr, int colNr);
+    void updateFindNextLabel(int lineNr = 0, int colNr = 0);
     void selectNextMatch(SearchDirection direction);
     void insertHistory();
     void searchParameterChanged();

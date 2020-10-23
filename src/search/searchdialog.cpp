@@ -128,7 +128,7 @@ void SearchDialog::finalUpdate()
     updateEditHighlighting();
 
     if (mCachedResults && !mCachedResults->size()) setSearchStatus(SearchStatus::NoResults);
-    else updateFindNextLabel(0, 0);
+    else updateFindNextLabel();
 }
 
 void SearchDialog::setSearchOngoing(bool searching)
@@ -553,6 +553,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
             x = e->textCursor().positionInBlock();
             y = e->textCursor().blockNumber();
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
+            mSplitSearchContinue = false; // make sure to start a new search
             found = t->findText(createRegex(), flags, mSplitSearchContinue);
             x = t->position().x();
             y = t->position().y()+1;
@@ -568,16 +569,14 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
                     QTextCursor tc = e->textCursor();
                     tc.movePosition(QTextCursor::End);
                     e->setTextCursor(tc);
-                } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
+                } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
                     t->jumpTo(t->knownLines()-1, 0, 0, true);
+                }
+                matchNr = MAX_SEARCH_RESULTS-1;
             } else { // forwards
-                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-                    QTextCursor tc = e->textCursor();
-                    tc.movePosition(QTextCursor::Start);
-                    e->setTextCursor(tc);
-                } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor()))
-                    t->jumpTo(0, 0, 0, true);
+                res = &resultList.first();
             }
+//            selectNextMatch(direction);
 
         } else { // startover in available cache
             if (backwards) res = &resultList.last();
@@ -593,7 +592,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
     }
     // update ui
     if (resultsView() && !resultsView()->isOutdated()) resultsView()->selectItem(matchNr);
-    updateNrMatches(matchNr+1);
+    updateFindNextLabel();
 }
 
 void SearchDialog::showEvent(QShowEvent *event)
@@ -697,11 +696,13 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
         QTextCursor tc;
-        if (edit) tc = edit->textCursor();
-        else if (tv) tc = tv->edit()->textCursor();
-
-        lineNr = tc.blockNumber()+1;
-        colNr = tc.columnNumber();
+        if (edit) {
+            lineNr = tc.blockNumber()+1;
+            colNr = tc.columnNumber();
+        } else if (tv) {
+            lineNr = tv->position().y()+1;
+            colNr = tv->position().x();
+        }
     }
 
     // find match by cursor position
@@ -719,7 +720,7 @@ void SearchDialog::updateFindNextLabel(int lineNr, int colNr)
             return;
         }
     }
-    resultsView()->selectItem(-1);
+    if (resultsView()) resultsView()->selectItem(-1);
     updateNrMatches();
 }
 
@@ -893,10 +894,10 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->lineEdit()->selectAll();
 }
 
-void SearchDialog::updateNrMatches(int current, int max)
+void SearchDialog::updateNrMatches(int current)
 {
     SearchResultList* list = mCachedResults;
-    int size = list ? list->size() : max;
+    int size = list->size();
 
     if (current == 0) {
         if (list->size() == 1)
