@@ -99,13 +99,11 @@ QStringList NeosProcess::remoteParameters()
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
-    bool needsFw = true;
+    bool needsPw = true;
+    bool needsGdx = true;
     while (i.hasNext()) {
         QString par = i.next();
-        if (par.startsWith("forceWork=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
-            needsFw = false;
-            i.setValue("fw=1");
-        } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
+        if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
         } else if (par.startsWith("reference=", Qt::CaseInsensitive) || par.startsWith("rf=", Qt::CaseInsensitive)) {
@@ -115,11 +113,17 @@ QStringList NeosProcess::remoteParameters()
             i.remove();
             continue;
         } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
+            needsPw = false;
+            i.remove();
+            continue;
+        } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
+            needsGdx = false;
             i.remove();
             continue;
         }
     }
-    if (needsFw) params << ("fw=1");
+    if (needsPw) params << ("previousWork=1");
+    if (needsGdx) params << ("gdx=default");
     return params;
 }
 

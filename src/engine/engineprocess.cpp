@@ -102,14 +102,11 @@ QStringList EngineProcess::remoteParameters()
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
-    bool needsFw = true;
+    bool needsPw = true;
     bool needsRestart = true;
     while (i.hasNext()) {
         QString par = i.next();
-        if (par.startsWith("forceWork=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
-            needsFw = false;
-            i.setValue("fw=1");
-        } else if (par.startsWith("restart=", Qt::CaseInsensitive)) {
+         if (par.startsWith("restart=", Qt::CaseInsensitive)) {
             needsRestart = false;
             continue;
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
@@ -122,11 +119,12 @@ QStringList EngineProcess::remoteParameters()
             i.remove();
             continue;
         } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
+            needsPw = false;
             i.remove();
             continue;
         }
     }
-    if (needsFw) params << ("fw=1");
+    if (needsPw) params << ("previousWork=1");
     if (needsRestart) params << ("restart="+modelName());
     return params;
 }
