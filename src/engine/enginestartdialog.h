@@ -22,6 +22,7 @@ class EngineStartDialog : public QDialog
 public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
     ~EngineStartDialog();
+    void hiddenCheck();
 
     void setProcess(EngineProcess *process);
     EngineProcess *process() const;
@@ -29,7 +30,6 @@ public:
     QString nSpace() const;
     QString user() const;
     QString password() const;
-    QString gamsVersion() const { return mGamsVersion; }
     void setLastPassword(QString lastPassword);
     void focusEmptyField();
     void setEngineVersion(QString version);
@@ -54,7 +54,7 @@ private slots:
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
-    QString mGamsVersion;
+    QStringList mLocalGamsVersion;
     QString mUrl;
     QString mOldUrl;
     bool mUrlChanged = false;

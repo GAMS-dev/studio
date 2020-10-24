@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>325</width>
-    <height>239</height>
+    <height>258</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="windowTitle">
    <string>Submit Job</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,1">
    <item>
     <widget class="QWidget" name="widget_2" native="true">
      <property name="minimumSize">
@@ -61,19 +61,54 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="laEngineVersion">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
+       <widget class="QWidget" name="widget_4" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="laEngGamsVersion">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="laEngineVersion">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="laWarn">
+     <property name="text">
+      <string/>
+     </property>
     </widget>
    </item>
    <item>

@@ -9,13 +9,16 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-const QString CUnavailable("-unavailable-");
+const QString CUnavailable("-server not found-");
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
     ui->setupUi(this);
+    QFont f = ui->laWarn->font();
+    f.setBold(true);
+    ui->laWarn->setFont(f);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
@@ -25,12 +28,22 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
+    GamsProcess gp;
+    QString about = gp.aboutGAMS();
+    QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
+    if (regex.exactMatch(about))
+        mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
     emit textChanged("");
 }
 
 EngineStartDialog::~EngineStartDialog()
 {
     delete ui;
+}
+
+void EngineStartDialog::hiddenCheck()
+{
+    getVersion();
 }
 
 void EngineStartDialog::setProcess(EngineProcess *process)
@@ -73,7 +86,8 @@ void EngineStartDialog::setLastPassword(QString lastPassword)
 
 void EngineStartDialog::focusEmptyField()
 {
-    if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
+    if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
+    else if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
     else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
     else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
 }
@@ -159,7 +173,8 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         getVersion();
         return;
     }
-    ui->laEngineVersion->setText(engineVersion);
+    ui->laEngineVersion->setText("Engine v"+engineVersion);
+    ui->laEngGamsVersion->setText("GAMS v"+gamsVersion);
     if (mUrl != ui->edUrl->text()) {
         int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
         int len = ui->edUrl->text().length();
@@ -172,7 +187,21 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             ui->edUrl->setSelection(len, pos-len);
         }
     }
-    mGamsVersion = gamsVersion;
+
+    if (!mProc->hasPreviousWorkOption()) {
+        bool newerGamsVersion = false;
+        QStringList engineGamsVersion = QString(gamsVersion).split('.');
+        if (mLocalGamsVersion.at(0).toInt() > engineGamsVersion.at(0).toInt())
+            newerGamsVersion = true;
+        if (mLocalGamsVersion.at(0).toInt() == engineGamsVersion.at(0).toInt() &&
+            mLocalGamsVersion.at(1).toInt() >= engineGamsVersion.at(1).toInt())
+            newerGamsVersion = true;
+        if (newerGamsVersion) {
+            ui->laWarn->setText("Newer local GAMS: Please use \"previousWork=1\"");
+        } else {
+            ui->laWarn->setText("");
+        }
+    }
 }
 
 void EngineStartDialog::reVersionError(const QString &errorText)
@@ -189,8 +218,9 @@ void EngineStartDialog::reVersionError(const QString &errorText)
         getVersion();
         return;
     }
+    ui->laWarn->setText("");
     ui->laEngineVersion->setText(CUnavailable);
-    mGamsVersion = QString();
+    ui->laEngGamsVersion->setText("");
     textChanged("");
 }
 

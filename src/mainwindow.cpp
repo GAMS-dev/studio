@@ -3169,24 +3169,15 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 
 void MainWindow::showEngineStartDialog()
 {
+    engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
+    dialog->setLastPassword(mEngineTempPassword);
+    dialog->setProcess(createEngineProcess());
+    connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
+    dialog->setModal(true);
 
     if (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
-        engine::EngineProcess *proc = createEngineProcess();
-        proc->setUrl(Settings::settings()->toString(SettingsKey::skEngineUrl));
-        proc->getVersions();
-        prepareEngineProcess(Settings::settings()->toString(SettingsKey::skEngineUrl),
-                            Settings::settings()->toString(SettingsKey::skEngineNamespace),
-                            Settings::settings()->toString(SettingsKey::skEngineUser), mEngineTempPassword);
+        dialog->hiddenCheck();
     } else {
-        engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
-        dialog->setProcess(createEngineProcess());
-
-        // TODO(JM) always create dialog / analyse gams version in dialog
-
-        connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
-
-        dialog->setLastPassword(mEngineTempPassword);
-        dialog->setModal(true);
         dialog->open();
         dialog->focusEmptyField();
     }
