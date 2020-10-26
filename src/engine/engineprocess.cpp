@@ -120,6 +120,9 @@ QStringList EngineProcess::remoteParameters()
         } else if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
+        } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
+            i.remove();
+            continue;
         }
     }
     if (needsFw) params << ("fw=1");
