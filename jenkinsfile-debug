@@ -37,7 +37,7 @@ pipeline {
                             cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
                             call vcvars64.bat
                             cd %WORKSPACE%
-                            qmake gams-studio.pro "CONFIG+=debug"
+                            qmake gams-studio.pro "CONFIG+=debug QMAKE_CXXFLAGS_DEBUG += /MP"
                             nmake
                         '''
                     }
@@ -60,22 +60,24 @@ pipeline {
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.16.27012\\vc_redist.x64.exe" "src\\bin"
                         '''
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
-                        withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
-                            bat '''
-                                echo Setting up environment for VS2017 usage...
-                                cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
-                                call vcvars64.bat
-                                cd %WORKSPACE%\\tmp\\studio
-                                signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /t http://timestamp.comodoca.com studio.exe
-                            '''
-                        }
-                        bat '''
-                            echo Setting up environment for VS2017 usage...
-                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
-                            call vcvars64.bat
-                            cd %WORKSPACE%\\tmp\\studio
-                            signtool verify /v /pa studio.exe
-                        '''
+
+                        // NO signing of debug builds
+                        //withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
+                        //    bat '''
+                        //        echo Setting up environment for VS2017 usage...
+                        //        cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                        //        call vcvars64.bat
+                        //        cd %WORKSPACE%\\tmp\\studio
+                        //        signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /t http://timestamp.comodoca.com studio.exe
+                        //    '''
+                        //}
+                        //bat '''
+                        //    echo Setting up environment for VS2017 usage...
+                        //    cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                        //    call vcvars64.bat
+                        //    cd %WORKSPACE%\\tmp\\studio
+                        //    signtool verify /v /pa studio.exe
+                        //'''
                     }
                 }
             }
