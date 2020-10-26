@@ -82,6 +82,7 @@ QStringList EngineProcess::compileParameters()
     QMutableListIterator<QString> i(params);
     bool needsXSave = true;
     bool needsActC = true;
+    bool hasPw = false;
     while (i.hasNext()) {
         QString par = i.next();
         if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
@@ -90,10 +91,15 @@ QStringList EngineProcess::compileParameters()
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
+        } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
+            hasPw = true;
+            i.remove();
+            continue;
         }
     }
     if (needsXSave) params << ("xsave=" + fi.fileName());
     if (needsActC) params << ("action=c");
+    if (!hasPw) params << ("previousWork=1");
     return params;
 }
 
@@ -102,7 +108,6 @@ QStringList EngineProcess::remoteParameters()
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
-    bool needsPw = true;
     bool needsRestart = true;
     while (i.hasNext()) {
         QString par = i.next();
@@ -119,12 +124,10 @@ QStringList EngineProcess::remoteParameters()
             i.remove();
             continue;
         } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
-            needsPw = false;
             i.remove();
             continue;
         }
     }
-    if (needsPw) params << ("previousWork=1");
     if (needsRestart) params << ("restart="+modelName());
     return params;
 }
