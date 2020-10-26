@@ -3115,7 +3115,7 @@ void MainWindow::createNeosProcess()
     mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL : option::RunActionState::RunNeos);
     runGroup->setProcess(std::move(neosProcess));
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
-    connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::neosProgress);
+    connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::remoteProgress);
     neosPtr->setStarting();
     if (!executePrepare(fileNode, runGroup, mGamsParameterEditor->getCurrentCommandLineData()))
         return;
@@ -3193,8 +3193,6 @@ void MainWindow::engineDialogDecision(bool start, bool always)
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         mEngineTempPassword = dialog->password();
         mEngineNoDialog = always;
-//        mUser = "studiotests";
-//        mPassword = "rercud-qinRa9-wagbew";
         prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());
     } else {
         dialog->close();
@@ -3212,6 +3210,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
         return nullptr;
     }
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
+    connect(engineProcess.get(), &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
     engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
@@ -3525,7 +3524,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     mProjectRepo.purgeGroup(parentGroup);
 }
 
-void MainWindow::neosProgress(AbstractProcess *proc, neos::ProcState progress)
+void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 {
     ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
     if (!runGroup || !runGroup->runnableGms()) return;
@@ -3533,9 +3532,9 @@ void MainWindow::neosProgress(AbstractProcess *proc, neos::ProcState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == neos::Proc3GetResult) {
+            if (progress == ProcState::Proc4GetResult) {
                 gv->releaseFile();
-            } else if (progress == neos::ProcState::ProcIdle) {
+            } else if (progress == ProcState::ProcIdle) {
                 gv->setHasChanged(true);
                 gv->reload(gdxNode->file()->codec());
             }
@@ -3543,21 +3542,24 @@ void MainWindow::neosProgress(AbstractProcess *proc, neos::ProcState progress)
     }
 }
 
-void MainWindow::engineProgress(AbstractProcess *proc, engine::ProcState progress)
+void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 {
     ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
     if (!runGroup || !runGroup->runnableGms()) return;
     QString gmsFilePath = runGroup->runnableGms()->location();
-    ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
-    if (gdxNode && gdxNode->file()->isOpen()) {
-        if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == engine::Proc4GetResult) {
-                gv->releaseFile();
-            } else if (progress == engine::ProcIdle) {
-                gv->setHasChanged(true);
-                gv->reload(gdxNode->file()->codec());
+    QList<ProjectFileNode*> gdxNodes = runGroup->findFiles(FileKind::Gdx, true);
+    for (ProjectFileNode *gdxNode : gdxNodes) {
+        if (gdxNode->file()->isOpen()) {
+            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
+                if (progress == ProcState::Proc4GetResult) {
+                    gv->releaseFile();
+                } else if (progress == ProcState::ProcIdle) {
+                    gv->setHasChanged(true);
+                    gv->reload(gdxNode->file()->codec());
+                }
             }
         }
+
     }
 }
 

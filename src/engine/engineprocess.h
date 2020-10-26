@@ -8,17 +8,6 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-// TODO(JM) join ProcState from neos and engine
-enum ProcState {
-    ProcCheck,
-    ProcIdle,
-    Proc1Compile,
-    Proc2Pack,
-    Proc3Monitor,
-    Proc4GetResult,
-    Proc5Unpack,
-};
-
 class EngineManager;
 
 /// \brief The EngineProcess controls all steps to run a job on GAMS Engine

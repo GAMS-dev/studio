@@ -127,6 +127,16 @@ enum class FileEventKind {
 };
 Q_ENUM_NS(FileEventKind)
 
+enum ProcState {
+    ProcCheck,
+    ProcIdle,
+    Proc1Compile,
+    Proc2Pack,
+    Proc3Monitor,
+    Proc4GetResult,
+    Proc5Unpack,
+};
+
 template <typename T>
 typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
 operator<<(QTextStream &dbg, T enumValue)

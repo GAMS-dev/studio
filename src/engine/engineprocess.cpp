@@ -17,13 +17,6 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-/*
-url: https://miro.gams.com/engine/api
-namespace: studiotests
-user: studiotests
-password: rercud-qinRa9-wagbew
-*/
-
 EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", parent), mProcState(ProcCheck)
 {
     disconnect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
@@ -169,6 +162,12 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
     Q_UNUSED(exitStatus)
+
+    QFile gms(mOutPath+'/'+modelName()+".gms");
+    if (gms.exists()) gms.remove();
+    QFile g00(mOutPath+'/'+modelName()+".g00");
+    if (g00.exists()) g00.remove();
+
     setProcState(ProcIdle);
     completed(exitCode);
 }
@@ -189,8 +188,13 @@ void EngineProcess::parseUnZipStdOut(const QByteArray &data)
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
-        if (data.endsWith("\n")) emit newStdChannelData("\n");
+        if (fName.endsWith("gms") || fName.endsWith("g00")) {
+            emit newStdChannelData("--- skipping: ."+ folder + fName);
+            if (data.endsWith("\n")) emit newStdChannelData("\n");
+         } else {
+            emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
+            if (data.endsWith("\n")) emit newStdChannelData("\n");
+        }
     } else
         emit newStdChannelData(data);
 }

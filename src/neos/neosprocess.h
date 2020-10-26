@@ -8,16 +8,6 @@ namespace gams {
 namespace studio {
 namespace neos {
 
-// TODO(JM) join ProcState from neos and engine
-enum ProcState {
-    ProcCheck,
-    ProcIdle,
-    Proc1Compile,
-    Proc2Monitor,
-    Proc3GetResult,
-    Proc4Unpack,
-};
-
 enum Priority {
     prioShort,
     prioLong
@@ -49,7 +39,7 @@ public:
     void setStarting();
 
 signals:
-    void procStateChanged(AbstractProcess *proc, neos::ProcState progress);
+    void procStateChanged(AbstractProcess *proc, ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
 

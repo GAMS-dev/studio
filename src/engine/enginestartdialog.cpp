@@ -187,6 +187,11 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             ui->edUrl->setSelection(len, pos-len);
         }
     }
+    if (!isVisible()) {
+        // hidden start
+        emit ready(true, true);
+        return;
+    }
 
     if (!mProc->hasPreviousWorkOption()) {
         bool newerGamsVersion = false;
@@ -222,6 +227,9 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     ui->laEngineVersion->setText(CUnavailable);
     ui->laEngGamsVersion->setText("");
     textChanged("");
+    if (!isVisible()) {
+        open();
+    }
 }
 
 } // namespace engine

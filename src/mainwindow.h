@@ -193,8 +193,8 @@ private slots:
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
-    void neosProgress(AbstractProcess *proc, neos::ProcState progress);
-    void engineProgress(AbstractProcess *proc, engine::ProcState progress);
+    void neosProgress(AbstractProcess *proc, ProcState progress);
+    void remoteProgress(AbstractProcess *proc, ProcState progress);
     void closeNodeConditionally(ProjectFileNode *node);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
