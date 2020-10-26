@@ -79,6 +79,7 @@ QStringList NeosProcess::compileParameters()
     QMutableListIterator<QString> i(params);
     bool needsXSave = true;
     bool needsActC = true;
+    bool hasPw = false;
     while (i.hasNext()) {
         QString par = i.next();
         if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
@@ -87,9 +88,13 @@ QStringList NeosProcess::compileParameters()
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
+        } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
+            hasPw = true;
+            continue;
         }
     }
     if (needsXSave) params << ("xsave=" + fi.fileName());
+    if (!hasPw) params << ("previousWork=1");
     if (needsActC) params << ("action=c");
     return params;
 }
@@ -99,7 +104,6 @@ QStringList NeosProcess::remoteParameters()
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
-    bool needsPw = true;
     bool needsGdx = true;
     while (i.hasNext()) {
         QString par = i.next();
@@ -113,7 +117,6 @@ QStringList NeosProcess::remoteParameters()
             i.remove();
             continue;
         } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
-            needsPw = false;
             i.remove();
             continue;
         } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
@@ -122,7 +125,6 @@ QStringList NeosProcess::remoteParameters()
             continue;
         }
     }
-    if (needsPw) params << ("previousWork=1");
     if (needsGdx) params << ("gdx=default");
     return params;
 }
