@@ -51,6 +51,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     mProc = process;
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
+    ui->cbForceGdx->setChecked(mProc->forceGdx());
     emit urlEdited(ui->edUrl->text());
 }
 
@@ -211,7 +212,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
 
 void EngineStartDialog::reVersionError(const QString &errorText)
 {
-    DEB() << "Network error: " << errorText;
+    Q_UNUSED(errorText)
     mPendingRequest = false;
     if (mUrlChanged) {
         getVersion();
@@ -232,6 +233,12 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
 }
 
+void EngineStartDialog::on_cbForceGdx_stateChanged(int state)
+{
+    if (mProc) mProc->setForceGdx(state != 0);
+}
+
 } // namespace engine
 } // namespace studio
 } // namespace gams
+

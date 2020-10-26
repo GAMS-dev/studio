@@ -51,6 +51,8 @@ private slots:
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
 
+    void on_cbForceGdx_stateChanged(int state);
+
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;

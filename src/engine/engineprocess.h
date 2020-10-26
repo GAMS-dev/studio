@@ -41,6 +41,9 @@ public:
     void setIgnoreSslErrors();
     void getVersions();
 
+    bool forceGdx() const;
+    void setForceGdx(bool forceGdx);
+
 signals:
     void authenticated(QString token);
     void procStateChanged(AbstractProcess *proc, ProcState progress);
@@ -88,6 +91,7 @@ private:
     QString mEngineVersion;
     QString mGamsVersion;
     bool mHasPreviousWorkOption = false;
+    bool mForceGdx = true;
 
     QString mJobNumber;
     QString mJobPassword;

@@ -99,6 +99,7 @@ QStringList EngineProcess::remoteParameters()
     QMutableListIterator<QString> i(params);
     bool needsFw = true;
     bool needsRestart = true;
+    bool needsGdx = mForceGdx;
     while (i.hasNext()) {
         QString par = i.next();
         if (par.startsWith("forceWork=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
@@ -106,6 +107,9 @@ QStringList EngineProcess::remoteParameters()
             i.setValue("fw=1");
         } else if (par.startsWith("restart=", Qt::CaseInsensitive)) {
             needsRestart = false;
+            continue;
+        } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
+            needsGdx = false;
             continue;
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
@@ -116,12 +120,10 @@ QStringList EngineProcess::remoteParameters()
         } else if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
-        } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
-            i.remove();
-            continue;
         }
     }
     if (needsFw) params << ("fw=1");
+    if (needsGdx) params << ("gdx=default");
     if (needsRestart) params << ("restart="+modelName());
     return params;
 }
@@ -540,6 +542,16 @@ void EngineProcess::startUnpacking()
 QString EngineProcess::modelName()
 {
     return QFileInfo(mOutPath).completeBaseName();
+}
+
+bool EngineProcess::forceGdx() const
+{
+    return mForceGdx;
+}
+
+void EngineProcess::setForceGdx(bool forceGdx)
+{
+    mForceGdx = forceGdx;
 }
 
 } // namespace engine
