@@ -3191,6 +3191,7 @@ void MainWindow::engineDialogDecision(bool start, bool always)
         Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
+        Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
         mEngineTempPassword = dialog->password();
         mEngineNoDialog = always;
         prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());

@@ -30,6 +30,7 @@ public:
     QString nSpace() const;
     QString user() const;
     QString password() const;
+    bool forceGdx() const;
     void setLastPassword(QString lastPassword);
     void focusEmptyField();
     void setEngineVersion(QString version);

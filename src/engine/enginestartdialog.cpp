@@ -23,6 +23,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
     ui->edUser->setText(Settings::settings()->toString(SettingsKey::skEngineUser));
+    ui->cbForceGdx->setChecked(Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
     connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::urlEdited);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
@@ -51,7 +52,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     mProc = process;
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
-    ui->cbForceGdx->setChecked(mProc->forceGdx());
+    mProc->setForceGdx(ui->cbForceGdx->isChecked());
     emit urlEdited(ui->edUrl->text());
 }
 
@@ -78,6 +79,11 @@ QString EngineStartDialog::user() const
 QString EngineStartDialog::password() const
 {
     return ui->edPassword->text();
+}
+
+bool EngineStartDialog::forceGdx() const
+{
+    return ui->cbForceGdx->isChecked();
 }
 
 void EngineStartDialog::setLastPassword(QString lastPassword)
