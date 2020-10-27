@@ -354,7 +354,6 @@ void MainWindow::initIcons()
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
     ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
-    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
     ui->actionRunEngine->setIcon(Scheme::icon(":/%1/run-engine"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
@@ -378,7 +377,7 @@ void MainWindow::initToolBar()
 {
     mGamsParameterEditor = new option::ParameterEditor(
                 ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                ui->actionRunNeos, ui->actionRunNeosL, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
+                ui->actionRunNeos, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
