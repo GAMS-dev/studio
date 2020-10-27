@@ -20,39 +20,17 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     connect(ui->cbForceGdx, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     connect(ui->rbShort, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     connect(ui->rbLong, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
+    connect(ui->cbTerms, &QCheckBox::stateChanged, [this](){
+        Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, ui->cbTerms->isChecked());
+    });
+    connect(ui->cbTerms, &QCheckBox::stateChanged, this, &NeosStartDialog::updateCanStart);
+    ui->cbTerms->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
     updateCanStart();
 }
 
 NeosStartDialog::~NeosStartDialog()
 {
     delete ui;
-}
-
-void NeosStartDialog::setConfirmText(QString text, QString checkboxText)
-{
-    QVBoxLayout *lay = qobject_cast<QVBoxLayout *>(this->layout());
-    if (lay) {
-        QLabel *laText = mLabelTerms;
-        if (!laText) {
-            laText = new QLabel(text, this);
-            laText->setWordWrap(true);
-            laText->setOpenExternalLinks(true);
-            lay->insertWidget(1, laText);
-            mLabelTerms = laText;
-        } else mLabelTerms->setText(text);
-
-        QCheckBox *cbCheck = mConfirmTerms;
-        if (!cbCheck) {
-            cbCheck = new QCheckBox(checkboxText, this);
-            lay->insertWidget(3, cbCheck);
-            mConfirmTerms = cbCheck;
-            connect(mConfirmTerms, &QCheckBox::stateChanged, [this](){
-                Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, mConfirmTerms->isChecked());
-            });
-            connect(mConfirmTerms, &QCheckBox::stateChanged, this, &NeosStartDialog::updateCanStart);
-            cbCheck->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
-        } else cbCheck->setText(checkboxText);
-    }
 }
 
 void NeosStartDialog::setProcess(NeosProcess *proc)
@@ -88,12 +66,8 @@ void NeosStartDialog::showEvent(QShowEvent *event)
 
 void NeosStartDialog::updateCanStart()
 {
-    bool enabled = mConfirmTerms && mConfirmTerms->isChecked();
-    ui->widget->setVisible(enabled);
-    if (mLabelTerms) mLabelTerms->setVisible(!enabled);
-    ui->cbForceGdx->setEnabled(enabled);
-    ui->rbShort->setEnabled(enabled);
-    ui->rbLong->setEnabled(enabled);
+    bool enabled = ui->cbTerms->isChecked();
+    ui->stackedWidget->setCurrentIndex(enabled ? 0 : 1);
     ui->bAlways->setEnabled(enabled);
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }

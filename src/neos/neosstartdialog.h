@@ -24,7 +24,6 @@ class NeosStartDialog : public QDialog
 public:
     explicit NeosStartDialog(QWidget *parent = nullptr);
     ~NeosStartDialog();
-    void setConfirmText(QString text, QString checkboxText);
     void setProcess(neos::NeosProcess *proc);
 
 private slots:
@@ -38,8 +37,6 @@ protected:
 private:
     Ui::NeosStartDialog *ui;
     NeosProcess *mProc = nullptr;
-    QLabel *mLabelTerms = nullptr;
-    QCheckBox *mConfirmTerms = nullptr;
 
 };
 

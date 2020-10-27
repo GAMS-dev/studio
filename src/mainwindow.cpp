@@ -3054,13 +3054,6 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
     execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), std::make_unique<GamsProcess>());
 }
 
-const QString CNeosConfirmTitle = "Submitting data to NEOS";
-const QString CNeosConfirmText = "You are about to submit your data to the NEOS Server. This service is offered "
-                                 "with no expectation or guarantee of confidentiality for the data or the model. "
-                                 "Please ensure you have read the terms of use at "
-                                 "<a href=https://neos-server.org/neos/termofuse.html>NEOS Server</a>";
-const QString CNeosConfirmCheckText = "I agree to the terms of use of NEOS";
-
 void MainWindow::on_actionRunNeos_triggered()
 {
     showNeosStartDialog();
@@ -3077,7 +3070,6 @@ void MainWindow::showNeosStartDialog()
     neos::NeosProcess *neosPtr = createNeosProcess();
     if (!neosPtr) return;
     dialog->setProcess(neosPtr);
-    dialog->setConfirmText(CNeosConfirmText, CNeosConfirmCheckText);
     connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, this, &MainWindow::prepareNeosProcess);
