@@ -115,7 +115,7 @@ private:
     void findInFiles(SearchResultList* collection, QList<FileMeta *> fml);
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
     void updateLabelByCursorPos(int lineNr = 0, int colNr = 0);
-    void selectNextMatch(SearchDirection direction);
+    void selectNextMatch(SearchDirection direction, bool firstLevel = true);
     void insertHistory();
     void searchParameterChanged();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList* collection);

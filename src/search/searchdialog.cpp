@@ -458,7 +458,7 @@ void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
 /// \brief SearchDialog::selectNextMatch steps through words in a document
 /// \param direction
 ///
-void SearchDialog::selectNextMatch(SearchDirection direction)
+void SearchDialog::selectNextMatch(SearchDirection direction, bool firstLevel)
 {
     QTextCursor matchSelection;
     QRegularExpression searchRegex = createRegex();
@@ -506,7 +506,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         res = &resultList.at(newIndex);
         matchNr = newIndex;
 
-    } else if (mMain->recent()->editor()){
+    } else if (mMain->recent()->editor()){ // finds next result by cursor position
         QString file = ViewHelper::location(mMain->recent()->editor());
         for (int i = start; i >= 0 && i < resultList.size(); i += iterator) {
             matchNr = i;
@@ -561,7 +561,8 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
         updateLabelByCursorPos(y, x);
         if (found) return; // exit early, all done
     }
-     // still no results, jump to start/end of file
+
+     // no results found, start over, jump to start/end of file
     if (!found) {
         if (mOutsideOfList || resultList.size() == MAX_SEARCH_RESULTS) {
             if (backwards) {
@@ -573,10 +574,10 @@ void SearchDialog::selectNextMatch(SearchDirection direction)
                     t->jumpTo(t->knownLines()-1, 0, 0, true);
                 }
                 matchNr = MAX_SEARCH_RESULTS-1;
+                if (firstLevel) selectNextMatch(direction, false); // try jumping once again
             } else { // forwards
                 res = &resultList.first();
             }
-//            selectNextMatch(direction);
 
         } else { // startover in available cache
             if (backwards) res = &resultList.last();
@@ -912,8 +913,11 @@ void SearchDialog::updateNrMatches(int current)
             ui->lbl_nrResults->setToolTip("");
         }
 
-    } else
-        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(size) + " matches");
+    } else {
+        QString plus("");
+        if (list->size() >= MAX_SEARCH_RESULTS) plus = "+";
+        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(size) + plus);
+    }
 
     ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 }
