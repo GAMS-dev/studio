@@ -36,6 +36,7 @@ NeosManager::NeosManager(QObject* parent)
 
     connect(&mHttp, &HttpManager::received, this, &NeosManager::received, Qt::QueuedConnection);
     connect(&mHttp, &HttpManager::sslErrors, this, &NeosManager::sslErrors, Qt::QueuedConnection);
+    connect(&mHttp, &HttpManager::error, this, &NeosManager::reError, Qt::QueuedConnection);
     connect(this, &NeosManager::submitCall, &mHttp, &HttpManager::submitCall);
 }
 
