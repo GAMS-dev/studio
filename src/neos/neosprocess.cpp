@@ -104,7 +104,8 @@ QStringList NeosProcess::remoteParameters()
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
-    bool needsGdx = true;
+    bool needsGdx = mForceGdx;
+    mHasGdx = mForceGdx;
     while (i.hasNext()) {
         QString par = i.next();
         if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
@@ -120,6 +121,7 @@ QStringList NeosProcess::remoteParameters()
             i.remove();
             continue;
         } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
+            mHasGdx = true;
             needsGdx = false;
             i.remove();
             continue;
@@ -140,7 +142,7 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        mManager->submitJob(g00, params.join(" "), mPrio==prioShort);
+        mManager->submitJob(g00, params.join(" "), mPrio==prioShort, mHasGdx);
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
     }
@@ -468,6 +470,11 @@ void NeosProcess::startUnpacking()
     subProc->setWorkingDirectory(mOutPath);
     subProc->setParameters(QStringList() << "-o" << "solver-output.zip");
     subProc->execute();
+}
+
+void NeosProcess::setForceGdx(bool forceGdx)
+{
+    mForceGdx = forceGdx;
 }
 
 } // namespace neos

@@ -1,6 +1,8 @@
 #include "neosstartdialog.h"
 #include "ui_neosstartdialog.h"
 #include "settings.h"
+#include "neosprocess.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -14,8 +16,10 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     setModal(true);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NeosStartDialog::buttonClicked);
     ui->cbForceGdx->setChecked(Settings::settings()->toBool(SettingsKey::skNeosForceGdx));
-    ui->rbShort->setChecked(Settings::settings()->toBool(SettingsKey::skNeosShortPrio));
-    ui->rbLong->setChecked(!ui->rbShort->isChecked());
+    (Settings::settings()->toBool(SettingsKey::skNeosShortPrio) ? ui->rbShort : ui->rbLong)->setChecked(true);
+    connect(ui->cbForceGdx, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
+    connect(ui->rbShort, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
+    connect(ui->rbLong, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     updateCanStart();
 }
 
@@ -42,24 +46,38 @@ void NeosStartDialog::setConfirmText(QString text, QString checkboxText)
             cbCheck = new QCheckBox(checkboxText, this);
             lay->insertWidget(3, cbCheck);
             mConfirmTerms = cbCheck;
+            connect(mConfirmTerms, &QCheckBox::stateChanged, [this](){
+                Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, mConfirmTerms->isChecked());
+            });
             connect(mConfirmTerms, &QCheckBox::stateChanged, this, &NeosStartDialog::updateCanStart);
             cbCheck->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
         } else cbCheck->setText(checkboxText);
     }
 }
 
-QDialogButtonBox::StandardButton NeosStartDialog::standardButton(QAbstractButton *button) const
+void NeosStartDialog::setProcess(NeosProcess *proc)
 {
-    if (button == ui->bAlways)
-        return QDialogButtonBox::YesToAll;
-    return ui->buttonBox->standardButton(button);
+    mProc = proc;
+    updateValues();
 }
 
 void NeosStartDialog::buttonClicked(QAbstractButton *button)
 {
     bool always = button == ui->bAlways;
     bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
-    emit ready(start, always);
+    Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, always);
+    if (start) accept();
+    else reject();
+}
+
+void NeosStartDialog::updateValues()
+{
+    Settings::settings()->setBool(SettingsKey::skNeosForceGdx, ui->cbForceGdx->isChecked());
+    Settings::settings()->setBool(SettingsKey::skNeosShortPrio, ui->rbShort->isChecked());
+    if (mProc) {
+        mProc->setForceGdx(ui->cbForceGdx->isChecked());
+        mProc->setPriority(ui->rbShort->isChecked() ? Priority::prioShort : Priority::prioLong);
+    }
 }
 
 void NeosStartDialog::showEvent(QShowEvent *event)

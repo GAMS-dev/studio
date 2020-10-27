@@ -11,6 +11,8 @@ namespace gams {
 namespace studio {
 namespace neos {
 
+class NeosProcess;
+
 namespace Ui {
 class NeosStartDialog;
 }
@@ -23,21 +25,19 @@ public:
     explicit NeosStartDialog(QWidget *parent = nullptr);
     ~NeosStartDialog();
     void setConfirmText(QString text, QString checkboxText);
-
-    QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
-
-signals:
-    void ready(bool start, bool always);
+    void setProcess(neos::NeosProcess *proc);
 
 private slots:
     void buttonClicked(QAbstractButton *button);
     void updateCanStart();
+    void updateValues();
 
 protected:
     void showEvent(QShowEvent *event);
 
 private:
     Ui::NeosStartDialog *ui;
+    NeosProcess *mProc = nullptr;
     QLabel *mLabelTerms = nullptr;
     QCheckBox *mConfirmTerms = nullptr;
 

@@ -339,13 +339,12 @@ private slots:
     void on_actionGoForward_triggered();
     void on_actionPrint_triggered();
     void on_actionRunNeos_triggered();
-    void on_actionRunNeosL_triggered();
     void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
-    void showNeosConfirmDialog();
-    void createNeosProcess();
+    void showNeosStartDialog();
+    void prepareNeosProcess();
     void showEngineStartDialog();
     void engineDialogDecision(QAbstractButton *button);
     void createEngineProcess(QString url, QString nSpace, QString user, QString password);
@@ -382,6 +381,7 @@ private:
     void updateAndSaveSettings();
     void restoreFromSettings();
     QString currentPath();
+    neos::NeosProcess *createNeosProcess();
     bool executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode *runGroup, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
                  ProjectFileNode *gmsFileNode = nullptr);
     void execution(ProjectRunGroupNode *runGroup);
@@ -462,7 +462,6 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
-    bool mNeosLong = false;
     QString mEngineTempPassword;
 };
 
