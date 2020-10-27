@@ -27,6 +27,7 @@
         <file alias="miro-deploy">miro-deploy.svg</file>
         <file alias="miro-c">miro-c.svg</file>
         <file alias="miro-h">miro-h.svg</file>
+        <file alias="neos">neos.svg</file>
         <file alias="option-file">option.svg</file>
         <file alias="ref-file">ref-file.svg</file>
         <file alias="square-darkyellow">square-darkyellow.svg</file>

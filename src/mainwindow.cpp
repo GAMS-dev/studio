@@ -63,6 +63,7 @@
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
 #include "engine/enginestartdialog.h"
+#include "neos/neosstartdialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -3065,7 +3066,8 @@ void MainWindow::on_actionRunNeos_triggered()
 {
     mNeosLong = false;
     if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
-            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
+            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)
+            || qApp->keyboardModifiers().testFlag(Qt::ControlModifier))
         showNeosConfirmDialog();
     else
         emit createNeosProcess();
@@ -3088,18 +3090,21 @@ void MainWindow::on_actionRunEngine_triggered()
 
 void MainWindow::showNeosConfirmDialog()
 {
-    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
-    dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
+    neos::NeosStartDialog *dialog = new neos::NeosStartDialog(this);
+    dialog->setConfirmText(CNeosConfirmText, CNeosConfirmCheckText);
+
+//    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
+//    dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
     connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::createNeosProcess);
+//    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::createNeosProcess);
     connect(dialog, &ConfirmDialog::accepted, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::autoConfirm, [] {
-        Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
-    });
-    connect(dialog, &ConfirmDialog::setAcceptBox, [this] (bool accept) {
-        Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, accept);
-        updateAndSaveSettings();
-    });
+//    connect(dialog, &ConfirmDialog::autoConfirm, [] {
+//        Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
+//    });
+//    connect(dialog, &ConfirmDialog::setAcceptBox, [this] (bool accept) {
+//        Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, accept);
+//        updateAndSaveSettings();
+//    });
     dialog->open();
 }
 
