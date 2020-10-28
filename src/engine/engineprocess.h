@@ -92,6 +92,8 @@ private:
     QString mGamsVersion;
     bool mHasPreviousWorkOption = false;
     bool mForceGdx = true;
+    QByteArray mRemoteWorkDir;
+    bool mScanForRemoteDir = false;
 
     QString mJobNumber;
     QString mJobPassword;

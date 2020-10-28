@@ -446,34 +446,53 @@ void EngineProcess::setProcState(ProcState newState)
 
 QByteArray EngineProcess::convertReferences(const QByteArray &data)
 {
+    int scanDirIndex = -1;
+    if (mRemoteWorkDir.isEmpty()) {
+        scanDirIndex = data.indexOf("--- GAMS Parameters defined");
+        if (scanDirIndex >= 0) mScanForRemoteDir = true;
+    }
+    if (mScanForRemoteDir) {
+        scanDirIndex = data.indexOf("    CurDir ", scanDirIndex);
+        if (scanDirIndex >= 0) {
+            scanDirIndex += 11;
+            int end = scanDirIndex;
+            for ( ; end < data.length(); ++end) {
+                if (data.at(end) == '\n' || data.at(end) == '\r')
+                    break;
+            }
+            mRemoteWorkDir = data.mid(scanDirIndex, end-scanDirIndex);
+            mScanForRemoteDir = false;
+        }
+    }
     QByteArray res;
     res.reserve(data.size()+mOutPath.length());
-    QByteArray remotePath("/var/lib/condor/execute/dir_+/gamsexec/");
     QByteArray lstTag("[LST:");
     int iRP = 0;
     int iLT = 0;
     int iCount = 0;  // count of chars currently not copied
 
     for (int i = 0; i < data.size(); ++i) {
-        if (iRP == remotePath.length()) {
-            // add local path
-            iRP = 0;
-        }
-        // Check if still in remotePath pattern
-        if (data.at(i) >= '0' && data.at(i) <= '9') {
-            if (remotePath.at(iRP) != '+') iRP = 0;
-        } else {
-            if (remotePath.at(iRP) == '+') ++iRP;
-            if (iRP < remotePath.length()) {
-                if (remotePath.at(iRP) == data.at(i)) ++iRP;
-                else iRP = 0;
+        if (!mRemoteWorkDir.isEmpty()) {
+            if (iRP == mRemoteWorkDir.length()) {
+                // add local path
+                iRP = 0;
+            }
+            // Check if still in remotePath pattern
+            if (data.at(i) >= '0' && data.at(i) <= '9') {
+                if (mRemoteWorkDir.at(iRP) != '+') iRP = 0;
+            } else {
+                if (mRemoteWorkDir.at(iRP) == '+') ++iRP;
+                if (iRP < mRemoteWorkDir.length()) {
+                    if (mRemoteWorkDir.at(iRP) == data.at(i)) ++iRP;
+                    else iRP = 0;
+                }
             }
         }
         // Check if still in lstTag pattern
         if (lstTag.at(iLT) == data.at(i)) ++iLT;
         else iLT = 0;
         ++iCount;
-        if (iRP == remotePath.size()) {
+        if (!mRemoteWorkDir.isEmpty() && iRP == mRemoteWorkDir.size()) {
             res.append(mOutPath+QDir::separator());
             iRP = 0;
             iLT = 0;
