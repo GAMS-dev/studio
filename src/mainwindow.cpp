@@ -353,8 +353,8 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
-    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
-    ui->actionRunEngine->setIcon(Scheme::icon(":/%1/run-engine"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/img/neos"));
+    ui->actionRunEngine->setIcon(Scheme::icon(":/img/engine"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));

@@ -5,7 +5,8 @@
         <file alias="err-ref">err-ref.svg</file>
         <file alias="err-ref-missing">err-ref-missing.svg</file>
         <file alias="exclam-circle-r">exclam-circle-r.svg</file>
-        <file alias="engine">engine-logo.svg</file>
+        <file alias="engine-logo">engine-logo.svg</file>
+        <file alias="engine">engine.svg</file>
         <file alias="file-alt">file-alt.svg</file>
         <file alias="file-edit">file-edit.svg</file>
         <file alias="filter">filter.svg</file>
@@ -28,6 +29,7 @@
         <file alias="miro-c">miro-c.svg</file>
         <file alias="miro-h">miro-h.svg</file>
         <file alias="neos">neos.svg</file>
+        <file alias="neos-logo">neos-logo.svg</file>
         <file alias="option-file">option.svg</file>
         <file alias="ref-file">ref-file.svg</file>
         <file alias="square-darkyellow">square-darkyellow.svg</file>

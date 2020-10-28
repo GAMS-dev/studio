@@ -771,10 +771,10 @@
   <action name="actionRunNeos">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/run-neos</normaloff>:/solid/run-neos</iconset>
+     <normaloff>:/img/neos</normaloff>:/img/neos</iconset>
    </property>
    <property name="text">
-    <string>Run &amp;NEOS - short</string>
+    <string>Run &amp;NEOS</string>
    </property>
    <property name="toolTip">
     <string>Run remote NEOS process</string>
@@ -783,7 +783,7 @@
   <action name="actionRunEngine">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/run-engine</normaloff>:/solid/run-engine</iconset>
+     <normaloff>:/img/engine</normaloff>:/img/engine</iconset>
    </property>
    <property name="text">
     <string>Run &amp;Engine</string>
