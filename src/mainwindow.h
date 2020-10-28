@@ -455,6 +455,7 @@ private:
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
     bool mIgnoreSslErrors = false;
+    bool mNeosNoDialog = false;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

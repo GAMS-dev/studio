@@ -353,8 +353,8 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
-    ui->actionRunNeos->setIcon(Scheme::icon(":/img/neos"));
-    ui->actionRunEngine->setIcon(Scheme::icon(":/img/engine"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/img/neos", false, ":/img/neos-g"));
+    ui->actionRunEngine->setIcon(Scheme::icon(":/img/engine", false, ":/img/engine-g"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
@@ -3073,13 +3073,16 @@ void MainWindow::showNeosStartDialog()
     connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, this, &MainWindow::prepareNeosProcess);
+    connect(dialog, &neos::NeosStartDialog::noDialogFlagChanged, [this](bool noDialog) {
+        mNeosNoDialog = noDialog;
+    });
 
-    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
-            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)
-            || qApp->keyboardModifiers().testFlag(Qt::ControlModifier))
-        dialog->open();
-    else
+    if (mNeosNoDialog && Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)
+            && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
         dialog->accept();
+    } else {
+        dialog->open();
+    }
 }
 
 neos::NeosProcess *MainWindow::createNeosProcess()
@@ -3156,7 +3159,6 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 void MainWindow::showEngineStartDialog()
 {
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
-    DEB() << dialog->windowFlags();
     connect(dialog, &engine::EngineStartDialog::buttonClicked, this, &MainWindow::engineDialogDecision);
     dialog->setLastPassword(mEngineTempPassword);
     dialog->setModal(true);

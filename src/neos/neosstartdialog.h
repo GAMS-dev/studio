@@ -26,6 +26,9 @@ public:
     ~NeosStartDialog();
     void setProcess(neos::NeosProcess *proc);
 
+signals:
+    void noDialogFlagChanged(bool noDialog);
+
 private slots:
     void buttonClicked(QAbstractButton *button);
     void updateCanStart();

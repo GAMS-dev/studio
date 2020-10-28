@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>253</height>
+    <height>325</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,83 +28,55 @@
     </widget>
    </item>
    <item>
-    <widget class="QStackedWidget" name="stackedWidget">
-     <property name="currentIndex">
-      <number>0</number>
+    <widget class="QWidget" name="widConf" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <widget class="QWidget" name="page">
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QWidget" name="widget" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QCheckBox" name="cbForceGdx">
-            <property name="text">
-             <string>always create a GDX file</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rbShort">
-            <property name="text">
-             <string>short priority (limited to 5 minutes)</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rbLong">
-            <property name="text">
-             <string>long priotity</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="page_2">
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <widget class="QLabel" name="laTerms">
-         <property name="text">
-          <string>You are about to submit your data to the NEOS Server. This service is offered with no expectation or guarantee of confidentiality for the data or the model. Please ensure you have read the terms of use at &lt;a href=https://neos-server.org/neos/termofuse.html&gt;NEOS Server&lt;/a&gt;.</string>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-         <property name="openExternalLinks">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="cbForceGdx">
+        <property name="text">
+         <string>always create a GDX file</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="rbShort">
+        <property name="text">
+         <string>short priority (limited to 5 minutes)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="rbLong">
+        <property name="text">
+         <string>long priotity</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widget_2" native="true">
+    <widget class="QWidget" name="widTerms" native="true">
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <property name="topMargin">
        <number>0</number>
@@ -113,9 +85,32 @@
        <number>6</number>
       </property>
       <item>
+       <widget class="QLabel" name="laTerms">
+        <property name="text">
+         <string>You are about to submit your data to the NEOS Server. This service is offered with no expectation or guarantee of confidentiality for the data or the model. Please ensure you have read the terms of use at &lt;a href=https://neos-server.org/neos/termofuse.html&gt;NEOS Server&lt;/a&gt;.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="cbTerms">
         <property name="text">
          <string>I agree to the terms of use of NEOS</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbHideTerms">
+        <property name="toolTip">
+         <string>Go to settings to turn them on again</string>
+        </property>
+        <property name="text">
+         <string>Hide Terms Of Use next time</string>
         </property>
        </widget>
       </item>
@@ -123,7 +118,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widget_3" native="true">
+    <widget class="QWidget" name="widButtons" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
        <horstretch>0</horstretch>
