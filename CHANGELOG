@@ -1,6 +1,9 @@
 Version 1.4.1 *
 ==================
 - Improve handling of network errors on running NEOS jobs
+- removed mandatory forceWork=1 and set previousWork=1 as default
+- Moved NEOS controls to the dialog
+- Added icons NEOS and GAMS Engine start actions
 
 Version 1.4.0
 ==================
