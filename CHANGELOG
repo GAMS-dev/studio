@@ -1,6 +1,13 @@
 Version 1.4.1 *
 ==================
-- Improve handling of network errors on running NEOS jobs
+- improved handling of network errors on running NEOS jobs
+- removed generated *.g00-file and *.gms-dummy-file
+- improved GAMS Engine handling and start dialog
+    - added check of remote GAMS version and GAMS Engine version
+    - convert remote paths references to local paths
+    - fixed permission denied on overwriting an opened gdx-file
+    - add "don't ask again" button for current session
+    - enhanced logging of network errors
 
 Version 1.4.0
 ==================
