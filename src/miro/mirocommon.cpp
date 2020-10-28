@@ -45,7 +45,7 @@ QString MiroCommon::path(const QString &configMiroPath)
 
 QString MiroCommon::assemblyFileName(const QString &modelName)
 {
-    return modelName + "_files.txt";
+    return modelName.toLower() + "_files.txt";
 }
 
 QString MiroCommon::assemblyFileName(const QString &modelLocation,
