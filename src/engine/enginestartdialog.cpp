@@ -9,7 +9,7 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-const QString CUnavailable("-server not found-");
+const QString CUnavailable("-");
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
@@ -127,6 +127,8 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
 void EngineStartDialog::getVersion()
 {
     ui->laEngineVersion->setText(CUnavailable);
+    ui->laWarn->setText("No GAMS Engine server");
+
     if (mPendingRequest) return;
     if (mProc) {
         mPendingRequest = true;
@@ -180,8 +182,8 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         getVersion();
         return;
     }
-    ui->laEngineVersion->setText("Engine v"+engineVersion);
-    ui->laEngGamsVersion->setText("GAMS v"+gamsVersion);
+    ui->laEngineVersion->setText("Engine "+engineVersion);
+    ui->laEngGamsVersion->setText("GAMS "+gamsVersion);
     if (mUrl != ui->edUrl->text()) {
         int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
         int len = ui->edUrl->text().length();
@@ -213,6 +215,8 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         } else {
             ui->laWarn->setText("");
         }
+    } else {
+        ui->laWarn->setText("");
     }
 }
 
@@ -232,6 +236,8 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
     ui->laWarn->setText("");
     ui->laEngineVersion->setText(CUnavailable);
+    ui->laWarn->setText("No GAMS Engine server");
+
     ui->laEngGamsVersion->setText("");
     textChanged("");
     if (!isVisible()) {
