@@ -25,6 +25,7 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     connect(ui->rbLong, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     connect(ui->cbTerms, &QCheckBox::stateChanged, [this](){
         Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, ui->cbTerms->isChecked());
+        updateCanStart();
     });
     connect(ui->cbHideTerms, &QCheckBox::stateChanged, [this](){
         Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, ui->cbHideTerms->isChecked());
@@ -32,7 +33,7 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     connect(ui->cbTerms, &QCheckBox::stateChanged, this, &NeosStartDialog::updateCanStart);
     ui->cbTerms->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
     ui->cbHideTerms->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm));
-    if (ui->cbHideTerms->isChecked()) ui->widTerms->setVisible(false);
+    if (ui->cbHideTerms->isChecked() && ui->cbTerms->isChecked()) ui->widTerms->setVisible(false);
     resize(width(), height() - ui->widTerms->height());
     updateCanStart();
 }
