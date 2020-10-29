@@ -193,8 +193,8 @@ private slots:
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
-    void neosProgress(AbstractProcess *proc, neos::ProcState progress);
-    void engineProgress(AbstractProcess *proc, engine::ProcState progress);
+    void neosProgress(AbstractProcess *proc, ProcState progress);
+    void remoteProgress(AbstractProcess *proc, ProcState progress);
     void closeNodeConditionally(ProjectFileNode *node);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
@@ -347,8 +347,9 @@ private slots:
     void showNeosConfirmDialog();
     void createNeosProcess();
     void showEngineStartDialog();
-    void engineDialogDecision(QAbstractButton *button);
-    void createEngineProcess(QString url, QString nSpace, QString user, QString password);
+    void engineDialogDecision(bool start, bool always);
+    engine::EngineProcess *createEngineProcess();
+    void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
 
@@ -464,6 +465,7 @@ private:
     bool mMiroRunning = false;
     bool mNeosLong = false;
     QString mEngineTempPassword;
+    bool mEngineNoDialog = false;
 };
 
 }

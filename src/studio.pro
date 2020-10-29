@@ -98,6 +98,7 @@ SOURCES += \
     editors/textviewedit.cpp \
     encodingsdialog.cpp \
     engine/client/OAIAuthApi.cpp \
+    engine/client/OAIDefaultApi.cpp \
     engine/client/OAIHelpers.cpp \
     engine/client/OAIHttpFileElement.cpp \
     engine/client/OAIHttpRequest.cpp \
@@ -275,6 +276,7 @@ HEADERS += \
     editors/textviewedit.h \
     encodingsdialog.h \
     engine/client/OAIAuthApi.h \
+    engine/client/OAIDefaultApi.h \
     engine/client/OAIEnum.h \
     engine/client/OAIHelpers.h \
     engine/client/OAIHttpFileElement.h \
