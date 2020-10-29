@@ -1,18 +1,20 @@
-Version 1.4.1 *
+Version 1.4.1
 ==================
-- improved handling of network errors on running NEOS jobs
-- improved GAMS Engine handling and start dialog
+- improved GAMS Engine integration
     - removed generated *.g00-file and *.gms-dummy-file
     - added check of remote GAMS version to check if "previousWork=1" is needed
-    - added GAMS Engine version for information
-    - convert remote paths references to local paths
-    - fixed permission denied on overwriting an opened gdx-file
-    - add "don't ask again" button for current session
-    - enhanced logging of network errors
-- removed forceWork=1 but use previousWork=1 as default for NEOS and GAMS Engine runs
-- moved NEOS control options into dialog
-- added icons for NEOS and GAMS Engine start actions
-
+    - added GAMS Engine version number to start dialog
+    - added conversion of remote paths to local paths
+    - fixed permission denied when overwriting an opened gdx-file
+    - added "don't ask again" button for current session
+    - improved logging of network errors
+    - removed default parameter forceWork=1 and added check of remote GAMS version to set "previousWork=1" if needed
+    - added unique icon for start action
+- improved NEOS integration
+    - improved handling of network errors
+    - changed default parameter from forceWork=1 to previousWork=1
+    - moved NEOS control options into dialog
+    - added unique icon for start action
 
 Version 1.4.0
 ==================
