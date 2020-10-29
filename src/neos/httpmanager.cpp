@@ -39,10 +39,14 @@ void HttpManager::submitCall(const QString &method, const QVariantList &params)
 void HttpManager::prepareReply(QNetworkReply *reply)
 {
     QString name;
-    bool isReply = name.isEmpty();
-    QVariant result = XmlRpc::parseParams(reply, name);
-    if (isReply) name = reply->request().attribute(QNetworkRequest::User).toString();
-    emit received(name, result);
+    if (reply->error()) {
+        emit error(reply->errorString(), reply->error());
+    } else {
+        bool isReply = name.isEmpty();
+        QVariant result = XmlRpc::parseParams(reply, name);
+        if (isReply) name = reply->request().attribute(QNetworkRequest::User).toString();
+        emit received(name, result);
+    }
     reply->deleteLater();
 }
 

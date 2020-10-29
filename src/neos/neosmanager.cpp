@@ -36,6 +36,7 @@ NeosManager::NeosManager(QObject* parent)
 
     connect(&mHttp, &HttpManager::received, this, &NeosManager::received, Qt::QueuedConnection);
     connect(&mHttp, &HttpManager::sslErrors, this, &NeosManager::sslErrors, Qt::QueuedConnection);
+    connect(&mHttp, &HttpManager::error, this, &NeosManager::reError, Qt::QueuedConnection);
     connect(this, &NeosManager::submitCall, &mHttp, &HttpManager::submitCall);
 }
 
@@ -73,7 +74,7 @@ void NeosManager::submitJob(QString fileName, QString params, bool prioShort, bo
     mLogOffset = 0;
     QString sData = data.toBase64();
     QString prio = (prioShort?"short":"long");
-    QString jobData = rawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"no");
+    QString jobData = rawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"");
     emit submitCall("submitJob", QVariantList() << jobData);
 }
 

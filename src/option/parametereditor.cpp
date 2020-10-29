@@ -34,10 +34,10 @@ namespace studio {
 namespace option {
 
 ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aRunNeos,
-                                 QAction *aRunNeosL, QAction *aRunEngine, QAction *aInterrupt, QAction *aStop, MainWindow *parent):
+                                 QAction *aRunEngine, QAction *aInterrupt, QAction *aStop, MainWindow *parent):
     ui(new Ui::ParameterEditor), actionRun(aRun), actionRun_with_GDX_Creation(aRunGDX), actionCompile(aCompile),
-    actionCompile_with_GDX_Creation(aCompileGDX), actionRunNeos(aRunNeos), actionRunNeosL(aRunNeosL),
-    actionRunEngine(aRunEngine), actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
+    actionCompile_with_GDX_Creation(aCompileGDX), actionRunNeos(aRunNeos), actionRunEngine(aRunEngine),
+    actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
 {
     ui->setupUi(this);
 
@@ -45,7 +45,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     mOptionTokenizer = new OptionTokenizer(QString("optgams.def"));
 
     setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionCompile, actionCompile_with_GDX_Creation,
-                       actionRunNeos, actionRunNeosL, actionRunEngine);
+                       actionRunNeos, actionRunEngine);
     setInterruptActionGroup(actionInterrupt, actionStop);
 
     setFocusPolicy(Qt::StrongFocus);
@@ -200,9 +200,6 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     } else if (state == RunActionState::RunNeos) {
         ui->gamsRunToolButton->setDefaultAction( actionRunNeos );
-
-    } else if (state == RunActionState::RunNeosL) {
-        ui->gamsRunToolButton->setDefaultAction( actionRunNeosL );
 
     } else if (state == RunActionState::RunEngine) {
         ui->gamsRunToolButton->setDefaultAction( actionRunEngine );
@@ -991,7 +988,7 @@ void ParameterEditor::resizeColumnsToContents()
 }
 
 void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX,
-                                         QAction *aRunNeos, QAction *aRunNeosL, QAction *aRunEngine)
+                                         QAction *aRunNeos, QAction *aRunEngine)
 {
     mHasSSL = QSslSocket::supportsSsl();
     actionRun = aRun;
@@ -999,7 +996,6 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     actionRun_with_GDX_Creation = aRunGDX;
     actionCompile_with_GDX_Creation = aCompileGDX;
     actionRunNeos = aRunNeos;
-    actionRunNeosL = aRunNeosL;
     actionRunEngine = aRunEngine;
 
     QMenu* runMenu = new QMenu;
@@ -1010,7 +1006,6 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     runMenu->addAction(actionCompile_with_GDX_Creation);
     runMenu->addSeparator();
     runMenu->addAction(actionRunNeos);
-    runMenu->addAction(actionRunNeosL);
     runMenu->addSeparator();
     runMenu->addAction(actionRunEngine);
     actionRun->setShortcutVisibleInContextMenu(true);
@@ -1018,7 +1013,6 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     actionCompile->setShortcutVisibleInContextMenu(true);
     actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
     actionRunNeos->setShortcutVisibleInContextMenu(true);
-    actionRunNeosL->setShortcutVisibleInContextMenu(true);
     actionRunEngine->setShortcutVisibleInContextMenu(true);
 
     ui->gamsRunToolButton->setMenu(runMenu);
@@ -1047,7 +1041,6 @@ void ParameterEditor::setRunActionsEnabled(bool enable)
     actionCompile->setEnabled(enable);
     actionCompile_with_GDX_Creation->setEnabled(enable);
     actionRunNeos->setEnabled(enable && mHasSSL);
-    actionRunNeosL->setEnabled(enable && mHasSSL);
     actionRunEngine->setEnabled(enable && mHasSSL);
     ui->gamsRunToolButton->menu()->setEnabled(enable);
 }

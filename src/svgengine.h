@@ -14,6 +14,7 @@ class SvgEngine : public QIconEngine
 {
 public:
     SvgEngine(const QString &name);
+    SvgEngine(const QString &name, const QString &disabledName);
     SvgEngine(const SvgEngine &other);
     ~SvgEngine() override;
     void setScope(int scope);
@@ -29,6 +30,7 @@ private:
     bool mForceSquare = true;
     int mScope = 0;
     QString mName;
+    QString mNameD;
     QIcon::Mode mNormalMode = QIcon::Normal;
 
 };

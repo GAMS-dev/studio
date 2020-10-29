@@ -378,11 +378,11 @@ void Scheme::setColor(Scheme::ColorSlot slot, Scheme::Scope scope, QColor color)
     instance()->mColorSchemes[scheme].insert(slot, dat);
 }
 
-QIcon Scheme::icon(QString name, Scope scope, bool forceSquare)
+QIcon Scheme::icon(QString name, Scope scope, bool forceSquare, QString disabledName)
 {
     if (name.contains("%")) name = name.arg(instance()->mIconSet);
     if (!instance()->mIconCache.contains(name)) {
-        SvgEngine *eng = new SvgEngine(name);
+        SvgEngine *eng = (disabledName.isEmpty() ? new SvgEngine(name) : new SvgEngine(name, disabledName));
         eng->setScope(scope);
         if (forceSquare) eng->forceSquare(true);
         instance()->mEngines << eng;
@@ -391,9 +391,9 @@ QIcon Scheme::icon(QString name, Scope scope, bool forceSquare)
     return instance()->mIconCache.value(name);
 }
 
-QIcon Scheme::icon(QString name, bool forceSquare)
+QIcon Scheme::icon(QString name, bool forceSquare, QString disabledName)
 {
-    return icon(name, StudioScope, forceSquare);
+    return icon(name, StudioScope, forceSquare, disabledName);
 }
 
 QByteArray &Scheme::data(QString name, Scope scope, QIcon::Mode mode)

@@ -141,8 +141,7 @@ public:
     void openSearchDialog();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
     void execute(QString commandLineStr,
-                 std::unique_ptr<AbstractProcess> process = nullptr,
-                 ProjectFileNode *gmsFileNode = nullptr);
+                 std::unique_ptr<AbstractProcess> process = nullptr, ProjectFileNode *gmsFileNode = nullptr);
 
     void resetHistory();
     void clearHistory(FileMeta *file);
@@ -194,8 +193,8 @@ private slots:
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();
-    void neosProgress(AbstractProcess *proc, neos::ProcState progress);
-    void engineProgress(AbstractProcess *proc, engine::ProcState progress);
+    void neosProgress(AbstractProcess *proc, ProcState progress);
+    void remoteProgress(AbstractProcess *proc, ProcState progress);
     void closeNodeConditionally(ProjectFileNode *node);
     void addToGroup(ProjectGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
@@ -340,16 +339,16 @@ private slots:
     void on_actionGoForward_triggered();
     void on_actionPrint_triggered();
     void on_actionRunNeos_triggered();
-    void on_actionRunNeosL_triggered();
     void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
 
-    void showNeosConfirmDialog();
-    void createNeosProcess();
+    void showNeosStartDialog();
+    void prepareNeosProcess();
     void showEngineStartDialog();
-    void engineDialogDecision(QAbstractButton *button);
-    void createEngineProcess(QString url, QString nSpace, QString user, QString password);
+    void engineDialogDecision(bool start, bool always);
+    engine::EngineProcess *createEngineProcess();
+    void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
 
@@ -383,6 +382,10 @@ private:
     void updateAndSaveSettings();
     void restoreFromSettings();
     QString currentPath();
+    neos::NeosProcess *createNeosProcess();
+    bool executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode *runGroup, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
+                 ProjectFileNode *gmsFileNode = nullptr);
+    void execution(ProjectRunGroupNode *runGroup);
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
@@ -453,6 +456,7 @@ private:
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
     bool mIgnoreSslErrors = false;
+    bool mNeosNoDialog = false;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
@@ -460,8 +464,8 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
-    bool mNeosLong = false;
     QString mEngineTempPassword;
+    bool mEngineNoDialog = false;
 };
 
 }

@@ -1,23 +1,40 @@
+Version 1.4.1
+==================
+- improved GAMS Engine integration
+    - removed generated *.g00-file and *.gms-dummy-file
+    - removed default parameter forceWork=1 and added check of remote GAMS version to set "previousWork=1" if needed
+    - added GAMS Engine version number to start dialog
+    - added conversion of remote paths to local paths
+    - fixed permission denied when overwriting an opened gdx-file
+    - added "don't ask again" button for current session
+    - improved logging of network errors
+    - added unique icon for start action
+- improved NEOS integration
+    - improved handling of network errors
+    - changed default parameter from forceWork=1 to previousWork=1
+    - moved NEOS control options into dialog
+    - added unique icon for start action
+
 Version 1.4.0
 ==================
-- highlight the subcommands of execute, $call, and $hiddencall
-- added jump to included files by context menu, F2 shortcut, or holding `Ctrl` and click on the filename.
+- **added support for GAMS Engine**
+- **added jump to included files by context menu, Ctrl + Mouse Click, or F2**
+- added support for comma separated list as file filter in search dialog
+- added Arrow Up/Down as shortcuts to jump to search results when Results View is focused
+- added additional information the current license in system log
+- added tooltips to search options in search dialog
+- added support to kill submitted NEOS jobs
+- changed behavior of "Whole Words" search option: $ is now considered a word boundary
+- highlight the subcommands of execute, $call, and $hiddenCall
+- renamed GAMS About dialog to GAMS Licensing
+- improved GAMS license detection during Studio start and in GAMS Licensing dialog
 - fixed cut off text in About GAMS dialog
 - fixed crash if files are modified in the background while a dialog is open
-- added tooltips to search options in search dialog
 - reworded Distraction Free Mode shortcut for better consistency with other shortcuts
-- added Arrow Up/Down as shortcuts to jump to search results when Results View is focussed
 - fixed Results View not always updating when navigating search results
 - fixed empty history on Welcome Page when starting Studio with no tabs open
-- added support for comma seperated list as file filter in search
 - adjusted search dialog size and resize behavior
-- natively implemented NEOS processing, enabling to kill submitted active jobs
-- renamed GAMS About dialog to GAMS Licensing dialog
-- improved GAMS license detection during Studio start and in GAMS Licensing dialog. Additionally the user gets more information about the current license via the system log.
-- updated GoTo dialog to avoid unexpected crashes on macOS and to follow the macOS dialog behavior rules
-- added tooltips to search options in search dialog
-- reworded Distraction Free Mode shortcut for better consistency with other shortcuts
-- changed behavior of "Whole Words" search option: $ is now considered a word boundary
+- changed GoTo dialog to match macOS native style
 
 Version 1.3.6
 ==================

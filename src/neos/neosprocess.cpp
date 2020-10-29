@@ -3,6 +3,8 @@
 #include "logger.h"
 #include "commonpaths.h"
 #include "process/gmsunzipprocess.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
@@ -39,6 +41,7 @@ NeosProcess::NeosProcess(QObject *parent) : AbstractGamsProcess("gams", parent),
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
     connect(&mPullTimer, &QTimer::timeout, this, &NeosProcess::pullStatus);
+    mPreparationState = QProcess::NotRunning;
 }
 
 NeosProcess::~NeosProcess()
@@ -76,6 +79,7 @@ QStringList NeosProcess::compileParameters()
     QMutableListIterator<QString> i(params);
     bool needsXSave = true;
     bool needsActC = true;
+    bool hasPw = false;
     while (i.hasNext()) {
         QString par = i.next();
         if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
@@ -84,9 +88,13 @@ QStringList NeosProcess::compileParameters()
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
+        } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
+            hasPw = true;
+            continue;
         }
     }
     if (needsXSave) params << ("xsave=" + fi.fileName());
+    if (!hasPw) params << ("previousWork=1");
     if (needsActC) params << ("action=c");
     return params;
 }
@@ -96,13 +104,11 @@ QStringList NeosProcess::remoteParameters()
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
-    bool needsFw = true;
+    bool needsGdx = mForceGdx;
+    mHasGdx = mForceGdx;
     while (i.hasNext()) {
         QString par = i.next();
-        if (par.startsWith("forceWork=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
-            needsFw = false;
-            i.setValue("fw=1");
-        } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
+        if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
         } else if (par.startsWith("reference=", Qt::CaseInsensitive) || par.startsWith("rf=", Qt::CaseInsensitive)) {
@@ -114,9 +120,14 @@ QStringList NeosProcess::remoteParameters()
         } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
+        } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
+            mHasGdx = true;
+            needsGdx = false;
+            i.remove();
+            continue;
         }
     }
-    if (needsFw) params << ("fw=1");
+    if (needsGdx) params << ("gdx=default");
     return params;
 }
 
@@ -131,7 +142,7 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        mManager->submitJob(g00, params.join(" "), mPrio==prioShort);
+        mManager->submitJob(g00, params.join(" "), mPrio==prioShort, mHasGdx);
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
     }
@@ -155,12 +166,13 @@ void NeosProcess::sslErrors(const QStringList &errors)
 
 void NeosProcess::parseUnzipStdOut(const QByteArray &data)
 {
-    if (data.startsWith(" extracting: ")) {
+    if (data.startsWith(" extracting: ") || data.startsWith("  inflating: ")) {
+        QByteArray preText = "--- " + data.left(data.indexOf(":")+1).trimmed() + " .";
         QByteArray fName = data.trimmed();
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
+        emit newStdChannelData(preText + folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
         if (data.endsWith("\n")) emit newStdChannelData("\n");
     } else
         emit newStdChannelData(data);
@@ -209,7 +221,7 @@ void NeosProcess::setParameters(const QStringList &parameters)
 
 QProcess::ProcessState NeosProcess::state() const
 {
-    return (mProcState <= ProcIdle) ? QProcess::NotRunning : QProcess::Running;
+    return (mProcState <= ProcIdle) ? mPreparationState : QProcess::Running;
 }
 
 void NeosProcess::validate()
@@ -223,6 +235,20 @@ void NeosProcess::setIgnoreSslErrors()
     if (mProcState == ProcCheck) {
         setProcState(ProcIdle);
     }
+}
+
+void NeosProcess::setStarting()
+{
+    if (mPreparationState == QProcess::NotRunning) {
+        mPreparationState = QProcess::Starting;
+        emit stateChanged(QProcess::Starting);
+    }
+}
+
+void NeosProcess::completed(int exitCode)
+{
+    mPreparationState = QProcess::NotRunning;
+    AbstractGamsProcess::completed(exitCode);
 }
 
 void NeosProcess::rePing(const QString &value)
@@ -255,7 +281,8 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission
-    setProcState(Proc2Monitor);
+    setProcState(Proc2Pack);
+    setProcState(Proc3Monitor);
 }
 
 
@@ -271,10 +298,10 @@ void NeosProcess::reGetJobStatus(const QString &status)
     int iStatus = CJobStatus.value(status, jsInvalid);
     switch (iStatus) {
     case jsDone: {
-        if (mProcState == Proc2Monitor) {
+        if (mProcState == Proc3Monitor) {
             mManager->getCompletionCode();
             if (mPullTimer.isActive()) mPullTimer.stop();
-            setProcState(Proc3GetResult);
+            setProcState(Proc4GetResult);
         }
     }   break;
     case jsRunning:
@@ -363,7 +390,7 @@ void NeosProcess::reGetOutputFile(const QByteArray &data)
 
 void NeosProcess::reError(const QString &errorText)
 {
-    DEB() << "ERROR: " << errorText;
+    emit newStdChannelData("Network error: " + errorText.toUtf8() +'\n');
     completed(-1);
 }
 
@@ -382,7 +409,7 @@ void NeosProcess::setProcState(ProcState newState)
     QProcess::ProcessState stateBefore = state();
     mProcState = newState;
     if (stateBefore != state())
-        emit stateChanged(mProcState == ProcIdle ? QProcess::NotRunning : QProcess::Running);
+        emit stateChanged(mProcState == ProcIdle ? mPreparationState : QProcess::Running);
     emit procStateChanged(this, mProcState);
 }
 
@@ -445,6 +472,11 @@ void NeosProcess::startUnpacking()
     subProc->setWorkingDirectory(mOutPath);
     subProc->setParameters(QStringList() << "-o" << "solver-output.zip");
     subProc->execute();
+}
+
+void NeosProcess::setForceGdx(bool forceGdx)
+{
+    mForceGdx = forceGdx;
 }
 
 } // namespace neos
