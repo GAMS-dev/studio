@@ -15,6 +15,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     ui->setupUi(this);
     QFont f = ui->laWarn->font();
     f.setBold(true);
@@ -114,7 +115,8 @@ QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButt
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
-    setFixedSize(size());
+    setMinimumSize(sizeHint());
+    setMaximumSize(sizeHint());
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
