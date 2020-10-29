@@ -440,12 +440,17 @@
        </item>
        <item>
         <property name="text">
+         <string>*.gms, *.inc</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>*.log</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>*.lst, *.inc</string>
+         <string>*.lst</string>
         </property>
        </item>
       </widget>

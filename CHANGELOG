@@ -1,7 +1,9 @@
 Version 1.4.1 *
 ==================
 - improve handling of network errors on running NEOS jobs
-- added ability to jump to search results even when exceeding cache limit
+- fixed jumping to search results that exceed cache limit
+- adjusted search navigation label to better reflect when cache limit is reached
+- adjusted default list of file filters in search dialog
 
 Version 1.4.0
 ==================
