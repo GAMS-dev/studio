@@ -15,7 +15,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     ui->setupUi(this);
     QFont f = ui->laWarn->font();
     f.setBold(true);
@@ -115,14 +114,14 @@ QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButt
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
-    setMinimumSize(sizeHint());
-    setMaximumSize(sizeHint());
+    setFixedSize(size());
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
 {
     bool always = button == ui->bAlways;
     bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
+    if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
     emit ready(start, always);
 }
 
@@ -130,6 +129,8 @@ void EngineStartDialog::getVersion()
 {
     ui->laEngineVersion->setText(CUnavailable);
     ui->laWarn->setText("No GAMS Engine server");
+    ui->laWarn->setToolTip("");
+    mForcePreviousWork = false;
 
     if (mPendingRequest) return;
     if (mProc) {
@@ -213,12 +214,18 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             mLocalGamsVersion.at(1).toInt() >= engineGamsVersion.at(1).toInt())
             newerGamsVersion = true;
         if (newerGamsVersion) {
-            ui->laWarn->setText("Newer local GAMS: Please use \"previousWork=1\"");
+            ui->laWarn->setText("Newer local GAMS: Added \"previousWork=1\"");
+            ui->laWarn->setToolTip("set \"previousWork=0\" to suppress this");
+            mForcePreviousWork = true;
         } else {
             ui->laWarn->setText("");
+            ui->laWarn->setToolTip("");
+            mForcePreviousWork = false;
         }
     } else {
+        ui->laWarn->setToolTip("");
         ui->laWarn->setText("");
+        mForcePreviousWork = false;
     }
 }
 
@@ -236,9 +243,10 @@ void EngineStartDialog::reVersionError(const QString &errorText)
         getVersion();
         return;
     }
-    ui->laWarn->setText("");
     ui->laEngineVersion->setText(CUnavailable);
     ui->laWarn->setText("No GAMS Engine server");
+    ui->laWarn->setToolTip("");
+    mForcePreviousWork = false;
 
     ui->laEngGamsVersion->setText("");
     textChanged("");

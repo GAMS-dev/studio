@@ -62,6 +62,7 @@ private:
     QString mOldUrl;
     bool mUrlChanged = false;
     bool mPendingRequest = false;
+    bool mForcePreviousWork = true;
 };
 
 } // namespace engine

@@ -3216,7 +3216,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     for (const option::OptionItem &item : itemList) {
-        if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0 && item.value.compare("1") == 0)
+        if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0)
             engineProcess->setHasPreviousWorkOption(true);
     }
     runGroup->setProcess(std::move(engineProcess));

@@ -27,6 +27,7 @@ public:
     void interrupt() override;
     void terminate() override;
     void setParameters(const QStringList &parameters) override;
+    void forcePreviousWork();
     void setHasPreviousWorkOption(bool value);
     bool hasPreviousWorkOption() const { return mHasPreviousWorkOption; }
     QProcess::ProcessState state() const override;
@@ -91,6 +92,7 @@ private:
     QString mEngineVersion;
     QString mGamsVersion;
     bool mHasPreviousWorkOption = false;
+    bool mForcePreviousWork = false;
     bool mForceGdx = true;
     QByteArray mRemoteWorkDir;
     bool mScanForRemoteDir = false;

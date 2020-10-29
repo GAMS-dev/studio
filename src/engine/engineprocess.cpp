@@ -77,6 +77,7 @@ QStringList EngineProcess::compileParameters()
     QMutableListIterator<QString> i(params);
     bool needsXSave = true;
     bool needsActC = true;
+    bool needsPw = mForcePreviousWork;
     while (i.hasNext()) {
         QString par = i.next();
         if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
@@ -85,10 +86,14 @@ QStringList EngineProcess::compileParameters()
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
+        } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
+            needsPw = false;
+            continue;
         }
     }
     if (needsXSave) params << ("xsave=" + fi.fileName());
     if (needsActC) params << ("action=c");
+    if (needsPw) params << ("previousWork=1");
     return params;
 }
 
@@ -193,7 +198,7 @@ void EngineProcess::parseUnZipStdOut(const QByteArray &data)
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        if (fName.endsWith("gms") || fName.endsWith("g00")) {
+        if (fName.endsWith("gms") || fName.endsWith("g00") || fName.endsWith("lxi")) {
             emit newStdChannelData("--- skipping: ."+ folder + fName);
             if (data.endsWith("\n")) emit newStdChannelData("\n");
          } else {
@@ -252,6 +257,11 @@ void EngineProcess::setParameters(const QStringList &parameters)
         mOutPath = QString();
     }
     AbstractProcess::setParameters(parameters);
+}
+
+void EngineProcess::forcePreviousWork()
+{
+    mForcePreviousWork = true;
 }
 
 void EngineProcess::setHasPreviousWorkOption(bool value)
@@ -528,7 +538,7 @@ void EngineProcess::startPacking()
     }
     file.write("*dummy");
     file.close();
-    file.setFileName(mOutPath+'/'+baseName+".g00");
+    file.setFileName(mOutPath+'/'+baseName+".gms");
     if (file.exists() && !file.remove()) {
         emit newStdChannelData("\n*** Can't remove file from subdirectory: "+file.fileName().toUtf8()+'\n');
         completed(-1);
