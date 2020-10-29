@@ -41,14 +41,17 @@ void SearchWorker::findInFiles()
 {
     QMutexLocker m(&mMutex);
     QList<Result> res;
+    bool cacheFull = false;
     for (FileMeta* fm : mFiles) {
+        if (cacheFull) break;
+
         int lineCounter = 0;
         QFile file(fm->location());
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             in.setCodec(fm->codec());
 
-            while (!in.atEnd()) { // read file
+            while (!in.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;
                 if (lineCounter % 500 == 0 && thread()->isInterruptionRequested()) break;
@@ -57,10 +60,13 @@ void SearchWorker::findInFiles()
 
                 QRegularExpressionMatch match;
                 QRegularExpressionMatchIterator i = mMatches->searchRegex().globalMatch(line);
-                while (i.hasNext()) {
+                while (i.hasNext() && !cacheFull) {
                     match = i.next();
                     // abort: too many results
-                    if (mMatches->size() > MAX_SEARCH_RESULTS-1) break;
+                    if (mMatches->size() > MAX_SEARCH_RESULTS-1) {
+                        cacheFull = true;
+                        break;
+                    }
                     mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
                                        file.fileName(), line.trimmed());
                 }
