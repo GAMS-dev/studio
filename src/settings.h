@@ -120,6 +120,7 @@ enum SettingsKey {
     skEngineUser,
     skEngineUserToken,
     skEngineStoreUserToken,
+    skEngineForceGdx,
 
     // user model library directory
     skUserModelLibraryDir,

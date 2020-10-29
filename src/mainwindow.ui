@@ -267,6 +267,8 @@
     <addaction name="actionRunNeos"/>
     <addaction name="actionRunEngine"/>
     <addaction name="separator"/>
+    <addaction name="actionRunEngine"/>
+    <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
     <addaction name="actionStop"/>
     <addaction name="separator"/>
@@ -786,7 +788,7 @@
      <normaloff>:/img/engine</normaloff>:/img/engine</iconset>
    </property>
    <property name="text">
-    <string>Run &amp;Engine</string>
+    <string>Run GAMS &amp;Engine</string>
    </property>
    <property name="toolTip">
     <string>Run remote GAMS Engine process</string>

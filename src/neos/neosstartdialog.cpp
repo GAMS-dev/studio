@@ -51,7 +51,7 @@ void NeosStartDialog::setProcess(NeosProcess *proc)
 void NeosStartDialog::buttonClicked(QAbstractButton *button)
 {
     bool mAlways = button == ui->bAlways;
-    emit noDialogFlagChanged(mAlways && ui->cbHideTerms->isChecked());
+    emit noDialogFlagChanged(mAlways);
     bool start = mAlways || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
     if (start) {
         Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, ui->cbHideTerms->isChecked());

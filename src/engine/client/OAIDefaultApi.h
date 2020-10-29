@@ -9,13 +9,11 @@
  * Do not edit the class manually.
  */
 
-#ifndef OAI_OAIAuthApi_H
-#define OAI_OAIAuthApi_H
+#ifndef OAI_OAIDefaultApi_H
+#define OAI_OAIDefaultApi_H
 
 #include "OAIHttpRequest.h"
 
-#include "OAIMessage.h"
-#include "OAIModel_auth_token.h"
 #include <QString>
 
 #include <QObject>
@@ -23,12 +21,12 @@
 
 namespace OpenAPI {
 
-class OAIAuthApi : public QObject {
+class OAIDefaultApi : public QObject {
     Q_OBJECT
 
 public:
-    OAIAuthApi(const QString &scheme = "http", const QString &host = "localhost", int port = 0, const QString &basePath = "", const int timeOut = 0);
-    ~OAIAuthApi();
+    OAIDefaultApi(const QString &scheme = "http", const QString &host = "localhost", int port = 0, const QString &basePath = "", const int timeOut = 0);
+    ~OAIDefaultApi();
 
     void setScheme(const QString &scheme);
     void setHost(const QString &host);
@@ -42,8 +40,7 @@ public:
     void enableResponseCompression();
     void abortRequests();
 
-    void createJWTToken();
-    void postW(const QString &username, const QString &password);
+    void getVersion();
 
 private:
     QString _scheme, _host;
@@ -56,22 +53,17 @@ private:
     bool isResponseCompressionEnabled;
     bool isRequestCompressionEnabled;
 
-    void createJWTTokenCallback(OAIHttpRequestWorker *worker);
-    void postWCallback(OAIHttpRequestWorker *worker);
+    void getVersionCallback(OAIHttpRequestWorker *worker);
 
 signals:
 
-    void createJWTTokenSignal(OAIModel_auth_token summary);
-    void postWSignal(OAIModel_auth_token summary);
+    void getVersionSignal();
 
-    void createJWTTokenSignalFull(OAIHttpRequestWorker *worker, OAIModel_auth_token summary);
-    void postWSignalFull(OAIHttpRequestWorker *worker, OAIModel_auth_token summary);
+    void getVersionSignalFull(OAIHttpRequestWorker *worker);
 
-    void createJWTTokenSignalE(OAIModel_auth_token summary, QNetworkReply::NetworkError error_type, QString error_str);
-    void postWSignalE(OAIModel_auth_token summary, QNetworkReply::NetworkError error_type, QString error_str);
+    void getVersionSignalE(QNetworkReply::NetworkError error_type, QString error_str);
 
-    void createJWTTokenSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
-    void postWSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
+    void getVersionSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
 
     void abortRequestsSignal(); 
 };

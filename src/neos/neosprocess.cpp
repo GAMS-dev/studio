@@ -281,7 +281,8 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission
-    setProcState(Proc2Monitor);
+    setProcState(Proc2Pack);
+    setProcState(Proc3Monitor);
 }
 
 
@@ -297,10 +298,10 @@ void NeosProcess::reGetJobStatus(const QString &status)
     int iStatus = CJobStatus.value(status, jsInvalid);
     switch (iStatus) {
     case jsDone: {
-        if (mProcState == Proc2Monitor) {
+        if (mProcState == Proc3Monitor) {
             mManager->getCompletionCode();
             if (mPullTimer.isActive()) mPullTimer.stop();
-            setProcState(Proc3GetResult);
+            setProcState(Proc4GetResult);
         }
     }   break;
     case jsRunning:
