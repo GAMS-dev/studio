@@ -102,15 +102,11 @@ QStringList EngineProcess::remoteParameters()
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
     QMutableListIterator<QString> i(params);
-    bool needsFw = true;
     bool needsRestart = true;
     bool needsGdx = mForceGdx;
     while (i.hasNext()) {
         QString par = i.next();
-        if (par.startsWith("forceWork=", Qt::CaseInsensitive) || par.startsWith("fw=", Qt::CaseInsensitive)) {
-            needsFw = false;
-            i.setValue("fw=1");
-        } else if (par.startsWith("restart=", Qt::CaseInsensitive)) {
+         if (par.startsWith("restart=", Qt::CaseInsensitive)) {
             needsRestart = false;
             continue;
         } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
@@ -130,7 +126,6 @@ QStringList EngineProcess::remoteParameters()
             continue;
         }
     }
-    if (needsFw) params << ("fw=1");
     if (needsGdx) params << ("gdx=default");
     if (needsRestart) params << ("restart="+modelName());
     return params;

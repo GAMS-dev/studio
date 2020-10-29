@@ -173,6 +173,7 @@ SOURCES += \
     neos/httpmanager.cpp \
     neos/neosmanager.cpp \
     neos/neosprocess.cpp \
+    neos/neosstartdialog.cpp \
     neos/xmlrpc.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
@@ -353,6 +354,7 @@ HEADERS += \
     neos/httpmanager.h \
     neos/neosmanager.h \
     neos/neosprocess.h \
+    neos/neosstartdialog.h \
     neos/xmlrpc.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
@@ -449,6 +451,7 @@ FORMS += \
     miro/mirodeploydialog.ui \
     miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
+    neos/neosstartdialog.ui \
     option/envvarconfigeditor.ui \
     option/gamsconfigeditor.ui \
     option/paramconfigeditor.ui \

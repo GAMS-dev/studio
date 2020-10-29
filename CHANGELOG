@@ -9,6 +9,10 @@ Version 1.4.1 *
     - fixed permission denied on overwriting an opened gdx-file
     - add "don't ask again" button for current session
     - enhanced logging of network errors
+- removed forceWork=1 but use previousWork=1 as default for NEOS and GAMS Engine runs
+- moved NEOS control options into dialog
+- added icons for NEOS and GAMS Engine start actions
+
 
 Version 1.4.0
 ==================

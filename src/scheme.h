@@ -113,8 +113,8 @@ public:
     static bool hasFontProps(ColorSlot slot);
     static QColor color(ColorSlot slot, Scheme::Scope scope = Scheme::EditorScope);
     static void setColor(ColorSlot slot, gams::studio::Scheme::Scope scope, QColor color);
-    static QIcon icon(QString name, Scope scope, bool forceSquare = false);
-    static QIcon icon(QString name, bool forceSquare = false);
+    static QIcon icon(QString name, Scope scope, bool forceSquare = false, QString disabledName = QString());
+    static QIcon icon(QString name, bool forceSquare = false, QString disabledName = QString());
     static QByteArray &data(QString name, Scope scope, QIcon::Mode mode);
     static bool hasFlag(ColorSlot slot, FontFlag flag, Scheme::Scope scope = Scheme::EditorScope);
     static void setFlags(ColorSlot slot, FontFlag flag, Scheme::Scope scope = Scheme::EditorScope);

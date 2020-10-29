@@ -328,6 +328,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     // misc page
     safelyAdd(res, skNeosAutoConfirm, scUser, {"neos","autoConfirm"}, false);
     safelyAdd(res, skNeosAcceptTerms, scUser, {"neos","acceptTerms"}, false);
+    safelyAdd(res, skNeosForceGdx, scSys, {"neos","forceGdx"}, true);
+    safelyAdd(res, skNeosShortPrio, scUser, {"neos","priotity"}, true);
 
     // solver option editor settings
     safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);

@@ -63,6 +63,7 @@
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
 #include "engine/enginestartdialog.h"
+#include "neos/neosstartdialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -352,9 +353,8 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
-    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
-    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
-    ui->actionRunEngine->setIcon(Scheme::icon(":/%1/run-engine"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/img/neos", false, ":/img/neos-g"));
+    ui->actionRunEngine->setIcon(Scheme::icon(":/img/engine", false, ":/img/engine-g"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
@@ -377,7 +377,7 @@ void MainWindow::initToolBar()
 {
     mGamsParameterEditor = new option::ParameterEditor(
                 ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                ui->actionRunNeos, ui->actionRunNeosL, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
+                ui->actionRunNeos, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
@@ -3054,31 +3054,9 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
     execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), std::make_unique<GamsProcess>());
 }
 
-const QString CNeosConfirmTitle = "Submitting data to NEOS";
-const QString CNeosConfirmText = "You are about to submit your data to the NEOS Server. This service is offered "
-                                 "with no expectation or guarantee of confidentiality for the data or the model. "
-                                 "Please ensure you have read the terms of use at "
-                                 "<a href=https://neos-server.org/neos/termofuse.html>NEOS Server</a>";
-const QString CNeosConfirmCheckText = "I agree to the terms of use of NEOS";
-
 void MainWindow::on_actionRunNeos_triggered()
 {
-    mNeosLong = false;
-    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
-            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
-        showNeosConfirmDialog();
-    else
-        emit createNeosProcess();
-}
-
-void MainWindow::on_actionRunNeosL_triggered()
-{
-    mNeosLong = true;
-    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
-            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
-        showNeosConfirmDialog();
-    else
-        emit createNeosProcess();
+    showNeosStartDialog();
 }
 
 void MainWindow::on_actionRunEngine_triggered()
@@ -3086,36 +3064,49 @@ void MainWindow::on_actionRunEngine_triggered()
     showEngineStartDialog();
 }
 
-void MainWindow::showNeosConfirmDialog()
+void MainWindow::showNeosStartDialog()
 {
-    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
-    dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
-    connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::createNeosProcess);
-    connect(dialog, &ConfirmDialog::accepted, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::autoConfirm, [] {
-        Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
+    neos::NeosStartDialog *dialog = new neos::NeosStartDialog(this);
+    neos::NeosProcess *neosPtr = createNeosProcess();
+    if (!neosPtr) return;
+    dialog->setProcess(neosPtr);
+    connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
+    connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);
+    connect(dialog, &neos::NeosStartDialog::accepted, this, &MainWindow::prepareNeosProcess);
+    connect(dialog, &neos::NeosStartDialog::noDialogFlagChanged, [this](bool noDialog) {
+        mNeosNoDialog = noDialog;
     });
-    connect(dialog, &ConfirmDialog::setAcceptBox, [this] (bool accept) {
-        Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, accept);
-        updateAndSaveSettings();
-    });
-    dialog->open();
+
+    if (mNeosNoDialog && Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)
+            && Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
+            && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
+        dialog->accept();
+    } else {
+        dialog->open();
+    }
 }
 
-void MainWindow::createNeosProcess()
+neos::NeosProcess *MainWindow::createNeosProcess()
 {
-    updateAndSaveSettings();
     ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
-    if (!runGroup) return;
+    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+    if (!runGroup) return nullptr;
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setPriority(mNeosLong ? neos::prioLong : neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL : option::RunActionState::RunNeos);
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
     runGroup->setProcess(std::move(neosProcess));
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
     connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::remoteProgress);
+    return neosPtr;
+}
+
+void MainWindow::prepareNeosProcess()
+{
+    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+    if (!runGroup) return;
+    updateAndSaveSettings();
+    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
     neosPtr->setStarting();
     if (!executePrepare(fileNode, runGroup, mGamsParameterEditor->getCurrentCommandLineData()))
         return;

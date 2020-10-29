@@ -28,6 +28,7 @@ public:
     NeosProcess(QObject *parent = nullptr);
     ~NeosProcess() override;
     void setPriority(Priority prio) { mPrio = prio; }
+    void setForceGdx(bool forceGdx);
 
     void execute() override;
     void interrupt() override;
@@ -74,6 +75,8 @@ private:
     void startUnpacking();
 
     NeosManager *mManager;
+    bool mForceGdx = false;
+    bool mHasGdx = false;
     QString mOutPath;
     QString mJobNumber;
     QString mJobPassword;
