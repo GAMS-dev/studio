@@ -44,6 +44,7 @@ EngineStartDialog::~EngineStartDialog()
 
 void EngineStartDialog::hiddenCheck()
 {
+    mHiddenCheck = true;
     getVersion();
 }
 
@@ -251,7 +252,7 @@ void EngineStartDialog::reVersionError(const QString &errorText)
 
     ui->laEngGamsVersion->setText("");
     textChanged("");
-    if (!isVisible()) {
+    if (!isVisible() && mHiddenCheck) {
         open();
     }
 }

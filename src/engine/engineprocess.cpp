@@ -538,7 +538,7 @@ void EngineProcess::startPacking()
     }
     file.write("*dummy");
     file.close();
-    file.setFileName(mOutPath+'/'+baseName+".gms");
+    file.setFileName(mOutPath+'/'+baseName+".g00");
     if (file.exists() && !file.remove()) {
         emit newStdChannelData("\n*** Can't remove file from subdirectory: "+file.fileName().toUtf8()+'\n');
         completed(-1);

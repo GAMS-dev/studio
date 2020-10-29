@@ -63,6 +63,7 @@ private:
     bool mUrlChanged = false;
     bool mPendingRequest = false;
     bool mForcePreviousWork = true;
+    bool mHiddenCheck = false;
 };
 
 } // namespace engine
