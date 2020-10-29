@@ -551,7 +551,7 @@ void SearchDialog::selectNextMatch(SearchDirection direction, bool firstLevel)
             found = !ntc.isNull();
             e->setTextCursor(ntc);
             x = e->textCursor().positionInBlock();
-            y = e->textCursor().blockNumber();
+            y = e->textCursor().blockNumber()+1;
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             mSplitSearchContinue = false; // make sure to start a new search
             found = t->findText(createRegex(), flags, mSplitSearchContinue);
