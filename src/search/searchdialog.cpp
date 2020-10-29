@@ -172,7 +172,7 @@ void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fm
     for(FileMeta* fm : fml) {
 
         // skip certain file types
-        if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Lxi || fm->kind() == FileKind::Ref)
+        if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
             continue;
 
         // sort files by modified
