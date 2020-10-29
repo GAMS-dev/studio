@@ -8,17 +8,6 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-// TODO(JM) join ProcState from neos and engine
-enum ProcState {
-    ProcCheck,
-    ProcIdle,
-    Proc1Compile,
-    Proc2Pack,
-    Proc3Monitor,
-    Proc4GetResult,
-    Proc5Unpack,
-};
-
 class EngineManager;
 
 /// \brief The EngineProcess controls all steps to run a job on GAMS Engine
@@ -38,22 +27,35 @@ public:
     void interrupt() override;
     void terminate() override;
     void setParameters(const QStringList &parameters) override;
+    void forcePreviousWork();
+    void setHasPreviousWorkOption(bool value);
+    bool hasPreviousWorkOption() const { return mHasPreviousWorkOption; }
     QProcess::ProcessState state() const override;
-    void authenticate(const QString &host, const QString &user, const QString &password);
+    void setUrl(const QString &url);
+    void setHost(const QString &_host);
+    QString host() const;
+    void setBasePath(const QString &path);
+    QString basePath() const;
+    void authenticate(const QString &user, const QString &password);
 //    void authenticate(const QString &host, const QString &token);
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrors();
+    void getVersions();
+
+    bool forceGdx() const;
+    void setForceGdx(bool forceGdx);
 
 signals:
     void authenticated(QString token);
     void procStateChanged(AbstractProcess *proc, ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersionError(const QString &errorText);
 
 protected slots:
     void completed(int exitCode) override;
     void rePing(const QString &value);
-    void reVersion(const QString &value);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode);
     void reKillJob(const QString &text);
@@ -69,6 +71,7 @@ private slots:
     void sslErrors(const QStringList &errors);
     void parseUnZipStdOut(const QByteArray &data);
     void subProcStateChanged(QProcess::ProcessState newState);
+    void reVersionIntern(const QString &engineVersion, const QString &gamsVersion);
 
 private:
     void setProcState(ProcState newState);
@@ -80,10 +83,19 @@ private:
     QString modelName();
 
     EngineManager *mManager;
+    QString mHost;
+    QString mBasePath;
     QString mUser;
     QString mPassword;
     QString mNamespace;
     QString mOutPath;
+    QString mEngineVersion;
+    QString mGamsVersion;
+    bool mHasPreviousWorkOption = false;
+    bool mForcePreviousWork = false;
+    bool mForceGdx = true;
+    QByteArray mRemoteWorkDir;
+    bool mScanForRemoteDir = false;
 
     QString mJobNumber;
     QString mJobPassword;

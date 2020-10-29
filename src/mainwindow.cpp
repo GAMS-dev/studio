@@ -63,6 +63,7 @@
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
 #include "engine/enginestartdialog.h"
+#include "neos/neosstartdialog.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -352,9 +353,8 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
-    ui->actionRunNeos->setIcon(Scheme::icon(":/%1/run-neos"));
-    ui->actionRunNeosL->setIcon(Scheme::icon(":/%1/run-neos-l"));
-    ui->actionRunEngine->setIcon(Scheme::icon(":/%1/run-engine"));
+    ui->actionRunNeos->setIcon(Scheme::icon(":/img/neos", false, ":/img/neos-g"));
+    ui->actionRunEngine->setIcon(Scheme::icon(":/img/engine", false, ":/img/engine-g"));
     ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
     ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
     ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
@@ -377,7 +377,7 @@ void MainWindow::initToolBar()
 {
     mGamsParameterEditor = new option::ParameterEditor(
                 ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                ui->actionRunNeos, ui->actionRunNeosL, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
+                ui->actionRunNeos, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
@@ -1841,6 +1841,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
     }
+    updateRunState();
 }
 
 void MainWindow::postGamsLibRun()
@@ -2140,7 +2141,7 @@ bool MainWindow::isRecentGroupRunning()
     if (!mRecent.group()) return false;
     ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
     if (!runGroup) return false;
-    return (runGroup->gamsProcessState() == QProcess::Running);
+    return (runGroup->gamsProcessState() != QProcess::NotRunning);
 }
 
 void MainWindow::on_actionShow_System_Log_triggered()
@@ -2830,14 +2831,21 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
 
 void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
 {
-    Settings *settings = Settings::settings();
-    ProjectFileNode* fc = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    ProjectFileNode* fileNode = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
+    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
     if (!runGroup) {
         DEB() << "Nothing to be executed.";
         return;
     }
+    bool ready = executePrepare(fileNode, runGroup, commandLineStr, std::move(process), gmsFileNode);
+    if (ready) execution(runGroup);
+}
 
+
+bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* runGroup, QString commandLineStr,
+                                std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
+{
+    Settings *settings = Settings::settings();
     runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     runGroup->clearErrorTexts();
 
@@ -2862,7 +2870,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
         int ret = msgBox.exec();
 
         if (ret == QMessageBox::Cancel) {
-            return;
+            return false;
         } else if (msgBox.clickedButton() == discardButton) {
             for (FileMeta *file: modifiedFiles)
                 if (file->kind() != FileKind::Log) {
@@ -2927,10 +2935,10 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     if (gmsFilePath == "") {
         appendSystemLogWarning("No runnable GMS file found in group ["+runGroup->name()+"].");
         ui->actionShow_System_Log->trigger();
-        return;
+        return false;
     }
     if (gmsFileNode)
-        logNode->file()->setCodecMib(fc->file()->codecMib());
+        logNode->file()->setCodecMib(fileNode->file()->codecMib());
     else {
         FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
         ProjectFileNode *runNode = runGroup->findFile(runMeta);
@@ -2959,12 +2967,19 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
     connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 
+    logNode->linkToProcess(groupProc);
+    return true;
+}
+
+void MainWindow::execution(ProjectRunGroupNode *runGroup)
+{
+    AbstractProcess* groupProc = runGroup->process();
     groupProc->execute();
     ui->toolBar->repaint();
 
-    logNode->linkToProcess(groupProc);
     ui->dockProcessLog->raise();
 }
+
 
 void MainWindow::updateRunState()
 {
@@ -3039,31 +3054,9 @@ void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
     execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), std::make_unique<GamsProcess>());
 }
 
-const QString CNeosConfirmTitle = "Submitting data to NEOS";
-const QString CNeosConfirmText = "You are about to submit your data to the NEOS Server. This service is offered "
-                                 "with no expectation or guarantee of confidentiality for the data or the model. "
-                                 "Please ensure you have read the terms of use at "
-                                 "<a href=https://neos-server.org/neos/termofuse.html>NEOS Server</a>";
-const QString CNeosConfirmCheckText = "I agree to the terms of use of NEOS";
-
 void MainWindow::on_actionRunNeos_triggered()
 {
-    mNeosLong = false;
-    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
-            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
-        showNeosConfirmDialog();
-    else
-        emit createNeosProcess();
-}
-
-void MainWindow::on_actionRunNeosL_triggered()
-{
-    mNeosLong = true;
-    if (!Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
-            || !Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms))
-        showNeosConfirmDialog();
-    else
-        emit createNeosProcess();
+    showNeosStartDialog();
 }
 
 void MainWindow::on_actionRunEngine_triggered()
@@ -3071,42 +3064,58 @@ void MainWindow::on_actionRunEngine_triggered()
     showEngineStartDialog();
 }
 
-void MainWindow::showNeosConfirmDialog()
+void MainWindow::showNeosStartDialog()
 {
-    ConfirmDialog *dialog = new ConfirmDialog(CNeosConfirmTitle, CNeosConfirmText, CNeosConfirmCheckText, this);
-    dialog->setBoxAccepted(Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms));
-    connect(dialog, &ConfirmDialog::rejected, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::accepted, this, &MainWindow::createNeosProcess);
-    connect(dialog, &ConfirmDialog::accepted, dialog, &ConfirmDialog::deleteLater);
-    connect(dialog, &ConfirmDialog::autoConfirm, [] {
-        Settings::settings()->setBool(SettingsKey::skNeosAutoConfirm, true);
+    neos::NeosStartDialog *dialog = new neos::NeosStartDialog(this);
+    neos::NeosProcess *neosPtr = createNeosProcess();
+    if (!neosPtr) return;
+    dialog->setProcess(neosPtr);
+    connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
+    connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);
+    connect(dialog, &neos::NeosStartDialog::accepted, this, &MainWindow::prepareNeosProcess);
+    connect(dialog, &neos::NeosStartDialog::noDialogFlagChanged, [this](bool noDialog) {
+        mNeosNoDialog = noDialog;
     });
-    connect(dialog, &ConfirmDialog::setAcceptBox, [this] (bool accept) {
-        Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, accept);
-        updateAndSaveSettings();
-    });
-    dialog->open();
+
+    if (mNeosNoDialog && Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)
+            && Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
+            && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
+        dialog->accept();
+    } else {
+        dialog->open();
+    }
 }
 
-void MainWindow::createNeosProcess()
+neos::NeosProcess *MainWindow::createNeosProcess()
 {
-    updateAndSaveSettings();
-    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (!runGroup) return;
+    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+    if (!runGroup) return nullptr;
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setPriority(mNeosLong ? neos::prioLong : neos::prioShort);
     neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(mNeosLong ? option::RunActionState::RunNeosL : option::RunActionState::RunNeos);
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
     runGroup->setProcess(std::move(neosProcess));
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
-    connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::neosProgress);
+    connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::remoteProgress);
+    return neosPtr;
+}
+
+void MainWindow::prepareNeosProcess()
+{
+    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+    if (!runGroup) return;
+    updateAndSaveSettings();
+    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
+    neosPtr->setStarting();
+    if (!executePrepare(fileNode, runGroup, mGamsParameterEditor->getCurrentCommandLineData()))
+        return;
     if (!mIgnoreSslErrors) {
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
         neosPtr->validate();
     } else {
         updateAndSaveSettings();
-        execute(mGamsParameterEditor->getCurrentCommandLineData());
+        execution(runGroup);
     }
 }
 
@@ -3114,7 +3123,10 @@ void MainWindow::sslValidation(QString errorMessage)
 {
     if (mIgnoreSslErrors || errorMessage.isEmpty()) {
         updateAndSaveSettings();
-        execute(mGamsParameterEditor->getCurrentCommandLineData());
+        ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+        ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+        if (!runGroup) return;
+        execution(runGroup);
     } else {
         QMessageBox *msgBox = new QMessageBox(this);
         msgBox->setWindowTitle("SSL Error");
@@ -3130,8 +3142,8 @@ void MainWindow::sslValidation(QString errorMessage)
 
 void MainWindow::sslUserDecision(QAbstractButton *button)
 {
-    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
+    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
     if (!runGroup) return;
     QMessageBox *msgBox = qobject_cast<QMessageBox*>(sender());
     if (msgBox && msgBox->standardButton(button) == QMessageBox::Ignore) {
@@ -3139,7 +3151,7 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
             neosProc->setIgnoreSslErrors();
             mIgnoreSslErrors = true;
             updateAndSaveSettings();
-            execute(mGamsParameterEditor->getCurrentCommandLineData());
+            execution(runGroup);
         }
     } else {
         runGroup->setProcess(nullptr);
@@ -3149,51 +3161,80 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 void MainWindow::showEngineStartDialog()
 {
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
-    DEB() << dialog->windowFlags();
-    connect(dialog, &engine::EngineStartDialog::buttonClicked, this, &MainWindow::engineDialogDecision);
     dialog->setLastPassword(mEngineTempPassword);
+    dialog->setProcess(createEngineProcess());
+    connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
     dialog->setModal(true);
-    dialog->open();
-    dialog->focusEmptyField();
+
+    if (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
+        dialog->hiddenCheck();
+    } else {
+        dialog->open();
+        dialog->focusEmptyField();
+    }
 }
 
-void MainWindow::engineDialogDecision(QAbstractButton *button)
+void MainWindow::engineDialogDecision(bool start, bool always)
 {
     engine::EngineStartDialog *dialog = qobject_cast<engine::EngineStartDialog*>(sender());
-    if (dialog && dialog->standardButton(button) == QDialogButtonBox::Ok) {
+    if (!dialog) return;
+    if (start) {
         Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
+        Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
         mEngineTempPassword = dialog->password();
-//        mUser = "studiotests";
-//        mPassword = "rercud-qinRa9-wagbew";
-        createEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());
+        mEngineNoDialog = always;
+        prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());
     } else {
         dialog->close();
     }
     dialog->deleteLater();
 }
 
-void MainWindow::createEngineProcess(QString url, QString nSpace, QString user, QString password)
+engine::EngineProcess *MainWindow::createEngineProcess()
 {
     updateAndSaveSettings();
     ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (!runGroup) return;
+    if (!runGroup) {
+        DEB() << "Could not create GAMS Engine process";
+        return nullptr;
+    }
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
+    connect(engineProcess.get(), &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
     engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
-    engineProcess->setNamespace(nSpace);
-    engineProcess->authenticate(url, user, password);
-    // TODO(JM) create token for the user and store it (if the user allowed it)
+    QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
+    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+    for (const option::OptionItem &item : itemList) {
+        if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0)
+            engineProcess->setHasPreviousWorkOption(true);
+    }
     runGroup->setProcess(std::move(engineProcess));
+    return qobject_cast<engine::EngineProcess*>(runGroup->process());
+}
+
+void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user, QString password)
+{
+    ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
+    if (!group) return;
+    AbstractProcess* process = group->process();
+    engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
+    if (!engineProcess) return;
+    mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
+    engineProcess->setUrl(url);
+    engineProcess->setNamespace(nSpace);
+    engineProcess->authenticate(user, password);
+    // TODO(JM) create token for the user and store it (if the user allowed it)
 //    if (!mIgnoreSslErrors) {
 //        engine::EngineProcess *enginePtr = static_cast<engine::EngineProcess*>(runGroup->process());
 //        connect(enginePtr, &engine::EngineProcess::sslValidation, this, &MainWindow::sslValidation);
 //    } else {
 //    }
     updateAndSaveSettings();
-    execute(mGamsParameterEditor->getCurrentCommandLineData());
+    executePrepare(node, group, mGamsParameterEditor->getCurrentCommandLineData());
+    execution(group);
 }
 
 void MainWindow::on_actionInterrupt_triggered()
@@ -3475,7 +3516,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     mProjectRepo.purgeGroup(parentGroup);
 }
 
-void MainWindow::neosProgress(AbstractProcess *proc, neos::ProcState progress)
+void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 {
     ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
     if (!runGroup || !runGroup->runnableGms()) return;
@@ -3483,9 +3524,9 @@ void MainWindow::neosProgress(AbstractProcess *proc, neos::ProcState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == neos::Proc3GetResult) {
+            if (progress == ProcState::Proc4GetResult) {
                 gv->releaseFile();
-            } else if (progress == neos::ProcState::ProcIdle) {
+            } else if (progress == ProcState::ProcIdle) {
                 gv->setHasChanged(true);
                 gv->reload(gdxNode->file()->codec());
             }
@@ -3493,21 +3534,24 @@ void MainWindow::neosProgress(AbstractProcess *proc, neos::ProcState progress)
     }
 }
 
-void MainWindow::engineProgress(AbstractProcess *proc, engine::ProcState progress)
+void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 {
     ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
     if (!runGroup || !runGroup->runnableGms()) return;
     QString gmsFilePath = runGroup->runnableGms()->location();
-    ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
-    if (gdxNode && gdxNode->file()->isOpen()) {
-        if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == engine::Proc4GetResult) {
-                gv->releaseFile();
-            } else if (progress == engine::ProcIdle) {
-                gv->setHasChanged(true);
-                gv->reload(gdxNode->file()->codec());
+    QList<ProjectFileNode*> gdxNodes = runGroup->findFiles(FileKind::Gdx, true);
+    for (ProjectFileNode *gdxNode : gdxNodes) {
+        if (gdxNode->file()->isOpen()) {
+            if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
+                if (progress == ProcState::Proc4GetResult) {
+                    gv->releaseFile();
+                } else if (progress == ProcState::ProcIdle) {
+                    gv->setHasChanged(true);
+                    gv->reload(gdxNode->file()->codec());
+                }
             }
         }
+
     }
 }
 
@@ -4547,12 +4591,22 @@ bool MainWindow::enabledPrintAction()
 
 void MainWindow::checkGamsLicense()
 {
-    support::GamsLicensingDialog::createLicenseFile(this);
-    auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath());
-    if (QFileInfo::exists(licenseFile)) {
-        appendSystemLogInfo("GAMS license found at " + licenseFile);
-    } else {
-        appendSystemLogError("No GAMS license found. You can install your license by copying the license information from the email you received after purchasing GAMS into your clipboard, and then open the license dialogue (Help / GAMS licensing). The license will be recognized and installed automatically. For more options, please check the GAMS documentation.");
+    const QString errorText = "No GAMS license found. You can install your license by"
+                              " copying the license information from the email you"
+                              " received after purchasing GAMS into your clipboard, and"
+                              " then open the license dialogue (Help / GAMS licensing)."
+                              " The license will be recognized and installed automatically."
+                              " For more options, please check the GAMS documentation.";
+    try {
+        support::GamsLicensingDialog::createLicenseFile(this);
+        auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath());
+        if (QFileInfo::exists(licenseFile)) {
+            appendSystemLogInfo("GAMS license found at " + licenseFile);
+        } else {
+            appendSystemLogError(errorText);
+        }
+    }  catch (Exception e) {
+        appendSystemLogError(e.what());
     }
 }
 

@@ -328,6 +328,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     // misc page
     safelyAdd(res, skNeosAutoConfirm, scUser, {"neos","autoConfirm"}, false);
     safelyAdd(res, skNeosAcceptTerms, scUser, {"neos","acceptTerms"}, false);
+    safelyAdd(res, skNeosForceGdx, scSys, {"neos","forceGdx"}, true);
+    safelyAdd(res, skNeosShortPrio, scUser, {"neos","priotity"}, true);
 
     // solver option editor settings
     safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);
@@ -341,6 +343,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEngineUser, scSys, {"engine","user"}, "");
     safelyAdd(res, skEngineUserToken, scSys, {"engine","userToken"}, "");
     safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);
+    safelyAdd(res, skEngineForceGdx, scSys, {"engine","forceGdx"}, true);
 
     // Check if all enum values of SettingsKey have been assigned
     for (int i = 0 ; i < skSettingsKeyCount ; ++i) {

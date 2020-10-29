@@ -144,6 +144,20 @@ ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recur
     return nullptr;
 }
 
+QList<ProjectFileNode*> ProjectGroupNode::findFiles(FileKind kind, bool recurse) const
+{
+    QList<ProjectFileNode*> res;
+    for (ProjectAbstractNode* node: mChildNodes) {
+        ProjectFileNode* fileNode = node->toFile();
+        if (fileNode && fileNode->file()->kind() == kind) res << fileNode;
+        if (recurse) {
+            const ProjectGroupNode* group = node->toGroup();
+            res << (group ? group->findFiles(kind, true) : QList<ProjectFileNode*>());
+        }
+    }
+    return res;
+}
+
 ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
 {
     for (ProjectAbstractNode* node: childNodes()) {

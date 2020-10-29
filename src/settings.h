@@ -105,6 +105,8 @@ enum SettingsKey {
     // misc page
     skNeosAutoConfirm,
     skNeosAcceptTerms,
+    skNeosForceGdx,
+    skNeosShortPrio,
 
     // solver option editor settings
     skSoOverrideExisting,
@@ -118,6 +120,7 @@ enum SettingsKey {
     skEngineUser,
     skEngineUserToken,
     skEngineStoreUserToken,
+    skEngineForceGdx,
 
     // user model library directory
     skUserModelLibraryDir,

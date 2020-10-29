@@ -8,16 +8,6 @@ namespace gams {
 namespace studio {
 namespace neos {
 
-// TODO(JM) join ProcState from neos and engine
-enum ProcState {
-    ProcCheck,
-    ProcIdle,
-    Proc1Compile,
-    Proc2Monitor,
-    Proc3GetResult,
-    Proc4Unpack,
-};
-
 enum Priority {
     prioShort,
     prioLong
@@ -38,6 +28,7 @@ public:
     NeosProcess(QObject *parent = nullptr);
     ~NeosProcess() override;
     void setPriority(Priority prio) { mPrio = prio; }
+    void setForceGdx(bool forceGdx);
 
     void execute() override;
     void interrupt() override;
@@ -46,13 +37,16 @@ public:
     QProcess::ProcessState state() const override;
     void validate();
     void setIgnoreSslErrors();
+    void setStarting();
 
 signals:
-    void procStateChanged(AbstractProcess *proc, neos::ProcState progress);
+    void procStateChanged(AbstractProcess *proc, ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
 
+
 protected slots:
+    void completed(int exitCode) override;
     void rePing(const QString &value);
     void reVersion(const QString &value);
     void reSubmitJob(const int &jobNumber, const QString &jobPassword);
@@ -81,12 +75,15 @@ private:
     void startUnpacking();
 
     NeosManager *mManager;
+    bool mForceGdx = false;
+    bool mHasGdx = false;
     QString mOutPath;
     QString mJobNumber;
     QString mJobPassword;
     Priority mPrio;
     ProcState mProcState;
     QTimer mPullTimer;
+    QProcess::ProcessState mPreparationState;
 
     AbstractGamsProcess *mSubProc = nullptr;
 };
