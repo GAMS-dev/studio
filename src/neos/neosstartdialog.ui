@@ -51,14 +51,14 @@
       <item>
        <widget class="QCheckBox" name="cbForceGdx">
         <property name="text">
-         <string>always create a GDX file</string>
+         <string>Create a GDX file</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="rbShort">
         <property name="text">
-         <string>short priority (limited to 5 minutes)</string>
+         <string>Short priority (limited to 5 minutes)</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -68,7 +68,7 @@
       <item>
        <widget class="QRadioButton" name="rbLong">
         <property name="text">
-         <string>long priotity</string>
+         <string>Long priotity</string>
         </property>
        </widget>
       </item>

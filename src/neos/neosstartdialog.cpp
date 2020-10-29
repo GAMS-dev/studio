@@ -84,7 +84,7 @@ void NeosStartDialog::showEvent(QShowEvent *event)
 void NeosStartDialog::updateCanStart()
 {
     bool enabled = ui->cbTerms->isChecked();
-    ui->bAlways->setEnabled(enabled);
+    ui->bAlways->setEnabled(enabled && ui->cbHideTerms->isChecked());
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
 
