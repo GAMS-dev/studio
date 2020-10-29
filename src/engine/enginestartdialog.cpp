@@ -112,6 +112,12 @@ QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButt
     return ui->buttonBox->standardButton(button);
 }
 
+void EngineStartDialog::closeEvent(QCloseEvent *event)
+{
+    if (mProc) mProc->abortRequests();
+    QDialog::closeEvent(event);
+}
+
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);

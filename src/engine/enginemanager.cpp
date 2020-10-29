@@ -229,6 +229,11 @@ void EngineManager::setToken(const QString &token)
     mToken = token;
 }
 
+void EngineManager::abortRequests()
+{
+    mJobsApi->abortRequests();
+}
+
 } // namespace engine
 } // namespace studio
 } // namespace gams

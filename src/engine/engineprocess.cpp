@@ -581,6 +581,11 @@ void EngineProcess::setForceGdx(bool forceGdx)
     mForceGdx = forceGdx;
 }
 
+void EngineProcess::abortRequests()
+{
+    mManager->abortRequests();
+}
+
 } // namespace engine
 } // namespace studio
 } // namespace gams

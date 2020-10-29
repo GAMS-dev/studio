@@ -40,6 +40,8 @@ public:
     bool ignoreSslErrors();
     QString getToken() const;
     void setToken(const QString &token);
+    void abortRequests();
+
 
     void authenticate(const QString &user, const QString &password);
     void authenticate(const QString &userToken);
