@@ -98,6 +98,7 @@ SOURCES += \
     editors/textviewedit.cpp \
     encodingsdialog.cpp \
     engine/client/OAIAuthApi.cpp \
+    engine/client/OAIDefaultApi.cpp \
     engine/client/OAIHelpers.cpp \
     engine/client/OAIHttpFileElement.cpp \
     engine/client/OAIHttpRequest.cpp \
@@ -172,6 +173,7 @@ SOURCES += \
     neos/httpmanager.cpp \
     neos/neosmanager.cpp \
     neos/neosprocess.cpp \
+    neos/neosstartdialog.cpp \
     neos/xmlrpc.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
@@ -275,6 +277,7 @@ HEADERS += \
     editors/textviewedit.h \
     encodingsdialog.h \
     engine/client/OAIAuthApi.h \
+    engine/client/OAIDefaultApi.h \
     engine/client/OAIEnum.h \
     engine/client/OAIHelpers.h \
     engine/client/OAIHttpFileElement.h \
@@ -351,6 +354,7 @@ HEADERS += \
     neos/httpmanager.h \
     neos/neosmanager.h \
     neos/neosprocess.h \
+    neos/neosstartdialog.h \
     neos/xmlrpc.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
@@ -447,6 +451,7 @@ FORMS += \
     miro/mirodeploydialog.ui \
     miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
+    neos/neosstartdialog.ui \
     option/envvarconfigeditor.ui \
     option/gamsconfigeditor.ui \
     option/paramconfigeditor.ui \

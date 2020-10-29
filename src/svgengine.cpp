@@ -9,7 +9,14 @@
 namespace gams {
 namespace studio {
 
-SvgEngine::SvgEngine(const QString &name) : QIconEngine(), mName(name)
+SvgEngine::SvgEngine(const QString &name)
+    : QIconEngine(), mName(name), mNameD(name)
+{
+    mController = Scheme::instance();
+}
+
+SvgEngine::SvgEngine(const QString &name, const QString &disabledName)
+    : QIconEngine(), mName(name), mNameD(disabledName)
 {
     mController = Scheme::instance();
 }
@@ -20,6 +27,7 @@ SvgEngine::SvgEngine(const SvgEngine &other) : QIconEngine()
     mForceSquare = other.mForceSquare;
     mScope = other.mScope;
     mName = other.mName;
+    mNameD = other.mNameD;
     mNormalMode = other.mNormalMode;
 }
 
@@ -61,7 +69,8 @@ void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QI
     Q_UNUSED(mode)
     Q_UNUSED(state)
     if (mode == QIcon::Normal) mode = mNormalMode;
-    QByteArray &data = mController->data(mName, Scheme::Scope(mScope), mode);
+    const QString &name = (mode == QIcon::Disabled ? mNameD : mName);
+    QByteArray &data = mController->data(name, Scheme::Scope(mScope), mode);
     QSvgRenderer renderer(data);
     QRect pRect = rect;
     if (mForceSquare) pRect.setWidth(pRect.height());

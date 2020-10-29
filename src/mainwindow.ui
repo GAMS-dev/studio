@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -265,7 +265,8 @@
     <addaction name="actionCompile_with_GDX_Creation"/>
     <addaction name="separator"/>
     <addaction name="actionRunNeos"/>
-    <addaction name="actionRunNeosL"/>
+    <addaction name="actionRunEngine"/>
+    <addaction name="separator"/>
     <addaction name="actionRunEngine"/>
     <addaction name="separator"/>
     <addaction name="actionInterrupt"/>
@@ -772,34 +773,22 @@
   <action name="actionRunNeos">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/run-neos</normaloff>:/solid/run-neos</iconset>
+     <normaloff>:/img/neos</normaloff>:/img/neos</iconset>
    </property>
    <property name="text">
-    <string>Run &amp;NEOS - short</string>
+    <string>Run &amp;NEOS</string>
    </property>
    <property name="toolTip">
-    <string>Run NEOS - short (limited to 5 minutes)</string>
-   </property>
-  </action>
-  <action name="actionRunNeosL">
-   <property name="icon">
-    <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/run-neos-l</normaloff>:/solid/run-neos-l</iconset>
-   </property>
-   <property name="text">
-    <string>Run NEOS - long</string>
-   </property>
-   <property name="toolTip">
-    <string>Run NEOS - long (no intermediate log output)</string>
+    <string>Run remote NEOS process</string>
    </property>
   </action>
   <action name="actionRunEngine">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
-     <normaloff>:/solid/run-engine</normaloff>:/solid/run-engine</iconset>
+     <normaloff>:/img/engine</normaloff>:/img/engine</iconset>
    </property>
    <property name="text">
-    <string>Run &amp;Engine</string>
+    <string>Run GAMS &amp;Engine</string>
    </property>
    <property name="toolTip">
     <string>Run remote GAMS Engine process</string>
