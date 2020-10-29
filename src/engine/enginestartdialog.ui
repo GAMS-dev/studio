@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>353</width>
-    <height>349</height>
+    <height>281</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -53,7 +53,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap resource="../../icons/icons.qrc">:/img/engine</pixmap>
+         <pixmap resource="../../icons/icons.qrc">:/img/engine-logo</pixmap>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
