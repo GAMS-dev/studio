@@ -40,6 +40,7 @@ protected:
 private:
     Ui::NeosStartDialog *ui;
     NeosProcess *mProc = nullptr;
+    bool mFirstShow = true;
 
 };
 

@@ -12,6 +12,7 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NeosStartDialog)
 {
+    setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
     ui->setupUi(this);
     setModal(true);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NeosStartDialog::buttonClicked);
@@ -71,8 +72,12 @@ void NeosStartDialog::updateValues()
 void NeosStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
-    resize(width(), height()/2);
-    setFixedSize(size());
+    if (mFirstShow) {
+        resize(width(), height()/2);
+        setMinimumSize(sizeHint());
+        setMaximumSize(sizeHint());
+    }
+    mFirstShow = false;
 }
 
 void NeosStartDialog::updateCanStart()
