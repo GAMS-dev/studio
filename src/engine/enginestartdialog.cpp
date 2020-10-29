@@ -204,6 +204,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         emit ready(true, true);
         return;
     }
+    textChanged("");
 
     if (!mProc->hasPreviousWorkOption()) {
         bool newerGamsVersion = false;
