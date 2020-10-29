@@ -100,7 +100,7 @@
       <item>
        <widget class="QCheckBox" name="cbTerms">
         <property name="text">
-         <string>I agree to the terms of use of NEOS</string>
+         <string>I agree to the Terms of Use of NEOS</string>
         </property>
        </widget>
       </item>
@@ -110,7 +110,7 @@
          <string>Go to settings to turn them on again</string>
         </property>
         <property name="text">
-         <string>Hide Terms Of Use next time</string>
+         <string>Don't show Terms of Use again</string>
         </property>
        </widget>
       </item>
