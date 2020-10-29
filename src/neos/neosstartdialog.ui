@@ -141,7 +141,7 @@
       <item>
        <widget class="QPushButton" name="bAlways">
         <property name="text">
-         <string>Ok, don't ask again</string>
+         <string>OK, don't ask again</string>
         </property>
        </widget>
       </item>
