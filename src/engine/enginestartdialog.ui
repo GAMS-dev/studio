@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>353</width>
-    <height>281</height>
+    <height>349</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -179,10 +179,10 @@
       <item row="5" column="1">
        <widget class="QCheckBox" name="cbForceGdx">
         <property name="toolTip">
-         <string>creates the GDX file even if an option is missing</string>
+         <string>Creates the GDX file even if the command line parameter is missing</string>
         </property>
         <property name="text">
-         <string>create GDX file</string>
+         <string>Create GDX file</string>
         </property>
        </widget>
       </item>
