@@ -9,6 +9,7 @@ Version 1.4.1
     - added "don't ask again" button for current session
     - improved logging of network errors
     - added unique icon for start action
+    - fixed crash after reopening dialog
 - improved NEOS integration
     - improved handling of network errors
     - changed default parameter from forceWork=1 to previousWork=1
