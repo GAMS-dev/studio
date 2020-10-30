@@ -44,6 +44,7 @@ public:
 
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
+    void abortRequests();
 
 signals:
     void authenticated(QString token);

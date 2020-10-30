@@ -39,6 +39,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 
 EngineStartDialog::~EngineStartDialog()
 {
+    if (mProc) mProc = nullptr;
     delete ui;
 }
 
@@ -64,7 +65,7 @@ EngineProcess *EngineStartDialog::process() const
 
 QString EngineStartDialog::url() const
 {
-    return ui->edUrl->text();
+    return ui->edUrl->text().trimmed();
 }
 
 QString EngineStartDialog::nSpace() const
@@ -112,6 +113,12 @@ QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButt
     return ui->buttonBox->standardButton(button);
 }
 
+void EngineStartDialog::closeEvent(QCloseEvent *event)
+{
+    if (mProc) mProc->abortRequests();
+    QDialog::closeEvent(event);
+}
+
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
@@ -137,7 +144,7 @@ void EngineStartDialog::getVersion()
     if (mProc) {
         mPendingRequest = true;
         mUrlChanged = false;
-        mProc->setUrl(mUrl);
+        mProc->setUrl(mUrl.trimmed());
         mProc->getVersions();
     }
 }
@@ -240,7 +247,7 @@ void EngineStartDialog::reVersionError(const QString &errorText)
         return;
     }
     if (mUrl == ui->edUrl->text()) {
-        mUrl += (mUrl.endsWith('/') ? "api" : "/api");
+        mUrl = mUrl.trimmed() + (mUrl.trimmed().endsWith('/') ? "api" : "/api");
         mUrlChanged = false;
         getVersion();
         return;

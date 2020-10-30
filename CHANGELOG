@@ -1,3 +1,7 @@
+Version 1.4.2
+==================
+- fixed crash after reopening GAMS Engine dialog
+
 Version 1.4.1
 ==================
 - improved GAMS Engine integration

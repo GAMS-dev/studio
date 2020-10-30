@@ -16,7 +16,7 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     ui->setupUi(this);
     setModal(true);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NeosStartDialog::buttonClicked);
-    connect(ui->bAlways, &QPushButton::clicked, [this](){
+    connect(ui->bAlways, &QPushButton::clicked, this, [this](){
         buttonClicked(ui->bAlways);
     });
     ui->cbForceGdx->setChecked(Settings::settings()->toBool(SettingsKey::skNeosForceGdx));
@@ -24,7 +24,7 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     connect(ui->cbForceGdx, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     connect(ui->rbShort, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
     connect(ui->rbLong, &QCheckBox::toggled, this, &NeosStartDialog::updateValues);
-    connect(ui->cbTerms, &QCheckBox::stateChanged, [this](){
+    connect(ui->cbTerms, &QCheckBox::stateChanged, this, [this](){
         Settings::settings()->setBool(SettingsKey::skNeosAcceptTerms, ui->cbTerms->isChecked());
         updateCanStart();
     });
