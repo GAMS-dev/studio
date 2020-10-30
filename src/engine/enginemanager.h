@@ -33,6 +33,7 @@ public:
 
 public:
     EngineManager(QObject *parent = nullptr);
+    ~EngineManager();
     void setWorkingDirectory(const QString &dir);
     void setHost(const QString &host);
     void setBasePath(const QString &path);

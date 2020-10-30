@@ -104,6 +104,12 @@ EngineManager::EngineManager(QObject* parent)
 
 }
 
+EngineManager::~EngineManager()
+{
+    mJobsApi->abortRequests();
+    mJobsApi->deleteLater();
+}
+
 void EngineManager::setWorkingDirectory(const QString &dir)
 {
     mJobsApi->setWorkingDirectory(dir);
