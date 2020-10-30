@@ -1,5 +1,6 @@
 #include "httpmanager.h"
 #include "xmlrpc.h"
+#include "networkmanager.h"
 
 namespace gams {
 namespace studio {
@@ -7,8 +8,9 @@ namespace neos {
 
 HttpManager::HttpManager(QObject *parent): QObject(parent)
 {
-    connect(&mManager, &QNetworkAccessManager::finished, this, &HttpManager::prepareReply);
-    connect(&mManager, &QNetworkAccessManager::sslErrors, this, &HttpManager::convertSslErrors);
+    mManager = NetworkManager::manager();
+    connect(mManager, &QNetworkAccessManager::finished, this, &HttpManager::prepareReply);
+    connect(mManager, &QNetworkAccessManager::sslErrors, this, &HttpManager::convertSslErrors);
     mRawRequest.setRawHeader("User-Agent", "neos/1.0");
     mRawRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml");
 }
@@ -33,7 +35,7 @@ void HttpManager::submitCall(const QString &method, const QVariantList &params)
     QByteArray xml = XmlRpc::prepareCall(method, params);
     QNetworkRequest request(mRawRequest);
     request.setAttribute(QNetworkRequest::User, method);
-    mManager.post(request, xml);
+    mManager->post(request, xml);
 }
 
 void HttpManager::prepareReply(QNetworkReply *reply)

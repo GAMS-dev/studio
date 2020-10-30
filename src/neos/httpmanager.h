@@ -30,7 +30,7 @@ private slots:
 
 private:
     QNetworkRequest mRawRequest;
-    QNetworkAccessManager mManager;
+    QNetworkAccessManager *mManager = nullptr;
     bool mIgnoreSslErrors = false;
 };
 
