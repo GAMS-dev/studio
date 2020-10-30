@@ -216,7 +216,7 @@
          <string>&lt;html style=&quot;white-space: nowrap;&quot;&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use this credentials for the current Studio session&lt;/p&gt;&lt;p&gt;(To show this dialog, Studio needs to be restarted)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>OK, don't ask</string>
+         <string>OK, don't ask again</string>
         </property>
        </widget>
       </item>

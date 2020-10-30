@@ -33,6 +33,7 @@ public:
 
 public:
     EngineManager(QObject *parent = nullptr);
+    ~EngineManager();
     void setWorkingDirectory(const QString &dir);
     void setHost(const QString &host);
     void setBasePath(const QString &path);
@@ -40,6 +41,8 @@ public:
     bool ignoreSslErrors();
     QString getToken() const;
     void setToken(const QString &token);
+    void abortRequests();
+
 
     void authenticate(const QString &user, const QString &password);
     void authenticate(const QString &userToken);

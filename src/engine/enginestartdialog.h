@@ -41,6 +41,7 @@ signals:
     void ready(bool start, bool always);
 
 protected:
+    void closeEvent(QCloseEvent *event);
     void showEvent(QShowEvent *event);
     void buttonClicked(QAbstractButton *button);
     void getVersion();
@@ -64,6 +65,7 @@ private:
     bool mPendingRequest = false;
     bool mForcePreviousWork = true;
     bool mHiddenCheck = false;
+
 };
 
 } // namespace engine
