@@ -24,6 +24,7 @@
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
+#include "networkmanager.h"
 
 #include <iostream>
 #include <QMessageBox>
@@ -54,6 +55,7 @@ Application::Application(int& argc, char** argv)
 
 Application::~Application()
 {
+    NetworkManager::cleanup();
     Settings::releaseSettings();
 }
 

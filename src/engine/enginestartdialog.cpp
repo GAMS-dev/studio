@@ -39,6 +39,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 
 EngineStartDialog::~EngineStartDialog()
 {
+    if (mProc) mProc = nullptr;
     delete ui;
 }
 

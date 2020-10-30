@@ -8,6 +8,8 @@
 #include <iostream>
 #include <QFile>
 
+#include "networkmanager.h"
+
 using namespace OpenAPI;
 
 namespace gams {
@@ -16,7 +18,7 @@ namespace engine {
 
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
-      mNetworkManager(new QNetworkAccessManager(this)), mQueueFinished(false)
+      mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
 {
 //    mAuthApi->setScheme("https");
 //    mAuthApi->setPort(443);
