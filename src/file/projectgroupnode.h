@@ -135,6 +135,7 @@ protected:
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
+    void appendChild(ProjectAbstractNode *child) override;
     void removeChild(ProjectAbstractNode *child) override;
     QString resolveHRef(QString href, ProjectFileNode *&node, int &line, int &col, bool create = false);
 
