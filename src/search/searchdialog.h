@@ -66,8 +66,6 @@ public:
     ResultsView *resultsView() const;
     void setResultsView(ResultsView *resultsView);
 
-    void updateSearchCache(bool ignoreReadOnly = false);
-
 public slots:
     void on_searchNext();
     void on_searchPrev();

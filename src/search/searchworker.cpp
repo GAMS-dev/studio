@@ -28,8 +28,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(QMutex& mutex, QList<FileMeta*> fml, SearchResultList* list)
-    : mMutex(mutex), mFiles(fml), mMatches(list)
+SearchWorker::SearchWorker(QList<FileMeta*> fml, SearchResultList* list)
+    : mFiles(fml), mMatches(list)
 {
 }
 
@@ -39,7 +39,6 @@ SearchWorker::~SearchWorker()
 
 void SearchWorker::findInFiles()
 {
-    QMutexLocker m(&mMutex);
     QList<Result> res;
     bool cacheFull = false;
     for (FileMeta* fm : mFiles) {

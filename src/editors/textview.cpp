@@ -21,7 +21,7 @@
 #include "filemapper.h"
 #include "memorymapper.h"
 #include "logger.h"
-#include "exception.h"
+#include "exception.h" // TODO(RG): check if this can be deleted
 #include "textviewedit.h"
 #include "keys.h"
 #include "settings.h"

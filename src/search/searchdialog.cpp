@@ -34,8 +34,6 @@
 #include <QTextDocumentFragment>
 #include <QThread>
 
-
-
 namespace gams {
 namespace studio {
 namespace search {
@@ -68,38 +66,34 @@ void SearchDialog::on_btn_Replace_clicked()
     if (!edit || edit->isReadOnly()) return;
 
     insertHistory();
-    mIsReplacing = true;
     QRegularExpression regex = createRegex();
     QRegularExpressionMatch match = regex.match(edit->textCursor().selectedText());
 
     if (edit->textCursor().hasSelection() && match.hasMatch() &&
-            match.capturedLength() == edit->textCursor().selectedText().length()) {
+            match.captured(0) == edit->textCursor().selectedText()) { // TODO(RG): test this
         edit->textCursor().insertText(ui->txt_replace->text());
     }
 
-    findNext(SearchDialog::Forward, true);
-    mIsReplacing = false;
+    Search::selectNextMatch();
 }
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
 {
     insertHistory();
-    replaceAll();
+    Search::replaceAll();
 }
 
 void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearching) {
         if (ui->combo_search->currentText().isEmpty()) return;
-        mHasChanged = false;
 
+        mHasChanged = false;
         setSearchOngoing(true);
         clearResults();
         insertHistory();
 
-        mShowResults = true;
-        mCachedResults = new SearchResultList(createRegex());
-        findInFiles(mCachedResults, getFilesByScope());
+        Search::start();
     } else {
         setSearchOngoing(false);
         mThread.requestInterruption();
@@ -156,62 +150,8 @@ void SearchDialog::setSearchOngoing(bool searching)
     ui->label->setEnabled(!searching);
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
-}
 
-///
-/// \brief SearchDialog::findInFiles starts a search in files. distinguishes between (non-)modified files.
-/// \param mMutex for parallelisation
-/// \param fml list of files to search
-/// \param skipFilters enable for result caching (find next/prev)
-///
-void SearchDialog::findInFiles(SearchResultList* collection, QList<FileMeta*> fml)
-{
-    QList<FileMeta*> unmodified;
-    QList<FileMeta*> modified; // need to be treated differently
-
-    for(FileMeta* fm : fml) {
-
-        // skip certain file types
-        if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
-            continue;
-
-        // sort files by modified
-        if (fm->isModified()) modified << fm;
-        else unmodified << fm;
-    }
-
-    // non-parallel first
-    for (FileMeta* fm : modified)
-        findInDoc(fm, collection);
-
-    SearchWorker* sw = new SearchWorker(mMutex, unmodified, collection);
-    sw->moveToThread(&mThread);
-
-    connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
-    connect(this, &SearchDialog::startSearch, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
-    connect(sw, &SearchWorker::update, this, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
-    connect(sw, &SearchWorker::resultReady, this, &SearchDialog::finalUpdate, Qt::UniqueConnection);
-
-    mThread.start();
-    emit startSearch();
-}
-
-void SearchDialog::findInDoc(FileMeta* fm, SearchResultList* collection)
-{
-    QTextCursor lastItem = QTextCursor(fm->document());
-    QTextCursor item;
-    QFlags<QTextDocument::FindFlag> flags = setFlags(SearchDirection::Forward);
-    do {
-        item = fm->document()->find(collection->searchRegex(), lastItem, flags);
-        if (item != lastItem) lastItem = item;
-        else break;
-
-        if (!item.isNull()) {
-            collection->addResult(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
-                                  item.selectedText().length(), fm->location(), item.block().text().trimmed());
-        }
-        if (collection->size() > MAX_SEARCH_RESULTS-1) break;
-    } while (!item.isNull());
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
@@ -367,235 +307,6 @@ void SearchDialog::replaceAll()
     invalidateCache();
 }
 
-///
-/// \brief SearchDialog::replaceUnopened replaces in files where there is currently no editor open
-/// \param fm file
-/// \param regex find
-/// \param replaceTerm replace with
-///
-int SearchDialog::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
-{
-    QFile file(fm->location());
-    QTextStream ts(&file);
-    ts.setCodec(fm->codec());
-    int hits = 0;
-
-    if (file.open(QIODevice::ReadWrite)) {
-        QString content = ts.readAll();
-        hits = content.count(regex);
-        content.replace(regex, replaceTerm);
-
-        ts.seek(0);
-        ts << content;
-    }
-    file.close();
-    return hits;
-}
-
-///
-/// \brief SearchDialog::replaceOpened uses QTextDocument for replacing strings. this allows the user
-/// to undo changes made by replacing.
-/// \param fm filemeta
-/// \param regex find
-/// \param replaceTerm replace with
-/// \param flags options
-///
-int SearchDialog::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
-{
-    QTextCursor item;
-    QTextCursor lastItem;
-    int hits = 0;
-
-    QTextCursor tc;
-    if (fm->editors().size() > 0)
-        tc = ViewHelper::toAbstractEdit(fm->editors().first())->textCursor();
-
-    tc.beginEditBlock();
-    do {
-        item = fm->document()->find(regex, lastItem, flags);
-        lastItem = item;
-
-        if (!item.isNull()) {
-            item.insertText(replaceTerm);
-            hits++;
-        }
-    } while(!item.isNull());
-    tc.endEditBlock();
-
-    return hits;
-}
-
-void SearchDialog::updateSearchCache(bool ignoreReadOnly)
-{
-    QApplication::sendPostedEvents();
-
-    if (mCachedResults) delete mCachedResults;
-    mCachedResults = new SearchResultList(createRegex());
-
-    mShowResults = false;
-    findInFiles(mCachedResults, getFilesByScope(ignoreReadOnly));
-    mHasChanged = false;
-}
-
-void SearchDialog::findNext(SearchDirection direction, bool ignoreReadOnly)
-{
-    if (ui->combo_search->currentText() == "") return;
-
-    // create new cache when cached search does not contain results for current file. user probably changed tab and a new search needs to start
-    bool requestNewCache = mCachedResults &&
-            mCachedResults->filteredResultList(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location()).size() == 0;
-
-    if (!mCachedResults || mHasChanged || requestNewCache) {
-        setSearchOngoing(true);
-        invalidateCache();
-        updateSearchCache(ignoreReadOnly);
-        QApplication::processEvents(QEventLoop::AllEvents, 50);
-    }
-    if (!mIsReplacing) selectNextMatch(direction);
-}
-
-///
-/// \brief SearchDialog::selectNextMatch steps through words in a document
-/// \param direction
-///
-void SearchDialog::selectNextMatch(SearchDirection direction, bool firstLevel)
-{
-    QTextCursor matchSelection;
-    QRegularExpression searchRegex = createRegex();
-
-    setSearchStatus(SearchStatus::Searching);
-
-    int lineNr = 0;
-    int colNr = 0;
-    bool backwards = direction == SearchDirection::Backward;
-
-    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        lineNr = e->textCursor().blockNumber()+1;
-        colNr = e->textCursor().columnNumber();
-    } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-        lineNr = t->position().y()+1;
-        colNr = t->position().x();
-    }
-
-    QList<Result> resultList = mCachedResults->resultsAsList();
-    if (resultList.size() == 0) {
-        setSearchStatus(SearchStatus::NoResults);
-        return;
-    }
-
-    const Result* res = nullptr;
-    int iterator = backwards ? -1 : 1;
-    int start = backwards ? resultList.size()-1 : 0;
-    bool allowJumping = false;
-    int matchNr = -1;
-    bool found = false;
-
-    // skip to next entry if file is opened in solver option edit
-    if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
-        int selected = resultsView() ? resultsView()->selectedItem() : -1;
-
-        // no rows selected, select new depending on direction
-        if (selected == -1) selected = backwards ? resultList.size() : 0;
-
-        int newIndex = selected + iterator;
-        if (newIndex < 0)
-            newIndex = resultList.size()-1;
-        else if (newIndex > resultList.size()-1)
-            newIndex = 0;
-
-        res = &resultList.at(newIndex);
-        matchNr = newIndex;
-
-    } else if (mMain->recent()->editor()){ // finds next result by cursor position
-        QString file = ViewHelper::location(mMain->recent()->editor());
-        for (int i = start; i >= 0 && i < resultList.size(); i += iterator) {
-            matchNr = i;
-            Result r = resultList.at(i);
-
-            // check if is in same line but behind the cursor
-            if (file == r.filepath()) {
-                allowJumping = true;
-                if (backwards) {
-                    if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
-                        res = &r;
-                        found = true;
-                        break;
-                    }
-                } else {
-                    if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
-                        res = &r;
-                        found = true;
-                        break;
-                    }
-                }
-            } else if (file != r.filepath() && allowJumping) {
-                // first match in next file
-                res = &r;
-                found = true;
-                break;
-            }
-        }
-    }
-
-    // navigation outside of cache when limit was reached
-    if (matchNr >= MAX_SEARCH_RESULTS-1) {
-        mOutsideOfList = true;
-        QTextDocument::FindFlags flags;
-        if (backwards) flags = flags | QTextDocument::FindBackward;
-
-        int x = 0;
-        int y = 0;
-        if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-            QTextCursor tc = e->textCursor();
-            QTextCursor ntc= e->document()->find(createRegex(), backwards ? tc.position()-1 : tc.position(), flags);
-            found = !ntc.isNull();
-            e->setTextCursor(ntc);
-            x = e->textCursor().positionInBlock();
-            y = e->textCursor().blockNumber()+1;
-        } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-            mSplitSearchContinue = false; // make sure to start a new search
-            found = t->findText(createRegex(), flags, mSplitSearchContinue);
-            x = t->position().x();
-            y = t->position().y()+1;
-        }
-        updateLabelByCursorPos(y, x);
-        if (found) return; // exit early, all done
-    }
-
-     // no results found, start over, jump to start/end of file
-    if (!found) {
-        if (mOutsideOfList || resultList.size() == MAX_SEARCH_RESULTS) {
-            if (backwards) {
-                if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-                    QTextCursor tc = e->textCursor();
-                    tc.movePosition(QTextCursor::End);
-                    e->setTextCursor(tc);
-                } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-                    t->jumpTo(t->knownLines()-1, 0, 0, true);
-                }
-                matchNr = MAX_SEARCH_RESULTS-1;
-                if (firstLevel) selectNextMatch(direction, false); // try jumping once again
-            } else { // forwards
-                res = &resultList.first();
-            }
-
-        } else { // startover in available cache
-            if (backwards) res = &resultList.last();
-            else res = &resultList.first();
-            matchNr = resultList.indexOf(*res);
-        }
-    }
-
-    if (res) { // result from cache available
-        ProjectFileNode *node = mMain->projectRepo()->findFile(res->filepath());
-        if (!node) EXCEPT() << "File not found: " << res->filepath();
-        node->file()->jumpTo(node->runGroupId(), true, res->lineNr()-1, qMax(res->colNr(), 0), res->length());
-    }
-    // update ui
-    if (resultsView() && !resultsView()->isOutdated()) resultsView()->selectItem(matchNr);
-    updateLabelByCursorPos();
-}
-
 void SearchDialog::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event)
@@ -606,12 +317,14 @@ void SearchDialog::showEvent(QShowEvent *event)
 
 void SearchDialog::on_searchNext()
 {
-    findNext(SearchDialog::Forward);
+    if (ui->combo_search->currentText() != "")
+        findNext(SearchDialog::Forward);
 }
 
 void SearchDialog::on_searchPrev()
 {
-    findNext(SearchDialog::Backward);
+    if (ui->combo_search->currentText() != "")
+        findNext(SearchDialog::Backward);
 }
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)

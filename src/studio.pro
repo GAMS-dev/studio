@@ -222,6 +222,7 @@ SOURCES += \
     schemewidget.cpp \
     search/result.cpp \
     search/resultsview.cpp \
+    search/search.cpp \
     search/searchdialog.cpp \
     search/searchlocator.cpp \
     search/searchresultlist.cpp \
@@ -404,6 +405,7 @@ HEADERS += \
     schemewidget.h \
     search/result.h \
     search/resultsview.h \
+    search/search.h \
     search/searchdialog.h \
     search/searchlocator.h \
     search/searchresultlist.h \
