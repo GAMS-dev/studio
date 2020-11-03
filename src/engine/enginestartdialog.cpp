@@ -215,7 +215,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         if (mLocalGamsVersion.at(0).toInt() > engineGamsVersion.at(0).toInt())
             newerGamsVersion = true;
         if (mLocalGamsVersion.at(0).toInt() == engineGamsVersion.at(0).toInt() &&
-            mLocalGamsVersion.at(1).toInt() >= engineGamsVersion.at(1).toInt())
+            mLocalGamsVersion.at(1).toInt() > engineGamsVersion.at(1).toInt())
             newerGamsVersion = true;
         if (newerGamsVersion) {
             ui->laWarn->setText("Newer local GAMS: Added \"previousWork=1\"");
