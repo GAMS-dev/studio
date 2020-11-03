@@ -63,6 +63,7 @@ void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMa
     mTreeView = treeView;
     mFileRepo = fileRepo;
     mTextMarkRepo = textMarkRepo;
+    connect(mTreeModel, &ProjectTreeModel::childrenChanged, this, &ProjectRepo::childrenChanged);
 }
 
 ProjectRunGroupNode *ProjectRepo::findRunGroup(NodeId nodeId) const

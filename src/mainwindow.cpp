@@ -283,6 +283,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, &MainWindow::updateRunState);
     mStartedUp = true;
 }
 
@@ -2130,7 +2131,9 @@ bool MainWindow::isActiveTabRunnable()
        if (!fm) { // assuming a welcome page here
            return false;
        } else {
-           return true;
+           if (!mRecent.group()) return false;
+           ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
+           return runGroup && runGroup->runnableGms();
        }
     }
     return false;
