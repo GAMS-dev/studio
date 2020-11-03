@@ -207,11 +207,6 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             ui->edUrl->setSelection(len, pos-len);
         }
     }
-    if (!isVisible()) {
-        // hidden start
-        emit ready(true, true);
-        return;
-    }
     textChanged("");
 
     if (!mProc->hasPreviousWorkOption()) {
@@ -235,6 +230,13 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         ui->laWarn->setToolTip("");
         ui->laWarn->setText("");
         mForcePreviousWork = false;
+    }
+
+    if (!isVisible()) {
+        // hidden start
+        if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
+        emit ready(true, true);
+        return;
     }
 }
 
