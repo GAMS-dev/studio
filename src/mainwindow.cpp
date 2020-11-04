@@ -2546,8 +2546,14 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 void MainWindow::setMiroRunning(bool running)
 {
     mMiroRunning = running;
-    ui->menuMIRO->setEnabled(!running);
-    mMiroDeployDialog->setEnabled(!running);
+    updateMiroEnabled();
+}
+
+void MainWindow::updateMiroEnabled()
+{
+    bool available = !mMiroRunning && isMiroAvailable() && isActiveTabRunnable();
+    ui->menuMIRO->setEnabled(available);
+    mMiroDeployDialog->setEnabled(available);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -2988,6 +2994,7 @@ void MainWindow::execution(ProjectRunGroupNode *runGroup)
 
 void MainWindow::updateRunState()
 {
+    updateMiroEnabled();
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 

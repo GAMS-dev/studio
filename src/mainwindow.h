@@ -260,6 +260,7 @@ private slots:
     void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
+    void updateMiroEnabled();
 
     // Tools
     void on_actionGDX_Diff_triggered();
