@@ -1,6 +1,6 @@
 Version 1.4.3 *
 ==================
-- disable run actions and MIRO menu if group as no active GMS file
+- disable run actions and MIRO menu if group has no active executable file
 - update state on dragging active GMS file to other group
 
 Version 1.4.2
