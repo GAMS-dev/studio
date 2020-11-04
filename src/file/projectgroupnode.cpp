@@ -428,7 +428,9 @@ void ProjectRunGroupNode::setLogLocation(QString path)
 
 FileMeta* ProjectRunGroupNode::runnableGms() const
 {
-    return fileRepo()->fileMeta(parameter("gms"));
+    FileMetaRepo *repo = fileRepo();
+    if (!repo) return nullptr;
+    return repo->fileMeta(parameter("gms"));
 }
 
 void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
