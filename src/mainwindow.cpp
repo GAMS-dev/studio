@@ -283,7 +283,10 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
-    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, &MainWindow::updateRunState);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
+        mRecent.setEditor(mRecent.editor(), this);
+        updateRunState();
+    });
     mStartedUp = true;
 }
 
@@ -2982,7 +2985,6 @@ void MainWindow::execution(ProjectRunGroupNode *runGroup)
 
     ui->dockProcessLog->raise();
 }
-
 
 void MainWindow::updateRunState()
 {

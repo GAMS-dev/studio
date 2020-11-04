@@ -462,6 +462,8 @@ ProjectFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, ProjectGr
         addToIndex(file);
         mTreeModel->insertChild(fileGroup->childCount(), fileGroup, file);
         mTreeModel->sortChildNodes(fileGroup);
+        for (QWidget *w: fileMeta->editors())
+            ViewHelper::setGroupId(w, fileGroup->id());
     }
     connect(fileGroup, &ProjectGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
