@@ -1,3 +1,8 @@
+Version 1.4.3 *
+==================
+- Fixed on GAMS Engine run add "previousWork=1" if dialog is hidden and server version is older
+- Fixed version comparison in GAMS Engine dialog
+
 Version 1.4.2
 ==================
 - fixed crash after reopening GAMS Engine dialog
