@@ -2551,9 +2551,15 @@ void MainWindow::setMiroRunning(bool running)
 
 void MainWindow::updateMiroEnabled()
 {
-    bool available = !mMiroRunning && isMiroAvailable() && isActiveTabRunnable();
+    bool available = isMiroAvailable() && isActiveTabRunnable();
     ui->menuMIRO->setEnabled(available);
-    mMiroDeployDialog->setEnabled(available);
+    mMiroDeployDialog->setEnabled(available && !mMiroRunning);
+    ui->actionBase_mode->setEnabled(available && !mMiroRunning);
+    ui->actionHypercube_mode->setEnabled(available && !mMiroRunning);
+    ui->actionConfiguration_mode->setEnabled(available && !mMiroRunning);
+    ui->actionSkip_model_execution->setEnabled(available && mMiroRunning);
+    ui->actionCreate_model_assembly->setEnabled(available && !mMiroRunning);
+    ui->actionDeploy->setEnabled(available && !mMiroRunning);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
