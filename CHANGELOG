@@ -1,7 +1,7 @@
 Version 1.4.3 *
 ==================
 - disable run actions and MIRO menu if group has no active executable file
-- update state on dragging active executable file to other group
+- update state on dragging active executable file to a different group
 
 Version 1.4.2
 ==================
