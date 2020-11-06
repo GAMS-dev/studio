@@ -26,16 +26,16 @@ namespace gams {
 namespace studio {
 namespace search {
 
-search::SearchDialog* SearchLocator::mSd = nullptr;
+search::Search* SearchLocator::mS = nullptr;
 
-void SearchLocator::provide(search::SearchDialog *sd)
+void SearchLocator::provide(search::Search *s)
 {
-    mSd = sd;
+    mS = s;
 }
 
-search::SearchDialog* SearchLocator::searchDialog()
+search::Search* SearchLocator::search()
 {
-    return mSd;
+    return mS;
 }
 
 }

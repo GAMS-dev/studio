@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include "mainwindow.h"
+#include "search.h"
 
 namespace gams {
 namespace studio {
@@ -36,23 +37,13 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
-    enum SearchDirection {
-        Forward = 0,
-        Backward = 1
-    };
     explicit SearchDialog(MainWindow *parent = nullptr);
     ~SearchDialog();
-
-    bool regex();
-    bool caseSens();
-    bool wholeWords();
-    QString searchTerm();
     QRegularExpression createRegex();
 
     int selectedScope();
     void setSelectedScope(int index);
 
-    void findNext(SearchDialog::SearchDirection direction, bool ignoreReadOnly = false);
     void clearResults();
     void updateReplaceActionAvailability();
 
@@ -61,10 +52,17 @@ public:
     void clearSearch();
     void invalidateCache();
 
-    SearchResultList* results();
+//    SearchResultModel* results();
 
-    ResultsView *resultsView() const;
+    ResultsView *resultsView();
     void setResultsView(ResultsView *resultsView);
+
+    QList<Result> filteredResultList(QString file) const;
+    Search* search();
+
+    bool regex();
+    bool caseSens();
+    bool wholeWords();
 
 public slots:
     void on_searchNext();
@@ -95,40 +93,28 @@ protected:
     void keyPressEvent(QKeyEvent *e);
 
 private:
-    enum SearchScope {
-        ThisFile = 0,
-        ThisGroup= 1,
-        OpenTabs = 2,
-        AllFiles = 3
-    };
-
-    enum SearchStatus {
-        Searching = 0,
-        NoResults = 1,
-        Clear = 2,
-        Replacing = 4
-    };
-
+    QString searchTerm();
     void replaceAll();
-    void findInFiles(SearchResultList* collection, QList<FileMeta *> fml);
+    void findInFiles(SearchResultModel* collection, QList<FileMeta *> fml);
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
     void updateLabelByCursorPos(int lineNr = 0, int colNr = 0);
-    void selectNextMatch(SearchDirection direction, bool firstLevel = true);
+    void selectNextMatch(Search::Direction direction, bool firstLevel = true);
     void insertHistory();
     void searchParameterChanged();
-    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList* collection);
-    void findInDoc(FileMeta *fm, SearchResultList* collection);
+    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
+    void findInDoc(FileMeta *fm, SearchResultModel* collection);
     void updateEditHighlighting();
-    void setSearchOngoing(bool searching);
-    void setSearchStatus(SearchStatus status);
-    int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
-    int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
+    void updateUi(bool searching);
+    void setSearchStatus(Search::Status status);
 
 private:
     Ui::SearchDialog *ui;
     MainWindow *mMain;
+    Search mSearch;
+
     ResultsView *mResultsView = nullptr;
-    SearchResultList *mCachedResults = nullptr;
+    SearchResultModel* mSearchResultModel = nullptr;
+
     bool mHasChanged = true;
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;
@@ -136,9 +122,7 @@ private:
     bool mShowResults = true;
     bool mIsReplacing = false;
     bool mSuppressChangeEvent = false;
-    QFlags<QTextDocument::FindFlag> setFlags(SearchDirection direction);
     QThread mThread;
-    bool mSearching = false;
     QMutex mMutex;
     bool mOutsideOfList = false;
 };

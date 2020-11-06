@@ -123,7 +123,7 @@ public:
     QWidgetList openEditors();
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
-    void showResults(search::SearchResultList* results);
+    void showResults(search::SearchResultModel* results);
     void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);

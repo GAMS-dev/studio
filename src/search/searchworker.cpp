@@ -17,10 +17,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "searchresultlist.h"
+#include "searchresultmodel.h"
 #include "searchworker.h"
 
 #include <QFile>
+#include <QRegularExpression>
 
 #include "file/filemeta.h"
 
@@ -28,8 +29,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(QList<FileMeta*> fml, SearchResultList* list)
-    : mFiles(fml), mMatches(list)
+SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> list)
+    : mFiles(fml), mMatches(list), mRegex(regex)
 {
 }
 
@@ -58,16 +59,18 @@ void SearchWorker::findInFiles()
                 QString line = in.readLine();
 
                 QRegularExpressionMatch match;
-                QRegularExpressionMatchIterator i = mMatches->searchRegex().globalMatch(line);
+                QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
                 while (i.hasNext() && !cacheFull) {
                     match = i.next();
                     // abort: too many results
-                    if (mMatches->size() > MAX_SEARCH_RESULTS-1) {
+                    if (mMatches.size() > MAX_SEARCH_RESULTS-1) {
                         cacheFull = true;
                         break;
                     }
-                    mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
-                                       file.fileName(), line.trimmed());
+
+                    mMatches.append(Result(lineCounter, match.capturedStart(),
+                                           match.capturedLength(), file.fileName(),
+                                           line.trimmed()));
                 }
 
                 // update periodically

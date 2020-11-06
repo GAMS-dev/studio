@@ -33,41 +33,45 @@ class Search : public QObject
 {
     Q_OBJECT
 public:
-    enum SearchScope {
+    enum Scope {
         ThisFile = 0,
         ThisGroup= 1,
         OpenTabs = 2,
         AllFiles = 3
     };
 
-    enum SearchStatus {
+    enum Status {
         Searching = 0,
         NoResults = 1,
         Clear = 2,
         Replacing = 4
     };
 
-    enum SearchDirection {
+    enum Direction {
         Forward = 0,
         Backward = 1
     };
 
-    explicit Search(QList<FileMeta*> files, QRegularExpression regex, QFlags<QTextDocument::FindFlag>);
-    ~Search();
+    void setParameters(QList<FileMeta*> files, QRegularExpression regex, QFlags<QTextDocument::FindFlag> options);
     void start();
+    void reset();
+    QList<Result> filteredResultList(QString fileLocation);
 
-signals:
-    void resultReady();
+    void findNext(Direction direction, bool ignoreReadOnly = false);
+    void replaceNext(QRegularExpression regex, QString replacementText);
+    void replaceAll(QList<FileMeta*> files, QRegularExpression regex, QString replacementText);
+    void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
+
+    QList<Result> results() const;
+
+    bool isRunning() const;
+
+    QRegularExpression regex() const;
 
 private:
-    Result findInFiles();
     void findInDoc(FileMeta* fm);
-    void findNext(SearchDirection direction, bool ignoreReadOnly = false);
-    void selectNextMatch(SearchDirection direction, bool firstLevel = true);
-    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultList* collection);
+    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
-//    void replaceNext();
-//    void replaceAll();
     int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
@@ -76,11 +80,11 @@ private slots:
 
 private:
     MainWindow *mMain;
-    SearchResultList *mResults = nullptr;
+    QList<Result> mResults;
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
-    bool isRunning = false;
+    bool mRunning = false;
 
     QThread mThread;
     bool mSearching = false;

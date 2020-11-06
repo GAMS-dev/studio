@@ -28,18 +28,14 @@ namespace gams {
 namespace studio {
 namespace search {
 
-class SearchResultList : public QAbstractTableModel
+class SearchResultModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    SearchResultList(QRegularExpression regex);
-    virtual ~SearchResultList() override;
-    QList<Result> resultsAsList() const;
-    QMultiHash<QString, QList<Result> > resultHash() const;
-    void addResult(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
-    QList<Result> filteredResultList(QString fileLocation);
+    SearchResultModel(QRegularExpression regex, QList<Result> results);
+
+    QList<Result> results() const;
     QRegularExpression searchRegex();
-    void setSearchRegex(QRegularExpression searchRegex);
     int size();
     Result at(int index) const;
 
@@ -50,9 +46,7 @@ public:
 
 private:
     QRegularExpression mSearchRegex;
-    int mSize = 0;
-    QHash<QString, QList<Result>> mResultHash;
-
+    QList<Result> mResults;
 };
 
 }

@@ -43,7 +43,7 @@
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
 #include "search/searchlocator.h"
-#include "search/searchresultlist.h"
+#include "search/searchresultmodel.h"
 #include "search/resultsview.h"
 #include "gotodialog.h"
 #include "support/updatedialog.h"
@@ -224,6 +224,7 @@ MainWindow::MainWindow(QWidget *parent)
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
+    qDebug() /*rogo: delete*/ << QTime::currentTime() << "set search dialog" << mSearchDialog;
 
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
@@ -259,7 +260,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainTabs->setUsesScrollButtons(true);
 
     // set up services
-    search::SearchLocator::provide(mSearchDialog);
+    search::SearchLocator::provide(mSearchDialog->search());
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
@@ -1118,7 +1119,7 @@ void MainWindow::updateEditorItemCount()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    if (!searchDialog()->searchTerm().isEmpty())
+    if (!searchDialog()->search()->regex().pattern().isEmpty())
         searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
@@ -3739,10 +3740,11 @@ void MainWindow::openSearchDialog()
     }
 }
 
-void MainWindow::showResults(search::SearchResultList* results)
+void MainWindow::showResults(search::SearchResultModel* results)
 {
     int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
 
+    // TODO(RG): move ownership of resultsview to mainwindow
     searchDialog()->setResultsView(new search::ResultsView(results, this));
     connect(searchDialog()->resultsView(), &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
 

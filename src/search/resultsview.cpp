@@ -20,7 +20,7 @@
 #include "searchdialog.h"
 #include "ui_resultsview.h"
 #include "exception.h"
-#include "searchresultlist.h"
+#include "searchresultmodel.h"
 #include "result.h"
 #include "common.h"
 #include "keys.h"
@@ -29,8 +29,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
-    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(resultList->searchRegex())
+ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent) :
+    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(results)
 {
     ui->setupUi(this);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -38,10 +38,7 @@ ResultsView::ResultsView(SearchResultList* resultList, MainWindow *parent) :
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     ui->tableView->setTextElideMode(Qt::ElideLeft);
 
-    for (Result r : resultList->resultsAsList()) {
-        mResultList.addResult(r.lineNr(), r.colNr(), r.length(), r.filepath(), r.context());
-    }
-    ui->tableView->setModel(&mResultList);
+    ui->tableView->setModel(mResultList);
 
     QPalette palette;
     palette.setColor(QPalette::Highlight, ui->tableView->palette().highlight().color());
@@ -62,7 +59,7 @@ void ResultsView::resizeColumnsToContent()
 
 void ResultsView::jumpToResult(int selectedRow, bool focus)
 {
-    Result r = mResultList.at(selectedRow);
+    Result r = mResultList->at(selectedRow);
 
     // open so we have a document of the file
     if (QFileInfo(r.filepath()).exists())
@@ -73,7 +70,7 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
 
     // jump to line
     node->file()->jumpTo(node->runGroupId(), focus, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
-    emit updateMatchLabel(selectedRow+1, mResultList.size());
+    emit updateMatchLabel(selectedRow+1, mResultList->size());
     selectItem(selectedRow);
     if (!focus) setFocus(); // focus stays in results view
 }
@@ -109,12 +106,12 @@ int ResultsView::selectNextItem(bool backwards)
 {
     int selected = selectedItem();
     int iterator = backwards ? -1 : 1;
-    if (selected == -1) selected = backwards ? mResultList.size() : 0;
+    if (selected == -1) selected = backwards ? mResultList->size() : 0;
 
     int newIndex = selected + iterator;
     if (newIndex < 0)
-        newIndex = mResultList.size()-1;
-    else if (newIndex > mResultList.size()-1)
+        newIndex = mResultList->size()-1;
+    else if (newIndex > mResultList->size()-1)
         newIndex = 0;
 
     return newIndex;
