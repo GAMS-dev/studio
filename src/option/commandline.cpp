@@ -51,7 +51,7 @@ void CommandLine::validateChangedParameter(const QString &text)
 
 QString CommandLine::getParameterString() const
 {
-    if (mParameterString.isEmpty() and this->count() > 0)
+    if (mParameterString.isEmpty() && this->count() > 0)
         return this->itemText(0);
     else
         return mParameterString;
