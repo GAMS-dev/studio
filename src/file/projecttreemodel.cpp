@@ -342,7 +342,7 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
         ProjectAbstractNode* node = mProjectRepo->node(mCurrent);
-        if (!node) return false;
+        if (!node || !node->parentNode()) return false;
         if (node->parentNode()->id() == nodeId(ind)) {
             return true;
         }
