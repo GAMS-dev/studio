@@ -6,10 +6,9 @@ def artifactVersion() {
     return major + "." + minor + "." + patch
 }
 
-def isAllowedDebugBuildBranch() {
-    return env.BRANCH_NAME == 'master'         ||
-           env.BRANCH_NAME == 'develop'        ||
-           env.BRANCH_NAME ==~ /.*-release/
+def isDebugBuildAllowed() {
+    return env.BRANCH_NAME == 'develop'        ||
+           env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/
 }
 
 pipeline {
@@ -26,7 +25,7 @@ pipeline {
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     when {
-                        expression { return isAllowedDebugBuildBranch() }
+                        expression { return isDebugBuildAllowed() }
                     }
                     steps {
                         step([$class: 'WsCleanup'])
@@ -49,7 +48,7 @@ pipeline {
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     when {
-                        expression { return isAllowedDebugBuildBranch() }
+                        expression { return isDebugBuildAllowed() }
                     }
                     steps {
                         bat '''
@@ -60,24 +59,6 @@ pipeline {
                             copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.16.27012\\vc_redist.x64.exe" "src\\bin"
                         '''
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
-
-                        // NO signing of debug builds
-                        //withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
-                        //    bat '''
-                        //        echo Setting up environment for VS2017 usage...
-                        //        cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
-                        //        call vcvars64.bat
-                        //        cd %WORKSPACE%\\tmp\\studio
-                        //        signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /t http://timestamp.comodoca.com studio.exe
-                        //    '''
-                        //}
-                        //bat '''
-                        //    echo Setting up environment for VS2017 usage...
-                        //    cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
-                        //    call vcvars64.bat
-                        //    cd %WORKSPACE%\\tmp\\studio
-                        //    signtool verify /v /pa studio.exe
-                        //'''
                     }
                 }
             }
@@ -87,7 +68,7 @@ pipeline {
                 stage('windowsX64') {
                     agent { label 'windowsX64' }
                     when {
-                        expression { return isAllowedDebugBuildBranch() }
+                        expression { return isDebugBuildAllowed() }
                     }
                     steps {
                         script {
@@ -104,7 +85,7 @@ pipeline {
                     agent { label 'master'}
                     steps {
                         sh '''
-                            echo "A Linux debug build is not available, but might be added in future."
+                            echo "Linux debug builds are not available, but might be added in future."
                         '''
                     }
                 }
@@ -112,7 +93,7 @@ pipeline {
                     agent { label 'windowsX64' }
                     steps {
                         bat '''
-                            echo "Windows debug builds are availabel for the branches master and develop."
+                            echo "Windows debug builds are availabel for branch develop and release tags only, e.g 1.4.0 or 1.5.0-rc."
                         '''
                     }
                 }
@@ -120,7 +101,7 @@ pipeline {
                     agent { label 'macos' }
                     steps {
                         sh '''
-                            echo "A macOS debug build is not available, but might be added in future."
+                            echo "macOS debug builds are not available, but might be added in future."
                         '''
                     }
                 }
