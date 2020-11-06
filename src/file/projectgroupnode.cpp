@@ -255,15 +255,29 @@ void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
     mLogNode = logNode;
 }
 
+void ProjectRunGroupNode::appendChild(ProjectAbstractNode *child)
+{
+    ProjectGroupNode::appendChild(child);
+    ProjectFileNode *file = child->toFile();
+    if (!mParameterHash.contains("gms") && file && file->file() && file->file()->kind() == FileKind::Gms) {
+        setRunnableGms(file->file());
+    }
+}
+
 void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
 {
     ProjectGroupNode::removeChild(child);
+    bool gmsLost = false;
     ProjectFileNode *file = child->toFile();
     if (file) {
         QList<QString> files = mParameterHash.keys(file->location());
         for (const QString &file: files) {
             mParameterHash.remove(file);
+            if (file=="gms") gmsLost = true;
         }
+    }
+    if (gmsLost) {
+        setRunnableGms();
     }
 }
 
@@ -414,7 +428,9 @@ void ProjectRunGroupNode::setLogLocation(QString path)
 
 FileMeta* ProjectRunGroupNode::runnableGms() const
 {
-    return fileRepo()->fileMeta(parameter("gms"));
+    FileMetaRepo *repo = fileRepo();
+    if (!repo) return nullptr;
+    return repo->fileMeta(parameter("gms"));
 }
 
 void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)

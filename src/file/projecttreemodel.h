@@ -53,6 +53,9 @@ public:
     QMap<int, QVariant> itemData(const QModelIndex &index) const;
     void sortChildNodes(ProjectGroupNode *group);
 
+signals:
+    void childrenChanged();
+
 protected:
     friend class ProjectRepo;
     friend class ProjectTreeView;

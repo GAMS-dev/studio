@@ -131,7 +131,6 @@ public:
     void writeTabs(QVariantMap &tabData) const;
     void resetViews();
     void resizeOptionEditor(const QSize &size);
-    void updateRunState();
     void setForeground();
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
@@ -161,6 +160,7 @@ public slots:
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
+    void updateRunState();
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
@@ -260,6 +260,7 @@ private slots:
     void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
+    void updateMiroEnabled();
 
     // Tools
     void on_actionGDX_Diff_triggered();
