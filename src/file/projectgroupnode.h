@@ -73,8 +73,8 @@ protected:
     friend class ProjectFileNode;
 
     ProjectGroupNode(QString name, QString location, NodeType type = NodeType::group);
-    void appendChild(ProjectAbstractNode *child);
-    void removeChild(ProjectAbstractNode *child);
+    virtual void appendChild(ProjectAbstractNode *child);
+    virtual void removeChild(ProjectAbstractNode *child);
     void setLocation(const QString &location);
 
 private:
@@ -135,7 +135,8 @@ protected:
     ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(ProjectLogNode* logNode);
-    void removeChild(ProjectAbstractNode *child);
+    void appendChild(ProjectAbstractNode *child) override;
+    void removeChild(ProjectAbstractNode *child) override;
     QString resolveHRef(QString href, ProjectFileNode *&node, int &line, int &col, bool create = false);
 
 private:

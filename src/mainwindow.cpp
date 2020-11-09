@@ -283,6 +283,10 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
+        mRecent.setEditor(mRecent.editor(), this);
+        updateRunState();
+    });
     mStartedUp = true;
 }
 
@@ -2130,7 +2134,9 @@ bool MainWindow::isActiveTabRunnable()
        if (!fm) { // assuming a welcome page here
            return false;
        } else {
-           return true;
+           if (!mRecent.group()) return false;
+           ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
+           return runGroup && runGroup->runnableGms();
        }
     }
     return false;
@@ -2540,8 +2546,20 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 void MainWindow::setMiroRunning(bool running)
 {
     mMiroRunning = running;
-    ui->menuMIRO->setEnabled(!running);
-    mMiroDeployDialog->setEnabled(!running);
+    updateMiroEnabled();
+}
+
+void MainWindow::updateMiroEnabled()
+{
+    bool available = isMiroAvailable() && isActiveTabRunnable();
+    ui->menuMIRO->setEnabled(available);
+    mMiroDeployDialog->setEnabled(available && !mMiroRunning);
+    ui->actionBase_mode->setEnabled(available && !mMiroRunning);
+    ui->actionHypercube_mode->setEnabled(available && !mMiroRunning);
+    ui->actionConfiguration_mode->setEnabled(available && !mMiroRunning);
+    ui->actionSkip_model_execution->setEnabled(available && mMiroRunning);
+    ui->actionCreate_model_assembly->setEnabled(available && !mMiroRunning);
+    ui->actionDeploy->setEnabled(available && !mMiroRunning);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -2980,9 +2998,9 @@ void MainWindow::execution(ProjectRunGroupNode *runGroup)
     ui->dockProcessLog->raise();
 }
 
-
 void MainWindow::updateRunState()
 {
+    updateMiroEnabled();
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
