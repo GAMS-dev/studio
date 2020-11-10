@@ -5,6 +5,9 @@
 #include <QDialogButtonBox>
 #include <QAbstractButton>
 
+class QCompleter;
+class QStringListModel;
+
 namespace gams {
 namespace studio {
 namespace engine {
@@ -34,6 +37,7 @@ public:
     void setLastPassword(QString lastPassword);
     void focusEmptyField();
     void setEngineVersion(QString version);
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
@@ -41,10 +45,12 @@ signals:
     void ready(bool start, bool always);
 
 protected:
-    void closeEvent(QCloseEvent *event);
-    void showEvent(QShowEvent *event);
+    void closeEvent(QCloseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
     void buttonClicked(QAbstractButton *button);
     void getVersion();
+    QString ensureApi(QString url);
+
 
 private slots:
     void urlEdited(const QString &text);
@@ -58,9 +64,11 @@ private slots:
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
+    QCompleter *mCompleter;
+    QStringListModel *mCompleteModel;
     QStringList mLocalGamsVersion;
     QString mUrl;
-    QString mOldUrl;
+    bool mDelete = false;
     bool mUrlChanged = false;
     bool mPendingRequest = false;
     bool mForcePreviousWork = true;
