@@ -97,8 +97,9 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
             [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
-        if (error_type != QNetworkReply::ServiceUnavailableError)
+        if (!mQueueFinished && error_type != QNetworkReply::ServiceUnavailableError)
             emit reGetLog("Network error "+QString::number(error_type).toLatin1()+" from popLog: "+worker->error_str.toUtf8());
+
     });
 
     connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
