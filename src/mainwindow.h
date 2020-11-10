@@ -259,8 +259,8 @@ private slots:
     void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void on_menuMIRO_aboutToShow();
+    void writeNewAssemblyFileData();
     void miroAssemblyDialogFinish(int result);
-    void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
     void updateMiroEnabled();
@@ -355,6 +355,7 @@ private slots:
     void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
+    void openMiroAssemblyDialog(QWidget *parent);
 
 protected:
     void closeEvent(QCloseEvent *event);

@@ -304,7 +304,7 @@ void MiroModelAssemblyDialog::on_createButton_clicked()
     if (!mFileSystemModel)
         return;
     if (selectedFiles().isEmpty())
-        showMessageBox();
+        showMessageBox(this);
     else
         accept();
 }
@@ -343,9 +343,9 @@ void MiroModelAssemblyDialog::setupViewModel()
     ui->directoryView->expandAll();
 }
 
-void MiroModelAssemblyDialog::showMessageBox()
+void MiroModelAssemblyDialog::showMessageBox(QWidget *parent)
 {
-    QMessageBox::critical(this, "No deployment files!", "Please select the files for your MIRO deployment.");
+    QMessageBox::critical(parent, "No deployment files!", "Please select the files for your MIRO deployment.");
 }
 
 }

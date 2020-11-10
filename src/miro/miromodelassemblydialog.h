@@ -105,6 +105,8 @@ public:
 
     void setWorkingDirectory(const QString &workingDirectory);
 
+    static void showMessageBox(QWidget *parent);
+
 private slots:
     void on_createButton_clicked();
     void on_selectAllButton_clicked();
@@ -112,7 +114,6 @@ private slots:
 
 private:
     void setupViewModel();
-    void showMessageBox();
 
 private:
     Ui::MiroModelAssemblyDialog *ui;

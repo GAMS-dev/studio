@@ -19,6 +19,7 @@
  */
 #include "mirodeploydialog.h"
 #include "ui_mirodeploydialog.h"
+#include "miromodelassemblydialog.h"
 #include "scheme.h"
 
 #include <QMessageBox>
@@ -29,11 +30,18 @@ namespace studio {
 namespace miro {
 
 MiroDeployDialog::MiroDeployDialog(QWidget *parent)
-    : QDialog(parent),
-      ui(new Ui::MiroDeployDialog)
+    : QDialog(parent)
+    , ui(new Ui::MiroDeployDialog)
+    , mFileSystemModel(new FileSystemModel(this))
+    , mFilterModel(new FilteredFileSystemModel(this))
 {
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    mFilterModel->setSourceModel(mFileSystemModel);
+    auto oldModel = ui->directoryView->selectionModel();
+    ui->directoryView->setModel(mFilterModel);
+    delete oldModel;
 
     updateTestDeployButtons();
     connect(ui->baseBox, &QCheckBox::stateChanged,
@@ -68,7 +76,7 @@ void MiroDeployDialog::setDefaults()
     ui->targetEnvBox->setCurrentIndex(0);
 }
 
-void MiroDeployDialog::setModelAssemblyFile(const QString &file) {
+void MiroDeployDialog::setAssemblyFileName(const QString &file) {
     mModelAssemblyFile = file;
     QFileInfo fi(mModelAssemblyFile);
     mValidAssemblyFile = fi.exists();
@@ -78,21 +86,51 @@ void MiroDeployDialog::setModelAssemblyFile(const QString &file) {
                          Scheme::color(Scheme::Normal_Green));
         ui->assemblyFileLabel->setPalette(palette);
         ui->assemblyFileLabel->setText(fi.fileName());
-        ui->assemblyFileButton->setText("Update");
     } else {
         auto palette = ui->assemblyFileLabel->palette();
         palette.setColor(ui->assemblyFileLabel->foregroundRole(),
                          Scheme::color(Scheme::Normal_Red));
         ui->assemblyFileLabel->setPalette(palette);
         ui->assemblyFileLabel->setText("none");
-        ui->assemblyFileButton->setText("Create");
     }
     updateTestDeployButtons();
 }
 
-void MiroDeployDialog::on_assemblyFileButton_clicked()
+QStringList MiroDeployDialog::selectedFiles()
 {
-    emit updateModelAssemblyFile();
+    if (mFileSystemModel)
+        return mFileSystemModel->selectedFiles();
+    return QStringList();
+}
+
+void MiroDeployDialog::setSelectedFiles(const QStringList &files)
+{
+    mFileSystemModel->setSelectedFiles(files);
+}
+
+void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)
+{
+    mWorkingDirectory = workingDirectory;
+    setupViewModel();
+}
+
+void MiroDeployDialog::on_createButton_clicked()
+{
+    if (selectedFiles().isEmpty())
+        MiroModelAssemblyDialog::showMessageBox(this);
+    emit newAssemblyFileData();
+}
+
+void MiroDeployDialog::on_selectAllButton_clicked()
+{
+    mFileSystemModel->selectAll();
+}
+
+void MiroDeployDialog::on_clearButton_clicked()
+{
+    mFileSystemModel->clearSelection();
+    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 void MiroDeployDialog::on_testBaseButton_clicked()
@@ -119,6 +157,17 @@ void MiroDeployDialog::updateTestDeployButtons()
     ui->deployButton->setEnabled((ui->baseBox->isChecked() ||
                                  ui->hypercubeBox->isChecked()) &&
                                  mValidAssemblyFile);
+}
+
+void MiroDeployDialog::setupViewModel()
+{
+    if (mWorkingDirectory.isEmpty())
+        return;
+
+    mFileSystemModel->setRootPath(mWorkingDirectory);
+    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
+    ui->directoryView->expandAll();
 }
 
 }
