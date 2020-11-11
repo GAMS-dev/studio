@@ -151,7 +151,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
     // skip to next entry if file is opened in solver option edit
     if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
-        int selected = mMain->searchDialog()->resultsView() ? mMain->searchDialog()->resultsView()->selectedItem() : -1;
+        int selected = mMain->resultsView() ? mMain->resultsView()->selectedItem() : -1;
 
         // no rows selected, select new depending on direction
         if (selected == -1) selected = backwards ? mResults.size() : 0;
@@ -248,8 +248,8 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                          qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
 
     // update ui
-    if (mMain->searchDialog()->resultsView() && !mMain->searchDialog()->resultsView()->isOutdated())
-        mMain->searchDialog()->resultsView()->selectItem(matchNr);
+    if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
+        mMain->resultsView()->selectItem(matchNr);
     // TODO(RG) move to dialog
     // updateLabelByCursorPos
 }

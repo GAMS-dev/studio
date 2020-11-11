@@ -52,11 +52,6 @@ public:
     void clearSearch();
     void invalidateCache();
 
-//    SearchResultModel* results();
-
-    ResultsView *resultsView();
-    void setResultsView(ResultsView *resultsView);
-
     QList<Result> filteredResultList(QString file) const;
     Search* search();
 

@@ -152,6 +152,9 @@ public:
 #endif
     option::ParameterEditor *gamsParameterEditor() const;
 
+    search::ResultsView *resultsView() const;
+    void setResultsView(search::ResultsView *resultsView);
+
 signals:
     void saved();
     void savedAs();
@@ -422,6 +425,7 @@ private:
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
+    search::ResultsView *mResultsView = nullptr;
     QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;

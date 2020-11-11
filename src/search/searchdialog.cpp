@@ -107,7 +107,7 @@ void SearchDialog::finalUpdate()
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
         mMain->showResults(mSearchResultModel);
 
-        resultsView()->resizeColumnsToContent();
+        mMain->resultsView()->resizeColumnsToContent();
     } else {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
@@ -335,14 +335,14 @@ void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
             mOutsideOfList = false;
 
-            if (resultsView() && !mHasChanged)
-                resultsView()->selectItem(i);
+            if (mMain->resultsView() && !mHasChanged)
+                mMain->resultsView()->selectItem(i);
 
             updateNrMatches(list.indexOf(match) + 1);
             return;
         }
     }
-    if (resultsView()) resultsView()->selectItem(-1);
+    if (mMain->resultsView()) mMain->resultsView()->selectItem(-1);
     updateNrMatches();
 }
 
@@ -559,7 +559,7 @@ QRegularExpression SearchDialog::createRegex()
 void SearchDialog::invalidateCache()
 {
     mHasChanged = true;
-    if (resultsView()) resultsView()->setOutdated();
+    if (mMain->resultsView()) mMain->resultsView()->setOutdated();
 }
 
 bool SearchDialog::regex()
@@ -595,17 +595,6 @@ void SearchDialog::setSelectedScope(int index)
 Search* SearchDialog::search()
 {
     return &mSearch;
-}
-
-ResultsView* SearchDialog::resultsView()
-{
-    return mResultsView;
-}
-
-void SearchDialog::setResultsView(ResultsView* resultsView)
-{
-    delete mResultsView;
-    mResultsView = resultsView;
 }
 
 }

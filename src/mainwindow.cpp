@@ -293,6 +293,8 @@ MainWindow::~MainWindow()
     delete mWp;
     delete ui;
     delete mNavigationHistory;
+    delete mResultsView;
+    delete mSearchDialog;
     FileType::clear();
 }
 
@@ -2097,7 +2099,7 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
-    bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
+    bool isResults = ui->logTabs->widget(index) == resultsView();
     if (isResults) {
         mSearchDialog->clearResults();
         return;
@@ -3284,7 +3286,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         if (TextView* logEdit = ViewHelper::toTextView(logNode->file()->editors().first())) {
             if (openOutput) setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
-                if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
+                if (ui->logTabs->currentWidget() != resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
             }
             if (moveToEnd) {
@@ -3742,11 +3744,11 @@ void MainWindow::openSearchDialog()
 
 void MainWindow::showResults(search::SearchResultModel* results)
 {
-    int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
+    int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 
-    // TODO(RG): move ownership of resultsview to mainwindow
-    searchDialog()->setResultsView(new search::ResultsView(results, this));
-    connect(searchDialog()->resultsView(), &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    delete mResultsView;
+    mResultsView = new search::ResultsView(results, this);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
 
     QString nr;
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
@@ -3760,15 +3762,17 @@ void MainWindow::showResults(search::SearchResultModel* results)
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
-    ui->logTabs->addTab(searchDialog()->resultsView(), title); // add new result page
-    ui->logTabs->setCurrentWidget(searchDialog()->resultsView());
+    ui->logTabs->addTab(mResultsView, title); // add new result page
+    ui->logTabs->setCurrentWidget(mResultsView);
 }
 
 void MainWindow::closeResultsPage()
 {
-    int index = ui->logTabs->indexOf(searchDialog()->resultsView());
+    int index = ui->logTabs->indexOf(mResultsView);
     if (index != -1) ui->logTabs->removeTab(index);
-    mSearchDialog->setResultsView(nullptr);
+
+    delete mResultsView;
+    mResultsView = nullptr;
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
@@ -3877,6 +3881,17 @@ void MainWindow::goToLine(int result)
             tv->jumpTo(mGotoDialog->lineNumber(), 0);
     }
 }
+
+search::ResultsView *MainWindow::resultsView() const
+{
+    return mResultsView;
+}
+
+void MainWindow::setResultsView(search::ResultsView *resultsView)
+{
+    mResultsView = resultsView;
+}
+
 void MainWindow::on_actionGo_To_triggered()
 {
     if (ui->mainTabs->currentWidget() == mWp) return;
