@@ -37,7 +37,7 @@ namespace studio {
 namespace search {
 
 SearchDialog::SearchDialog(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::SearchDialog), mMain(parent)
+    QDialog(parent), ui(new Ui::SearchDialog), mMain(parent), mSearch(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     Settings *mSettings = Settings::settings();
@@ -59,18 +59,24 @@ SearchDialog::~SearchDialog()
 
 void SearchDialog::on_btn_Replace_clicked()
 {
+    mSearch.setParameters(getFilesByScope(), createRegex());
+
     insertHistory();
     mSearch.replaceNext(createRegex(), ui->txt_replace->text());
 }
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
 {
+    mSearch.setParameters(getFilesByScope(), createRegex());
+
     insertHistory();
     replaceAll();
 }
 
 void SearchDialog::on_btn_FindAll_clicked()
 {
+    mSearch.setParameters(getFilesByScope(), createRegex());
+
     // TODO(RG): theres probably a better solution than this
     if (!mSearch.isRunning()) {
         if (ui->combo_search->currentText().isEmpty()) return;
@@ -265,12 +271,16 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int)
 
 void SearchDialog::on_btn_back_clicked()
 {
+    mSearch.setParameters(getFilesByScope(), createRegex(), true);
+
     insertHistory();
     mSearch.findNext(Search::Backward);
 }
 
 void SearchDialog::on_btn_forward_clicked()
 {
+    mSearch.setParameters(getFilesByScope(), createRegex());
+
     insertHistory();
     mSearch.findNext(Search::Forward);
 }
@@ -388,6 +398,8 @@ void SearchDialog::updateReplaceActionAvailability()
 
 void SearchDialog::clearSearch()
 {
+    mSearch.setParameters(QList<FileMeta*>(), QRegularExpression());
+
     mSuppressChangeEvent = true;
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();

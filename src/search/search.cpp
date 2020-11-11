@@ -33,11 +33,19 @@ namespace gams {
 namespace studio {
 namespace search {
 
-void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, QFlags<QTextDocument::FindFlag> options)
+Search::Search(MainWindow *main) : mMain(main)
+{
+
+}
+
+void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
     mFiles = files;
     mRegex = regex;
-    mOptions = options;
+    mOptions = QFlags<QTextDocument::FindFlag>();
+
+    // TODO(RG): test if other flags are needed here, but they shouldnt
+    mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
 }
 
 void Search::start()

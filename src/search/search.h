@@ -51,8 +51,9 @@ public:
         Forward = 0,
         Backward = 1
     };
+    Search(MainWindow* main);
 
-    void setParameters(QList<FileMeta*> files, QRegularExpression regex, QFlags<QTextDocument::FindFlag> options);
+    void setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
     void start();
     void reset();
     QList<Result> filteredResultList(QString fileLocation);
