@@ -419,7 +419,6 @@ void SearchDialog::updateEditHighlighting()
 void SearchDialog::clearResults()
 {
     setSearchStatus(Search::Clear);
-    mSearch.reset();
 
     ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
     if (!fc) return;

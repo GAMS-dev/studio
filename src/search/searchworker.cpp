@@ -29,7 +29,7 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> list)
+SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list)
     : mFiles(fml), mMatches(list), mRegex(regex)
 {
 }
@@ -63,12 +63,12 @@ void SearchWorker::findInFiles()
                 while (i.hasNext() && !cacheFull) {
                     match = i.next();
                     // abort: too many results
-                    if (mMatches.size() > MAX_SEARCH_RESULTS-1) {
+                    if (mMatches->size() > MAX_SEARCH_RESULTS-1) {
                         cacheFull = true;
                         break;
                     }
 
-                    mMatches.append(Result(lineCounter, match.capturedStart(),
+                    mMatches->append(Result(lineCounter, match.capturedStart(),
                                            match.capturedLength(), file.fileName(),
                                            line.trimmed()));
                 }

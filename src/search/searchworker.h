@@ -38,7 +38,7 @@ class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> list);
+    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list);
     ~SearchWorker();
     void findInFiles();
 
@@ -48,7 +48,7 @@ signals:
 
 private:
     QList<FileMeta*> mFiles;
-    QList<Result> mMatches;
+    QList<Result>* mMatches;
     QRegularExpression mRegex;
 };
 

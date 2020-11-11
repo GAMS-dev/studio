@@ -82,6 +82,7 @@ private slots:
 private:
     MainWindow *mMain;
     QList<Result> mResults;
+    QHash<QString, QList<Result>> mResultHash;
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;

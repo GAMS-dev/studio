@@ -19,6 +19,7 @@
  */
 #include "searchresultmodel.h"
 #include <QtDebug>
+#include <QTime>
 
 namespace gams {
 namespace studio {
@@ -26,8 +27,7 @@ namespace search {
 
 SearchResultModel::SearchResultModel(QRegularExpression regex, QList<Result> results)
     : mSearchRegex(regex), mResults(results)
-{
-}
+{ }
 
 QList<Result> SearchResultModel::results() const
 {

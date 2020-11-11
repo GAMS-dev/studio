@@ -51,13 +51,13 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
 void Search::start()
 {
     mResults.clear();
+    mResultHash.clear();
 
     mSearching = true;
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
     for(FileMeta* fm : mFiles) {
-
         // skip certain file types
         if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
             continue;
@@ -71,7 +71,7 @@ void Search::start()
     for (FileMeta* fm : modified)
         findInDoc(fm);
 
-    SearchWorker* sw = new SearchWorker(unmodified, mRegex, mResults);
+    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -316,6 +316,9 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 void Search::finished()
 {
     mSearching = false;
+
+    for (Result r : mResults)
+        mResultHash[r.filepath()].append(r);
 }
 
 QRegularExpression Search::regex() const
@@ -335,14 +338,7 @@ QList<Result> Search::results() const
 
 QList<Result> Search::filteredResultList(QString fileLocation)
 {
-    qDebug() /*rogo: delete*/ << QTime::currentTime() << "start filtering";
-    QList<Result> filteredList;
-    for (Result r : mResults)
-        if (r.filepath() == fileLocation)
-            filteredList.append(r);
-    qDebug() /*rogo: delete*/ << QTime::currentTime() << "end filtering";
-
-    return filteredList;
+    return mResultHash[fileLocation];
 }
 
 void Search::replaceNext(QRegularExpression regex, QString replacementText)
