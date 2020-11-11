@@ -75,11 +75,11 @@ void SearchWorker::findInFiles()
 
                 // update periodically
                 if (lineCounter % 250000 == 0)
-                    emit update();
+                    emit update(mMatches->size());
             }
             file.close();
         }
-        emit update();
+        emit update(mMatches->size());
     }
     emit resultReady();
     thread()->quit();

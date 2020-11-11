@@ -43,7 +43,7 @@ public:
     void findInFiles();
 
 signals:
-    void update();
+    void update(int hits);
     void resultReady();
 
 private:

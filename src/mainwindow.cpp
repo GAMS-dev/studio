@@ -224,7 +224,6 @@ MainWindow::MainWindow(QWidget *parent)
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
-    qDebug() /*rogo: delete*/ << QTime::currentTime() << "set search dialog" << mSearchDialog;
 
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {

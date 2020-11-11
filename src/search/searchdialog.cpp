@@ -89,13 +89,14 @@ void SearchDialog::on_btn_FindAll_clicked()
         mSearch.start();
     } else {
         updateUi(false);
-        mThread.requestInterruption();
+        mSearch.stop();
     }
 }
 
-void SearchDialog::intermediateUpdate()
+void SearchDialog::intermediateUpdate(int hits)
 {
-    setSearchStatus(Search::Searching);
+    setSearchStatus(Search::Searching, hits);
+    QApplication::processEvents();
 }
 
 void SearchDialog::finalUpdate()
@@ -117,7 +118,7 @@ void SearchDialog::finalUpdate()
 
     updateEditHighlighting();
 
-    if (mSearch.results().size() > 0)
+    if (mSearch.results().size() == 0)
         setSearchStatus(Search::NoResults);
     else updateLabelByCursorPos();
 }
@@ -433,15 +434,19 @@ void SearchDialog::clearResults()
     updateEditHighlighting();
 }
 
-void SearchDialog::setSearchStatus(Search::Status status)
+void SearchDialog::setSearchStatus(Search::Status status, int hits)
 {
+    QString searching = "Searching (";
+    QString dotAnim = ".";
+    QRegularExpression re("\\.*");
+
     switch (status) {
     case Search::Searching:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        if (ui->lbl_nrResults->text() == QString("Searching...")) ui->lbl_nrResults->setText("Searching.  ");
-        else if (ui->lbl_nrResults->text() == QString("Searching.  ")) ui->lbl_nrResults->setText("Searching.. ");
-        else ui->lbl_nrResults->setText("Searching...");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+
+        ui->lbl_nrResults->setText(searching + QString::number(hits) + ") "
+                                   + dotAnim.repeated(mSearchAnimation++ % 4));
         break;
     case Search::NoResults:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);

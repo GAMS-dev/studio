@@ -1718,7 +1718,7 @@ void CodeEdit::updateExtraSelections()
                               || sender() == this->verticalScrollBar()
                               || sender() == nullptr);
 
-        //    (  not caused by parenthiesis matching                               ) OR has selection
+        //    (  not caused by parentheses matching                               ) OR has selection
         if ( (( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || hasSelection())
                // ( depending on settings: no selection necessary OR has selection )
                && (mSettings->toBool(skEdWordUnderCursor) || hasSelection())

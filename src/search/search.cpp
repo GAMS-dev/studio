@@ -76,11 +76,17 @@ void Search::start()
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
     connect(&mThread, &QThread::finished, this, &Search::finished, Qt::UniqueConnection);
+    connect(&mThread, &QThread::started, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
     connect(sw, &SearchWorker::update, mMain->searchDialog(), &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
     connect(sw, &SearchWorker::resultReady, mMain->searchDialog(), &SearchDialog::finalUpdate, Qt::UniqueConnection);
 
     mThread.start();
-    sw->findInFiles(); // is this working? if not use signal
+    mThread.setPriority(QThread::LowPriority); // search is a background task
+}
+
+void Search::stop()
+{
+    mThread.requestInterruption();
 }
 
 void Search::reset()
@@ -126,8 +132,6 @@ void Search::findNext(Direction direction, bool ignoreReadOnly)
 void Search::selectNextMatch(Direction direction, bool firstLevel)
 {
     QTextCursor matchSelection;
-
-    mMain->searchDialog()->intermediateUpdate();
 
     int lineNr = 0;
     int colNr = 0;
@@ -319,6 +323,11 @@ void Search::finished()
 
     for (Result r : mResults)
         mResultHash[r.filepath()].append(r);
+
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor()))
+        ae->updateExtraSelections();
+    else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
+        tv->updateExtraSelections();
 }
 
 QRegularExpression Search::regex() const
@@ -328,7 +337,7 @@ QRegularExpression Search::regex() const
 
 bool Search::isRunning() const
 {
-    return mRunning;
+    return mSearching;
 }
 
 QList<Result> Search::results() const
@@ -419,7 +428,7 @@ void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QStrin
     if (msgBox.clickedButton() == ok) {
 
         // TODO(RG): implement the following setSearchStatusses
-//        setSearchStatus(SearchStatus::Replacing);
+//        setSearchStatus(Search::Replacing);
         QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
 
         for (FileMeta* fm : opened) {

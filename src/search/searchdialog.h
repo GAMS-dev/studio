@@ -64,7 +64,7 @@ public slots:
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
-    void intermediateUpdate();
+    void intermediateUpdate(int hits);
     void updateNrMatches(int current = 0);
 
 private slots:
@@ -100,7 +100,7 @@ private:
     void findInDoc(FileMeta *fm, SearchResultModel* collection);
     void updateEditHighlighting();
     void updateUi(bool searching);
-    void setSearchStatus(Search::Status status);
+    void setSearchStatus(Search::Status status, int hits = 0);
 
 private:
     Ui::SearchDialog *ui;
@@ -117,9 +117,8 @@ private:
     bool mShowResults = true;
     bool mIsReplacing = false;
     bool mSuppressChangeEvent = false;
-    QThread mThread;
-    QMutex mMutex;
     bool mOutsideOfList = false;
+    int mSearchAnimation = 0;
 };
 
 }
