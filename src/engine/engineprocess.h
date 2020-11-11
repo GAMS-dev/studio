@@ -96,7 +96,7 @@ private:
     bool mForcePreviousWork = false;
     bool mForceGdx = true;
     QByteArray mRemoteWorkDir;
-    bool mScanForRemoteDir = false;
+    bool mInParameterBlock = false;
 
     QString mJobNumber;
     QString mJobPassword;
