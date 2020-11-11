@@ -50,7 +50,7 @@ protected:
     void buttonClicked(QAbstractButton *button);
     void getVersion();
     QString ensureApi(QString url);
-
+    void setCanStart(bool valid);
 
 private slots:
     void urlEdited(const QString &text);
@@ -58,14 +58,11 @@ private slots:
     void on_bAlways_clicked();
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
-
     void on_cbForceGdx_stateChanged(int state);
 
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
-    QCompleter *mCompleter;
-    QStringListModel *mCompleteModel;
     QStringList mLocalGamsVersion;
     QString mUrl;
     bool mDelete = false;

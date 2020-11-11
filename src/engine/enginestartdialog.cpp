@@ -4,9 +4,7 @@
 #include "logger.h"
 #include "engineprocess.h"
 #include <QPushButton>
-#include <QCompleter>
-#include <QStringListModel>
-#include <QKeyEvent>
+#include <QEvent>
 
 namespace gams {
 namespace studio {
@@ -22,11 +20,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
-    mCompleteModel = new QStringListModel(QStringList() << "", this);
-    mCompleter = new QCompleter(mCompleteModel, ui->edUrl);
-    mCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    mCompleter->setCompletionMode(QCompleter::InlineCompletion);
-    ui->edUrl->setCompleter(mCompleter);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
@@ -117,9 +110,8 @@ void EngineStartDialog::setEngineVersion(QString version)
 
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == ui->edUrl && event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_Backspace && ui->edUrl->hasSelectedText()) mDelete = true;
+    if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
+        ui->edUrl->setText(mUrl.trimmed());
     }
     return QDialog::eventFilter(watched, event);
 }
@@ -154,9 +146,6 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
 void EngineStartDialog::getVersion()
 {
     QString text = ui->edUrl->text();
-    mCompleter->setCompletionPrefix(text);
-    mCompleteModel->setData(mCompleteModel->index(0), "");
-    mCompleter->complete();
 
     ui->laEngineVersion->setText(CUnavailable);
     ui->laWarn->setText("No GAMS Engine server");
@@ -174,32 +163,26 @@ void EngineStartDialog::getVersion()
 
 QString EngineStartDialog::ensureApi(QString url)
 {
-    if (url.endsWith("/api") || url.endsWith("/api/")) return url;
-    if (url.endsWith("/ap")) return url + "i";
-    if (url.endsWith("/a")) return url + "pi";
     if (url.endsWith("/")) return url + "api";
     return url + "/api";
 }
 
+void EngineStartDialog::setCanStart(bool canStart)
+{
+    QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
+    if (!bOk) return;
+    canStart = canStart && !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
+            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+    if (canStart != bOk->isEnabled())
+        bOk->setEnabled(canStart);
+    if (canStart != ui->bAlways->isEnabled())
+        ui->bAlways->setEnabled(canStart);
+}
+
 void EngineStartDialog::urlEdited(const QString &text)
 {
-//    if (mOldUrl.endsWith("api", Qt::CaseInsensitive) && !text.endsWith("api", Qt::CaseInsensitive)
-//            && mOldUrl.length()-2 > text.length() && text.length() > 0) {
-//        mOldUrl = text.left(text.length()-1);
-//    } else {
-//        mOldUrl = text;
-//    }
-//    mUrl = mOldUrl;
-//    int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
-//    ui->edUrl->setText(mUrl);
-//    ui->edUrl->setCursorPosition(pos);
     mUrlChanged = true;
-    if (mDelete && text.length() > 0) {
-        mUrl = text.left(text.size()-1);
-        ui->edUrl->setText(mUrl);
-        mDelete = false;
-    } else
-        mUrl = text;
+    mUrl = text;
     getVersion();
 }
 
@@ -213,10 +196,7 @@ void EngineStartDialog::textChanged(const QString &/*text*/)
         getVersion();
         enabled = false;
     }
-    if (enabled != bOk->isEnabled())
-        bOk->setEnabled(enabled);
-    if (enabled != ui->bAlways->isEnabled())
-        ui->bAlways->setEnabled(enabled);
+    setCanStart(enabled);
 }
 
 void EngineStartDialog::on_bAlways_clicked()
@@ -233,22 +213,6 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
     }
     ui->laEngineVersion->setText("Engine "+engineVersion);
     ui->laEngGamsVersion->setText("GAMS "+gamsVersion);
-//    if (mUrl != ui->edUrl->text()) {
-//        int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
-//        int len = ui->edUrl->text().length();
-//        ui->edUrl->selectAll();
-//        ui->edUrl->insert(mUrl);
-//        if (pos < len) {
-//            ui->edUrl->setCursorPosition(len);
-//        } else {
-//            len = mUrl.length();
-//            ui->edUrl->setSelection(len, pos-len);
-//        }
-//    }
-    textChanged("");
-    mCompleteModel->setData(mCompleteModel->index(0), mUrl);
-    mCompleter->complete();
-    DEB() << "completionCount: " << mCompleter->completionCount();
 
     if (!mProc->hasPreviousWorkOption()) {
         bool newerGamsVersion = false;
@@ -273,6 +237,8 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         mForcePreviousWork = false;
     }
 
+    setCanStart(true);
+
     if (!isVisible()) {
         // hidden start
         if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
@@ -295,6 +261,9 @@ void EngineStartDialog::reVersionError(const QString &errorText)
         getVersion();
         return;
     }
+    // neither user-input nor user-input with /api is valid, so reset mUrl to user-input
+    setCanStart(false);
+    mUrl = ui->edUrl->text();
     ui->laEngineVersion->setText(CUnavailable);
     ui->laWarn->setText("No GAMS Engine server");
     ui->laWarn->setToolTip("");
