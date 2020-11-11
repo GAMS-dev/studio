@@ -245,11 +245,6 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
 //            ui->edUrl->setSelection(len, pos-len);
 //        }
 //    }
-    if (!isVisible()) {
-        // hidden start
-        emit ready(true, true);
-        return;
-    }
     textChanged("");
     mCompleteModel->setData(mCompleteModel->index(0), mUrl);
     mCompleter->complete();
@@ -261,7 +256,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         if (mLocalGamsVersion.at(0).toInt() > engineGamsVersion.at(0).toInt())
             newerGamsVersion = true;
         if (mLocalGamsVersion.at(0).toInt() == engineGamsVersion.at(0).toInt() &&
-            mLocalGamsVersion.at(1).toInt() >= engineGamsVersion.at(1).toInt())
+            mLocalGamsVersion.at(1).toInt() > engineGamsVersion.at(1).toInt())
             newerGamsVersion = true;
         if (newerGamsVersion) {
             ui->laWarn->setText("Newer local GAMS: Added \"previousWork=1\"");
@@ -276,6 +271,13 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         ui->laWarn->setToolTip("");
         ui->laWarn->setText("");
         mForcePreviousWork = false;
+    }
+
+    if (!isVisible()) {
+        // hidden start
+        if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
+        emit ready(true, true);
+        return;
     }
 }
 
