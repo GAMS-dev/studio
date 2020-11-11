@@ -13,8 +13,14 @@ def isDevelopmentArtifact() {
            !(env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/)
 }
 
+def QT_FOR_LINUX = "/opt/Qt/5.12.9/bin"
+def QT_FOR_MACOS = "/Users/distrib/Qt/5.12.9/clang_64/bin"
+def QT_FOR_WINDOWS = "C:\\Qt\\5.12.9\\msvc2017_64\\bin"
+
 pipeline {
     agent none
+
+
 
     options {
         parallelsAlwaysFailFast()
@@ -26,6 +32,9 @@ pipeline {
             parallel {
                 stage ('linux') {
                     agent { label 'master' }
+                    environment {
+                        PATH="${QT_FOR_LINUX}:${PATH}"
+                    }
                     steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
@@ -42,6 +51,9 @@ pipeline {
                 }
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
+                    environment {
+                        PATH="${QT_FOR_WINDOWS};${PATH}"
+                    }
                     steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
@@ -63,6 +75,9 @@ pipeline {
                 }
                 stage ('macos') {
                     agent { label 'macos' }
+                    environment {
+                        PATH="${QT_FOR_MACOS}:${PATH}"
+                    }
                     steps {
                         step([$class: 'WsCleanup'])
                         checkout scm
@@ -90,6 +105,9 @@ pipeline {
             parallel {
                 stage ('linux') {
                     agent { label 'master' }
+                    environment {
+                        PATH="${QT_FOR_LINUX}:${PATH}"
+                    }
                     steps {
                         sh '''
                             mkdir reports
@@ -107,6 +125,9 @@ pipeline {
                 }
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
+                    environment {
+                        PATH="${QT_FOR_WINDOWS};${PATH}"
+                    }
                     steps {
                         bat '''
                             mkdir reports
@@ -122,6 +143,9 @@ pipeline {
                 }
                 stage ('macos') {
                     agent { label 'macos' }
+                    environment {
+                        PATH="${QT_FOR_MACOS}:${PATH}"
+                    }
                     steps {
                         sh '''
                             mkdir reports
@@ -143,6 +167,9 @@ pipeline {
             parallel {
                 stage ('linux') {
                     agent { label 'master' }
+                    environment {
+                        PATH="${QT_FOR_LINUX}:${PATH}"
+                    }
                     steps {
                         sh '''
                             # create folder structure
@@ -171,6 +198,9 @@ pipeline {
                 }
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
+                    environment {
+                        PATH="${QT_FOR_WINDOWS};${PATH}"
+                    }
                     steps {
                         bat '''
                             windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
@@ -200,6 +230,9 @@ pipeline {
                 }
                 stage ('macos') {
                     agent { label 'macos' }
+                    environment {
+                        PATH="${QT_FOR_MACOS}:${PATH}"
+                    }
                     steps {
                         fileOperations([folderRenameOperation(destination: 'src/bin/GAMS Studio.app', source: 'src/bin/studio.app')])
                         withCredentials([string(credentialsId: '2e590f95-5e30-4101-93be-31a1b7402da4', variable: 'MACOS_KEYCHAIN_PASSWD')]) {
