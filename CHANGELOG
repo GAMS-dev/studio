@@ -3,6 +3,8 @@ Version 1.4.3 *
 - fixed parameter that is ignored when re-runing the gams main file in a group
 - disable run actions and MIRO menu if group has no active executable file
 - update state on dragging active executable file to a different group
+- Fixed on GAMS Engine run add "previousWork=1" if dialog is hidden and server version is older
+- Fixed version comparison in GAMS Engine dialog
 
 Version 1.4.2
 ==================
