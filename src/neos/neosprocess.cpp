@@ -172,8 +172,13 @@ void NeosProcess::parseUnzipStdOut(const QByteArray &data)
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        emit newStdChannelData(preText + folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
-        if (data.endsWith("\n")) emit newStdChannelData("\n");
+        if (fName.endsWith("lxi")) {
+            emit newStdChannelData("--- skipping: ."+ folder + fName);
+            if (data.endsWith("\n")) emit newStdChannelData("\n");
+         } else {
+            emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
+            if (data.endsWith("\n")) emit newStdChannelData("\n");
+        }
     } else
         emit newStdChannelData(data);
 }
