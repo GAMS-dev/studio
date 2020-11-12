@@ -8,6 +8,7 @@ Version 1.4.3 *
 - fixed link in tooltip of LOG and LST
 - fixed URL edit of Engine dialog blocking some input
 - ignore links when selecting text in the LOG
+- restore tab order on Studio restart
 
 Version 1.4.2
 ==================

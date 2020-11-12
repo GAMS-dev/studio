@@ -137,6 +137,13 @@ enum ProcState {
     Proc5Unpack,
 };
 
+enum NewTabStrategy {
+    tabAtStart,
+    tabBeforeCurrent,
+    tabAfterCurrent,
+    tabAtEnd
+};
+
 template <typename T>
 typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
 operator<<(QTextStream &dbg, T enumValue)

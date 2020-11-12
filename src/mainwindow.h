@@ -156,7 +156,8 @@ signals:
     void savedAs();
 
 public slots:
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+                      NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
@@ -181,8 +182,10 @@ public slots:
 
 private slots:
     void openInitialFiles();
-    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedTextEditor = false);
-    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1,
+                  bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+                      NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
