@@ -366,7 +366,7 @@ void Search::replaceNext(QRegularExpression regex, QString replacementText)
     QRegularExpressionMatch match = regex.match(edit->textCursor().selectedText());
 
     if (edit->textCursor().hasSelection() && match.hasMatch() &&
-            match.captured(0) == edit->textCursor().selectedText()) { // TODO(RG): test this
+            match.captured(0) == edit->textCursor().selectedText()) {
         edit->textCursor().insertText(replacementText);
     }
 

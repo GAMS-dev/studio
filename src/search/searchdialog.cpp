@@ -426,17 +426,15 @@ void SearchDialog::clearSearch()
 
 void SearchDialog::updateEditHighlighting()
 {
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
-        ce->updateExtraSelections();
-    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+    if (AbstractEdit* ae = ViewHelper::toCodeEdit(mMain->recent()->editor()))
+        ae->updateExtraSelections();
+    else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
         tv->updateExtraSelections();
-    }
 }
 
 void SearchDialog::clearResultsView()
 {
     setSearchStatus(Search::Clear);
-
     mMain->closeResultsPage();
 }
 
@@ -536,7 +534,7 @@ void SearchDialog::updateNrMatches(int current)
         else
             ui->lbl_nrResults->setText(QString::number(size) + " matches");
 
-        if (size >= MAX_SEARCH_RESULTS) { // TODO(RG): add flag for this
+        if (size >= MAX_SEARCH_RESULTS) {
             ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
             ui->lbl_nrResults->setToolTip("Search is limited to " + QString::number(MAX_SEARCH_RESULTS) + " matches.");
         } else {
@@ -545,7 +543,7 @@ void SearchDialog::updateNrMatches(int current)
 
     } else {
         QString plus("");
-        if (size >= MAX_SEARCH_RESULTS) plus = "+"; // TODO(RG): add flag for this
+        if (size >= MAX_SEARCH_RESULTS) plus = "+";
         ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(size) + plus);
     }
 

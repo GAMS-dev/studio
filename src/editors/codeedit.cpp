@@ -24,7 +24,6 @@
 #include "editors/codeedit.h"
 #include "settings.h"
 #include "search/searchdialog.h"
-#include "exception.h" // TODO(RG): check if this can be deleted
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
