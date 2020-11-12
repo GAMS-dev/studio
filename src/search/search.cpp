@@ -44,7 +44,6 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
 
-    // TODO(RG): test if other flags are needed here, but they shouldnt
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
 }
 
@@ -89,11 +88,13 @@ void Search::stop()
     mThread.requestInterruption();
 }
 
+// TODO(RG): reset search where approps
 void Search::reset()
 {
     mFiles.clear();
     mRegex.pattern().clear();
     mOptions = QFlags<QTextDocument::FindFlag>();
+    mCacheAvailable = false;
 }
 
 void Search::findInDoc(FileMeta* fm)
@@ -115,13 +116,14 @@ void Search::findInDoc(FileMeta* fm)
 
 void Search::findNext(Direction direction, bool ignoreReadOnly)
 {
-    // create new cache when cached search does not contain results for current file. user probably changed tab and a new search needs to start
-    bool requestNewCache = true; // TODO(RG): for now
-//            mResults && mResults.filteredResultList(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location()).size() == 0;
+    // TODO(RG): do not show results for this execution branch
 
-    if ((mResults.size() == 0 && !mSearching) || requestNewCache) {
-        start();
-    }
+    // create new cache when cached search does not contain results for current file
+    bool requestNewCache = !mCacheAvailable
+            || mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor()
+                                                            )->location()) == mResultHash.end();
+
+    if (requestNewCache) start();
     selectNextMatch(direction);
 }
 
@@ -133,98 +135,95 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 {
     QTextCursor matchSelection;
 
-    int lineNr = 0;
-    int colNr = 0;
     bool backwards = direction == Direction::Backward;
-
-    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        lineNr = e->textCursor().blockNumber()+1;
-        colNr = e->textCursor().columnNumber();
-    } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-        lineNr = t->position().y()+1;
-        colNr = t->position().x();
-    }
-
-    int iterator = backwards ? -1 : 1;
-    int start = backwards ? mResults.size()-1 : 0;
-    bool allowJumping = false;
     int matchNr = -1;
     bool found = false;
 
-    // TODO(RG): check if caching is done
+    if (mCacheAvailable) {
+        int lineNr = 0;
+        int colNr = 0;
+        if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+            lineNr = e->textCursor().blockNumber()+1;
+            colNr = e->textCursor().columnNumber();
+        } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
+            lineNr = t->position().y()+1;
+            colNr = t->position().x();
+        }
 
-    // skip to next entry if file is opened in solver option edit
-    if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
-        int selected = mMain->resultsView() ? mMain->resultsView()->selectedItem() : -1;
+        int iterator = backwards ? -1 : 1;
+        int start = backwards ? mResults.size()-1 : 0;
+        bool allowJumping = false;
 
-        // no rows selected, select new depending on direction
-        if (selected == -1) selected = backwards ? mResults.size() : 0;
+        // skip to next entry if file is opened in solver option edit
+        if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
+            int selected = mMain->resultsView() ? mMain->resultsView()->selectedItem() : -1;
 
-        int newIndex = selected + iterator;
-        if (newIndex < 0)
-            newIndex = mResults.size()-1;
-        else if (newIndex > mResults.size()-1)
-            newIndex = 0;
+            // no rows selected, select new depending on direction
+            if (selected == -1) selected = backwards ? mResults.size() : 0;
 
-        matchNr = newIndex;
+            int newIndex = selected + iterator;
+            if (newIndex < 0)
+                newIndex = mResults.size()-1;
+            else if (newIndex > mResults.size()-1)
+                newIndex = 0;
 
-    } else if (mMain->recent()->editor()){ // finds next result by cursor position
-        QString file = ViewHelper::location(mMain->recent()->editor());
-        for (int i = start; i >= 0 && i < mResults.size(); i += iterator) {
-            matchNr = i;
-            Result r = mResults.at(i);
+            matchNr = newIndex;
 
-            // check if is in same line but behind the cursor
-            if (file == r.filepath()) {
-                allowJumping = true;
-                if (backwards) {
-                    if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
-                        found = true;
-                        break;
+        } else if (mMain->recent()->editor()){ // finds next result from cache by cursor position
+            QString file = ViewHelper::location(mMain->recent()->editor());
+            for (int i = start; i >= 0 && i < mResults.size(); i += iterator) {
+                matchNr = i;
+                Result r = mResults.at(i);
+
+                // check if is in same line but behind the cursor
+                if (file == r.filepath()) {
+                    allowJumping = true;
+                    if (backwards) {
+                        if (lineNr > r.lineNr() || (lineNr == r.lineNr() && colNr > r.colNr() + r.length())) {
+                            found = true;
+                            break;
+                        }
+                    } else {
+                        if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
+                            found = true;
+                            break;
+                        }
                     }
-                } else {
-                    if (lineNr < r.lineNr() || (lineNr == r.lineNr() && colNr <= r.colNr())) {
-                        found = true;
-                        break;
-                    }
+                } else if (file != r.filepath() && allowJumping) {
+                    // first match in next file
+                    found = true;
+                    break;
                 }
-            } else if (file != r.filepath() && allowJumping) {
-                // first match in next file
-                found = true;
-                break;
             }
         }
     }
 
-    // navigation outside of cache when limit was reached
-    if (matchNr >= MAX_SEARCH_RESULTS-1) {
-        mOutsideOfList = true;
-        QTextDocument::FindFlags flags;
-        if (backwards) flags = flags | QTextDocument::FindBackward;
+    // navigation outside of cache
+    if (!found) {
+        mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS;
 
         int x = 0;
         int y = 0;
+        // start over
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
             QTextCursor tc = e->textCursor();
-            QTextCursor ntc= e->document()->find(mRegex, backwards ? tc.position()-1 : tc.position(), flags);
+            QTextCursor ntc= e->document()->find(mRegex, backwards ? tc.position()-tc.selectedText().length() : tc.position(), mOptions);
             found = !ntc.isNull();
             e->setTextCursor(ntc);
             x = e->textCursor().positionInBlock();
             y = e->textCursor().blockNumber()+1;
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             mSplitSearchContinue = false; // make sure to start a new search
-            found = t->findText(mRegex, flags, mSplitSearchContinue);
+            found = t->findText(mRegex, mOptions, mSplitSearchContinue);
             x = t->position().x();
             y = t->position().y()+1;
         }
         // TODO(RG) move to dialog
         // updateLabelByCursorPos(y, x);
         if (found) return; // exit early, all done
-    }
 
-     // no results found, start over, jump to start/end of file
-    if (!found) {
-        if (mOutsideOfList || mResults.size() == MAX_SEARCH_RESULTS) {
+        // still no results found, start over, jump to start/end of file
+        if (mOutsideOfList) {
             if (backwards) {
                 if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
                     QTextCursor tc = e->textCursor();
@@ -233,23 +232,26 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                 } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
                     t->jumpTo(t->knownLines()-1, 0, 0, true);
                 }
-                matchNr = MAX_SEARCH_RESULTS-1;
+                matchNr = mResults.size()-1;
                 if (firstLevel) selectNextMatch(direction, false); // try jumping once again
             } else { // forwards
                 matchNr = 0;
             }
 
         } else { // startover in available cache
-            if (backwards) matchNr = MAX_SEARCH_RESULTS-1;
+            if (backwards) matchNr = mResults.size()-1;
             else matchNr = 0;
         }
     }
 
-    ProjectFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
-    if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
+    // jump using cache
+    if (mCacheAvailable) {
+        ProjectFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
+        if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
 
-    node->file()->jumpTo(node->runGroupId(), true, mResults.at(matchNr).lineNr()-1,
-                         qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
+        node->file()->jumpTo(node->runGroupId(), true, mResults.at(matchNr).lineNr()-1,
+                             qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
+    }
 
     // update ui
     if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
@@ -328,6 +330,8 @@ void Search::finished()
         ae->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
         tv->updateExtraSelections();
+
+    mCacheAvailable = true;
 }
 
 QRegularExpression Search::regex() const

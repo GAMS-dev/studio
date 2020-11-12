@@ -90,6 +90,7 @@ private:
 
     QThread mThread;
     bool mSearching = false;
+    bool mCacheAvailable = false;
     bool mOutsideOfList = true;
 
     bool mSplitSearchContinue = false;

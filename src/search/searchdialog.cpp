@@ -204,7 +204,6 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     return res;
 }
 
-// TODO(RG): move this
 void SearchDialog::replaceAll()
 {
     mHasChanged = false; // TODO(RG): sure this is right here?
@@ -399,8 +398,6 @@ void SearchDialog::updateReplaceActionAvailability()
 
 void SearchDialog::clearSearch()
 {
-    mSearch.setParameters(QList<FileMeta*>(), QRegularExpression());
-
     mSuppressChangeEvent = true;
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
@@ -420,9 +417,6 @@ void SearchDialog::updateEditHighlighting()
 void SearchDialog::clearResults()
 {
     setSearchStatus(Search::Clear);
-
-    ProjectFileNode *fc = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
-    if (!fc) return;
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (edit) {
