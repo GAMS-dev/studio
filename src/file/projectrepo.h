@@ -133,7 +133,8 @@ signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
-    void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedAsTextEditor = false);
+    void openFile(FileMeta* fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1,
+                  bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
     void childrenChanged();
     void deselect(const QVector<QModelIndex> &declined);
