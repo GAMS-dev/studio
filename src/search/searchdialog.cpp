@@ -133,8 +133,6 @@ void SearchDialog::updateUi(bool searching)
         ui->btn_FindAll->setText("Find All");
 
     // deactivate actions while search is ongoing
-    ui->btn_forward->setEnabled(!searching);
-    ui->btn_back->setEnabled(!searching);
     ui->btn_Replace->setEnabled(!searching);
     ui->btn_ReplaceAll->setEnabled(!searching);
     ui->btn_clear->setEnabled(!searching);
@@ -149,7 +147,7 @@ void SearchDialog::updateUi(bool searching)
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
 
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    QApplication::processEvents();
 }
 
 QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
@@ -223,14 +221,14 @@ void SearchDialog::showEvent(QShowEvent *event)
 
 void SearchDialog::on_searchNext()
 {
-    if (ui->combo_search->currentText() != "")
-        mSearch.findNext(Search::Forward);
+    if (ui->combo_search->currentText() == "") return;
+    mSearch.findNext(Search::Forward);
 }
 
 void SearchDialog::on_searchPrev()
 {
-    if (ui->combo_search->currentText() != "")
-        mSearch.findNext(Search::Backward);
+    if (ui->combo_search->currentText() == "") return;
+    mSearch.findNext(Search::Backward);
 }
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
@@ -363,6 +361,7 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString)
 void SearchDialog::searchParameterChanged() {
     setSearchStatus(Search::Clear);
 
+    mSearch.reset();
     if (mMain->resultsView()) mMain->resultsView()->setOutdated();
 }
 

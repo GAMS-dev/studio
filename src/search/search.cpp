@@ -117,14 +117,17 @@ void Search::findInDoc(FileMeta* fm)
     } while (!item.isNull());
 }
 
-void Search::findNext(Direction direction, bool ignoreReadOnly)
+void Search::findNext(Direction direction)
 {
     // create new cache when cached search does not contain results for current file
     bool requestNewCache = !mCacheAvailable
             || mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor()
                                                             )->location()) == mResultHash.end();
 
-    if (requestNewCache) start();
+    if (requestNewCache) {
+        mMain->searchDialog()->updateUi(true);
+        start();
+    }
     selectNextMatch(direction);
 }
 
@@ -219,7 +222,8 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
             x = t->position().x();
             y = t->position().y()+1;
         }
-        emit updateLabelByCursorPos(y, x);
+        if (mCacheAvailable) emit updateLabelByCursorPos(y, x);
+
         if (found) return; // exit early, all done
 
         // still no results found, start over, jump to start/end of file
@@ -245,19 +249,19 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     }
 
     // jump using cache
-    if (mCacheAvailable) {
+    if (mCacheAvailable && matchNr < mResults.size()) {
         ProjectFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
         if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
 
         node->file()->jumpTo(node->runGroupId(), true, mResults.at(matchNr).lineNr()-1,
                              qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
+
+        updateLabelByCursorPos(-1, -1);
     }
 
-    // update ui
+    // update results view
     if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
         mMain->resultsView()->selectItem(matchNr);
-
-    updateLabelByCursorPos(-1, -1);
 }
 
 ///

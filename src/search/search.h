@@ -59,7 +59,7 @@ public:
     void reset();
     QList<Result> filteredResultList(QString fileLocation);
 
-    void findNext(Direction direction, bool ignoreReadOnly = false);
+    void findNext(Direction direction);
     void replaceNext(QRegularExpression regex, QString replacementText);
     void replaceAll(QList<FileMeta*> files, QRegularExpression regex, QString replacementText);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
