@@ -340,6 +340,19 @@ void TextViewEdit::paintEvent(QPaintEvent *e)
     AbstractEdit::paintEvent(e);
 }
 
+QString TextViewEdit::getToolTipText(const QPoint &pos)
+{
+    QString res = AbstractEdit::getToolTipText(pos);
+    if (!res.isEmpty()) return res;
+    QString fileName;
+    checkLinks(pos, true, &fileName);
+    if (!fileName.isEmpty()) {
+        fileName = QDir::toNativeSeparators(fileName);
+        fileName = "<p style='white-space:pre'>"+fileName+"<br>[<b>Click</b> to open]</p>";
+    }
+    return fileName;
+}
+
 int TextViewEdit::topVisibleLine()
 {
     return mMapper.visibleTopLine();

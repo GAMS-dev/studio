@@ -5,6 +5,7 @@ Version 1.4.3 *
 - update state on dragging active executable file to a different group
 - fixed on GAMS Engine run add "previousWork=1" if dialog is hidden and server version is older
 - fixed version comparison in GAMS Engine dialog
+- fixed link in tooltip of LOG and LST
 - ignore links when selecting text in the LOG
 
 Version 1.4.2
