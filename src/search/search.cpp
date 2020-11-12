@@ -222,8 +222,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
             x = t->position().x();
             y = t->position().y()+1;
         }
-        // TODO(RG) move to dialog
-        // updateLabelByCursorPos(y, x);
+        emit updateLabelByCursorPos(y, x);
         if (found) return; // exit early, all done
 
         // still no results found, start over, jump to start/end of file
@@ -260,8 +259,8 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     // update ui
     if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
         mMain->resultsView()->selectItem(matchNr);
-    // TODO(RG) move to dialog
-    // updateLabelByCursorPos
+
+    updateLabelByCursorPos(-1, -1);
 }
 
 ///

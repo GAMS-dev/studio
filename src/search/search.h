@@ -65,10 +65,11 @@ public:
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
     QList<Result> results() const;
-
     bool isRunning() const;
-
     QRegularExpression regex() const;
+
+signals:
+    void updateLabelByCursorPos(int line, int col);
 
 private:
     void findInDoc(FileMeta* fm);

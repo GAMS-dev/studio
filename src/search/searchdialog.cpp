@@ -42,6 +42,8 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     Settings *mSettings = Settings::settings();
 
+    connect(&mSearch, &Search::updateLabelByCursorPos, this, &SearchDialog::updateLabelByCursorPos);
+
     ui->setupUi(this);
     ui->cb_regex->setChecked(mSettings->toBool(skSearchUseRegex));
     ui->cb_caseSens->setChecked(mSettings->toBool(skSearchCaseSens));
@@ -319,7 +321,7 @@ void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
     if(mMain->recent()->editor()) file = ViewHelper::location(mMain->recent()->editor());
 
     // if unknown get cursor from current editor
-    if (lineNr == 0 || colNr == 0) {
+    if (lineNr == -1 || colNr == -1) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
         TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
         if (edit) {

@@ -91,7 +91,7 @@ private:
     void replaceAll();
     void findInFiles(SearchResultModel* collection, QList<FileMeta *> fml);
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
-    void updateLabelByCursorPos(int lineNr = 0, int colNr = 0);
+    void updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void selectNextMatch(Search::Direction direction, bool firstLevel = true);
     void insertHistory();
     void searchParameterChanged();
