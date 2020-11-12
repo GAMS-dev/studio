@@ -2,8 +2,9 @@
 #include "ui_enginestartdialog.h"
 #include "settings.h"
 #include "logger.h"
-#include <QPushButton>
 #include "engineprocess.h"
+#include <QPushButton>
+#include <QEvent>
 
 namespace gams {
 namespace studio {
@@ -35,6 +36,11 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     if (regex.exactMatch(about))
         mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
     emit textChanged("");
+    ui->edUrl->installEventFilter(this);
+    mConnectStateUpdater.setSingleShot(true);
+    mConnectStateUpdater.setInterval(100);
+    connect(&mConnectStateUpdater, &QTimer::timeout, this, &EngineStartDialog::updateConnectStateAppearance);
+
 }
 
 EngineStartDialog::~EngineStartDialog()
@@ -106,6 +112,14 @@ void EngineStartDialog::setEngineVersion(QString version)
     ui->laEngineVersion->setText(version);
 }
 
+bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
+        ui->edUrl->setText(mUrl.trimmed());
+    }
+    return QDialog::eventFilter(watched, event);
+}
+
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const
 {
     if (button == ui->bAlways)
@@ -135,33 +149,44 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
 
 void EngineStartDialog::getVersion()
 {
-    ui->laEngineVersion->setText(CUnavailable);
-    ui->laWarn->setText("No GAMS Engine server");
-    ui->laWarn->setToolTip("");
-    mForcePreviousWork = false;
-
-    if (mPendingRequest) return;
+    setConnectionState(scsWaiting);
     if (mProc) {
-        mPendingRequest = true;
+//        if (mPendingRequest) mProc->abortRequests();
         mUrlChanged = false;
         mProc->setUrl(mUrl.trimmed());
         mProc->getVersions();
+//        mPendingRequest = true;
     }
+}
+
+QString EngineStartDialog::ensureApi(QString url)
+{
+    if (url.endsWith("/")) return url + "api";
+    return url + "/api";
+}
+
+void EngineStartDialog::setCanStart(bool canStart)
+{
+    QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
+    if (!bOk) return;
+    canStart = canStart && !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
+            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+    if (canStart != bOk->isEnabled())
+        bOk->setEnabled(canStart);
+    if (canStart != ui->bAlways->isEnabled())
+        ui->bAlways->setEnabled(canStart);
+}
+
+void EngineStartDialog::setConnectionState(ServerConnectionState state)
+{
+    mConnectState = state;
+    mConnectStateUpdater.start();
 }
 
 void EngineStartDialog::urlEdited(const QString &text)
 {
-    if (mOldUrl.endsWith("api", Qt::CaseInsensitive) && !text.endsWith("api", Qt::CaseInsensitive)
-            && mOldUrl.length()-2 > text.length() && text.length() > 0) {
-        mOldUrl = text.left(text.length()-1);
-    } else {
-        mOldUrl = text;
-    }
-    mUrl = mOldUrl;
-    int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
-    ui->edUrl->setText(mUrl);
-    ui->edUrl->setCursorPosition(pos);
     mUrlChanged = true;
+    mUrl = text;
     getVersion();
 }
 
@@ -173,12 +198,8 @@ void EngineStartDialog::textChanged(const QString &/*text*/)
             && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
     if (enabled && ui->laEngineVersion->text() == CUnavailable) {
         getVersion();
-        enabled = false;
     }
-    if (enabled != bOk->isEnabled())
-        bOk->setEnabled(enabled);
-    if (enabled != ui->bAlways->isEnabled())
-        ui->bAlways->setEnabled(enabled);
+    setConnectionState(mConnectState);
 }
 
 void EngineStartDialog::on_bAlways_clicked()
@@ -188,79 +209,33 @@ void EngineStartDialog::on_bAlways_clicked()
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
 {
-    mPendingRequest = false;
-    if (mUrlChanged) {
-        getVersion();
-        return;
-    }
-    ui->laEngineVersion->setText("Engine "+engineVersion);
-    ui->laEngGamsVersion->setText("GAMS "+gamsVersion);
-    if (mUrl != ui->edUrl->text()) {
-        int pos = qMin(ui->edUrl->cursorPosition(), mUrl.length());
-        int len = ui->edUrl->text().length();
-        ui->edUrl->selectAll();
-        ui->edUrl->insert(mUrl);
-        if (pos < len) {
-            ui->edUrl->setCursorPosition(len);
-        } else {
-            len = mUrl.length();
-            ui->edUrl->setSelection(len, pos-len);
-        }
-    }
-    textChanged("");
-
-    if (!mProc->hasPreviousWorkOption()) {
-        bool newerGamsVersion = false;
-        QStringList engineGamsVersion = QString(gamsVersion).split('.');
-        if (mLocalGamsVersion.at(0).toInt() > engineGamsVersion.at(0).toInt())
-            newerGamsVersion = true;
-        if (mLocalGamsVersion.at(0).toInt() == engineGamsVersion.at(0).toInt() &&
-            mLocalGamsVersion.at(1).toInt() > engineGamsVersion.at(1).toInt())
-            newerGamsVersion = true;
-        if (newerGamsVersion) {
-            ui->laWarn->setText("Newer local GAMS: Added \"previousWork=1\"");
-            ui->laWarn->setToolTip("set \"previousWork=0\" to suppress this");
-            mForcePreviousWork = true;
-        } else {
-            ui->laWarn->setText("");
-            ui->laWarn->setToolTip("");
-            mForcePreviousWork = false;
-        }
-    } else {
-        ui->laWarn->setToolTip("");
-        ui->laWarn->setText("");
-        mForcePreviousWork = false;
-    }
-
-    if (!isVisible()) {
-        // hidden start
-        if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
-        emit ready(true, true);
-        return;
-    }
+//    mPendingRequest = false;
+    mEngineVersion = engineVersion;
+    mGamsVersion = gamsVersion;
+    mValidUrl = mUrl;
+    setConnectionState(scsValid);
 }
 
 void EngineStartDialog::reVersionError(const QString &errorText)
 {
     Q_UNUSED(errorText)
-    mPendingRequest = false;
+//    mPendingRequest = false;
     if (mUrlChanged) {
         getVersion();
         return;
     }
+    // if the raw input failed, try with "/api"
     if (mUrl == ui->edUrl->text()) {
-        mUrl = mUrl.trimmed() + (mUrl.trimmed().endsWith('/') ? "api" : "/api");
-        mUrlChanged = false;
+        mUrl = ensureApi(mUrl.trimmed());
         getVersion();
         return;
     }
-    ui->laEngineVersion->setText(CUnavailable);
-    ui->laWarn->setText("No GAMS Engine server");
-    ui->laWarn->setToolTip("");
-    mForcePreviousWork = false;
+    // neither user-input nor user-input with "/api" is valid, so reset mUrl to user-input
+    setConnectionState(scsInvalid);
+    if (mUrl != mValidUrl)
+        mUrl = ui->edUrl->text();
 
-    ui->laEngGamsVersion->setText("");
-    textChanged("");
+    // if server not found on hidden dialog - open dialog anyway
     if (!isVisible() && mHiddenCheck) {
         open();
     }
@@ -269,6 +244,68 @@ void EngineStartDialog::reVersionError(const QString &errorText)
 void EngineStartDialog::on_cbForceGdx_stateChanged(int state)
 {
     if (mProc) mProc->setForceGdx(state != 0);
+}
+
+void EngineStartDialog::updateConnectStateAppearance()
+{
+    switch (mConnectState) {
+    case scsNone: {
+        ui->laEngGamsVersion->setText("");
+        ui->laEngineVersion->setText(CUnavailable);
+        ui->laWarn->setText("No GAMS Engine server");
+        ui->laWarn->setToolTip("");
+        mForcePreviousWork = false;
+        setCanStart(false);
+    } break;
+    case scsWaiting: {
+        ui->laEngGamsVersion->setText("");
+        ui->laEngineVersion->setText(CUnavailable);
+        ui->laWarn->setText("Waiting for server ...");
+        ui->laWarn->setToolTip("");
+        mForcePreviousWork = false;
+        setCanStart(false);
+    } break;
+    case scsValid: {
+        ui->laEngineVersion->setText("Engine "+mEngineVersion);
+        ui->laEngGamsVersion->setText("GAMS "+mGamsVersion);
+        if (!mProc->hasPreviousWorkOption()) {
+            bool newerGamsVersion = false;
+            QStringList engineGamsVersion = QString(mGamsVersion).split('.');
+            if (mLocalGamsVersion.at(0).toInt() > engineGamsVersion.at(0).toInt())
+                newerGamsVersion = true;
+            if (mLocalGamsVersion.at(0).toInt() == engineGamsVersion.at(0).toInt() &&
+                mLocalGamsVersion.at(1).toInt() > engineGamsVersion.at(1).toInt())
+                newerGamsVersion = true;
+            if (newerGamsVersion) {
+                ui->laWarn->setText("Newer local GAMS: Added \"previousWork=1\"");
+                ui->laWarn->setToolTip("set \"previousWork=0\" to suppress this");
+                mForcePreviousWork = true;
+            } else {
+                ui->laWarn->setText("");
+                ui->laWarn->setToolTip("");
+                mForcePreviousWork = false;
+            }
+            if (!isVisible()) {
+                // hidden start
+                if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
+                emit ready(true, true);
+            }
+        } else {
+            ui->laWarn->setText("");
+            ui->laWarn->setToolTip("");
+            mForcePreviousWork = false;
+        }
+        setCanStart(true);
+    } break;
+    case scsInvalid: {
+        ui->laEngGamsVersion->setText("");
+        ui->laEngineVersion->setText(CUnavailable);
+        ui->laWarn->setText("No GAMS Engine server");
+        ui->laWarn->setToolTip("");
+        mForcePreviousWork = false;
+        setCanStart(false);
+    } break;
+    }
 }
 
 } // namespace engine
