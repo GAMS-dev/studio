@@ -51,7 +51,7 @@ public:
 
 public:
     virtual ~AbstractEdit() override;
-    virtual EditorType type() = 0;
+    virtual EditorType type() const = 0;
     virtual void setOverwriteMode(bool overwrite);
     virtual bool overwriteMode() const;
     void sendToggleBookmark();
@@ -89,13 +89,13 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
-    const QList<TextMark*> &marksAtMouse() const;
+    const QList<TextMark *> marksAtMouse() const;
     inline FileId fileId() {
         bool ok;
         FileId file = property("fileId").toInt(&ok);
         return ok ? file : FileId();
     }
-    inline NodeId groupId() {
+    inline NodeId groupId() const {
         bool ok;
         NodeId group = property("groupId").toInt(&ok);
         return ok ? group : NodeId();
@@ -114,13 +114,11 @@ protected:
     virtual bool ensureUnfolded(int line);
     virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr);
     virtual void jumpToCurrentLink(const QPoint &mousePos);
-    void updateMarksAtMouse(QTextCursor cursor);
     QPoint clickPos() const;
     void setClickPos(const QPoint &clickPos);
 
 private:
     const LineMarks* mMarks = nullptr;
-    QList<TextMark*> mMarksAtMouse;
     QPoint mClickPos;
     QPoint mTipPos;
     QTimer mSelUpdater;

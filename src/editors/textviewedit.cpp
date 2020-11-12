@@ -61,7 +61,7 @@ void TextViewEdit::disconnectTimers()
     CodeEdit::disconnectTimers();
 }
 
-AbstractEdit::EditorType TextViewEdit::type()
+AbstractEdit::EditorType TextViewEdit::type() const
 {
     return LstView;
 }

@@ -1491,7 +1491,7 @@ void CodeEdit::rawKeyPressEvent(QKeyEvent *e)
     AbstractEdit::keyPressEvent(e);
 }
 
-AbstractEdit::EditorType CodeEdit::type()
+AbstractEdit::EditorType CodeEdit::type() const
 {
     return EditorType::CodeEditor;
 }
