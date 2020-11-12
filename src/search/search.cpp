@@ -203,8 +203,8 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     }
 
     // navigation outside of cache
-    if (!found) {
-        mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS;
+    mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS;
+    if (!found || mOutsideOfList) {
 
         int x = 0;
         int y = 0;
@@ -241,7 +241,6 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
             } else { // forwards
                 matchNr = 0;
             }
-
         } else { // startover in available cache
             if (backwards) matchNr = mResults.size()-1;
             else matchNr = 0;
@@ -250,6 +249,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
     // jump using cache
     if (mCacheAvailable && matchNr < mResults.size()) {
+        mOutsideOfList = false;
         ProjectFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
         if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
 
