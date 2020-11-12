@@ -84,7 +84,7 @@ void SystemLogEdit::mousePressEvent(QMouseEvent *event)
     AbstractEdit::mousePressEvent(event);
 }
 
-AbstractEdit::EditorType SystemLogEdit::type()
+AbstractEdit::EditorType SystemLogEdit::type() const
 {
     return EditorType::SystemLog;
 }

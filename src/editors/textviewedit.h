@@ -37,7 +37,7 @@ public:
     void protectWordUnderCursor(bool protect);
     bool hasSelection() const override;
     void disconnectTimers() override;
-    EditorType type() override;
+    EditorType type() const override;
     int lineCount();
 
 signals:
@@ -69,6 +69,8 @@ protected:
 //    bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
     void paintEvent(QPaintEvent *e) override;
+    QString getToolTipText(const QPoint &pos) override;
+
 
 private:
     int topVisibleLine() override;
