@@ -17,33 +17,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef PROCESSLOGEDIT_H
-#define PROCESSLOGEDIT_H
+#ifndef GAMS_STUDIO_NETWORKMANAGER_H
+#define GAMS_STUDIO_NETWORKMANAGER_H
 
-#include "abstractedit.h"
+#include <QNetworkReply>
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-class ProcessLogEdit : public AbstractEdit
+class NetworkManager
 {
-    Q_OBJECT
-
+    NetworkManager();
+    static QNetworkAccessManager *mNetworkManager;
+    static bool mLock;
 public:
-    ProcessLogEdit(QWidget *parent = nullptr);
-    EditorType type() const override;
-
-protected:
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void mouseDoubleClickEvent(QMouseEvent *event) override;
-
-    void jumpToLst(QPoint pos, bool fuzzy);
-    void contextMenuEvent(QContextMenuEvent *e) override;
-    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
-
+    static QNetworkAccessManager *manager() {
+        if (mLock)
+            EXCEPT() << "NetworkManager already deleted";
+        if (!mNetworkManager) {
+            mNetworkManager = new QNetworkAccessManager();
+        }
+        return mNetworkManager;
+    }
+    static void cleanup() {
+        if (mNetworkManager) {
+            delete mNetworkManager;
+        }
+        mLock = true;
+    }
 };
 
-}
-}
+} // namespace studio
+} // namespace gams
 
-#endif // PROCESSLOGEDIT_H
+#endif // GAMS_STUDIO_NETWORKMANAGER_H

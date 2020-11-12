@@ -61,7 +61,7 @@ void TextViewEdit::disconnectTimers()
     CodeEdit::disconnectTimers();
 }
 
-AbstractEdit::EditorType TextViewEdit::type()
+AbstractEdit::EditorType TextViewEdit::type() const
 {
     return LstView;
 }
@@ -231,7 +231,7 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
     setCursorWidth(2);
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(e->pos());
-        mClickPos = e->pos();
+        setClickPos(e->pos());
         mClickStart = !(e->modifiers() & Qt::ShiftModifier);
         if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) return;
         if (e->buttons() == Qt::LeftButton) {
@@ -256,7 +256,9 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
             }
         } else {
             mScrollTimer.stop();
-            if (mClickStart && (mClickPos - e->pos()).manhattanLength() < 4) return;
+            bool valid = mClickStart && (clickPos() - e->pos()).manhattanLength() < 4;
+            if (valid) return;
+            viewport()->setCursor((e->pos().x() < 0) ? Qt::ArrowCursor : Qt::IBeamCursor);
             QTextCursor::MoveMode mode = mClickStart ? QTextCursor::MoveAnchor
                                                      : QTextCursor::KeepAnchor;
             mClickStart = false;
@@ -336,6 +338,19 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 void TextViewEdit::paintEvent(QPaintEvent *e)
 {
     AbstractEdit::paintEvent(e);
+}
+
+QString TextViewEdit::getToolTipText(const QPoint &pos)
+{
+    QString res = AbstractEdit::getToolTipText(pos);
+    if (!res.isEmpty()) return res;
+    QString fileName;
+    checkLinks(pos, true, &fileName);
+    if (!fileName.isEmpty()) {
+        fileName = QDir::toNativeSeparators(fileName);
+        fileName = "<p style='white-space:pre'>"+fileName+"<br>[<b>Click</b> to open]</p>";
+    }
+    return fileName;
 }
 
 int TextViewEdit::topVisibleLine()

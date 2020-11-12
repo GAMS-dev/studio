@@ -856,7 +856,7 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEdit)
+QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEdit, NewTabStrategy tabStrategy)
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
@@ -931,7 +931,15 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     ViewHelper::setFileId(res, id());
     ViewHelper::setGroupId(res, runGroup->id());
     ViewHelper::setLocation(res, location());
-    int i = tabWidget->insertTab(tabWidget->currentIndex()+1, res, name(NameModifier::editState));
+
+    int atIndex = tabWidget->count();
+    switch (tabStrategy) {
+    case tabAtStart: atIndex = 0; break;
+    case tabBeforeCurrent: atIndex = tabWidget->currentIndex() < 0 ? 0 : tabWidget->currentIndex(); break;
+    case tabAfterCurrent: atIndex = tabWidget->currentIndex()+1; break;
+    case tabAtEnd: atIndex = tabWidget->count(); break;
+    }
+    int i = tabWidget->insertTab(atIndex, res, name(NameModifier::editState));
     tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
     addEditor(res);
     if (mEditors.size() == 1 && kind() != FileKind::Log && ViewHelper::toAbstractEdit(res)) {

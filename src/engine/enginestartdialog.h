@@ -4,6 +4,10 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QAbstractButton>
+#include <QTimer>
+
+class QCompleter;
+class QStringListModel;
 
 namespace gams {
 namespace studio {
@@ -15,13 +19,20 @@ namespace Ui {
 class EngineStartDialog;
 }
 
+enum ServerConnectionState {
+    scsNone,
+    scsWaiting,
+    scsValid,
+    scsInvalid
+};
+
 class EngineStartDialog : public QDialog
 {
     Q_OBJECT
 
 public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
-    ~EngineStartDialog();
+    ~EngineStartDialog() override;
     void hiddenCheck();
 
     void setProcess(EngineProcess *process);
@@ -34,6 +45,7 @@ public:
     void setLastPassword(QString lastPassword);
     void focusEmptyField();
     void setEngineVersion(QString version);
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
@@ -41,9 +53,13 @@ signals:
     void ready(bool start, bool always);
 
 protected:
-    void showEvent(QShowEvent *event);
+    void closeEvent(QCloseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
     void buttonClicked(QAbstractButton *button);
     void getVersion();
+    QString ensureApi(QString url);
+    void setCanStart(bool valid);
+    void setConnectionState(ServerConnectionState state);
 
 private slots:
     void urlEdited(const QString &text);
@@ -51,19 +67,24 @@ private slots:
     void on_bAlways_clicked();
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
-
     void on_cbForceGdx_stateChanged(int state);
+    void updateConnectStateAppearance();
 
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
     QStringList mLocalGamsVersion;
+    ServerConnectionState mConnectState = scsNone;
     QString mUrl;
-    QString mOldUrl;
+    QString mValidUrl;
+//    bool mPendingRequest = false;
     bool mUrlChanged = false;
-    bool mPendingRequest = false;
     bool mForcePreviousWork = true;
     bool mHiddenCheck = false;
+    QTimer mConnectStateUpdater;
+    QString mEngineVersion;
+    QString mGamsVersion;
+
 };
 
 } // namespace engine

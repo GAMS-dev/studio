@@ -17,33 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef PROCESSLOGEDIT_H
-#define PROCESSLOGEDIT_H
-
-#include "abstractedit.h"
+#include "networkmanager.h"
 
 namespace gams {
 namespace studio {
 
-class ProcessLogEdit : public AbstractEdit
-{
-    Q_OBJECT
+QNetworkAccessManager *NetworkManager::mNetworkManager = nullptr;
+bool NetworkManager::mLock = false;
 
-public:
-    ProcessLogEdit(QWidget *parent = nullptr);
-    EditorType type() const override;
+NetworkManager::NetworkManager()
+{  }
 
-protected:
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void mouseDoubleClickEvent(QMouseEvent *event) override;
-
-    void jumpToLst(QPoint pos, bool fuzzy);
-    void contextMenuEvent(QContextMenuEvent *e) override;
-    void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
-
-};
-
-}
-}
-
-#endif // PROCESSLOGEDIT_H
+} // namespace studio
+} // namespace gams

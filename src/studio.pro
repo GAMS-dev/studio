@@ -175,6 +175,7 @@ SOURCES += \
     neos/neosprocess.cpp \
     neos/neosstartdialog.cpp \
     neos/xmlrpc.cpp \
+    networkmanager.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
     numerics/dtoaLoc.c \
@@ -357,6 +358,7 @@ HEADERS += \
     neos/neosprocess.h \
     neos/neosstartdialog.h \
     neos/xmlrpc.h \
+    networkmanager.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
     numerics/dtoaLoc.h \

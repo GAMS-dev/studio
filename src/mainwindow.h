@@ -131,7 +131,6 @@ public:
     void writeTabs(QVariantMap &tabData) const;
     void resetViews();
     void resizeOptionEditor(const QSize &size);
-    void updateRunState();
     void setForeground();
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
@@ -160,10 +159,12 @@ signals:
     void savedAs();
 
 public slots:
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+                      NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
+    void updateRunState();
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
@@ -184,8 +185,10 @@ public slots:
 
 private slots:
     void openInitialFiles();
-    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedTextEditor = false);
-    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1,
+                  bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+                      NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
@@ -263,6 +266,7 @@ private slots:
     void miroDeployAssemblyFileUpdate();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
+    void updateMiroEnabled();
 
     // Tools
     void on_actionGDX_Diff_triggered();

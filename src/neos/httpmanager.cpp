@@ -1,5 +1,6 @@
 #include "httpmanager.h"
 #include "xmlrpc.h"
+#include "networkmanager.h"
 
 namespace gams {
 namespace studio {

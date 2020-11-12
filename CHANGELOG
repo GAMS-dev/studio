@@ -1,21 +1,38 @@
-Version 1.4.1 *
+Version 1.4.3 *
 ==================
-- improve handling of network errors on running NEOS jobs
-- fixed jumping to search results that exceed cache limit
-- adjusted search navigation label to better reflect when cache limit is reached
-- adjusted default list of file filters in search dialog
-- improved handling of network errors on running NEOS jobs
-- improved GAMS Engine handling and start dialog
+- fixed parameter that is ignored when re-runing the gams main file in a group
+- disable run actions and MIRO menu if group has no active executable file
+- update state on dragging active executable file to a different group
+- fixed on GAMS Engine run add "previousWork=1" if dialog is hidden and server version is older
+- fixed version comparison in GAMS Engine dialog
+- fixed link in tooltip of LOG and LST
+- fixed URL edit of Engine dialog blocking some input
+- ignore links when selecting text in the LOG
+- restore tab order on Studio restart
+- improved feedback of ongoing search
+- improved performance of search
+- added possibility to interrupt Find Next/Previous
+
+Version 1.4.2
+==================
+- fixed crash after reopening GAMS Engine dialog
+
+Version 1.4.1
+==================
+- improved GAMS Engine integration
     - removed generated *.g00-file and *.gms-dummy-file
-    - added check of remote GAMS version to check if "previousWork=1" is needed
-    - added GAMS Engine version for information
-    - convert remote paths references to local paths
-    - fixed permission denied on overwriting an opened gdx-file
-    - add "don't ask again" button for current session
-    - enhanced logging of network errors
-- removed forceWork=1 but use previousWork=1 as default for NEOS and GAMS Engine runs
-- moved NEOS control options into dialog
-- added icons for NEOS and GAMS Engine start actions
+    - removed default parameter forceWork=1 and added check of remote GAMS version to set "previousWork=1" if needed
+    - added GAMS Engine version number to start dialog
+    - added conversion of remote paths to local paths
+    - fixed permission denied when overwriting an opened gdx-file
+    - added "don't ask again" button for current session
+    - improved logging of network errors
+    - added unique icon for start action
+- improved NEOS integration
+    - improved handling of network errors
+    - changed default parameter from forceWork=1 to previousWork=1
+    - moved NEOS control options into dialog
+    - added unique icon for start action
 
 Version 1.4.0
 ==================

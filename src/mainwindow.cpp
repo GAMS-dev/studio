@@ -283,6 +283,10 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
+        mRecent.setEditor(mRecent.editor(), this);
+        updateRunState();
+    });
     mStartedUp = true;
 }
 
@@ -2132,7 +2136,9 @@ bool MainWindow::isActiveTabRunnable()
        if (!fm) { // assuming a welcome page here
            return false;
        } else {
-           return true;
+           if (!mRecent.group()) return false;
+           ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
+           return runGroup && runGroup->runnableGms();
        }
     }
     return false;
@@ -2542,8 +2548,20 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 void MainWindow::setMiroRunning(bool running)
 {
     mMiroRunning = running;
-    ui->menuMIRO->setEnabled(!running);
-    mMiroDeployDialog->setEnabled(!running);
+    updateMiroEnabled();
+}
+
+void MainWindow::updateMiroEnabled()
+{
+    bool available = isMiroAvailable() && isActiveTabRunnable();
+    ui->menuMIRO->setEnabled(available);
+    mMiroDeployDialog->setEnabled(available && !mMiroRunning);
+    ui->actionBase_mode->setEnabled(available && !mMiroRunning);
+    ui->actionHypercube_mode->setEnabled(available && !mMiroRunning);
+    ui->actionConfiguration_mode->setEnabled(available && !mMiroRunning);
+    ui->actionSkip_model_execution->setEnabled(available && mMiroRunning);
+    ui->actionCreate_model_assembly->setEnabled(available && !mMiroRunning);
+    ui->actionDeploy->setEnabled(available && !mMiroRunning);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -2982,9 +3000,9 @@ void MainWindow::execution(ProjectRunGroupNode *runGroup)
     ui->dockProcessLog->raise();
 }
 
-
 void MainWindow::updateRunState()
 {
+    updateMiroEnabled();
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
@@ -3028,7 +3046,7 @@ void MainWindow::openInitialFiles()
             mHistory.files() << map.value("file").toString();
     }
 
-    openFiles(mInitialFiles);
+    openFiles(mInitialFiles, false);
     mInitialFiles.clear();
     watchProjectTree();
     ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
@@ -3075,7 +3093,7 @@ void MainWindow::showNeosStartDialog()
     connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, this, &MainWindow::prepareNeosProcess);
-    connect(dialog, &neos::NeosStartDialog::noDialogFlagChanged, [this](bool noDialog) {
+    connect(dialog, &neos::NeosStartDialog::noDialogFlagChanged, this, [this](bool noDialog) {
         mNeosNoDialog = noDialog;
     });
 
@@ -3360,7 +3378,8 @@ void MainWindow::raiseEdit(QWidget *widget)
     }
 }
 
-void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEditor)
+void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib,
+                          bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     Settings *settings = Settings::settings();
     if (!fileMeta) return;
@@ -3398,7 +3417,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         }
         try {
             if (codecMib == -1) codecMib = fileMeta->codecMib();
-            edit = fileMeta->createEdit(tabWidget, runGroup, codecMib, forcedAsTextEditor);
+            edit = fileMeta->createEdit(tabWidget, runGroup, codecMib, forcedAsTextEditor, tabStrategy);
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -3454,10 +3473,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     addToOpenedFiles(fileMeta->location());
 }
 
-void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
+void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!node) return;
-    openFile(node->file(), focus, node->assignedRunGroup(), codecMib, forcedAsTextEditor);
+    openFile(node->file(), focus, node->assignedRunGroup(), codecMib, forcedAsTextEditor, tabStrategy);
 }
 
 void MainWindow::reOpenFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
@@ -3605,7 +3624,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
-void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor)
+void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
@@ -3618,7 +3637,7 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib,
             EXCEPT() << "Could not create node for file: " << filePath;
     }
 
-    openFileNode(fileNode, focus, codecMib, forcedAsTextEditor);
+    openFileNode(fileNode, focus, codecMib, forcedAsTextEditor, tabStrategy);
 }
 
 ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName, ProjectGroupNode* group)
@@ -3817,24 +3836,31 @@ void MainWindow::updateEditorLineWrapping()
 
 bool MainWindow::readTabs(const QVariantMap &tabData)
 {
+    QString curTab;
     if (tabData.contains("mainTabRecent")) {
         QString location = tabData.value("mainTabRecent").toString();
         if (QFileInfo(location).exists()) {
             openFilePath(location, true);
             mOpenTabsList << location;
+            curTab = location;
         } else if (location == "WELCOME_PAGE") {
             showWelcomePage();
         }
     }
     QApplication::processEvents(QEventLoop::AllEvents, 10);
     if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QVariant::List)) {
+        NewTabStrategy tabStrategy = curTab.isEmpty() ? tabAtEnd : tabBeforeCurrent;
         QVariantList tabArray = tabData.value("mainTabs").toList();
         for (int i = 0; i < tabArray.size(); ++i) {
             QVariantMap tabObject = tabArray.at(i).toMap();
             if (tabObject.contains("location")) {
                 QString location = tabObject.value("location").toString();
+                if (curTab == location) {
+                    tabStrategy = tabAtEnd;
+                    continue;
+                }
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, false);
+                    openFilePath(location, false, -1, false, tabStrategy);
                     mOpenTabsList << location;
                 }
                 if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
