@@ -266,9 +266,22 @@ TextLinkType AbstractEdit::checkLinks(const QPoint &mousePos, bool greedy, QStri
 
 void AbstractEdit::jumpToCurrentLink(const QPoint &mousePos)
 {
+    QTextCursor cur = textCursor();
+    cur.clearSelection();
+    setTextCursor(cur);
     TextLinkType linkType = checkLinks(mousePos, true);
     if (linkType == linkMark)
         marksAtMouse().first()->jumpToRefMark();
+}
+
+QPoint AbstractEdit::clickPos() const
+{
+    return mClickPos;
+}
+
+void AbstractEdit::setClickPos(const QPoint &clickPos)
+{
+    mClickPos = clickPos;
 }
 
 void AbstractEdit::internalExtraSelUpdate()
@@ -365,7 +378,7 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mousePressEvent(e);
     if (!marksAtMouse().isEmpty()) {
-        mClickPos = e->pos();
+        setClickPos(e->pos());
     } else if (e->button() == Qt::RightButton) {
         QTextCursor currentTC = textCursor();
         QTextCursor mouseTC = cursorForPosition(e->pos());
@@ -395,7 +408,7 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseMoveEvent(e);
-    bool offClickRegion = !mClickPos.isNull() && (mClickPos-e->pos()).manhattanLength() > 4;
+    bool offClickRegion = (clickPos() - e->pos()).manhattanLength() > 4;
     bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
 
     updateToolTip(e->pos());
@@ -405,9 +418,9 @@ void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
-    bool offClickRegion = !mClickPos.isNull() && (mClickPos-e->pos()).manhattanLength() > 4;
+    bool offClickRegion = (clickPos() - e->pos()).manhattanLength() > 4;
     bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
-    mClickPos = QPoint();
+    setClickPos(QPoint());
     if (validLink) jumpToCurrentLink(e->pos());
 }
 

@@ -806,6 +806,9 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
 
 void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
 {
+    QTextCursor cur = textCursor();
+    cur.clearSelection();
+    setTextCursor(cur);
     TextLinkType linkType = checkLinks(mousePos, true);
     if (linkType == linkMark) {
         if (!marks() || marks()->isEmpty()) {
