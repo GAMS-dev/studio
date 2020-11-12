@@ -58,6 +58,8 @@ public:
     bool caseSens();
     bool wholeWords();
 
+    void setSearchStatus(Search::Status status, int hits = 0);
+
 public slots:
     void on_searchNext();
     void on_searchPrev();
@@ -99,7 +101,6 @@ private:
     void findInDoc(FileMeta *fm, SearchResultModel* collection);
     void updateEditHighlighting();
     void updateUi(bool searching);
-    void setSearchStatus(Search::Status status, int hits = 0);
 
 private:
     Ui::SearchDialog *ui;

@@ -81,7 +81,6 @@ void SearchDialog::on_btn_FindAll_clicked()
         if (ui->combo_search->currentText().isEmpty()) return;
 
         updateUi(true);
-        mShowResults = true;
         mSearch.setParameters(getFilesByScope(), createRegex());
         insertHistory();
 
@@ -122,6 +121,8 @@ void SearchDialog::finalUpdate()
     if (mSearch.results().size() == 0)
         setSearchStatus(Search::NoResults);
     else updateLabelByCursorPos();
+
+    mShowResults = true; // reset default
 }
 
 void SearchDialog::updateUi(bool searching)

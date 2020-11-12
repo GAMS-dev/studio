@@ -90,7 +90,6 @@ void Search::stop()
     mThread.requestInterruption();
 }
 
-// TODO(RG): reset search where approps
 void Search::reset()
 {
     mFiles.clear();
@@ -120,8 +119,6 @@ void Search::findInDoc(FileMeta* fm)
 
 void Search::findNext(Direction direction, bool ignoreReadOnly)
 {
-    // TODO(RG): do not show results for this execution branch
-
     // create new cache when cached search does not contain results for current file
     bool requestNewCache = !mCacheAvailable
             || mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor()
@@ -434,22 +431,18 @@ void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QStrin
     msgBox.exec();
     if (msgBox.clickedButton() == ok) {
 
-        // TODO(RG): implement the following setSearchStatusses
-//        setSearchStatus(Search::Replacing);
+        mMain->searchDialog()->setSearchStatus(Search::Replacing);
         QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
 
-        for (FileMeta* fm : opened) {
+        for (FileMeta* fm : opened)
             hits += replaceOpened(fm, regex, replaceTerm, mOptions);
-        }
 
-        for (FileMeta* fm : unopened) {
+        for (FileMeta* fm : unopened)
             hits += replaceUnopened(fm, regex, replaceTerm);
-        }
 
-//        setSearchStatus(SearchStatus::Clear);
+        mMain->searchDialog()->setSearchStatus(Search::Clear);
     } else if (msgBox.clickedButton() == search) {
-//        mShowResults = true;
-        start(/* TODO(RG): move show results parameter here and to signal */ );
+        start();
         return;
     } else if (msgBox.clickedButton() == cancel) {
         return;
