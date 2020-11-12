@@ -80,7 +80,6 @@ private:
     AbstractTextMapper &mMapper;
     Settings *mSettings;
     qint64 mTopByte = 0;
-    QPoint mClickPos;
     bool mClickStart = false;
     QTimer mScrollTimer;
     int mScrollDelta = 0;

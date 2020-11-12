@@ -63,7 +63,6 @@ public:
     virtual void disconnectTimers();
 
 signals:
-//    void requestMarkTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
     void requestLstTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void toggleBookmark(FileId fileId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, FileId refFileId, int refLineNr);
@@ -115,6 +114,8 @@ protected:
     virtual bool ensureUnfolded(int line);
     virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr);
     virtual void jumpToCurrentLink(const QPoint &mousePos);
+    QPoint clickPos() const;
+    void setClickPos(const QPoint &clickPos);
 
 private:
     const LineMarks* mMarks = nullptr;
