@@ -69,6 +69,8 @@ protected:
 //    bool viewportEvent(QEvent *event) override;
     QVector<int> toolTipLstNumbers(const QPoint &mousePos) override;
     void paintEvent(QPaintEvent *e) override;
+    QString getToolTipText(const QPoint &pos) override;
+
 
 private:
     int topVisibleLine() override;
