@@ -49,6 +49,8 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
 
 void Search::start()
 {
+    if (mSearching || mRegex.pattern().isEmpty()) return;
+
     mResults.clear();
     mResultHash.clear();
 
@@ -92,9 +94,11 @@ void Search::stop()
 void Search::reset()
 {
     mFiles.clear();
-    mRegex.pattern().clear();
+    mRegex.setPattern("");
+
     mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
+    mThread.isInterruptionRequested();
 }
 
 void Search::findInDoc(FileMeta* fm)

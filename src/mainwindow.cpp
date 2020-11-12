@@ -2100,7 +2100,7 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
     bool isResults = ui->logTabs->widget(index) == resultsView();
     if (isResults) {
-        mSearchDialog->clearResults();
+        mSearchDialog->clearResultsView();
         return;
     }
 

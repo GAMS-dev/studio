@@ -44,13 +44,12 @@ public:
     int selectedScope();
     void setSelectedScope(int index);
 
-    void clearResults();
+    void clearResultsView();
     void updateReplaceActionAvailability();
 
     void autofillSearchField();
 
     void clearSearch();
-    void invalidateCache();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
@@ -110,7 +109,6 @@ private:
     ResultsView *mResultsView = nullptr;
     SearchResultModel* mSearchResultModel = nullptr;
 
-    bool mHasChanged = true;
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;
     bool mSplitSearchContinue = false;

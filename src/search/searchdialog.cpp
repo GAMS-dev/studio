@@ -75,21 +75,20 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 
 void SearchDialog::on_btn_FindAll_clicked()
 {
-    mSearch.setParameters(getFilesByScope(), createRegex());
-
-    // TODO(RG): theres probably a better solution than this
     if (!mSearch.isRunning()) {
         if (ui->combo_search->currentText().isEmpty()) return;
+
+        updateUi(true);
+        mShowResults = true;
+        mSearch.setParameters(getFilesByScope(), createRegex());
         insertHistory();
 
-        mHasChanged = false;
-        updateUi(true);
-        clearResults();
+        clearResultsView();
 
         mSearch.start();
     } else {
-        updateUi(false);
         mSearch.stop();
+        updateUi(false);
     }
 }
 
@@ -206,9 +205,9 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
 
 void SearchDialog::replaceAll()
 {
-    mHasChanged = false; // TODO(RG): sure this is right here?
     mSearch.replaceAll(getFilesByScope(true), createRegex(), ui->txt_replace->text());
-    invalidateCache();
+
+    searchParameterChanged();
 }
 
 void SearchDialog::showEvent(QShowEvent *event)
@@ -271,6 +270,9 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int)
 
 void SearchDialog::on_btn_back_clicked()
 {
+    if (ui->combo_search->currentText().isEmpty()) return;
+
+    mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex(), true);
 
     insertHistory();
@@ -279,6 +281,9 @@ void SearchDialog::on_btn_back_clicked()
 
 void SearchDialog::on_btn_forward_clicked()
 {
+    if (ui->combo_search->currentText().isEmpty()) return;
+
+    mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex());
 
     insertHistory();
@@ -335,7 +340,7 @@ void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
             mOutsideOfList = false;
 
-            if (mMain->resultsView() && !mHasChanged)
+            if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
                 mMain->resultsView()->selectItem(i);
 
             updateNrMatches(list.indexOf(match) + 1);
@@ -354,7 +359,8 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString)
 
 void SearchDialog::searchParameterChanged() {
     setSearchStatus(Search::Clear);
-    invalidateCache();
+
+    if (mMain->resultsView()) mMain->resultsView()->setOutdated();
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -402,30 +408,36 @@ void SearchDialog::clearSearch()
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
     mSuppressChangeEvent = false;
+    mSearch.reset();
 
-    clearResults();
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
+        QTextCursor tc = ce->textCursor();
+        tc.clearSelection();
+        ce->setTextCursor(tc);
+    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        QTextCursor tc = tv->edit()->textCursor();
+        tc.clearSelection();
+        tv->edit()->setTextCursor(tc);
+    }
+
+    clearResultsView();
+    updateEditHighlighting();
 }
 
 void SearchDialog::updateEditHighlighting()
 {
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor()))
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
         ce->updateExtraSelections();
-    if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
+    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
         tv->updateExtraSelections();
+    }
 }
 
-void SearchDialog::clearResults()
+void SearchDialog::clearResultsView()
 {
     setSearchStatus(Search::Clear);
 
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    if (edit) {
-        QTextCursor tc = edit->textCursor();
-        tc.clearSelection();
-        edit->setTextCursor(tc);
-    }
     mMain->closeResultsPage();
-    updateEditHighlighting();
 }
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)
@@ -469,13 +481,11 @@ void SearchDialog::insertHistory()
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {
-        bool state = mHasChanged;
         mSuppressChangeEvent = true;
         ui->combo_search->removeItem(ui->combo_search->findText(searchText));
         ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
         mSuppressChangeEvent = false;
-        mHasChanged = state;
     }
 
     QString filePattern(ui->combo_filePattern->currentText());
@@ -552,12 +562,6 @@ QRegularExpression SearchDialog::createRegex()
     if (!caseSens()) searchRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
     return searchRegex;
-}
-
-void SearchDialog::invalidateCache()
-{
-    mHasChanged = true;
-    if (mMain->resultsView()) mMain->resultsView()->setOutdated();
 }
 
 bool SearchDialog::regex()
