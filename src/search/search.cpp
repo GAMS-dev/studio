@@ -203,28 +203,19 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     }
 
     // navigation outside of cache
-    mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS;
+    mOutsideOfList = matchNr >= MAX_SEARCH_RESULTS;
     if (!found || mOutsideOfList) {
 
-        int x = 0;
-        int y = 0;
         // start over
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
             QTextCursor tc = e->textCursor();
             QTextCursor ntc= e->document()->find(mRegex, backwards ? tc.position()-tc.selectedText().length() : tc.position(), mOptions);
             found = !ntc.isNull();
             e->setTextCursor(ntc);
-            x = e->textCursor().positionInBlock();
-            y = e->textCursor().blockNumber()+1;
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             mSplitSearchContinue = false; // make sure to start a new search
             found = t->findText(mRegex, mOptions, mSplitSearchContinue);
-            x = t->position().x();
-            y = t->position().y()+1;
         }
-        if (mCacheAvailable) emit updateLabelByCursorPos(y, x);
-
-        if (found) return; // exit early, all done
 
         // still no results found, start over, jump to start/end of file
         if (mOutsideOfList) {
@@ -237,7 +228,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                     t->jumpTo(t->knownLines()-1, 0, 0, true);
                 }
                 matchNr = mResults.size()-1;
-                if (firstLevel) selectNextMatch(direction, false); // try jumping once again
+                if (firstLevel) selectNextMatch(direction, false);
             } else { // forwards
                 matchNr = 0;
             }

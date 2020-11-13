@@ -11,6 +11,7 @@ Version 1.4.3 *
 - restore tab order on Studio restart
 - improved feedback of ongoing search
 - improved performance of search
+- fixed navigation past the search limit
 - added possibility to interrupt Find Next/Previous
 - fixed conversion of remote paths to local paths
 
