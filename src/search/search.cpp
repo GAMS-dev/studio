@@ -146,6 +146,10 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     if (mCacheAvailable) {
         int lineNr = 0;
         int colNr = 0;
+        int iterator = backwards ? -1 : 1;
+        int start = backwards ? mResults.size()-1 : 0;
+        bool allowJumping = false;
+
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
             lineNr = e->textCursor().blockNumber()+1;
             colNr = e->textCursor().columnNumber();
@@ -153,10 +157,6 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
             lineNr = t->position().y()+1;
             colNr = t->position().x();
         }
-
-        int iterator = backwards ? -1 : 1;
-        int start = backwards ? mResults.size()-1 : 0;
-        bool allowJumping = false;
 
         // skip to next entry if file is opened in solver option edit
         if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {

@@ -86,6 +86,7 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         clearResultsView();
 
+        mShowResults = true;
         mSearch.start();
     } else {
         mSearch.stop();
