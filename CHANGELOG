@@ -12,6 +12,7 @@ Version 1.4.3 *
 - improved feedback of ongoing search
 - improved performance of search
 - added possibility to interrupt Find Next/Previous
+- fixed conversion of remote paths to local paths
 
 Version 1.4.2
 ==================
