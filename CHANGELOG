@@ -10,6 +10,7 @@ Version 1.4.3 *
 - ignore links when selecting text in the LOG
 - restore tab order on Studio restart
 - fixed unaccessible MIRO assembly dialog when opened via MIRO deploy dialog
+- fixed conversion of remote paths to local paths
 
 Version 1.4.2
 ==================
