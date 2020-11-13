@@ -71,6 +71,7 @@ MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
 
 void MiroDeployDialog::setDefaults()
 {
+    mFileSystemModel->clearSelection();
     ui->baseBox->setCheckState(Qt::Unchecked);
     ui->hypercubeBox->setCheckState(Qt::Unchecked);
     ui->targetEnvBox->setCurrentIndex(0);
