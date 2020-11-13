@@ -222,14 +222,12 @@ void SearchDialog::showEvent(QShowEvent *event)
 
 void SearchDialog::on_searchNext()
 {
-    if (ui->combo_search->currentText() == "") return;
-    mSearch.findNext(Search::Forward);
+    on_btn_forward_clicked();
 }
 
 void SearchDialog::on_searchPrev()
 {
-    if (ui->combo_search->currentText() == "") return;
-    mSearch.findNext(Search::Backward);
+    on_btn_back_clicked();
 }
 
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
