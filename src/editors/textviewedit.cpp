@@ -300,9 +300,9 @@ TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy, QStri
     Q_UNUSED(greedy)
     TextLinkType res = linkNone;
     if (!marks() || marks()->isEmpty()) {
-        QTextCursor cursor = cursorForPosition(mousePos);
-        if (!cursor.charFormat().anchorHref().isEmpty()) {
-            QString fileName = resolveHRef(cursor.charFormat().anchorHref());
+        QTextCursor cur = cursorForPositionCut(mousePos);
+        if (!cur.charFormat().anchorHref().isEmpty()) {
+            QString fileName = resolveHRef(cur.charFormat().anchorHref());
             res = (fileName.isEmpty()) ? linkMiss : linkMark;
             if (fName) *fName = fileName;
         }
@@ -324,11 +324,12 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 {
     QVector<int> res = CodeEdit::toolTipLstNumbers(mousePos);
     if (res.isEmpty()) {
-        QTextCursor cursor = cursorForPosition(mousePos);
-        cursor.setPosition(cursor.block().position());
-        if (cursor.charFormat().anchorHref().length() > 4 && cursor.charFormat().anchorHref().at(3) == ':') {
+        QTextCursor cur = cursorForPositionCut(mousePos);
+        if (cur.isNull()) return res;
+        cur.setPosition(cur.block().position());
+        if (cur.charFormat().anchorHref().length() > 4 && cur.charFormat().anchorHref().at(3) == ':') {
             bool ok = false;
-            int lstNr = cursor.charFormat().anchorHref().mid(4, cursor.charFormat().anchorHref().length()-4).toInt(&ok);
+            int lstNr = cur.charFormat().anchorHref().mid(4, cur.charFormat().anchorHref().length()-4).toInt(&ok);
             if (ok) res << lstNr;
         }
     }
@@ -348,7 +349,7 @@ QString TextViewEdit::getToolTipText(const QPoint &pos)
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
-        fileName = "<p style='white-space:pre'>"+fileName+"<br>[<b>Click</b> to open]</p>";
+        fileName = "<p style='white-space:pre'>"+fileName;
     }
     return fileName;
 }

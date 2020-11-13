@@ -116,6 +116,7 @@ protected:
     virtual void jumpToCurrentLink(const QPoint &mousePos);
     QPoint clickPos() const;
     void setClickPos(const QPoint &clickPos);
+    QTextCursor cursorForPositionCut(const QPoint &pos) const;
 
 private:
     const LineMarks* mMarks = nullptr;
