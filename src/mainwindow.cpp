@@ -58,7 +58,6 @@
 #include "miro/miroprocess.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
-#include "miro/miromodelassemblydialog.h"
 #include "process/gamsinstprocess.h"
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
@@ -84,8 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
       mLogTabContextMenu(this),
       mFileEventHandler(new FileEventHandler(this)),
       mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
-      mMiroDeployDialog(new miro::MiroDeployDialog(this)),
-      mMiroAssemblyDialog(new miro::MiroModelAssemblyDialog(this))
+      mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     Settings *settings = Settings::settings();
@@ -215,8 +213,6 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::miroDeploy);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::newAssemblyFileData,
             this, &MainWindow::writeNewAssemblyFileData);
-    connect(mMiroAssemblyDialog.get(), &miro::MiroModelAssemblyDialog::finished,
-            this, &MainWindow::miroAssemblyDialogFinish);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -2453,11 +2449,6 @@ void MainWindow::on_actionStop_MIRO_triggered()
     mRecent.group()->toRunGroup()->process()->terminate();
 }
 
-void MainWindow::on_actionCreate_model_assembly_triggered()
-{
-    openMiroAssemblyDialog(this);
-}
-
 void MainWindow::on_actionDeploy_triggered()
 {
     if (!validMiroPrerequisites())
@@ -2495,40 +2486,6 @@ void MainWindow::writeNewAssemblyFileData()
 void MainWindow::on_menuMIRO_aboutToShow()
 {
     ui->menuMIRO->setEnabled(isMiroAvailable());
-}
-
-void MainWindow::miroAssemblyDialogFinish(int result)
-{
-    if (result != QDialog::Accepted)
-        return;
-
-    if (!miro::MiroCommon::writeAssemblyFile(mMiroAssemblyDialog->assemblyFileName(),
-                                             mMiroAssemblyDialog->selectedFiles()))
-        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1")
-                                           .arg(mMiroAssemblyDialog->assemblyFileName()),
-                                           LogMsgType::Error);
-    else
-        addToGroup(mRecent.group(), mMiroAssemblyDialog->assemblyFileName());
-}
-
-void MainWindow::openMiroAssemblyDialog(QWidget *parent)
-{
-    QString location;
-    QString assemblyFile;
-    QStringList checkedFiles;
-    if (mRecent.hasValidRunGroup()) {
-        location = mRecent.group()->toRunGroup()->location();
-        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->location(),
-                                                          mRecent.group()->toRunGroup()->mainModelName());
-        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
-                                                                    mRecent.group()->toRunGroup()->mainModelName(false));
-    }
-
-    mMiroAssemblyDialog->setParent(parent);
-    mMiroAssemblyDialog->setAssemblyFileName(assemblyFile);
-    mMiroAssemblyDialog->setWorkingDirectory(location);
-    mMiroAssemblyDialog->setSelectedFiles(checkedFiles);
-    mMiroAssemblyDialog->open();
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)

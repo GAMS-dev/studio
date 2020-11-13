@@ -160,10 +160,10 @@ SOURCES += \
     maintabcontextmenu.cpp \
     mainwindow.cpp \
     miro/abstractmiroprocess.cpp \
+    miro/filesystemmodel.cpp \
     miro/mirocommon.cpp \
     miro/mirodeploydialog.cpp \
     miro/mirodeployprocess.cpp \
-    miro/miromodelassemblydialog.cpp \
     miro/miroprocess.cpp \
     modeldialog/glbparser.cpp   \
     modeldialog/library.cpp     \
@@ -342,10 +342,10 @@ HEADERS += \
     maintabcontextmenu.h \
     mainwindow.h \
     miro/abstractmiroprocess.h \
+    miro/filesystemmodel.h \
     miro/mirocommon.h \
     miro/mirodeploydialog.h \
     miro/mirodeployprocess.h \
-    miro/miromodelassemblydialog.h \
     miro/miroprocess.h \
     modeldialog/glbparser.h \
     modeldialog/library.h \
@@ -451,7 +451,6 @@ FORMS += \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     miro/mirodeploydialog.ui \
-    miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
     neos/neosstartdialog.ui \
     option/envvarconfigeditor.ui \
