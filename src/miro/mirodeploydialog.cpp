@@ -19,11 +19,10 @@
  */
 #include "mirodeploydialog.h"
 #include "ui_mirodeploydialog.h"
-#include "miromodelassemblydialog.h"
+#include "filesystemmodel.h"
 #include "scheme.h"
 
 #include <QMessageBox>
-#include <QDir>
 
 namespace gams {
 namespace studio {
@@ -118,8 +117,9 @@ void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)
 void MiroDeployDialog::on_createButton_clicked()
 {
     if (selectedFiles().isEmpty())
-        MiroModelAssemblyDialog::showMessageBox(this);
-    emit newAssemblyFileData();
+        QMessageBox::critical(this, "No deployment files!", "Please select the files for your MIRO deployment.");
+    else
+        emit newAssemblyFileData();
 }
 
 void MiroDeployDialog::on_selectAllButton_clicked()

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MIROMODELASSEMBLYDIALOG_H
-#define MIROMODELASSEMBLYDIALOG_H
+#ifndef FILESYSTEMMODEL_H
+#define FILESYSTEMMODEL_H
 
 #include <QDialog>
 #include <QFileSystemModel>
@@ -29,10 +29,6 @@ namespace gams {
 namespace studio {
 namespace miro {
 
-namespace Ui {
-class MiroModelAssemblyDialog;
-}
-
 class FilteredFileSystemModel : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -41,8 +37,8 @@ public:
     FilteredFileSystemModel(QObject *parent = nullptr);
 
 protected:
-  bool filterAcceptsColumn(int source_column,
-                           const QModelIndex& source_parent) const override;
+    bool filterAcceptsColumn(int source_column,
+                             const QModelIndex& source_parent) const override;
 };
 
 class FileSystemModel : public QFileSystemModel
@@ -82,49 +78,8 @@ private:
     QSet<QString> mCheckedFiles;
 };
 
-class MiroModelAssemblyDialog : public QDialog
-{
-    Q_OBJECT
-
-public:
-    explicit MiroModelAssemblyDialog(QWidget *parent = nullptr);
-    ~MiroModelAssemblyDialog();
-
-    QStringList selectedFiles();
-    void setSelectedFiles(const QStringList &files) {
-        mFileSystemModel->setSelectedFiles(files);
-    }
-
-    QString assemblyFileName() const {
-        return mAssemblyFileName;
-    }
-
-    void setAssemblyFileName(const QString &fileName) {
-        mAssemblyFileName = fileName;
-    }
-
-    void setWorkingDirectory(const QString &workingDirectory);
-
-    static void showMessageBox(QWidget *parent);
-
-private slots:
-    void on_createButton_clicked();
-    void on_selectAllButton_clicked();
-    void on_clearButton_clicked();
-
-private:
-    void setupViewModel();
-
-private:
-    Ui::MiroModelAssemblyDialog *ui;
-    QString mAssemblyFileName;
-    QString mWorkingDirectory;
-    FileSystemModel *mFileSystemModel = nullptr;
-    FilteredFileSystemModel *mFilterModel = nullptr;
-};
-
 }
 }
 }
 
-#endif // MIROMODELASSEMBLYDIALOG_H
+#endif // FILESYSTEMMODEL_H
