@@ -62,6 +62,7 @@ CodeEdit::CodeEdit(QWidget *parent)
 
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+    QTimer::singleShot(0, [this](){ setCursorWidth(2); });
 }
 
 CodeEdit::~CodeEdit()
@@ -983,8 +984,6 @@ void CodeEdit::wheelEvent(QWheelEvent *e) {
 
 void CodeEdit::paintEvent(QPaintEvent* e)
 {
-    int cw = mBlockEdit ? 0 : 2;
-    if (cursorWidth()!=cw) setCursorWidth(cw);
     AbstractEdit::paintEvent(e);
     if (mBlockEdit) {
         mBlockEdit->paintEvent(e);
@@ -1384,6 +1383,7 @@ void CodeEdit::startBlockEdit(int blockNr, int colNr)
     bool overwrite = overwriteMode();
     if (overwrite) setOverwriteMode(false);
     mBlockEdit = new BlockEdit(this, blockNr, colNr);
+    setCursorWidth(0);
     mBlockEdit->setOverwriteMode(overwrite);
     mBlockEdit->startCursorTimer();
     updateLineNumberAreaWidth();
@@ -1396,6 +1396,7 @@ void CodeEdit::endBlockEdit(bool adjustCursor)
     bool overwrite = mBlockEdit->overwriteMode();
     delete mBlockEdit;
     mBlockEdit = nullptr;
+    setCursorWidth(2);
     setOverwriteMode(overwrite);
 }
 
