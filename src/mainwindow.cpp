@@ -4492,9 +4492,12 @@ void MainWindow::openGdxDiffFile()
     }
     if (FileMeta* fMeta = mFileMetaRepo.fileMeta(diffFile)) {
         if (fMeta->isOpen()) {
-            if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().first()))
+            bool resized = fMeta->compare().testFlag(FileMeta::FdSize);
+            fMeta->refreshMetaData();
+            if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().first())) {
                 gdx->setHasChanged(true);
-            fMeta->reload();
+                gdx->reload(fMeta->codec(), resized);
+            }
         }
     }
     ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
