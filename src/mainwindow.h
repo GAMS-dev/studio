@@ -75,7 +75,6 @@ class GdxDiffDialog;
 }
 namespace miro {
 class MiroDeployDialog;
-class MiroModelAssemblyDialog;
 }
 
 struct HistoryData {
@@ -256,11 +255,9 @@ private slots:
     void on_actionHypercube_mode_triggered();
     void on_actionConfiguration_mode_triggered();
     void on_actionStop_MIRO_triggered();
-    void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void on_menuMIRO_aboutToShow();
     void writeNewAssemblyFileData();
-    void miroAssemblyDialogFinish(int result);
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
     void updateMiroEnabled();
@@ -355,7 +352,6 @@ private slots:
     void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
-    void openMiroAssemblyDialog(QWidget *parent);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -467,7 +463,6 @@ private:
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
-    QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
     QString mEngineTempPassword;
     bool mEngineNoDialog = false;
