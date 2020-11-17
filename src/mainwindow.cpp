@@ -3630,7 +3630,13 @@ void MainWindow::closeFileEditors(const FileId fileId)
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
-        if (mRecent.editor() == edit) mRecent.reset();
+        if (mRecent.editor() == edit) {
+            if (mRecent.group()) {
+               ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
+               runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+            }
+            mRecent.reset();
+        }
         lastIndex = ui->mainTabs->indexOf(edit);
         ui->mainTabs->removeTab(lastIndex);
         fm->removeEditor(edit);
