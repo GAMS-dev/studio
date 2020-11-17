@@ -116,7 +116,6 @@ private:
     bool mShowResults = true;
     bool mIsReplacing = false;
     bool mSuppressChangeEvent = false;
-    bool mOutsideOfList = false;
     int mSearchAnimation = 0;
 };
 

@@ -78,6 +78,10 @@ private:
     int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
+    QPair<int, int> cursorPosition();
+    int findNextEntryInCache(Search::Direction direction, QPair<int, int> cursorPos);
+
+
 private slots:
     void finished();
 
@@ -92,7 +96,7 @@ private:
     QThread mThread;
     bool mSearching = false;
     bool mCacheAvailable = false;
-    bool mOutsideOfList = true;
+    bool mOutsideOfList = false;
 
     bool mSplitSearchContinue = false;
 };

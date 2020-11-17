@@ -110,11 +110,6 @@ void SearchDialog::finalUpdate()
         mMain->showResults(mSearchResultModel);
 
         mMain->resultsView()->resizeColumnsToContent();
-    } else {
-        AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-        TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
-
-        if (edit || tv) mSearch.selectNextMatch(Search::Forward);
     }
 
     updateEditHighlighting();
@@ -338,7 +333,6 @@ void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
         Result match = list.at(i);
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
-            mOutsideOfList = false;
 
             if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
                 mMain->resultsView()->selectItem(i);
