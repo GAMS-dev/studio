@@ -4490,6 +4490,13 @@ void MainWindow::openGdxDiffFile()
                 pgDiff = v.first()->parentNode();
         }
     }
+    if (FileMeta* fMeta = mFileMetaRepo.fileMeta(diffFile)) {
+        if (fMeta->isOpen()) {
+            if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().first()))
+                gdx->setHasChanged(true);
+            fMeta->reload();
+        }
+    }
     ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
     openFile(node->file());
 }
