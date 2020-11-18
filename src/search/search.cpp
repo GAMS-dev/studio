@@ -172,9 +172,11 @@ int Search::findNextEntryInCache(Search::Direction direction, QPair<int, int> cu
             if (file == r.filepath()) {
                 allowJumping = true;
                 if (direction == Direction::Backward) {
-                    // only pick last result when limit was not reached, otherwise this would always be true
-                    if ((mResults.size() != MAX_SEARCH_RESULTS && cursorPos.first > r.lineNr()) || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length()))
-                        return i;
+                    if (cursorPos.first > r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length())) {
+                        // when limit was reached, last result has to be found by "free" navigation mode,
+                        // otherwise it would always directly jump to the last result
+                        return (i == MAX_SEARCH_RESULTS-1) ? -1 : i;
+                    }
                 } else {
                     if (cursorPos.first < r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second <= r.colNr()))
                         return i;
@@ -250,7 +252,9 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                 else tc.movePosition(QTextCursor::Start);
             }
 
-            QTextCursor ntc= e->document()->find(mRegex, backwards ? tc.position()-tc.selectedText().length() : tc.position(), mOptions);
+            QTextCursor ntc= e->document()->find(mRegex, backwards
+                                                 ? tc.position()-tc.selectedText().length()
+                                                 : tc.position(), mOptions);
             found = !ntc.isNull();
             if (found) e->setTextCursor(ntc);
 

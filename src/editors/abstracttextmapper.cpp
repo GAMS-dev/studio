@@ -446,23 +446,28 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
         Chunk *chunk = getChunk(mFindChunk, false);
         if (!chunk) return false;
         QString textBlock = lines(chunk, startLine, lineCount);
-        QStringRef partRef(&textBlock);
         int ind = backwards ? -1 : 0;
+
         if (part == 1) {
-            textBlock = textBlock.left(textBlock.lastIndexOf(mDelimiter) + mDelimiter.size() + refPos->charNr);
+            int delimIndex = textBlock.lastIndexOf(mDelimiter);
+            textBlock = textBlock.left( (delimIndex>-1 ? mDelimiter.size()+delimIndex : 0) + refPos->charNr);
         }
         if (part == 2 && !backwards) {
             ind = refPos->charNr;
         }
 
         QRegularExpressionMatch match;
+
         if (backwards) textBlock.lastIndexOf(searchRegex, ind, &match);
         else textBlock.indexOf(searchRegex, ind, &match);
+
         if (match.hasMatch() || match.hasPartialMatch()) {
+
             QStringRef ref = textBlock.leftRef(match.capturedStart());
             int line = ref.count("\n");
             int charNr = line ? match.capturedStart() - ref.lastIndexOf("\n") - 1
                               : match.capturedStart();
+
             setPosAbsolute(chunk, line+startLine, charNr);
             setPosAbsolute(chunk, line+startLine, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
             continueFind = false;
