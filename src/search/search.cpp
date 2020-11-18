@@ -172,7 +172,8 @@ int Search::findNextEntryInCache(Search::Direction direction, QPair<int, int> cu
             if (file == r.filepath()) {
                 allowJumping = true;
                 if (direction == Direction::Backward) {
-                    if (cursorPos.first > r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length()))
+                    // only pick last result when limit was not reached, otherwise this would always be true
+                    if ((mResults.size() != MAX_SEARCH_RESULTS && cursorPos.first > r.lineNr()) || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length()))
                         return i;
                 } else {
                     if (cursorPos.first < r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second <= r.colNr()))
@@ -196,7 +197,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     int matchNr = -1;
     QPair<int, int> cursorPos = cursorPosition();
 
-    // navigation based on cache
+    // navigation on cache
     if (mCacheAvailable && !mOutsideOfList) {
         if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
             // skip to next entry if file is opened in solver option edit
@@ -217,16 +218,20 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
         } else {
             matchNr = findNextEntryInCache(direction, cursorPos);
+            if ((matchNr == 0 && mResults.size() == MAX_SEARCH_RESULTS) || matchNr == MAX_SEARCH_RESULTS)
+                mOutsideOfList = true;
         }
 
-        // TODO(RG): check if this is right
+
+        // check if we should leave cache navigation
         if (matchNr == -1) { // not found
             mOutsideOfList = mResults.size() == MAX_SEARCH_RESULTS; // now leaving cache
+            // if not, jump to start/end
             if (!mOutsideOfList && mResults.size() > 0) matchNr = backwards ? mResults.size()-1 : 0;
         }
 
+        // navigate to match
         if (matchNr != -1) {
-            mOutsideOfList = false; // TODO(RG): move this
             ProjectFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
             if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
 
@@ -234,20 +239,13 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                                  qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
 
 //            updateLabelByCursorPos(cursorPos.first, cursorPos.second); // TODO(RG): this needs cleaning up
-            mMain->searchDialog()->updateNrMatches(matchNr+1);
         }
-
-        // update results view
-        if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
-            mMain->resultsView()->selectItem(matchNr);
-        return;
     }
 
     // navigation outside of cache
     if (mOutsideOfList || !mCacheAvailable) {
         bool found = false;
 
-        // TODO(RG): fix second click for restart in TextView when limit is reached
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
 
             QTextCursor tc = e->textCursor();
@@ -275,6 +273,11 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         matchNr = findNextEntryInCache(direction, cursorPos);
         mOutsideOfList = matchNr == -1;
     }
+
+    // update ui
+    mMain->searchDialog()->updateNrMatches(matchNr+1);
+    if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
+        mMain->resultsView()->selectItem(matchNr);
 }
 
 ///
