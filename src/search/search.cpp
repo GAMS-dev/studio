@@ -218,13 +218,11 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
         } else {
             matchNr = findNextEntryInCache(direction, cursorPos);
-            if ((matchNr == 0 && mResults.size() == MAX_SEARCH_RESULTS) || matchNr == MAX_SEARCH_RESULTS)
-                mOutsideOfList = true;
         }
 
-
-        // check if we should leave cache navigation
-        if (matchNr == -1) { // not found
+         // nothing found
+        if (matchNr == -1) {
+            // check if we should leave cache navigation
             mOutsideOfList = mResults.size() == MAX_SEARCH_RESULTS; // now leaving cache
             // if not, jump to start/end
             if (!mOutsideOfList && mResults.size() > 0) matchNr = backwards ? mResults.size()-1 : 0;
@@ -237,8 +235,6 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
             node->file()->jumpTo(node->runGroupId(), true, mResults.at(matchNr).lineNr()-1,
                                  qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
-
-//            updateLabelByCursorPos(cursorPos.first, cursorPos.second); // TODO(RG): this needs cleaning up
         }
     }
 
@@ -269,14 +265,13 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
         if (!found && firstLevel) selectNextMatch(direction, false);
 
-        // recheck after cursor was moved
-        matchNr = findNextEntryInCache(direction, cursorPos);
-        mOutsideOfList = matchNr == -1;
+        // check if cache was re-entered
+        mOutsideOfList = findNextEntryInCache(direction, cursorPosition()) == -1;
     }
 
     // update ui
     mMain->searchDialog()->updateNrMatches(matchNr+1);
-    if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
+    if (mMain->resultsView() && !mMain->resultsView()->isOutdated() && (!mOutsideOfList || matchNr == -1))
         mMain->resultsView()->selectItem(matchNr);
 }
 
