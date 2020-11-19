@@ -532,10 +532,13 @@ void SearchDialog::updateNrMatches(int current)
     int size = mSearch.results().size();
 
     if (current == 0) {
-        if (size == 1)
+        if (size == 1) {
             ui->lbl_nrResults->setText(QString::number(size) + " match");
-        else
-            ui->lbl_nrResults->setText(QString::number(size) + " matches");
+
+        } else {
+            if (size == 0) setSearchStatus(Search::NoResults);
+            else ui->lbl_nrResults->setText(QString::number(size) + " matches");
+        }
 
         if (size >= MAX_SEARCH_RESULTS) {
             ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
