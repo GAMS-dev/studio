@@ -266,6 +266,10 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int)
 void SearchDialog::on_btn_back_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
+    if (!getFilesByScope().contains(mMain->fileRepo()->fileMeta(mMain->recent()->editor()))) {
+        setSearchStatus(Search::NoResults);
+        return;
+    }
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex(), true);
@@ -277,6 +281,10 @@ void SearchDialog::on_btn_back_clicked()
 void SearchDialog::on_btn_forward_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
+    if (!getFilesByScope().contains(mMain->fileRepo()->fileMeta(mMain->recent()->editor()))) {
+        setSearchStatus(Search::NoResults);
+        return;
+    }
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex());
