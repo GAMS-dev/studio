@@ -788,7 +788,8 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
         linkType = AbstractEdit::checkLinks(mousePos, greedy, fName);
     mIncludeLinkLine = -1;
     if (greedy && linkType == linkNone) {
-        QTextCursor cur = cursorForPosition(mousePos);
+        QTextCursor cur = cursorForPositionCut(mousePos);
+        if (cur.isNull()) return linkType;
         int fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
@@ -948,7 +949,8 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
-    bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0 || type() != CodeEditor;
+    bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0
+            || (type() != CodeEditor && type() != LstView);
     updateToolTip(e->pos(), direct);
     updateLinkAppearance(e->pos(), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
@@ -1884,7 +1886,7 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
-        fileName = "<p style='white-space:pre'>"+fileName+"<br>[<b>Ctrl-click</b> to open]</p>";
+        fileName = "<p style='white-space:pre'>"+fileName+"<br><b>Ctrl-click</b> to open</p>";
     }
     return fileName;
 }
