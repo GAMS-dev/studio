@@ -44,6 +44,8 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
 
+    mOptions.setFlag(QTextDocument::FindCaseSensitively,
+                     !mRegex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
 }
 
