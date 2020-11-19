@@ -2526,9 +2526,9 @@ void MainWindow::setMiroRunning(bool running)
     updateMiroEnabled();
 }
 
-void MainWindow::updateMiroEnabled()
+void MainWindow::updateMiroEnabled(bool printError)
 {
-    bool available = isMiroAvailable() && isActiveTabRunnable();
+    bool available = isMiroAvailable(printError) && isActiveTabRunnable();
     ui->menuMIRO->setEnabled(available);
     mMiroDeployDialog->setEnabled(available && !mMiroRunning);
     ui->actionBase_mode->setEnabled(available && !mMiroRunning);
@@ -2977,7 +2977,7 @@ void MainWindow::execution(ProjectRunGroupNode *runGroup)
 
 void MainWindow::updateRunState()
 {
-    updateMiroEnabled();
+    updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
@@ -4401,12 +4401,15 @@ QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
     return font;
 }
 
-bool MainWindow::isMiroAvailable()
+bool MainWindow::isMiroAvailable(bool printError)
 {
     if (Settings::settings()->toString(skMiroInstallPath).isEmpty())
         return false;
     QFileInfo fileInfo(Settings::settings()->toString(skMiroInstallPath));
-    return fileInfo.exists();
+    bool state = fileInfo.exists() && !fileInfo.isDir() && fileInfo.isExecutable();
+    if (!state && printError)
+        appendSystemLogError("The MIRO installation location does not exist or does not point to a valid MIRO executable. Please check your settings.");
+    return state;
 }
 
 bool MainWindow::validMiroPrerequisites()

@@ -260,7 +260,7 @@ private slots:
     void writeNewAssemblyFileData();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
-    void updateMiroEnabled();
+    void updateMiroEnabled(bool printError = true);
 
     // Tools
     void on_actionGDX_Diff_triggered();
@@ -405,7 +405,7 @@ private:
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
     QFont createEditorFont(const QString &fontFamily, int pointSize);
-    bool isMiroAvailable();
+    bool isMiroAvailable(bool printError = true);
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
