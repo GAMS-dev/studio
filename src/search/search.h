@@ -79,7 +79,7 @@ private:
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
     QPair<int, int> cursorPosition();
-    int findNextEntryInCache(Search::Direction direction, QPair<int, int> cursorPos);
+    int findNextEntryInCache(Search::Direction direction);
 
 
 private slots:

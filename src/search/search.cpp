@@ -114,7 +114,7 @@ void Search::findInDoc(FileMeta* fm)
         else break;
 
         if (!item.isNull()) {
-            mResults.append(Result(item.blockNumber()+1, item.columnNumber() - item.selectedText().length(),
+            mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                   item.selectedText().length(), fm->location(), item.block().text().trimmed()));
         }
         if (mResults.size() > MAX_SEARCH_RESULTS-1) break;
@@ -145,7 +145,7 @@ QPair<int, int> Search::cursorPosition() {
 
     if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
         lineNr = e->textCursor().blockNumber()+1;
-        colNr = e->textCursor().columnNumber();
+        colNr = e->textCursor().positionInBlock();
     } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
         lineNr = t->position().y()+1;
         colNr = t->position().x();
@@ -160,7 +160,9 @@ QPair<int, int> Search::cursorPosition() {
 /// \param cursorPos QPair of LineNr and ColumnNr
 /// \return index of match in result list
 ///
-int Search::findNextEntryInCache(Search::Direction direction, QPair<int, int> cursorPos) {
+int Search::findNextEntryInCache(Search::Direction direction) {
+    QPair<int, int> cursorPos = cursorPosition();
+
     int start = direction == Direction::Backward ? mResults.size()-1 : 0;
     int iterator = direction == Direction::Backward ? -1 : 1;
     bool allowJumping = false;
@@ -199,7 +201,6 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 {
     bool backwards = direction == Direction::Backward;
     int matchNr = -1;
-    QPair<int, int> cursorPos = cursorPosition();
 
     // navigation on cache
     if (mCacheAvailable && !mOutsideOfList) {
@@ -221,7 +222,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
             matchNr = newIndex;
 
         } else {
-            matchNr = findNextEntryInCache(direction, cursorPos);
+            matchNr = findNextEntryInCache(direction);
         }
 
          // nothing found
@@ -272,7 +273,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         if (!found && firstLevel) selectNextMatch(direction, false);
 
         // check if cache was re-entered
-        mOutsideOfList = findNextEntryInCache(direction, cursorPosition()) == -1;
+        mOutsideOfList = findNextEntryInCache(direction) == -1;
     }
 
     // update ui

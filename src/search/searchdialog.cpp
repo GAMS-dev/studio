@@ -328,7 +328,7 @@ void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
         if (edit) {
             QTextCursor tc = edit->textCursor();
             lineNr = tc.blockNumber()+1;
-            colNr = tc.columnNumber();
+            colNr = tc.positionInBlock();
         } else if (tv) {
             lineNr = tv->position().y()+1;
             colNr = tv->position().x();
