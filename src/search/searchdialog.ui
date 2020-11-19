@@ -130,7 +130,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search backwards&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;Shift + F3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search backward&lt;/p&gt;&lt;p&gt;Shortcut: &lt;span style=&quot; font-weight:600;&quot;&gt;Shift + F3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>&lt;</string>

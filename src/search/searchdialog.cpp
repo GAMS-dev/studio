@@ -473,7 +473,6 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
     }
 }
 
-// TODO(RG): check if we even need custom function here
 void SearchDialog::insertHistory()
 {
     QString searchText(ui->combo_search->currentText());
