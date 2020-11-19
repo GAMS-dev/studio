@@ -92,10 +92,16 @@ void ResultsView::keyPressEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
         e->accept();
-    } else if (e == Hotkey::SearchFindPrev || e->key() == Qt::Key_Up) {
+    } else if (e == Hotkey::SearchFindPrev) {
+        mMain->searchDialog()->on_searchPrev();
+        e->accept();
+    } else if (e == Hotkey::SearchFindNext) {
+        mMain->searchDialog()->on_searchNext();
+        e->accept();
+    } else if (e->key() == Qt::Key_Up) {
         jumpToResult(selectNextItem(true), false);
         e->accept();
-    } else if (e == Hotkey::SearchFindNext || e->key() == Qt::Key_Down) {
+    } else if (e->key() == Qt::Key_Down) {
         jumpToResult(selectNextItem(), false);
         e->accept();
     }

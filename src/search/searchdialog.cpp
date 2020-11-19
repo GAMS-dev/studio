@@ -245,11 +245,11 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         }
 
     } else if (e == Hotkey::SearchFindPrev) {
+        on_btn_back_clicked();
         e->accept();
-        on_searchPrev();
     } else if (e == Hotkey::SearchFindNext) {
+        on_btn_forward_clicked();
         e->accept();
-        on_searchNext();
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
         e->accept();
         on_btn_FindAll_clicked();
