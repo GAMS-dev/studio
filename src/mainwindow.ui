@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -265,7 +265,6 @@
     <addaction name="actionCompile_with_GDX_Creation"/>
     <addaction name="separator"/>
     <addaction name="actionRunNeos"/>
-    <addaction name="actionRunEngine"/>
     <addaction name="separator"/>
     <addaction name="actionRunEngine"/>
     <addaction name="separator"/>
@@ -300,8 +299,6 @@
     <addaction name="actionConfiguration_mode"/>
     <addaction name="separator"/>
     <addaction name="actionSkip_model_execution"/>
-    <addaction name="separator"/>
-    <addaction name="actionCreate_model_assembly"/>
     <addaction name="separator"/>
     <addaction name="actionDeploy"/>
    </widget>

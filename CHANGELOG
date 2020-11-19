@@ -1,6 +1,6 @@
 Version 1.4.3 *
 ==================
-- fixed parameter that is ignored when re-runing the gams main file in a group
+- fixed parameter that is ignored when re-running the gams main file in a group
 - disable run actions and MIRO menu if group has no active executable file
 - update state on dragging active executable file to a different group
 - fixed on GAMS Engine run add "previousWork=1" if dialog is hidden and server version is older
@@ -14,6 +14,9 @@ Version 1.4.3 *
 - fixed navigation past the search limit
 - added possibility to interrupt Find Next/Previous
 - fixed conversion of remote paths to local paths
+- fixed unaccessible MIRO assembly file dialog when opened via MIRO deploy dialog
+- fixed conversion of remote paths to local paths
+- removed standalone MIRO assembly file dialog, which is now part of the MIRO deploy dialog
 
 Version 1.4.2
 ==================

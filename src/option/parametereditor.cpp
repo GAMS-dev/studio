@@ -474,6 +474,9 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
     for (QString str: history) {
         ui->gamsParameterCommandLine->insertItem(0, str );
     }
+    if (history.size() > 0) {
+        ui->gamsParameterCommandLine->validateChangedParameter( history.last() );
+    }
 
     connect(ui->gamsParameterCommandLine, &QComboBox::editTextChanged,
             ui->gamsParameterCommandLine, &CommandLine::validateChangedParameter, Qt::UniqueConnection);

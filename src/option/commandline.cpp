@@ -51,10 +51,7 @@ void CommandLine::validateChangedParameter(const QString &text)
 
 QString CommandLine::getParameterString() const
 {
-    if (mParameterString.isEmpty() && this->count() > 0)
-        return this->itemText(0);
-    else
-        return mParameterString;
+    return mParameterString;
 }
 
 void CommandLine::keyPressEvent(QKeyEvent *event)

@@ -83,7 +83,7 @@ QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile,
         if (!mainFile.isEmpty())
             selectedFiles << mainFile;
     }
-    return selectedFiles.toList();
+    return selectedFiles.values();
 }
 
 bool MiroCommon::writeAssemblyFile(const QString &assemblyFile,

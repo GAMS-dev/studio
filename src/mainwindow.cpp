@@ -58,7 +58,6 @@
 #include "miro/miroprocess.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
-#include "miro/miromodelassemblydialog.h"
 #include "process/gamsinstprocess.h"
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
@@ -84,8 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
       mLogTabContextMenu(this),
       mFileEventHandler(new FileEventHandler(this)),
       mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
-      mMiroDeployDialog(new miro::MiroDeployDialog(this)),
-      mMiroAssemblyDialog(new miro::MiroModelAssemblyDialog(this))
+      mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     Settings *settings = Settings::settings();
@@ -209,14 +207,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
-    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::updateModelAssemblyFile,
-            this, &MainWindow::miroDeployAssemblyFileUpdate);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
             this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
             this, &MainWindow::miroDeploy);
-    connect(mMiroAssemblyDialog.get(), &miro::MiroModelAssemblyDialog::finished,
-            this, &MainWindow::miroAssemblyDialogFinish);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::newAssemblyFileData,
+            this, &MainWindow::writeNewAssemblyFileData);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -2455,62 +2451,43 @@ void MainWindow::on_actionStop_MIRO_triggered()
     mRecent.group()->toRunGroup()->process()->terminate();
 }
 
-void MainWindow::on_actionCreate_model_assembly_triggered()
-{
-    QString location;
-    QString assemblyFile;
-    QStringList checkedFiles;
-    if (mRecent.hasValidRunGroup()) {
-        location = mRecent.group()->toRunGroup()->location();
-        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->location(),
-                                                          mRecent.group()->toRunGroup()->mainModelName());
-        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
-                                                                    mRecent.group()->toRunGroup()->mainModelName(false));
-    }
-
-    mMiroAssemblyDialog->setAssemblyFileName(assemblyFile);
-    mMiroAssemblyDialog->setWorkingDirectory(location);
-    mMiroAssemblyDialog->setSelectedFiles(checkedFiles);
-    mMiroAssemblyDialog->open();
-}
-
 void MainWindow::on_actionDeploy_triggered()
 {
     if (!validMiroPrerequisites())
         return;
 
-    auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
+    QString assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
+                           miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
+
+    QStringList checkedFiles;
+    if (mRecent.hasValidRunGroup()) {
+        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
+                                                                mRecent.group()->toRunGroup()->mainModelName(false));
+    }
+
     mMiroDeployDialog->setDefaults();
-    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
+    mMiroDeployDialog->setAssemblyFileName(assemblyFile);
+    mMiroDeployDialog->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
+}
+
+void MainWindow::writeNewAssemblyFileData()
+{
+    if (!miro::MiroCommon::writeAssemblyFile(mMiroDeployDialog->assemblyFileName(),
+                                             mMiroDeployDialog->selectedFiles()))
+        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1")
+                                           .arg(mMiroDeployDialog->assemblyFileName()),
+                                           LogMsgType::Error);
+    else {
+        mMiroDeployDialog->setAssemblyFileName(mMiroDeployDialog->assemblyFileName());
+        addToGroup(mRecent.group(), mMiroDeployDialog->assemblyFileName());
+    }
 }
 
 void MainWindow::on_menuMIRO_aboutToShow()
 {
     ui->menuMIRO->setEnabled(isMiroAvailable());
-}
-
-void MainWindow::miroAssemblyDialogFinish(int result)
-{
-    if (result != QDialog::Accepted)
-        return;
-
-    if (!miro::MiroCommon::writeAssemblyFile(mMiroAssemblyDialog->assemblyFileName(),
-                                             mMiroAssemblyDialog->selectedFiles()))
-        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1")
-                                           .arg(mMiroAssemblyDialog->assemblyFileName()),
-                                           LogMsgType::Error);
-    else
-        addToGroup(mRecent.group(), mMiroAssemblyDialog->assemblyFileName());
-}
-
-void MainWindow::miroDeployAssemblyFileUpdate()
-{
-    on_actionCreate_model_assembly_triggered();
-    auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
-    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
@@ -3612,7 +3589,13 @@ void MainWindow::closeFileEditors(const FileId fileId)
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
-        if (mRecent.editor() == edit) mRecent.reset();
+        if (mRecent.editor() == edit) {
+            if (mRecent.group()) {
+               ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
+               runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+            }
+            mRecent.reset();
+        }
         lastIndex = ui->mainTabs->indexOf(edit);
         ui->mainTabs->removeTab(lastIndex);
         fm->removeEditor(edit);

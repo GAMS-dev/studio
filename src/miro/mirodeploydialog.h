@@ -33,6 +33,9 @@ namespace Ui {
 class MiroDeployDialog;
 }
 
+class FileSystemModel;
+class FilteredFileSystemModel;
+
 class MiroDeployDialog : public QDialog
 {
     Q_OBJECT
@@ -46,14 +49,26 @@ public:
 
     void setDefaults();
 
-    void setModelAssemblyFile(const QString &file);
+    QString assemblyFileName() const {
+        return mModelAssemblyFile;
+    }
+
+    void setAssemblyFileName(const QString &file);
+
+    QStringList selectedFiles();
+    void setSelectedFiles(const QStringList &files);
+
+    void setWorkingDirectory(const QString &workingDirectory);
 
 signals:
-    void updateModelAssemblyFile();
     void testDeploy(bool testDeploy, MiroDeployMode mode);
+    void newAssemblyFileData();
 
 private slots:
-    void on_assemblyFileButton_clicked();
+    void on_createButton_clicked();
+    void on_selectAllButton_clicked();
+    void on_clearButton_clicked();
+
     void on_testBaseButton_clicked();
     void on_testHcubeButton_clicked();
     void on_deployButton_clicked();
@@ -61,9 +76,16 @@ private slots:
     void updateTestDeployButtons();
 
 private:
+    void setupViewModel();
+
+private:
     Ui::MiroDeployDialog *ui;
     QString mModelAssemblyFile;
     bool mValidAssemblyFile;
+    QString mWorkingDirectory;
+
+    FileSystemModel *mFileSystemModel;
+    FilteredFileSystemModel *mFilterModel;
 };
 
 }

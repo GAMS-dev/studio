@@ -284,6 +284,18 @@ void AbstractEdit::setClickPos(const QPoint &clickPos)
     mClickPos = clickPos;
 }
 
+QTextCursor AbstractEdit::cursorForPositionCut(const QPoint &pos) const
+{
+    QTextCursor cur = cursorForPosition(pos);
+    if (!cur.atEnd()) {
+        QTextCursor rightCur = cur;
+        rightCur.setPosition(cur.position()+1);
+        if (cursorRect(rightCur).right() > cursorRect(cur).right()) cur = rightCur;
+        if (cursorRect(cur).right() < pos.x()) cur = QTextCursor();
+    }
+    return cur;
+}
+
 void AbstractEdit::internalExtraSelUpdate()
 {
     QList<QTextEdit::ExtraSelection> selections;
@@ -394,10 +406,10 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
 {
     QList<TextMark *> res;
     if (!mMarks) return res;
-    QPoint pos = mapFromGlobal(QCursor::pos());
-    QTextCursor cursor = cursorForPosition(pos);
-    if (cursor.isNull()) return res;
-    QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cursor.blockNumber()));
+    QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
+    QTextCursor cur = cursorForPositionCut(mousePos);
+    if (cur.isNull()) return res;
+    QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cur.blockNumber()));
     for (TextMark* mark: marks) {
         if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
             res << mark;
