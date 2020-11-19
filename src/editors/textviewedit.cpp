@@ -233,7 +233,10 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
         QTextCursor cursor = cursorForPosition(e->pos());
         setClickPos(e->pos());
         mClickStart = !(e->modifiers() & Qt::ShiftModifier);
-        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) return;
+        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) {
+            CodeEdit::mousePressEvent(e);
+            return;
+        }
         if (e->buttons() == Qt::LeftButton) {
             if (!mClickStart) {
                 mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
