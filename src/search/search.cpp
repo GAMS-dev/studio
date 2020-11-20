@@ -392,7 +392,6 @@ void Search::replaceNext(QString replacementText)
             match.captured(0) == edit->textCursor().selectedText()) {
         edit->textCursor().insertText(replacementText);
     }
-
     selectNextMatch();
 }
 

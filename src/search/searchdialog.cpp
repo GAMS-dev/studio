@@ -61,8 +61,12 @@ SearchDialog::~SearchDialog()
 
 void SearchDialog::on_btn_Replace_clicked()
 {
+    if (ui->combo_search->currentText().isEmpty()) return;
     insertHistory();
+
+    mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex());
+    mSearch.start();
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
@@ -407,6 +411,7 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
     mSuppressChangeEvent = false;
     mSearch.reset();
+    mSearch.setParameters(QList<FileMeta*>(), QRegularExpression(""));
 
     if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
         QTextCursor tc = ce->textCursor();
