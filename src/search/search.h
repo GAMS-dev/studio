@@ -60,7 +60,7 @@ public:
     QList<Result> filteredResultList(QString fileLocation);
 
     void findNext(Direction direction);
-    void replaceNext(QRegularExpression regex, QString replacementText);
+    void replaceNext(QString replacementText);
     void replaceAll(QString replacementText);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 

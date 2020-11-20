@@ -61,10 +61,9 @@ SearchDialog::~SearchDialog()
 
 void SearchDialog::on_btn_Replace_clicked()
 {
-    mSearch.setParameters(getFilesByScope(), createRegex());
-
     insertHistory();
-    mSearch.replaceNext(createRegex(), ui->txt_replace->text());
+    mSearch.setParameters(getFilesByScope(), createRegex());
+    mSearch.replaceNext(ui->txt_replace->text());
 }
 
 void SearchDialog::on_btn_ReplaceAll_clicked()

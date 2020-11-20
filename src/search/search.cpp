@@ -382,12 +382,12 @@ QList<Result> Search::filteredResultList(QString fileLocation)
     return mResultHash[fileLocation];
 }
 
-void Search::replaceNext(QRegularExpression regex, QString replacementText)
+void Search::replaceNext(QString replacementText)
 {
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit || edit->isReadOnly()) return;
 
-    QRegularExpressionMatch match = regex.match(edit->textCursor().selectedText());
+    QRegularExpressionMatch match = mRegex.match(edit->textCursor().selectedText());
 
     if (edit->textCursor().hasSelection() && match.hasMatch() &&
             match.captured(0) == edit->textCursor().selectedText()) {
