@@ -4,7 +4,7 @@ Version 1.4.3
 - disabled run actions and MIRO menu when group has no active executable file
 - fixed gms file not being executable after drag'n'drop to different group
 - fixed link in tooltip of log and lst files
-- fixed links interferinh with text selection in the log
+- fixed links interfering with text selection in the log
 - fixed random tab order when restarting Studio
 - fixed conversion of remote paths to local paths in log when running Engine/NEOS
 - fixed missing reload of opened gdx-diff-file
