@@ -328,13 +328,19 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
     tc.beginEditBlock();
     do {
+
         item = fm->document()->find(regex, lastItem, flags);
         lastItem = item;
 
-        if (!item.isNull()) {
-            item.insertText(replaceTerm);
-            hits++;
-        }
+        // mitigate infinite loop
+       if (lastItem.selectedText().length() == 0) {
+           if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
+       } else {
+           if (!item.isNull()) {
+               item.insertText(replaceTerm);
+               hits++;
+           }
+       }
     } while(!item.isNull());
     tc.endEditBlock();
 
