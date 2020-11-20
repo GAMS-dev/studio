@@ -2485,7 +2485,7 @@ void MainWindow::writeNewAssemblyFileData()
 
 void MainWindow::on_menuMIRO_aboutToShow()
 {
-    ui->menuMIRO->setEnabled(isMiroAvailable());
+    updateMiroEnabled();
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
@@ -2534,7 +2534,7 @@ void MainWindow::updateMiroEnabled(bool printError)
     ui->actionBase_mode->setEnabled(available && !mMiroRunning);
     ui->actionHypercube_mode->setEnabled(available && !mMiroRunning);
     ui->actionConfiguration_mode->setEnabled(available && !mMiroRunning);
-    ui->actionSkip_model_execution->setEnabled(available && mMiroRunning);
+    ui->actionSkip_model_execution->setEnabled(available && !mMiroRunning);
     ui->actionCreate_model_assembly->setEnabled(available && !mMiroRunning);
     ui->actionDeploy->setEnabled(available && !mMiroRunning);
 }
@@ -3666,7 +3666,7 @@ void MainWindow::on_actionSettings_triggered()
     sd.disconnect();
     updateAndSaveSettings();
     if (sd.miroSettingsEnabled())
-        ui->menuMIRO->setEnabled(isMiroAvailable());
+        updateMiroEnabled();
 }
 
 void MainWindow::on_actionSearch_triggered()
