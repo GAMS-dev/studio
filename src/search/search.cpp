@@ -391,9 +391,9 @@ void Search::replaceNext(QRegularExpression regex, QString replacementText)
     selectNextMatch();
 }
 
-void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QString replacementText)
+void Search::replaceAll(QString replacementText)
 {
-    if (regex.pattern().isEmpty()) return;
+    if (mRegex.pattern().isEmpty()) return;
 
     QList<FileMeta*> opened;
     QList<FileMeta*> unopened;
@@ -401,9 +401,9 @@ void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QStrin
     int matchedFiles = 0;
 
     // sort and filter FMs by editability and modification state
-    for (FileMeta* fm : files) {
+    for (FileMeta* fm : mFiles) {
         if (fm->isReadOnly()) {
-            files.removeOne(fm);
+            mFiles.removeOne(fm);
             continue;
         }
 
@@ -417,10 +417,10 @@ void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QStrin
     }
 
     // user interaction
-    QString searchTerm = regex.pattern();
+    QString searchTerm = mRegex.pattern();
     QString replaceTerm = replacementText;
     QMessageBox msgBox;
-    if (files.length() == 0) {
+    if (mFiles.length() == 0) {
         msgBox.setText("No files matching criteria.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
@@ -429,7 +429,7 @@ void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QStrin
     } else if (matchedFiles == 1) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in file "
-                       + files.first()->name() + ". This action cannot be undone. Are you sure?");
+                       + mFiles.first()->name() + ". This action cannot be undone. Are you sure?");
     } else if (matchedFiles >= 2) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files. " +
@@ -437,7 +437,7 @@ void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QStrin
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
-        for (FileMeta* fm : files)
+        for (FileMeta* fm : mFiles)
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "
@@ -457,10 +457,10 @@ void Search::replaceAll(QList<FileMeta*> files, QRegularExpression regex, QStrin
         QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
 
         for (FileMeta* fm : opened)
-            hits += replaceOpened(fm, regex, replaceTerm, mOptions);
+            hits += replaceOpened(fm, mRegex, replaceTerm, mOptions);
 
         for (FileMeta* fm : unopened)
-            hits += replaceUnopened(fm, regex, replaceTerm);
+            hits += replaceUnopened(fm, mRegex, replaceTerm);
 
         mMain->searchDialog()->setSearchStatus(Search::Clear);
     } else if (msgBox.clickedButton() == search) {

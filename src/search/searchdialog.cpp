@@ -69,10 +69,13 @@ void SearchDialog::on_btn_Replace_clicked()
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
 {
-    mSearch.setParameters(getFilesByScope(), createRegex());
-
+    if (ui->combo_search->currentText().isEmpty()) return;
     insertHistory();
-    replaceAll();
+
+    mSearch.setParameters(getFilesByScope(), createRegex());
+    mSearch.replaceAll(ui->txt_replace->text());
+
+    searchParameterChanged();
 }
 
 void SearchDialog::on_btn_FindAll_clicked()
@@ -198,13 +201,6 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         }
     }
     return res;
-}
-
-void SearchDialog::replaceAll()
-{
-    mSearch.replaceAll(getFilesByScope(true), createRegex(), ui->txt_replace->text());
-
-    searchParameterChanged();
 }
 
 void SearchDialog::showEvent(QShowEvent *event)

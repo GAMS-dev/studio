@@ -89,15 +89,10 @@ protected:
 
 private:
     QString searchTerm();
-    void replaceAll();
-    void findInFiles(SearchResultModel* collection, QList<FileMeta *> fml);
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
     void updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
-    void selectNextMatch(Search::Direction direction, bool firstLevel = true);
     void insertHistory();
     void searchParameterChanged();
-    void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
-    void findInDoc(FileMeta *fm, SearchResultModel* collection);
     void updateEditHighlighting();
     void updateUi(bool searching);
     void setSearchStatus(Search::Status status, int hits = 0);
