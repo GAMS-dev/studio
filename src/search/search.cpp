@@ -95,7 +95,6 @@ void Search::stop()
 void Search::reset()
 {
     mFiles.clear();
-    mRegex.setPattern("");
 
     mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
