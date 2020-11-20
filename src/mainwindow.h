@@ -75,7 +75,6 @@ class GdxDiffDialog;
 }
 namespace miro {
 class MiroDeployDialog;
-class MiroModelAssemblyDialog;
 }
 
 struct HistoryData {
@@ -123,7 +122,7 @@ public:
     QWidgetList openEditors();
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
-    void showResults(search::SearchResultList* results);
+    void showResults(search::SearchResultModel* results);
     void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
@@ -131,7 +130,6 @@ public:
     void writeTabs(QVariantMap &tabData) const;
     void resetViews();
     void resizeOptionEditor(const QSize &size);
-    void updateRunState();
     void setForeground();
     void setForegroundOSCheck();
     void convertLowerUpper(bool toUpper);
@@ -152,15 +150,20 @@ public:
 #endif
     option::ParameterEditor *gamsParameterEditor() const;
 
+    search::ResultsView *resultsView() const;
+    void setResultsView(search::ResultsView *resultsView);
+
 signals:
     void saved();
     void savedAs();
 
 public slots:
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+                      NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
+    void updateRunState();
     void updateEditorPos();
     void updateEditorMode();
     void updateEditorBlockCount();
@@ -181,8 +184,10 @@ public slots:
 
 private slots:
     void openInitialFiles();
-    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1, bool forcedTextEditor = false);
-    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1,
+                  bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+                      NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
@@ -253,13 +258,12 @@ private slots:
     void on_actionHypercube_mode_triggered();
     void on_actionConfiguration_mode_triggered();
     void on_actionStop_MIRO_triggered();
-    void on_actionCreate_model_assembly_triggered();
     void on_actionDeploy_triggered();
     void on_menuMIRO_aboutToShow();
-    void miroAssemblyDialogFinish(int result);
-    void miroDeployAssemblyFileUpdate();
+    void writeNewAssemblyFileData();
     void miroDeploy(bool testDeploy, miro::MiroDeployMode mode);
     void setMiroRunning(bool running);
+    void updateMiroEnabled(bool printError = true);
 
     // Tools
     void on_actionGDX_Diff_triggered();
@@ -404,7 +408,7 @@ private:
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
     QFont createEditorFont(const QString &fontFamily, int pointSize);
-    bool isMiroAvailable();
+    bool isMiroAvailable(bool printError = true);
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
@@ -422,6 +426,7 @@ private:
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
+    search::ResultsView *mResultsView = nullptr;
     QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
@@ -462,7 +467,6 @@ private:
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
 
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
-    QScopedPointer<miro::MiroModelAssemblyDialog> mMiroAssemblyDialog;
     bool mMiroRunning = false;
     QString mEngineTempPassword;
     bool mEngineNoDialog = false;

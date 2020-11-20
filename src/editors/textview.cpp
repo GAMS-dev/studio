@@ -21,7 +21,6 @@
 #include "filemapper.h"
 #include "memorymapper.h"
 #include "logger.h"
-#include "exception.h"
 #include "textviewedit.h"
 #include "keys.h"
 #include "settings.h"

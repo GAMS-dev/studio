@@ -34,7 +34,7 @@ public:
     SystemLogEdit(QWidget *parent = nullptr);
     void append(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
 
-    EditorType type() override;
+    EditorType type() const override;
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;

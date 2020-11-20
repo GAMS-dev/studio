@@ -24,7 +24,6 @@
 #include "editors/codeedit.h"
 #include "settings.h"
 #include "search/searchdialog.h"
-#include "exception.h"
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
@@ -62,6 +61,7 @@ CodeEdit::CodeEdit(QWidget *parent)
 
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+    QTimer::singleShot(0, [this](){ setCursorWidth(2); });
 }
 
 CodeEdit::~CodeEdit()
@@ -788,7 +788,8 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
         linkType = AbstractEdit::checkLinks(mousePos, greedy, fName);
     mIncludeLinkLine = -1;
     if (greedy && linkType == linkNone) {
-        QTextCursor cur = cursorForPosition(mousePos);
+        QTextCursor cur = cursorForPositionCut(mousePos);
+        if (cur.isNull()) return linkType;
         int fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
@@ -806,6 +807,9 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
 
 void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
 {
+    QTextCursor cur = textCursor();
+    cur.clearSelection();
+    setTextCursor(cur);
     TextLinkType linkType = checkLinks(mousePos, true);
     if (linkType == linkMark) {
         if (!marks() || marks()->isEmpty()) {
@@ -945,7 +949,8 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
-    bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0 || type() != CodeEditor;
+    bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0
+            || (type() != CodeEditor && type() != LstView);
     updateToolTip(e->pos(), direct);
     updateLinkAppearance(e->pos(), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
@@ -980,8 +985,6 @@ void CodeEdit::wheelEvent(QWheelEvent *e) {
 
 void CodeEdit::paintEvent(QPaintEvent* e)
 {
-    int cw = mBlockEdit ? 0 : 2;
-    if (cursorWidth()!=cw) setCursorWidth(cw);
     AbstractEdit::paintEvent(e);
     if (mBlockEdit) {
         mBlockEdit->paintEvent(e);
@@ -1381,6 +1384,7 @@ void CodeEdit::startBlockEdit(int blockNr, int colNr)
     bool overwrite = overwriteMode();
     if (overwrite) setOverwriteMode(false);
     mBlockEdit = new BlockEdit(this, blockNr, colNr);
+    setCursorWidth(0);
     mBlockEdit->setOverwriteMode(overwrite);
     mBlockEdit->startCursorTimer();
     updateLineNumberAreaWidth();
@@ -1393,6 +1397,7 @@ void CodeEdit::endBlockEdit(bool adjustCursor)
     bool overwrite = mBlockEdit->overwriteMode();
     delete mBlockEdit;
     mBlockEdit = nullptr;
+    setCursorWidth(2);
     setOverwriteMode(overwrite);
 }
 
@@ -1488,7 +1493,7 @@ void CodeEdit::rawKeyPressEvent(QKeyEvent *e)
     AbstractEdit::keyPressEvent(e);
 }
 
-AbstractEdit::EditorType CodeEdit::type()
+AbstractEdit::EditorType CodeEdit::type() const
 {
     return EditorType::CodeEditor;
 }
@@ -1704,9 +1709,7 @@ void CodeEdit::updateExtraSelections()
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
-        QRegularExpression regexp = search::SearchLocator::searchDialog()->results()
-                                    ? search::SearchLocator::searchDialog()->results()->searchRegex()
-                                    : QRegularExpression();
+        QRegularExpression regexp = search::SearchLocator::search()->regex();
 
         // word boundary (\b) only matches start-of-string when first character is \w
         // so \b will only be added when first character of selectedText is a \w
@@ -1720,7 +1723,7 @@ void CodeEdit::updateExtraSelections()
                               || sender() == this->verticalScrollBar()
                               || sender() == nullptr);
 
-        //    (  not caused by parenthiesis matching                               ) OR has selection
+        //    (  not caused by parentheses matching                               ) OR has selection
         if ( (( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || hasSelection())
                // ( depending on settings: no selection necessary OR has selection )
                && (mSettings->toBool(skEdWordUnderCursor) || hasSelection())
@@ -1811,15 +1814,10 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    search::SearchDialog *searchDialog = search::SearchLocator::searchDialog();
-    if (!searchDialog || searchDialog->searchTerm().isEmpty()) return;
+    search::Search* search = search::SearchLocator::search();
+    if (search->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
 
-    search::SearchResultList* list = searchDialog->results();
-    if (!list) return;
-
-    if (list->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
-
-    QRegularExpression regEx = list->searchRegex();
+    QRegularExpression regEx = search->regex();
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -1881,7 +1879,7 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
-        fileName = "<p style='white-space:pre'>"+fileName+"<br>[<b>Ctrl-click</b> to open]</p>";
+        fileName = "<p style='white-space:pre'>"+fileName+"<br><b>Ctrl-click</b> to open</p>";
     }
     return fileName;
 }

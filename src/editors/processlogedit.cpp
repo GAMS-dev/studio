@@ -90,7 +90,7 @@ void ProcessLogEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selec
     return;
 }
 
-AbstractEdit::EditorType ProcessLogEdit::type()
+AbstractEdit::EditorType ProcessLogEdit::type() const
 {
     return EditorType::ProcessLog;
 }

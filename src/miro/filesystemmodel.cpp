@@ -17,11 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "miromodelassemblydialog.h"
-#include "ui_miromodelassemblydialog.h"
-
-#include <QDir>
-#include <QMessageBox>
+#include "filesystemmodel.h"
 
 namespace gams {
 namespace studio {
@@ -271,81 +267,6 @@ QString FileSystemModel::subPath(const QModelIndex &idx) const
 QString FileSystemModel::subPath(const QString &path) const
 {
     return QString(path).remove(0, rootDirectory().canonicalPath().size()+1);
-}
-
-MiroModelAssemblyDialog::MiroModelAssemblyDialog(QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::MiroModelAssemblyDialog)
-{
-    ui->setupUi(this);
-    setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-}
-
-MiroModelAssemblyDialog::~MiroModelAssemblyDialog()
-{
-    delete ui;
-}
-
-QStringList MiroModelAssemblyDialog::selectedFiles()
-{
-    if (mFileSystemModel)
-        return mFileSystemModel->selectedFiles();
-    return QStringList();
-}
-
-void MiroModelAssemblyDialog::setWorkingDirectory(const QString &workingDirectory)
-{
-    mWorkingDirectory = workingDirectory;
-    setupViewModel();
-}
-
-void MiroModelAssemblyDialog::on_createButton_clicked()
-{
-    if (!mFileSystemModel)
-        return;
-    if (selectedFiles().isEmpty())
-        showMessageBox();
-    else
-        accept();
-}
-
-void MiroModelAssemblyDialog::on_selectAllButton_clicked()
-{
-    if (mFileSystemModel)
-        mFileSystemModel->selectAll();
-}
-
-void MiroModelAssemblyDialog::on_clearButton_clicked()
-{
-    if (mFileSystemModel) {
-        mFileSystemModel->clearSelection();
-        auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-        ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
-    }
-}
-
-void MiroModelAssemblyDialog::setupViewModel()
-{
-    if (mWorkingDirectory.isEmpty())
-        return;
-
-    mFileSystemModel = new FileSystemModel(this);
-    mFileSystemModel->setRootPath(mWorkingDirectory);
-    mFilterModel = new FilteredFileSystemModel(this);
-    mFilterModel->setSourceModel(mFileSystemModel);
-
-    auto oldModel = ui->directoryView->selectionModel();
-    ui->directoryView->setModel(mFilterModel);
-    delete oldModel;
-
-    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
-    ui->directoryView->expandAll();
-}
-
-void MiroModelAssemblyDialog::showMessageBox()
-{
-    QMessageBox::critical(this, "No deployment files!", "Please select the files for your MIRO deployment.");
 }
 
 }

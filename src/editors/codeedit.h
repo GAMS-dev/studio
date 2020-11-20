@@ -97,7 +97,7 @@ public:
     void extendedUndo();
     void convertToLower();
     void convertToUpper();
-    EditorType type() override;
+    EditorType type() const override;
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
     void disconnectTimers() override;

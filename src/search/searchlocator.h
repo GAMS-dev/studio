@@ -24,17 +24,17 @@ namespace gams {
 namespace studio {
 namespace search {
 
-class SearchDialog;
-class SearchResultList;
+class Search;
+class SearchResultModel;
 class SearchLocator
 {
 
 public:
-    static search::SearchDialog* searchDialog();
-    static void provide(search::SearchDialog* sd);
+    static search::Search* search();
+    static void provide(Search* s);
 
 private:
-    static search::SearchDialog* mSd;
+    static search::Search* mS;
 };
 
 }

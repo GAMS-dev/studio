@@ -61,7 +61,7 @@ void TextViewEdit::disconnectTimers()
     CodeEdit::disconnectTimers();
 }
 
-AbstractEdit::EditorType TextViewEdit::type()
+AbstractEdit::EditorType TextViewEdit::type() const
 {
     return LstView;
 }
@@ -231,9 +231,12 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
     setCursorWidth(2);
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(e->pos());
-        mClickPos = e->pos();
+        setClickPos(e->pos());
         mClickStart = !(e->modifiers() & Qt::ShiftModifier);
-        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) return;
+        if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) {
+            CodeEdit::mousePressEvent(e);
+            return;
+        }
         if (e->buttons() == Qt::LeftButton) {
             if (!mClickStart) {
                 mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
@@ -256,7 +259,9 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
             }
         } else {
             mScrollTimer.stop();
-            if (mClickStart && (mClickPos - e->pos()).manhattanLength() < 4) return;
+            bool valid = mClickStart && (clickPos() - e->pos()).manhattanLength() < 4;
+            if (valid) return;
+            viewport()->setCursor((e->pos().x() < 0) ? Qt::ArrowCursor : Qt::IBeamCursor);
             QTextCursor::MoveMode mode = mClickStart ? QTextCursor::MoveAnchor
                                                      : QTextCursor::KeepAnchor;
             mClickStart = false;
@@ -298,9 +303,9 @@ TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy, QStri
     Q_UNUSED(greedy)
     TextLinkType res = linkNone;
     if (!marks() || marks()->isEmpty()) {
-        QTextCursor cursor = cursorForPosition(mousePos);
-        if (!cursor.charFormat().anchorHref().isEmpty()) {
-            QString fileName = resolveHRef(cursor.charFormat().anchorHref());
+        QTextCursor cur = cursorForPositionCut(mousePos);
+        if (!cur.charFormat().anchorHref().isEmpty()) {
+            QString fileName = resolveHRef(cur.charFormat().anchorHref());
             res = (fileName.isEmpty()) ? linkMiss : linkMark;
             if (fName) *fName = fileName;
         }
@@ -322,11 +327,12 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 {
     QVector<int> res = CodeEdit::toolTipLstNumbers(mousePos);
     if (res.isEmpty()) {
-        QTextCursor cursor = cursorForPosition(mousePos);
-        cursor.setPosition(cursor.block().position());
-        if (cursor.charFormat().anchorHref().length() > 4 && cursor.charFormat().anchorHref().at(3) == ':') {
+        QTextCursor cur = cursorForPositionCut(mousePos);
+        if (cur.isNull()) return res;
+        cur.setPosition(cur.block().position());
+        if (cur.charFormat().anchorHref().length() > 4 && cur.charFormat().anchorHref().at(3) == ':') {
             bool ok = false;
-            int lstNr = cursor.charFormat().anchorHref().mid(4, cursor.charFormat().anchorHref().length()-4).toInt(&ok);
+            int lstNr = cur.charFormat().anchorHref().mid(4, cur.charFormat().anchorHref().length()-4).toInt(&ok);
             if (ok) res << lstNr;
         }
     }
@@ -336,6 +342,19 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
 void TextViewEdit::paintEvent(QPaintEvent *e)
 {
     AbstractEdit::paintEvent(e);
+}
+
+QString TextViewEdit::getToolTipText(const QPoint &pos)
+{
+    QString res = AbstractEdit::getToolTipText(pos);
+    if (!res.isEmpty()) return res;
+    QString fileName;
+    checkLinks(pos, true, &fileName);
+    if (!fileName.isEmpty()) {
+        fileName = QDir::toNativeSeparators(fileName);
+        fileName = "<p style='white-space:pre'>"+fileName;
+    }
+    return fileName;
 }
 
 int TextViewEdit::topVisibleLine()

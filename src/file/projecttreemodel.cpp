@@ -218,7 +218,7 @@ bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, 
         ProjectGroupNode *group = node->toGroup();
         if (!group) return false;
         group->setName(value.toString());
-        dataChanged(index, index);
+        emit dataChanged(index, index);
         sortChildNodes(group->parentNode());
     }
     return true;
@@ -246,6 +246,7 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
     beginInsertRows(parMi, row, row);
     child->setParentNode(parent);
     endInsertRows();
+    emit childrenChanged();
     return true;
 }
 
@@ -263,6 +264,7 @@ bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);
     endRemoveRows();
+    emit childrenChanged();
     return true;
 }
 
@@ -325,12 +327,12 @@ void ProjectTreeModel::setCurrent(const QModelIndex& ind)
         QModelIndex mi = index(mCurrent);
         mCurrent = nodeId(ind);
         while (mi.isValid()) { // invalidate old
-            dataChanged(mi, mi);
+            emit dataChanged(mi, mi);
             mi = mProjectRepo->node(mi) ? index(mProjectRepo->node(mi)->parentNode()) : QModelIndex();
         }
         mi = ind;
         while (mi.isValid()) { // invalidate new
-            dataChanged(mi, mi);
+            emit dataChanged(mi, mi);
             mi = mProjectRepo->node(mi) ? index(mProjectRepo->node(mi)->parentNode()) : QModelIndex();
         }
     }
@@ -340,7 +342,7 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
         ProjectAbstractNode* node = mProjectRepo->node(mCurrent);
-        if (!node) return false;
+        if (!node || !node->parentNode()) return false;
         if (node->parentNode()->id() == nodeId(ind)) {
             return true;
         }
@@ -371,7 +373,7 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
         NodeId id = nodeId(ind);
         if (id.isValid() && mSelected.contains(id)) {
             mSelected.removeAll(id);
-            dataChanged(ind, ind);
+            emit dataChanged(ind, ind);
         }
     }
     NodeId firstId = mSelected.isEmpty() ? selected.isEmpty() ? NodeId()
@@ -389,7 +391,7 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
         }
         if (id.isValid() && !mSelected.contains(id) && (!selKind || nodeKind == selKind)) {
             mSelected << id;
-            dataChanged(ind, ind);
+            emit dataChanged(ind, ind);
         } else {
             mDeclined << ind;
         }
@@ -399,7 +401,7 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
 void ProjectTreeModel::deselectAll()
 {
     mSelected.clear();
-    dataChanged(rootModelIndex(), index(rowCount(rootModelIndex())));
+    emit dataChanged(rootModelIndex(), index(rowCount(rootModelIndex())));
 }
 
 QVector<NodeId> ProjectTreeModel::selectedIds() const
@@ -431,7 +433,7 @@ const QVector<QModelIndex> ProjectTreeModel::popAddGroups()
 
 void ProjectTreeModel::update(const QModelIndex &ind)
 {
-    if (ind.isValid()) dataChanged(ind, ind);
+    if (ind.isValid()) emit dataChanged(ind, ind);
 }
 
 } // namespace studio

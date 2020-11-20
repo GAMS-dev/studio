@@ -160,10 +160,10 @@ SOURCES += \
     maintabcontextmenu.cpp \
     mainwindow.cpp \
     miro/abstractmiroprocess.cpp \
+    miro/filesystemmodel.cpp \
     miro/mirocommon.cpp \
     miro/mirodeploydialog.cpp \
     miro/mirodeployprocess.cpp \
-    miro/miromodelassemblydialog.cpp \
     miro/miroprocess.cpp \
     modeldialog/glbparser.cpp   \
     modeldialog/library.cpp     \
@@ -223,9 +223,10 @@ SOURCES += \
     schemewidget.cpp \
     search/result.cpp \
     search/resultsview.cpp \
+    search/search.cpp \
     search/searchdialog.cpp \
     search/searchlocator.cpp \
-    search/searchresultlist.cpp \
+    search/searchresultmodel.cpp \
     search/searchworker.cpp \
     settings.cpp \
     settingsdialog.cpp \
@@ -342,10 +343,10 @@ HEADERS += \
     maintabcontextmenu.h \
     mainwindow.h \
     miro/abstractmiroprocess.h \
+    miro/filesystemmodel.h \
     miro/mirocommon.h \
     miro/mirodeploydialog.h \
     miro/mirodeployprocess.h \
-    miro/miromodelassemblydialog.h \
     miro/miroprocess.h \
     modeldialog/glbparser.h \
     modeldialog/library.h \
@@ -406,9 +407,10 @@ HEADERS += \
     schemewidget.h \
     search/result.h \
     search/resultsview.h \
+    search/search.h \
     search/searchdialog.h \
     search/searchlocator.h \
-    search/searchresultlist.h \
+    search/searchresultmodel.h \
     search/searchworker.h \
     settings.h \
     settingsdialog.h \
@@ -451,7 +453,6 @@ FORMS += \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     miro/mirodeploydialog.ui \
-    miro/miromodelassemblydialog.ui \
     modeldialog/modeldialog.ui \
     neos/neosstartdialog.ui \
     option/envvarconfigeditor.ui \

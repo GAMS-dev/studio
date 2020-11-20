@@ -2,6 +2,31 @@ Version 1.5.0 *
 ==================
 - don't generate link to LXI file of NEOS results
 
+Version 1.4.3
+==================
+- fixed GAMS parameters being ignored when re-running gms file in a different group
+- disabled run actions and MIRO menu when group has no active executable file
+- fixed gms file not being executable after drag'n'drop to different group
+- fixed link in tooltip of log and lst files
+- fixed links interfering with text selection in the log
+- fixed random tab order when restarting Studio
+- fixed conversion of remote paths to local paths in log when running Engine/NEOS
+- fixed missing reload of opened gdx-diff-file
+- added error output in system log if the MIRO installation location is invalid
+- improved Search & Replace
+    - improved feedback of ongoing search
+    - improved performance of Find Next/Previous
+    - added possibility to interrupt Find Next/Previous
+    - added navigation outside of the search limit
+    - fixed handling of wrapped lines in search
+    - fixed possible infinite loop when replacing with a regex that has matches of length zero
+- improved MIRO & Engine dialogs
+    - fixed GAMS Engine dialog not adding "previousWork=1" if dialog was set to "Do not show again"
+    - fixed version comparison in GAMS Engine dialog
+    - fixed URL textfield of Engine dialog blocking user input
+    - reworked MIRO deploy dialog
+    - removed standalone MIRO assembly file dialog, which is now part of the MIRO deploy dialog
+
 Version 1.4.2
 ==================
 - fixed crash after reopening GAMS Engine dialog
