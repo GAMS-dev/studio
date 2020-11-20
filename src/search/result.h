@@ -30,6 +30,7 @@ class Result
 {
     friend class SearchResultList;
 public:
+    explicit Result(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
     int lineNr() const;
     int colNr() const;
     QString filepath() const;
@@ -43,7 +44,6 @@ private:
     int mLength;
     QString mFilepath;
     QString mContext;
-    explicit Result(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
 };
 
 }

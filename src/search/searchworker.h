@@ -20,6 +20,8 @@
 #ifndef SEARCHWORKER_H
 #define SEARCHWORKER_H
 
+#include "result.h"
+
 #include <QMutex>
 #include <QObject>
 #include <QRegularExpression>
@@ -31,23 +33,23 @@ class FileMeta;
 
 namespace search {
 
-class SearchResultList;
+class SearchResultModel;
 class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(QMutex& mutex, QList<FileMeta*> fml, SearchResultList* list);
+    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list);
     ~SearchWorker();
     void findInFiles();
 
 signals:
-    void update();
+    void update(int hits);
     void resultReady();
 
 private:
-    QMutex& mMutex;
     QList<FileMeta*> mFiles;
-    SearchResultList* mMatches;
+    QList<Result>* mMatches;
+    QRegularExpression mRegex;
 };
 
 }

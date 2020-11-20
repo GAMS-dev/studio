@@ -23,7 +23,7 @@
 #include <QTableWidget>
 #include <QTextCursor>
 #include <QWidget>
-#include "searchresultlist.h"
+#include "searchresultmodel.h"
 
 
 namespace gams {
@@ -44,7 +44,7 @@ class ResultsView : public QWidget
     Q_OBJECT
 
 public:
-    explicit ResultsView(SearchResultList* searchResultList, MainWindow *parent = nullptr);
+    explicit ResultsView(SearchResultModel* searchResultList, MainWindow *parent = nullptr);
     ~ResultsView();
     void resizeColumnsToContent();
 
@@ -69,7 +69,7 @@ protected:
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultList mResultList;
+    SearchResultModel* mResultList;
     bool mOutdated = false;
 
 private:

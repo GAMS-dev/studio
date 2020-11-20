@@ -17,10 +17,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "searchresultlist.h"
+#include "searchresultmodel.h"
 #include "searchworker.h"
 
 #include <QFile>
+#include <QRegularExpression>
 
 #include "file/filemeta.h"
 
@@ -28,8 +29,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(QMutex& mutex, QList<FileMeta*> fml, SearchResultList* list)
-    : mMutex(mutex), mFiles(fml), mMatches(list)
+SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list)
+    : mFiles(fml), mMatches(list), mRegex(regex)
 {
 }
 
@@ -39,40 +40,46 @@ SearchWorker::~SearchWorker()
 
 void SearchWorker::findInFiles()
 {
-    QMutexLocker m(&mMutex);
     QList<Result> res;
+    bool cacheFull = false;
     for (FileMeta* fm : mFiles) {
+        if (cacheFull) break;
+
         int lineCounter = 0;
         QFile file(fm->location());
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             in.setCodec(fm->codec());
 
-            while (!in.atEnd()) { // read file
-
-                // abort: too many results
-                if (mMatches->size() > MAX_SEARCH_RESULTS-1) break;
+            while (!in.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;
-                if (lineCounter % 1000 == 0 && thread()->isInterruptionRequested()) break;
+                if (lineCounter % 500 == 0 && thread()->isInterruptionRequested()) break;
 
                 QString line = in.readLine();
 
                 QRegularExpressionMatch match;
-                QRegularExpressionMatchIterator i = mMatches->searchRegex().globalMatch(line);
-                while (i.hasNext()) {
+                QRegularExpressionMatchIterator i = mRegex.globalMatch(line);
+                while (i.hasNext() && !cacheFull) {
                     match = i.next();
-                    mMatches->addResult(lineCounter, match.capturedStart(), match.capturedLength(),
-                                       file.fileName(), line.trimmed());
+                    // abort: too many results
+                    if (mMatches->size() > MAX_SEARCH_RESULTS-1) {
+                        cacheFull = true;
+                        break;
+                    }
+
+                    mMatches->append(Result(lineCounter, match.capturedStart(),
+                                           match.capturedLength(), file.fileName(),
+                                           line.trimmed()));
                 }
 
                 // update periodically
                 if (lineCounter % 250000 == 0)
-                    emit update();
+                    emit update(mMatches->size());
             }
             file.close();
         }
-        emit update();
+        emit update(mMatches->size());
     }
     emit resultReady();
     thread()->quit();

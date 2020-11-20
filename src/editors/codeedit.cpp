@@ -24,7 +24,6 @@
 #include "editors/codeedit.h"
 #include "settings.h"
 #include "search/searchdialog.h"
-#include "exception.h"
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
@@ -1710,9 +1709,7 @@ void CodeEdit::updateExtraSelections()
     extraSelCurrentLine(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
-        QRegularExpression regexp = search::SearchLocator::searchDialog()->results()
-                                    ? search::SearchLocator::searchDialog()->results()->searchRegex()
-                                    : QRegularExpression();
+        QRegularExpression regexp = search::SearchLocator::search()->regex();
 
         // word boundary (\b) only matches start-of-string when first character is \w
         // so \b will only be added when first character of selectedText is a \w
@@ -1726,7 +1723,7 @@ void CodeEdit::updateExtraSelections()
                               || sender() == this->verticalScrollBar()
                               || sender() == nullptr);
 
-        //    (  not caused by parenthiesis matching                               ) OR has selection
+        //    (  not caused by parentheses matching                               ) OR has selection
         if ( (( !extraSelMatchParentheses(selections, sender() == &mParenthesesDelay) || hasSelection())
                // ( depending on settings: no selection necessary OR has selection )
                && (mSettings->toBool(skEdWordUnderCursor) || hasSelection())
@@ -1817,15 +1814,10 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
-    search::SearchDialog *searchDialog = search::SearchLocator::searchDialog();
-    if (!searchDialog || searchDialog->searchTerm().isEmpty()) return;
+    search::Search* search = search::SearchLocator::search();
+    if (search->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
 
-    search::SearchResultList* list = searchDialog->results();
-    if (!list) return;
-
-    if (list->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
-
-    QRegularExpression regEx = list->searchRegex();
+    QRegularExpression regEx = search->regex();
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());

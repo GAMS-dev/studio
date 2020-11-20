@@ -9,6 +9,13 @@ Version 1.4.3 *
 - fixed URL edit of Engine dialog blocking some input
 - ignore links when selecting text in the LOG
 - restore tab order on Studio restart
+- improved feedback of ongoing search
+- improved performance of search
+- fixed navigation past the search limit
+- added possibility to interrupt Find Next/Previous
+- fixed handling of wrapped lines in search
+- fixed possible infinite loop when replacing with a regex that has matches of length zero
+- fixed conversion of remote paths to local paths
 - fixed unaccessible MIRO assembly file dialog when opened via MIRO deploy dialog
 - fixed conversion of remote paths to local paths
 - removed standalone MIRO assembly file dialog, which is now part of the MIRO deploy dialog

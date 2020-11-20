@@ -122,7 +122,7 @@ public:
     QWidgetList openEditors();
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
-    void showResults(search::SearchResultList* results);
+    void showResults(search::SearchResultModel* results);
     void closeResultsPage();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
@@ -149,6 +149,9 @@ public:
     help::HelpWidget *helpWidget() const;
 #endif
     option::ParameterEditor *gamsParameterEditor() const;
+
+    search::ResultsView *resultsView() const;
+    void setResultsView(search::ResultsView *resultsView);
 
 signals:
     void saved();
@@ -423,6 +426,7 @@ private:
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
+    search::ResultsView *mResultsView = nullptr;
     QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
