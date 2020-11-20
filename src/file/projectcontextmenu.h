@@ -22,6 +22,7 @@
 
 #include <QMenu>
 #include <QSignalMapper>
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -49,7 +50,8 @@ signals:
     void getSourcePath(QString& source);
     void openLogFor(ProjectAbstractNode* node, bool openOutput, bool createMissing);
     void renameGroup(ProjectGroupNode* group);
-    void openFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void openFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
+                  NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void selectAll();
     void expandAll();

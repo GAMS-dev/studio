@@ -449,24 +449,51 @@ void EngineProcess::setProcState(ProcState newState)
     emit procStateChanged(this, mProcState);
 }
 
+int indexOfEnd(const QByteArray &data, const QByteArray &pattern, const int start)
+{
+    int match = 0;
+    for (int i = start; i < data.length(); ++i) {
+        if (match == pattern.length()) return i;
+        if (data.at(i) == pattern.at(match)) ++match;
+        else match = 0;
+    }
+    return -1;
+}
+
 QByteArray EngineProcess::convertReferences(const QByteArray &data)
 {
     int scanDirIndex = -1;
+    int endOfParameters = (!mRemoteWorkDir.isEmpty() && !mInParameterBlock) ? 0 : data.length();
     if (mRemoteWorkDir.isEmpty()) {
         scanDirIndex = data.indexOf("--- GAMS Parameters defined");
-        if (scanDirIndex >= 0) mScanForRemoteDir = true;
+        if (scanDirIndex >= 0) mInParameterBlock = true;
     }
-    if (mScanForRemoteDir) {
-        scanDirIndex = data.indexOf("    CurDir ", scanDirIndex);
+    if (mInParameterBlock) {
+        scanDirIndex = qMax(indexOfEnd(data, "    Input ", scanDirIndex),
+                            indexOfEnd(data, "    Restart ", scanDirIndex));
+        int end = 0;
         if (scanDirIndex >= 0) {
-            scanDirIndex += 11;
-            int end = scanDirIndex;
+            end = scanDirIndex;
             for ( ; end < data.length(); ++end) {
                 if (data.at(end) == '\n' || data.at(end) == '\r')
                     break;
             }
             mRemoteWorkDir = data.mid(scanDirIndex, end-scanDirIndex);
-            mScanForRemoteDir = false;
+            mRemoteWorkDir = mRemoteWorkDir.left(qMax(mRemoteWorkDir.lastIndexOf('/'), mRemoteWorkDir.lastIndexOf('\\'))+1);
+        }
+        if (!mRemoteWorkDir.isEmpty()) {
+            // remote working dir found, now find end of parameters
+            while (mInParameterBlock && data.length() > end+5) {
+                while (data.length() > end && (data.at(end) == '\n' || data.at(end) == '\r')) ++end;
+                if (data.length() > end+4 && data.mid(end,4) == "    ") {
+                    while (data.length() > end && (data.at(end) != '\n' && data.at(end) != '\r')) ++end;
+                    continue;
+                } else {
+                    mInParameterBlock = false;
+                    endOfParameters = end;
+                    break;
+                }
+            }
         }
     }
     QByteArray res;
@@ -477,7 +504,7 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
     int iCount = 0;  // count of chars currently not copied
 
     for (int i = 0; i < data.size(); ++i) {
-        if (!mRemoteWorkDir.isEmpty()) {
+        if (!mRemoteWorkDir.isEmpty() && i > endOfParameters) {
             if (iRP == mRemoteWorkDir.length()) {
                 // add local path
                 iRP = 0;

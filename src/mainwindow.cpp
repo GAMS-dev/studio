@@ -43,7 +43,7 @@
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
 #include "search/searchlocator.h"
-#include "search/searchresultlist.h"
+#include "search/searchresultmodel.h"
 #include "search/resultsview.h"
 #include "gotodialog.h"
 #include "support/updatedialog.h"
@@ -58,7 +58,6 @@
 #include "miro/miroprocess.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
-#include "miro/miromodelassemblydialog.h"
 #include "process/gamsinstprocess.h"
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
@@ -84,8 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
       mLogTabContextMenu(this),
       mFileEventHandler(new FileEventHandler(this)),
       mGdxDiffDialog(new gdxdiffdialog::GdxDiffDialog(this)),
-      mMiroDeployDialog(new miro::MiroDeployDialog(this)),
-      mMiroAssemblyDialog(new miro::MiroModelAssemblyDialog(this))
+      mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     Settings *settings = Settings::settings();
@@ -209,14 +207,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
-    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::updateModelAssemblyFile,
-            this, &MainWindow::miroDeployAssemblyFileUpdate);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
             this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
             this, &MainWindow::miroDeploy);
-    connect(mMiroAssemblyDialog.get(), &miro::MiroModelAssemblyDialog::finished,
-            this, &MainWindow::miroAssemblyDialogFinish);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::newAssemblyFileData,
+            this, &MainWindow::writeNewAssemblyFileData);
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
@@ -259,7 +255,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainTabs->setUsesScrollButtons(true);
 
     // set up services
-    search::SearchLocator::provide(mSearchDialog);
+    search::SearchLocator::provide(mSearchDialog->search());
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
@@ -283,6 +279,10 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
+        mRecent.setEditor(mRecent.editor(), this);
+        updateRunState();
+    });
     mStartedUp = true;
 }
 
@@ -292,6 +292,8 @@ MainWindow::~MainWindow()
     delete mWp;
     delete ui;
     delete mNavigationHistory;
+    delete mResultsView;
+    delete mSearchDialog;
     FileType::clear();
 }
 
@@ -1118,7 +1120,7 @@ void MainWindow::updateEditorItemCount()
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
 {
-    if (!searchDialog()->searchTerm().isEmpty())
+    if (!searchDialog()->search()->regex().pattern().isEmpty())
         searchDialog()->on_documentContentChanged(from, charsRemoved, charsAdded);
 }
 
@@ -2096,9 +2098,9 @@ int MainWindow::showSaveChangesMsgBox(const QString &text)
 
 void MainWindow::on_logTabs_tabCloseRequested(int index)
 {
-    bool isResults = ui->logTabs->widget(index) == mSearchDialog->resultsView();
+    bool isResults = ui->logTabs->widget(index) == resultsView();
     if (isResults) {
-        mSearchDialog->clearResults();
+        mSearchDialog->clearResultsView();
         return;
     }
 
@@ -2130,7 +2132,9 @@ bool MainWindow::isActiveTabRunnable()
        if (!fm) { // assuming a welcome page here
            return false;
        } else {
-           return true;
+           if (!mRecent.group()) return false;
+           ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
+           return runGroup && runGroup->runnableGms();
        }
     }
     return false;
@@ -2447,62 +2451,43 @@ void MainWindow::on_actionStop_MIRO_triggered()
     mRecent.group()->toRunGroup()->process()->terminate();
 }
 
-void MainWindow::on_actionCreate_model_assembly_triggered()
-{
-    QString location;
-    QString assemblyFile;
-    QStringList checkedFiles;
-    if (mRecent.hasValidRunGroup()) {
-        location = mRecent.group()->toRunGroup()->location();
-        assemblyFile = miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->location(),
-                                                          mRecent.group()->toRunGroup()->mainModelName());
-        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
-                                                                    mRecent.group()->toRunGroup()->mainModelName(false));
-    }
-
-    mMiroAssemblyDialog->setAssemblyFileName(assemblyFile);
-    mMiroAssemblyDialog->setWorkingDirectory(location);
-    mMiroAssemblyDialog->setSelectedFiles(checkedFiles);
-    mMiroAssemblyDialog->open();
-}
-
 void MainWindow::on_actionDeploy_triggered()
 {
     if (!validMiroPrerequisites())
         return;
 
-    auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
+    QString assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
+                           miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
+
+    QStringList checkedFiles;
+    if (mRecent.hasValidRunGroup()) {
+        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
+                                                                mRecent.group()->toRunGroup()->mainModelName(false));
+    }
+
     mMiroDeployDialog->setDefaults();
-    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
+    mMiroDeployDialog->setAssemblyFileName(assemblyFile);
+    mMiroDeployDialog->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
+}
+
+void MainWindow::writeNewAssemblyFileData()
+{
+    if (!miro::MiroCommon::writeAssemblyFile(mMiroDeployDialog->assemblyFileName(),
+                                             mMiroDeployDialog->selectedFiles()))
+        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1")
+                                           .arg(mMiroDeployDialog->assemblyFileName()),
+                                           LogMsgType::Error);
+    else {
+        mMiroDeployDialog->setAssemblyFileName(mMiroDeployDialog->assemblyFileName());
+        addToGroup(mRecent.group(), mMiroDeployDialog->assemblyFileName());
+    }
 }
 
 void MainWindow::on_menuMIRO_aboutToShow()
 {
-    ui->menuMIRO->setEnabled(isMiroAvailable());
-}
-
-void MainWindow::miroAssemblyDialogFinish(int result)
-{
-    if (result != QDialog::Accepted)
-        return;
-
-    if (!miro::MiroCommon::writeAssemblyFile(mMiroAssemblyDialog->assemblyFileName(),
-                                             mMiroAssemblyDialog->selectedFiles()))
-        SysLogLocator::systemLog()->append(QString("Could not write model assembly file: %1")
-                                           .arg(mMiroAssemblyDialog->assemblyFileName()),
-                                           LogMsgType::Error);
-    else
-        addToGroup(mRecent.group(), mMiroAssemblyDialog->assemblyFileName());
-}
-
-void MainWindow::miroDeployAssemblyFileUpdate()
-{
-    on_actionCreate_model_assembly_triggered();
-    auto assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
-                        miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
-    mMiroDeployDialog->setModelAssemblyFile(assemblyFile);
+    updateMiroEnabled();
 }
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
@@ -2540,8 +2525,20 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 void MainWindow::setMiroRunning(bool running)
 {
     mMiroRunning = running;
-    ui->menuMIRO->setEnabled(!running);
-    mMiroDeployDialog->setEnabled(!running);
+    updateMiroEnabled();
+}
+
+void MainWindow::updateMiroEnabled(bool printError)
+{
+    bool available = isMiroAvailable(printError) && isActiveTabRunnable();
+    ui->menuMIRO->setEnabled(available);
+    mMiroDeployDialog->setEnabled(available && !mMiroRunning);
+    ui->actionBase_mode->setEnabled(available && !mMiroRunning);
+    ui->actionHypercube_mode->setEnabled(available && !mMiroRunning);
+    ui->actionConfiguration_mode->setEnabled(available && !mMiroRunning);
+    ui->actionSkip_model_execution->setEnabled(available && !mMiroRunning);
+    ui->actionCreate_model_assembly->setEnabled(available && !mMiroRunning);
+    ui->actionDeploy->setEnabled(available && !mMiroRunning);
 }
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
@@ -2980,9 +2977,9 @@ void MainWindow::execution(ProjectRunGroupNode *runGroup)
     ui->dockProcessLog->raise();
 }
 
-
 void MainWindow::updateRunState()
 {
+    updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
 }
 
@@ -3026,7 +3023,7 @@ void MainWindow::openInitialFiles()
             mHistory.files() << map.value("file").toString();
     }
 
-    openFiles(mInitialFiles);
+    openFiles(mInitialFiles, false);
     mInitialFiles.clear();
     watchProjectTree();
     ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
@@ -3283,7 +3280,7 @@ void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool cr
         if (TextView* logEdit = ViewHelper::toTextView(logNode->file()->editors().first())) {
             if (openOutput) setOutputViewVisibility(true);
             if (ui->logTabs->currentWidget() != logEdit) {
-                if (ui->logTabs->currentWidget() != searchDialog()->resultsView())
+                if (ui->logTabs->currentWidget() != resultsView())
                     ui->logTabs->setCurrentWidget(logEdit);
             }
             if (moveToEnd) {
@@ -3358,7 +3355,8 @@ void MainWindow::raiseEdit(QWidget *widget)
     }
 }
 
-void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEditor)
+void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib,
+                          bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     Settings *settings = Settings::settings();
     if (!fileMeta) return;
@@ -3396,7 +3394,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         }
         try {
             if (codecMib == -1) codecMib = fileMeta->codecMib();
-            edit = fileMeta->createEdit(tabWidget, runGroup, codecMib, forcedAsTextEditor);
+            edit = fileMeta->createEdit(tabWidget, runGroup, codecMib, forcedAsTextEditor, tabStrategy);
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -3452,10 +3450,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     addToOpenedFiles(fileMeta->location());
 }
 
-void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
+void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!node) return;
-    openFile(node->file(), focus, node->assignedRunGroup(), codecMib, forcedAsTextEditor);
+    openFile(node->file(), focus, node->assignedRunGroup(), codecMib, forcedAsTextEditor, tabStrategy);
 }
 
 void MainWindow::reOpenFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
@@ -3591,7 +3589,13 @@ void MainWindow::closeFileEditors(const FileId fileId)
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().first();
-        if (mRecent.editor() == edit) mRecent.reset();
+        if (mRecent.editor() == edit) {
+            if (mRecent.group()) {
+               ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
+               runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+            }
+            mRecent.reset();
+        }
         lastIndex = ui->mainTabs->indexOf(edit);
         ui->mainTabs->removeTab(lastIndex);
         fm->removeEditor(edit);
@@ -3603,7 +3607,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
-void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor)
+void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!QFileInfo(filePath).exists()) {
         EXCEPT() << "File not found: " << filePath;
@@ -3616,7 +3620,7 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib,
             EXCEPT() << "Could not create node for file: " << filePath;
     }
 
-    openFileNode(fileNode, focus, codecMib, forcedAsTextEditor);
+    openFileNode(fileNode, focus, codecMib, forcedAsTextEditor, tabStrategy);
 }
 
 ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName, ProjectGroupNode* group)
@@ -3664,7 +3668,7 @@ void MainWindow::on_actionSettings_triggered()
     sd.disconnect();
     updateAndSaveSettings();
     if (sd.miroSettingsEnabled())
-        ui->menuMIRO->setEnabled(isMiroAvailable());
+        updateMiroEnabled();
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -3739,12 +3743,13 @@ void MainWindow::openSearchDialog()
     }
 }
 
-void MainWindow::showResults(search::SearchResultList* results)
+void MainWindow::showResults(search::SearchResultModel* results)
 {
-    int index = ui->logTabs->indexOf(searchDialog()->resultsView()); // did widget exist before?
+    int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 
-    searchDialog()->setResultsView(new search::ResultsView(results, this));
-    connect(searchDialog()->resultsView(), &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    delete mResultsView;
+    mResultsView = new search::ResultsView(results, this);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
 
     QString nr;
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
@@ -3758,15 +3763,17 @@ void MainWindow::showResults(search::SearchResultList* results)
 
     if (index != -1) ui->logTabs->removeTab(index); // remove old result page
 
-    ui->logTabs->addTab(searchDialog()->resultsView(), title); // add new result page
-    ui->logTabs->setCurrentWidget(searchDialog()->resultsView());
+    ui->logTabs->addTab(mResultsView, title); // add new result page
+    ui->logTabs->setCurrentWidget(mResultsView);
 }
 
 void MainWindow::closeResultsPage()
 {
-    int index = ui->logTabs->indexOf(searchDialog()->resultsView());
+    int index = ui->logTabs->indexOf(mResultsView);
     if (index != -1) ui->logTabs->removeTab(index);
-    mSearchDialog->setResultsView(nullptr);
+
+    delete mResultsView;
+    mResultsView = nullptr;
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
@@ -3812,24 +3819,31 @@ void MainWindow::updateEditorLineWrapping()
 
 bool MainWindow::readTabs(const QVariantMap &tabData)
 {
+    QString curTab;
     if (tabData.contains("mainTabRecent")) {
         QString location = tabData.value("mainTabRecent").toString();
         if (QFileInfo(location).exists()) {
             openFilePath(location, true);
             mOpenTabsList << location;
+            curTab = location;
         } else if (location == "WELCOME_PAGE") {
             showWelcomePage();
         }
     }
     QApplication::processEvents(QEventLoop::AllEvents, 10);
     if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QVariant::List)) {
+        NewTabStrategy tabStrategy = curTab.isEmpty() ? tabAtEnd : tabBeforeCurrent;
         QVariantList tabArray = tabData.value("mainTabs").toList();
         for (int i = 0; i < tabArray.size(); ++i) {
             QVariantMap tabObject = tabArray.at(i).toMap();
             if (tabObject.contains("location")) {
                 QString location = tabObject.value("location").toString();
+                if (curTab == location) {
+                    tabStrategy = tabAtEnd;
+                    continue;
+                }
                 if (QFileInfo(location).exists()) {
-                    openFilePath(location, false);
+                    openFilePath(location, false, -1, false, tabStrategy);
                     mOpenTabsList << location;
                 }
                 if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
@@ -3875,6 +3889,17 @@ void MainWindow::goToLine(int result)
             tv->jumpTo(mGotoDialog->lineNumber(), 0);
     }
 }
+
+search::ResultsView *MainWindow::resultsView() const
+{
+    return mResultsView;
+}
+
+void MainWindow::setResultsView(search::ResultsView *resultsView)
+{
+    mResultsView = resultsView;
+}
+
 void MainWindow::on_actionGo_To_triggered()
 {
     if (ui->mainTabs->currentWidget() == mWp) return;
@@ -4392,12 +4417,15 @@ QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
     return font;
 }
 
-bool MainWindow::isMiroAvailable()
+bool MainWindow::isMiroAvailable(bool printError)
 {
     if (Settings::settings()->toString(skMiroInstallPath).isEmpty())
         return false;
     QFileInfo fileInfo(Settings::settings()->toString(skMiroInstallPath));
-    return fileInfo.exists();
+    bool state = fileInfo.exists() && !fileInfo.isDir() && fileInfo.isExecutable();
+    if (!state && printError)
+        appendSystemLogError("The MIRO installation location does not exist or does not point to a valid MIRO executable. Please check your settings.");
+    return state;
 }
 
 bool MainWindow::validMiroPrerequisites()
@@ -4442,6 +4470,16 @@ void MainWindow::openGdxDiffFile()
             QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
             if(v.size() == 1)
                 pgDiff = v.first()->parentNode();
+        }
+    }
+    if (FileMeta* fMeta = mFileMetaRepo.fileMeta(diffFile)) {
+        if (fMeta->isOpen()) {
+            bool resized = fMeta->compare().testFlag(FileMeta::FdSize);
+            fMeta->refreshMetaData();
+            if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().first())) {
+                gdx->setHasChanged(true);
+                gdx->reload(fMeta->codec(), resized);
+            }
         }
     }
     ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
