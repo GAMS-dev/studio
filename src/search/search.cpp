@@ -353,11 +353,6 @@ void Search::finished()
     for (Result r : mResults)
         mResultHash[r.filepath()].append(r);
 
-    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor()))
-        ae->updateExtraSelections();
-    else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
-        tv->updateExtraSelections();
-
     mCacheAvailable = true;
 }
 
