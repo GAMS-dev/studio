@@ -185,9 +185,12 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
-    mSpecialKinds.insert(QString("onPut").toLower(), SyntaxKind::PutBlock);
-    mSpecialKinds.insert(QString("onPutV").toLower(), SyntaxKind::PutBlock);
-    mSpecialKinds.insert(QString("onPutS").toLower(), SyntaxKind::PutBlock);
+    mSpecialKinds.insert(QString("onEcho").toLower(), SyntaxKind::IgnoredBlock);
+    mSpecialKinds.insert(QString("onEchoV").toLower(), SyntaxKind::IgnoredBlock);
+    mSpecialKinds.insert(QString("onEchoS").toLower(), SyntaxKind::IgnoredBlock);
+    mSpecialKinds.insert(QString("onPut").toLower(), SyntaxKind::IgnoredBlock);
+    mSpecialKinds.insert(QString("onPutV").toLower(), SyntaxKind::IgnoredBlock);
+    mSpecialKinds.insert(QString("onPutS").toLower(), SyntaxKind::IgnoredBlock);
     mSpecialKinds.insert(QString("embeddedCode").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("embeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("embeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
@@ -209,20 +212,22 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
 {
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
-    flavor = mFlavors.value(match.captured(2).toLower(), 0);
+    int outFlavor = mFlavors.value(match.captured(2).toLower(), 0);
     if (entryKind == SyntaxKind::CommentBlock) {
         if (match.captured(2).compare("offtext", Qt::CaseInsensitive) == 0)
-            return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+            return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
-    } else if (entryKind == SyntaxKind::PutBlock) {
-        if (match.captured(2).compare("offput", Qt::CaseInsensitive) == 0)
-            return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+    } else if (entryKind == SyntaxKind::IgnoredBlock) {
+        if (flavor == 3 && match.captured(2).compare("offecho", Qt::CaseInsensitive) == 0)
+            return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+        if (flavor == 5 && match.captured(2).compare("offput", Qt::CaseInsensitive) == 0)
+            return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
         if (match.captured(2).compare("pauseembeddedcode", Qt::CaseInsensitive) == 0
                 || match.captured(2).compare("endembeddedcode", Qt::CaseInsensitive) == 0
                 || match.captured(2).compare("offembeddedcode", Qt::CaseInsensitive) == 0)
-            return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+            return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (mSyntaxCommentEndline) {
         if (match.captured(2).startsWith("oneolcom", Qt::CaseInsensitive)) {
@@ -248,11 +253,11 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
         bool atEnd = match.capturedEnd(0) >= line.length();
-        bool isMultiLine = next == SyntaxKind::CommentBlock || next == SyntaxKind::PutBlock || next == SyntaxKind::EmbeddedBody;
+        bool isMultiLine = next == SyntaxKind::CommentBlock || next == SyntaxKind::IgnoredBlock || next == SyntaxKind::EmbeddedBody;
         SyntaxShift shift = (atEnd && !isMultiLine) ? SyntaxShift::skip : SyntaxShift::in;
-        return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
+        return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
     } else {
-        return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), next, true);
+        return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), next, true);
     }
 }
 

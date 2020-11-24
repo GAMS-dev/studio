@@ -50,7 +50,7 @@ enum class SyntaxKind {
     CommentBlock,
     CommentEndline,
     CommentInline,
-    PutBlock,
+    IgnoredBlock,
 
     Semicolon,
     CommaIdent,
