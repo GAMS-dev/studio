@@ -67,10 +67,11 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxAssign(), Scheme::Syntax_assign);
     initKind(new SyntaxString(), Scheme::Syntax_neutral);
     initKind(new SyntaxCommentLine(), Scheme::Syntax_comment);
-    initKind(new SyntaxCommentBlock(), Scheme::Syntax_comment);
+    initKind(new SyntaxUniqueBlock(SyntaxKind::CommentBlock), Scheme::Syntax_comment);
     SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
     initKind(syntaxCommentEndline, Scheme::Syntax_comment);
     syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
+    initKind(new SyntaxUniqueBlock(SyntaxKind::PutBlock), Scheme::Syntax_neutral);
 
     initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), Scheme::Syntax_keyword);
     initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), Scheme::Syntax_keyword);
@@ -239,6 +240,7 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
     SyntaxKind::CommentBlock,
     SyntaxKind::CommentEndline,
     SyntaxKind::CommentInline,
+    SyntaxKind::PutBlock,
     SyntaxKind::DeclarationSetType,
     SyntaxKind::DeclarationVariableType,
     SyntaxKind::Declaration,

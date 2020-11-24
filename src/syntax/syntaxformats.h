@@ -50,6 +50,7 @@ enum class SyntaxKind {
     CommentBlock,
     CommentEndline,
     CommentInline,
+    PutBlock,
 
     Semicolon,
     CommaIdent,
@@ -278,10 +279,10 @@ public:
 };
 
 /// \brief Defines the syntax for a multi-line comment block.
-class SyntaxCommentBlock: public SyntaxAbstract
+class SyntaxUniqueBlock: public SyntaxAbstract
 {
 public:
-    SyntaxCommentBlock();
+    SyntaxUniqueBlock(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };

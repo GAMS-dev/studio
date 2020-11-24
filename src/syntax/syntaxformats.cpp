@@ -148,7 +148,7 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
 
     QList<QPair<QString, QString>> data = SyntaxData::directives();
     QStringList blockEndingDirectives;
-    blockEndingDirectives << "offText" << "pauseEmbeddedCode" << "endEmbeddedCode" << "offEmbeddedCode";
+    blockEndingDirectives << "offText" << "offPut" << "pauseEmbeddedCode" << "endEmbeddedCode" << "offEmbeddedCode";
     for (const QPair<QString, QString> &list: data) {
         if (blockEndingDirectives.contains(list.first)) {
             // block-ending directives are checked separately -> ignore here
@@ -185,6 +185,9 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
+    mSpecialKinds.insert(QString("onPut").toLower(), SyntaxKind::PutBlock);
+    mSpecialKinds.insert(QString("onPutV").toLower(), SyntaxKind::PutBlock);
+    mSpecialKinds.insert(QString("onPutS").toLower(), SyntaxKind::PutBlock);
     mSpecialKinds.insert(QString("embeddedCode").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("embeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("embeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
@@ -209,6 +212,10 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
     flavor = mFlavors.value(match.captured(2).toLower(), 0);
     if (entryKind == SyntaxKind::CommentBlock) {
         if (match.captured(2).compare("offtext", Qt::CaseInsensitive) == 0)
+            return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+        return SyntaxBlock(this);
+    } else if (entryKind == SyntaxKind::PutBlock) {
+        if (match.captured(2).compare("offput", Qt::CaseInsensitive) == 0)
             return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
@@ -241,7 +248,7 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
         bool atEnd = match.capturedEnd(0) >= line.length();
-        bool isMultiLine = next == SyntaxKind::CommentBlock || next == SyntaxKind::EmbeddedBody;
+        bool isMultiLine = next == SyntaxKind::CommentBlock || next == SyntaxKind::PutBlock || next == SyntaxKind::EmbeddedBody;
         SyntaxShift shift = (atEnd && !isMultiLine) ? SyntaxShift::skip : SyntaxShift::in;
         return SyntaxBlock(this, flavor, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
     } else {
@@ -315,18 +322,18 @@ SyntaxBlock SyntaxCommentLine::validTail(const QString &line, int index, int fla
 }
 
 
-SyntaxCommentBlock::SyntaxCommentBlock() : SyntaxAbstract(SyntaxKind::CommentBlock)
+SyntaxUniqueBlock::SyntaxUniqueBlock(SyntaxKind kind) : SyntaxAbstract(kind)
 {
     mSubKinds << SyntaxKind::Directive;
 }
 
-SyntaxBlock SyntaxCommentBlock::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
+SyntaxBlock SyntaxUniqueBlock::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
 {
     Q_UNUSED(entryKind)
     return SyntaxBlock(this, flavor, index, line.length());
 }
 
-SyntaxBlock SyntaxCommentBlock::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxUniqueBlock::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     int end = index;
     while (isWhitechar(line, end)) end++;
