@@ -61,9 +61,6 @@ protected:
 
     virtual QProcessEnvironment miroProcessEnvironment() = 0;
 
-    QString confFolder() const;
-    QString dataFolder() const;
-
     void readStdChannel(QProcess &process, QProcess::ProcessChannel channel);
 
 private:
@@ -73,9 +70,6 @@ private:
     QString mMiroPath;
     QString mModelName;
     QProcess mMiro;
-
-    static const QString ConfFolderPrefix;
-    static const QString DataFolderPrefix;
 };
 
 }

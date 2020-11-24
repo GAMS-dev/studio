@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>23</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1382,7 +1382,7 @@
      <normaloff>:/img/miro-deploy</normaloff>:/img/miro-deploy</iconset>
    </property>
    <property name="text">
-    <string>Deploy</string>
+    <string>Assembly and Deploy</string>
    </property>
   </action>
   <action name="actionCreate_model_assembly">

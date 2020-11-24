@@ -29,7 +29,8 @@ FilteredFileSystemModel::FilteredFileSystemModel(QObject *parent)
 
 }
 
-bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
+bool FilteredFileSystemModel::filterAcceptsColumn(int source_column,
+                                                  const QModelIndex &source_parent) const
 {
     Q_UNUSED(source_parent)
     return source_column == 0;
@@ -38,7 +39,8 @@ bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QMode
 FileSystemModel::FileSystemModel(QObject *parent)
     : QFileSystemModel(parent)
 {
-    connect(this, &QFileSystemModel::directoryLoaded, this, &FileSystemModel::newDirectoryData);
+    connect(this, &QFileSystemModel::directoryLoaded,
+            this, &FileSystemModel::newDirectoryData);
 }
 
 QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
