@@ -808,16 +808,18 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
 void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
 {
     QTextCursor cur = textCursor();
-    cur.clearSelection();
-    setTextCursor(cur);
     TextLinkType linkType = checkLinks(mousePos, true);
     if (linkType == linkMark) {
         if (!marks() || marks()->isEmpty()) {
             // no regular marks, check for temporary hrefs
             QTextCursor cursor = cursorForPosition(mousePos);
             if (resolveHRef(cursor.charFormat().anchorHref()).isEmpty()) return;
+            cur.clearSelection();
+            setTextCursor(cur);
             emit jumpToHRef(cursor.charFormat().anchorHref());
         } else {
+            cur.clearSelection();
+            setTextCursor(cur);
             marksAtMouse().first()->jumpToRefMark();
         }
     }
@@ -829,6 +831,8 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
             QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
             if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
                 mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
+                cur.clearSelection();
+                setTextCursor(cur);
                 emit jumpToHRef(command+" "+file);
             }
         }
