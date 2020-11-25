@@ -185,12 +185,12 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
-    mSpecialKinds.insert(QString("onEcho").toLower(), SyntaxKind::IgnoredBlock);
-    mSpecialKinds.insert(QString("onEchoV").toLower(), SyntaxKind::IgnoredBlock);
-    mSpecialKinds.insert(QString("onEchoS").toLower(), SyntaxKind::IgnoredBlock);
-    mSpecialKinds.insert(QString("onPut").toLower(), SyntaxKind::IgnoredHead);
-    mSpecialKinds.insert(QString("onPutV").toLower(), SyntaxKind::IgnoredHead);
-    mSpecialKinds.insert(QString("onPutS").toLower(), SyntaxKind::IgnoredHead);
+    mSpecialKinds.insert(QString("onEcho").toLower(), SyntaxKind::IgnoredHead);
+    mSpecialKinds.insert(QString("onEchoV").toLower(), SyntaxKind::IgnoredHead);
+    mSpecialKinds.insert(QString("onEchoS").toLower(), SyntaxKind::IgnoredHead);
+    mSpecialKinds.insert(QString("onPut").toLower(), SyntaxKind::IgnoredBlock);
+    mSpecialKinds.insert(QString("onPutV").toLower(), SyntaxKind::IgnoredBlock);
+    mSpecialKinds.insert(QString("onPutS").toLower(), SyntaxKind::IgnoredBlock);
     mSpecialKinds.insert(QString("embeddedCode").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("embeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("embeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
