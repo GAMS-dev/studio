@@ -63,7 +63,7 @@ void SearchWorker::findInFiles()
                 while (i.hasNext() && !cacheFull) {
                     match = i.next();
                     // abort: too many results
-                    if (mMatches->size() > MAX_SEARCH_RESULTS-1) {
+                    if (mMatches->size() > MAX_SEARCH_RESULTS) {
                         cacheFull = true;
                         break;
                     }

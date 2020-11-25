@@ -90,7 +90,7 @@ protected:
 private:
     QString searchTerm();
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
-    void updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
+    int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
     void searchParameterChanged();
     void updateEditHighlighting();
