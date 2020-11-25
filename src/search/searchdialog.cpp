@@ -310,10 +310,10 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 }
 
 ///
-/// \brief SearchDialog::updateFindNextLabel calculates match number from cursor position and updates label
+/// \brief SearchDialog::updateFindNextLabel calculates match number, updates label and result lists from cursor position
 /// \param matchSelection cursor position to calculate result number
 ///
-void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
+int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 {
     updateUi(false);
 
@@ -336,7 +336,8 @@ void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 
     // find match by cursor position
     QList<Result> list = mSearch.results();
-    for (int i = 0; i < list.size(); i++) {
+    int size = list.size() >= MAX_SEARCH_RESULTS ? MAX_SEARCH_RESULTS : list.size();
+    for (int i = 0; i < size; i++) {
         Result match = list.at(i);
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
@@ -344,12 +345,14 @@ void SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
             if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
                 mMain->resultsView()->selectItem(i);
 
-            updateNrMatches(list.indexOf(match) + 1);
-            return;
+            updateNrMatches(i + 1);
+            return i;
         }
     }
     if (mMain->resultsView()) mMain->resultsView()->selectItem(-1);
     updateNrMatches();
+
+    return -1;
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
@@ -447,6 +450,8 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
     QString dotAnim = ".";
     QRegularExpression re("\\.*");
 
+    hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
+
     switch (status) {
     case Search::Searching:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
@@ -528,7 +533,8 @@ void SearchDialog::autofillSearchField()
 
 void SearchDialog::updateNrMatches(int current)
 {
-    int size = mSearch.results().size();
+    int size = (mSearch.results().size() >= MAX_SEARCH_RESULTS)
+            ? MAX_SEARCH_RESULTS : mSearch.results().size();
 
     if (current == 0) {
         if (size == 1) {
