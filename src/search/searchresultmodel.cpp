@@ -29,12 +29,9 @@ namespace search {
 SearchResultModel::SearchResultModel(QRegularExpression regex, QList<Result> results)
     : mSearchRegex(regex), mResults(results)
 {
-    qDebug() << QTime::currentTime() << "start trimming"; // rogo: delete
     while (mResults.size() > MAX_SEARCH_RESULTS) {
-        qDebug() << "removing item"; // rogo: delete
         mResults.removeLast();
     }
-    qDebug() << QTime::currentTime() << "done trimming"; // rogo: delete
 }
 
 QList<Result> SearchResultModel::results() const

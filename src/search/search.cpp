@@ -179,8 +179,9 @@ int Search::findNextEntryInCache(Search::Direction direction) {
                         return (i == MAX_SEARCH_RESULTS) ? -1 : i;
                     }
                 } else {
-                    if (cursorPos.first < r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second <= r.colNr()))
+                    if (cursorPos.first < r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second <= r.colNr())) {
                         return (i == MAX_SEARCH_RESULTS) ? -1 : i;
+                    }
                 }
             } else if (file != r.filepath() && allowJumping) {
                 // first match in next file
@@ -270,7 +271,8 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         if (!found && firstLevel) selectNextMatch(direction, false);
 
         // check if cache was re-entered
-        mOutsideOfList = findNextEntryInCache(direction) == -1;
+        matchNr = mMain->searchDialog()->updateLabelByCursorPos();
+        mOutsideOfList = matchNr == -1;
     }
 
     // update ui
