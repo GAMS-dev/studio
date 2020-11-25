@@ -116,7 +116,7 @@ void Search::findInDoc(FileMeta* fm)
             mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                   item.selectedText().length(), fm->location(), item.block().text().trimmed()));
         }
-        if (mResults.size() > MAX_SEARCH_RESULTS-1) break;
+        if (mResults.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
 }
 
@@ -176,13 +176,11 @@ int Search::findNextEntryInCache(Search::Direction direction) {
                 allowJumping = true;
                 if (direction == Direction::Backward) {
                     if (cursorPos.first > r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length())) {
-                        // when limit was reached, last result has to be found by "free" navigation mode,
-                        // otherwise it would always directly jump to the last result
-                        return (i == MAX_SEARCH_RESULTS-1) ? -1 : i;
+                        return (i == MAX_SEARCH_RESULTS) ? -1 : i;
                     }
                 } else {
                     if (cursorPos.first < r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second <= r.colNr()))
-                        return i;
+                        return (i == MAX_SEARCH_RESULTS) ? -1 : i;
                 }
             } else if (file != r.filepath() && allowJumping) {
                 // first match in next file
@@ -227,7 +225,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
          // nothing found
         if (matchNr == -1) {
             // check if we should leave cache navigation
-            mOutsideOfList = mResults.size() == MAX_SEARCH_RESULTS; // now leaving cache
+            mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS; // now leaving cache
             // if not, jump to start/end
             if (!mOutsideOfList && mResults.size() > 0) matchNr = backwards ? mResults.size()-1 : 0;
         }

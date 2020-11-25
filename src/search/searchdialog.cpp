@@ -447,6 +447,8 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
     QString dotAnim = ".";
     QRegularExpression re("\\.*");
 
+    hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
+
     switch (status) {
     case Search::Searching:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
@@ -528,7 +530,8 @@ void SearchDialog::autofillSearchField()
 
 void SearchDialog::updateNrMatches(int current)
 {
-    int size = mSearch.results().size();
+    int size = (mSearch.results().size() >= MAX_SEARCH_RESULTS)
+            ? MAX_SEARCH_RESULTS : mSearch.results().size();
 
     if (current == 0) {
         if (size == 1) {

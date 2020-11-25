@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "searchresultmodel.h"
+#include "common.h"
 #include <QtDebug>
 #include <QTime>
 
@@ -27,7 +28,14 @@ namespace search {
 
 SearchResultModel::SearchResultModel(QRegularExpression regex, QList<Result> results)
     : mSearchRegex(regex), mResults(results)
-{ }
+{
+    qDebug() << QTime::currentTime() << "start trimming"; // rogo: delete
+    while (mResults.size() > MAX_SEARCH_RESULTS) {
+        qDebug() << "removing item"; // rogo: delete
+        mResults.removeLast();
+    }
+    qDebug() << QTime::currentTime() << "done trimming"; // rogo: delete
+}
 
 QList<Result> SearchResultModel::results() const
 {
@@ -63,9 +71,7 @@ QVariant SearchResultModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
     if (role == Qt::DisplayRole) {
-        int row = index.row();
-
-        Result item = at(row);
+        Result item = at(index.row());
 
         switch(index.column())
         {
