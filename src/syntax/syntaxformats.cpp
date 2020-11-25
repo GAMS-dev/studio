@@ -254,7 +254,7 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
     if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
         bool atEnd = match.capturedEnd(0) >= line.length();
         bool isMultiLine = next == SyntaxKind::CommentBlock || next == SyntaxKind::IgnoredBlock
-                || (next == SyntaxKind::IgnoredHead) || next == SyntaxKind::EmbeddedBody;
+                || next == SyntaxKind::EmbeddedBody;
         SyntaxShift shift = (atEnd && !isMultiLine) ? SyntaxShift::skip : SyntaxShift::in;
         return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
     } else {
@@ -274,7 +274,10 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, int flavo
 
 SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
 {
-    if (kind == SyntaxKind::IgnoredHead) mSubKinds << SyntaxKind::IgnoredHead << SyntaxKind::IgnoredBlock;
+    if (kind == SyntaxKind::IgnoredHead) {
+        mSubKinds << SyntaxKind::Directive << SyntaxKind::IgnoredHead << SyntaxKind::IgnoredBlock;
+        mEmptyLineKinds << SyntaxKind::IgnoredBlock;
+    }
     else mSubKinds << SyntaxKind::CommentEndline << SyntaxKind::CommentInline << SyntaxKind::DirectiveBody;
     Q_ASSERT_X((kind == SyntaxKind::DirectiveBody || kind == SyntaxKind::DirectiveComment || kind == SyntaxKind::Title || kind == SyntaxKind::IgnoredHead),
                "SyntaxDirectiveBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
