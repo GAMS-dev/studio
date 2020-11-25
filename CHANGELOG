@@ -1,6 +1,8 @@
-Version 1.4.4 *
+Version 1.4.4
 ==================
-- Fixed lost selection on releasing the mouse at the line-number area
+- fixed loss of selection when dragging mouse over line-number area
+- fixed search result selection for result number 50000
+- fixed search label not properly updating when navigating past search result limit
 
 Version 1.4.3
 ==================
