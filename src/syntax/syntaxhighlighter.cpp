@@ -49,6 +49,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     syntaxDirective->setDirectiveBody(syntaxDirectiveBody);
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), Scheme::Syntax_comment);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title), Scheme::Syntax_title);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::IgnoredHead), Scheme::Syntax_directiveBody);
     initKind(new SyntaxCall(), Scheme::Syntax_directive);
 
     SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
@@ -67,11 +68,11 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxAssign(), Scheme::Syntax_assign);
     initKind(new SyntaxString(), Scheme::Syntax_neutral);
     initKind(new SyntaxCommentLine(), Scheme::Syntax_comment);
-    initKind(new SyntaxUniqueBlock(SyntaxKind::CommentBlock), Scheme::Syntax_comment);
+    initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock), Scheme::Syntax_comment);
     SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
     initKind(syntaxCommentEndline, Scheme::Syntax_comment);
     syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
-    initKind(new SyntaxUniqueBlock(SyntaxKind::IgnoredBlock), Scheme::Syntax_neutral);
+    initKind(new SyntaxUniformBlock(SyntaxKind::IgnoredBlock), Scheme::Syntax_neutral);
 
     initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), Scheme::Syntax_keyword);
     initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), Scheme::Syntax_keyword);

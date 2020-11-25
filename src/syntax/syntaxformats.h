@@ -50,6 +50,7 @@ enum class SyntaxKind {
     CommentBlock,
     CommentEndline,
     CommentInline,
+    IgnoredHead,
     IgnoredBlock,
 
     Semicolon,
@@ -149,7 +150,7 @@ class SyntaxAbstract
 public:
     SyntaxAbstract(SyntaxKind kind) : mKind(kind) {}
     virtual ~SyntaxAbstract() {}
-    SyntaxKind kind() { return mKind; }
+    SyntaxKind kind() const { return mKind; }
     void assignColorSlot(Scheme::ColorSlot slot);
     Scheme::ColorSlot colorSlot() const { return mColorSlot; }
 
@@ -278,11 +279,11 @@ public:
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
-/// \brief Defines the syntax for a multi-line comment block.
-class SyntaxUniqueBlock: public SyntaxAbstract
+/// \brief Defines the syntax for a uniform multi-line block.
+class SyntaxUniformBlock: public SyntaxAbstract
 {
 public:
-    SyntaxUniqueBlock(SyntaxKind kind);
+    SyntaxUniformBlock(SyntaxKind kind);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
