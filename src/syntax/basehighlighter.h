@@ -40,6 +40,8 @@ public:
 
     void setDocument(QTextDocument *doc, bool wipe = false);
     QTextDocument *document() const;
+    void pause();
+    void resume();
 
 signals:
     void needUnfold(QTextBlock block);
