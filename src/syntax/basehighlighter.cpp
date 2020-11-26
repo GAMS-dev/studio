@@ -79,6 +79,23 @@ QTextDocument *BaseHighlighter::document() const
     return mDoc;
 }
 
+void BaseHighlighter::pause()
+{
+    if (!mDoc) return;
+    disconnect(mDoc, &QTextDocument::contentsChange, this, &BaseHighlighter::reformatBlocks);
+    disconnect(mDoc, &QTextDocument::blockCountChanged, this, &BaseHighlighter::blockCountChanged);
+    mAborted = true;
+}
+
+void BaseHighlighter::resume()
+{
+    if (!mDoc) return;
+    mAborted = false;
+    connect(mDoc, &QTextDocument::contentsChange, this, &BaseHighlighter::reformatBlocks);
+    connect(mDoc, &QTextDocument::blockCountChanged, this, &BaseHighlighter::blockCountChanged);
+    rehighlight();
+}
+
 void BaseHighlighter::rehighlight()
 {
     if (!mDoc) return;
