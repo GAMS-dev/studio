@@ -1,6 +1,6 @@
-Version 1.4.5 *
+Version 1.4.5
 ==================
-- fix crash on reloading large gms-source while still highlighting
+- fixed crash when reloading large gms file while highlighter is still working
 
 Version 1.4.4
 ==================
