@@ -2,6 +2,10 @@ Version 1.5.0 *
 ==================
 - don't generate link to LXI file of NEOS results
 
+Version 1.4.5
+==================
+- fixed crash when reloading large gms file while highlighter is still working
+
 Version 1.4.4
 ==================
 - fixed loss of selection when dragging mouse over line number area

@@ -479,6 +479,7 @@ void FileMeta::removeEditor(QWidget *edit)
     }
     if (scEdit && mHighlighter) {
         disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+        disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
     }
 }
 
@@ -571,7 +572,9 @@ void FileMeta::load(int codecMib, bool init)
             }
             QVector<QPoint> edPos = getEditPositions();
             mLoading = true;
+            if (mHighlighter) mHighlighter->pause();
             document()->setPlainText(text);
+            if (mHighlighter) mHighlighter->resume();
             setEditPositions(edPos);
             mLoading = false;
             mCodec = codec;
