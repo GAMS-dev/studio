@@ -1,6 +1,6 @@
 Version 1.4.6 *
 ==================
-- added syntax highlight for $onPut/$offPut and $onEcho/$offEcho
+- disabed GAMS syntax highlighting between $onPut/$offPut and $onEcho/$offEcho
 
 Version 1.4.5
 ==================
