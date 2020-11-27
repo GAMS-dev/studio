@@ -283,7 +283,7 @@ void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
 
 QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, int &line, int &col, bool create)
 {
-    const QStringList tags {"LST","LS2","INC","LIB","SYS"};
+    const QStringList tags {"LST","LS2","INC","LIB","SYS","FIL"};
     QString res;
 
     bool exist = false;
@@ -305,6 +305,8 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
 
         } else {
             QString fName = parts.first().toString();
+            if (fName.startsWith("\"") && fName.endsWith("\""))
+                fName = fName.mid(1, fName.length()-2);
             QStringList locations;
             if (iCode == 2) { // INC
                 locations << location();
@@ -344,6 +346,10 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                 } else
                     locations << CommonPaths::systemDir();
 
+            } else if (iCode == 5) { // FIL
+                exist = QFile(fName).exists();
+                if (parts.count() > 1) line = parts.at(1).toInt();
+                if (parts.count() > 2) col = parts.at(2).toInt();
             } else { // LIB
                 QString libDir;
                 emit getParameterValue("libIncDir", libDir);
