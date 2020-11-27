@@ -43,7 +43,6 @@ public:
         bool hasErr() const { return !errRef.isEmpty() || errNr; }
         QString hRef;
         int lstLine = 0;
-        int charInLine = 0;
         QString errRef;
         int errNr = 0;
     };
