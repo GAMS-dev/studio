@@ -32,8 +32,8 @@ namespace studio {
 
 FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
 {
-//    connect(&mWatcher, &QFileSystemWatcher::directoryChanged, this, &FileMetaRepo::dirChanged);
-    connect(&mWatcher, &QFileSystemWatcher::fileChanged, this, &FileMetaRepo::fileChanged);
+    connect(&mWatcher, &QFileSystemWatcher::fileChanged,
+            this, &FileMetaRepo::fileChanged);
     mMissCheckTimer.setInterval(5000);
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
@@ -180,10 +180,7 @@ QWidgetList FileMetaRepo::editors() const
 
 void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
-    if (fileMeta->location().isEmpty()) return;
-    mWatcher.removePath(fileMeta->location());
-    mMissList.removeAll(fileMeta->location());
-    if (mMissList.isEmpty()) mMissCheckTimer.stop();
+    unwatch(fileMeta->location());
 }
 
 void FileMetaRepo::unwatch(const QString &filePath)
@@ -201,7 +198,8 @@ bool FileMetaRepo::watch(const FileMeta *fileMeta)
         return true;
     }
     mMissList << fileMeta->location();
-    if (!mMissCheckTimer.isActive()) mMissCheckTimer.start();
+    if (!mMissCheckTimer.isActive())
+        mMissCheckTimer.start();
     return false;
 }
 
@@ -259,6 +257,7 @@ void FileMetaRepo::fileChanged(const QString &path)
         QTimer::singleShot(100, this, &FileMetaRepo::reviewRemoved);
     } else {
         // changedExternally
+        watch(file); // sometimes the watcher looses the entry
         if (file->compare(path)) {
             FileEvent e(file->id(), FileEventKind::changedExtern);
             file->updateView();
@@ -279,15 +278,17 @@ void FileMetaRepo::reviewRemoved()
                 FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {
-                FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
-                                                                          : FileEventKind::changedExtern;
+                FileEventKind feKind = file->checkActivelySavedAndReset()
+                        ? FileEventKind::changed
+                        : FileEventKind::changedExtern;
                 FileEvent e(file->id(), feKind);
                 file->updateView();
                 emit fileEvent(e);
             }
         } else {
-            // (JM) About RENAME: To evaluate if a file has been renamed the directory content before the
-            // change must have been stored so it can be ensured that the possible file is no recent copy
+            // (JM) About RENAME: To evaluate if a file has been renamed
+            // the directory content before the change must have been stored
+            // so it can be ensured that the possible file is no recent copy
             // of the file that was removed.
             FileEvent e(file->id(), FileEventKind::removedExtern);
             emit fileEvent(e);
@@ -305,8 +306,9 @@ void FileMetaRepo::checkMissing()
         mProjectRepo->fileChanged(file->id());
         if (QFileInfo(fileName).exists()) {
             watch(file);
-            FileEventKind feKind = file->checkActivelySavedAndReset() ? FileEventKind::changed
-                                                                      : FileEventKind::changedExtern;
+            FileEventKind feKind = file->checkActivelySavedAndReset()
+                    ? FileEventKind::changed
+                    : FileEventKind::changedExtern;
             FileEvent e(file->id(), feKind);
             file->updateView();
             emit fileEvent(e);
