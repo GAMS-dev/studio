@@ -13,9 +13,9 @@ def isDevelopmentArtifact() {
            !(env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/)
 }
 
-def QT_FOR_LINUX = "/opt/Qt/5.12.9/bin"
-def QT_FOR_MACOS = "/Users/distrib/Qt/5.12.9/clang_64/bin"
-def QT_FOR_WINDOWS = "C:\\Qt\\5.12.9\\msvc2017_64\\bin"
+def QT_FOR_LINUX = "/opt/Qt/5.15.2/bin"
+def QT_FOR_MACOS = "/Users/distrib/Qt/5.15.2/clang_64/bin"
+def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
 pipeline {
     agent none
@@ -37,6 +37,7 @@ pipeline {
                     }
                     steps {
                         step([$class: 'WsCleanup'])
+                        echo "${PATH}"
                         checkout scm
                         sh '''
                             qmake gams-studio.pro CONFIG+=release && make -j3
@@ -59,8 +60,8 @@ pipeline {
                         checkout scm
                         bat '''
                             @echo off
-                            echo Setting up environment for VS2017 usage...
-                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            echo Setting up environment for VS2019 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build"
                             call vcvars64.bat
                             cd %WORKSPACE%
                             qmake gams-studio.pro "CONFIG+=release"
@@ -206,24 +207,24 @@ pipeline {
                             windeployqt --release --compiler-runtime --force src\\bin\\studio.exe
 
                             copy CHANGELOG "src\\bin\\resources\\Changelog"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.16.27012\\x64\\Microsoft.VC141.CRT\\*" "src\\bin"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.16.27012\\vc_redist.x64.exe" "src\\bin"
+                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\x64\\Microsoft.VC142.CRT\\*" "src\\bin"
+                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\vc_redist.x64.exe" "src\\bin"
                         '''
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                         script {
                             if (!isDevelopmentArtifact() || env.BRANCH_NAME == 'develop') {
                                 withCredentials([certificate(aliasVariable: '', credentialsId: '302df092-b329-47b9-8f7a-605da075126d', keystoreVariable: 'WIN_CERT_FILE', passwordVariable: 'WIN_CERT_PASSWD')]) {
                                     bat '''
-                                        echo Setting up environment for VS2017 usage...
-                                        cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                                        echo Setting up environment for VS2019 usage...
+                                        cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build"
                                         call vcvars64.bat
                                         cd %WORKSPACE%\\tmp\\studio
                                         signtool sign /v /f %WIN_CERT_FILE% /p %WIN_CERT_PASSWD% /t http://timestamp.comodoca.com studio.exe
                                     '''
                                 }
                                 bat '''
-                                    echo Setting up environment for VS2017 usage...
-                                    cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                                    echo Setting up environment for VS2019 usage...
+                                    cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build"
                                     call vcvars64.bat
                                     cd %WORKSPACE%\\tmp\\studio
                                     signtool verify /v /pa studio.exe

@@ -11,7 +11,7 @@ def isDebugBuildAllowed() {
            env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/
 }
 
-def QT_FOR_WINDOWS = "C:\\Qt\\5.12.9\\msvc2017_64\\bin"
+def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
 pipeline {
     agent none
@@ -37,8 +37,8 @@ pipeline {
                         checkout scm
                         bat '''
                             @echo off
-                            echo Setting up environment for VS2017 usage...
-                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            echo Setting up environment for VS2019 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build"
                             call vcvars64.bat
                             cd %WORKSPACE%
                             qmake gams-studio.pro "CONFIG+=debug QMAKE_CXXFLAGS_DEBUG += /MP"
@@ -63,8 +63,8 @@ pipeline {
                             windeployqt --debug --compiler-runtime --pdb --force src\\bin\\studio.exe
 
                             copy CHANGELOG "src\\bin\\resources\\Changelog"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.16.27012\\x64\\Microsoft.VC141.CRT\\*" "src\\bin"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.16.27012\\vc_redist.x64.exe" "src\\bin"
+                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\x64\\Microsoft.VC142.CRT\\*" "src\\bin"
+                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\vc_redist.x64.exe" "src\\bin"
                         '''
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                     }
