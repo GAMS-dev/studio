@@ -1,6 +1,7 @@
 Version 1.5.0 *
 ==================
 - don't generate link to LXI file of NEOS results
+- mirgration to Qt 5.15.2 (LTS)
 
 Version 1.4.5
 ==================
