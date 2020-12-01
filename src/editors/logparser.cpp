@@ -107,7 +107,7 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
 {
     mbState.marks = MarkData();
     hasError = false;
-    if (!line.endsWith(']') || line.length() < 5) return line;
+    if (!line.endsWith(']') || line.length() < 5 || line.startsWith('[')) return line;
 
     mbState.errData.errNr = 0;
     QString result;
