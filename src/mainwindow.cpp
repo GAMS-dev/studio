@@ -1453,7 +1453,8 @@ void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
     if (oldfn) { // switch from a non-welcome page
         ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup();
         if (!oldgroup) return;
-        oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+        if (oldfn != fn)
+            oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
 
         if (!fn) { // switch to a welcome page
             mGamsParameterEditor->loadCommandLine(QStringList());
@@ -1462,8 +1463,7 @@ void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 
         ProjectRunGroupNode* group = fn->assignedRunGroup();
         if (!group) return;
-        if (group == oldgroup) return;
-
+        if (group == oldgroup && oldfn != fn) return;
         mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
 
     } else { // switch from a welcome page
@@ -1480,7 +1480,7 @@ void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 
 void MainWindow::activeTabChanged(int index)
 {
-    ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
     if (mStartedUp)
@@ -1557,7 +1557,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setLineCount(-1);
     }
 
-    loadCommandLines(oldTab, node);
+    loadCommandLines(oldNode, node);
     updateRunState();
     searchDialog()->updateReplaceActionAvailability();
     updateToolbar(mainTabs()->currentWidget());
