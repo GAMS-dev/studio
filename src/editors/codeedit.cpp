@@ -193,7 +193,7 @@ void CodeEdit::convertToLower()
 
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toLower()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();
@@ -210,7 +210,7 @@ void CodeEdit::convertToUpper()
     if (isReadOnly()) return;
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toUpper()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();

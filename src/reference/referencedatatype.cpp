@@ -115,7 +115,7 @@ void ReferenceDataType::clear()
 }
 
 ReferenceDataType::ReferenceDataType(ReferenceDataType::ReferenceType type, QString name, QString typeDescription) :
-    mType(type), mName(name.split(",", QString::SkipEmptyParts)), mDescription(typeDescription)
+    mType(type), mName(name.split(",", Qt::SkipEmptyParts)), mDescription(typeDescription)
 {
 
 }

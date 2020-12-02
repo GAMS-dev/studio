@@ -297,15 +297,15 @@ void TestConopt4Option::testReadOptionFile_data()
         QFAIL("expected to open conopt4.op2 to write, but failed");
 
     QTextStream out(&outputFile);
-    out << "* This is comment line" << endl;
-    out << "* DF_Method 1" << endl;
-    out << "Lim_Iteration=100" << endl;
-    out << "Lim_Iteration 100" << endl;
-    out << "Flg_Hessian 1" << endl;
-    out << "cooptfile \"C:/Users/Dude/coopt.file\"" << endl;
-    out << "Tol_Bound=5.E-9 ; Bound filter tolerance for solution values close to a bound." << endl;
-    out << "HEAPLIMIT 1e20  # Maximum Heap size in MB allowed" << endl;
-    out << "Lim_Variable  1e+03 " << endl;
+    out << "* This is comment line" << Qt::endl;
+    out << "* DF_Method 1" << Qt::endl;
+    out << "Lim_Iteration=100" << Qt::endl;
+    out << "Lim_Iteration 100" << Qt::endl;
+    out << "Flg_Hessian 1" << Qt::endl;
+    out << "cooptfile \"C:/Users/Dude/coopt.file\"" << Qt::endl;
+    out << "Tol_Bound=5.E-9 ; Bound filter tolerance for solution values close to a bound." << Qt::endl;
+    out << "HEAPLIMIT 1e20  # Maximum Heap size in MB allowed" << Qt::endl;
+    out << "Lim_Variable  1e+03 " << Qt::endl;
     outputFile.close();
 
     // when

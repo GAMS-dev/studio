@@ -1084,10 +1084,10 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
         }
         if (key.isEmpty()) {
             if (line.contains(mOption->getDefaultSeparator())) {
-                QVector<QStringRef> sref = line.splitRef(mOption->getDefaultSeparator(), QString::SkipEmptyParts);
+                QVector<QStringRef> sref = line.splitRef(mOption->getDefaultSeparator(), Qt::SkipEmptyParts);
                 key = sref.first().toString();
             } else if (line.contains(" ")) {
-                QVector<QStringRef> sref = line.splitRef(" ", QString::SkipEmptyParts);
+                QVector<QStringRef> sref = line.splitRef(" ", Qt::SkipEmptyParts);
                 key = sref.first().toString();
             } else  {
                 return hintKey;
@@ -1108,7 +1108,7 @@ QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QStrin
 
     for(QChar ch : mOption->getEOLChars()) {
         if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
-            value = value.split(getEOLCommentChar(), QString::SkipEmptyParts).at(0).simplified();
+            value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
             break;
         }
     }
@@ -1145,7 +1145,7 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
 
     for(QChar ch : mOption->getEOLChars()) {
         if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
-            value = value.split(getEOLCommentChar(), QString::SkipEmptyParts).at(0).simplified();
+            value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
             break;
         }
     }
@@ -1274,7 +1274,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
     out.setCodec( codec );
 
     for(SolverOptionItem* item: items) {
-            out << formatOption( item ) << endl;
+            out << formatOption( item ) << Qt::endl;
             switch (item->error) {
             case OptionErrorType::Invalid_Key:
                 logger()->append( QString("Unknown option '%1'").arg(item->key),

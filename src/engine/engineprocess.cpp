@@ -191,7 +191,7 @@ void EngineProcess::parseUnZipStdOut(const QByteArray &data)
     if (data.startsWith(" extracting: ")) {
         QByteArray fName = data.trimmed();
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
-        QByteArray folder = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last().toUtf8();
+        QByteArray folder = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
         if (fName.endsWith("gms") || fName.endsWith("g00") || fName.endsWith("lxi")) {
             emit newStdChannelData("--- skipping: ."+ folder + fName);
@@ -525,7 +525,8 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
         else iLT = 0;
         ++iCount;
         if (!mRemoteWorkDir.isEmpty() && iRP == mRemoteWorkDir.size()) {
-            res.append(mOutPath+QDir::separator());
+            res.append(mOutPath.toUtf8());
+            res.append(QDir::separator().toLatin1());
             iRP = 0;
             iLT = 0;
             iCount = 0;

@@ -121,7 +121,7 @@ bool Application::checkForOtherInstance()
     if(socket.waitForConnected()) {
         QByteArray buffer;
         for(QString f : mCmdParser.files())
-            buffer.append(f + "\n");
+            buffer.append(f.toUtf8() + "\n");
         socket.write(buffer);
         socket.waitForBytesWritten();
         return true;
@@ -144,7 +144,7 @@ void Application::newConnection()
 void Application::receiveFileArguments()
 {
     QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
-    mMainWindow->openFiles(QString(socket->readAll()).split("\n", QString::SkipEmptyParts));
+    mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts));
     socket->deleteLater();
     mMainWindow->setForegroundOSCheck();
 }

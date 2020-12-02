@@ -390,7 +390,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
    if (checked) {
        QString urlLocalFile = url.toLocalFile();
        QString onlinepath = onlineStartPageUrl.path();
-       QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
+       QStringList pathList = onlinepath.split("/", Qt::SkipEmptyParts);
 
        int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlLocalFile);
        if(docsidx > -1) {
@@ -399,7 +399,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
 
            int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf(pathStr);
            QString newPath = urlLocalFile.right(newSize);
-           pathList << newPath.split("/", QString::SkipEmptyParts) ;
+           pathList << newPath.split("/", Qt::SkipEmptyParts) ;
 
            QUrl onlineUrl;
            onlineUrl.setScheme(onlineStartPageUrl.scheme());
@@ -426,14 +426,14 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                    QString pathStr = pathStrList.at(docsidx);
                    int pathIndex = url.path().indexOf( pathStr );
                    QString newPath = url.path().mid( pathIndex, url.path().size());
-                   QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
+                   QStringList newPathList = newPath.split("/", Qt::SkipEmptyParts);
                    newPathList.removeFirst();
 
                    int docsidx = gams::studio::help::HelpData::getURLIndexFrom(pathStr);
                    baseLocation = (docsidx == 0) ?  QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir())
                                                  :  QDir::cleanPath(CommonPaths::systemDir() + "/" + CommonPaths::modelLibraryDir(pathStr.mid(1)));
                    QStringList pathList;
-                   pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
+                   pathList << baseLocation.split("/", Qt::SkipEmptyParts) << newPathList;
 
                    QUrl localUrl = QUrl::fromLocalFile(QString());
                    localUrl.setScheme("file");

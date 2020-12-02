@@ -125,7 +125,7 @@ QString GamsLicenseInfo::solverLicense(const QString &name, int id) const
 QStringList GamsLicenseInfo::licenseFromClipboard()
 {
     QClipboard* clipboard = QGuiApplication::clipboard();
-    QStringList licenseLines = clipboard->text().split('\n', QString::SkipEmptyParts);
+    QStringList licenseLines = clipboard->text().split('\n', Qt::SkipEmptyParts);
     if (licenseLines.isEmpty())
         QStringList();
 

@@ -313,7 +313,7 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                 if (inDir.isNull()) emit getParameterValue("IDir", inDir);
                 if (!inDir.isNull()) {
                     // check if there are joined paths
-                    locations << QDir::fromNativeSeparators(inDir).split(QDir::listSeparator(), QString::SkipEmptyParts);
+                    locations << QDir::fromNativeSeparators(inDir).split(QDir::listSeparator(), Qt::SkipEmptyParts);
                 } else {
                     emit getParameterValue("InputDir*", inDir);
                     if (inDir.isNull()) emit getParameterValue("IDir*", inDir);
@@ -601,7 +601,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     QStringList defaultArgumentList;
     defaultArgumentList << "lo" << "ide" << "er" << "errmsg" << "pagesize" << "LstTitleLeftAligned";
     for(QString param: defaultParameters) {
-        QStringList list = param.split("=", QString::SkipEmptyParts);
+        QStringList list = param.split("=", Qt::SkipEmptyParts);
         if (list.count() != 2)
             continue;
         defaultGamsArgs.insert( list[0], list[1] );

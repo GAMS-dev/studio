@@ -401,13 +401,13 @@ void TestGUROBIOption::testReadOptionFile_data()
         QFAIL("expected to open gurobi.op2 to write, but failed");
 
     QTextStream out(&outputFile);
-    out << "cutoff 0.12345" << endl;
-    out << "cliquecuts=-1" << endl;
-    out << "iterationlimit=120000" << endl;
-    out << "barconvtol 1e-8" << endl;
-    out << "mipgap 0.10" << endl;
-    out << "fixoptfile /This/Is/a/Fix/opt/file" << endl;
-    out << "objnreltol str1, str2, str3" << endl;
+    out << "cutoff 0.12345" << Qt::endl;
+    out << "cliquecuts=-1" << Qt::endl;
+    out << "iterationlimit=120000" << Qt::endl;
+    out << "barconvtol 1e-8" << Qt::endl;
+    out << "mipgap 0.10" << Qt::endl;
+    out << "fixoptfile /This/Is/a/Fix/opt/file" << Qt::endl;
+    out << "objnreltol str1, str2, str3" << Qt::endl;
     outputFile.close();
 
     // when
