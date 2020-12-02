@@ -755,8 +755,15 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
             QString command = match.captured(2).toUpper();
             if (command == "INCLUDE") {
                 fileStart = match.capturedEnd();
+                int fileEnd = block.text().length();
+                while (fileEnd >= fileStart) {
+                    int kind;
+                    requestSyntaxKind(block.position() + fileEnd, kind);
+                    if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
+                    --fileEnd;
+                }
                 endChar = QChar();
-                res = block.text().mid(fileStart, block.text().length()).trimmed();
+                res = block.text().mid(fileStart, fileEnd-fileStart).trimmed();
             } else if (command.endsWith("INCLUDE")) { // batInclude, sysInclude, libInclude
                 if (command.at(0) != 'B') code = command.left(3);
                 fileStart = match.capturedEnd();
