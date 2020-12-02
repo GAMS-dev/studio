@@ -175,7 +175,7 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     if (fis.isSymLink())
         sysdir = fis.symLinkTarget();
 
-    QStringList sectionPath = section.split("/", QString::SkipEmptyParts);
+    QStringList sectionPath = section.split("/", Qt::SkipEmptyParts);
 
     QString docdir = sysdir;
     if (sectionPath.first().compare("docs", Qt::CaseInsensitive)==0) {
@@ -192,7 +192,7 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     // when
     QUrl onlineStartPageUrl = QUrl("https://www.gams.com/latest", QUrl::TolerantMode);
     QString onlinepath = onlineStartPageUrl.path();
-    QStringList pathList = onlinepath.split("/", QString::SkipEmptyParts);
+    QStringList pathList = onlinepath.split("/", Qt::SkipEmptyParts);
 
     int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlLocalFile);
     QVERIFY(docsidx > -1);
@@ -202,11 +202,11 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf(pathStr);
     QString newPath = urlLocalFile.right(newSize);
     if (docsidx==0) {
-        pathList << newPath.split("/", QString::SkipEmptyParts) ;
+        pathList << newPath.split("/", Qt::SkipEmptyParts) ;
     } else {
-        QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
+        QStringList newPathList = newPath.split("/", Qt::SkipEmptyParts);
         newPathList.removeLast();
-        pathList << newPath.split("/", QString::SkipEmptyParts) ;
+        pathList << newPath.split("/", Qt::SkipEmptyParts) ;
     }
 
     QUrl onlineUrl;
@@ -291,7 +291,7 @@ void TestDocLocation::testOnlineUrlToLocalFile()
         pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
     }
 #else
-    pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
+    pathList << baseLocation.split("/", Qt::SkipEmptyParts) << newPath.split("/", Qt::SkipEmptyParts);
 #endif
 
     QUrl localUrl = QUrl::fromLocalFile(QString());

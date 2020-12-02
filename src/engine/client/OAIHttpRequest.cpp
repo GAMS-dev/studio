@@ -184,7 +184,7 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
 
     // prepare request content
 
-    QString boundary = "";
+    QByteArray boundary = "";
 
     if (input->var_layout == ADDRESS || input->var_layout == URL_ENCODED) {
         // variable layout is ADDRESS or URL_ENCODED
@@ -213,9 +213,9 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
 
         boundary = QString("__-----------------------%1%2")
                        .arg(QDateTime::currentDateTime().toTime_t())
-                       .arg(qrand());
-        QString boundary_delimiter = "--";
-        QString new_line = "\r\n";
+                       .arg(qrand()).toUtf8();
+        QByteArray boundary_delimiter = "--";
+        QByteArray new_line = "\r\n";
 
         // add variables
         foreach (QString key, input->vars.keys()) {
@@ -235,7 +235,7 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
             request_content.append(new_line);
 
             // add variable content
-            request_content.append(input->vars.value(key));
+            request_content.append(input->vars.value(key).toUtf8());
             request_content.append(new_line);
         }
 
@@ -276,12 +276,14 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
 
             // add header
             request_content.append(
-                QString("Content-Disposition: form-data; %1; %2").arg(http_attribute_encode("name", file_info->variable_name), http_attribute_encode("filename", file_info->request_filename)));
+                QString("Content-Disposition: form-data; %1; %2").arg(http_attribute_encode("name", file_info->variable_name),
+                                                                      http_attribute_encode("filename", file_info->request_filename))
+                                                                 .toUtf8());
             request_content.append(new_line);
 
             if (file_info->mime_type != nullptr && !file_info->mime_type.isEmpty()) {
                 request_content.append("Content-Type: ");
-                request_content.append(file_info->mime_type);
+                request_content.append(file_info->mime_type.toUtf8());
                 request_content.append(new_line);
             }
 
@@ -415,14 +417,14 @@ void OAIHttpRequestWorker::on_reply_timeout(QNetworkReply *reply) {
 
 void OAIHttpRequestWorker::process_response(QNetworkReply *reply) {
     if (getResponseHeaders().contains(QString("Content-Disposition"))) {
-        auto contentDisposition = getResponseHeaders().value(QString("Content-Disposition").toUtf8()).split(QString(";"), QString::SkipEmptyParts);
+        auto contentDisposition = getResponseHeaders().value(QString("Content-Disposition").toUtf8()).split(QString(";"), Qt::SkipEmptyParts);
         auto contentType =
-            getResponseHeaders().contains(QString("Content-Type")) ? getResponseHeaders().value(QString("Content-Type").toUtf8()).split(QString(";"), QString::SkipEmptyParts).first() : QString();
+            getResponseHeaders().contains(QString("Content-Type")) ? getResponseHeaders().value(QString("Content-Type").toUtf8()).split(QString(";"), Qt::SkipEmptyParts).first() : QString();
         if ((contentDisposition.count() > 0) && (contentDisposition.first() == QString("attachment"))) {
             QString filename = QUuid::createUuid().toString();
             for (const auto &file : contentDisposition) {
                 if (file.contains(QString("filename"))) {
-                    filename = file.split(QString("="), QString::SkipEmptyParts).at(1);
+                    filename = file.split(QString("="), Qt::SkipEmptyParts).at(1);
                     break;
                 }
             }
@@ -432,14 +434,14 @@ void OAIHttpRequestWorker::process_response(QNetworkReply *reply) {
         }
 
     } else if (getResponseHeaders().contains(QString("Content-Type"))) {
-        auto contentType = getResponseHeaders().value(QString("Content-Type").toUtf8()).split(QString(";"), QString::SkipEmptyParts);
+        auto contentType = getResponseHeaders().value(QString("Content-Type").toUtf8()).split(QString(";"), Qt::SkipEmptyParts);
         if ((contentType.count() > 0) && (contentType.first() == QString("multipart/form-data"))) {
             // TODO : Handle Multipart responses
         } else {
             if(headers.contains("Content-Encoding")){
-                auto encoding = headers.value("Content-Encoding").split(QString(";"), QString::SkipEmptyParts);
+                auto encoding = headers.value("Content-Encoding").split(QString(";"), Qt::SkipEmptyParts);
                 if(encoding.count() > 0){
-                    auto compressionTypes = encoding.first().split(',', QString::SkipEmptyParts);
+                    auto compressionTypes = encoding.first().split(',', Qt::SkipEmptyParts);
                     if(compressionTypes.contains("gzip", Qt::CaseInsensitive) || compressionTypes.contains("deflate", Qt::CaseInsensitive)){
                         response = decompress(reply->readAll());
                     } else if(compressionTypes.contains("identity", Qt::CaseInsensitive)){

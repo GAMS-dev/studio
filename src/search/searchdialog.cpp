@@ -50,7 +50,7 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     ui->cb_wholeWords->setChecked(mSettings->toBool(skSearchWholeWords));
     ui->combo_scope->setCurrentIndex(mSettings->toInt(skSearchScope));
     ui->lbl_nrResults->setText("");
-    ui->combo_search->setAutoCompletion(false);
+    ui->combo_search->setCompleter(nullptr);
     adjustSize();
 }
 
@@ -181,7 +181,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     }
 
     // apply filter
-    QStringList filter = ui->combo_filePattern->currentText().split(',', QString::SkipEmptyParts);
+    QStringList filter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
     // convert user input to wildcard list
     QList<QRegExp> filterList;
     for (QString s : filter)

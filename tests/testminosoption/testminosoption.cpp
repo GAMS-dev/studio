@@ -364,23 +364,23 @@ void TestMINOSOption::testReadOptionFile_data()
         QFAIL("expected to open cplex.op2 to write, but failed");
 
     QTextStream out(&outputFile);
-    out << "print level 1" << endl;
-    out << "* this is a comment line" << endl;
-    out << "" << endl;
-    out << "hessian dimension=8" << endl;
-    out << "crash option 2" << endl;;
-    out << "major damping parameter 4.2" << endl;
-    out << "radius of convergence = 0.1" << endl;
-    out << "lagrangian YES      * Default value (recommended) " << endl;
-    out << "start assigned nonlinears BASIC" << endl;
-    out << "scale nonlinear variables  * No value" << endl;
-    out << "scale print" << endl;
-    out << "secret strlist - back door for secret or undocumented MINOS options" << endl;
-    out << "" << endl;
-    out << "unbounded step size * ub" << endl;
-    out << "unbounded_step_size 1.2345" << endl;
-    out << "scale option 2 ! Scale linear + nonlinear variables" << endl;
-    out << "start_assigned_nonlinears ELIGIBLE_FOR_CRASH" << endl;
+    out << "print level 1" << Qt::endl;
+    out << "* this is a comment line" << Qt::endl;
+    out << "" << Qt::endl;
+    out << "hessian dimension=8" << Qt::endl;
+    out << "crash option 2" << Qt::endl;
+    out << "major damping parameter 4.2" << Qt::endl;
+    out << "radius of convergence = 0.1" << Qt::endl;
+    out << "lagrangian YES      * Default value (recommended) " << Qt::endl;
+    out << "start assigned nonlinears BASIC" << Qt::endl;
+    out << "scale nonlinear variables  * No value" << Qt::endl;
+    out << "scale print" << Qt::endl;
+    out << "secret strlist - back door for secret or undocumented MINOS options" << Qt::endl;
+    out << "" << Qt::endl;
+    out << "unbounded step size * ub" << Qt::endl;
+    out << "unbounded_step_size 1.2345" << Qt::endl;
+    out << "scale option 2 ! Scale linear + nonlinear variables" << Qt::endl;
+    out << "start_assigned_nonlinears ELIGIBLE_FOR_CRASH" << Qt::endl;
     outputFile.close();
 
     // when
