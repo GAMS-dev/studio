@@ -137,6 +137,7 @@ signals:
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
     void childrenChanged();
+    void parentAssigned(const ProjectAbstractNode *node);
     void deselect(const QVector<QModelIndex> &declined);
     void select(const QVector<QModelIndex> &selected);
     void closeFileEditors(FileId fileId);

@@ -283,6 +283,12 @@ void MainWindow::watchProjectTree()
         mRecent.setEditor(mRecent.editor(), this);
         updateRunState();
     });
+    connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const ProjectAbstractNode *node) {
+        if (ProjectFileNode *fn = mProjectRepo.asFileNode(node->id())) {
+            if (fn->file()->editors().contains(ui->mainTabs->currentWidget()))
+                loadCommandLines(fn, fn);
+        }
+    });
     mStartedUp = true;
 }
 
@@ -1450,31 +1456,19 @@ void MainWindow::codecReload(QAction *action)
 
 void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
-    if (oldfn) { // switch from a non-welcome page
-        ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup();
-        if (!oldgroup) return;
-        if (oldfn != fn)
-            oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+    if (oldfn && oldfn != fn) {
+        // node changed from valid: store current command-line
+        if (ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup())
+            oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData());
+    }
 
-        if (!fn) { // switch to a welcome page
-            mGamsParameterEditor->loadCommandLine(QStringList());
-            return;
-        }
-
-        ProjectRunGroupNode* group = fn->assignedRunGroup();
-        if (!group) return;
-        if (group == oldgroup && oldfn != fn) return;
-        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
-
-    } else { // switch from a welcome page
-        if (!fn) { // switch to a welcome page
-            mGamsParameterEditor->loadCommandLine(QStringList());
-            return;
-        }
-
-        ProjectRunGroupNode* group = fn->assignedRunGroup();
-        if (!group) return;
-        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
+    if (fn) {
+        // switched to valid node
+        if (ProjectRunGroupNode* group = fn->assignedRunGroup())
+            mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
+    } else {
+        // switched to welcome page
+        mGamsParameterEditor->loadCommandLine(QStringList());
     }
 }
 
