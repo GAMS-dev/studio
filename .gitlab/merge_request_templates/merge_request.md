@@ -2,9 +2,9 @@ t.b.d.
 
 Please test the MR on
 
-- [ ] Linux ()
-- [ ] macOS ()
-- [ ] Windows ()
+- [ ] Linux (@jparnjai @rgoltermann)
+- [ ] macOS (@afust @jmonki)
+- [ ] Windows (@cwestphal @lwestermann)
 
 **Artefacts:** 
 
