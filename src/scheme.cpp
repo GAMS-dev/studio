@@ -312,7 +312,8 @@ QByteArray Scheme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
         int start = data.indexOf("<style");
         while (start >= 0 && start < end) {
             QString key = QString(".%1").arg(it.key());
-            int from = data.indexOf('.'+it.key(), start+1);
+            QString str('.'+it.key());
+            int from = data.indexOf(str.toUtf8(), start+1);
             if (from < 0 || from+10 > end) break;
             start = from;
             QString colorCode = it.value().at(iMode);

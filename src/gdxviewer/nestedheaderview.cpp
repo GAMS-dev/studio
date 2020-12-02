@@ -62,7 +62,7 @@ void NestedHeaderView::reset()
             for (int i=0; i<dimension; i++) {
                 QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
                 for (QString label : labelsInRows.at(i))
-                    sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.width(label)));
+                    sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.horizontalAdvance(label)));
             }
             for (int i=0; i<dimension; i++)
                 sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
@@ -72,7 +72,7 @@ void NestedHeaderView::reset()
             for (int i=0; i<this->model()->columnCount(); i++) {
                 for (QString label : model()->headerData(i, Qt::Horizontal).toStringList()) {
                     if (!labelWidth.contains(label))
-                        labelWidth.insert(label, fm.width(label));
+                        labelWidth.insert(label, fm.horizontalAdvance(label));
                     sectionWidth.replace(i, qMax(sectionWidth.at(i), labelWidth[label]));
                 }
             }

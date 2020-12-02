@@ -4643,8 +4643,8 @@ void MainWindow::checkGamsLicense()
         } else {
             appendSystemLogError(errorText);
         }
-    }  catch (Exception e) {
-        appendSystemLogError(e.what());
+    }  catch (Exception *e) {
+        appendSystemLogError(e->what());
     }
 }
 

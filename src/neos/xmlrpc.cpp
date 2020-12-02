@@ -77,7 +77,7 @@ bool putVariant(QXmlStreamWriter &xml, QVariant var, QByteArray &errorText)
     }   break;
     default:
         errorText = "XML-Error: Unsupported QVariant of type ";
-        errorText.append(QString::number(var.type()));
+        errorText.append(QByteArray::number(var.type()));
         qDebug() << errorText;
         return false;
     }

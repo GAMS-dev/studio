@@ -175,7 +175,7 @@ QVariant TabListModel::data(const QModelIndex &index, int role) const
         if (index.row() == mTabs->currentIndex()) font.setBold(true);
         QString location = nameAppendix(index);
         QFontMetrics fm = QFontMetrics(font);
-        return QSize(fm.width(mTabs->tabText(index.row()) + " [" + location + "]"), fm.height()+4);
+        return QSize(fm.horizontalAdvance(mTabs->tabText(index.row()) + " [" + location + "]"), fm.height()+4);
     }
     if (role == Qt::FontRole) {
         QFont font = mTabs->font();
