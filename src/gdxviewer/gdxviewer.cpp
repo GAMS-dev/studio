@@ -138,8 +138,10 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
             //msgBox.setIcon(QMessageBox::Information);
             //msgBox.exec();
         }
-        mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
-        mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
+        if (mSymbolTableProxyModel) {
+            mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
+            mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
+        }
         return initError;
     }
     return 0;
