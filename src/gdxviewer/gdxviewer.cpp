@@ -23,6 +23,7 @@
 #include "gdxsymboltable.h"
 #include "gdxsymbolview.h"
 #include "common.h"
+#include "logger.h"
 #include "exception.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
@@ -237,7 +238,7 @@ int GdxViewer::init(bool quiet)
             if (QMessageBox::Retry == msgBox.exec()) {
                 mHasChanged = true;
                 invalidate();
-                reload(mCodec);
+                errNr = reload(mCodec);
             } else {
                 errNr = -1;
             }
