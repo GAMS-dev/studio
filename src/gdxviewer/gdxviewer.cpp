@@ -59,7 +59,9 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     char msg[GMS_SSSIZE];
     if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
         EXCEPT() << "Could not load GDX library: " << msg;
-    init();
+    int errNr = init();
+    if (errNr < 0)
+        EXCEPT() << "Could not open invalid GDX file: " << gdxFile;
 
     QAction* cpAction = new QAction("Copy");
 //    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -236,6 +238,8 @@ int GdxViewer::init(bool quiet)
                 mHasChanged = true;
                 invalidate();
                 reload(mCodec);
+            } else {
+                errNr = -1;
             }
         }
         return errNr;

@@ -1603,7 +1603,7 @@ int MainWindow::fileChangedExtern(FileId fileId)
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
                 int gdxErr = gv->reload(file->codec(), resized);
-                if (gdxErr) return 4;
+                if (gdxErr) return (gdxErr==-1 ? 5 : 4);
             }
         }
         return 0;
@@ -1735,6 +1735,11 @@ void MainWindow::processFileEvents()
         case 4: // file is locked: reschedule event
             for (auto event: remainEvents.value(key))
                 scheduledEvents << event;
+            break;
+        case 5: // file is invalid: close it
+            for (const FileEventData &ed : remainEvents.value(key)) {
+                closeFileEditors(ed.fileId);
+            }
             break;
         default:
             break;
