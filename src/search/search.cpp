@@ -95,6 +95,8 @@ void Search::stop()
 void Search::reset()
 {
     mFiles.clear();
+    mResults.clear();
+    mResultHash.clear();
 
     mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
