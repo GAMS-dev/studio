@@ -134,6 +134,7 @@ public:
                << "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
                << "Option files (*.opt *.op* *.o*)"
                << "Gams Configuration file (*.yaml)"
+               << "GAMS Data eXchange (*.gdx)"
                << "Reference files (*.ref)"
                << "Text files (*.txt)"
                << "All files (*.*)";
