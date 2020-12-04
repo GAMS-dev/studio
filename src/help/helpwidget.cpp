@@ -602,7 +602,7 @@ void HelpWidget::wheelEvent(QWheelEvent* e)
 {
     if (e->modifiers() & Qt::ControlModifier) {
         e->accept();
-        const int delta = e->delta();
+        const int delta = e->angleDelta().y();
         if (delta < 0) zoomOut();
         else if (delta > 0) zoomIn();
         return;
