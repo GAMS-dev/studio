@@ -183,7 +183,7 @@ QVariant TabListModel::data(const QModelIndex &index, int role) const
             font.setBold(true);
         return font;
     }
-    if (role == Qt::BackgroundColorRole) {
+    if (role == Qt::BackgroundRole) {
         return mTabs->palette().color(mTabs->backgroundRole());
     }
     return  QVariant();

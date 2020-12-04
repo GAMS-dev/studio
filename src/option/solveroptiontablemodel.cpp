@@ -199,7 +199,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
             return tooltipText;
         }
     }
-    case Qt::TextColorRole: {
+    case Qt::ForegroundRole: {
         if (mOptionItem.at(row)->disabled) {
             return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
         } else {
