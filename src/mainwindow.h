@@ -378,8 +378,8 @@ private:
     void initIcons();
     void initEnvironment();
     ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
-    int fileChangedExtern(FileId fileId);
-    int fileDeletedExtern(FileId fileId);
+    FileProcessKind fileChangedExtern(FileId fileId);
+    FileProcessKind fileDeletedExtern(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
     bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
