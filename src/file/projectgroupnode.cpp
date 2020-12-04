@@ -305,6 +305,8 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
 
         } else {
             QString fName = parts.first().toString();
+            if (fName.startsWith("\"") && fName.endsWith("\""))
+                fName = fName.mid(1, fName.length()-2);
             QStringList locations;
             if (iCode == 2) { // INC
                 locations << location();
