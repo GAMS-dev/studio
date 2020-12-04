@@ -236,7 +236,8 @@ void SettingsDialog::on_btn_browse_clicked()
 {
     QString workspace = ui->txt_workspace->text();
     QFileDialog filedialog(this, "Choose default working directory", workspace);
-    filedialog.setFileMode(QFileDialog::DirectoryOnly);
+    filedialog.setOption(QFileDialog::ShowDirsOnly, true);
+    filedialog.setFileMode(QFileDialog::Directory);
 
     if (filedialog.exec())
         workspace = filedialog.selectedFiles().first();
