@@ -2,6 +2,7 @@ Version 1.5.0 *
 ==================
 - don't generate link to LXI file of NEOS results
 - enable jumping to a specific position in a text-file for log-references
+- added GDX filter to open file dialog
 - mirgration to Qt 5.15.2 (LTS)
 
 Version 1.4.5
