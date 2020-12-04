@@ -971,7 +971,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
 void CodeEdit::wheelEvent(QWheelEvent *e) {
     if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->delta();
+        const int delta = e->angleDelta().y();
         if (delta < 0) {
             int pix = fontInfo().pixelSize();
             zoomOut();
