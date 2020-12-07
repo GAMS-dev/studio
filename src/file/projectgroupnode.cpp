@@ -609,7 +609,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         defaultGamsArgs.insert( list[0], list[1] );
         defaultArgumentList << list[0];
     }
-    QMap<QString, QString> gamsArgs(defaultGamsArgs);
+    QMultiMap<QString, QString> gamsArgs(defaultGamsArgs);
 
 
     // find directory changes first
@@ -621,13 +621,13 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0) {
             cdir = item.value;
-            gamsArgs[item.key] = item.value;
+            gamsArgs.replace(item.key, item.value);
         }
 
         if (QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
                 || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
             wdir = item.value;
-            gamsArgs[item.key] = item.value;
+            gamsArgs.replace(item.key, item.value);
         }
 
         if (QString::compare(item.key, "filestem", Qt::CaseInsensitive) == 0)
@@ -661,9 +661,9 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 
         // keep unmodified value as option for output
         if (item.recurrent)
-             gamsArgs.insert(item.key, item.value);
+            gamsArgs.replace(item.key, item.value);
         else
-            gamsArgs.insertMulti(item.key, item.value);
+            gamsArgs.insert(item.key, item.value);
 
         // convert to native seperator
         QString value = item.value;
@@ -715,7 +715,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     for (option::OptionItem item : itemList) {
         if (item.recurrent) {
             if (recurrentArgumentList.contains(item.key))
-                output.append( item.key + "=" + gamsArgs[item.key] );
+                output.append( item.key + "=" + gamsArgs.value(item.key) );
             else
                 recurrentArgumentList << item.key;
         } else {
