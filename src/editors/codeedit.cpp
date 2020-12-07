@@ -1826,7 +1826,8 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     search::Search* search = search::SearchLocator::search();
-    if (search->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
+    if (search->regex().pattern().isEmpty() || search->filteredResultList(ViewHelper::location(this)).isEmpty())
+        return;
 
     QRegularExpression regEx = search->regex();
 
