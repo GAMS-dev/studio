@@ -3,6 +3,7 @@ Version 1.4.6 *
 - disabed GAMS syntax highlighting between $onPut/$offPut and $onEcho/$offEcho
 - fixed missing request for new search cache after switching file
 - ignore eol-comment on $include DCO
+- fixed rare crash in the LOG output
 - fixed endless dialog for invalid GDX file
 
 Version 1.4.5
