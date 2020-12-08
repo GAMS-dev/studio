@@ -1132,13 +1132,16 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = (!groups.isEmpty()) ? groups.first()->location() : currentPath();
-    if (path.isEmpty()) path = ".";
+    QString path;
+    if (!groups.isEmpty()) {
+        path = groups.first()->location();
 
-    if (mRecent.editFileId() >= 0) {
+    } else if (mRecent.editFileId() >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
         if (fm) path = QFileInfo(fm->location()).path();
     }
+    if (path.isEmpty()) path = currentPath();
+    if (path.isEmpty()) path = ".";
 
     if (solverName.isEmpty()) {
         // find a free file name

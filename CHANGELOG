@@ -5,6 +5,7 @@ Version 1.4.6 *
 - ignore eol-comment on $include DCO
 - fixed rare crash in the LOG output
 - fixed endless dialog for invalid GDX file
+- If available, use the groups path for new file dialog
 
 Version 1.4.5
 ==================
