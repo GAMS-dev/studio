@@ -233,7 +233,7 @@ private:
 
     QMap<QString, OptionDefinition> mOption;
     QStringList mDeprecatedSynonym;
-    QMap<QString, QString> mSynonymMap;
+    QMultiMap<QString, QString> mSynonymMap;
     QMap<int, QString> mOptionTypeNameMap;
     QMap<int, OptionGroup> mOptionGroup;
 

@@ -329,7 +329,7 @@ void TestGamsOption::testOptionSynonym_data()
     QTest::newRow("PF1")  << "PF1" << "PoolFree1";
     QTest::newRow("PF2")  << "PF2" << "PoolFree2";
     QTest::newRow("PF3")  << "PF3" << "PoolFree3";
-    QTest::newRow("PF4")  << "PF4" << "IntVarUp";
+    QTest::newRow("PF4")        << "PF4"       << "IntVarUp";
     QTest::newRow("PoolFree4")  << "PoolFree4" << "IntVarUp";
     QTest::newRow("PF5")  << "PF5" << "PoolFree5";
     QTest::newRow("PF6")  << "PF6" << "PoolFree6";
@@ -412,11 +412,18 @@ void TestGamsOption::testOptionSynonym_data()
     QTest::newRow("SO")    << "SO" << "SaveObfuscate";
     QTest::newRow("XSO")   << "XSO" << "XSaveObfuscate";
     QTest::newRow("RN")    << "RN" << "RestartNamed";
+    QTest::newRow("PW")    << "PW" << "PageWidth";
 
-    QTest::newRow("Bratio")     << "" << "Bratio";
+    QTest::newRow("AsyncSolLst") << "" << "AsyncSolLst";
+    QTest::newRow("Bratio")      << "" << "Bratio";
+    QTest::newRow("DomLim")      << "" << "DomLim";
+    QTest::newRow("GDX")         << "" << "GDX";
     QTest::newRow("IterLim")     << "" << "IterLim";
+    QTest::newRow("Keep")        << "" << "Keep";
     QTest::newRow("gdxConvert")  << "" << "gdxConvert";
     QTest::newRow("ProcDirPath") << "" << "ProcDirPath";
+    QTest::newRow("Solver")      << "" << "Solver";
+    QTest::newRow("TraceOpt")    << "" << "TraceOpt";
 
 }
 
