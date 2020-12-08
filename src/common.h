@@ -117,6 +117,16 @@ enum class EditorType {
 };
 Q_ENUM_NS(EditorType)
 
+enum class FileProcessKind {
+    ignore,
+    changedExternOnly,
+    changedConflict,
+    removedExtern,
+    fileLocked,
+    fileBecameInvalid,
+};
+Q_ENUM_NS(FileProcessKind)
+
 enum class FileEventKind {
     invalid,
     changed,
