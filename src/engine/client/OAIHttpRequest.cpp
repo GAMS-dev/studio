@@ -52,8 +52,7 @@ void OAIHttpRequestInput::add_file(QString variable_name, QString local_filename
 }
 
 OAIHttpRequestWorker::OAIHttpRequestWorker(QObject *parent, QNetworkAccessManager *_manager)
-    : QObject(parent), manager(_manager), timeOutTimer(this), isResponseCompressionEnabled(false), isRequestCompressionEnabled(false), httpResponseCode(-1) {
-    qsrand(QDateTime::currentDateTime().toTime_t());
+    : QObject(parent), manager(_manager), timeOutTimer(this), isResponseCompressionEnabled(false), isRequestCompressionEnabled(false), httpResponseCode(-1), randomGenerator(QRandomGenerator::securelySeeded()) {
     if (manager == nullptr) {
         manager = new QNetworkAccessManager(this);
     }
@@ -213,7 +212,7 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
 
         boundary = QString("__-----------------------%1%2")
                        .arg(QDateTime::currentDateTime().toTime_t())
-                       .arg(qrand()).toUtf8();
+                       .arg(randomGenerator.generate()).toUtf8();
         QByteArray boundary_delimiter = "--";
         QByteArray new_line = "\r\n";
 
