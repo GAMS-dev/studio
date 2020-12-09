@@ -1138,13 +1138,16 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = (!groups.isEmpty()) ? groups.first()->location() : currentPath();
-    if (path.isEmpty()) path = ".";
+    QString path;
+    if (!groups.isEmpty()) {
+        path = groups.first()->location();
 
-    if (mRecent.editFileId() >= 0) {
+    } else if (mRecent.editFileId() >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
         if (fm) path = QFileInfo(fm->location()).path();
     }
+    if (path.isEmpty()) path = currentPath();
+    if (path.isEmpty()) path = ".";
 
     if (solverName.isEmpty()) {
         // find a free file name
@@ -1582,25 +1585,25 @@ void MainWindow::fileClosed(const FileId fileId)
     Q_UNUSED(fileId)
 }
 
-int MainWindow::fileChangedExtern(FileId fileId)
+FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
-    if (!file->isOpen()) return 0;
-    if (file->kind() == FileKind::Log) return 0;
+    if (!file->isOpen()) return FileProcessKind::ignore;
+    if (file->kind() == FileKind::Log) return FileProcessKind::ignore;
     if (file->kind() == FileKind::Gdx) {
         QFile f(file->location());
-        if (!f.exists()) return 4;
+        if (!f.exists()) return FileProcessKind::fileLocked;
         bool resized = file->compare().testFlag(FileMeta::FdSize);
         file->refreshMetaData();
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
                 int gdxErr = gv->reload(file->codec(), resized);
-                if (gdxErr) return 4;
+                if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : FileProcessKind::ignore);
             }
         }
-        return 0;
+        return FileProcessKind::ignore;
     }
     if (file->kind() == FileKind::Opt) {
         for (QWidget *e : file->editors()) {
@@ -1614,14 +1617,14 @@ int MainWindow::fileChangedExtern(FileId fileId)
                guce->setFileChangedExtern(true);
         }
     }
-    return file->isModified() ? 2 : 1;
+    return file->isModified() ? FileProcessKind::changedConflict : FileProcessKind::changedExternOnly;
 }
 
-int MainWindow::fileDeletedExtern(FileId fileId)
+FileProcessKind MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-    if (!file) return 0;
-    if (file->exists(true)) return 0;
+    if (!file) return FileProcessKind::ignore;
+    if (file->exists(true)) return FileProcessKind::ignore;
     mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
@@ -1633,9 +1636,9 @@ int MainWindow::fileDeletedExtern(FileId fileId)
         }
         mHistory.files().removeAll(file->location());
         historyChanged();
-        return 0;
+        return FileProcessKind::ignore;
     }
-    return 3;
+    return FileProcessKind::removedExtern;
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
@@ -1680,7 +1683,7 @@ void MainWindow::processFileEvents()
 
     // First process all events that need no user decision. For the others: remember the kind of change
     QSet<FileEventData> scheduledEvents;
-    QMap<int, QVector<FileEventData>> remainEvents;
+    QMap<FileProcessKind, QVector<FileEventData>> remainEvents;
     while (true) {
         FileEventData fileEvent;
         { // lock only while accessing mFileEvents
@@ -1700,7 +1703,7 @@ void MainWindow::processFileEvents()
             scheduledEvents += fileEvent;
             continue;
         }
-        int remainKind = 0;
+        FileProcessKind remainKind = FileProcessKind::ignore;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
             remainKind = fileChangedExtern(fm->id());
@@ -1710,7 +1713,7 @@ void MainWindow::processFileEvents()
             break;
         default: break;
         }
-        if (remainKind > 0) {
+        if (remainKind != FileProcessKind::ignore) {
             if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
             if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
         }
@@ -1719,16 +1722,21 @@ void MainWindow::processFileEvents()
     // Then ask what to do with the files of each remainKind
     for (auto key: remainEvents.keys()) {
         switch (key) {
-        case 1: // changed externally but unmodified internally
-        case 2: // changed externally and modified internally
+        case FileProcessKind::changedExternOnly: // changed externally but unmodified internally
+        case FileProcessKind::changedConflict: // changed externally and modified internally
             mFileEventHandler->process(FileEventHandler::Change, remainEvents.value(key));
             break;
-        case 3: // removed externally
+        case FileProcessKind::removedExtern: // removed externally
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
-        case 4: // file is locked: reschedule event
+        case FileProcessKind::fileLocked: // file is locked: reschedule event
             for (auto event: remainEvents.value(key))
                 scheduledEvents << event;
+            break;
+        case FileProcessKind::fileBecameInvalid: // file is invalid: close it
+            for (const FileEventData &ed : remainEvents.value(key)) {
+                closeFileEditors(ed.fileId);
+            }
             break;
         default:
             break;

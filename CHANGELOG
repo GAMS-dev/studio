@@ -4,6 +4,8 @@ Version 1.4.6 *
 - fixed missing request for new search cache after switching file
 - ignore eol-comment on $include DCO
 - fixed rare crash in the LOG output
+- fixed endless dialog for invalid GDX file
+- If available, use the groups path for new file dialog
 - fixed missing update of parameter history for a file assigned to more than one group
 
 Version 1.4.5
