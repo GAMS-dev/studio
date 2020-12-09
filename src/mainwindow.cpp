@@ -2948,8 +2948,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     if (process)
         runGroup->setProcess(std::move(process));
     AbstractProcess* groupProc = runGroup->process();
-    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
-
+    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, mGamsParameterEditor->getOptionTokenizer()->getOption()) );
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
 

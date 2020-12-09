@@ -146,6 +146,8 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
     }
 
     QList<int> idList;
+    QMultiMap<int, int> idPositionMap;
+    int position = 0;
     for (OptionItem& item : commandLineList) {
         QString key = item.key;
         if (mOption->isASynonym(item.key))
@@ -153,14 +155,15 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
         if (mOption->isValid(key) || mOption->isASynonym(key))
             item.optionId = mOption->getOptionDefinition(key).number;
         idList << item.optionId;
+        idPositionMap.insert(item.optionId, position++);
     }
-
     for(OptionItem& item : commandLineList) {
         QString key = (mOption->isASynonym(item.key) ? mOption->getNameFromSynonym(item.key) : item.key);
         if (mOption->getOptionType(key) == optTypeImmediate)
             item.recurrent = false;
         else
            item.recurrent = (item.optionId != -1 && idList.count(item.optionId) > 1);
+        item.recurrentIndices = idPositionMap.values(item.optionId);
     }
 
     return commandLineList;

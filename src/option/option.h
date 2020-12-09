@@ -73,6 +73,7 @@ struct OptionItem {
     int valuePosition = -1;
     bool disabled = false;
     bool recurrent = false;
+    QList<int> recurrentIndices = QList<int>();
     OptionErrorType error = OptionErrorType::No_Error;
 };
 
