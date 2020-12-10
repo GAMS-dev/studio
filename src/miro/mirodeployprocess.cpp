@@ -36,7 +36,9 @@ MiroDeployProcess::MiroDeployProcess(QObject *parent)
 
 QStringList MiroDeployProcess::defaultParameters() const
 {
-    return { QString("IDCJSON=%1/%2_io.json").arg(confFolder()).arg(modelName().toLower()),
+    return { QString("IDCJSON=%1/%2_io.json")
+                .arg(MiroCommon::confDirectory(modelName()))
+                .arg(modelName().toLower()),
              "a=c" };
 }
 
@@ -67,8 +69,8 @@ void MiroDeployProcess::completed(int exitCode)
         msg = QString("Error deploying %1 (MIRO exit code %2) to location %3")
                 .arg(MiroCommon::deployFileName(modelName()))
                 .arg(exitCode).arg(workingDirectory());
-    else
-        msg = QString("%1 successfully deployed to location %2")
+    else if (!mTestDeployment)
+        msg = QString("\n%1 successfully deployed to location %2")
                 .arg(MiroCommon::deployFileName(modelName()))
                 .arg(workingDirectory());
     emit newStdChannelData(msg.toLatin1());

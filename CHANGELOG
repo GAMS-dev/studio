@@ -3,6 +3,7 @@ Version 1.5.0 *
 - don't generate link to LXI file of NEOS results
 - enable jumping to a specific position in a text-file for log-references
 - added GDX filter to open file dialog
+- enhanced MIRO deploy dialog usability and conf/data folder creation for deploy/test deploy
 
 Version 1.4.5
 ==================

@@ -209,7 +209,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
             this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
-    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::deploy,
             this, &MainWindow::miroDeploy);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::newAssemblyFileData,
             this, &MainWindow::writeNewAssemblyFileData);
@@ -2468,6 +2468,7 @@ void MainWindow::on_actionDeploy_triggered()
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setAssemblyFileName(assemblyFile);
     mMiroDeployDialog->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mMiroDeployDialog->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
 }
@@ -2481,7 +2482,7 @@ void MainWindow::writeNewAssemblyFileData()
                                            LogMsgType::Error);
     else {
         mMiroDeployDialog->setAssemblyFileName(mMiroDeployDialog->assemblyFileName());
-        addToGroup(mRecent.group(), mMiroDeployDialog->assemblyFileName());
+        mProjectRepo.findOrCreateFileNode(mMiroDeployDialog->assemblyFileName(), mRecent.group());
     }
 }
 

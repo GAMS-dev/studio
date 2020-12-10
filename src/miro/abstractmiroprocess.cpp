@@ -32,9 +32,6 @@ namespace gams {
 namespace studio {
 namespace miro {
 
-const QString AbstractMiroProcess::ConfFolderPrefix = "conf_";
-const QString AbstractMiroProcess::DataFolderPrefix = "data_";
-
 AbstractMiroProcess::AbstractMiroProcess(const QString &application, QObject *parent)
     : AbstractProcess(application, parent)
 {
@@ -160,16 +157,6 @@ QString AbstractMiroProcess::nativeAppPath()
         return QString();
     auto appPath = QDir(systemDir).filePath(AbstractProcess::nativeAppPath());
     return QDir::toNativeSeparators(appPath);
-}
-
-QString AbstractMiroProcess::confFolder() const
-{
-    return ConfFolderPrefix + modelName().toLower();
-}
-
-QString AbstractMiroProcess::dataFolder() const
-{
-    return DataFolderPrefix + modelName().toLower();
 }
 
 void AbstractMiroProcess::readStdChannel(QProcess &process, QProcess::ProcessChannel channel)
