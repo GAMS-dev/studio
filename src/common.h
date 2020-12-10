@@ -42,6 +42,7 @@ public:
     inline operator int() const {return mValue;}
     constexpr PhantomInt<PHANTOM_TYPE>& operator=(const PhantomInt<PHANTOM_TYPE>& other) {
         mValue = other.mValue;
+        return *this;
     }
     inline bool isValid() const {return mValue>=0;}
     inline PhantomInt<PHANTOM_TYPE>& operator++() {
