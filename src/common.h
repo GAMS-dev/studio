@@ -40,6 +40,9 @@ public:
     PhantomInt (const PhantomInt<PHANTOM_TYPE> &value) : mValue(value.mValue) { }
     virtual ~PhantomInt() {}
     inline operator int() const {return mValue;}
+    constexpr PhantomInt<PHANTOM_TYPE>& operator=(const PhantomInt<PHANTOM_TYPE>& other) {
+        mValue = other.mValue;
+    }
     inline bool isValid() const {return mValue>=0;}
     inline PhantomInt<PHANTOM_TYPE>& operator++() {
         mValue++;
