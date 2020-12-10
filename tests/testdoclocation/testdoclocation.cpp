@@ -284,11 +284,11 @@ void TestDocLocation::testOnlineUrlToLocalFile()
 #ifdef __APPLE__
     if (pathIndex == 0) {
         baseLocation = QDir(CommonPaths::systemDir() + "/" + CommonPaths::documentationDir()).canonicalPath();
-        QStringList newPathList = newPath.split("/", QString::SkipEmptyParts);
+        QStringList newPathList = newPath.split("/", Qt::SkipEmptyParts);
         newPathList.removeLast();
-        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPathList;
+        pathList << baseLocation.split("/", Qt::SkipEmptyParts) << newPathList;
     } else {
-        pathList << baseLocation.split("/", QString::SkipEmptyParts) << newPath.split("/", QString::SkipEmptyParts);
+        pathList << baseLocation.split("/", Qt::SkipEmptyParts) << newPath.split("/", Qt::SkipEmptyParts);
     }
 #else
     pathList << baseLocation.split("/", Qt::SkipEmptyParts) << newPath.split("/", Qt::SkipEmptyParts);
