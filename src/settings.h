@@ -125,6 +125,9 @@ enum SettingsKey {
     // user model library directory
     skUserModelLibraryDir,
 
+    // syntax colors
+    skUserThemes,
+
     skSettingsKeyCount,
 };
 
@@ -135,6 +138,7 @@ public:
                 scSysX,     // System setting (for current version)
                 scUser,     // User settings (shared with all versions)
                 scUserX,    // User settings (for current version)
+                scTheme,    // Color theme settings (shared with all versions)
                };
 
     struct ScopePair {
@@ -178,8 +182,11 @@ public:
     bool setMap(SettingsKey key, QVariantMap value);
     bool setList(SettingsKey key, QVariantList value);
 
-    void exportSettings(const QString &settingsPath);
-    void importSettings(const QString &settingsPath);
+    void importSettings(const QString &path);
+    void exportSettings(const QString &path);
+
+    void importSyntaxTheme(const QString &path);
+    void exportSyntaxTheme(const QString &path);
 
     void updateSettingsFiles();
 
@@ -225,6 +232,8 @@ private:
     void saveFile(Scope scope);
     void loadMap(Scope scope, QVariantMap map);
     QVariant read(SettingsKey key);
+    void saveThemes();
+    void loadThemes();
 
     QVariant value(SettingsKey key) const;
     bool setValue(SettingsKey key, QVariant value);

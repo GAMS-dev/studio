@@ -21,7 +21,7 @@
 #include "search/searchdialog.h"
 #include "search/searchlocator.h"
 #include "keys.h"
-#include "scheme.h"
+#include "theme.h"
 #include "logger.h"
 #include <QMenu>
 #include <QMessageBox>

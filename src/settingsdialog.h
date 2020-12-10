@@ -33,7 +33,7 @@ namespace studio {
 
 class MainWindow;
 class Settings;
-class SchemeWidget;
+class ThemeWidget;
 
 class SettingsDialog : public QDialog
 {
@@ -58,7 +58,7 @@ private slots:
     void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &value);
     void on_sb_fontsize_valueChanged(int size);
-    void schemeModified();
+    void themeModified();
     void setModified();
     void appearanceIndexChanged(int index);
 
@@ -80,7 +80,7 @@ private:
     MainWindow *mMain;
     bool isModified = false;
     bool mInitializing = true;
-    QList<SchemeWidget*> mColorWidgets;
+    QList<ThemeWidget*> mColorWidgets;
 
     void saveSettings();
     void loadSettings();

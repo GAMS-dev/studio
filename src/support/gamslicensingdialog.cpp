@@ -26,7 +26,7 @@
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "gamslicenseinfo.h"
-#include "scheme.h"
+#include "theme.h"
 
 #include <QClipboard>
 #include <QDir>
@@ -50,7 +50,7 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent) 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
-    ui->gamslogo->setPixmap(Scheme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
+    ui->gamslogo->setPixmap(Theme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
     ui->solverTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     auto dataModel = new SolverTableModel(this);
     auto sortModel = new QSortFilterProxyModel(this);

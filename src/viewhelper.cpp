@@ -126,8 +126,8 @@ void ViewHelper::changeAppearance(int appearance)
 #ifndef __APPLE__
     PaletteManager::instance()->setPalette(pickedTheme);
 #endif
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
+    Theme::instance()->setActiveTheme(pickedTheme, Theme::EditorScope);
+    Theme::instance()->setActiveTheme(pickedTheme, Theme::StudioScope);
 }
 
 } // namespace studio

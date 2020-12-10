@@ -32,7 +32,7 @@
 #include <QSortFilterProxyModel>
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-#include "scheme.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -190,7 +190,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
     int tabIdx=0;
     if (isUserLibrary)
-        tabIdx = ui->tabWidget->addTab(tableView, Scheme::icon(mIconUserLib), label);
+        tabIdx = ui->tabWidget->addTab(tableView, Theme::icon(mIconUserLib), label);
     else
         tabIdx = ui->tabWidget->addTab(tableView, label);
     ui->tabWidget->setTabToolTip(tabIdx, items.at(0).library()->longName());

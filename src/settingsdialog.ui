@@ -579,18 +579,18 @@
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string>Color Scheme</string>
+          <string>Color Theme</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLabel" name="label_currentscheme">
+           <widget class="QLabel" name="label_currenttheme">
             <property name="text">
-             <string>Current Scheme</string>
+             <string>Current Theme</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cbSchemes">
+           <widget class="QComboBox" name="cbThemes">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
               <horstretch>0</horstretch>

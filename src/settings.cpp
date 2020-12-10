@@ -35,7 +35,7 @@
 #include "colors/palettemanager.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-#include "scheme.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -92,6 +92,7 @@ QString findFixedFont()
 Settings::ScopePair scopePair(Settings::Scope scope)
 {
     int iScope = scope;
+    if (iScope >= Settings::scTheme) return Settings::ScopePair(scope, scope);
     if (iScope % 2) return Settings::ScopePair(static_cast<Settings::Scope>(scope-1), scope);
     return Settings::ScopePair(scope, static_cast<Settings::Scope>(scope+1));
 }
@@ -159,6 +160,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     // initialize storage
     mData.insert(scSys, Data());
     mData.insert(scUserX, Data());
+    mData.insert(scTheme, Data());
 
     // initialize json format and make it the default
     QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
@@ -179,6 +181,9 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             settings = newQSettings("usersettings");
             mSettings.insert(scUser, settings);
             loadFile(scUser);
+
+            // each theme has one file
+            loadFile(scTheme);
 
             QDir location(settingsPath());
             for (const QString &fileName: location.entryList({"*.lock"})) {
@@ -345,6 +350,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);
     safelyAdd(res, skEngineForceGdx, scSys, {"engine","forceGdx"}, true);
 
+    // syntax color settings
+    safelyAdd(res, skUserThemes, scTheme, {"theme"}, QJsonArray());
+
     // Check if all enum values of SettingsKey have been assigned
     for (int i = 0 ; i < skSettingsKeyCount ; ++i) {
         if (!res.contains(static_cast<SettingsKey>(i))) {
@@ -382,6 +390,7 @@ void Settings::reload()
 {
     loadFile(scSys);
     loadFile(scUser);
+    loadFile(scTheme);
 }
 
 QList<SettingsKey> Settings::viewKeys()
@@ -595,6 +604,12 @@ QString Settings::settingsPath()
 void Settings::saveFile(Scope scope)
 {
     if (!canWrite()) return;
+
+    if (scope >= scTheme) {
+        saveThemes();
+        return;
+    }
+
     ScopePair scopes = scopePair(scope);
 
     if (!mSettings.contains(scopes.base)) {
@@ -609,6 +624,7 @@ void Settings::saveFile(Scope scope)
     for (Data::const_iterator it = src.constBegin() ; it != src.constEnd() ; ++it) {
         baseDat.insert(it.key(), it.value());
     }
+
     addVersionInfo(scope, baseDat);
     settings->setValue("base", baseDat);
 
@@ -653,6 +669,23 @@ QVariant Settings::read(SettingsKey key)
         return jo[dat.keys[1]].toVariant();
     }
     return QVariant();
+}
+
+void Settings::saveThemes()
+{
+    for (const QVariant &vTheme: toList(skUserThemes)) {
+        QVariantMap theme = vTheme.toMap();
+        QString name = theme.value("Name").toString();
+        QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
+        themeSettings.setValue("Name", name);
+        themeSettings.setValue("Data", theme.value("Data"));
+        themeSettings.sync();
+    }
+}
+
+void Settings::loadThemes()
+{
+
 }
 
 int Settings::usableVersion(ScopePair scopes)
@@ -718,6 +751,22 @@ void Settings::loadVersionData(ScopePair scopes)
                 break;
             }
 
+        } else if (scopes.base == scTheme) {
+
+            // --------- version handling for scSyntax ---------
+            switch (foundVersion) {
+            case 1: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+
+                break;
+            }
+            case 2: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+
+                break;
+            }
+            default:
+                break;
+            }
+
         } else {
             DEB() << "Warning: Missing version handling for scope " << scopes.base;
         }
@@ -728,6 +777,11 @@ void Settings::loadVersionData(ScopePair scopes)
 void Settings::loadFile(Scope scope)
 {
     if (!mCanRead) return;
+
+    if (scope == scTheme) {
+        loadThemes();
+        return;
+    }
 
     ScopePair scopes = scopePair(scope);
     // load settings content into mData
@@ -742,7 +796,7 @@ void Settings::loadFile(Scope scope)
         loadVersionData(scopes);
     }
 
-//    Scheme::instance()->initDefault();
+//    Theme::instance()->initDefault();
 
 
     // the location for user model libraries is not modifyable right now
@@ -768,6 +822,27 @@ void Settings::exportSettings(const QString &path)
         QFile::remove(path);
     if (!originFile.copy(path)) {
         SysLogLocator::systemLog()->append("Error exporting settings to " + path, LogMsgType::Error);
+    }
+}
+
+void Settings::importSyntaxTheme(const QString &path)
+{
+    if (!mSettings.value(scTheme)) return;
+    QFile backupFile(path);
+    QFile syntaxFile(mSettings.value(scTheme)->fileName());
+    syntaxFile.remove(); // remove old file
+    backupFile.copy(syntaxFile.fileName()); // import new file
+    reload();
+}
+
+void Settings::exportSyntaxTheme(const QString &path)
+{
+    if (!mSettings.value(scTheme)) return;
+    QFile originFile(mSettings.value(scTheme)->fileName());
+    if (QFile::exists(path))
+        QFile::remove(path);
+    if (!originFile.copy(path)) {
+        SysLogLocator::systemLog()->append("Error exporting syntax theme to " + path, LogMsgType::Error);
     }
 }
 

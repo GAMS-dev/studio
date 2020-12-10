@@ -28,14 +28,14 @@ INCLUDEPATH +=   \
 
 HEADERS += \
     testconopt4option.h \
-    $$SRCPATH/scheme.h \
+    $$SRCPATH/theme.h \
     $$SRCPATH/svgengine.h \
     $$SRCPATH/option/option.h \
     $$SRCPATH/option/optiontokenizer.h
 
 SOURCES += \
     testconopt4option.cpp \
-    $$SRCPATH/scheme.cpp \
+    $$SRCPATH/theme.cpp \
     $$SRCPATH/svgengine.cpp \
     $$SRCPATH/option/option.cpp \
     $$SRCPATH/option/optiontokenizer.cpp \

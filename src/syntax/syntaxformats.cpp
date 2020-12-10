@@ -33,7 +33,7 @@ QString syntaxKindName(SyntaxKind kind)
     return QVariant::fromValue(kind).toString();
 }
 
-void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
+void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
 {
     mColorSlot = slot;
     charFormat().setProperty(QTextFormat::UserProperty, intSyntaxType());
@@ -41,8 +41,8 @@ void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
         charFormat().setForeground(toColor(slot));
     else
         charFormat().setForeground(Qt::black);
-    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::fBold) ? QFont::Bold : QFont::Normal);
-    charFormat().setFontItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+    charFormat().setFontWeight(Theme::hasFlag(slot, Theme::fBold) ? QFont::Bold : QFont::Normal);
+    charFormat().setFontItalic(Theme::hasFlag(slot, Theme::fItalic));
 }
 
 SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
@@ -54,7 +54,7 @@ SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 QTextCharFormat SyntaxAbstract::charFormatError()
 {
     QTextCharFormat errorFormat;
-    errorFormat.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
+    errorFormat.setUnderlineColor(Theme::color(Theme::Normal_Red));
     errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     return errorFormat;
 }

@@ -124,7 +124,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::ForegroundRole: {
         ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
         if (node && !node->file()->exists(true))
-            return isCurrent(ind) ? Scheme::color(Scheme::Normal_Red).darker()
+            return isCurrent(ind) ? Theme::color(Theme::Normal_Red).darker()
                                   : QColor(Qt::gray);
         break;
     }

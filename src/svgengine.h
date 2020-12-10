@@ -8,7 +8,7 @@
 namespace gams {
 namespace studio {
 
-class Scheme;
+class Theme;
 
 class SvgEngine : public QIconEngine
 {
@@ -26,7 +26,7 @@ public:
     QIconEngine * clone() const override;
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
 private:
-    Scheme *mController = nullptr;
+    Theme *mController = nullptr;
     bool mForceSquare = true;
     int mScope = 0;
     QString mName;

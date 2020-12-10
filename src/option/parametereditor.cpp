@@ -1057,35 +1057,35 @@ void ParameterEditor::setInterruptActionsEnabled(bool enable)
 
 void ParameterEditor::addActions()
 {
-    QAction* insertParameterAction = mContextMenu.addAction(Scheme::icon(":/%1/insert"), "Insert new parameter", [this]() { insertParameter(); });
+    QAction* insertParameterAction = mContextMenu.addAction(Theme::icon(":/%1/insert"), "Insert new parameter", [this]() { insertParameter(); });
     insertParameterAction->setObjectName("actionInsert_option");
     insertParameterAction->setShortcut( QKeySequence("Ctrl+Return") );
     insertParameterAction->setShortcutVisibleInContextMenu(true);
     insertParameterAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(insertParameterAction);
 
-    QAction* deleteAction = mContextMenu.addAction(Scheme::icon(":/%1/delete-all"), "Delete selection", [this]() { deleteParameter(); });
+    QAction* deleteAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete selection", [this]() { deleteParameter(); });
     deleteAction->setObjectName("actionDelete_option");
     deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
     deleteAction->setShortcutVisibleInContextMenu(true);
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(deleteAction);
 
-    QAction* deleteAllAction = mContextMenu.addAction(Scheme::icon(":/%1/delete-all"), "Delete all parameters", [this]() { deleteAllParameters(); });
+    QAction* deleteAllAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete all parameters", [this]() { deleteAllParameters(); });
     deleteAllAction->setObjectName("actionDeleteAll_option");
     deleteAllAction->setShortcut( QKeySequence("Alt+Delete") );
     deleteAllAction->setShortcutVisibleInContextMenu(true);
     deleteAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(deleteAllAction);
 
-    QAction* moveUpAction = mContextMenu.addAction(Scheme::icon(":/%1/move-up"), "Move up", [this]() { moveParameterUp(); });
+    QAction* moveUpAction = mContextMenu.addAction(Theme::icon(":/%1/move-up"), "Move up", [this]() { moveParameterUp(); });
     moveUpAction->setObjectName("actionMoveUp_option");
     moveUpAction->setShortcut( QKeySequence("Ctrl+Up") );
     moveUpAction->setShortcutVisibleInContextMenu(true);
     moveUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(moveUpAction);
 
-    QAction* moveDownAction = mContextMenu.addAction(Scheme::icon(":/%1/move-down"), "Move down", [this]() { moveParameterDown(); });
+    QAction* moveDownAction = mContextMenu.addAction(Theme::icon(":/%1/move-down"), "Move down", [this]() { moveParameterDown(); });
     moveDownAction->setObjectName("actionMoveDown_option");
     moveDownAction->setShortcut( QKeySequence("Ctrl+Down") );
     moveDownAction->setShortcutVisibleInContextMenu(true);
@@ -1106,7 +1106,7 @@ void ParameterEditor::addActions()
     showDuplicationAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(showDuplicationAction);
 
-    QAction* addThisOptionAction = mContextMenu.addAction(Scheme::icon(":/%1/plus"), "Add this parameter", [this]() {
+    QAction* addThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/plus"), "Add this parameter", [this]() {
         QModelIndexList selection = ui->gamsParameterTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
             addParameterFromDefinition(selection.at(0));
@@ -1117,7 +1117,7 @@ void ParameterEditor::addActions()
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTreeView->addAction(addThisOptionAction);
 
-    QAction* deleteThisOptionAction = mContextMenu.addAction(Scheme::icon(":/%1/delete-all"), "Remove this parameter", [this]() {
+    QAction* deleteThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Remove this parameter", [this]() {
         findAndSelectionParameterFromDefinition();
         deleteParameter();
     });

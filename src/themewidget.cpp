@@ -1,5 +1,5 @@
-#include "schemewidget.h"
-#include "ui_schemewidget.h"
+#include "themewidget.h"
+#include "ui_themewidget.h"
 #include "logger.h"
 #include <QPushButton>
 #include <QColorDialog>
@@ -7,112 +7,112 @@
 namespace gams {
 namespace studio {
 
-SchemeWidget::SchemeWidget(QWidget *parent) :
+ThemeWidget::ThemeWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SchemeWidget)
+    ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
     ui->iconEx->setVisible(false);
 }
 
-SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, QWidget *parent, bool iconExample) :
+ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExample) :
     QWidget(parent),
-    ui(new Ui::SchemeWidget)
+    ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
     ui->iconEx->setVisible(iconExample);
     ui->textFrame->setVisible(!iconExample);
     if (iconExample) {
         mIconEng = new SvgEngine(":/solid/user");
-        if (Scheme::name(slotFg).startsWith("Disable_")) mIconEng->replaceNormalMode(QIcon::Disabled);
-        if (Scheme::name(slotFg).startsWith("Active_")) mIconEng->replaceNormalMode(QIcon::Active);
-        if (Scheme::name(slotFg).startsWith("Select_")) mIconEng->replaceNormalMode(QIcon::Selected);
+        if (Theme::name(slotFg).startsWith("Disable_")) mIconEng->replaceNormalMode(QIcon::Disabled);
+        if (Theme::name(slotFg).startsWith("Active_")) mIconEng->replaceNormalMode(QIcon::Active);
+        if (Theme::name(slotFg).startsWith("Select_")) mIconEng->replaceNormalMode(QIcon::Selected);
         ui->iconEx->setIcon(QIcon(mIconEng));
     }
 
-    ui->name->setText(Scheme::instance()->text(slotFg));
-    setFormatVisible(Scheme::hasFontProps(slotFg));
+    ui->name->setText(Theme::instance()->text(slotFg));
+    setFormatVisible(Theme::hasFontProps(slotFg));
     initSlot(mSlotFg, slotFg, ui->colorFG);
     ui->colorBG1->hide();
     ui->colorBG2->hide();
 }
 
-SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg, QWidget *parent) :
+ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SchemeWidget)
+    ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
     ui->iconEx->setVisible(false);
 
-    setFormatVisible(Scheme::hasFontProps(slotFg));
-    ui->name->setText(Scheme::instance()->text(slotFg ? slotFg : slotBg));
+    setFormatVisible(Theme::hasFontProps(slotFg));
+    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg));
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     ui->colorBG2->hide();
 }
 
-SchemeWidget::SchemeWidget(Scheme::ColorSlot slotFg, Scheme::ColorSlot slotBg, Scheme::ColorSlot slotBg2, QWidget *parent) :
+ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme::ColorSlot slotBg2, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SchemeWidget)
+    ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
     ui->iconEx->setVisible(false);
 
-    setFormatVisible(Scheme::hasFontProps(slotFg));
-    ui->name->setText(Scheme::instance()->text(slotFg ? slotFg : slotBg));
+    setFormatVisible(Theme::hasFontProps(slotFg));
+    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg));
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     initSlot(mSlotBg2, slotBg2, ui->colorBG2);
 }
 
-SchemeWidget::~SchemeWidget()
+ThemeWidget::~ThemeWidget()
 {
     if (mIconEng) mIconEng->unbind();
     delete ui;
 }
 
-void SchemeWidget::initSlot(Scheme::ColorSlot &slotVar, const Scheme::ColorSlot &slot, QFrame *frame)
+void ThemeWidget::initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slot, QFrame *frame)
 {
     slotVar = slot;
-    bool active = slot != Scheme::invalid;
+    bool active = slot != Theme::invalid;
     frame->setEnabled(active);
     frame->setAutoFillBackground(active);
     if (active) {
         setColor(frame, toColor(slot, mScope), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
-        if (Scheme::hasFontProps(slot)) {
-            ui->btBold->setDown(Scheme::hasFlag(slot, Scheme::fBold));
-            ui->btItalic->setDown(Scheme::hasFlag(slot, Scheme::fItalic));
+        if (Theme::hasFontProps(slot)) {
+            ui->btBold->setDown(Theme::hasFlag(slot, Theme::fBold));
+            ui->btItalic->setDown(Theme::hasFlag(slot, Theme::fItalic));
             QFont font = ui->textEx->font();
-            font.setBold(Scheme::hasFlag(slot, Scheme::fBold));
-            font.setItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+            font.setBold(Theme::hasFlag(slot, Theme::fBold));
+            font.setItalic(Theme::hasFlag(slot, Theme::fItalic));
             ui->textEx->setFont(font);
         }
         frame->installEventFilter(this);
     }
 }
 
-void SchemeWidget::setText(const QString &text)
+void ThemeWidget::setText(const QString &text)
 {
     ui->name->setText(text);
 }
 
-QString SchemeWidget::text() const
+QString ThemeWidget::text() const
 {
     return ui->name->text();
 }
 
-void SchemeWidget::setTextVisible(bool visible)
+void ThemeWidget::setTextVisible(bool visible)
 {
     ui->name->setVisible(visible);
 }
 
-void SchemeWidget::setFormatVisible(bool visible)
+void ThemeWidget::setFormatVisible(bool visible)
 {
     ui->btBold->setVisible(visible);
     ui->btItalic->setVisible(visible);
 }
 
-bool SchemeWidget::eventFilter(QObject *watched, QEvent *event)
+bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::MouseButtonRelease) {
         if (watched == ui->colorFG) selectColor(ui->colorFG, mSlotFg);
@@ -122,25 +122,25 @@ bool SchemeWidget::eventFilter(QObject *watched, QEvent *event)
     return false;
 }
 
-void SchemeWidget::selectColor(QFrame *frame, Scheme::ColorSlot slot)
+void ThemeWidget::selectColor(QFrame *frame, Theme::ColorSlot slot)
 {
     QColorDialog diag;
     diag.setCurrentColor(frame->palette().window().color());
     if (diag.exec()) {
         setColor(frame, diag.currentColor(), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
-        Scheme::setColor(slot, mScope, diag.currentColor());
+        Theme::setColor(slot, mScope, diag.currentColor());
         emit changed();
     }
 }
 
-void SchemeWidget::refresh()
+void ThemeWidget::refresh()
 {
     if (mSlotFg) setColor(ui->colorFG, toColor(mSlotFg, mScope), 1);
     if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg, mScope), 2);
     if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2, mScope));
 }
 
-void SchemeWidget::setAlignment(Qt::Alignment align)
+void ThemeWidget::setAlignment(Qt::Alignment align)
 {
     if (align.testFlag(Qt::AlignLeft) || align.testFlag(Qt::AlignJustify)) {
         ui->spLeft->changeSize(10, 10);
@@ -154,17 +154,17 @@ void SchemeWidget::setAlignment(Qt::Alignment align)
     }
 }
 
-Scheme::Scope SchemeWidget::scope() const
+Theme::Scope ThemeWidget::scope() const
 {
     return mScope;
 }
 
-void SchemeWidget::setScope(const Scheme::Scope &scope)
+void ThemeWidget::setScope(const Theme::Scope &scope)
 {
     mScope = scope;
 }
 
-void SchemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
+void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
 {
     QPalette pal = frame->palette();
     pal.setColor(QPalette::Window, color);

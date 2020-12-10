@@ -25,7 +25,7 @@
 #include "editors/abstractedit.h"
 #include "logger.h"
 #include "keys.h"
-#include "scheme.h"
+#include "theme.h"
 #include <QApplication>
 
 namespace gams {
@@ -149,7 +149,7 @@ void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
     if (!Settings::settings()->toBool(skEdHighlightCurrentLine)) return;
 
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(toColor(Scheme::Edit_currentLineBg));
+    selection.format.setBackground(toColor(Theme::Edit_currentLineBg));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.movePosition(QTextCursor::StartOfBlock);
@@ -176,10 +176,10 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
-                selection.format.setUnderlineColor(toColor(Scheme::Normal_Red));
+                selection.format.setUnderlineColor(toColor(Theme::Normal_Red));
                 if (m->size() == 1) {
-                    selection.format.setBackground(toColor(Scheme::Edit_errorBg));
-                    selection.format.setForeground(toColor(Scheme::Edit_text));
+                    selection.format.setBackground(toColor(Theme::Edit_errorBg));
+                    selection.format.setForeground(toColor(Theme::Edit_text));
                 }
                 selection.format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                 selection.format.setAnchorNames(QStringList()<<QString::number(m->line()));

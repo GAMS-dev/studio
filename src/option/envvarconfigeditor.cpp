@@ -21,7 +21,7 @@
 #include "envvarconfigeditor.h"
 #include "envvarcfgcompleterdelegate.h"
 #include "ui_envvarconfigeditor.h"
-#include "scheme.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -262,10 +262,10 @@ void EnvVarConfigEditor::initActions()
     ui->actionSelectAll->setEnabled(true);
     ui->actionResize_Columns_To_Contents->setEnabled(true);
 
-    ui->actionInsert->setIcon(Scheme::icon(":/%1/plus", true));
-    ui->actionDelete->setIcon(Scheme::icon(":/%1/delete-all", true));
-    ui->actionMoveUp->setIcon(Scheme::icon(":/%1/move-up", true));
-    ui->actionMoveDown->setIcon(Scheme::icon(":/%1/move-down", true));
+    ui->actionInsert->setIcon(Theme::icon(":/%1/plus", true));
+    ui->actionDelete->setIcon(Theme::icon(":/%1/delete-all", true));
+    ui->actionMoveUp->setIcon(Theme::icon(":/%1/move-up", true));
+    ui->actionMoveDown->setIcon(Theme::icon(":/%1/move-down", true));
 }
 
 void EnvVarConfigEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)

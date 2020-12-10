@@ -210,7 +210,7 @@ private slots:
     void newProcessCall(const QString &text, const QString &call);
 
     // View
-    void invalidateScheme();
+    void invalidateTheme();
     void gamsProcessStateChanged(ProjectGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);

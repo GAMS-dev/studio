@@ -1,5 +1,5 @@
 #include "svgengine.h"
-#include "scheme.h"
+#include "theme.h"
 #include "logger.h"
 #include <QPainter>
 #include <QStyleOption>
@@ -12,13 +12,13 @@ namespace studio {
 SvgEngine::SvgEngine(const QString &name)
     : QIconEngine(), mName(name), mNameD(name)
 {
-    mController = Scheme::instance();
+    mController = Theme::instance();
 }
 
 SvgEngine::SvgEngine(const QString &name, const QString &disabledName)
     : QIconEngine(), mName(name), mNameD(disabledName)
 {
-    mController = Scheme::instance();
+    mController = Theme::instance();
 }
 
 SvgEngine::SvgEngine(const SvgEngine &other) : QIconEngine()
@@ -70,7 +70,7 @@ void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QI
     Q_UNUSED(state)
     if (mode == QIcon::Normal) mode = mNormalMode;
     const QString &name = (mode == QIcon::Disabled ? mNameD : mName);
-    QByteArray &data = mController->data(name, Scheme::Scope(mScope), mode);
+    QByteArray &data = mController->data(name, Theme::Scope(mScope), mode);
     QSvgRenderer renderer(data);
     QRect pRect = rect;
     if (mForceSquare) pRect.setWidth(pRect.height());

@@ -22,7 +22,7 @@
 #include "configoptiondefinitionmodel.h"
 #include "optionsortfilterproxymodel.h"
 #include "paramconfigeditor.h"
-#include "scheme.h"
+#include "theme.h"
 #include "ui_paramconfigeditor.h"
 
 #include <QScrollBar>
@@ -174,13 +174,13 @@ void ParamConfigEditor::initActions()
 
     ui->actionResize_Columns_To_Contents->setEnabled(true);
 
-    ui->actionInsert->setIcon(Scheme::icon(":/%1/plus", true));
-    ui->actionDelete->setIcon(Scheme::icon(":/%1/delete-all", true));
-    ui->actionMoveUp->setIcon(Scheme::icon(":/%1/move-up", true));
-    ui->actionMoveDown->setIcon(Scheme::icon(":/%1/move-down", true));
+    ui->actionInsert->setIcon(Theme::icon(":/%1/plus", true));
+    ui->actionDelete->setIcon(Theme::icon(":/%1/delete-all", true));
+    ui->actionMoveUp->setIcon(Theme::icon(":/%1/move-up", true));
+    ui->actionMoveDown->setIcon(Theme::icon(":/%1/move-down", true));
 
-    ui->actionAdd_This_Parameter->setIcon(Scheme::icon(":/%1/plus", true));
-    ui->actionRemove_This_Parameter->setIcon(Scheme::icon(":/%1/delete-all", true));
+    ui->actionAdd_This_Parameter->setIcon(Theme::icon(":/%1/plus", true));
+    ui->actionRemove_This_Parameter->setIcon(Theme::icon(":/%1/delete-all", true));
 }
 
 bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
