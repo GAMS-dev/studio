@@ -138,6 +138,10 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         }
     }
+    case Qt::ToolTipRole: {
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+        return item->data(index.column());
+    }
     default:
          break;
     }
