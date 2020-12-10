@@ -225,7 +225,7 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
 
             // add header
             request_content.append("Content-Disposition: form-data; ");
-            request_content.append(http_attribute_encode("name", key));
+            request_content.append(http_attribute_encode("name", key).toUtf8());
             request_content.append(new_line);
             request_content.append("Content-Type: text/plain");
             request_content.append(new_line);
