@@ -85,7 +85,7 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
     if (AbstractEdit *ed = toAbstractEdit(widget)) {
         if (ed != widget) ed->setProperty("location", location);
     } else if (TextView* tv = toTextView(widget)) {
-        if (tv != widget) tv->edit()->setProperty("location", location);
+       tv->edit()->setProperty("location", location);
     }
 }
 

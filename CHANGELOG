@@ -7,6 +7,7 @@ Version 1.4.6 *
 - fixed endless dialog for invalid GDX file
 - If available, use the groups path for new file dialog
 - fixed missing update of parameter history for a file assigned to more than one group
+- fixed search results not being highlighted in .log files
 
 Version 1.4.5
 ==================
