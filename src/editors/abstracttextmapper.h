@@ -168,6 +168,7 @@ public:
     virtual void setPosToAbsStart(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
     virtual void setPosToAbsEnd(QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
     virtual void selectAll();
+    virtual void clearSelection();
     virtual QPoint position(bool local = false) const;
     virtual QPoint anchor(bool local = false) const;
     virtual bool hasSelection() const;
