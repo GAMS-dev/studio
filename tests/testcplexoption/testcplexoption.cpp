@@ -617,51 +617,51 @@ void TestCPLEXOption::testReadOptionFile_data()
         QFAIL("expected to open cplex.op2 to write, but failed");
 
     QTextStream out(&outputFile);
-    out << "advind=0" << endl;                     // integer
-    out << "advind -1" << endl;                    // integer
-    out << "*----------------------- " << endl;
-    out << "*  this is a comment  line" << endl;
-    out << "*" << endl;
-    out << "" << endl;
-    out << "cuts 2" << endl;                       // enumstr
-    out << "cost.feaspref 0.9" << endl;            // dot option
-    out << "cost.feaspref(*,*) 4" << endl;         // dot option
-    out << "benderspartitioninstage 1" << endl;    // boolean
-    out << "dettilim 1e+075" << endl;              // double
-    out << "secret def 1 34" << endl;               // strlist
-    out << "computeserver  https://somewhere.org/" << endl;
-    out << "rerun=auto" << endl;                    // string
-    out << "*  eprhs=0.001" << endl;
-    out << "solnpoolcapacity=1100000000" << endl;   // integer
-    out << "* x.benderspartition 4" << endl;        // dot option
-    out << "solnpoolintensity  3" << endl;          // integer
-    out << "tuning str1, str2, str3" << endl;       // strlist
+    out << "advind=0" << Qt::endl;                     // integer
+    out << "advind -1" << Qt::endl;                    // integer
+    out << "*----------------------- " << Qt::endl;
+    out << "*  this is a comment  line" << Qt::endl;
+    out << "*" << Qt::endl;
+    out << "" << Qt::endl;
+    out << "cuts 2" << Qt::endl;                       // enumstr
+    out << "cost.feaspref 0.9" << Qt::endl;            // dot option
+    out << "cost.feaspref(*,*) 4" << Qt::endl;         // dot option
+    out << "benderspartitioninstage 1" << Qt::endl;    // boolean
+    out << "dettilim 1e+075" << Qt::endl;              // double
+    out << "secret def 1 34" << Qt::endl;               // strlist
+    out << "computeserver  https://somewhere.org/" << Qt::endl;
+    out << "rerun=auto" << Qt::endl;                    // string
+    out << "*  eprhs=0.001" << Qt::endl;
+    out << "solnpoolcapacity=1100000000" << Qt::endl;   // integer
+    out << "* x.benderspartition 4" << Qt::endl;        // dot option
+    out << "solnpoolintensity  3" << Qt::endl;          // integer
+    out << "tuning str1, str2, str3" << Qt::endl;       // strlist
     out << "tuning str 4";                          // strlist
     out << ", str 5";
-    out << "" << endl;
-    out << "indic equ1(i,j,k)$bin1(i,k) 1" << endl;
-    out << "scalex no" << endl;                      // unknown option
-    out << "siftitlim abc" << endl;                  // integer incorrectvalue
-    out << "barqcpepcomp -1.234" << endl;            // double out of reange value
-    out << "barqcpepcomp x" << endl;                 // double incorrectvalue
-    out << "bbinterval 7 1" << endl;                 // integer too many values
-    out << "rerun YES"      << endl;                 // bool value upper case
-    out << "xyz.feaspref(i) 1" << endl;              // dot option
+    out << "" << Qt::endl;
+    out << "indic equ1(i,j,k)$bin1(i,k) 1" << Qt::endl;
+    out << "scalex no" << Qt::endl;                      // unknown option
+    out << "siftitlim abc" << Qt::endl;                  // integer incorrectvalue
+    out << "barqcpepcomp -1.234" << Qt::endl;            // double out of reange value
+    out << "barqcpepcomp x" << Qt::endl;                 // double incorrectvalue
+    out << "bbinterval 7 1" << Qt::endl;                 // integer too many values
+    out << "rerun YES"      << Qt::endl;                 // bool value upper case
+    out << "xyz.feaspref(i) 1" << Qt::endl;              // dot option
 
-    out << "advind 2 ! this sets the option to two" << endl;  // eol comment
-    out << "workdir /x/y!/z/a/b"                    << endl;  // eol comment
-    out << "workdir \"/x/y!/z/a/b\""                << endl;  // eol comment
-    out << "epgap  0.00001 ! 1MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"   << endl;  // eol comment
-    out << "epgap  w0.00001 ! 2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"  << endl;  // eol comment
-    out << "epgap  1E-5!3MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"     << endl;  // eol comment
-    out << "neteprhs 1e-003  ! feasibility tolerance for the network simplex method " << endl; // eol comment
+    out << "advind 2 ! this sets the option to two" << Qt::endl;  // eol comment
+    out << "workdir /x/y!/z/a/b"                    << Qt::endl;  // eol comment
+    out << "workdir \"/x/y!/z/a/b\""                << Qt::endl;  // eol comment
+    out << "epgap  0.00001 ! 1MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"   << Qt::endl;  // eol comment
+    out << "epgap  w0.00001 ! 2MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"  << Qt::endl;  // eol comment
+    out << "epgap  1E-5!3MIP solve criteria to optimal (default is GAMS OptCA/OptCR)"     << Qt::endl;  // eol comment
+    out << "neteprhs 1e-003  ! feasibility tolerance for the network simplex method " << Qt::endl; // eol comment
 
-    out << "varsel 1  asd" << endl;
-    out << "barqcpepcomp   !convergence tolerance for the barrier optimizer for QCPs" << endl;
-    out << "non-exist-option 0" << endl;
-    out << "another-non-exist-option" << endl;
-    out << "epint ;" << endl;
-    out << "record !" << endl;
+    out << "varsel 1  asd" << Qt::endl;
+    out << "barqcpepcomp   !convergence tolerance for the barrier optimizer for QCPs" << Qt::endl;
+    out << "non-exist-option 0" << Qt::endl;
+    out << "another-non-exist-option" << Qt::endl;
+    out << "epint ;" << Qt::endl;
+    out << "record !" << Qt::endl;
 
     outputFile.close();
 

@@ -175,7 +175,7 @@ QVariant TabListModel::data(const QModelIndex &index, int role) const
         if (index.row() == mTabs->currentIndex()) font.setBold(true);
         QString location = nameAppendix(index);
         QFontMetrics fm = QFontMetrics(font);
-        return QSize(fm.width(mTabs->tabText(index.row()) + " [" + location + "]"), fm.height()+4);
+        return QSize(fm.horizontalAdvance(mTabs->tabText(index.row()) + " [" + location + "]"), fm.height()+4);
     }
     if (role == Qt::FontRole) {
         QFont font = mTabs->font();
@@ -183,7 +183,7 @@ QVariant TabListModel::data(const QModelIndex &index, int role) const
             font.setBold(true);
         return font;
     }
-    if (role == Qt::BackgroundColorRole) {
+    if (role == Qt::BackgroundRole) {
         return mTabs->palette().color(mTabs->backgroundRole());
     }
     return  QVariant();

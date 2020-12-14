@@ -193,7 +193,7 @@ void CodeEdit::convertToLower()
 
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toLower()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();
@@ -210,7 +210,7 @@ void CodeEdit::convertToUpper()
     if (isReadOnly()) return;
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toUpper()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();
@@ -971,7 +971,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
 void CodeEdit::wheelEvent(QWheelEvent *e) {
     if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->delta();
+        const int delta = e->angleDelta().y();
         if (delta < 0) {
             int pix = fontInfo().pixelSize();
             zoomOut();

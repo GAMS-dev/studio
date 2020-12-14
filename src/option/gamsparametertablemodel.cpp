@@ -185,7 +185,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
         }
         return tooltipText;
     }
-    case Qt::TextColorRole: {
+    case Qt::ForegroundRole: {
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
 

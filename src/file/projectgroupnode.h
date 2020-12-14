@@ -38,6 +38,7 @@ class FileMeta;
 class FileMetaRepo;
 namespace option {
 struct OptionItem;
+class Option;
 }
 
 class ProjectGroupNode : public ProjectAbstractNode
@@ -98,7 +99,7 @@ public:
     bool hasErrorText(int lstLine = -1);
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
-    QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList);
+    QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt = nullptr);
 
     QString parameter(const QString& kind) const;
     bool hasParameter(const QString& kind) const;
