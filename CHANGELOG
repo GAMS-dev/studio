@@ -9,6 +9,7 @@ Version 1.4.6 *
 - fixed missing update of parameter history for a file assigned to more than one group
 - fixed search results not being highlighted in .log files
 - fixed search performance problem after reset search parameters
+- fixed logfile additionally contained parts of a line
 - fixed selection lost in SystemLog
 - added select entry on clicking timestamp
 
