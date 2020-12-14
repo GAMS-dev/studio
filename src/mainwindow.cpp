@@ -1579,8 +1579,7 @@ void MainWindow::activeTabChanged(int index)
 void MainWindow::activeLogTabChanged(int index)
 {
     Q_UNUSED(index)
-    QWidget *wid = ui->logTabs->currentWidget();
-    if (wid) wid->setFocus();
+    if (QWidget *wid = ui->logTabs->currentWidget()) wid->setFocus();
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -2863,6 +2862,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     Settings *settings = Settings::settings();
     runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     runGroup->clearErrorTexts();
+    if (QWidget * wid = ui->mainTabs->currentWidget()) wid->setFocus();
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;
@@ -2939,11 +2939,13 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
 
     if (settings->toBool(skEdClearLog)) logNode->clearLog();
 
+    disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::activeLogTabChanged);
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
     }
     ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
     ui->dockProcessLog->setVisible(true);
+    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::activeLogTabChanged);
 
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
