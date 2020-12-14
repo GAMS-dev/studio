@@ -3551,7 +3551,6 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
                 }
             }
         }
-
     }
 }
 
