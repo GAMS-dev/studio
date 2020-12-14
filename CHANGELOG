@@ -10,6 +10,8 @@ Version 1.4.6 *
 - fixed search results not being highlighted in .log files
 - fixed search performance problem after reset search parameters
 - fixed logfile additionally contained parts of a line
+- fixed selection lost in SystemLog
+- added select entry on clicking timestamp
 - fixed focus behavior in main and log tabs
 
 Version 1.4.5
