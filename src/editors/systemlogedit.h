@@ -39,9 +39,11 @@ public:
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     QString level(LogMsgType type);
+    bool selectEntry(QPoint mousePos, bool checkOnly = false);
 
 private:
     SystemLogHighlighter *mHighlighter;
