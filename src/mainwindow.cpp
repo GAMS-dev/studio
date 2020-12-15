@@ -160,7 +160,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
-    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::activeLogTabChanged);
+    connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->mainTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -1493,15 +1494,12 @@ void MainWindow::activeTabChanged(int index)
         changeToLog(node, false, false);
         mStatusWidgets->setFileName(QDir::toNativeSeparators(node->location()));
         mStatusWidgets->setEncoding(node->file()->codecMib());
-        QWidget *widgetToFocus = nullptr;
 
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
-            widgetToFocus = edit;
             mStatusWidgets->setLineCount(edit->blockCount());
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
             ui->menuconvert_to->setEnabled(node && !edit->isReadOnly());
         } else if (TextView* tv = ViewHelper::toTextView(editWidget)) {
-            widgetToFocus = tv;
             ui->menuEncoding->setEnabled(true);
             ui->menuconvert_to->setEnabled(false);
             try {
@@ -1513,12 +1511,10 @@ void MainWindow::activeTabChanged(int index)
                 e.raise();
             }
         } else if (gdxviewer::GdxViewer *gv =ViewHelper::toGdxViewer(editWidget)) {
-            widgetToFocus = gv;
             ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
             node->file()->reload();
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
-            widgetToFocus = refViewer;
             ui->menuEncoding->setEnabled(false);
             ui->menuconvert_to->setEnabled(false);
             if (ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer)) {
@@ -1529,7 +1525,6 @@ void MainWindow::activeTabChanged(int index)
                 updateMenuToCodec(node->file()->codecMib());
             }
         } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
-            widgetToFocus = solverOptionEditor;
             ui->menuEncoding->setEnabled(false);
             if (ProjectFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor)) {
                 ui->menuEncoding->setEnabled(true);
@@ -1541,7 +1536,6 @@ void MainWindow::activeTabChanged(int index)
                 updateMenuToCodec(node->file()->codecMib());
             }
         } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
-            widgetToFocus = gucEditor;
             ui->menuEncoding->setEnabled(false);
             if (ProjectFileNode* fc = mProjectRepo.findFileNode(gucEditor)) {
                 ui->menuEncoding->setEnabled(false);
@@ -1554,7 +1548,6 @@ void MainWindow::activeTabChanged(int index)
                 updateMenuToCodec(node->file()->codecMib());
             }
         }
-        if (widgetToFocus) widgetToFocus->setFocus();
         updateMenuToCodec(node->file()->codecMib());
     } else {
         ui->menuEncoding->setEnabled(false);
@@ -1576,10 +1569,11 @@ void MainWindow::activeTabChanged(int index)
     updateCursorHistoryAvailability();
 }
 
-void MainWindow::activeLogTabChanged(int index)
+void MainWindow::tabBarClicked(int index)
 {
     Q_UNUSED(index)
-    if (QWidget *wid = ui->logTabs->currentWidget()) wid->setFocus();
+    QTabWidget *tabs = sender() == ui->mainTabs ? ui->mainTabs : sender() == ui->logTabs ? ui->logTabs : nullptr;
+    if (tabs && tabs->currentWidget()) tabs->currentWidget()->setFocus();
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -2939,13 +2933,13 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
 
     if (settings->toBool(skEdClearLog)) logNode->clearLog();
 
-    disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::activeLogTabChanged);
+    disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
     }
     ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
     ui->dockProcessLog->setVisible(true);
-    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::activeLogTabChanged);
+    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
 
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
