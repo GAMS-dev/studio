@@ -14,6 +14,7 @@ Version 1.4.6 *
 - added select entry on clicking timestamp
 - fixed missing close button in log tab after running NEOS
 - fixed focus behavior in main and log tabs
+- in lxi tree on pressing the "enter" key, the LST view scrolls to the assigned position
 
 Version 1.4.5
 ==================
