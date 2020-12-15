@@ -54,6 +54,7 @@ protected:
     QProcessEnvironment miroProcessEnvironment() override;
 
 private:
+    void setupMiroPath(const QString &path);
     QString deployMode();
 
 private:

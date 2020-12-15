@@ -29,6 +29,9 @@ namespace gams {
 namespace studio {
 namespace miro {
 
+const QString MiroCommon::ConfFolderPrefix = "conf_";
+const QString MiroCommon::DataFolderPrefix = "data_";
+
 QString MiroCommon::path(const QString &configMiroPath)
 {
     if (!configMiroPath.isEmpty()) {
@@ -41,6 +44,16 @@ QString MiroCommon::path(const QString &configMiroPath)
     }
     auto locations = standardLocations();
     return searchLocations(locations);
+}
+
+QString MiroCommon::confDirectory(const QString &modelName)
+{
+    return ConfFolderPrefix + modelName.toLower();
+}
+
+QString MiroCommon::dataDirectory(const QString &modelName)
+{
+    return DataFolderPrefix + modelName.toLower();
 }
 
 QString MiroCommon::assemblyFileName(const QString &modelName)

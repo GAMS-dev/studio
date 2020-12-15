@@ -19,6 +19,7 @@
  */
 #include "mirodeploydialog.h"
 #include "ui_mirodeploydialog.h"
+#include "mirocommon.h"
 #include "filesystemmodel.h"
 #include "theme.h"
 
@@ -47,6 +48,10 @@ MiroDeployDialog::MiroDeployDialog(QWidget *parent)
             this, &MiroDeployDialog::updateTestDeployButtons);
     connect(ui->hypercubeBox, &QCheckBox::stateChanged,
             this, &MiroDeployDialog::updateTestDeployButtons);
+    connect(ui->baseBox, &QCheckBox::stateChanged,
+            this, &MiroDeployDialog::checkMiroPaths);
+    connect(ui->hypercubeBox, &QCheckBox::stateChanged,
+            this, &MiroDeployDialog::checkMiroPaths);
 }
 
 bool MiroDeployDialog::baseMode() const
@@ -85,15 +90,20 @@ void MiroDeployDialog::setAssemblyFileName(const QString &file) {
         palette.setColor(ui->assemblyFileLabel->foregroundRole(),
                          Theme::color(Theme::Normal_Green));
         ui->assemblyFileLabel->setPalette(palette);
-        ui->assemblyFileLabel->setText(fi.fileName());
+        ui->assemblyFileLabel->setText("File " + fi.fileName() + " found.");
     } else {
         auto palette = ui->assemblyFileLabel->palette();
         palette.setColor(ui->assemblyFileLabel->foregroundRole(),
                          Theme::color(Theme::Normal_Red));
         ui->assemblyFileLabel->setPalette(palette);
-        ui->assemblyFileLabel->setText("none");
+        ui->assemblyFileLabel->setText("No file " + fi.fileName() + " found!");
     }
     updateTestDeployButtons();
+}
+
+void MiroDeployDialog::setModelName(const QString &modelName) {
+    mModelName = modelName;
+    checkMiroPaths();
 }
 
 QStringList MiroDeployDialog::selectedFiles()
@@ -117,7 +127,8 @@ void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)
 void MiroDeployDialog::on_createButton_clicked()
 {
     if (selectedFiles().isEmpty())
-        QMessageBox::critical(this, "No deployment files!", "Please select the files for your MIRO deployment.");
+        QMessageBox::critical(this, "No deployment files!",
+                              "Please select the files for your MIRO deployment.");
     else
         emit newAssemblyFileData();
 }
@@ -136,12 +147,12 @@ void MiroDeployDialog::on_clearButton_clicked()
 
 void MiroDeployDialog::on_testBaseButton_clicked()
 {
-    emit testDeploy(true, MiroDeployMode::Base);
+    emit deploy(true, MiroDeployMode::Base);
 }
 
 void MiroDeployDialog::on_testHcubeButton_clicked()
 {
-    emit testDeploy(true, MiroDeployMode::Hypercube);
+    emit deploy(true, MiroDeployMode::Hypercube);
 }
 
 void MiroDeployDialog::on_deployButton_clicked()
@@ -152,12 +163,48 @@ void MiroDeployDialog::on_deployButton_clicked()
 void MiroDeployDialog::updateTestDeployButtons()
 {
     ui->testBaseButton->setEnabled(ui->baseBox->isChecked() &&
-                                   mValidAssemblyFile);
+                                   mValidAssemblyFile &&
+                                   checkMiroPaths());
     ui->testHcubeButton->setEnabled(ui->hypercubeBox->isChecked() &&
-                                    mValidAssemblyFile);
+                                    mValidAssemblyFile &&
+                                    checkMiroPaths());
     ui->deployButton->setEnabled((ui->baseBox->isChecked() ||
                                  ui->hypercubeBox->isChecked()) &&
-                                 mValidAssemblyFile);
+                                 mValidAssemblyFile &&
+                                 checkMiroPaths());
+}
+
+bool MiroDeployDialog::checkMiroPaths()
+{
+    QStringList paths {
+        mWorkingDirectory + "/" + MiroCommon::confDirectory(mModelName),
+        mWorkingDirectory + "/" + MiroCommon::dataDirectory(mModelName) };
+
+    QStringList missing;
+    for (int i=0; i<paths.size(); ++i) {
+        QDir dir(paths[i]);
+        if (!dir.exists() || dir.isEmpty()) {
+            if (missing.size()>0)
+                missing << "and";
+            missing << paths[i];
+        }
+    }
+
+    if (missing.isEmpty()) {
+        ui->errorLabel->setText("");
+        return true;
+    }
+
+    auto palette = ui->errorLabel->palette();
+    palette.setColor(ui->errorLabel->foregroundRole(),
+                     Scheme::color(Scheme::Normal_Red));
+    ui->errorLabel->setPalette(palette);
+    ui->errorLabel->setText("It looks like " +
+                            missing.join(" ") +
+                            (missing.size()>1 ? " are" : " is") +
+                            " missing or empty. Please run MIRO first before"
+                            " executing any MIRO deploy step.");
+    return false;
 }
 
 void MiroDeployDialog::setupViewModel()
@@ -168,7 +215,6 @@ void MiroDeployDialog::setupViewModel()
     mFileSystemModel->setRootPath(mWorkingDirectory);
     auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
     ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
-    ui->directoryView->expandAll();
 }
 
 }

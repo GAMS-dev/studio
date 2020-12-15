@@ -73,6 +73,7 @@ struct OptionItem {
     int valuePosition = -1;
     bool disabled = false;
     bool recurrent = false;
+    QList<int> recurrentIndices = QList<int>();
     OptionErrorType error = OptionErrorType::No_Error;
 };
 
@@ -233,7 +234,7 @@ private:
 
     QMap<QString, OptionDefinition> mOption;
     QStringList mDeprecatedSynonym;
-    QMap<QString, QString> mSynonymMap;
+    QMultiMap<QString, QString> mSynonymMap;
     QMap<int, QString> mOptionTypeNameMap;
     QMap<int, OptionGroup> mOptionGroup;
 

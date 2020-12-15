@@ -23,6 +23,7 @@
 #include "gdxsymboltable.h"
 #include "gdxsymbolview.h"
 #include "common.h"
+#include "logger.h"
 #include "exception.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
@@ -59,7 +60,9 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     char msg[GMS_SSSIZE];
     if (!gdxCreateD(&mGdx, mSystemDirectory.toLatin1(), msg, sizeof(msg)))
         EXCEPT() << "Could not load GDX library: " << msg;
-    init();
+    int errNr = init();
+    if (errNr < 0)
+        EXCEPT() << "Could not open invalid GDX file: " << gdxFile;
 
     QAction* cpAction = new QAction("Copy");
 //    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -138,8 +141,10 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
             //msgBox.setIcon(QMessageBox::Information);
             //msgBox.exec();
         }
-        mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
-        mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
+        if (mSymbolTableProxyModel) {
+            mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
+            mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
+        }
         return initError;
     }
     return 0;
@@ -233,7 +238,9 @@ int GdxViewer::init(bool quiet)
             if (QMessageBox::Retry == msgBox.exec()) {
                 mHasChanged = true;
                 invalidate();
-                reload(mCodec);
+                errNr = reload(mCodec);
+            } else {
+                errNr = -1;
             }
         }
         return errNr;

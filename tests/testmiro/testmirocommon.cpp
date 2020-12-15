@@ -73,6 +73,38 @@ void TestMiroCommon::testPath()
     QCOMPARE(MiroCommon::path(data), result);
 }
 
+void TestMiroCommon::testConfDirectory_data()
+{
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("empty") << QString() << "conf_";
+    QTest::newRow("model") << "myModel" << "conf_mymodel";
+}
+
+void TestMiroCommon::testConfDirectory()
+{
+    QFETCH(QString, data);
+    QFETCH(QString, result);
+    QCOMPARE(MiroCommon::confDirectory(data), result);
+}
+
+void TestMiroCommon::testDataDirectory_data()
+{
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("empty") << QString() << "data_";
+    QTest::newRow("model") << "myModel" << "data_mymodel";
+}
+
+void TestMiroCommon::testDataDirectory()
+{
+    QFETCH(QString, data);
+    QFETCH(QString, result);
+    QCOMPARE(MiroCommon::dataDirectory(data), result);
+}
+
 void TestMiroCommon::testAssemblyFileName_data()
 {
     QTest::addColumn<QString>("data");
@@ -195,7 +227,7 @@ void TestMiroCommon::testWriteAssemblyFile()
         QFile file(fileName);
         if (file.open(QIODevice::ReadOnly)) {
             QStringList data;
-            for (auto item: QString(file.readAll()).split('\n', QString::SkipEmptyParts))
+            for (auto item: QString(file.readAll()).split('\n', Qt::SkipEmptyParts))
                 data << item.trimmed();
             sort(data.begin(), data.end());
             sort(selectedFiles.begin(), selectedFiles.end());

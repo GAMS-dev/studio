@@ -51,7 +51,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
         path.addRect(checkRect);
         QPen pen;
         painter->setPen(pen);
-        painter->fillPath(path, QBrush(index.data(Qt::BackgroundColorRole).value<QColor>(), Qt::SolidPattern));
+        painter->fillPath(path, QBrush(index.data(Qt::BackgroundRole).value<QColor>(), Qt::SolidPattern));
     }
 
     int level = 0;
@@ -59,7 +59,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
     if (index.column()==0 && level > 0) {
         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt);
-        painter->fillRect(textRect, index.data(Qt::BackgroundColorRole).value<QColor>());
+        painter->fillRect(textRect, index.data(Qt::BackgroundRole).value<QColor>());
 
         auto view = qobject_cast<const QTreeView*>(opt.widget);
         int indent = level * (view ? view->indentation() : 10);

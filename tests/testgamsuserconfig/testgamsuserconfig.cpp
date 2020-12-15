@@ -79,23 +79,23 @@ void TestGamsUserConfig::testReadDefaultGamsConfigFile()
         QFAIL(QString("expected to open [%1] to write, but failed").arg(testFile).toLatin1());
 
     QTextStream out(&file);
-    out << "---" << endl;
-    out << "commandLineParameters:" << endl;
-    out << "- pySetup:"             << endl;
-    out << "    value: 0"           << endl;
-    out << "    minVersion: 23"     << endl;
-    out << "    maxVersion: 30.2"   << endl;
-    out << "- action:"              << endl;
-    out << "    value: ce"          << endl;
-    out << "    maxVersion: 30.2"   << endl;
-    out << "- CurDir:"              << endl;
-    out << "    value: x"           << endl;
-    out << "- CNS:"                 << endl;
-    out << "    value: y"           << endl;
-    out << "environmentVariables:"  << endl;
-    out << "- PYTHON38:"            << endl;
-    out << "    value: blah"        << endl;
-    out << "..."                    << endl;
+    out << "---" << Qt::endl;
+    out << "commandLineParameters:" << Qt::endl;
+    out << "- pySetup:"             << Qt::endl;
+    out << "    value: 0"           << Qt::endl;
+    out << "    minVersion: 23"     << Qt::endl;
+    out << "    maxVersion: 30.2"   << Qt::endl;
+    out << "- action:"              << Qt::endl;
+    out << "    value: ce"          << Qt::endl;
+    out << "    maxVersion: 30.2"   << Qt::endl;
+    out << "- CurDir:"              << Qt::endl;
+    out << "    value: x"           << Qt::endl;
+    out << "- CNS:"                 << Qt::endl;
+    out << "    value: y"           << Qt::endl;
+    out << "environmentVariables:"  << Qt::endl;
+    out << "- PYTHON38:"            << Qt::endl;
+    out << "    value: blah"        << Qt::endl;
+    out << "..."                    << Qt::endl;
     file.close();
 
     // when
@@ -146,11 +146,11 @@ void TestGamsUserConfig::testGamsRunningDefaultConfigFile()
         QFAIL(QString("expected to open [%1] to write, but failed").arg(testFile).toLatin1());
 
     QTextStream out(&gamsConfigFile);
-    out << "---"                            << endl;
-    out << "commandLineParameters:"         << endl;
-    out << "- GDX:"                         << endl;
-    out << "    value: mygdxfromconfig.gdx" << endl;
-    out << "..."                            << endl;
+    out << "---"                            << Qt::endl;
+    out << "commandLineParameters:"         << Qt::endl;
+    out << "- GDX:"                         << Qt::endl;
+    out << "    value: mygdxfromconfig.gdx" << Qt::endl;
+    out << "..."                            << Qt::endl;
     gamsConfigFile.close();
 
     // when

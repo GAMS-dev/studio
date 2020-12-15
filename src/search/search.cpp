@@ -95,6 +95,8 @@ void Search::stop()
 void Search::reset()
 {
     mFiles.clear();
+    mResults.clear();
+    mResultHash.clear();
 
     mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
@@ -124,10 +126,11 @@ void Search::findNext(Direction direction)
 {
     // create new cache when cached search does not contain results for current file
     bool requestNewCache = !mCacheAvailable
-            || mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor()
-                                                            )->location()) == mResultHash.end();
+            || mResultHash.find(mMain->fileRepo()
+                                ->fileMeta(mMain->recent()->editor())->location())->count() == 0;
 
     if (requestNewCache) {
+        mCacheAvailable = false;
         mMain->searchDialog()->updateUi(true);
         start();
     }

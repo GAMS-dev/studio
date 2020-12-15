@@ -116,7 +116,7 @@ void SymbolDataType::clear()
 }
 
 SymbolDataType::SymbolDataType(SymbolType type, QString typeDescription) :
-    mType(type), mDescription(typeDescription.split(",", QString::SkipEmptyParts))
+    mType(type), mDescription(typeDescription.split(",", Qt::SkipEmptyParts))
 {
 }
 

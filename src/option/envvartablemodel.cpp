@@ -139,7 +139,7 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
         }
         return tooltipText;
     }
-    case Qt::TextColorRole: {
+    case Qt::ForegroundRole: {
          return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
      }
     default:

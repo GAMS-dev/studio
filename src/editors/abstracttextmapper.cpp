@@ -402,6 +402,7 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
         Chunk *chunk = chunkForRelativeLine(interval.first, &chunkInterval.first);
         if (!chunk) break;
         chunkInterval.second = qMin(interval.second, chunk->lineCount() - chunkInterval.first);
+        if (!chunkInterval.second) break;
         QByteArray raw;
         raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(chunkInterval.first),
                        uint(chunk->lineBytes.at(chunkInterval.first+chunkInterval.second)
@@ -550,7 +551,7 @@ QString AbstractTextMapper::selectedText() const
         }
         QByteArray raw;
         raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
-        all.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
+        all.append(mCodec ? mCodec->toUnicode(raw).toUtf8() : raw);
         if (chunk->nr == chunkCount()-1) break;
 
         chunk = getChunk(chunk->nr + 1);

@@ -33,6 +33,12 @@ private slots:
     void testPath_data();
     void testPath();
 
+    void testConfDirectory_data();
+    void testConfDirectory();
+
+    void testDataDirectory_data();
+    void testDataDirectory();
+
     void testAssemblyFileName_data();
     void testAssemblyFileName();
 

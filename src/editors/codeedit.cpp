@@ -193,7 +193,7 @@ void CodeEdit::convertToLower()
 
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toLower()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();
@@ -210,7 +210,7 @@ void CodeEdit::convertToUpper()
     if (isReadOnly()) return;
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toUpper()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();
@@ -755,8 +755,15 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
             QString command = match.captured(2).toUpper();
             if (command == "INCLUDE") {
                 fileStart = match.capturedEnd();
+                int fileEnd = block.text().length();
+                while (fileEnd >= fileStart) {
+                    int kind;
+                    requestSyntaxKind(block.position() + fileEnd, kind);
+                    if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
+                    --fileEnd;
+                }
                 endChar = QChar();
-                res = block.text().mid(fileStart, block.text().length()).trimmed();
+                res = block.text().mid(fileStart, fileEnd-fileStart).trimmed();
             } else if (command.endsWith("INCLUDE")) { // batInclude, sysInclude, libInclude
                 if (command.at(0) != 'B') code = command.left(3);
                 fileStart = match.capturedEnd();
@@ -971,7 +978,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
 void CodeEdit::wheelEvent(QWheelEvent *e) {
     if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->delta();
+        const int delta = e->angleDelta().y();
         if (delta < 0) {
             int pix = fontInfo().pixelSize();
             zoomOut();
@@ -1819,7 +1826,8 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
 void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
 {
     search::Search* search = search::SearchLocator::search();
-    if (search->filteredResultList(ViewHelper::location(this)).isEmpty()) return;
+    if (search->regex().pattern().isEmpty() || search->filteredResultList(ViewHelper::location(this)).isEmpty())
+        return;
 
     QRegularExpression regEx = search->regex();
 

@@ -41,6 +41,10 @@ private:
 public:
     static QString path(const QString &configMiroPath);
 
+    static QString confDirectory(const QString &modelName);
+
+    static QString dataDirectory(const QString &modelName);
+
     static QString assemblyFileName(const QString &modelName);
 
     static QString assemblyFileName(const QString &modelLocation,
@@ -58,6 +62,10 @@ private:
     static bool exists(const QString &miro);
     static QString searchLocations(const QStringList &locations);
     static QStringList standardLocations();
+
+private:
+    static const QString ConfFolderPrefix;
+    static const QString DataFolderPrefix;
 };
 
 }

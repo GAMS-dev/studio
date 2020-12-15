@@ -473,9 +473,7 @@ void MemoryMapper::parseNewLine()
     }
 
     // update log-file cache
-    if (!mLastLineIsOpen || mLastLineLen != line.length()) {
-        mNewLogLines << line;
-    }
+    mLogStack.setLine(line);
 
     if (mLastLineIsOpen && mLastLineLen > line.length()) {
         ensureSpace(1);
@@ -494,7 +492,8 @@ void MemoryMapper::parseNewLine()
 
 void MemoryMapper::appendEmptyLine()
 {
-    if (mNewLogLines.length() >= CParseLinesMax)
+    mLogStack.commitLine();
+    if (mLogStack.count() >= CParseLinesMax)
         fetchLog();
 
     // update chunk (switch to new if filled up)
@@ -524,11 +523,8 @@ void MemoryMapper::clearLastLine()
         chunk->lineBytes.last() = start+1;
         chunk->bArray[start] = '\n';
     }
-    if (mNewLogLines.size()) {
-        mNewLogLines.removeLast();
-    } else {
-        mWeakLastLogLine = true;
-    }
+
+    mLogStack.setLine();
 
     if (mNewLines)
         newPending(PendingContentChange);
@@ -538,9 +534,8 @@ void MemoryMapper::clearLastLine()
 
 void MemoryMapper::fetchLog()
 {
-    emit appendLines(mNewLogLines, mWeakLastLogLine);
-    mNewLogLines.clear();
-    mWeakLastLogLine = false;
+    if (mLogStack.count())
+        emit appendLines(mLogStack.popLines(), false);
 }
 
 void MemoryMapper::fetchDisplay()
@@ -597,8 +592,6 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                     cleaned = ensureSpace(midData.size()+1);
                     chunk = mChunks.last();
                     appendLineData(midData, chunk);
-                } else if (!mLastLineIsOpen) {
-                    mNewLogLines << QString(delimiter());
                 }
                 start = i + 1;
                 cleaned = ensureSpace(1);

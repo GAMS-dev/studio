@@ -49,6 +49,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     syntaxDirective->setDirectiveBody(syntaxDirectiveBody);
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), Theme::Syntax_comment);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title), Theme::Syntax_title);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::IgnoredHead), Theme::Syntax_directiveBody);
     initKind(new SyntaxCall(), Theme::Syntax_directive);
 
     SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
@@ -67,10 +68,11 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxAssign(), Theme::Syntax_assign);
     initKind(new SyntaxString(), Theme::Syntax_neutral);
     initKind(new SyntaxCommentLine(), Theme::Syntax_comment);
-    initKind(new SyntaxCommentBlock(), Theme::Syntax_comment);
+    initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock), Theme::Syntax_comment);
     SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
     initKind(syntaxCommentEndline, Theme::Syntax_comment);
     syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
+    initKind(new SyntaxUniformBlock(SyntaxKind::IgnoredBlock), Scheme::Syntax_neutral);
 
     initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), Theme::Syntax_keyword);
     initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), Theme::Syntax_keyword);
@@ -239,6 +241,7 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
     SyntaxKind::CommentBlock,
     SyntaxKind::CommentEndline,
     SyntaxKind::CommentInline,
+    SyntaxKind::IgnoredBlock,
     SyntaxKind::DeclarationSetType,
     SyntaxKind::DeclarationVariableType,
     SyntaxKind::Declaration,

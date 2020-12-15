@@ -55,13 +55,15 @@ public:
 
     void setAssemblyFileName(const QString &file);
 
+    void setModelName(const QString &modelName);
+
     QStringList selectedFiles();
     void setSelectedFiles(const QStringList &files);
 
     void setWorkingDirectory(const QString &workingDirectory);
 
 signals:
-    void testDeploy(bool testDeploy, MiroDeployMode mode);
+    void deploy(bool test, MiroDeployMode mode);
     void newAssemblyFileData();
 
 private slots:
@@ -74,6 +76,7 @@ private slots:
     void on_deployButton_clicked();
 
     void updateTestDeployButtons();
+    bool checkMiroPaths();
 
 private:
     void setupViewModel();
@@ -81,6 +84,7 @@ private:
 private:
     Ui::MiroDeployDialog *ui;
     QString mModelAssemblyFile;
+    QString mModelName;
     bool mValidAssemblyFile;
     QString mWorkingDirectory;
 
