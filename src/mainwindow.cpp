@@ -2911,9 +2911,9 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
         wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
-        if (ViewHelper::toTextView(wid))
-            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                                               : AbstractEdit::NoWrap);
+        if (TextView* tv = ViewHelper::toTextView(wid))
+            tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                      : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
