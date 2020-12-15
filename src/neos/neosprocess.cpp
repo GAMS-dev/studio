@@ -254,6 +254,7 @@ void NeosProcess::completed(int exitCode)
 {
     mPreparationState = QProcess::NotRunning;
     AbstractGamsProcess::completed(exitCode);
+    emit stateChanged(QProcess::NotRunning);
 }
 
 void NeosProcess::rePing(const QString &value)

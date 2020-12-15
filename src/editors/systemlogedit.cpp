@@ -23,6 +23,7 @@
 
 #include <QDesktopServices>
 #include <QTime>
+#include <QMenu>
 
 namespace gams {
 namespace studio {
@@ -52,18 +53,19 @@ void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)
 {
     QTextCursor cursor = cursorForPosition(event->pos());
     int pos = cursor.positionInBlock();
-
+    Qt::CursorShape shape = Qt::IBeamCursor;
     for (QTextLayout::FormatRange range : cursor.block().layout()->formats()) {
         if (range.format.isAnchor() && pos >= range.start && pos <= range.start + range.length) {
-            Qt::CursorShape shape = Qt::PointingHandCursor;
-            viewport()->setCursor(shape);
-        } else {
-            Qt::CursorShape shape = Qt::IBeamCursor;
-            viewport()->setCursor(shape);
+            shape = Qt::PointingHandCursor;
         }
+    }
+    bool valid = (event->buttons() == Qt::NoButton || (!clickPos().isNull() && ((clickPos() - event->pos()).manhattanLength() <= 4)));
+    if (shape == Qt::IBeamCursor && valid && selectEntry(event->pos(), true)) {
+        shape = Qt::ArrowCursor;
     }
 
     AbstractEdit::mouseMoveEvent(event);
+    viewport()->setCursor(shape);
 }
 
 void SystemLogEdit::mousePressEvent(QMouseEvent *event)
@@ -82,6 +84,17 @@ void SystemLogEdit::mousePressEvent(QMouseEvent *event)
     }
 
     AbstractEdit::mousePressEvent(event);
+    setClickPos(event->pos());
+}
+
+void SystemLogEdit::mouseReleaseEvent(QMouseEvent *event)
+{
+    bool doSelect = !clickPos().isNull() && (clickPos() - event->pos()).manhattanLength() <= 4;
+    AbstractEdit::mouseReleaseEvent(event);
+    if (event->modifiers().testFlag(Qt::ShiftModifier)) return;
+    if (doSelect) {
+        selectEntry(event->pos());
+    }
 }
 
 AbstractEdit::EditorType SystemLogEdit::type() const
@@ -100,6 +113,21 @@ QString SystemLogEdit::level(LogMsgType type)
         return HighlightingData::ErrorKeyword;
     }
     return QString();
+}
+
+bool SystemLogEdit::selectEntry(QPoint mousePos, bool checkOnly)
+{
+    QTextCursor cur = cursorForPosition(mousePos);
+    QTextBlock block = cur.block();
+    int offset = block.text().indexOf("]: ") + 3;
+    if (offset > 2 && cur.positionInBlock() < offset) {
+        if (checkOnly) return true;
+        cur.setPosition(block.position() + offset);
+        cur.setPosition(block.position() + block.length() - 1, QTextCursor::KeepAnchor);
+        setTextCursor(cur);
+        return true;
+    }
+    return false;
 }
 
 }

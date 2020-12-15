@@ -247,6 +247,7 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
     child->setParentNode(parent);
     endInsertRows();
     emit childrenChanged();
+    emit parentAssigned(child);
     return true;
 }
 

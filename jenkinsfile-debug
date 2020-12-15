@@ -63,8 +63,8 @@ pipeline {
                             windeployqt --debug --compiler-runtime --pdb --force src\\bin\\studio.exe
 
                             copy CHANGELOG "src\\bin\\resources\\Changelog"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\x64\\Microsoft.VC142.CRT\\*" "src\\bin"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\vc_redist.x64.exe" "src\\bin"
+                            copy "C:\\Program Files (x86)\\Microsoft SDKs\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.18362.0\\Redist\\Debug\\x64\\*" "src\\bin"
+                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\debug_nonredist\\x64\\Microsoft.VC141.DebugCRT\\*" "src\\bin"
                         '''
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                     }

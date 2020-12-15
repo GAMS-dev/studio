@@ -163,6 +163,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
     int line = topVisibleLine();
+    int max = document()->characterCount()-1;
     while (block.isValid() && top < viewport()->height()) {
         const QList<TextMark*> lm = marks()->values(line);
         for (const TextMark* m: lm) {
@@ -172,7 +173,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             int start = m->blockStart();
             int end = m->size() ? (m->size() < 0 ? block.length() : m->blockEnd()+1) : 0;
             selection.cursor.setPosition(block.position() + start);
-            selection.cursor.setPosition(block.position() + end, QTextCursor::KeepAnchor);
+            selection.cursor.setPosition(qMin(block.position() + end, max), QTextCursor::KeepAnchor);
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
@@ -266,12 +267,13 @@ TextLinkType AbstractEdit::checkLinks(const QPoint &mousePos, bool greedy, QStri
 
 void AbstractEdit::jumpToCurrentLink(const QPoint &mousePos)
 {
-    QTextCursor cur = textCursor();
-    cur.clearSelection();
-    setTextCursor(cur);
     TextLinkType linkType = checkLinks(mousePos, true);
-    if (linkType == linkMark)
+    if (linkType == linkMark) {
+        QTextCursor cur = textCursor();
+        cur.clearSelection();
+        setTextCursor(cur);
         marksAtMouse().first()->jumpToRefMark();
+    }
 }
 
 QPoint AbstractEdit::clickPos() const
