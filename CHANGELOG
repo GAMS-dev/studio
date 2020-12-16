@@ -5,6 +5,7 @@ Version 1.5.0 *
 - added GDX filter to open file dialog
 - enhanced MIRO deploy dialog usability and conf/data folder creation for deploy/test deploy
 - Studio now uses Qt 5.15.2 (LTS) on all platforms
+- the setting "autosave on run" now saves ALL modified files, not just the files of the current group
 - fixed not all changed files were requested to save on run
 
 Version 1.4.6

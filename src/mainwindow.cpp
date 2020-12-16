@@ -2878,7 +2878,16 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     if (QWidget * wid = ui->mainTabs->currentWidget()) wid->setFocus();
 
     // gather modified files and autosave or request to save
-    QVector<FileMeta*> modifiedFiles = mFileMetaRepo.modifiedFiles();
+    QVector<FileMeta*> modifiedFiles;
+    if (settings->toBool(skAutosaveOnRun)) {
+        modifiedFiles = mFileMetaRepo.modifiedFiles();
+    } else {
+        for (ProjectFileNode *node: runGroup->listFiles(true)) {
+            if (node->file()->isOpen() && !modifiedFiles.contains(node->file()) && node->file()->isModified())
+                modifiedFiles << node->file();
+        }
+    }
+
     bool doSave = !modifiedFiles.isEmpty();
     if (doSave && !settings->toBool(skAutosaveOnRun)) {
         QMessageBox msgBox;
