@@ -52,6 +52,10 @@ public:
     void unwatch(const QString &filePath);
     bool watch(const FileMeta* fm);
 
+    QStringList watchedFiles() const {
+        return mWatcher.files();
+    }
+
     void setDebugMode(bool debug);
     bool debugMode() const;
     static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
