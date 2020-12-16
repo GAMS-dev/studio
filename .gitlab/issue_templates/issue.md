@@ -5,6 +5,6 @@ t.b.d.
 
 **Steps**
 - [ ] t.b.d.
-- [ ] Update CHNAGELOG
+- [ ] Update CHANGELOG
 - [ ] Unit Tests
 - [ ] UI Tests
