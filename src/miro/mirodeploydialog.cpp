@@ -197,7 +197,7 @@ bool MiroDeployDialog::checkMiroPaths()
 
     auto palette = ui->errorLabel->palette();
     palette.setColor(ui->errorLabel->foregroundRole(),
-                     Scheme::color(Scheme::Normal_Red));
+                     Theme::color(Theme::Normal_Red));
     ui->errorLabel->setPalette(palette);
     ui->errorLabel->setText("It looks like " +
                             missing.join(" ") +

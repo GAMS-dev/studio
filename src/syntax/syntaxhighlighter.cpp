@@ -72,7 +72,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
     initKind(syntaxCommentEndline, Theme::Syntax_comment);
     syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
-    initKind(new SyntaxUniformBlock(SyntaxKind::IgnoredBlock), Scheme::Syntax_neutral);
+    initKind(new SyntaxUniformBlock(SyntaxKind::IgnoredBlock), Theme::Syntax_neutral);
 
     initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), Theme::Syntax_keyword);
     initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), Theme::Syntax_keyword);
