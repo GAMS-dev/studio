@@ -12,6 +12,7 @@ Version 1.4.6 *
 - fixed logfile additionally contained parts of a line
 - fixed selection lost in SystemLog
 - added select entry on clicking timestamp
+- fixed behavior of ESC key when current widget has a selection
 
 Version 1.4.5
 ==================
