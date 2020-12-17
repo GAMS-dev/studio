@@ -233,6 +233,11 @@ void TextView::selectAllText()
     mEdit->selectAllText();
 }
 
+void TextView::clearSelection()
+{
+    mEdit->clearSelection();
+}
+
 AbstractEdit *TextView::edit()
 {
     return mEdit;

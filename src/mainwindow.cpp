@@ -2641,12 +2641,30 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
         // log widgets
         if (focusWidget() == mSyslog) {
-            setOutputViewVisibility(false);
-            e->accept(); return;
-        } else if (focusWidget() == ui->logTabs->currentWidget()) {
-            on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
-            ui->logTabs->currentWidget()->setFocus();
-            e->accept(); return;
+            if (mSyslog->textCursor().hasSelection()) {
+                QTextCursor cursor = mSyslog->textCursor();
+                cursor.clearSelection();
+                mSyslog->setTextCursor(cursor);
+            } else {
+                setOutputViewVisibility(false);
+            }
+            e->accept();
+            return;
+        } else if (focusWidget() == ui->logTabs->currentWidget()
+                   || (focusWidget() && focusWidget()->parentWidget() == ui->logTabs->currentWidget())) {
+            e->setAccepted(false);
+            if (TextView *tv = ViewHelper::toTextView(ui->logTabs->currentWidget())) {
+                if (tv->hasSelection()) {
+                    tv->clearSelection();
+                    e->accept();
+                }
+            }
+            if (!e->isAccepted()) {
+                on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
+                ui->logTabs->currentWidget()->setFocus();
+                e->accept();
+            }
+            return;
         } else if (focusWidget() == ui->projectView) {
             setProjectViewVisibility(false);
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {

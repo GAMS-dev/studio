@@ -13,6 +13,7 @@ Version 1.4.6 *
 - fixed selection lost in SystemLog
 - added select entry on clicking timestamp
 - fixed missing close button in log tab after running NEOS
+- fixed behavior of ESC key when current widget has a selection
 
 Version 1.4.5
 ==================
