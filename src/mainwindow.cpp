@@ -1510,7 +1510,7 @@ void MainWindow::activeTabChanged(int index)
                     closeFileEditors(fileRepo()->fileMeta(tv)->id());
                 e.raise();
             }
-        } else if (gdxviewer::GdxViewer *gv =ViewHelper::toGdxViewer(editWidget)) {
+        } else if (ViewHelper::toGdxViewer(editWidget)) {
             ui->menuconvert_to->setEnabled(false);
             mStatusWidgets->setLineCount(-1);
             node->file()->reload();

@@ -85,10 +85,12 @@ void LxiViewer::print(QPagedPaintDevice *printer)
 
 bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress && watched == ui->lxiTreeView) {
+    if (event->type() == QEvent::KeyPress && watched == ui->lxiTreeView && ui->lxiTreeView->currentIndex().isValid()) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         if (keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return) {
             jumpToLine(ui->lxiTreeView->currentIndex());
+            if (ui->lxiTreeView->model()->hasChildren(ui->lxiTreeView->currentIndex()))
+                ui->lxiTreeView->expand(ui->lxiTreeView->currentIndex());
         }
     }
     return false;
