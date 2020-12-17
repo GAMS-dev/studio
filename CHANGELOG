@@ -15,7 +15,7 @@ Version 1.4.6 *
 - fixed missing close button in log tab after running NEOS
 - fixed behavior of ESC key when current widget has a selection
 - fixed focus behavior in main and log tabs
-- in lxi tree on pressing the "enter" key, the LST view scrolls to the assigned position
+- pressing "enter" in the LXI tree scrolls to the corresponding position in the LST view
 
 Version 1.4.5
 ==================
