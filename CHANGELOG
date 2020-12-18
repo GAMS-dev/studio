@@ -1,15 +1,15 @@
-Version 1.4.6 *
+Version 1.4.6
 ==================
 - disabed GAMS syntax highlighting between $onPut/$offPut and $onEcho/$offEcho
 - fixed missing request for new search cache after switching file
 - fixed end-of-line comment making links unclickable
 - fixed rare crash related to LOG output
-- fixed endless dialog for invalid GDX file
+- fixed endlessly recurring message box for invalid GDX file
 - fixed New File dialog not using group path
 - fixed missing update of parameter history for a file assigned to more than one group
 - fixed search results not being highlighted in .log files
 - fixed search performance problem after reset search parameters
-- fixed logfile additionally contained parts of a line
+- fixed log file additionally contained parts of a line
 - fixed selection lost in SystemLog
 - added select entry on clicking timestamp
 - fixed missing close button in log tab after running NEOS
