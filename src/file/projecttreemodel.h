@@ -55,6 +55,7 @@ public:
 
 signals:
     void childrenChanged();
+    void parentAssigned(const ProjectAbstractNode *node);
 
 protected:
     friend class ProjectRepo;

@@ -160,6 +160,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
+    connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->mainTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -282,6 +284,12 @@ void MainWindow::watchProjectTree()
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
         mRecent.setEditor(mRecent.editor(), this);
         updateRunState();
+    });
+    connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const ProjectAbstractNode *node) {
+        if (ProjectFileNode *fn = mProjectRepo.asFileNode(node->id())) {
+            if (fn->file()->editors().contains(ui->mainTabs->currentWidget()))
+                loadCommandLines(fn, fn);
+        }
     });
     mStartedUp = true;
 }
@@ -1132,13 +1140,16 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
 
 void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
 {
-    QString path = (!groups.isEmpty()) ? groups.first()->location() : currentPath();
-    if (path.isEmpty()) path = ".";
+    QString path;
+    if (!groups.isEmpty()) {
+        path = groups.first()->location();
 
-    if (mRecent.editFileId() >= 0) {
+    } else if (mRecent.editFileId() >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
         if (fm) path = QFileInfo(fm->location()).path();
     }
+    if (path.isEmpty()) path = currentPath();
+    if (path.isEmpty()) path = ".";
 
     if (solverName.isEmpty()) {
         // find a free file name
@@ -1450,37 +1461,25 @@ void MainWindow::codecReload(QAction *action)
 
 void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 {
-    if (oldfn) { // switch from a non-welcome page
-        ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup();
-        if (!oldgroup) return;
-        oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+    if (oldfn && oldfn != fn) {
+        // node changed from valid: store current command-line
+        if (ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup())
+            oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData());
+    }
 
-        if (!fn) { // switch to a welcome page
-            mGamsParameterEditor->loadCommandLine(QStringList());
-            return;
-        }
-
-        ProjectRunGroupNode* group = fn->assignedRunGroup();
-        if (!group) return;
-        if (group == oldgroup) return;
-
-        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
-
-    } else { // switch from a welcome page
-        if (!fn) { // switch to a welcome page
-            mGamsParameterEditor->loadCommandLine(QStringList());
-            return;
-        }
-
-        ProjectRunGroupNode* group = fn->assignedRunGroup();
-        if (!group) return;
-        mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
+    if (fn) {
+        // switched to valid node
+        if (ProjectRunGroupNode* group = fn->assignedRunGroup())
+            mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
+    } else {
+        // switched to welcome page
+        mGamsParameterEditor->loadCommandLine(QStringList());
     }
 }
 
 void MainWindow::activeTabChanged(int index)
 {
-    ProjectFileNode* oldTab = mProjectRepo.findFileNode(mRecent.editor());
+    ProjectFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
     if (mStartedUp)
@@ -1557,7 +1556,7 @@ void MainWindow::activeTabChanged(int index)
         mStatusWidgets->setLineCount(-1);
     }
 
-    loadCommandLines(oldTab, node);
+    loadCommandLines(oldNode, node);
     updateRunState();
     searchDialog()->updateReplaceActionAvailability();
     updateToolbar(mainTabs()->currentWidget());
@@ -1568,6 +1567,13 @@ void MainWindow::activeTabChanged(int index)
 
     mNavigationHistory->setActiveTab(editWidget);
     updateCursorHistoryAvailability();
+}
+
+void MainWindow::tabBarClicked(int index)
+{
+    Q_UNUSED(index)
+    QTabWidget *tabs = sender() == ui->mainTabs ? ui->mainTabs : sender() == ui->logTabs ? ui->logTabs : nullptr;
+    if (tabs && tabs->currentWidget()) tabs->currentWidget()->setFocus();
 }
 
 void MainWindow::fileChanged(const FileId fileId)
@@ -1588,25 +1594,25 @@ void MainWindow::fileClosed(const FileId fileId)
     Q_UNUSED(fileId)
 }
 
-int MainWindow::fileChangedExtern(FileId fileId)
+FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
-    if (!file->isOpen()) return 0;
-    if (file->kind() == FileKind::Log) return 0;
+    if (!file->isOpen()) return FileProcessKind::ignore;
+    if (file->kind() == FileKind::Log) return FileProcessKind::ignore;
     if (file->kind() == FileKind::Gdx) {
         QFile f(file->location());
-        if (!f.exists()) return 4;
+        if (!f.exists()) return FileProcessKind::fileLocked;
         bool resized = file->compare().testFlag(FileMeta::FdSize);
         file->refreshMetaData();
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
                 int gdxErr = gv->reload(file->codec(), resized);
-                if (gdxErr) return 4;
+                if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : FileProcessKind::ignore);
             }
         }
-        return 0;
+        return FileProcessKind::ignore;
     }
     if (file->kind() == FileKind::Opt) {
         for (QWidget *e : file->editors()) {
@@ -1620,14 +1626,14 @@ int MainWindow::fileChangedExtern(FileId fileId)
                guce->setFileChangedExtern(true);
         }
     }
-    return file->isModified() ? 2 : 1;
+    return file->isModified() ? FileProcessKind::changedConflict : FileProcessKind::changedExternOnly;
 }
 
-int MainWindow::fileDeletedExtern(FileId fileId)
+FileProcessKind MainWindow::fileDeletedExtern(FileId fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
-    if (!file) return 0;
-    if (file->exists(true)) return 0;
+    if (!file) return FileProcessKind::ignore;
+    if (file->exists(true)) return FileProcessKind::ignore;
     mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
@@ -1639,9 +1645,9 @@ int MainWindow::fileDeletedExtern(FileId fileId)
         }
         mHistory.files().removeAll(file->location());
         historyChanged();
-        return 0;
+        return FileProcessKind::ignore;
     }
-    return 3;
+    return FileProcessKind::removedExtern;
 }
 
 void MainWindow::fileEvent(const FileEvent &e)
@@ -1686,7 +1692,7 @@ void MainWindow::processFileEvents()
 
     // First process all events that need no user decision. For the others: remember the kind of change
     QSet<FileEventData> scheduledEvents;
-    QMap<int, QVector<FileEventData>> remainEvents;
+    QMap<FileProcessKind, QVector<FileEventData>> remainEvents;
     while (true) {
         FileEventData fileEvent;
         { // lock only while accessing mFileEvents
@@ -1706,7 +1712,7 @@ void MainWindow::processFileEvents()
             scheduledEvents += fileEvent;
             continue;
         }
-        int remainKind = 0;
+        FileProcessKind remainKind = FileProcessKind::ignore;
         switch (fileEvent.kind) {
         case FileEventKind::changedExtern:
             remainKind = fileChangedExtern(fm->id());
@@ -1716,7 +1722,7 @@ void MainWindow::processFileEvents()
             break;
         default: break;
         }
-        if (remainKind > 0) {
+        if (remainKind != FileProcessKind::ignore) {
             if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
             if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
         }
@@ -1725,16 +1731,21 @@ void MainWindow::processFileEvents()
     // Then ask what to do with the files of each remainKind
     for (auto key: remainEvents.keys()) {
         switch (key) {
-        case 1: // changed externally but unmodified internally
-        case 2: // changed externally and modified internally
+        case FileProcessKind::changedExternOnly: // changed externally but unmodified internally
+        case FileProcessKind::changedConflict: // changed externally and modified internally
             mFileEventHandler->process(FileEventHandler::Change, remainEvents.value(key));
             break;
-        case 3: // removed externally
+        case FileProcessKind::removedExtern: // removed externally
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
-        case 4: // file is locked: reschedule event
+        case FileProcessKind::fileLocked: // file is locked: reschedule event
             for (auto event: remainEvents.value(key))
                 scheduledEvents << event;
+            break;
+        case FileProcessKind::fileBecameInvalid: // file is invalid: close it
+            for (const FileEventData &ed : remainEvents.value(key)) {
+                closeFileEditors(ed.fileId);
+            }
             break;
         default:
             break;
@@ -2639,12 +2650,30 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
         // log widgets
         if (focusWidget() == mSyslog) {
-            setOutputViewVisibility(false);
-            e->accept(); return;
-        } else if (focusWidget() == ui->logTabs->currentWidget()) {
-            on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
-            ui->logTabs->currentWidget()->setFocus();
-            e->accept(); return;
+            if (mSyslog->textCursor().hasSelection()) {
+                QTextCursor cursor = mSyslog->textCursor();
+                cursor.clearSelection();
+                mSyslog->setTextCursor(cursor);
+            } else {
+                setOutputViewVisibility(false);
+            }
+            e->accept();
+            return;
+        } else if (focusWidget() == ui->logTabs->currentWidget()
+                   || (focusWidget() && focusWidget()->parentWidget() == ui->logTabs->currentWidget())) {
+            e->setAccepted(false);
+            if (TextView *tv = ViewHelper::toTextView(ui->logTabs->currentWidget())) {
+                if (tv->hasSelection()) {
+                    tv->clearSelection();
+                    e->accept();
+                }
+            }
+            if (!e->isAccepted()) {
+                on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
+                ui->logTabs->currentWidget()->setFocus();
+                e->accept();
+            }
+            return;
         } else if (focusWidget() == ui->projectView) {
             setProjectViewVisibility(false);
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
@@ -2845,6 +2874,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     Settings *settings = Settings::settings();
     runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     runGroup->clearErrorTexts();
+    if (QWidget * wid = ui->mainTabs->currentWidget()) wid->setFocus();
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;
@@ -2899,9 +2929,9 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
         wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
-        if (ViewHelper::toTextView(wid))
-            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                                               : AbstractEdit::NoWrap);
+        if (TextView* tv = ViewHelper::toTextView(wid))
+            tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                      : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -2921,11 +2951,13 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
 
     if (settings->toBool(skEdClearLog)) logNode->clearLog();
 
+    disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
     }
     ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
     ui->dockProcessLog->setVisible(true);
+    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
 
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
@@ -3549,7 +3581,6 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
                 }
             }
         }
-
     }
 }
 

@@ -29,7 +29,20 @@
 namespace gams {
 namespace studio {
 
-class DynamicFile;
+class LogStack {
+    QString pendingLine; // only initially isNull()
+    QStringList data;
+public:
+    LogStack() {}
+    void setLine(const QString &line = "") { pendingLine = line.isNull() ? "" : line; }
+    void commitLine() { if (!pendingLine.isNull()) data << pendingLine; pendingLine = ""; }
+    QStringList popLines(bool finish = false) {
+        if (finish && !pendingLine.isEmpty()) commitLine();
+        QStringList res = data; data.clear();
+        return res;
+    }
+    int count() { return data.count(); }
+};
 
 class MemoryMapper : public AbstractTextMapper
 {
@@ -170,6 +183,7 @@ private: // members
     bool mLastLineIsOpen = false;
     int mLastLineLen = 0;
     QStringList mNewLogLines;
+    LogStack mLogStack;
     QElapsedTimer mDisplayCacheChanged;
     QTimer mPendingTimer;
     int mNewLines = 0;
