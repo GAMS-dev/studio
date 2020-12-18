@@ -820,6 +820,11 @@ void AbstractTextMapper::selectAll()
     mPosition.charNr = line(chunk, mPosition.localLine).length();
 }
 
+void AbstractTextMapper::clearSelection()
+{
+    mAnchor = CursorPosition();
+}
+
 QPoint AbstractTextMapper::convertPosLocal(const CursorPosition &pos) const
 {
     // no position or it starts before the topLine

@@ -56,6 +56,12 @@ bool TextViewEdit::hasSelection() const
     return mMapper.hasSelection();
 }
 
+void TextViewEdit::clearSelection()
+{
+    mMapper.clearSelection();
+    emit updatePosAndAnchor();
+}
+
 void TextViewEdit::disconnectTimers()
 {
     CodeEdit::disconnectTimers();

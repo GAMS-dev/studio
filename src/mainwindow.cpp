@@ -160,6 +160,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mCodecGroupSwitch, &QActionGroup::triggered, this, &MainWindow::codecChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
+    connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->mainTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -1567,6 +1569,13 @@ void MainWindow::activeTabChanged(int index)
     updateCursorHistoryAvailability();
 }
 
+void MainWindow::tabBarClicked(int index)
+{
+    Q_UNUSED(index)
+    QTabWidget *tabs = sender() == ui->mainTabs ? ui->mainTabs : sender() == ui->logTabs ? ui->logTabs : nullptr;
+    if (tabs && tabs->currentWidget()) tabs->currentWidget()->setFocus();
+}
+
 void MainWindow::fileChanged(const FileId fileId)
 {
     mProjectRepo.fileChanged(fileId);
@@ -2642,12 +2651,30 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
         // log widgets
         if (focusWidget() == mSyslog) {
-            setOutputViewVisibility(false);
-            e->accept(); return;
-        } else if (focusWidget() == ui->logTabs->currentWidget()) {
-            on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
-            ui->logTabs->currentWidget()->setFocus();
-            e->accept(); return;
+            if (mSyslog->textCursor().hasSelection()) {
+                QTextCursor cursor = mSyslog->textCursor();
+                cursor.clearSelection();
+                mSyslog->setTextCursor(cursor);
+            } else {
+                setOutputViewVisibility(false);
+            }
+            e->accept();
+            return;
+        } else if (focusWidget() == ui->logTabs->currentWidget()
+                   || (focusWidget() && focusWidget()->parentWidget() == ui->logTabs->currentWidget())) {
+            e->setAccepted(false);
+            if (TextView *tv = ViewHelper::toTextView(ui->logTabs->currentWidget())) {
+                if (tv->hasSelection()) {
+                    tv->clearSelection();
+                    e->accept();
+                }
+            }
+            if (!e->isAccepted()) {
+                on_logTabs_tabCloseRequested(ui->logTabs->currentIndex());
+                ui->logTabs->currentWidget()->setFocus();
+                e->accept();
+            }
+            return;
         } else if (focusWidget() == ui->projectView) {
             setProjectViewVisibility(false);
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
@@ -2848,6 +2875,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     Settings *settings = Settings::settings();
     runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     runGroup->clearErrorTexts();
+    if (QWidget * wid = ui->mainTabs->currentWidget()) wid->setFocus();
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;
@@ -2902,9 +2930,9 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
         wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
-        if (ViewHelper::toTextView(wid))
-            ViewHelper::toTextView(wid)->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                                               : AbstractEdit::NoWrap);
+        if (TextView* tv = ViewHelper::toTextView(wid))
+            tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
+                                                                      : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -2924,11 +2952,13 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
 
     if (settings->toBool(skEdClearLog)) logNode->clearLog();
 
+    disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
     if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
         ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
     }
     ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
     ui->dockProcessLog->setVisible(true);
+    connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
 
     // select gms-file and working dir to run
     QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
