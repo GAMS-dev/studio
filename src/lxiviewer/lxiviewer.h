@@ -43,10 +43,11 @@ class LxiViewer : public QWidget
 
 public:
     explicit LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent);
-    ~LxiViewer();
+    ~LxiViewer() override;
 
     TextView *textView() const;
     void print(QPagedPaintDevice *printer);
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 public slots:
     void loadLxi();

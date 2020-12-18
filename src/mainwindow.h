@@ -192,6 +192,7 @@ private slots:
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
+    void tabBarClicked(int index);
     void fileChanged(const FileId fileId);
     void fileClosed(const FileId fileId);
     void fileEvent(const FileEvent &e);
