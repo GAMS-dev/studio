@@ -2879,18 +2879,23 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;
-    for (ProjectFileNode *node: runGroup->listFiles(true)) {
-        if (node->file()->isOpen() && !modifiedFiles.contains(node->file()) && node->file()->isModified())
-            modifiedFiles << node->file();
+    if (settings->toBool(skAutosaveOnRun)) {
+        modifiedFiles = mFileMetaRepo.modifiedFiles();
+    } else {
+        for (ProjectFileNode *node: runGroup->listFiles(true)) {
+            if (node->file()->isOpen() && !modifiedFiles.contains(node->file()) && node->file()->isModified())
+                modifiedFiles << node->file();
+        }
     }
+
     bool doSave = !modifiedFiles.isEmpty();
     if (doSave && !settings->toBool(skAutosaveOnRun)) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         if (modifiedFiles.size() > 1)
-            msgBox.setText(QDir::toNativeSeparators(modifiedFiles.first()->location())+" has been modified.");
+            msgBox.setText(modifiedFiles.first()->location()+" and "+QString::number(modifiedFiles.size()-1)+" other files have been modified.");
         else
-            msgBox.setText(QString::number(modifiedFiles.size())+" files have been modified.");
+            msgBox.setText(QDir::toNativeSeparators(modifiedFiles.first()->location())+" has been modified.");
         msgBox.setInformativeText("Do you want to save your changes before running?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
