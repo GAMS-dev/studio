@@ -283,9 +283,8 @@ void FileMetaRepo::reviewRemoved()
                 FileEvent e(file->id(), FileEventKind::removedExtern);
                 emit fileEvent(e);
             } else if (diff) {
-                FileEventKind feKind = file->checkActivelySavedAndReset()
-                        ? FileEventKind::changed
-                        : FileEventKind::changedExtern;
+                file->refreshMetaData();
+                FileEventKind feKind = FileEventKind::changedExtern;
                 FileEvent e(file->id(), feKind);
                 file->updateView();
                 emit fileEvent(e);
@@ -311,9 +310,8 @@ void FileMetaRepo::checkMissing()
         mProjectRepo->fileChanged(file->id());
         if (QFileInfo(fileName).exists()) {
             watch(file);
-            FileEventKind feKind = file->checkActivelySavedAndReset()
-                    ? FileEventKind::changed
-                    : FileEventKind::changedExtern;
+            file->refreshMetaData();
+            FileEventKind feKind = FileEventKind::changedExtern;
             FileEvent e(file->id(), feKind);
             file->updateView();
             emit fileEvent(e);

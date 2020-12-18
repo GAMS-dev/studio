@@ -88,7 +88,7 @@ public:
     void save(const QString& newLocation = "");
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
-    void refreshMetaData();
+    bool refreshMetaData();
 
     void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0, int length = 0);
     void rehighlight(int line);
