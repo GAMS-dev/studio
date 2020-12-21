@@ -25,9 +25,6 @@
 #include "exception.h"
 #include "logger.h"
 #include "viewhelper.h"
-#include "editors/abstractsystemlogger.h"
-#include "editors/sysloglocator.h"
-
 #include <QFileInfo>
 
 namespace gams {
@@ -250,8 +247,6 @@ void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecM
 
 void FileMetaRepo::fileChanged(const QString &path)
 {
-    SysLogLocator::systemLog()->append("FileMetaRepo File Change: " + path, LogMsgType::Info);
-
     FileMeta *file = fileMeta(path);
     if (!file) return;
     mProjectRepo->fileChanged(file->id());

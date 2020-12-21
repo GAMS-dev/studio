@@ -1653,7 +1653,6 @@ void MainWindow::fileEvent(const FileEvent &e)
 {
     FileMeta *fm = mFileMetaRepo.fileMeta(e.fileId());
     if (!fm) return;
-    appendSystemLogInfo("MainWindow::filesEvent: " + fm->name() + " FileEventKind: " + QString::number((int)e.kind()));
     if (e.kind() == FileEventKind::changed)
         fileChanged(e.fileId()); // Just update display kind
     else if (e.kind() == FileEventKind::created)
@@ -1668,11 +1667,8 @@ void MainWindow::fileEvent(const FileEvent &e)
         {
             QMutexLocker locker(&mFileMutex);
             FileEventData data = e.data();
-            if (mFileEvents.contains(data)) {
-                appendSystemLogInfo("mFileEvents.removeAll(data)");
+            if (mFileEvents.contains(data))
                 mFileEvents.removeAll(data);
-            }
-            appendSystemLogInfo("  -> Add data to mFileEvents");
             mFileEvents << data;
         }
 
@@ -1684,9 +1680,6 @@ void MainWindow::fileEvent(const FileEvent &e)
 
 void MainWindow::processFileEvents()
 {
-    appendSystemLogInfo("MainWindow::processFileEvents mFileEvents: " + QString::number(mFileEvents.count()));
-    appendSystemLogInfo("Watched Files:\n" + mFileMetaRepo.watchedFiles().join("\n"));
-
     static bool active = false;
     if (mFileEvents.isEmpty()) return;
     // Pending events but window is not active: wait and retry
@@ -1695,8 +1688,6 @@ void MainWindow::processFileEvents()
         return;
     }
     active = true;
-
-    appendSystemLogInfo("MainWindow::processFileEvents to pre-process: " + QString::number(mFileEvents.count()));
 
     // First process all events that need no user decision. For the others: remember the kind of change
     QSet<FileEventData> scheduledEvents;
@@ -1730,14 +1721,11 @@ void MainWindow::processFileEvents()
             break;
         default: break;
         }
-        appendSystemLogInfo("File: " + fm->name() + " Kind: " + QString::number((int)remainKind) + " Event " + QString::number((int)fileEvent.kind));
         if (remainKind != FileProcessKind::ignore) {
             if (!remainEvents.contains(remainKind)) remainEvents.insert(remainKind, QVector<FileEventData>());
             if (!remainEvents[remainKind].contains(fileEvent)) remainEvents[remainKind] << fileEvent;
         }
     }
-
-    appendSystemLogInfo("MainWindow::processFileEvents pre-processed: " + QString::number(remainEvents.count()));
 
     // Then ask what to do with the files of each remainKind
     for (auto key: remainEvents.keys()) {
@@ -1778,7 +1766,6 @@ void MainWindow::processFileEvents()
     }
 
     active = false;
-    appendSystemLogInfo("MainWindow::processFileEvents done!");
 }
 
 void MainWindow::appendSystemLogInfo(const QString &text) const

@@ -19,7 +19,6 @@ FileEventHandler::FileEventHandler(MainWindow *mainWindow, QObject *parent)
 
 void FileEventHandler::process(Type type, const QVector<FileEventData> &events)
 {
-    mMainWindow->appendSystemLogInfo("File Events to process: " + QString::number(events.count()));
     if (mMessageBox->isVisible()) {
         for (auto event: events) {
             if (mCurrentType == type && event.fileId == mCurrentFile->id())
@@ -56,7 +55,6 @@ bool FileEventHandler::filter(const QVector<FileEventData> &events)
         }
         mCurrentEvents.push_back(event);
     }
-    mMainWindow->appendSystemLogInfo("File Events after filter(): " + QString::number(mCurrentEvents.count()));
     return !mCurrentEvents.isEmpty();
 }
 
@@ -68,12 +66,10 @@ void FileEventHandler::process()
 
     switch (mCurrentType) {
         case Change:
-            mMainWindow->appendSystemLogInfo("Process Change");
             openMessageBox(QDir::toNativeSeparators(mCurrentFile->location()),
                            false, mCurrentFile->isModified(), mCurrentEvents.size());
             break;
         case Deletion:
-            mMainWindow->appendSystemLogInfo("Process Deletion");
             if (mCurrentFile->exists(true))
                 return;
             openMessageBox(QDir::toNativeSeparators(mCurrentFile->location()),
