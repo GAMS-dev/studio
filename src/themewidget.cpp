@@ -140,7 +140,6 @@ void ThemeWidget::fontFlagsChanged()
                                                    : (ui->btItalic->isChecked() ? Theme::fItalic : Theme::fNormal);
     Theme::setFlags(mSlotFg, flag);
 
-    DEB() << "Set flags: " << flag << " - result " << Theme::hasFlag(mSlotFg, Theme::fBold) << Theme::hasFlag(mSlotFg, Theme::fItalic);
     refresh();
     emit changed();
 }

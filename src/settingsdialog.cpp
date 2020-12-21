@@ -138,6 +138,7 @@ void SettingsDialog::loadSettings()
 
     // color page
     ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
+    Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
     for (ThemeWidget *wid : mColorWidgets) {
         wid->refresh();
     }
@@ -221,7 +222,7 @@ void SettingsDialog::saveSettings()
 
     // colors page
     mSettings->setInt(skEdAppearance, ui->cbThemes->currentIndex());
-//    mSettings->saveTheme();
+    Theme::instance()->writeUserThemes();
 
     // misc page
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
@@ -260,6 +261,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         saveSettings();
     } else { // reject
         loadSettings(); // reset changes (mostly font and -size)
+        emit themeModified();
     }
     emit editorLineWrappingChanged();
 }
