@@ -46,17 +46,22 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->tabWidget->setCurrentIndex(0);
 
     // Themes
+    ui->cbThemes->clear();
+    for (int i = 0; i < Theme::instance()->themeCount(); ++i) {
+        ui->cbThemes->insertItem(i, Theme::instance()->themes().at(i));
+    }
 #ifdef _WIN32
-    ui->combo_appearance->insertItem(0, "Follow Operating System");
+    ui->cbThemes->insertItem(0, "Follow Operating System");
 #elif __APPLE__
     ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
-    ui->combo_appearance->setVisible(false);
+    ui->cbThemes->setVisible(false);
 #endif
 
     mSettings = Settings::settings();
     mSettings->block(); // prevent changes from outside this dialog
-    loadSettings();
     initColorPage();
+    loadSettings();
+
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
 
@@ -68,8 +73,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->combo_appearance, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
+    connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -97,6 +102,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
 void SettingsDialog::loadSettings()
 {
     mSettings->loadFile(Settings::scUser);
+    mSettings->loadFile(Settings::scTheme);
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
@@ -108,7 +114,6 @@ void SettingsDialog::loadSettings()
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
 
     // editor tab page
-    ui->combo_appearance->setCurrentIndex(mSettings->toInt(skEdAppearance));
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
     ui->sb_fontsize->setValue(mSettings->toInt(skEdFontSize));
     ui->cb_showlinenr->setChecked(mSettings->toBool(skEdShowLineNr));
@@ -129,6 +134,12 @@ void SettingsDialog::loadSettings()
         auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
         ui->miroEdit->setText(path);
         mSettings->setString(skMiroInstallPath, path);
+    }
+
+    // color page
+    ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
+    for (ThemeWidget *wid : mColorWidgets) {
+        wid->refresh();
     }
 
     // misc page
@@ -191,7 +202,6 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
 
     // editor page
-    mSettings->setInt(skEdAppearance, ui->combo_appearance->currentIndex());
     mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());
     mSettings->setInt(skEdFontSize, ui->sb_fontsize->value());
     mSettings->setBool(skEdShowLineNr, ui->cb_showlinenr->isChecked());
@@ -210,6 +220,7 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
 
     // colors page
+    mSettings->setInt(skEdAppearance, ui->cbThemes->currentIndex());
 //    mSettings->saveTheme();
 
     // misc page
@@ -274,11 +285,12 @@ void SettingsDialog::appearanceIndexChanged(int index)
 
 void SettingsDialog::themeModified()
 {
+//    Theme::instance()->invalidate();
+//    for (QWidget *wid: mColorWidgets) {
+//        static_cast<ThemeWidget*>(wid)->refresh();
+//    }
     emit setModified();
-    Theme::instance()->invalidate();
-    for (QWidget *wid: mColorWidgets) {
-        static_cast<ThemeWidget*>(wid)->refresh();
-    }
+    emit themeChanged();
 }
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
@@ -389,88 +401,87 @@ void SettingsDialog::initColorPage()
     QGridLayout *grid = nullptr;
     QVector<QVector<Theme::ColorSlot>> slot2;
     QStringList names;
-
-    // EDIT first colors
-    box = ui->editP1;
-    grid = qobject_cast<QGridLayout*>(box->layout());
     ThemeWidget *wid = nullptr;
 
-    slot2 = {
-        {Theme::Edit_linenrAreaFg, Theme::Edit_linenrAreaBg},
-        {Theme::Edit_linenrAreaMarkFg, Theme::Edit_linenrAreaMarkBg},
-        {},
+    // EDIT first colors
+//    box = ui->editP1;
+//    grid = qobject_cast<QGridLayout*>(box->layout());
 
-        {Theme::invalid, Theme::Edit_currentLineBg},
-        {},
+//    slot2 = {
+//        {Theme::Edit_linenrAreaFg, Theme::Edit_linenrAreaBg},
+//        {Theme::Edit_linenrAreaMarkFg, Theme::Edit_linenrAreaMarkBg},
+//        {},
 
-        {Theme::invalid, Theme::Edit_currentWordBg},
-        {Theme::invalid, Theme::Edit_matchesBg},
-        {Theme::invalid, Theme::Edit_errorBg},
-    };
-    int cols = 3;
-    int rows = ((slot2.count()-1) / cols) + 1;
-    for (int i = 0; i < slot2.size(); ++i) {
-        if (slot2.at(i).isEmpty()) continue;
-        int row = i % rows;
-        int col = i / rows;
-        wid = (slot2.at(i).size() == 1) ? new ThemeWidget(slot2.at(i).at(0), box)
-                                        : new ThemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), box);
-        wid->setAlignment(Qt::AlignRight);
-        grid->addWidget(wid, row+1, col, Qt::AlignRight);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-        mColorWidgets << wid;
-    }
-    for (int col = 0; col < 3; ++col)
-        grid->setColumnStretch(col, 1);
+//        {Theme::invalid, Theme::Edit_currentLineBg},
+//        {},
+
+//        {Theme::invalid, Theme::Edit_currentWordBg},
+//        {Theme::invalid, Theme::Edit_matchesBg},
+//        {Theme::invalid, Theme::Edit_errorBg},
+//    };
+//    int cols = 3;
+//    int rows = ((slot2.count()-1) / cols) + 1;
+//    for (int i = 0; i < slot2.size(); ++i) {
+//        if (slot2.at(i).isEmpty()) continue;
+//        int row = i % rows;
+//        int col = i / rows;
+//        wid = (slot2.at(i).size() == 1) ? new ThemeWidget(slot2.at(i).at(0), box)
+//                                        : new ThemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), box);
+//        wid->setAlignment(Qt::AlignRight);
+//        grid->addWidget(wid, row+1, col, Qt::AlignRight);
+//        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
+//        mColorWidgets << wid;
+//    }
+//    for (int col = 0; col < 3; ++col)
+//        grid->setColumnStretch(col, 1);
 
     // EDIT second colors
-    box = ui->editP2;
-    grid = qobject_cast<QGridLayout*>(box->layout());
-    slot2 = {
-        {Theme::Edit_parenthesesValidFg, Theme::Edit_parenthesesValidBg, Theme::Edit_parenthesesValidBgBlink},
-        {Theme::Edit_parenthesesInvalidFg, Theme::Edit_parenthesesInvalidBg, Theme::Edit_parenthesesInvalidBgBlink},
-        {},
-        {},
-    };
-    rows = ((slot2.count()-1) / cols) + 1;
-    for (int i = 0; i < slot2.size(); ++i) {
-        if (slot2.at(i).isEmpty()) continue;
-        int row = i % rows;
-        int col = i / rows;
-        if (slot2.at(i).size()) {
-            wid = new ThemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), slot2.at(i).at(2), box);
-            wid->setAlignment(Qt::AlignRight);
-            grid->addWidget(wid, row+1, col, Qt::AlignRight);
-            connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-            mColorWidgets << wid;
-        } else {
-            grid->addWidget(new QWidget(box), row+1, col);
-        }
-    }
+//    box = ui->editP2;
+//    grid = qobject_cast<QGridLayout*>(box->layout());
+//    slot2 = {
+//        {Theme::Edit_parenthesesValidFg, Theme::Edit_parenthesesValidBg, Theme::Edit_parenthesesValidBgBlink},
+//        {Theme::Edit_parenthesesInvalidFg, Theme::Edit_parenthesesInvalidBg, Theme::Edit_parenthesesInvalidBgBlink},
+//        {},
+//        {},
+//    };
+//    rows = ((slot2.count()-1) / cols) + 1;
+//    for (int i = 0; i < slot2.size(); ++i) {
+//        if (slot2.at(i).isEmpty()) continue;
+//        int row = i % rows;
+//        int col = i / rows;
+//        if (slot2.at(i).size()) {
+//            wid = new ThemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), slot2.at(i).at(2), box);
+//            wid->setAlignment(Qt::AlignRight);
+//            grid->addWidget(wid, row+1, col, Qt::AlignRight);
+//            connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
+//            mColorWidgets << wid;
+//        } else {
+//            grid->addWidget(new QWidget(box), row+1, col);
+//        }
+//    }
 
     // SYNTAX colors
     box = ui->syntax;
     grid = qobject_cast<QGridLayout*>(box->layout());
     slot2 = {
+        {Theme::Syntax_declaration},
         {Theme::Syntax_directive},
         {Theme::Syntax_directiveBody},
-        {Theme::Syntax_assign},
-        {Theme::Syntax_declaration},
-        {Theme::Syntax_keyword},
+        {Theme::Syntax_comment},
+        {Theme::Syntax_title},
+        {Theme::Syntax_description},
+        {Theme::Syntax_embedded},
 
+        {Theme::Syntax_assign},
+        {Theme::Syntax_keyword},
         {Theme::Syntax_identifier},
         {Theme::Syntax_identifierAssign},
         {Theme::Syntax_assignLabel},
         {Theme::Syntax_assignValue},
         {Theme::Syntax_tableHeader},
-
-        {Theme::Syntax_comment},
-        {Theme::Syntax_title},
-        {Theme::Syntax_description},
-        {Theme::Syntax_embedded},
     };
-    cols = 3;
-    rows = ((slot2.count()-1) / cols) + 1;
+    int cols = 2;
+    int rows = ((slot2.count()-1) / cols) + 1;
     for (int i = 0; i < slot2.size(); ++i) {
         if (slot2.at(i).isEmpty()) continue;
         int row = i % rows;
@@ -485,18 +496,18 @@ void SettingsDialog::initColorPage()
         grid->setColumnStretch(col, 1);
 
     // ICON colors
-    box = ui->groupIconColors;
-    grid = qobject_cast<QGridLayout*>(box->layout());
-    QVector<Theme::ColorSlot> slot1;
-    slot1 = {Theme::Icon_Gray, Theme::Disable_Gray, Theme::Active_Gray, Theme::Select_Gray,
-            Theme::Icon_Back, Theme::Disable_Back, Theme::Active_Back, Theme::Select_Back};
-    for (int i = 0; i < slot1.size(); ++i) {
-        ThemeWidget *wid = new ThemeWidget(slot1.at(i), box, true);
-        wid->setTextVisible(false);
-        grid->addWidget(wid, (i/4)+1, (i%4)+1);
-        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-        mColorWidgets.insert(slot1.at(i), wid);
-    }
+//    box = ui->groupIconColors;
+//    grid = qobject_cast<QGridLayout*>(box->layout());
+//    QVector<Theme::ColorSlot> slot1;
+//    slot1 = {Theme::Icon_Gray, Theme::Disable_Gray, Theme::Active_Gray, Theme::Select_Gray,
+//            Theme::Icon_Back, Theme::Disable_Back, Theme::Active_Back, Theme::Select_Back};
+//    for (int i = 0; i < slot1.size(); ++i) {
+//        ThemeWidget *wid = new ThemeWidget(slot1.at(i), box, true);
+//        wid->setTextVisible(false);
+//        grid->addWidget(wid, (i/4)+1, (i%4)+1);
+//        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
+//        mColorWidgets.insert(slot1.at(i), wid);
+//    }
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()

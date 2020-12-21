@@ -130,12 +130,12 @@ QIcon TextMark::icon()
 {
     switch (mType) {
     case error:
-        return Theme::icon(":/img/exclam-circle-r", Theme::EditorScope);
+        return Theme::icon(":/img/exclam-circle-r");
     case link:
-        return mReference ? Theme::icon(":/img/err-ref", Theme::EditorScope)
-                          : Theme::icon(":/img/err-ref-missing", Theme::EditorScope);
+        return mReference ? Theme::icon(":/img/err-ref")
+                          : Theme::icon(":/img/err-ref-missing");
     case bookmark: {
-        QIcon ico = Theme::icon(":/img/bookmark", Theme::EditorScope);
+        QIcon ico = Theme::icon(":/img/bookmark");
         return ico;
     }
     default:

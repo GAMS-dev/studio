@@ -52,6 +52,7 @@ protected:
 signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
     void editorLineWrappingChanged();
+    void themeChanged();
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);

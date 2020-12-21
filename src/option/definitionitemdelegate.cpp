@@ -45,7 +45,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
     QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt, widget);
     if (opt.checkState == Qt::Checked)  {
-        painter->fillRect(checkRect, Theme::color(Theme::Normal_Green, Theme::StudioScope));
+        painter->fillRect(checkRect, Theme::color(Theme::Normal_Green));
     } else  {
         QPainterPath path;
         path.addRect(checkRect);

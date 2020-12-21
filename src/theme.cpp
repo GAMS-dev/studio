@@ -42,12 +42,12 @@ void Theme::initSlotTexts()
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
     mSlotText.insert(Edit_matchesBg,            "Matches");
-    mSlotText.insert(Edit_foldLineBg,             "Fold line");
+    mSlotText.insert(Edit_foldLineBg,           "Fold line");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
-    mSlotText.insert(Edit_foldLineFg,     "Folded line marker");
+    mSlotText.insert(Edit_foldLineFg,           "Folded line marker");
 
     mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
@@ -75,8 +75,7 @@ void Theme::initDefault()
     mThemeNames.clear();
 
     // default to first color theme
-    mScopeTheme.insert(StudioScope, 0);
-    mScopeTheme.insert(EditorScope, 0);
+    mTheme = 0;
 
     // Add first color theme
     int sNr = 0;
@@ -201,33 +200,23 @@ QStringList Theme::themes()
     return mThemeNames;
 }
 
-int Theme::setActiveTheme(QString themeName, Scope scope)
+int Theme::setActiveTheme(QString themeName)
 {
     int theme = mThemeNames.indexOf(themeName);
-    return setActiveTheme(theme, scope);
+    return setActiveTheme(theme);
 }
 
-int Theme::setActiveTheme(int theme, Scope scope)
+int Theme::setActiveTheme(int theme)
 {
     if (theme < 0 || theme >= mThemeNames.size()) return -1;
-    mScopeTheme.insert(scope, theme);
+    mTheme = theme;
     invalidate();
-    return mScopeTheme.value(scope);
+    return theme;
 }
 
-int Theme::activeTheme(Scope scope) const
+int Theme::activeTheme() const
 {
-    return mScopeTheme.value(scope);
-}
-
-QList<Theme::Scope> Theme::scopes()
-{
-    QList<Theme::Scope> res;
-    QMetaEnum meta = QMetaEnum::fromType<Theme::Scope>();
-    for (int i = 0; i < meta.keyCount(); ++i) {
-        res << Theme::Scope(meta.value(i));
-    }
-    return res;
+    return mTheme;
 }
 
 QString Theme::name(Theme::ColorSlot slot)
@@ -253,48 +242,44 @@ Theme::ColorSlot Theme::slot(QString name)
     return ColorSlot(value);
 }
 
-QList<QHash<QString, QStringList>> Theme::iconCodes() const
+QHash<QString, QStringList> Theme::iconCodes() const
 {
-    QList<QHash<QString, QStringList>> res;
-    for (const Scope &scope: scopes()) {
-        QHash<QString, QStringList> set;
-        const ColorTheme &theme = mColorThemes.at(mScopeTheme.value(scope));
-        for (ColorSlot &slot: theme.keys()) {
-            QString slotName = name(slot);
-            if (slotName.startsWith("Icon_")) {
-                QString key = slotName.mid(5, slotName.length()-5);
-                set.insert(key, QStringList());
-                for (int i = 0 ; i < 4 ; ++i)
-                    set[key] << theme.value(slot).color.name();
-                set[key] << theme.value(Normal_Red).color.name();
-                set[key] << theme.value(Normal_Green).color.name();
-                set[key] << theme.value(Normal_Blue).color.name();
-            }
+    QHash<QString, QStringList> set;
+    const ColorTheme &theme = mColorThemes.at(mTheme);
+    for (ColorSlot &slot: theme.keys()) {
+        QString slotName = name(slot);
+        if (slotName.startsWith("Icon_")) {
+            QString key = slotName.mid(5, slotName.length()-5);
+            set.insert(key, QStringList());
+            for (int i = 0 ; i < 4 ; ++i)
+                set[key] << theme.value(slot).color.name();
+            set[key] << theme.value(Normal_Red).color.name();
+            set[key] << theme.value(Normal_Green).color.name();
+            set[key] << theme.value(Normal_Blue).color.name();
         }
-        for (ColorSlot &slot: theme.keys()) {
-            QString slotName = name(slot);
-            if (slotName.startsWith("Disable_")) {
-                QString key = slotName.mid(8, slotName.length()-8);
-                if (set.contains(key))
-                    set[key].replace(1, theme.value(slot).color.name());
-            }
-            if (slotName.startsWith("Active_")) {
-                QString key = slotName.mid(7, slotName.length()-7);
-                if (set.contains(key))
-                    set[key].replace(2, theme.value(slot).color.name());
-            }
-            if (slotName.startsWith("Select_")) {
-                QString key = slotName.mid(7, slotName.length()-7);
-                if (set.contains(key))
-                    set[key].replace(3, theme.value(slot).color.name());
-            }
-        }
-        res << set;
     }
-    return res;
+    for (ColorSlot &slot: theme.keys()) {
+        QString slotName = name(slot);
+        if (slotName.startsWith("Disable_")) {
+            QString key = slotName.mid(8, slotName.length()-8);
+            if (set.contains(key))
+                set[key].replace(1, theme.value(slot).color.name());
+        }
+        if (slotName.startsWith("Active_")) {
+            QString key = slotName.mid(7, slotName.length()-7);
+            if (set.contains(key))
+                set[key].replace(2, theme.value(slot).color.name());
+        }
+        if (slotName.startsWith("Select_")) {
+            QString key = slotName.mid(7, slotName.length()-7);
+            if (set.contains(key))
+                set[key].replace(3, theme.value(slot).color.name());
+        }
+    }
+    return set;
 }
 
-QByteArray Theme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
+QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode)
 {
     QFile file(name);
     if (!file.open(QFile::ReadOnly)) return QByteArray();
@@ -306,13 +291,13 @@ QByteArray Theme::colorizedContent(QString name, Scope scope, QIcon::Mode mode)
     int iMode = int(mode);
 
 
-    QHash<QString, QStringList> iconCode = mIconCodes.at(scope);
+    QHash<QString, QStringList> iconCode = mIconCodes;
     QHash<QString, QStringList>::const_iterator it = iconCode.constBegin(); // Icon_Gray + Icon_Back
     for ( ; it != iconCode.constEnd() ; ++it) {
         int start = data.indexOf("<style");
         while (start >= 0 && start < end) {
             QString key = QString(".%1").arg(it.key());
-            int from = data.indexOf('.'+it.key(), start+1);
+            int from = data.indexOf('.'+it.key().toUtf8(), start+1);
             if (from < 0 || from+10 > end) break;
             start = from;
             QString colorCode = it.value().at(iMode);
@@ -354,20 +339,10 @@ void Theme::unbind(SvgEngine *engine)
     mEngines.removeAll(engine);
 }
 
-bool Theme::isValidScope(int scopeValue)
-{
-    if (scopeValue < 0) return false;
-    for (int i = 0; i < QMetaEnum::fromType<Scope>().keyCount(); ++i) {
-        if (QMetaEnum::fromType<Scope>().value(i) == scopeValue)
-            return true;
-    }
-    return false;
-}
-
-int Theme::copyTheme(int index)
+int Theme::copyTheme(int index, const QString &destName)
 {
     // clone first theme as base
-    QString baseName = mThemeNames.at(index);
+    QString baseName = destName.isEmpty() ? mThemeNames.at(index) : destName;
     if (baseName.isEmpty()) baseName = "Theme";
     // count trailing digits
     int n = 1;
@@ -393,31 +368,32 @@ int Theme::copyTheme(int index)
         name = baseName + QString::number(i);
     }
 
+    // TODO(JM) maybe this should be inserted in sort order
+
     mColorThemes << mColorThemes.at(index);
     mThemeNames << name;
     return mColorThemes.count()-1;
 }
 
-QColor Theme::color(Theme::ColorSlot slot, Scope scope)
+QColor Theme::color(Theme::ColorSlot slot)
 {
-    int theme = instance()->mScopeTheme.value(scope);
+    int theme = instance()->mTheme;
     return instance()->mColorThemes.at(theme).value(slot, CUndefined).color;
 }
 
-void Theme::setColor(Theme::ColorSlot slot, Theme::Scope scope, QColor color)
+void Theme::setColor(Theme::ColorSlot slot, QColor color)
 {
-    int theme = instance()->mScopeTheme.value(scope);
+    int theme = instance()->mTheme;
     Color dat = instance()->mColorThemes.at(theme).value(slot);
     dat.color = color;
     instance()->mColorThemes[theme].insert(slot, dat);
 }
 
-QIcon Theme::icon(QString name, Scope scope, bool forceSquare, QString disabledName)
+QIcon Theme::icon(QString name, bool forceSquare, QString disabledName)
 {
     if (name.contains("%")) name = name.arg(instance()->mIconSet);
     if (!instance()->mIconCache.contains(name)) {
         SvgEngine *eng = (disabledName.isEmpty() ? new SvgEngine(name) : new SvgEngine(name, disabledName));
-        eng->setScope(scope);
         if (forceSquare) eng->forceSquare(true);
         instance()->mEngines << eng;
         instance()->mIconCache.insert(name, QIcon(eng));
@@ -425,75 +401,70 @@ QIcon Theme::icon(QString name, Scope scope, bool forceSquare, QString disabledN
     return instance()->mIconCache.value(name);
 }
 
-QIcon Theme::icon(QString name, bool forceSquare, QString disabledName)
-{
-    return icon(name, StudioScope, forceSquare, disabledName);
-}
-
-QByteArray &Theme::data(QString name, Scope scope, QIcon::Mode mode)
+QByteArray &Theme::data(QString name, QIcon::Mode mode)
 {
     QStringList ext {"_N","_D","_A","_S"};
-    QString nameKey = QString("%1@%2").arg(scope).arg(name + ext.at(int(mode)));
+    QString nameKey = name + ext.at(int(mode));
     if (!instance()->mDataCache.contains(nameKey)) {
-        QByteArray data(instance()->colorizedContent(name, scope, mode));
+        QByteArray data(instance()->colorizedContent(name, mode));
         instance()->mDataCache.insert(nameKey, data);
     }
     return instance()->mDataCache[nameKey];
 }
 
-bool Theme::hasFlag(Theme::ColorSlot slot, Theme::FontFlag flag, Scope scope)
+bool Theme::hasFlag(Theme::ColorSlot slot, Theme::FontFlag flag)
 {
-    int theme = instance()->mScopeTheme.value(scope);
+    int theme = instance()->mTheme;
     Color cl = instance()->mColorThemes.at(theme).value(slot);
     if (flag == fNormal) return (cl.fontFlag == fNormal);
     return (FontFlag(flag & cl.fontFlag) == flag);
 }
 
-void Theme::setFlags(Theme::ColorSlot slot, Theme::FontFlag flag, Scope scope)
+void Theme::setFlags(Theme::ColorSlot slot, Theme::FontFlag flag)
 {
-    int theme = instance()->mScopeTheme.value(scope);
+    if (slot == Syntax_directive) DEB() << "set directive FLAGS to " << flag;
+    int theme = instance()->mTheme;
     Color dat = instance()->mColorThemes.at(theme).value(slot);
     dat.fontFlag = flag;
     instance()->mColorThemes[theme].insert(slot, dat);
 }
 
-QVariantList Theme::exportThemes()
+QVariantList Theme::writeUserThemes() const
 {
     QVariantList res;
-    // export variable themes (the first two are static)
-
-    // TODO (JM) set start index i=2 (only export user settings)
-    for (int i = 0; i < mColorThemes.length(); ++i) {
+    // starts with index i=2 (only export user settings, light and dark should be fixed)
+    for (int i = 2; i < mColorThemes.length(); ++i) {
         QVariantMap resData;
         const QHash<ColorSlot, Color> &theme = mColorThemes.at(i);
         for (ColorSlot key = invalid; key < ColorSlotCount; key = static_cast<ColorSlot>(key+1)) {
-            resData.insert(name(key), theme.value(key).color.name() + "," + QString(theme.value(key).fontFlag));
+            resData.insert(name(key), theme.value(key).color.name() + "," + QString::number(theme.value(key).fontFlag));
         }
         QVariantMap resTheme;
-        resTheme.insert("Name", mThemeNames.at(i));
-        resTheme.insert("Data", resData);
+        resTheme.insert("name", mThemeNames.at(i));
+        resTheme.insert("theme", resData);
+        res << resTheme;
     }
     return res;
 }
 
-void Theme::importThemes(const QVariantList &syntaxThemes)
+void Theme::readUserThemes(const QVariantList &sourceThemes)
 {
     // remove user defined themes
     while (mThemeNames.size() > 2) mThemeNames.removeLast();
     while (mColorThemes.size() > 2) mColorThemes.removeLast();
 
     // add new user defined themes
-    for (QVariant vTheme: syntaxThemes) {
-        QVariantMap theme = vTheme.toMap();
-        if (theme.isEmpty() || !theme.contains("Name") || !theme.contains("Data")) continue;
+    for (QVariant vSource: sourceThemes) {
+        QVariantMap tSource = vSource.toMap();
+        if (tSource.isEmpty() || !tSource.contains("name") || !tSource.contains("theme")) continue;
+        QString name = tSource.value("name").toString();
 
         // clone first theme as base
-        int newInd = copyTheme(0);
+        int newInd = copyTheme(0, name);
         ColorTheme currentTheme = mColorThemes.at(newInd);
 
-        QVariantMap data = theme.value("Data").toMap();
-        QVariantMap::const_iterator it;
-        for (it = data.constBegin() ; it != data.constEnd() ; ++it) {
+        QVariantMap sourceData = tSource.value("theme").toMap();
+        for (auto it = sourceData.constBegin() ; it != sourceData.constEnd() ; ++it) {
             ColorSlot cSlot = slot(it.key());
             if (cSlot == invalid) continue;
             QStringList dat = it.value().toString().split(',');
@@ -503,6 +474,7 @@ void Theme::importThemes(const QVariantList &syntaxThemes)
             Color color = Color(QColor(dat.at(0)), FontFlag(iFlag));
             currentTheme.insert(cSlot, color);
         }
+        mColorThemes.replace(newInd, currentTheme);
     }
 }
 

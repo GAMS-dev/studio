@@ -2304,6 +2304,8 @@ void MainWindow::updateAndSaveSettings()
 
     historyChanged();
 
+    settings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
+
     // at last, save the settings
     settings->save();
 }
@@ -2346,6 +2348,8 @@ void MainWindow::restoreFromSettings()
     double hZoom = settings->toDouble(skHelpZoomFactor);
     helpWidget()->setZoomFactor(hZoom > 0.0 ? hZoom : 1.0);
 #endif
+
+    Theme::instance()->readUserThemes(settings->toList(SettingsKey::skUserThemes));
 
 }
 
@@ -3663,6 +3667,7 @@ void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(this);
     sd.setMiroSettingsEnabled(!mMiroRunning);
+    connect(&sd, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
     connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();

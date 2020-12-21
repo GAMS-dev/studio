@@ -21,7 +21,8 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExam
 {
     ui->setupUi(this);
     ui->iconEx->setVisible(iconExample);
-    ui->textFrame->setVisible(!iconExample);
+//    ui->textFrame->setVisible(!iconExample);
+    ui->textFrame->setVisible(false);
     if (iconExample) {
         mIconEng = new SvgEngine(":/solid/user");
         if (Theme::name(slotFg).startsWith("Disable_")) mIconEng->replaceNormalMode(QIcon::Disabled);
@@ -30,7 +31,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExam
         ui->iconEx->setIcon(QIcon(mIconEng));
     }
 
-    ui->name->setText(Theme::instance()->text(slotFg));
+    ui->name->setText(Theme::instance()->text(slotFg) + ' ');
     setFormatVisible(Theme::hasFontProps(slotFg));
     initSlot(mSlotFg, slotFg, ui->colorFG);
     ui->colorBG1->hide();
@@ -45,7 +46,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, QWidg
     ui->iconEx->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
-    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg));
+    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     ui->colorBG2->hide();
@@ -59,7 +60,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
     ui->iconEx->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
-    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg));
+    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     initSlot(mSlotBg2, slotBg2, ui->colorBG2);
@@ -75,30 +76,17 @@ void ThemeWidget::initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &sl
 {
     slotVar = slot;
     bool active = slot != Theme::invalid;
+    frame->setVisible(true);
     frame->setEnabled(active);
     frame->setAutoFillBackground(active);
     if (active) {
-        setColor(frame, toColor(slot, mScope), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
-        if (Theme::hasFontProps(slot)) {
-            ui->btBold->setDown(Theme::hasFlag(slot, Theme::fBold));
-            ui->btItalic->setDown(Theme::hasFlag(slot, Theme::fItalic));
-            QFont font = ui->textEx->font();
-            font.setBold(Theme::hasFlag(slot, Theme::fBold));
-            font.setItalic(Theme::hasFlag(slot, Theme::fItalic));
-            ui->textEx->setFont(font);
+        if (Theme::hasFontProps(mSlotFg)) {
+            connect(ui->btBold, &QAbstractButton::clicked, this, &ThemeWidget::fontFlagsChanged);
+            connect(ui->btItalic, &QAbstractButton::clicked, this, &ThemeWidget::fontFlagsChanged);
         }
+        refresh();
         frame->installEventFilter(this);
     }
-}
-
-void ThemeWidget::setText(const QString &text)
-{
-    ui->name->setText(text);
-}
-
-QString ThemeWidget::text() const
-{
-    return ui->name->text();
 }
 
 void ThemeWidget::setTextVisible(bool visible)
@@ -114,30 +102,65 @@ void ThemeWidget::setFormatVisible(bool visible)
 
 bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
 {
+    if (event->type() == QEvent::Close && watched == mColorDialog) {
+        mColorDialog->deleteLater();
+    }
     if (event->type() == QEvent::MouseButtonRelease) {
-        if (watched == ui->colorFG) selectColor(ui->colorFG, mSlotFg);
-        if (watched == ui->colorBG1) selectColor(ui->colorBG1, mSlotBg);
-        if (watched == ui->colorBG2) selectColor(ui->colorBG2, mSlotBg2);
+        if (watched == ui->colorFG) showColorSelector(ui->colorFG);
+        else if (watched == ui->colorBG1) showColorSelector(ui->colorBG1);
+        else if (watched == ui->colorBG2) showColorSelector(ui->colorBG2);
     }
     return false;
 }
 
-void ThemeWidget::selectColor(QFrame *frame, Theme::ColorSlot slot)
+void ThemeWidget::showColorSelector(QFrame *frame)
 {
-    QColorDialog diag;
-    diag.setCurrentColor(frame->palette().window().color());
-    if (diag.exec()) {
-        setColor(frame, diag.currentColor(), slot==mSlotFg ? 1 : slot==mSlotBg ? 2 : 0);
-        Theme::setColor(slot, mScope, diag.currentColor());
-        emit changed();
+    if (!mColorDialog) {
+        mColorDialog = new QColorDialog(this);
+        mColorDialog->setModal(true);
+        mColorDialog->installEventFilter(this);
     }
+    mSelectedFrame = frame;
+    mColorDialog->setCurrentColor(frame->palette().window().color());
+    connect(mColorDialog, &QColorDialog::colorSelected, this, &ThemeWidget::colorChanged);
+    mColorDialog->show();
+}
+
+void ThemeWidget::colorChanged(const QColor &color)
+{
+    Theme::ColorSlot slot = mSelectedFrame==ui->colorFG ? mSlotFg : mSelectedFrame==ui->colorBG1 ? mSlotBg : mSlotBg2;
+    Theme::setColor(slot, color);
+    refresh();
+    emit changed();
+}
+
+void ThemeWidget::fontFlagsChanged()
+{
+    Theme::FontFlag flag = ui->btBold->isChecked() ? (ui->btItalic->isChecked() ? Theme::fBoldItalic : Theme::fBold)
+                                                   : (ui->btItalic->isChecked() ? Theme::fItalic : Theme::fNormal);
+    Theme::setFlags(mSlotFg, flag);
+
+    DEB() << "Set flags: " << flag << " - result " << Theme::hasFlag(mSlotFg, Theme::fBold) << Theme::hasFlag(mSlotFg, Theme::fItalic);
+    refresh();
+    emit changed();
 }
 
 void ThemeWidget::refresh()
 {
-    if (mSlotFg) setColor(ui->colorFG, toColor(mSlotFg, mScope), 1);
-    if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg, mScope), 2);
-    if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2, mScope));
+    if (mSlotFg) {
+        setColor(ui->colorFG, toColor(mSlotFg), 1);
+        if (Theme::hasFontProps(mSlotFg)) {
+            ui->btBold->setChecked(Theme::hasFlag(mSlotFg, Theme::fBold));
+            ui->btItalic->setChecked(Theme::hasFlag(mSlotFg, Theme::fItalic));
+            QFont font = ui->name->font();
+            font.setBold(Theme::hasFlag(mSlotFg, Theme::fBold));
+            font.setItalic(Theme::hasFlag(mSlotFg, Theme::fItalic));
+            ui->name->setFont(font);
+        }
+    }
+    if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg), 2);
+    if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2));
+
 }
 
 void ThemeWidget::setAlignment(Qt::Alignment align)
@@ -154,33 +177,20 @@ void ThemeWidget::setAlignment(Qt::Alignment align)
     }
 }
 
-Theme::Scope ThemeWidget::scope() const
-{
-    return mScope;
-}
-
-void ThemeWidget::setScope(const Theme::Scope &scope)
-{
-    mScope = scope;
-}
-
 void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
 {
-    QPalette pal = frame->palette();
-    pal.setColor(QPalette::Window, color);
-    frame->setPalette(pal);
+    frame->setStyleSheet("background:"+color.name()+";");
     if (examplePart) {
-        if (ui->textFrame->isVisible()) {
-            pal = ui->textEx->palette();
-            pal.setColor(examplePart == 1 ? QPalette::WindowText : QPalette::Window, color);
-            ui->textEx->setPalette(pal);
-        }
         if (ui->iconEx->isVisible()) {
             // TODO(JM) colorize Icon
             ui->iconEx->setIcon(ui->iconEx->icon());
+        } else {
+            ui->name->setStyleSheet((examplePart == 1 ? "color:" : "background") +color.name()+";");
         }
+
     }
 }
 
 } // namespace studio
 } // namespace gams
+

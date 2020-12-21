@@ -26,6 +26,7 @@ INCLUDEPATH += $$SRCPATH \
 
 HEADERS += \
     testminosoption.h \
+    $$SRCPATH/logger.h \
     $$SRCPATH/theme.h \
     $$SRCPATH/svgengine.h \
     $$SRCPATH/option/option.h \
@@ -33,6 +34,7 @@ HEADERS += \
 
 SOURCES += \
     testminosoption.cpp \
+    $$SRCPATH/logger.cpp \
     $$SRCPATH/theme.cpp \
     $$SRCPATH/svgengine.cpp \
     $$SRCPATH/option/option.cpp \

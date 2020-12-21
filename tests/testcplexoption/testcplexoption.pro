@@ -26,6 +26,7 @@ INCLUDEPATH += $$SRCPATH \
 
 HEADERS += \
     testcplexoption.h \
+    $$SRCPATH/logger.h \
     $$SRCPATH/theme.h \
     $$SRCPATH/option/option.h \
     $$SRCPATH/svgengine.h \
@@ -33,6 +34,7 @@ HEADERS += \
 
 SOURCES += \
     testcplexoption.cpp \
+    $$SRCPATH/logger.cpp \
     $$SRCPATH/theme.cpp \
     $$SRCPATH/option/option.cpp \
     $$SRCPATH/svgengine.cpp \

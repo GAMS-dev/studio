@@ -9,6 +9,8 @@ namespace Ui {
 class ThemeWidget;
 }
 
+class QColorDialog;
+
 namespace gams {
 namespace studio {
 
@@ -23,21 +25,20 @@ public:
     explicit ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg,
                           Theme::ColorSlot slotBg2, QWidget *parent = nullptr);
     ~ThemeWidget() override;
-    Theme::Scope scope() const;
-    void setScope(const Theme::Scope &scope);
-    void setText(const QString &text);
-    QString text() const;
     void setTextVisible(bool visible);
     void setFormatVisible(bool visible);
     bool eventFilter(QObject *watched, QEvent *event) override;
-    void selectColor(QFrame *frame, Theme::ColorSlot slot);
-    void saveToTheme();
+    void showColorSelector(QFrame *frame);
     void refresh();
     void setAlignment(Qt::Alignment align);
 
 
 signals:
     void changed();
+
+private slots:
+    void colorChanged(const QColor &color);
+    void fontFlagsChanged();
 
 private:
     Ui::ThemeWidget *ui;
@@ -46,7 +47,8 @@ private:
     Theme::ColorSlot mSlotBg2 = Theme::invalid;
     bool mChanged = false;
     SvgEngine *mIconEng = nullptr;
-    Theme::Scope mScope;
+    QColorDialog *mColorDialog = nullptr;
+    QFrame *mSelectedFrame;
 
     void initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slotVal, QFrame *frame);
     void setColor(QFrame *frame, const QColor &color, int examplePart = 0);

@@ -82,9 +82,6 @@ public:
 
     enum IconSet {ThinIcons, SolidIcons};
 
-    enum Scope {StudioScope, EditorScope};
-    Q_ENUM(Scope)
-
 private:
     struct Color {
         Color(QColor _color = QColor(), FontFlag _fontFlag = fNormal) : color(_color), fontFlag(_fontFlag) {}
@@ -98,29 +95,26 @@ public:
     void initDefault();
     int themeCount() { return mThemeNames.size(); }
     QStringList themes();
-    int setActiveTheme(QString themeName, Scope scope = Theme::EditorScope);
-    int setActiveTheme(int theme, Scope scope = Theme::EditorScope);
-    int activeTheme(Scope scope) const;
+    int setActiveTheme(QString themeName);
+    int setActiveTheme(int theme);
+    int activeTheme() const;
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
-    bool isValidScope(int scopeValue);
-    int copyTheme(int index);
+    int copyTheme(int index, const QString &destName = nullptr);
 
-    QVariantList exportThemes();
-    void importThemes(const QVariantList &syntaxThemes);
+    QVariantList writeUserThemes() const;
+    void readUserThemes(const QVariantList &sourceThemes);
 
-    static QList<Scope> scopes();
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
     static bool hasFontProps(ColorSlot slot);
-    static QColor color(ColorSlot slot, Theme::Scope scope = Theme::EditorScope);
-    static void setColor(ColorSlot slot, gams::studio::Theme::Scope scope, QColor color);
-    static QIcon icon(QString name, Scope scope, bool forceSquare = false, QString disabledName = QString());
+    static QColor color(ColorSlot slot);
+    static void setColor(ColorSlot slot, QColor color);
     static QIcon icon(QString name, bool forceSquare = false, QString disabledName = QString());
-    static QByteArray &data(QString name, Scope scope, QIcon::Mode mode);
-    static bool hasFlag(ColorSlot slot, FontFlag flag, Theme::Scope scope = Theme::EditorScope);
-    static void setFlags(ColorSlot slot, FontFlag flag, Theme::Scope scope = Theme::EditorScope);
+    static QByteArray &data(QString name, QIcon::Mode mode);
+    static bool hasFlag(ColorSlot slot, FontFlag flag);
+    static void setFlags(ColorSlot slot, FontFlag flag);
 
 
 signals:
@@ -129,8 +123,8 @@ signals:
 private:
     explicit Theme(QObject *parent = nullptr);
     void initSlotTexts();
-    QList<QHash<QString, QStringList>> iconCodes() const;
-    QByteArray colorizedContent(QString name, Scope scope, QIcon::Mode mode = QIcon::Normal);
+    QHash<QString, QStringList> iconCodes() const;
+    QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
 
 private:
     static Theme *mInstance;
@@ -139,15 +133,15 @@ private:
     QHash<ColorSlot, QString> mSlotText;
     QStringList mThemeNames;
     QString mIconSet;
-    QHash<Scope, int> mScopeTheme;
-    QList<QHash<QString, QStringList>> mIconCodes;
+    int mTheme;
+    QHash<QString, QStringList> mIconCodes;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
     QVector<SvgEngine*> mEngines;
 };
 
-inline QColor toColor(Theme::ColorSlot code, Theme::Scope scope = Theme::EditorScope) {
-    return Theme::color(code, scope); }
+inline QColor toColor(Theme::ColorSlot code) {
+    return Theme::color(code); }
 inline QString name(Theme::ColorSlot col) { return Theme::instance()->name(col); }
 
 } // namespace studio

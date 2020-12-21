@@ -23,6 +23,7 @@
 #include <QDir>
 #include <QSettings>
 #include <QFile>
+#include <QDir>
 #include <QSize>
 #include <QPoint>
 #include <QFontDatabase>
@@ -45,6 +46,8 @@ const QHash<Settings::Scope, int> Settings::mVersion = {{Settings::scSysX, 1},
                                                         {Settings::scUserX ,2}};
 Settings *Settings::mInstance = nullptr;
 bool Settings::mUseRelocatedTestDir = false;
+const QString CThemePrefix("usertheme_");
+const QString CThemeSufix("json");
 
 // ====== Some helper functions ======
 
@@ -163,7 +166,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     mData.insert(scTheme, Data());
 
     // initialize json format and make it the default
-    QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
+    QSettings::Format jsonFormat = QSettings::registerFormat(CThemeSufix, readJsonFile, writeJsonFile);
     QSettings::setDefaultFormat(jsonFormat);
     if (mUseRelocatedTestDir)
         QSettings::setPath(jsonFormat, QSettings::UserScope, ".");
@@ -416,6 +419,8 @@ void Settings::save()
     for (const Scope &scope : mSettings.keys()) {
         saveFile(scope);
     }
+    // Themes are stored dynamically in multiple files
+    saveFile(Scope::scTheme);
 }
 
 QSize Settings::toSize(SettingsKey key) const
@@ -673,19 +678,55 @@ QVariant Settings::read(SettingsKey key)
 
 void Settings::saveThemes()
 {
-    for (const QVariant &vTheme: toList(skUserThemes)) {
+    const QVariantList themes = toList(skUserThemes);
+
+    for (int i = 0 ; i < themes.count() ; ++i) {
+        const QVariant &vTheme = themes.at(i);
         QVariantMap theme = vTheme.toMap();
-        QString name = theme.value("Name").toString();
-        QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
-        themeSettings.setValue("Name", name);
-        themeSettings.setValue("Data", theme.value("Data"));
+        QString name = theme.value("name").toString();
+        QString fName = CThemePrefix + name.toLower();
+        QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, fName);
+        themeSettings.setValue("name", name);
+        themeSettings.setValue("theme", theme.value("theme"));
         themeSettings.sync();
     }
 }
 
 void Settings::loadThemes()
 {
+    QVariantList themes;
+    QStringList themeNames;
 
+    QDir dir(settingsPath());
+    for (const QFileInfo &fileInfo : dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
+        QString fName = fileInfo.fileName();
+        if (!fName.startsWith(CThemePrefix, Qt::CaseInsensitive) || !fName.endsWith(CThemeSufix, Qt::CaseInsensitive)) {
+            continue;
+        }
+        QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, fileInfo.completeBaseName());
+        QString name = themeSettings.value("name").toString();
+        QVariantMap data = themeSettings.value("theme").toMap();
+        if (data.isEmpty()) {
+            SysLogLocator::systemLog()->append("Skipping empty theme '" + name + "' from " + fName);
+            continue;
+        }
+        if (fName.compare(CThemePrefix+name+'.'+CThemeSufix, Qt::CaseInsensitive) != 0) {
+            SysLogLocator::systemLog()->append("Skipping theme name doesn't match filename in " + fName);
+            continue;
+        }
+        int ind = themeNames.indexOf(name.toLower());
+        if (ind >= 0) {
+            SysLogLocator::systemLog()->append("Skipping theme duplicate from " + fName);
+            continue;
+        }
+
+        QVariantMap theme;
+        theme.insert("name", name);
+        theme.insert("theme", data);
+        themes << theme;
+        themeNames << name.toLower();
+    }
+    setList(skUserThemes, themes);
 }
 
 int Settings::usableVersion(ScopePair scopes)
@@ -825,7 +866,7 @@ void Settings::exportSettings(const QString &path)
     }
 }
 
-void Settings::importSyntaxTheme(const QString &path)
+void Settings::importTheme(const QString &path)
 {
     if (!mSettings.value(scTheme)) return;
     QFile backupFile(path);
@@ -835,7 +876,7 @@ void Settings::importSyntaxTheme(const QString &path)
     reload();
 }
 
-void Settings::exportSyntaxTheme(const QString &path)
+void Settings::exportTheme(const QString &path)
 {
     if (!mSettings.value(scTheme)) return;
     QFile originFile(mSettings.value(scTheme)->fileName());
@@ -844,6 +885,16 @@ void Settings::exportSyntaxTheme(const QString &path)
     if (!originFile.copy(path)) {
         SysLogLocator::systemLog()->append("Error exporting syntax theme to " + path, LogMsgType::Error);
     }
+}
+
+void Settings::renameTheme(const QString &oldName, const QString &newName)
+{
+
+}
+
+void Settings::removeTheme(const QString &name)
+{
+
 }
 
 }

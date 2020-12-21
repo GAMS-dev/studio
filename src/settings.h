@@ -185,8 +185,10 @@ public:
     void importSettings(const QString &path);
     void exportSettings(const QString &path);
 
-    void importSyntaxTheme(const QString &path);
-    void exportSyntaxTheme(const QString &path);
+    void importTheme(const QString &path);
+    void exportTheme(const QString &path);
+    void renameTheme(const QString &oldName, const QString &newName);
+    void removeTheme(const QString &name);
 
     void updateSettingsFiles();
 
