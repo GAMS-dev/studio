@@ -214,9 +214,40 @@ int Theme::setActiveTheme(int theme)
     return theme;
 }
 
+QString Theme::renameActiveTheme(const QString &name)
+{
+    if (mTheme < 2) return mThemeNames.at(mTheme);
+    if (name.compare(mThemeNames.at(mTheme)) == 0) return name;
+    QString uniqueName = findUniqueName(name);
+    mThemeNames.replace(mTheme, uniqueName);
+    if (mTheme < mThemeNames.count()-1) {
+        mThemeNames.move(mTheme, mThemeNames.count()-1);
+        mColorThemes.move(mTheme, mThemeNames.count()-1);
+        mTheme = mThemeNames.count()-1;
+    }
+
+    // restore sort order
+    int i = mThemeNames.count() - 1;
+    while (i > 2 && mThemeNames.at(i-1).compare(name, Qt::CaseInsensitive) > 0) --i;
+
+    int last = mThemeNames.count() - 1;
+    if (i < last) {
+        mThemeNames.move(last, i);
+        mColorThemes.move(last, i);
+        mTheme = i;
+    }
+
+    return uniqueName;
+}
+
 int Theme::activeTheme() const
 {
     return mTheme;
+}
+
+QString Theme::activeThemeName()
+{
+    return mThemeNames.at(mTheme);
 }
 
 QString Theme::name(Theme::ColorSlot slot)
@@ -318,6 +349,22 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode)
     return data;
 }
 
+QString Theme::findUniqueName(const QString &name)
+{
+    DEB() << "Names: " << mThemeNames.join(" ");
+    if (!mThemeNames.contains(name)) return name;
+    QString uniqueName = name;
+    QString base = name;
+    int nr = 0;
+    while (!base.isEmpty() && base.at(base.length()-1).isDigit())
+        base = base.left(base.length()-1);
+    if (base.isEmpty()) base = name;
+    if (base.length() != name.length()) nr = name.right(name.length()-base.length()).toInt();
+    while (mThemeNames.contains(uniqueName))
+        uniqueName = base + QString::number(++nr);
+    return uniqueName;
+}
+
 QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
 {
     return QColor::fromRgbF((c1.redF()*weight + c2.redF()*(1-weight)),
@@ -341,38 +388,32 @@ void Theme::unbind(SvgEngine *engine)
 
 int Theme::copyTheme(int index, const QString &destName)
 {
-    // clone first theme as base
-    QString baseName = destName.isEmpty() ? mThemeNames.at(index) : destName;
-    if (baseName.isEmpty()) baseName = "Theme";
-    // count trailing digits
-    int n = 1;
-    while (n < baseName.length() && baseName.at(baseName.length()-n).isDigit()) ++n;
-    --n;
-
-    // generate next number
-    int i = 0;
-    if (n == baseName.length()) {
-        // digits only -> append second digit-block starting with 1
-        i = 1;
-        baseName += "-1";
-    } else if (n) {
-        // digit(s) present -> parse number and crop baseName
-        i = baseName.right(n).toInt();
-        baseName = baseName.left(baseName.length()-n);
-    }
-    QString name = i ? baseName + QString::number(i) : baseName;
-
-    // check for next free number
-    while (mThemeNames.contains(name)) {
-        ++i;
-        name = baseName + QString::number(i);
-    }
-
-    // TODO(JM) maybe this should be inserted in sort order
-
+    QString name = findUniqueName(destName);
     mColorThemes << mColorThemes.at(index);
     mThemeNames << name;
-    return mColorThemes.count()-1;
+
+    // restore sort order
+    int i = mThemeNames.count() - 1;
+    while (i > 2 && mThemeNames.at(i-1).compare(name, Qt::CaseInsensitive) > 0) --i;
+
+    int last = mThemeNames.count() - 1;
+    if (i < last) {
+        mThemeNames.move(last, i);
+        mColorThemes.move(last, i);
+    }
+
+    return i;
+}
+
+int Theme::removeTheme(int index)
+{
+    if (index < 2 || index >= mThemeNames.count()) return mTheme;
+    if (index <= mTheme) --mTheme;
+    QString name = mThemeNames.at(index);
+    mColorThemes.removeAt(index);
+    mThemeNames.removeAt(index);
+    DEB() << "removed " << name;
+    return mTheme;
 }
 
 QColor Theme::color(Theme::ColorSlot slot)

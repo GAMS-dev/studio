@@ -115,6 +115,7 @@ bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
 
 void ThemeWidget::showColorSelector(QFrame *frame)
 {
+    if (mReadonly) return;
     if (!mColorDialog) {
         mColorDialog = new QColorDialog(this);
         mColorDialog->setModal(true);
@@ -136,6 +137,10 @@ void ThemeWidget::colorChanged(const QColor &color)
 
 void ThemeWidget::fontFlagsChanged()
 {
+    if (mReadonly) {
+        refresh();
+        return;
+    }
     Theme::FontFlag flag = ui->btBold->isChecked() ? (ui->btItalic->isChecked() ? Theme::fBoldItalic : Theme::fBold)
                                                    : (ui->btItalic->isChecked() ? Theme::fItalic : Theme::fNormal);
     Theme::setFlags(mSlotFg, flag);
@@ -174,6 +179,14 @@ void ThemeWidget::setAlignment(Qt::Alignment align)
     } else {
         ui->spRight->changeSize(10, 10, QSizePolicy::MinimumExpanding);
     }
+}
+
+void ThemeWidget::setReadonly(bool readonly)
+{
+    mReadonly = readonly;
+    setStyleSheet( readonly ? "color:"+toColor(Theme::Disable_Gray).name()+";" : QString() );
+    setMouseTracking(!readonly);
+    refresh();
 }
 
 void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)

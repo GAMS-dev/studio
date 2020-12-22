@@ -48,6 +48,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
@@ -71,9 +72,10 @@ private slots:
     void on_cb_writeLog_toggled(bool checked);
     void on_sb_nrLogBackups_valueChanged(int value);
     void on_miroBrowseButton_clicked();
-
-
     void on_btn_resetHistory_clicked();
+    void on_btRename_clicked();
+    void on_btCopy_clicked();
+    void on_btRemove_clicked();
 
 private:
     Ui::SettingsDialog *ui;

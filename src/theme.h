@@ -97,11 +97,14 @@ public:
     QStringList themes();
     int setActiveTheme(QString themeName);
     int setActiveTheme(int theme);
+    QString renameActiveTheme(const QString &name);
     int activeTheme() const;
+    QString activeThemeName();
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
-    int copyTheme(int index, const QString &destName = nullptr);
+    int copyTheme(int index, const QString &destName);
+    int removeTheme(int index);
 
     QVariantList writeUserThemes() const;
     void readUserThemes(const QVariantList &sourceThemes);
@@ -125,6 +128,7 @@ private:
     void initSlotTexts();
     QHash<QString, QStringList> iconCodes() const;
     QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
+    QString findUniqueName(const QString &name);
 
 private:
     static Theme *mInstance;

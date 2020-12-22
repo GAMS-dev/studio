@@ -187,8 +187,6 @@ public:
 
     void importTheme(const QString &path);
     void exportTheme(const QString &path);
-    void renameTheme(const QString &oldName, const QString &newName);
-    void removeTheme(const QString &name);
 
     void updateSettingsFiles();
 

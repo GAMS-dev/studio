@@ -31,7 +31,7 @@ public:
     void showColorSelector(QFrame *frame);
     void refresh();
     void setAlignment(Qt::Alignment align);
-
+    void setReadonly(bool readonly);
 
 signals:
     void changed();
@@ -49,6 +49,7 @@ private:
     SvgEngine *mIconEng = nullptr;
     QColorDialog *mColorDialog = nullptr;
     QFrame *mSelectedFrame;
+    bool mReadonly = false;
 
     void initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slotVal, QFrame *frame);
     void setColor(QFrame *frame, const QColor &color, int examplePart = 0);

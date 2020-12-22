@@ -680,6 +680,17 @@ void Settings::saveThemes()
 {
     const QVariantList themes = toList(skUserThemes);
 
+    // remove previous theme files
+    QDir dir(settingsPath());
+    for (const QFileInfo &fileInfo : dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
+        QString fName = fileInfo.fileName();
+        if (!fName.startsWith(CThemePrefix, Qt::CaseInsensitive) || !fName.endsWith(CThemeSufix, Qt::CaseInsensitive)) {
+            continue;
+        }
+        dir.remove(fileInfo.fileName());
+    }
+
+    // create current theme files
     for (int i = 0 ; i < themes.count() ; ++i) {
         const QVariant &vTheme = themes.at(i);
         QVariantMap theme = vTheme.toMap();
@@ -885,16 +896,6 @@ void Settings::exportTheme(const QString &path)
     if (!originFile.copy(path)) {
         SysLogLocator::systemLog()->append("Error exporting syntax theme to " + path, LogMsgType::Error);
     }
-}
-
-void Settings::renameTheme(const QString &oldName, const QString &newName)
-{
-
-}
-
-void Settings::removeTheme(const QString &name)
-{
-
 }
 
 }

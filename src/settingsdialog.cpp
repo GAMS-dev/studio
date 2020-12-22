@@ -140,7 +140,7 @@ void SettingsDialog::loadSettings()
     ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
     for (ThemeWidget *wid : mColorWidgets) {
-        wid->refresh();
+        wid->setReadonly(mSettings->toInt(skEdAppearance) < 3);
     }
 
     // misc page
@@ -222,7 +222,7 @@ void SettingsDialog::saveSettings()
 
     // colors page
     mSettings->setInt(skEdAppearance, ui->cbThemes->currentIndex());
-    Theme::instance()->writeUserThemes();
+    mSettings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
 
     // misc page
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
@@ -283,14 +283,17 @@ void SettingsDialog::appearanceIndexChanged(int index)
 #else
     Q_UNUSED(index)
 #endif
+    for (ThemeWidget *wid : mColorWidgets) {
+        bool readonly = index < 3;
+        wid->setReadonly(readonly);
+        ui->btRename->setEnabled(!readonly);
+        ui->btRemove->setEnabled(!readonly);
+    }
+
 }
 
 void SettingsDialog::themeModified()
 {
-//    Theme::instance()->invalidate();
-//    for (QWidget *wid: mColorWidgets) {
-//        static_cast<ThemeWidget*>(wid)->refresh();
-//    }
     emit setModified();
     emit themeChanged();
 }
@@ -316,6 +319,41 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
         }
     }
     emit editorLineWrappingChanged();
+}
+
+bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->cbThemes && ui->cbThemes->isEditable()) {
+        bool rename = false;
+        if (event->type() == QEvent::KeyPress) {
+            auto ke = static_cast<QKeyEvent*>(event);
+            if (ke->key() == Qt::Key_Escape) {
+                ui->cbThemes->setEditable(false);
+                ui->cbThemes->removeEventFilter(this);
+                return true;
+            }
+            if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
+                rename = true;
+            }
+        }
+        if (event->type() == QEvent::FocusOut) {
+            rename = true;
+        }
+        if (rename) {
+            QString name = ui->cbThemes->currentText();
+            name = Theme::instance()->renameActiveTheme(name);
+            ui->cbThemes->setEditable(false);
+            ui->cbThemes->removeEventFilter(this);
+            int i = ui->cbThemes->currentIndex();
+            ui->cbThemes->removeItem(i);
+            i = Theme::instance()->themes().indexOf(name);
+            ui->cbThemes->insertItem(i+1, name);
+            ui->cbThemes->setCurrentIndex(i+1);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 SettingsDialog::~SettingsDialog()
@@ -516,6 +554,35 @@ void SettingsDialog::on_btn_resetHistory_clicked()
 {
     mMain->resetHistory();
     mSettings->setList(skHistory, QVariantList());
+}
+
+void SettingsDialog::on_btRename_clicked()
+{
+    ui->cbThemes->setEditable(true);
+    ui->cbThemes->setFocus();
+    ui->cbThemes->installEventFilter(this);
+}
+
+void SettingsDialog::on_btCopy_clicked()
+{
+    Theme *theme = Theme::instance();
+    int i = theme->copyTheme(theme->activeTheme(), theme->activeThemeName());
+    ui->cbThemes->insertItem(i+1, Theme::instance()->themes().at(i));
+    ui->cbThemes->setCurrentIndex(i+1);
+    for (ThemeWidget *wid : mColorWidgets) {
+        wid->refresh();
+    }
+}
+
+void SettingsDialog::on_btRemove_clicked()
+{
+    int old = Theme::instance()->activeTheme();
+    int i = Theme::instance()->removeTheme(old);
+    ui->cbThemes->removeItem(old+1);
+    ui->cbThemes->setCurrentIndex(i+1);
+    for (ThemeWidget *wid : mColorWidgets) {
+        wid->refresh();
+    }
 }
 
 }
