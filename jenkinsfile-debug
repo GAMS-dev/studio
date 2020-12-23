@@ -13,6 +13,8 @@ def isDebugBuildAllowed() {
 
 def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
+def GAMS_FOR_WINDOWS = "C:\\GAMS\\33"
+
 pipeline {
     agent none
 
@@ -27,7 +29,8 @@ pipeline {
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     environment {
-                        PATH="${QT_FOR_WINDOWS};${PATH}"
+                        GAMS_CORE_PATH="${GAMS_FOR_WINDOWS}"
+                        PATH="${QT_FOR_WINDOWS};${GAMS_FOR_WINDOWS};${PATH}"
                     }
                     when {
                         expression { return isDebugBuildAllowed() }
