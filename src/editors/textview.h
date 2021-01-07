@@ -60,6 +60,7 @@ public:
     void copySelection();
     QString selectedText() const;
     void selectAllText();
+    void clearSelection();
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);

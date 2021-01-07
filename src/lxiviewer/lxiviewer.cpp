@@ -42,6 +42,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     ui->setupUi(this);
 
     ui->splitter->addWidget(mTextView);
+    setTabOrder(ui->lxiTreeView, mTextView);
 
     QFileInfo info(lstFile);
     mLxiFile = info.path() + "/" + info.completeBaseName() + ".lxi";
@@ -53,6 +54,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
 
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
+    ui->lxiTreeView->installEventFilter(this);
 }
 
 LxiViewer::~LxiViewer()
@@ -81,6 +83,19 @@ void LxiViewer::print(QPagedPaintDevice *printer)
     document.print(printer);
 }
 
+bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress && watched == ui->lxiTreeView && ui->lxiTreeView->currentIndex().isValid()) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return) {
+            jumpToLine(ui->lxiTreeView->currentIndex());
+            if (ui->lxiTreeView->model()->hasChildren(ui->lxiTreeView->currentIndex()))
+                ui->lxiTreeView->expand(ui->lxiTreeView->currentIndex());
+        }
+    }
+    return false;
+}
+
 void LxiViewer::loadLxi()
 {
     if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size() > 0) {
@@ -88,6 +103,8 @@ void LxiViewer::loadLxi()
         LxiTreeModel* model = LxiParser::parseFile(mLxiFile);
         LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
         ui->lxiTreeView->setModel(model);
+        QModelIndex idx = model->index(0,0);
+        ui->lxiTreeView->setCurrentIndex(idx);
         if (oldModel)
             delete oldModel;
     }

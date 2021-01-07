@@ -50,6 +50,7 @@ signals:
 public slots:
     void copySelection() override;
     void selectAllText() override;
+    void clearSelection();
     void scrollStep();
 
 protected:

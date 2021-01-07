@@ -41,7 +41,7 @@ public:
         QStringList res = data; data.clear();
         return res;
     }
-    bool count() { return data.count(); }
+    int count() { return data.count(); }
 };
 
 class MemoryMapper : public AbstractTextMapper

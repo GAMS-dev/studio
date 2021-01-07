@@ -4,23 +4,28 @@ Version 1.5.0 *
 - enable jumping to a specific position in a text-file for log-references
 - added GDX filter to open file dialog
 - enhanced MIRO deploy dialog usability and conf/data folder creation for deploy/test deploy
-- mirgration to Qt 5.15.2 (LTS)
+- Studio now uses Qt 5.15.2 (LTS) on all platforms
+- the setting "autosave on run" now saves ALL modified files, not just the files of the current group
+- fixed not all changed files were requested to save on run
 
-Version 1.4.6 *
+Version 1.4.6
 ==================
 - disabed GAMS syntax highlighting between $onPut/$offPut and $onEcho/$offEcho
 - fixed missing request for new search cache after switching file
 - fixed end-of-line comment making links unclickable
 - fixed rare crash related to LOG output
-- fixed endless dialog for invalid GDX file
+- fixed endlessly recurring message box for invalid GDX file
 - fixed New File dialog not using group path
 - fixed missing update of parameter history for a file assigned to more than one group
 - fixed search results not being highlighted in .log files
 - fixed search performance problem after reset search parameters
-- fixed logfile additionally contained parts of a line
+- fixed log file additionally contained parts of a line
 - fixed selection lost in SystemLog
 - added select entry on clicking timestamp
 - fixed missing close button in log tab after running NEOS
+- fixed behavior of ESC key when current widget has a selection
+- fixed focus behavior in main and log tabs
+- pressing "enter" in the LXI tree scrolls to the corresponding position in the LST view
 
 Version 1.4.5
 ==================
