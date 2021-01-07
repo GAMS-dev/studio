@@ -3,6 +3,7 @@ Version 1.4.7 *
 - fixed file-watcher sometimes untracks a file changed externally
 - ignore eol-comment on $include DCO
 - fixed solver option editor when toggling option of boolean no value type
+- fixed misplaced cursor start on mouse selection
 
 Version 1.4.6
 ==================

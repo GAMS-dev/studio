@@ -268,11 +268,9 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
             bool valid = mClickStart && (clickPos() - e->pos()).manhattanLength() < 4;
             if (valid) return;
             viewport()->setCursor((e->pos().x() < 0) ? Qt::ArrowCursor : Qt::IBeamCursor);
-            QTextCursor::MoveMode mode = mClickStart ? QTextCursor::MoveAnchor
-                                                     : QTextCursor::KeepAnchor;
             mClickStart = false;
             QTextCursor cursor = cursorForPosition(e->pos());
-            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), mode);
+            mMapper.setPosRelative(cursor.blockNumber(), cursor.positionInBlock(), QTextCursor::KeepAnchor);
             updatePosAndAnchor();
         }
     } else {
