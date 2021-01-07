@@ -100,6 +100,7 @@ public:
     QString renameActiveTheme(const QString &name);
     int activeTheme() const;
     QString activeThemeName();
+    int baseTheme(int theme) const;
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
@@ -119,7 +120,6 @@ public:
     static bool hasFlag(ColorSlot slot, FontFlag flag);
     static void setFlags(ColorSlot slot, FontFlag flag);
 
-
 signals:
     void changed();
 
@@ -136,6 +136,7 @@ private:
     QList<ColorTheme> mColorThemes;
     QHash<ColorSlot, QString> mSlotText;
     QStringList mThemeNames;
+    QList<int> mThemeBases;
     QString mIconSet;
     int mTheme;
     QHash<QString, QStringList> mIconCodes;

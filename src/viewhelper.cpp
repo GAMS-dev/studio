@@ -124,7 +124,8 @@ void ViewHelper::changeAppearance(int appearance)
 #endif
 
 #ifndef __APPLE__
-    PaletteManager::instance()->setPalette(pickedTheme);
+    int base = Theme::instance()->baseTheme(pickedTheme);
+    PaletteManager::instance()->setPalette(base);
 #endif
     Theme::instance()->setActiveTheme(pickedTheme);
     Theme::instance()->setActiveTheme(pickedTheme);

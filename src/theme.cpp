@@ -73,6 +73,7 @@ void Theme::initDefault()
 {
     mColorThemes.clear();
     mThemeNames.clear();
+    mThemeBases.clear();
 
     // default to first color theme
     mTheme = 0;
@@ -81,6 +82,7 @@ void Theme::initDefault()
     int sNr = 0;
     mColorThemes << ColorTheme();
     mThemeNames << "Light";
+    mThemeBases << 0;
 
     mColorThemes[sNr].clear();
     mColorThemes[sNr].insert(invalid,                        CUndefined);
@@ -142,6 +144,7 @@ void Theme::initDefault()
     // Add and switch to second color theme
     mColorThemes << mColorThemes.at(sNr++);
     mThemeNames << "Dark";
+    mThemeBases << 1;
 
     // Dark Colors
     QColor dark_highlight(243,150,25);      //QColor(243,150,25);
@@ -222,6 +225,7 @@ QString Theme::renameActiveTheme(const QString &name)
     mThemeNames.replace(mTheme, uniqueName);
     if (mTheme < mThemeNames.count()-1) {
         mThemeNames.move(mTheme, mThemeNames.count()-1);
+        mThemeBases.move(mTheme, mThemeNames.count()-1);
         mColorThemes.move(mTheme, mThemeNames.count()-1);
         mTheme = mThemeNames.count()-1;
     }
@@ -233,6 +237,7 @@ QString Theme::renameActiveTheme(const QString &name)
     int last = mThemeNames.count() - 1;
     if (i < last) {
         mThemeNames.move(last, i);
+        mThemeBases.move(last, i);
         mColorThemes.move(last, i);
         mTheme = i;
     }
@@ -248,6 +253,12 @@ int Theme::activeTheme() const
 QString Theme::activeThemeName()
 {
     return mThemeNames.at(mTheme);
+}
+
+int Theme::baseTheme(int theme) const
+{
+    if (theme < 0 || theme >= mThemeBases.size()) return -1;
+    return mThemeBases.at(theme);
 }
 
 QString Theme::name(Theme::ColorSlot slot)
@@ -351,7 +362,6 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode)
 
 QString Theme::findUniqueName(const QString &name)
 {
-    DEB() << "Names: " << mThemeNames.join(" ");
     if (!mThemeNames.contains(name)) return name;
     QString uniqueName = name;
     QString base = name;
@@ -391,6 +401,7 @@ int Theme::copyTheme(int index, const QString &destName)
     QString name = findUniqueName(destName);
     mColorThemes << mColorThemes.at(index);
     mThemeNames << name;
+    mThemeBases << mThemeBases.at(index);
 
     // restore sort order
     int i = mThemeNames.count() - 1;
@@ -399,6 +410,7 @@ int Theme::copyTheme(int index, const QString &destName)
     int last = mThemeNames.count() - 1;
     if (i < last) {
         mThemeNames.move(last, i);
+        mThemeBases.move(last, i);
         mColorThemes.move(last, i);
     }
 
@@ -412,7 +424,7 @@ int Theme::removeTheme(int index)
     QString name = mThemeNames.at(index);
     mColorThemes.removeAt(index);
     mThemeNames.removeAt(index);
-    DEB() << "removed " << name;
+    mThemeBases.removeAt(index);
     return mTheme;
 }
 
@@ -482,6 +494,7 @@ QVariantList Theme::writeUserThemes() const
         }
         QVariantMap resTheme;
         resTheme.insert("name", mThemeNames.at(i));
+        resTheme.insert("base", mThemeBases.at(i));
         resTheme.insert("theme", resData);
         res << resTheme;
     }
@@ -491,6 +504,7 @@ QVariantList Theme::writeUserThemes() const
 void Theme::readUserThemes(const QVariantList &sourceThemes)
 {
     // remove user defined themes
+    while (mThemeBases.size() > 2) mThemeBases.removeLast();
     while (mThemeNames.size() > 2) mThemeNames.removeLast();
     while (mColorThemes.size() > 2) mColorThemes.removeLast();
 
@@ -499,9 +513,10 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
         QVariantMap tSource = vSource.toMap();
         if (tSource.isEmpty() || !tSource.contains("name") || !tSource.contains("theme")) continue;
         QString name = tSource.value("name").toString();
+        int base = tSource.value("base").toInt();
 
         // clone first theme as base
-        int newInd = copyTheme(0, name);
+        int newInd = copyTheme(base, name);
         ColorTheme currentTheme = mColorThemes.at(newInd);
 
         QVariantMap sourceData = tSource.value("theme").toMap();

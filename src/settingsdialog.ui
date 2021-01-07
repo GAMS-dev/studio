@@ -685,7 +685,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="page_2">
+         <widget class="QWidget" name="pageEditor">
           <property name="geometry">
            <rect>
             <x>0</x>
@@ -695,7 +695,7 @@
            </rect>
           </property>
           <attribute name="label">
-           <string>pageEditor</string>
+           <string>Editor colors</string>
           </attribute>
          </widget>
         </widget>
