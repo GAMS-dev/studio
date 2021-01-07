@@ -702,11 +702,15 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                      QString iv = QString::number(ivalue);
                      value = getValueFromStr(text, itype, ioptsubtype, n, iv);
                      if (value.simplified().isEmpty() && iopttype == optTypeBoolean) {
-                         iv = (ivalue == 0) ? "no" : "yes";
-                         value = getValueFromStr(text, itype, ioptsubtype, n, iv);
-                         if (value.simplified().isEmpty()) {
-                             iv = (ivalue == 0) ? "false" : "true";
-                             value = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                         if (ioptsubtype == optsubNoValue)  {
+                             value = "";
+                         } else {
+                            iv = (ivalue == 0) ? "no" : "yes";
+                            value = getValueFromStr(text, itype, ioptsubtype, n, iv);
+                            if (value.simplified().isEmpty()) {
+                                iv = (ivalue == 0) ? "false" : "true";
+                                value = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                            }
                          }
                      }
                      valueRead = true;
@@ -718,8 +722,12 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                      break;
                 }
                 case optDataString: {  // 3
-                     QString sv = QString(svalue);
-                     value = getValueFromStr(text, itype, ioptsubtype, n, sv);
+                     if (ioptsubtype == optsubNoValue)  {
+                         value = "";
+                     } else {
+                         QString sv = QString(svalue);
+                         value = getValueFromStr(text, itype, ioptsubtype, n, sv);
+                     }
                      valueRead = true;
                      break;
                 }
@@ -747,8 +755,13 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                     item->key = key;
                     item->value = value;
                     item->text = (errorType != OptionErrorType::No_Error && commentCharIndex >= 0) ? text.mid(commentCharIndex+1).simplified() :  eolComment;
-                    item->error = ( errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option)
-                                   ? errorType : OptionErrorType::Value_Out_Of_Range;
+                    if (errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option) {
+                        item->error = errorType;
+                    } else if (errorType == OptionErrorType::UserDefined_Error && ioptsubtype == optsubNoValue) {
+                            item->error = OptionErrorType::Incorrect_Value_Type;
+                    } else {
+                        item->error = OptionErrorType::Value_Out_Of_Range;
+                    }
                     item->disabled = false;
 
                     mOption->setModified(QString::fromLatin1(name), true);
@@ -1030,10 +1043,13 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    item->value = definedValue;
                    item->text = eolComment;
                    item->error = errorType;
-                   if (errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option)
+                   if (errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option) {
                        item->error = errorType;
-                   else
+                   } else if (errorType == OptionErrorType::UserDefined_Error && ioptsubtype == optsubNoValue) {
+                           item->error = OptionErrorType::Incorrect_Value_Type;
+                   } else {
                        item->error = OptionErrorType::Value_Out_Of_Range;
+                   }
 
                    mOption->setModified(QString::fromLatin1(name), true);
                }
