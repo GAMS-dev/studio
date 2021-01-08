@@ -61,9 +61,9 @@ void Theme::initSlotTexts()
     mSlotText.insert(Syntax_keyword,            "Keyword");
     mSlotText.insert(Syntax_declaration,        "Declaration Keyword");
     mSlotText.insert(Syntax_identifier,         "Identifier");
-    mSlotText.insert(Syntax_description,        "Description");
+    mSlotText.insert(Syntax_description,        "Explanatory Text");
     mSlotText.insert(Syntax_identifierAssign,   "Identifier Declaration");
-    mSlotText.insert(Syntax_assignLabel,        "Declaration Label");
+    mSlotText.insert(Syntax_assignLabel,        "Element");
     mSlotText.insert(Syntax_assignValue,        "Declaration Value");
     mSlotText.insert(Syntax_tableHeader,        "Table header");
     mSlotText.insert(Syntax_embedded,           "Embedded code");

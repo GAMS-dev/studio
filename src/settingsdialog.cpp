@@ -499,20 +499,18 @@ void SettingsDialog::initColorPage()
     grid = qobject_cast<QGridLayout*>(box->layout());
     slot2 = {
         {Theme::Syntax_declaration},
-        {Theme::Syntax_directive},
-        {Theme::Syntax_directiveBody},
-        {Theme::Syntax_comment},
-        {Theme::Syntax_title},
-        {Theme::Syntax_description},
-        {Theme::Syntax_embedded},
-
-        {Theme::Syntax_assign},
-        {Theme::Syntax_keyword},
-        {Theme::Syntax_identifier},
         {Theme::Syntax_identifierAssign},
         {Theme::Syntax_assignLabel},
         {Theme::Syntax_assignValue},
         {Theme::Syntax_tableHeader},
+        {Theme::Syntax_description},
+
+        {Theme::Syntax_keyword},
+        {Theme::Syntax_identifier},
+        {Theme::Syntax_directive},
+        {Theme::Syntax_directiveBody},
+        {Theme::Syntax_comment},
+        {Theme::Syntax_embedded},
     };
     int cols = 2;
     int rows = ((slot2.count()-1) / cols) + 1;

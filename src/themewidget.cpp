@@ -123,6 +123,7 @@ void ThemeWidget::showColorSelector(QFrame *frame)
     if (mReadonly) return;
     if (!mColorDialog) {
         mColorDialog = new QColorDialog(mCarrier);
+        mColorDialog->setParent(mCarrier);
         mColorDialog->setModal(true);
         mColorDialog->installEventFilter(this);
     }

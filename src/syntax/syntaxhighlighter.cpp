@@ -101,7 +101,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), Theme::Syntax_identifierAssign);
 
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), Theme::Syntax_tableHeader);
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), Theme::Syntax_identifierAssign);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), Theme::Syntax_assignValue);
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
