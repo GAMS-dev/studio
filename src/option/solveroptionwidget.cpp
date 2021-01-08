@@ -1278,35 +1278,35 @@ void SolverOptionWidget::refreshOptionTableModel(bool hideAllComments)
 
 void SolverOptionWidget::addActions()
 {
-    QAction* insertOptionAction = mContextMenu.addAction(Scheme::icon(":/%1/insert"), "Insert new option", [this]() { insertOption(); });
+    QAction* insertOptionAction = mContextMenu.addAction(Theme::icon(":/%1/insert"), "Insert new option", [this]() { insertOption(); });
     insertOptionAction->setObjectName("actionInsert_option");
     insertOptionAction->setShortcut( QKeySequence("Ctrl+Return") );
     insertOptionAction->setShortcutVisibleInContextMenu(true);
     insertOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(insertOptionAction);
 
-    QAction* insertCommentAction = mContextMenu.addAction(Scheme::icon(":/%1/insert"), "Insert new comment", [this]() { insertComment(); });
+    QAction* insertCommentAction = mContextMenu.addAction(Theme::icon(":/%1/insert"), "Insert new comment", [this]() { insertComment(); });
     insertCommentAction->setObjectName("actionInsert_comment");
     insertCommentAction->setShortcut( QKeySequence("Ctrl+Shift+Return") );
     insertCommentAction->setShortcutVisibleInContextMenu(true);
     insertCommentAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(insertCommentAction);
 
-    QAction* deleteAction = mContextMenu.addAction(Scheme::icon(":/%1/delete-all"), "Delete selection", [this]() { deleteOption(); });
+    QAction* deleteAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete selection", [this]() { deleteOption(); });
     deleteAction->setObjectName("actionDelete_option");
     deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
     deleteAction->setShortcutVisibleInContextMenu(true);
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(deleteAction);
 
-    QAction* moveUpAction = mContextMenu.addAction(Scheme::icon(":/%1/move-up"), "Move up", [this]() { moveOptionUp(); });
+    QAction* moveUpAction = mContextMenu.addAction(Theme::icon(":/%1/move-up"), "Move up", [this]() { moveOptionUp(); });
     moveUpAction->setObjectName("actionMoveUp_option");
     moveUpAction->setShortcut( QKeySequence("Ctrl+Up") );
     moveUpAction->setShortcutVisibleInContextMenu(true);
     moveUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(moveUpAction);
 
-    QAction* moveDownAction = mContextMenu.addAction(Scheme::icon(":/%1/move-down"), "Move down", [this]() { moveOptionDown(); });
+    QAction* moveDownAction = mContextMenu.addAction(Theme::icon(":/%1/move-down"), "Move down", [this]() { moveOptionDown(); });
     moveDownAction->setObjectName("actionMoveDown_option");
     moveDownAction->setShortcut( QKeySequence("Ctrl+Down") );
     moveDownAction->setShortcutVisibleInContextMenu(true);
@@ -1327,7 +1327,7 @@ void SolverOptionWidget::addActions()
     anotehrSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(anotehrSelectAll);
 
-    QAction* addThisOptionAction = mContextMenu.addAction(Scheme::icon(":/%1/plus"), "Add this option", [this]() {
+    QAction* addThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/plus"), "Add this option", [this]() {
         QModelIndexList selection = ui->solverOptionTreeView->selectionModel()->selectedRows();
         if (selection.size()>0) {
             ui->solverOptionTableView->clearSelection();
@@ -1341,7 +1341,7 @@ void SolverOptionWidget::addActions()
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(addThisOptionAction);
 
-    QAction* deleteThisOptionAction = mContextMenu.addAction(Scheme::icon(":/%1/delete-all"), "Remove this option", [this]() {
+    QAction* deleteThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Remove this option", [this]() {
         findAndSelectionOptionFromDefinition();
         deleteOption();
     });

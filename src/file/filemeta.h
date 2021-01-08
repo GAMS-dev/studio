@@ -105,7 +105,7 @@ public:
 public slots:
     void reload();
     void updateView();
-    void invalidateScheme();
+    void invalidateTheme();
 
 signals:
     void changed(FileId fileId);

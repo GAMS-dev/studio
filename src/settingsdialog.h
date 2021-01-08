@@ -33,7 +33,7 @@ namespace studio {
 
 class MainWindow;
 class Settings;
-class SchemeWidget;
+class ThemeWidget;
 
 class SettingsDialog : public QDialog
 {
@@ -48,17 +48,19 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
     void editorLineWrappingChanged();
+    void themeChanged();
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &value);
     void on_sb_fontsize_valueChanged(int size);
-    void schemeModified();
+    void themeModified();
     void setModified();
     void appearanceIndexChanged(int index);
 
@@ -70,9 +72,10 @@ private slots:
     void on_cb_writeLog_toggled(bool checked);
     void on_sb_nrLogBackups_valueChanged(int value);
     void on_miroBrowseButton_clicked();
-
-
     void on_btn_resetHistory_clicked();
+    void on_btRename_clicked();
+    void on_btCopy_clicked();
+    void on_btRemove_clicked();
 
 private:
     Ui::SettingsDialog *ui;
@@ -80,13 +83,15 @@ private:
     MainWindow *mMain;
     bool isModified = false;
     bool mInitializing = true;
-    QList<SchemeWidget*> mColorWidgets;
+    QList<ThemeWidget*> mColorWidgets;
+    int mFixedThemeCount = 0;
+    bool mMiroSettingsEnabled = true;
 
     void saveSettings();
     void loadSettings();
     void setModifiedStatus(bool status);
     void initColorPage();
-    bool mMiroSettingsEnabled = true;
+    void setThemeEditable(bool editable);
 
 };
 

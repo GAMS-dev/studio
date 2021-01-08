@@ -347,16 +347,16 @@ void FileMeta::initEditorColors()
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(w))
             ed = lxi->textView()->edit();
         if (!ed) continue;
-        if (Scheme::color(Scheme::Edit_text) == Qt::transparent &&
-                Scheme::color(Scheme::Edit_background) == Qt::transparent) {
+        if (Theme::color(Theme::Edit_text) == Qt::transparent &&
+                Theme::color(Theme::Edit_background) == Qt::transparent) {
             ed->setAutoFillBackground(false);
             ed->setPalette(QPalette());
-        } else if (ed->palette().windowText().color() != Scheme::color(Scheme::Edit_text) ||
-                ed->palette().window().color() != Scheme::color(Scheme::Edit_background)) {
+        } else if (ed->palette().windowText().color() != Theme::color(Theme::Edit_text) ||
+                ed->palette().window().color() != Theme::color(Theme::Edit_background)) {
             ed->setAutoFillBackground(true);
             QPalette pal = ed->palette();
-            pal.setColor(QPalette::Text, Scheme::color(Scheme::Edit_text));
-            pal.setColor(QPalette::Base, Scheme::color(Scheme::Edit_background));
+            pal.setColor(QPalette::Text, Theme::color(Theme::Edit_text));
+            pal.setColor(QPalette::Base, Theme::color(Theme::Edit_background));
             ed->setPalette(pal);
         }
     }
@@ -373,7 +373,7 @@ void FileMeta::updateEditorColors()
     }
 }
 
-void FileMeta::invalidateScheme()
+void FileMeta::invalidateTheme()
 {
     updateEditorColors();
     updateSyntaxColors();

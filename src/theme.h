@@ -1,5 +1,5 @@
-#ifndef GAMS_STUDIO_SCHEME_H
-#define GAMS_STUDIO_SCHEME_H
+#ifndef GAMS_STUDIO_THEME_H
+#define GAMS_STUDIO_THEME_H
 
 #include <QObject>
 #include <QColor>
@@ -12,7 +12,7 @@ namespace studio {
 
 class SvgEngine;
 
-class Scheme : public QObject
+class Theme : public QObject
 {
     Q_OBJECT
 public:
@@ -73,15 +73,14 @@ public:
         Syntax_assignValue,
         Syntax_tableHeader,
         Syntax_embedded,
+
+        ColorSlotCount
     };
     Q_ENUM(ColorSlot)
 
     enum FontFlag {fNormal, fBold, fItalic, fBoldItalic};
 
     enum IconSet {ThinIcons, SolidIcons};
-
-    enum Scope {StudioScope, EditorScope};
-    Q_ENUM(Scope)
 
 private:
     struct Color {
@@ -91,63 +90,66 @@ private:
     };
 
 public:
-    ~Scheme();
-    static Scheme *instance();
+    ~Theme();
+    static Theme *instance();
     void initDefault();
-    int schemeCount() { return mSchemeNames.size(); }
-    QStringList schemes();
-    int setActiveScheme(QString schemeName, Scope scope = Scheme::EditorScope);
-    int setActiveScheme(int scheme, Scope scope = Scheme::EditorScope);
-    int activeScheme(Scope scope) const;
+    int themeCount() { return mThemeNames.size(); }
+    QStringList themes();
+    int setActiveTheme(QString themeName);
+    int setActiveTheme(int theme);
+    QString renameActiveTheme(const QString &name);
+    int activeTheme() const;
+    QString activeThemeName();
+    int baseTheme(int theme) const;
     ColorSlot slot(QString name);
     void invalidate();
     void unbind(SvgEngine *engine);
-    bool isValidScope(int scopeValue);
+    int copyTheme(int index, const QString &destName);
+    int removeTheme(int index);
 
-    QByteArray exportJsonColorSchemes();
-    void importJsonColorSchemes(const QByteArray &jsonData);
+    QVariantList writeUserThemes() const;
+    void readUserThemes(const QVariantList &sourceThemes);
 
-    static QList<Scope> scopes();
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
     static bool hasFontProps(ColorSlot slot);
-    static QColor color(ColorSlot slot, Scheme::Scope scope = Scheme::EditorScope);
-    static void setColor(ColorSlot slot, gams::studio::Scheme::Scope scope, QColor color);
-    static QIcon icon(QString name, Scope scope, bool forceSquare = false, QString disabledName = QString());
+    static QColor color(ColorSlot slot);
+    static void setColor(ColorSlot slot, QColor color);
     static QIcon icon(QString name, bool forceSquare = false, QString disabledName = QString());
-    static QByteArray &data(QString name, Scope scope, QIcon::Mode mode);
-    static bool hasFlag(ColorSlot slot, FontFlag flag, Scheme::Scope scope = Scheme::EditorScope);
-    static void setFlags(ColorSlot slot, FontFlag flag, Scheme::Scope scope = Scheme::EditorScope);
-
+    static QByteArray &data(QString name, QIcon::Mode mode);
+    static bool hasFlag(ColorSlot slot, FontFlag flag);
+    static void setFlags(ColorSlot slot, FontFlag flag);
 
 signals:
     void changed();
 
 private:
-    explicit Scheme(QObject *parent = nullptr);
+    explicit Theme(QObject *parent = nullptr);
     void initSlotTexts();
-    QList<QHash<QString, QStringList>> iconCodes() const;
-    QByteArray colorizedContent(QString name, Scope scope, QIcon::Mode mode = QIcon::Normal);
+    QHash<QString, QStringList> iconCodes() const;
+    QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
+    QString findUniqueName(const QString &name);
 
 private:
-    static Scheme *mInstance;
-    typedef QHash<ColorSlot, Color> ColorScheme;
-    QList<ColorScheme> mColorSchemes;
+    static Theme *mInstance;
+    typedef QHash<ColorSlot, Color> ColorTheme;
+    QList<ColorTheme> mColorThemes;
     QHash<ColorSlot, QString> mSlotText;
-    QStringList mSchemeNames;
+    QStringList mThemeNames;
+    QList<int> mThemeBases;
     QString mIconSet;
-    QHash<Scope, int> mScopeScheme;
-    QList<QHash<QString, QStringList>> mIconCodes;
+    int mTheme;
+    QHash<QString, QStringList> mIconCodes;
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
     QVector<SvgEngine*> mEngines;
 };
 
-inline QColor toColor(Scheme::ColorSlot code, Scheme::Scope scope = Scheme::EditorScope) {
-    return Scheme::color(code, scope); }
-inline QString name(Scheme::ColorSlot col) { return Scheme::instance()->name(col); }
+inline QColor toColor(Theme::ColorSlot code) {
+    return Theme::color(code); }
+inline QString name(Theme::ColorSlot col) { return Theme::instance()->name(col); }
 
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_SCHEME_H
+#endif // GAMS_STUDIO_THEME_H

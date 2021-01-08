@@ -12,6 +12,7 @@ Version 1.5.0
 - fixed end of line comments breaking include file links
 - fixed solver option editor when toggling option of boolean no value type
 - fixed misplaced cursor start on mouse selection in read-only files
+- **new feature** color themes can be edited in the settings dialog
 
 Version 1.4.6
 ==================

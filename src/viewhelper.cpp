@@ -124,10 +124,10 @@ void ViewHelper::changeAppearance(int appearance)
 #endif
 
 #ifndef __APPLE__
-    PaletteManager::instance()->setPalette(pickedTheme);
+    int base = Theme::instance()->baseTheme(pickedTheme);
+    PaletteManager::instance()->setPalette(base);
 #endif
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::EditorScope);
-    Scheme::instance()->setActiveScheme(pickedTheme, Scheme::StudioScope);
+    Theme::instance()->setActiveTheme(pickedTheme);
 }
 
 } // namespace studio

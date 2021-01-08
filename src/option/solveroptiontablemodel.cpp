@@ -23,7 +23,7 @@
 
 #include "solveroptiontablemodel.h"
 #include "settings.h"
-#include "scheme.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -97,19 +97,19 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
             if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(Scheme::icon(":/img/square-red-yellow"));
+               return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
             else
-                return QVariant::fromValue(Scheme::icon(":/img/square-red"));
+                return QVariant::fromValue(Theme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
                   if (mOptionItem.at(index)->recurrent)
-                      return QVariant::fromValue(Scheme::icon(":/img/square-gray-yellow"));
+                      return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
                   else
-                     return QVariant::fromValue(Scheme::icon(":/img/square-gray"));
+                     return QVariant::fromValue(Theme::icon(":/img/square-gray"));
         } else {
             if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(Scheme::icon(":/img/square-green-yellow"));
+               return QVariant::fromValue(Theme::icon(":/img/square-green-yellow"));
            else
-               return QVariant::fromValue(Scheme::icon(":/img/square-green"));
+               return QVariant::fromValue(Theme::icon(":/img/square-green"));
         }
     }
 
@@ -201,28 +201,28 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ForegroundRole: {
         if (mOptionItem.at(row)->disabled) {
-            return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
+            return QVariant::fromValue(Theme::color(Theme::Disable_Gray));
         } else {
             switch(mOptionItem.at(row)->error) {
             case OptionErrorType::UserDefined_Error:
             case OptionErrorType::Invalid_Key:
             case OptionErrorType::Incorrect_Value_Type:
             case OptionErrorType::Value_Out_Of_Range:
-                 return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             case OptionErrorType::Deprecated_Option:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
-                    return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
-                else return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
+                    return QVariant::fromValue(Theme::color(Theme::Normal_Yellow));
+                else return QVariant::fromValue(Theme::color(Theme::Disable_Gray));
             case OptionErrorType::No_Error:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
-                    return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
+                    return QVariant::fromValue(Theme::color(Theme::Normal_Yellow));
                 else if (mOption->isEOLCharDefined() && col==COLUMN_EOL_COMMENT)
-                    return QVariant::fromValue(Scheme::color(Scheme::Disable_Gray));
+                    return QVariant::fromValue(Theme::color(Theme::Disable_Gray));
                 else
                     return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             default:
                 if (mOptionItem.at(row)->recurrent && index.column()==COLUMN_OPTION_KEY)
-                    return QVariant::fromValue(Scheme::color(Scheme::Normal_Yellow));
+                    return QVariant::fromValue(Theme::color(Theme::Normal_Yellow));
                 else
                     return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             }

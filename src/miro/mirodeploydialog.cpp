@@ -21,7 +21,7 @@
 #include "ui_mirodeploydialog.h"
 #include "mirocommon.h"
 #include "filesystemmodel.h"
-#include "scheme.h"
+#include "theme.h"
 
 #include <QMessageBox>
 
@@ -88,13 +88,13 @@ void MiroDeployDialog::setAssemblyFileName(const QString &file) {
     if (fi.exists()) {
         auto palette = ui->assemblyFileLabel->palette();
         palette.setColor(ui->assemblyFileLabel->foregroundRole(),
-                         Scheme::color(Scheme::Normal_Green));
+                         Theme::color(Theme::Normal_Green));
         ui->assemblyFileLabel->setPalette(palette);
         ui->assemblyFileLabel->setText("File " + fi.fileName() + " found.");
     } else {
         auto palette = ui->assemblyFileLabel->palette();
         palette.setColor(ui->assemblyFileLabel->foregroundRole(),
-                         Scheme::color(Scheme::Normal_Red));
+                         Theme::color(Theme::Normal_Red));
         ui->assemblyFileLabel->setPalette(palette);
         ui->assemblyFileLabel->setText("No file " + fi.fileName() + " found!");
     }
@@ -197,7 +197,7 @@ bool MiroDeployDialog::checkMiroPaths()
 
     auto palette = ui->errorLabel->palette();
     palette.setColor(ui->errorLabel->foregroundRole(),
-                     Scheme::color(Scheme::Normal_Red));
+                     Theme::color(Theme::Normal_Red));
     ui->errorLabel->setPalette(palette);
     ui->errorLabel->setText("It looks like " +
                             missing.join(" ") +

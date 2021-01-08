@@ -39,10 +39,10 @@ ProjectRepo::ProjectRepo(QObject* parent)
 {
     addToIndex(mTreeModel->rootNode());
     mRunAnimateTimer.setInterval(150);
-    mRunIcons << Scheme::icon(":/img/folder-run1", true);
-    mRunIcons << Scheme::icon(":/img/folder-run2", true);
-    mRunIcons << Scheme::icon(":/img/folder-run3", true);
-    mRunIcons << Scheme::icon(":/img/folder-run4", true);
+    mRunIcons << Theme::icon(":/img/folder-run1", true);
+    mRunIcons << Theme::icon(":/img/folder-run2", true);
+    mRunIcons << Theme::icon(":/img/folder-run3", true);
+    mRunIcons << Theme::icon(":/img/folder-run4", true);
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 

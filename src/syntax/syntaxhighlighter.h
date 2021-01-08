@@ -25,7 +25,7 @@
 #include "syntaxformats.h"
 #include "blockcode.h"
 #include "logger.h"
-#include "scheme.h"
+#include "theme.h"
 #include "blockdata.h"
 
 namespace gams {
@@ -67,8 +67,8 @@ private:
     typedef QHash<SyntaxKind, SyntaxAbstract*> Kinds;
     typedef QList<CodeRelation> CodeRelations;
 
-    void initKind(int debug, SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
-    void initKind(SyntaxAbstract* syntax, Scheme::ColorSlot slot = Scheme::Syntax_neutral);
+    void initKind(int debug, SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
+    void initKind(SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
 
     int addCode(BlockCode code, CodeRelationIndex parentIndex);
     CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, int nest = 0);

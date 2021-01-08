@@ -23,6 +23,7 @@
 #include <QDir>
 #include <QSettings>
 #include <QFile>
+#include <QDir>
 #include <QSize>
 #include <QPoint>
 #include <QFontDatabase>
@@ -35,7 +36,7 @@
 #include "colors/palettemanager.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-#include "scheme.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -45,6 +46,8 @@ const QHash<Settings::Scope, int> Settings::mVersion = {{Settings::scSysX, 1},
                                                         {Settings::scUserX ,2}};
 Settings *Settings::mInstance = nullptr;
 bool Settings::mUseRelocatedTestDir = false;
+const QString CThemePrefix("usertheme_");
+const QString CThemeSufix("json");
 
 // ====== Some helper functions ======
 
@@ -92,6 +95,7 @@ QString findFixedFont()
 Settings::ScopePair scopePair(Settings::Scope scope)
 {
     int iScope = scope;
+    if (iScope >= Settings::scTheme) return Settings::ScopePair(scope, scope);
     if (iScope % 2) return Settings::ScopePair(static_cast<Settings::Scope>(scope-1), scope);
     return Settings::ScopePair(scope, static_cast<Settings::Scope>(scope+1));
 }
@@ -159,9 +163,10 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     // initialize storage
     mData.insert(scSys, Data());
     mData.insert(scUserX, Data());
+    mData.insert(scTheme, Data());
 
     // initialize json format and make it the default
-    QSettings::Format jsonFormat = QSettings::registerFormat("json", readJsonFile, writeJsonFile);
+    QSettings::Format jsonFormat = QSettings::registerFormat(CThemeSufix, readJsonFile, writeJsonFile);
     QSettings::setDefaultFormat(jsonFormat);
     if (mUseRelocatedTestDir)
         QSettings::setPath(jsonFormat, QSettings::UserScope, ".");
@@ -179,6 +184,9 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             settings = newQSettings("usersettings");
             mSettings.insert(scUser, settings);
             loadFile(scUser);
+
+            // each theme has one file
+            loadFile(scTheme);
 
             QDir location(settingsPath());
             for (const QString &fileName: location.entryList({"*.lock"})) {
@@ -345,6 +353,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);
     safelyAdd(res, skEngineForceGdx, scSys, {"engine","forceGdx"}, true);
 
+    // syntax color settings
+    safelyAdd(res, skUserThemes, scTheme, {"theme"}, QJsonArray());
+
     // Check if all enum values of SettingsKey have been assigned
     for (int i = 0 ; i < skSettingsKeyCount ; ++i) {
         if (!res.contains(static_cast<SettingsKey>(i))) {
@@ -382,6 +393,7 @@ void Settings::reload()
 {
     loadFile(scSys);
     loadFile(scUser);
+    loadFile(scTheme);
 }
 
 QList<SettingsKey> Settings::viewKeys()
@@ -407,6 +419,8 @@ void Settings::save()
     for (const Scope &scope : mSettings.keys()) {
         saveFile(scope);
     }
+    // Themes are stored dynamically in multiple files
+    saveFile(Scope::scTheme);
 }
 
 QSize Settings::toSize(SettingsKey key) const
@@ -595,6 +609,12 @@ QString Settings::settingsPath()
 void Settings::saveFile(Scope scope)
 {
     if (!canWrite()) return;
+
+    if (scope >= scTheme) {
+        saveThemes();
+        return;
+    }
+
     ScopePair scopes = scopePair(scope);
 
     if (!mSettings.contains(scopes.base)) {
@@ -609,6 +629,7 @@ void Settings::saveFile(Scope scope)
     for (Data::const_iterator it = src.constBegin() ; it != src.constEnd() ; ++it) {
         baseDat.insert(it.key(), it.value());
     }
+
     addVersionInfo(scope, baseDat);
     settings->setValue("base", baseDat);
 
@@ -653,6 +674,75 @@ QVariant Settings::read(SettingsKey key)
         return jo[dat.keys[1]].toVariant();
     }
     return QVariant();
+}
+
+void Settings::saveThemes()
+{
+    const QVariantList themes = toList(skUserThemes);
+
+    // remove previous theme files
+    QDir dir(settingsPath());
+    for (const QFileInfo &fileInfo : dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
+        QString fName = fileInfo.fileName();
+        if (!fName.startsWith(CThemePrefix, Qt::CaseInsensitive) || !fName.endsWith(CThemeSufix, Qt::CaseInsensitive)) {
+            continue;
+        }
+        dir.remove(fileInfo.fileName());
+    }
+
+    // create current theme files
+    for (int i = 0 ; i < themes.count() ; ++i) {
+        const QVariant &vTheme = themes.at(i);
+        QVariantMap theme = vTheme.toMap();
+        QString name = theme.value("name").toString();
+        QString fName = CThemePrefix + name.toLower();
+        QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, fName);
+        themeSettings.setValue("name", name);
+        themeSettings.setValue("base", theme.value("base"));
+        themeSettings.setValue("theme", theme.value("theme"));
+        themeSettings.sync();
+    }
+}
+
+void Settings::loadThemes()
+{
+    QVariantList themes;
+    QStringList themeNames;
+
+    QDir dir(settingsPath());
+    for (const QFileInfo &fileInfo : dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
+        QString fName = fileInfo.fileName();
+        if (!fName.startsWith(CThemePrefix, Qt::CaseInsensitive) || !fName.endsWith(CThemeSufix, Qt::CaseInsensitive)) {
+            continue;
+        }
+        QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, fileInfo.completeBaseName());
+        QString name = themeSettings.value("name").toString();
+        bool ok;
+        int base = themeSettings.value("base").toInt(&ok);
+        if (!ok) base = 0;
+        QVariantMap data = themeSettings.value("theme").toMap();
+        if (data.isEmpty()) {
+            SysLogLocator::systemLog()->append("Skipping empty theme '" + name + "' from " + fName);
+            continue;
+        }
+        if (fName.compare(CThemePrefix+name+'.'+CThemeSufix, Qt::CaseInsensitive) != 0) {
+            SysLogLocator::systemLog()->append("Skipping theme name doesn't match filename in " + fName);
+            continue;
+        }
+        int ind = themeNames.indexOf(name.toLower());
+        if (ind >= 0) {
+            SysLogLocator::systemLog()->append("Skipping theme duplicate from " + fName);
+            continue;
+        }
+
+        QVariantMap theme;
+        theme.insert("name", name);
+        theme.insert("base", base);
+        theme.insert("theme", data);
+        themes << theme;
+        themeNames << name.toLower();
+    }
+    setList(skUserThemes, themes);
 }
 
 int Settings::usableVersion(ScopePair scopes)
@@ -718,6 +808,22 @@ void Settings::loadVersionData(ScopePair scopes)
                 break;
             }
 
+        } else if (scopes.base == scTheme) {
+
+            // --------- version handling for scSyntax ---------
+            switch (foundVersion) {
+            case 1: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+
+                break;
+            }
+            case 2: { // On increasing version from 1 to 2 -> implement mData conversion HERE
+
+                break;
+            }
+            default:
+                break;
+            }
+
         } else {
             DEB() << "Warning: Missing version handling for scope " << scopes.base;
         }
@@ -728,6 +834,11 @@ void Settings::loadVersionData(ScopePair scopes)
 void Settings::loadFile(Scope scope)
 {
     if (!mCanRead) return;
+
+    if (scope == scTheme) {
+        loadThemes();
+        return;
+    }
 
     ScopePair scopes = scopePair(scope);
     // load settings content into mData
@@ -742,7 +853,7 @@ void Settings::loadFile(Scope scope)
         loadVersionData(scopes);
     }
 
-//    Scheme::instance()->initDefault();
+//    Theme::instance()->initDefault();
 
 
     // the location for user model libraries is not modifyable right now
@@ -768,6 +879,27 @@ void Settings::exportSettings(const QString &path)
         QFile::remove(path);
     if (!originFile.copy(path)) {
         SysLogLocator::systemLog()->append("Error exporting settings to " + path, LogMsgType::Error);
+    }
+}
+
+void Settings::importTheme(const QString &path)
+{
+    if (!mSettings.value(scTheme)) return;
+    QFile backupFile(path);
+    QFile syntaxFile(mSettings.value(scTheme)->fileName());
+    syntaxFile.remove(); // remove old file
+    backupFile.copy(syntaxFile.fileName()); // import new file
+    reload();
+}
+
+void Settings::exportTheme(const QString &path)
+{
+    if (!mSettings.value(scTheme)) return;
+    QFile originFile(mSettings.value(scTheme)->fileName());
+    if (QFile::exists(path))
+        QFile::remove(path);
+    if (!originFile.copy(path)) {
+        SysLogLocator::systemLog()->append("Error exporting syntax theme to " + path, LogMsgType::Error);
     }
 }
 
