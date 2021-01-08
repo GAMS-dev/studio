@@ -450,8 +450,7 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
         // reload theme when switching OS theme
-        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Theme::StudioScope);
-        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Theme::EditorScope);
+        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
 #endif
     }
     return QMainWindow::event(event);
