@@ -698,6 +698,7 @@ void Settings::saveThemes()
         QString fName = CThemePrefix + name.toLower();
         QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, fName);
         themeSettings.setValue("name", name);
+        themeSettings.setValue("base", theme.value("base"));
         themeSettings.setValue("theme", theme.value("theme"));
         themeSettings.sync();
     }
@@ -716,6 +717,9 @@ void Settings::loadThemes()
         }
         QSettings themeSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, fileInfo.completeBaseName());
         QString name = themeSettings.value("name").toString();
+        bool ok;
+        int base = themeSettings.value("base").toInt(&ok);
+        if (!ok) base = 0;
         QVariantMap data = themeSettings.value("theme").toMap();
         if (data.isEmpty()) {
             SysLogLocator::systemLog()->append("Skipping empty theme '" + name + "' from " + fName);
@@ -733,6 +737,7 @@ void Settings::loadThemes()
 
         QVariantMap theme;
         theme.insert("name", name);
+        theme.insert("base", base);
         theme.insert("theme", data);
         themes << theme;
         themeNames << name.toLower();

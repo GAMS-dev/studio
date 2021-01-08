@@ -549,7 +549,6 @@ void SettingsDialog::setThemeEditable(bool editable)
     for (ThemeWidget *wid : mColorWidgets) {
         wid->setReadonly(!editable);
     }
-    DEB()  << "set editable " << editable;
     ui->btRename->setEnabled(editable);
     ui->btRemove->setEnabled(editable);
 }
