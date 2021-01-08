@@ -501,7 +501,7 @@ void SettingsDialog::initColorPage()
 //    }
 
     // SYNTAX colors
-    box = ui->syntax;
+    box = ui->syntaxColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
     slot2 = {
         {Theme::Syntax_declaration},

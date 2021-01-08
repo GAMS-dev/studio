@@ -649,7 +649,7 @@
           <attribute name="label">
            <string>Syntax colors</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout">
+          <layout class="QVBoxLayout" name="verticalLayoutSc">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -663,7 +663,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QWidget" name="syntax" native="true">
+            <widget class="QWidget" name="syntaxColors" native="true">
              <layout class="QGridLayout" name="gridLayout_15">
               <property name="leftMargin">
                <number>0</number>
@@ -697,6 +697,51 @@
           <attribute name="label">
            <string>Editor colors</string>
           </attribute>
+          <layout class="QVBoxLayout" name="verticalLayoutEc">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QWidget" name="editorColors" native="true">
+             <layout class="QGridLayout" name="gridLayout_16">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Coming soon...</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </widget>
        </item>
