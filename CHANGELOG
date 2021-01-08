@@ -1,17 +1,17 @@
-Version 1.5.0 *
+Version 1.5.0
 ==================
-- don't generate link to LXI file of NEOS results
-- enable jumping to a specific position in a text-file for log-references
-- added GDX filter to open file dialog
-- enhanced MIRO deploy dialog usability and conf/data folder creation for deploy/test deploy
-- Studio now uses Qt 5.15.2 (LTS) on all platforms
-- the setting "autosave on run" now saves ALL modified files, not just the files of the current group
-- changed comment color to tell it apart from assignments
-- added user fold markers $onFold and $offFold
-- fixed file-watcher sometimes untracks a file changed externally
-- ignore eol-comment on $include DCO
+- Studio now uses Qt 5.15 (LTS) on all platforms
+- added $onFold and $offFold commands to create user definded fold markers
+- added .gdx file filter to Open File dialog
+- improved MIRO deploy dialog
+- deactivated generation of links to LXI files for NEOS results
+- changed "Autosave on Run" setting to save ALL modified files, not just files of the current group
+- changed light theme comment color to grey for better distinction from assignments
+- fixed links to text files not jumping to a specific line
+- fixed Studio sometimes not detecting all externally changed files correctly
+- fixed end of line comments breaking include file links
 - fixed solver option editor when toggling option of boolean no value type
-- fixed misplaced cursor start on mouse selection
+- fixed misplaced cursor start on mouse selection in read-only files
 - **new feature** color themes can be edited in the settings dialog
 
 Version 1.4.6
