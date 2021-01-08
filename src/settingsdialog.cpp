@@ -55,8 +55,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->cbThemes->insertItem(0, "Follow Operating System");
     ++mFixedThemeCount;
 #elif __APPLE__
-    ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
-    ui->cbThemes->setVisible(false);
+//    ui->cbThemes->setVisible(false);
 #endif
 
     mSettings = Settings::settings();
