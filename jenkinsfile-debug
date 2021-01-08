@@ -15,8 +15,6 @@ def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
 def GAMS_FOR_WINDOWS = "C:\\GAMS\\34"
 
-def GAMS_FOR_WINDOWS = "C:\\GAMS\\33"
-
 pipeline {
     agent none
 
