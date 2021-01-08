@@ -526,7 +526,7 @@ void SettingsDialog::initColorPage()
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
         mColorWidgets << wid;
     }
-    for (int col = 0; col < 3; ++col)
+    for (int col = 0; col < cols; ++col)
         grid->setColumnStretch(col, 1);
 
     // ICON colors

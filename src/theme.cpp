@@ -474,7 +474,6 @@ bool Theme::hasFlag(Theme::ColorSlot slot, Theme::FontFlag flag)
 
 void Theme::setFlags(Theme::ColorSlot slot, Theme::FontFlag flag)
 {
-    if (slot == Syntax_directive) DEB() << "set directive FLAGS to " << flag;
     int theme = instance()->mTheme;
     Color dat = instance()->mColorThemes.at(theme).value(slot);
     dat.fontFlag = flag;
