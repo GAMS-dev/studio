@@ -59,12 +59,12 @@ void Theme::initSlotTexts()
     mSlotText.insert(Syntax_directiveBody,      "Dollar-Control body");
     mSlotText.insert(Syntax_title,              "Title");
     mSlotText.insert(Syntax_keyword,            "Keyword");
-    mSlotText.insert(Syntax_declaration,        "Declaration");
+    mSlotText.insert(Syntax_declaration,        "Declaration Keyword");
     mSlotText.insert(Syntax_identifier,         "Identifier");
     mSlotText.insert(Syntax_description,        "Description");
-    mSlotText.insert(Syntax_identifierAssign,   "Identifier assignment");
-    mSlotText.insert(Syntax_assignLabel,        "Assignment label");
-    mSlotText.insert(Syntax_assignValue,        "Assignment value");
+    mSlotText.insert(Syntax_identifierAssign,   "Identifier Declaration");
+    mSlotText.insert(Syntax_assignLabel,        "Declaration Label");
+    mSlotText.insert(Syntax_assignValue,        "Declaration Value");
     mSlotText.insert(Syntax_tableHeader,        "Table header");
     mSlotText.insert(Syntax_embedded,           "Embedded code");
 }

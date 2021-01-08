@@ -521,6 +521,7 @@ void SettingsDialog::initColorPage()
         int row = i % rows;
         int col = i / rows;
         wid = new ThemeWidget(slot2.at(i).at(0), box);
+        wid->setCarrierDialog(this);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);

@@ -72,6 +72,11 @@ ThemeWidget::~ThemeWidget()
     delete ui;
 }
 
+void ThemeWidget::setCarrierDialog(QWidget *carrierDialog)
+{
+    mCarrier = carrierDialog;
+}
+
 void ThemeWidget::initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slot, QFrame *frame)
 {
     slotVar = slot;
@@ -117,7 +122,7 @@ void ThemeWidget::showColorSelector(QFrame *frame)
 {
     if (mReadonly) return;
     if (!mColorDialog) {
-        mColorDialog = new QColorDialog(this->nativeParentWidget());
+        mColorDialog = new QColorDialog(mCarrier);
         mColorDialog->setModal(true);
         mColorDialog->installEventFilter(this);
     }

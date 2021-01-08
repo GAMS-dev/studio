@@ -25,6 +25,7 @@ public:
     explicit ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg,
                           Theme::ColorSlot slotBg2, QWidget *parent = nullptr);
     ~ThemeWidget() override;
+    void setCarrierDialog(QWidget *carrierDialog);
     void setTextVisible(bool visible);
     void setFormatVisible(bool visible);
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -50,6 +51,7 @@ private:
     QColorDialog *mColorDialog = nullptr;
     QFrame *mSelectedFrame;
     bool mReadonly = false;
+    QWidget *mCarrier = nullptr;
 
     void initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slotVal, QFrame *frame);
     void setColor(QFrame *frame, const QColor &color, int examplePart = 0);
