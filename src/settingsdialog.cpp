@@ -277,11 +277,11 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 
 void SettingsDialog::appearanceIndexChanged(int index)
 {
-#ifndef __APPLE__
     ViewHelper::changeAppearance(index);
-#else
-    Q_UNUSED(index)
-#endif
+//#ifndef __APPLE__
+//#else
+//    Q_UNUSED(index)
+//#endif
     setThemeEditable(index >= mFixedThemeCount);
 }
 
@@ -340,8 +340,9 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
             int i = ui->cbThemes->currentIndex();
             ui->cbThemes->removeItem(i);
             i = Theme::instance()->themes().indexOf(name);
-            ui->cbThemes->insertItem(i+1, name);
-            ui->cbThemes->setCurrentIndex(i+1);
+            int shift = mFixedThemeCount-2;
+            ui->cbThemes->insertItem(i+shift, name);
+            ui->cbThemes->setCurrentIndex(i+shift);
             return true;
         }
     }
@@ -569,8 +570,9 @@ void SettingsDialog::on_btCopy_clicked()
 {
     Theme *theme = Theme::instance();
     int i = theme->copyTheme(theme->activeTheme(), theme->activeThemeName());
-    ui->cbThemes->insertItem(i+1, Theme::instance()->themes().at(i));
-    ui->cbThemes->setCurrentIndex(i+1);
+    int shift = mFixedThemeCount-2;
+    ui->cbThemes->insertItem(i+shift, Theme::instance()->themes().at(i));
+    ui->cbThemes->setCurrentIndex(i+shift);
     for (ThemeWidget *wid : mColorWidgets) {
         wid->refresh();
     }
@@ -580,8 +582,9 @@ void SettingsDialog::on_btRemove_clicked()
 {
     int old = Theme::instance()->activeTheme();
     int i = Theme::instance()->removeTheme(old);
-    ui->cbThemes->removeItem(old+1);
-    ui->cbThemes->setCurrentIndex(i+1);
+    int shift = mFixedThemeCount-2;
+    ui->cbThemes->removeItem(old+shift);
+    ui->cbThemes->setCurrentIndex(i+shift);
     for (ThemeWidget *wid : mColorWidgets) {
         wid->refresh();
     }
