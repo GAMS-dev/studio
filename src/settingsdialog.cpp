@@ -50,8 +50,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     for (int i = 0; i < Theme::instance()->themeCount(); ++i) {
         ui->cbThemes->insertItem(i, Theme::instance()->themes().at(i));
     }
+    mFixedThemeCount = 2;
 #ifdef _WIN32
     ui->cbThemes->insertItem(0, "Follow Operating System");
+    ++mFixedThemeCount;
 #elif __APPLE__
     ui->label_4->setVisible(false); // theme chooser is deactived on macos, as the way of setting the light palette doesnt work there
     ui->cbThemes->setVisible(false);
@@ -137,11 +139,9 @@ void SettingsDialog::loadSettings()
     }
 
     // color page
-    ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
-    for (ThemeWidget *wid : mColorWidgets) {
-        wid->setReadonly(mSettings->toInt(skEdAppearance) < 3);
-    }
+    ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
+    setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
 
     // misc page
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
@@ -283,13 +283,7 @@ void SettingsDialog::appearanceIndexChanged(int index)
 #else
     Q_UNUSED(index)
 #endif
-    for (ThemeWidget *wid : mColorWidgets) {
-        bool readonly = index < 3;
-        wid->setReadonly(readonly);
-        ui->btRename->setEnabled(!readonly);
-        ui->btRemove->setEnabled(!readonly);
-    }
-
+    setThemeEditable(index >= mFixedThemeCount);
 }
 
 void SettingsDialog::themeModified()
@@ -547,7 +541,17 @@ void SettingsDialog::initColorPage()
 //        grid->addWidget(wid, (i/4)+1, (i%4)+1);
 //        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
 //        mColorWidgets.insert(slot1.at(i), wid);
-//    }
+    //    }
+}
+
+void SettingsDialog::setThemeEditable(bool editable)
+{
+    for (ThemeWidget *wid : mColorWidgets) {
+        wid->setReadonly(!editable);
+    }
+    DEB()  << "set editable " << editable;
+    ui->btRename->setEnabled(editable);
+    ui->btRemove->setEnabled(editable);
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()

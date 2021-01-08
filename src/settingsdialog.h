@@ -84,12 +84,14 @@ private:
     bool isModified = false;
     bool mInitializing = true;
     QList<ThemeWidget*> mColorWidgets;
+    int mFixedThemeCount = 0;
+    bool mMiroSettingsEnabled = true;
 
     void saveSettings();
     void loadSettings();
     void setModifiedStatus(bool status);
     void initColorPage();
-    bool mMiroSettingsEnabled = true;
+    void setThemeEditable(bool editable);
 
 };
 
