@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -503,50 +503,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabMiro">
-      <attribute name="title">
-       <string>MIRO</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_miro">
-       <item>
-        <widget class="QLabel" name="label_mirolocation">
-         <property name="text">
-          <string>MIRO installation location</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_miro">
-         <item>
-          <widget class="QLineEdit" name="miroEdit"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="miroBrowseButton">
-           <property name="text">
-            <string>Browse</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_miro">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Expanding</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>1</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="tabColors">
       <attribute name="title">
        <string>Colors</string>
@@ -723,6 +679,50 @@
           </layout>
          </widget>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabMiro">
+      <attribute name="title">
+       <string>MIRO</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_miro">
+       <item>
+        <widget class="QLabel" name="label_mirolocation">
+         <property name="text">
+          <string>MIRO installation location</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_miro">
+         <item>
+          <widget class="QLineEdit" name="miroEdit"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="miroBrowseButton">
+           <property name="text">
+            <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_miro">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>1</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
