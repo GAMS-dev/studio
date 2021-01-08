@@ -252,7 +252,7 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
 
 const QString validParentheses("{[(}])/");
 const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
-const QString flavorChars("TtCcPpIiOoFf");
+const QString flavorChars("TtCcPpIiOoFfUu");
 
 void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind,
                                         QVector<ParenthesesPos> &parentheses, NestingImpact &nestingImpact)

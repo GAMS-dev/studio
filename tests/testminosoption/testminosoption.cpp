@@ -58,24 +58,32 @@ void TestMINOSOption::testOptionStringType_data()
 {
     QTest::addColumn<QString>("optionName");
     QTest::addColumn<bool>("valid");
+    QTest::addColumn<bool>("novalue");
     QTest::addColumn<QString>("defvalue");
     QTest::addColumn<QString>("description");
 
-    QTest::newRow("scale print nv")                << "scale print"                << true << "" << "Print scaling factors";
-    QTest::newRow("LU partial pivoting nv")        << "LU partial pivoting"        << true << "" << "LUSOL pivoting strategy";
-    QTest::newRow("scale no nv")                   << "scale no"                   << true << "" << "Synonym to scale option 0";
-    QTest::newRow("Verify_objective_gradients nv") << "Verify objective gradients" << true << "" << "Synonym to verify level 1";
+    QTest::newRow("scale print nv")                << "scale print"                << true << true << "" << "Print scaling factors";
+    QTest::newRow("LU partial pivoting nv")        << "LU partial pivoting"        << true << true << "" << "LUSOL pivoting strategy";
+    QTest::newRow("scale no nv")                   << "scale no"                   << true << true << "" << "Synonym to scale option 0";
+    QTest::newRow("Verify_objective_gradients nv") << "Verify objective gradients" << true << true << "" << "Synonym to verify level 1";
+    QTest::newRow("verify no nv")                  << "verify no"                  << true << true << "" << "Synonym to verify level 0";
+    QTest::newRow("verify yes nv")                 << "verify yes"                 << true << true << "" << "Synonym to verify level 3";
 }
 
 void TestMINOSOption::testOptionStringType()
 {
     QFETCH(QString, optionName);
     QFETCH(bool, valid);
+    QFETCH(bool, novalue);
     QFETCH(QString, defvalue);
     QFETCH(QString, description);
 
     QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
     QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeString);
+    if (novalue)
+        QVERIFY( optionTokenizer->getOption()->getOptionSubType(optionName) == optsubNoValue );
+    else
+        QVERIFY( optionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue );
     QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
     QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).defaultValue, defvalue);
 }

@@ -129,7 +129,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
     mColorThemes[sNr].insert(Syntax_assign,                  Color());
     mColorThemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
-    mColorThemes[sNr].insert(Syntax_comment,                 Color(QColor(80, 145, 75), fItalic));
+    mColorThemes[sNr].insert(Syntax_comment,                 Color(QColor(120, 120, 120), fItalic)); //QColor(150, 120, 65)
     mColorThemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorThemes[sNr].insert(Syntax_keyword,                 Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorThemes[sNr].insert(Syntax_declaration,             Color(QColor(Qt::darkBlue).lighter(140), fBold));
@@ -172,7 +172,6 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).darker(170));
     mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(60,90,50));
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).darker(115));
-
     mColorThemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_directive,         QColor(200,60,90));
     mColorThemes[sNr].insert(Syntax_keyword,           Color(dark_highlight, fBold));
