@@ -1603,12 +1603,11 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
     if (file->kind() == FileKind::Gdx) {
         QFile f(file->location());
         if (!f.exists()) return FileProcessKind::fileLocked;
-        bool resized = file->compare().testFlag(FileMeta::FdSize);
-        file->refreshMetaData();
+        bool changed = file->refreshMetaData();
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
-                int gdxErr = gv->reload(file->codec(), resized);
+                int gdxErr = gv->reload(file->codec(), changed);
                 if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : FileProcessKind::ignore);
             }
         }
@@ -4510,11 +4509,10 @@ void MainWindow::openGdxDiffFile()
     }
     if (FileMeta* fMeta = mFileMetaRepo.fileMeta(diffFile)) {
         if (fMeta->isOpen()) {
-            bool resized = fMeta->compare().testFlag(FileMeta::FdSize);
-            fMeta->refreshMetaData();
+            bool changed = fMeta->refreshMetaData();
             if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().first())) {
                 gdx->setHasChanged(true);
-                gdx->reload(fMeta->codec(), resized);
+                gdx->reload(fMeta->codec(), changed);
             }
         }
     }
