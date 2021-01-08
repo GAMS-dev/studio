@@ -21,10 +21,6 @@ def GAMS_FOR_LINUX = "/opt/gams/gams34.0_linux_x64_64_sfx"
 def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/34/Resources"
 def GAMS_FOR_WINDOWS = "C:\\GAMS\\34"
 
-def GAMS_FOR_LINUX = "/opt/gams/gams33.3_linux_x64_64_sfx"
-def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/33/Resources"
-def GAMS_FOR_WINDOWS = "C:\\GAMS\\33"
-
 pipeline {
     agent none
 
