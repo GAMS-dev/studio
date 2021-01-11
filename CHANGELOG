@@ -1,7 +1,7 @@
 Version 1.5.0
 ==================
 - Studio now uses Qt 5.15 (LTS) on all platforms
-- added $onFold and $offFold commands to create user definded fold markers
+- added $onFold and $offFold commands to create user defined fold markers
 - added .gdx file filter to Open File dialog
 - improved MIRO deploy dialog
 - deactivated generation of links to LXI files for NEOS results
