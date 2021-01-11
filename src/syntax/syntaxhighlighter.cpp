@@ -101,7 +101,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), Theme::Syntax_identifierAssign);
 
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), Theme::Syntax_tableHeader);
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), Theme::Syntax_assignValue);
+    initKind(1,new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), Theme::Syntax_assignValue);
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()
@@ -331,7 +331,9 @@ QColor backColor(int index) {
 
 void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, Theme::ColorSlot slot)
 {
-    if (debug) syntax->charFormat().setBackground(backColor(debug));
+//    if (debug) syntax->charFormat().setBackground(backColor(debug));
+    if (debug) syntax->charFormat().setFontOverline(true);
+    if (debug) syntax->charFormat().setFontUnderline(true);
     syntax->assignColorSlot(slot);
 
     // TODO(JM) check if mSingleLineKinds can be left out of mKinds because the code won't be passed to the next line
