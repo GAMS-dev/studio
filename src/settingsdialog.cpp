@@ -436,64 +436,6 @@ void SettingsDialog::initColorPage()
     QVector<QVector<Theme::ColorSlot>> slot2;
     QStringList names;
     ThemeWidget *wid = nullptr;
-
-    // EDIT first colors
-//    box = ui->editP1;
-//    grid = qobject_cast<QGridLayout*>(box->layout());
-
-//    slot2 = {
-//        {Theme::Edit_linenrAreaFg, Theme::Edit_linenrAreaBg},
-//        {Theme::Edit_linenrAreaMarkFg, Theme::Edit_linenrAreaMarkBg},
-//        {},
-
-//        {Theme::invalid, Theme::Edit_currentLineBg},
-//        {},
-
-//        {Theme::invalid, Theme::Edit_currentWordBg},
-//        {Theme::invalid, Theme::Edit_matchesBg},
-//        {Theme::invalid, Theme::Edit_errorBg},
-//    };
-//    int cols = 3;
-//    int rows = ((slot2.count()-1) / cols) + 1;
-//    for (int i = 0; i < slot2.size(); ++i) {
-//        if (slot2.at(i).isEmpty()) continue;
-//        int row = i % rows;
-//        int col = i / rows;
-//        wid = (slot2.at(i).size() == 1) ? new ThemeWidget(slot2.at(i).at(0), box)
-//                                        : new ThemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), box);
-//        wid->setAlignment(Qt::AlignRight);
-//        grid->addWidget(wid, row+1, col, Qt::AlignRight);
-//        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-//        mColorWidgets << wid;
-//    }
-//    for (int col = 0; col < 3; ++col)
-//        grid->setColumnStretch(col, 1);
-
-    // EDIT second colors
-//    box = ui->editP2;
-//    grid = qobject_cast<QGridLayout*>(box->layout());
-//    slot2 = {
-//        {Theme::Edit_parenthesesValidFg, Theme::Edit_parenthesesValidBg, Theme::Edit_parenthesesValidBgBlink},
-//        {Theme::Edit_parenthesesInvalidFg, Theme::Edit_parenthesesInvalidBg, Theme::Edit_parenthesesInvalidBgBlink},
-//        {},
-//        {},
-//    };
-//    rows = ((slot2.count()-1) / cols) + 1;
-//    for (int i = 0; i < slot2.size(); ++i) {
-//        if (slot2.at(i).isEmpty()) continue;
-//        int row = i % rows;
-//        int col = i / rows;
-//        if (slot2.at(i).size()) {
-//            wid = new ThemeWidget(slot2.at(i).at(0), slot2.at(i).at(1), slot2.at(i).at(2), box);
-//            wid->setAlignment(Qt::AlignRight);
-//            grid->addWidget(wid, row+1, col, Qt::AlignRight);
-//            connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
-//            mColorWidgets << wid;
-//        } else {
-//            grid->addWidget(new QWidget(box), row+1, col);
-//        }
-//    }
-
     int cols;
     int rows;
 
@@ -502,22 +444,22 @@ void SettingsDialog::initColorPage()
     grid = qobject_cast<QGridLayout*>(box->layout());
     slot2 = {
         {Theme::Syntax_declaration},
-        {Theme::Syntax_identifierAssign},
         {Theme::Syntax_assignLabel},
         {Theme::Syntax_assignValue},
-        {Theme::Syntax_tableHeader},
-        {Theme::Syntax_description},
-
-        {Theme::Syntax_keyword},
-        {Theme::Syntax_identifier},
         {Theme::Syntax_directive},
-        {Theme::Syntax_directiveBody},
-        {Theme::Syntax_comment},
         {Theme::Syntax_embedded},
+        {Theme::Syntax_keyword},
+
+        {Theme::Syntax_identifier},
+        {Theme::Syntax_description},
+        {},
+        {Theme::Syntax_directiveBody},
+        {Theme::Syntax_equation},
+        {Theme::Syntax_comment},
     };
     cols = 2;
     rows = ((slot2.count()-1) / cols) + 1;
-    int sep = 4;
+    int sep = 3;
     for (int i = 0; i < slot2.size(); ++i) {
         if (slot2.at(i).isEmpty()) continue;
         int row = i % rows;
@@ -535,6 +477,7 @@ void SettingsDialog::initColorPage()
 
     for (int col = 0; col < cols; ++col)
         grid->setColumnStretch(col, 1);
+    grid->setColumnStretch(cols, 0);
 
     // EDITOR colors
     box = ui->editorColors;
