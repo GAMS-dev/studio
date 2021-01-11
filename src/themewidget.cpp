@@ -58,6 +58,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
 {
     ui->setupUi(this);
     ui->iconEx->setVisible(false);
+    ui->textFrame->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
     ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');

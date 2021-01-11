@@ -494,6 +494,9 @@ void SettingsDialog::initColorPage()
 //        }
 //    }
 
+    int cols;
+    int rows;
+
     // SYNTAX colors
     box = ui->syntaxColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
@@ -512,13 +515,58 @@ void SettingsDialog::initColorPage()
         {Theme::Syntax_comment},
         {Theme::Syntax_embedded},
     };
-    int cols = 2;
-    int rows = ((slot2.count()-1) / cols) + 1;
+    cols = 2;
+    rows = ((slot2.count()-1) / cols) + 1;
+    int sep = 4;
     for (int i = 0; i < slot2.size(); ++i) {
         if (slot2.at(i).isEmpty()) continue;
         int row = i % rows;
         int col = i / rows;
         wid = new ThemeWidget(slot2.at(i).at(0), box);
+        wid->setCarrierDialog(this);
+        wid->setAlignment(Qt::AlignRight);
+        int effectiveRow = row + (row >= sep ? 2 : 1);
+
+        grid->addWidget(wid, effectiveRow, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
+        mColorWidgets << wid;
+    }
+    grid->addWidget(ui->syntaxColorLine, sep+1, 0, 1, 2);
+
+    for (int col = 0; col < cols; ++col)
+        grid->setColumnStretch(col, 1);
+
+    // EDITOR colors
+    box = ui->editorColors;
+    grid = qobject_cast<QGridLayout*>(box->layout());
+    slot2 = {
+        {Theme::Edit_text,                  Theme::Edit_background,             Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_currentLineBg,          Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_errorBg,                Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_currentWordBg,          Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_matchesBg,              Theme::invalid},
+        {Theme::Edit_parenthesesValidFg,    Theme::Edit_parenthesesValidBg,     Theme::Edit_parenthesesValidBgBlink},
+        {Theme::Edit_parenthesesInvalidFg,  Theme::Edit_parenthesesInvalidBg,   Theme::Edit_parenthesesInvalidBgBlink},
+
+        {Theme::Edit_foldLineFg,            Theme::Edit_foldLineBg,             Theme::invalid},
+        {Theme::Edit_linenrAreaFg,          Theme::Edit_linenrAreaBg,           Theme::invalid},
+        {Theme::Edit_linenrAreaMarkFg,      Theme::Edit_linenrAreaMarkBg,       Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_linenrAreaFoldBg,       Theme::invalid},
+        {Theme::Mark_errorFg,               Theme::invalid,                     Theme::invalid},
+        {Theme::Mark_listingFg,             Theme::invalid,                     Theme::invalid},
+        {Theme::Mark_fileFg,                Theme::invalid,                     Theme::invalid},
+
+    };
+    cols = 2;
+    rows = ((slot2.count()-1) / cols) + 1;
+    for (int i = 0; i < slot2.size(); ++i) {
+        if (slot2.at(i).isEmpty()) continue;
+        Theme::ColorSlot fg = slot2.at(i).at(0);
+        Theme::ColorSlot bg1 = slot2.at(i).count() > 1 ? slot2.at(i).at(1) : Theme::invalid;
+        Theme::ColorSlot bg2 = slot2.at(i).count() > 2 ? slot2.at(i).at(2) : Theme::invalid;
+        int row = i % rows;
+        int col = i / rows;
+        wid = new ThemeWidget(fg, bg1, bg2, box);
         wid->setCarrierDialog(this);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);

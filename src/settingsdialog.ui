@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -585,6 +585,9 @@
            <string>Syntax colors</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayoutSc">
+           <property name="spacing">
+            <number>4</number>
+           </property>
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -599,6 +602,12 @@
            </property>
            <item>
             <widget class="QWidget" name="syntaxColors" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>20</height>
+              </size>
+             </property>
              <layout class="QGridLayout" name="gridLayout_15">
               <property name="leftMargin">
                <number>0</number>
@@ -615,6 +624,13 @@
               <property name="spacing">
                <number>4</number>
               </property>
+              <item row="0" column="0">
+               <widget class="Line" name="syntaxColorLine">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -625,8 +641,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>521</width>
+            <height>321</height>
            </rect>
           </property>
           <attribute name="label">
@@ -663,16 +679,6 @@
               <property name="spacing">
                <number>4</number>
               </property>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_5">
-                <property name="text">
-                 <string>Coming soon...</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
              </layout>
             </widget>
            </item>

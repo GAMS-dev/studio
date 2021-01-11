@@ -38,6 +38,7 @@ Theme *Theme::instance()
 void Theme::initSlotTexts()
 {
     mSlotText.clear();
+    mSlotText.insert(Edit_text,                 "General color");
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
@@ -48,6 +49,10 @@ void Theme::initSlotTexts()
     mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
     mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
     mSlotText.insert(Edit_foldLineFg,           "Folded line marker");
+    mSlotText.insert(Edit_linenrAreaFoldBg,     "Fold marker");
+    mSlotText.insert(Mark_errorFg,              "Error mark");
+    mSlotText.insert(Mark_listingFg,            "Listing mark");
+    mSlotText.insert(Mark_fileFg,               "File mark");
 
     mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
