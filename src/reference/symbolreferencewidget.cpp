@@ -40,9 +40,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
-    if (mType == SymbolDataType::SymbolType::FileUsed)
-        ui->symbolView->sortByColumn(0, Qt::AscendingOrder);
-    else
+    if (mType != SymbolDataType::SymbolType::FileUsed)
         ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
     ui->symbolView->setSortingEnabled(true);
     ui->symbolView->setAlternatingRowColors(true);
