@@ -27,7 +27,6 @@ public:
 private:
     Theme *mController = nullptr;
     bool mForceSquare = true;
-    int mScope = 0;
     QString mName;
     QString mNameD;
     QIcon::Mode mNormalMode = QIcon::Normal;
