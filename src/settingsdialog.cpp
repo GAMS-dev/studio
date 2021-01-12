@@ -459,7 +459,7 @@ void SettingsDialog::initColorPage()
 
         {Theme::Syntax_identifier},
         {Theme::Syntax_description},
-        {},
+        {Theme::Syntax_tableHeader},
         {Theme::Syntax_directiveBody},
         {Theme::Syntax_comment},
     };
