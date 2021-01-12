@@ -285,6 +285,13 @@ void SettingsDialog::appearanceIndexChanged(int index)
     setThemeEditable(index >= mFixedThemeCount);
 }
 
+void SettingsDialog::editorBaseColorChanged()
+{
+    QColor color = Theme::color(Theme::Edit_text);
+    Theme::setColor(Theme::Syntax_formula, color);
+    Theme::setColor(Theme::Syntax_neutral, color);
+}
+
 void SettingsDialog::themeModified()
 {
     emit setModified();
@@ -454,7 +461,6 @@ void SettingsDialog::initColorPage()
         {Theme::Syntax_description},
         {},
         {Theme::Syntax_directiveBody},
-        {Theme::Syntax_equation},
         {Theme::Syntax_comment},
     };
     cols = 2;
@@ -513,6 +519,8 @@ void SettingsDialog::initColorPage()
         wid->setCarrierDialog(this);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
+        if (fg == Theme::Edit_text)
+            connect(wid, &ThemeWidget::changed, this, &SettingsDialog::editorBaseColorChanged);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
         mColorWidgets << wid;
     }

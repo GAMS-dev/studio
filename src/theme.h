@@ -60,7 +60,7 @@ public:
         Syntax_undefined,
         Syntax_neutral,
         Syntax_directive,
-        Syntax_equation,
+        Syntax_formula,
         Syntax_directiveBody,
         Syntax_comment,
         Syntax_title,

@@ -53,7 +53,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxCall(), Theme::Syntax_directive);
 
     SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
-    initKind(syntaxFormula, Theme::Syntax_equation);
+    initKind(syntaxFormula, Theme::Syntax_formula);
     syntaxDirective->addSubBody(syntaxFormula);
     SyntaxFormula * syntaxSolveBody = new SyntaxFormula(SyntaxKind::SolveBody);
     initKind(syntaxSolveBody);
@@ -65,7 +65,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(syntaxExecuteBody);
     syntaxDirective->addSubBody(syntaxExecuteBody);
 
-    initKind(new SyntaxAssign(), Theme::Syntax_equation);
+    initKind(new SyntaxAssign(), Theme::Syntax_formula);
     initKind(new SyntaxString(), Theme::Syntax_neutral);
     initKind(new SyntaxCommentLine(), Theme::Syntax_comment);
     initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock), Theme::Syntax_comment);

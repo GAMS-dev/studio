@@ -38,7 +38,7 @@ Theme *Theme::instance()
 void Theme::initSlotTexts()
 {
     mSlotText.clear();
-    mSlotText.insert(Edit_text,                 "General color");
+    mSlotText.insert(Edit_text,                 "Editor base");
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
@@ -58,7 +58,7 @@ void Theme::initSlotTexts()
     mSlotText.insert(Icon_Back,                 "Icon brush");
     mSlotText.insert(Icon_Paper,                "Icon paper");
 
-    mSlotText.insert(Syntax_equation,           "Equation");
+    mSlotText.insert(Syntax_formula,            "Formula");
     mSlotText.insert(Syntax_comment,            "Comment");
     mSlotText.insert(Syntax_directive,          "Dollar Control Option");
     mSlotText.insert(Syntax_directiveBody,      "Dollar Control Argument");
@@ -131,7 +131,7 @@ void Theme::initDefault()
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorThemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
-    mColorThemes[sNr].insert(Syntax_equation,                Color(Qt::black));
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(Qt::black));
     mColorThemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
     mColorThemes[sNr].insert(Syntax_comment,                 Color(QColor(120, 120, 120), fItalic)); //QColor(150, 120, 65)
     mColorThemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBold));
@@ -175,26 +175,26 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).darker(170));
     mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(60,90,50));
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).darker(115));
-    mColorThemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_directive,         QColor(200,60,90));
-    mColorThemes[sNr].insert(Syntax_keyword,           Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_declaration,       Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_description,       Color(dark_unobstrusive));
-    mColorThemes[sNr].insert(Syntax_comment,           Color(dark_unobstrusive, fItalic));
-    mColorThemes[sNr].insert(Syntax_identifier,        Color(dark_id));
-    mColorThemes[sNr].insert(Syntax_equation,          Color(dark_id));
-    mColorThemes[sNr].insert(Syntax_assignLabel,       Color(dark_assignment));
-    mColorThemes[sNr].insert(Syntax_tableHeader,       Color(dark_assignment, fBold));
-    mColorThemes[sNr].insert(Syntax_assignValue,       Color(dark_assignment.lighter()));
-    mColorThemes[sNr].insert(Syntax_directiveBody,     Color(dark_highlight, fItalic));
+    mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_directive,               QColor(200,60,90));
+    mColorThemes[sNr].insert(Syntax_keyword,                 Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
+    mColorThemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
+    mColorThemes[sNr].insert(Syntax_identifier,              Color(dark_id));
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_id));
+    mColorThemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
+    mColorThemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
+    mColorThemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
+    mColorThemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
 
-    mColorThemes[sNr].insert(Icon_Gray,                QColor(65,55,50));
-    mColorThemes[sNr].insert(Icon_Back,                QColor(220,220,220));
-    mColorThemes[sNr].insert(Active_Back,              QColor(Qt::white));
-    mColorThemes[sNr].insert(Disable_Back,             QColor(96,99,96));
-    mColorThemes[sNr].insert(Normal_Red,               QColor(187,34,51));
-    mColorThemes[sNr].insert(Normal_Green,             QColor(102,170,102));
-    mColorThemes[sNr].insert(Normal_Blue,              QColor(68,153,238));
+    mColorThemes[sNr].insert(Icon_Gray,                      QColor(65,55,50));
+    mColorThemes[sNr].insert(Icon_Back,                      QColor(220,220,220));
+    mColorThemes[sNr].insert(Active_Back,                    QColor(Qt::white));
+    mColorThemes[sNr].insert(Disable_Back,                   QColor(96,99,96));
+    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,34,51));
+    mColorThemes[sNr].insert(Normal_Green,                   QColor(102,170,102));
+    mColorThemes[sNr].insert(Normal_Blue,                    QColor(68,153,238));
 
     invalidate();
 }

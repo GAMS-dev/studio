@@ -31,7 +31,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExam
         ui->iconEx->setIcon(QIcon(mIconEng));
     }
 
-    ui->name->setText(Theme::instance()->text(slotFg) + ' ');
+    ui->name->setText(' ' + Theme::instance()->text(slotFg) + ' ');
     setFormatVisible(Theme::hasFontProps(slotFg));
     initSlot(mSlotFg, slotFg, ui->colorFG);
     ui->colorBG1->hide();
@@ -46,7 +46,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, QWidg
     ui->iconEx->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
-    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
+    ui->name->setText(' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     ui->colorBG2->hide();
@@ -61,7 +61,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
     ui->textFrame->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
-    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
+    ui->name->setText(' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     initSlot(mSlotBg2, slotBg2, ui->colorBG2);
@@ -168,10 +168,11 @@ void ThemeWidget::refresh()
             font.setItalic(Theme::hasFlag(mSlotFg, Theme::fItalic));
             ui->name->setFont(font);
         }
+        if (!ui->iconEx->isVisible()) {
+        }
     }
     if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg), 2);
     if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2));
-
 }
 
 void ThemeWidget::setAlignment(Qt::Alignment align)
@@ -201,12 +202,13 @@ void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
     frame->setStyleSheet("background:"+color.name()+";");
     if (examplePart) {
         if (ui->iconEx->isVisible()) {
-            // TODO(JM) colorize Icon
             ui->iconEx->setIcon(ui->iconEx->icon());
         } else {
-            ui->name->setStyleSheet((examplePart == 1 ? "color:" : "background") +color.name()+";");
+            QString sheet;
+            if (mSlotFg != Theme::invalid) sheet = "color:" + toColor(mSlotFg).name()+";";
+            if (mSlotBg != Theme::invalid) sheet += "background:" + toColor(mSlotBg).name()+";";
+            ui->name->setStyleSheet(sheet);
         }
-
     }
 }
 

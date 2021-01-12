@@ -32,7 +32,7 @@ class BlockData : public QTextBlockUserData
 {
 public:
     BlockData() {}
-    ~BlockData();
+    ~BlockData() override;
     static BlockData *fromTextBlock(QTextBlock block);
     QChar charForPos(int relPos);
     bool isEmpty() {return mParentheses.isEmpty();}

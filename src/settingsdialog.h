@@ -63,6 +63,7 @@ private slots:
     void themeModified();
     void setModified();
     void appearanceIndexChanged(int index);
+    void editorBaseColorChanged();
 
     void on_btn_openUserLibLocation_clicked();
     void on_btn_browse_clicked();
