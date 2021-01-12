@@ -12,9 +12,9 @@ struct NestingImpact
     NestingImpact() {}
     void addCloser() { --mImpact; if (mImpact<mMaxDepth) mMaxDepth = mImpact; }
     void addOpener() { ++mImpact; }
-    int impact() { return mImpact; }
-    int leftOpen() { return mMaxDepth; }
-    int rightOpen() { return mImpact - mMaxDepth; }
+    int impact() const { return mImpact; }
+    int leftOpen() const { return mMaxDepth; }
+    int rightOpen() const { return mImpact - mMaxDepth; }
 private:
     short mImpact = 0;
     short mMaxDepth = 0;
@@ -42,12 +42,15 @@ public:
     int &foldCount() { return mFoldCount; }
     bool isFolded() const { return mFoldCount; }
     void setFoldCount(int foldCount) { mFoldCount = foldCount; }
+    void setVar(int var) { mVar = var; }
+    int &var() { return mVar; }
 
 private:
     // if extending the data remember to enhance isEmpty()
     QVector<ParenthesesPos> mParentheses;
     NestingImpact mNestingImpact;
     int mFoldCount = 0;
+    int mVar = 0;
 };
 
 } // namespace syntax
