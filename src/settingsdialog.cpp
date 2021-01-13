@@ -20,6 +20,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QMessageBox>
+#include <QScrollArea>
 #include "mainwindow.h"
 #include "theme.h"
 #include "colors/palettemanager.h"
@@ -260,7 +261,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         saveSettings();
     } else { // reject
         loadSettings(); // reset changes (mostly font and -size)
-        emit themeModified();
+        themeModified();
     }
     emit editorLineWrappingChanged();
 }
@@ -294,7 +295,7 @@ void SettingsDialog::editorBaseColorChanged()
 
 void SettingsDialog::themeModified()
 {
-    emit setModified();
+    setModified();
     emit themeChanged();
 }
 
@@ -437,6 +438,16 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 void SettingsDialog::initColorPage()
 {
     if (!mColorWidgets.isEmpty()) return;
+
+    if (ui->pageSyntax->parentWidget()) {
+        QScrollArea *sa = qobject_cast<QScrollArea*>(ui->pageSyntax->parentWidget()->parentWidget());
+        if (sa) sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
+
+    if (ui->pageEditor->parentWidget()) {
+        QScrollArea *sa = qobject_cast<QScrollArea*>(ui->pageEditor->parentWidget()->parentWidget());
+        if (sa) sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
 
     QWidget *box = nullptr;
     QGridLayout *grid = nullptr;
