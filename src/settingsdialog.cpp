@@ -439,16 +439,6 @@ void SettingsDialog::initColorPage()
 {
     if (!mColorWidgets.isEmpty()) return;
 
-    if (ui->pageSyntax->parentWidget()) {
-        QScrollArea *sa = qobject_cast<QScrollArea*>(ui->pageSyntax->parentWidget()->parentWidget());
-        if (sa) sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    }
-
-    if (ui->pageEditor->parentWidget()) {
-        QScrollArea *sa = qobject_cast<QScrollArea*>(ui->pageEditor->parentWidget()->parentWidget());
-        if (sa) sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    }
-
     QWidget *box = nullptr;
     QGridLayout *grid = nullptr;
     QVector<QVector<Theme::ColorSlot>> slot2;
@@ -482,7 +472,6 @@ void SettingsDialog::initColorPage()
         int row = i % rows;
         int col = i / rows;
         wid = new ThemeWidget(slot2.at(i).at(0), box);
-        wid->setCarrierDialog(this);
         wid->setAlignment(Qt::AlignRight);
         int effectiveRow = row + (row >= sep ? 2 : 1);
 
@@ -527,7 +516,6 @@ void SettingsDialog::initColorPage()
         int row = i % rows;
         int col = i / rows;
         wid = new ThemeWidget(fg, bg1, bg2, box);
-        wid->setCarrierDialog(this);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
         if (fg == Theme::Edit_text)
@@ -558,8 +546,9 @@ void SettingsDialog::setThemeEditable(bool editable)
     for (ThemeWidget *wid : mColorWidgets) {
         wid->setReadonly(!editable);
     }
-    ui->btRename->setEnabled(editable);
-    ui->btRemove->setEnabled(editable);
+    ui->btRenameTheme->setEnabled(editable);
+    ui->btRemoveTheme->setEnabled(editable);
+    ui->btExportTheme->setEnabled(editable);
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()
@@ -568,14 +557,14 @@ void SettingsDialog::on_btn_resetHistory_clicked()
     mSettings->setList(skHistory, QVariantList());
 }
 
-void SettingsDialog::on_btRename_clicked()
+void SettingsDialog::on_btRenameTheme_clicked()
 {
     ui->cbThemes->setEditable(true);
     ui->cbThemes->setFocus();
     ui->cbThemes->installEventFilter(this);
 }
 
-void SettingsDialog::on_btCopy_clicked()
+void SettingsDialog::on_btCopyTheme_clicked()
 {
     Theme *theme = Theme::instance();
     int i = theme->copyTheme(theme->activeTheme(), theme->activeThemeName());
@@ -587,7 +576,7 @@ void SettingsDialog::on_btCopy_clicked()
     }
 }
 
-void SettingsDialog::on_btRemove_clicked()
+void SettingsDialog::on_btRemoveTheme_clicked()
 {
     int old = Theme::instance()->activeTheme();
     int i = Theme::instance()->removeTheme(old);
@@ -597,6 +586,30 @@ void SettingsDialog::on_btRemove_clicked()
     for (ThemeWidget *wid : mColorWidgets) {
         wid->refresh();
     }
+}
+
+void SettingsDialog::on_btImportTheme_clicked()
+{
+//    QFileDialog *fd = new QFileDialog(this, "Import theme", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
+//    fd->setAcceptMode(QFileDialog::AcceptOpen);
+//    fd->installEventFilter(this);
+//    connect(fd, &QFileDialog::accepted, [this, fd](){
+
+//    });
+}
+
+void SettingsDialog::on_btExportTheme_clicked()
+{
+    QFileDialog *fd = new QFileDialog(this, "Export theme", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
+    fd->selectFile(Settings::themeFileName(Theme::instance()->activeThemeName()));
+    fd->setAcceptMode(QFileDialog::AcceptSave);
+    connect(fd, &QFileDialog::finished, [/*this,*/ fd](int res) {
+        if (res && !fd->selectedFiles().isEmpty()) {
+            Settings::settings()->exportTheme(Theme::instance()->writeCurrentTheme(), fd->selectedFiles().at(0));
+        }
+        fd->deleteLater();
+    });
+    fd->open();
 }
 
 }

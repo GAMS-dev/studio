@@ -534,5 +534,19 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
     }
 }
 
+QVariantMap Theme::writeCurrentTheme()
+{
+    QVariantMap resData;
+    const QHash<ColorSlot, Color> &theme = mColorThemes.at(mTheme);
+    for (ColorSlot key = invalid; key < ColorSlotCount; key = static_cast<ColorSlot>(key+1)) {
+        resData.insert(name(key), theme.value(key).color.name() + "," + QString::number(theme.value(key).fontFlag));
+    }
+    QVariantMap resTheme;
+    resTheme.insert("name", mThemeNames.at(mTheme));
+    resTheme.insert("base", mThemeBases.at(mTheme));
+    resTheme.insert("theme", resData);
+    return resTheme;
+}
+
 } // namespace studio
 } // namespace gams

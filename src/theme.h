@@ -89,7 +89,7 @@ private:
     };
 
 public:
-    ~Theme();
+    ~Theme() override;
     static Theme *instance();
     void initDefault();
     int themeCount() { return mThemeNames.size(); }
@@ -107,6 +107,7 @@ public:
     int removeTheme(int index);
 
     QVariantList writeUserThemes() const;
+    QVariantMap writeCurrentTheme();
     void readUserThemes(const QVariantList &sourceThemes);
 
     static QString name(ColorSlot slot);

@@ -704,6 +704,18 @@ void Settings::saveThemes()
     }
 }
 
+void Settings::exportTheme(const QVariant &vTheme, QString fileName)
+{
+    QVariantMap theme = vTheme.toMap();
+    QString name = theme.value("name").toString();
+//    QString fName = path + '/' + CThemePrefix + name.toLower();
+    QSettings themeSettings(fileName, QSettings::defaultFormat());
+    themeSettings.setValue("name", name);
+    themeSettings.setValue("base", theme.value("base"));
+    themeSettings.setValue("theme", theme.value("theme"));
+    themeSettings.sync();
+}
+
 void Settings::loadThemes()
 {
     QVariantList themes;
@@ -892,15 +904,9 @@ void Settings::importTheme(const QString &path)
     reload();
 }
 
-void Settings::exportTheme(const QString &path)
+QString Settings::themeFileName(QString baseName)
 {
-    if (!mSettings.value(scTheme)) return;
-    QFile originFile(mSettings.value(scTheme)->fileName());
-    if (QFile::exists(path))
-        QFile::remove(path);
-    if (!originFile.copy(path)) {
-        SysLogLocator::systemLog()->append("Error exporting syntax theme to " + path, LogMsgType::Error);
-    }
+    return CThemePrefix+baseName.toLower()+".json";
 }
 
 }

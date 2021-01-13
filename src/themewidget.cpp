@@ -73,11 +73,6 @@ ThemeWidget::~ThemeWidget()
     delete ui;
 }
 
-void ThemeWidget::setCarrierDialog(QWidget *carrierDialog)
-{
-    mCarrier = carrierDialog;
-}
-
 void ThemeWidget::initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slot, QFrame *frame)
 {
     slotVar = slot;
@@ -123,15 +118,15 @@ void ThemeWidget::showColorSelector(QFrame *frame)
 {
     if (mReadonly) return;
     if (!mColorDialog) {
-        mColorDialog = new QColorDialog(mCarrier);
-        mColorDialog->setParent(mCarrier);
+        mColorDialog = new QColorDialog(this);
+        mColorDialog->setParent(this);
         mColorDialog->setModal(true);
         mColorDialog->installEventFilter(this);
     }
     mSelectedFrame = frame;
     mColorDialog->setCurrentColor(frame->palette().window().color());
     connect(mColorDialog, &QColorDialog::colorSelected, this, &ThemeWidget::colorChanged);
-    mColorDialog->show();
+    mColorDialog->open();
 }
 
 void ThemeWidget::colorChanged(const QColor &color)
