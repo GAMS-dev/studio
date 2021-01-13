@@ -689,7 +689,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             setLogLocation(cleanPath(path, value));
         }
 
-        if (defaultArgumentIdList.contains(item.optionId))
+        if (item.optionId != -1 && defaultArgumentIdList.contains(item.optionId))
             defaultOverride = true;
     }
 
@@ -715,7 +715,11 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             if (item.recurrentIndices.first() == position)
                 output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
         } else {
-            output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
+            if (item.optionId == -1) { // double-dashed option or unknown option
+                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( item.value ) );
+            } else {
+                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
+            }
         }
         position++;
     }

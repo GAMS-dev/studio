@@ -68,8 +68,6 @@ void TestGUROBIOption::testOptionBooleanType_data()
     QTest::newRow("lazyconstraints")  << "lazyconstraints"  << true  << 0  << "Indicator to use lazy constraints";
     QTest::newRow("mipstart")    << "mipstart"     << true  << 0  << "Use mip starting values";
     QTest::newRow("names")       << "names"        << true  << 1  << "Indicator for loading names";
-    QTest::newRow("presparsify") << "presparsify"  << true  << 0  << "Enables the presolve sparsify reduction for MIP models";
-    QTest::newRow("qcpdual")     << "qcpdual"      << true  << 1  << "Determines whether dual variable values are computed for QCP models";
     QTest::newRow("sensitivity") << "sensitivity"  << true  << 0  << "Provide sensitivity information";
     QTest::newRow("varhint")     << "varhint"      << true  << 0  << "Guide heuristics and branching through variable hints";
 }
@@ -93,27 +91,23 @@ void TestGUROBIOption::testOptionStringType_data()
     QTest::addColumn<bool>("valid");
     QTest::addColumn<QString>("description");
 
-    QTest::newRow("computeserver")  << "computeserver"   << true  << "List of Gurobi compute servers";
     QTest::newRow("fixoptfile")     << "fixoptfile"      << true  << "Option file for fixed problem optimization";
-    QTest::newRow("icsecretkey")    << "icsecretkey"     << true  << "The secret key for your Gurobi Instant Cloud license";
     QTest::newRow("miptrace")       << "miptrace"        << false << "Filename of MIP trace file";
-    QTest::newRow("nodefiledir")    << "nodefiledir"     << true  << "Nodefile directory";
     QTest::newRow("probread")       << "probread"        << false << "Supply a problem via a Gurobi input file";
     QTest::newRow("readparams")     << "readparams"      << true  << "Read Gurobi parameter file";
     QTest::newRow("solnpool")       << "solnpool"        << true  << "Controls export of alternate MIP solutions";
     QTest::newRow("tuning")         << "tuning"          << true  << "Parameter Tuning";
-    QTest::newRow("workerpassword") << "workerpassword"  << true  << "Compute server password Pool of compute servers to use for distributed algorithms";
 }
 
 void TestGUROBIOption::testOptionStringType()
 {// TODO avoid test issues with new GAMS versions
-    /*QFETCH(QString, optionName);
+    QFETCH(QString, optionName);
     QFETCH(bool, valid);
     QFETCH(QString, description);
 
     QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
     QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeString);
-    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);*/
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
 }
 
 void TestGUROBIOption::testOptionEnumIntType_data()
@@ -205,16 +199,12 @@ void TestGUROBIOption::testOptionDoubleType_data()
     QTest::addColumn<double>("upperBound");
     QTest::addColumn<double>("defaultValue");
 
-    QTest::newRow("barconvtol")     <<  "barconvtol"      << true  << 1e-10  << 1.0                                            << 1e-8;
-    QTest::newRow("cstimeoutfrac")  <<  "cstimeoutfrac"   << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 0.1;
     QTest::newRow("feasibilitytol") <<  "feasibilitytol"  << true  << 1e-9   << 1e-2                                           << 1e-6;
     QTest::newRow(".feaspref")      <<  ".feaspref"       << true  << 0.0    << 1e+020                                         << 1.0;
     QTest::newRow("heuristics")     <<  "heuristics"      << true  << 0.0    << 1.0                                            << 0.05;
-    QTest::newRow("improvestartgap")  <<  "improvestartgap"   << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << gams::studio::option::OPTION_VALUE_MAXDOUBLE;
     QTest::newRow("markowitztol")     <<  "markowitztol"      << true  << 1e-4   << 0.999                                          << 0.0078125;
     QTest::newRow("nodefilestart")    <<  "nodefilestart"     << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << gams::studio::option::OPTION_VALUE_MAXDOUBLE;
     QTest::newRow("objscale")         <<  "objscale"          << true  << -1.0   << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 0.0;
-    QTest::newRow("perturbvalue")     <<  "perturbvalue"      << true  << 0.0     << 0.01                                          << 0.0002;
     QTest::newRow(".prior")           <<  ".prior"            << true  << 1.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 1.0;
     QTest::newRow("timelimit")        <<  "timelimit"         << true  << 0.0    << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << gams::studio::option::OPTION_VALUE_MAXDOUBLE;
 
@@ -222,7 +212,7 @@ void TestGUROBIOption::testOptionDoubleType_data()
 
 void TestGUROBIOption::testOptionDoubleType()
 {// TODO avoid test issues with new GAMS versions
-    /*QFETCH(QString, optionName);
+    QFETCH(QString, optionName);
     QFETCH(bool, valid);
     QFETCH(double, lowerBound);
     QFETCH(double, upperBound);
@@ -232,7 +222,7 @@ void TestGUROBIOption::testOptionDoubleType()
     QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeDouble);
     QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
     QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
-    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );*/
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
 }
 
 void TestGUROBIOption::testOptionIntegerType_data()
@@ -243,27 +233,18 @@ void TestGUROBIOption::testOptionIntegerType_data()
     QTest::addColumn<int>("upperBound");
     QTest::addColumn<int>("defaultValue");
 
-    QTest::newRow("aggregate")      << "aggregate"      << true  << 0    << 1                                         << 1;
     QTest::newRow("bariterlimit")   << "bariterlimit"   << true  << 0    << gams::studio::option::OPTION_VALUE_MAXINT << gams::studio::option::OPTION_VALUE_MAXINT;
-    QTest::newRow("concurrentmip")  << "concurrentmip"  << true  << 1    << gams::studio::option::OPTION_VALUE_MAXINT << 1;
     QTest::newRow("degenmoves")     << "degenmoves"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
     QTest::newRow(".genconstrtype") << ".genconstrtype" << true  << 0    << 13                                         << 0;
-    QTest::newRow("icpriority")     << "icpriority"     << true  << -100 << 100                                       << 0;
-    QTest::newRow("minrelnodes")    << "minrelnodes"    << true  << 0    << gams::studio::option::OPTION_VALUE_MAXINT << 0;
     QTest::newRow("normadjust")     << "normadjust"     << true  << -1   << 3                                         << -1;
-    QTest::newRow("outputflag")     << "outputflag"     << false << 0    << 1                                         << 1;
     QTest::newRow(".partition")     << ".partition"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << 0;
     QTest::newRow("quad")           << "quad"           << true  << -1   << 1                                         << -1;
     QTest::newRow("rins")           << "rins"           << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
-    QTest::newRow("scaleflag")      << "scaleflag"      << true  << 0    << 3                                         << 1;
-    QTest::newRow("threads")        << "threads"        << true  << -128 << gams::studio::option::OPTION_VALUE_MAXINT << 0;
-    QTest::newRow("workerport")     << "workerport"     << true  << -1   << gams::studio::option::OPTION_VALUE_MAXINT << -1;
-    QTest::newRow("zeroobjnodes")   << "zeroobjnodes"   << true  << 0    << gams::studio::option::OPTION_VALUE_MAXINT << 0;
 }
 
 void TestGUROBIOption::testOptionIntegerType()
 {// TODO avoid test issues with new GAMS versions
-    /*QFETCH(QString, optionName);
+    QFETCH(QString, optionName);
     QFETCH(bool, valid);
     QFETCH(int, lowerBound);
     QFETCH(int, upperBound);
@@ -273,7 +254,7 @@ void TestGUROBIOption::testOptionIntegerType()
     QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeInteger);
     QCOMPARE( optionTokenizer->getOption()->getLowerBound(optionName).toDouble(), lowerBound );
     QCOMPARE( optionTokenizer->getOption()->getUpperBound(optionName).toDouble(), upperBound );
-    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );*/
+    QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toDouble(), defaultValue );
 }
 
 void TestGUROBIOption::testDeprecatedOption_data()
@@ -285,7 +266,6 @@ void TestGUROBIOption::testDeprecatedOption_data()
 
     QTest::newRow("lpmethod")          << "lpmethod"          << true << "enumint" << "Algorithm used to solve continuous models";
     QTest::newRow("rootmethod")        << "rootmethod"        << true << "enumint" << "Algorithm used to solve continuous models";
-    QTest::newRow("concurrentmipjobs") << "concurrentmipjobs" << true << "integer" << "Distributed concurrent MIP job count";
     QTest::newRow("dumpsolution")      << "dumpsolution"      << true << "string"  << "Controls export of alternate MIP solutions";
 }
 
@@ -319,77 +299,43 @@ void TestGUROBIOption::testOptionGroup_data()
     QTest::addColumn<QString>("optionName");
     QTest::addColumn<int>("groupNumber");
     QTest::addColumn<QString>("optionGroupName");
-    QTest::addColumn<QString>("optionGroupDescription");
     QTest::addColumn<QString>("optionType");
 
-    QTest::newRow("bariterlimit_1")         << "bariterlimit"         << 1 << "Termination" << "Termination options" << "integer";
-    QTest::newRow("cutoff_1")               << "cutoff"               << 1 << "Termination" << "Termination options" << "double";
-    QTest::newRow("iterationlimit_1")       << "iterationlimit"       << 1 << "Termination" << "Termination options" << "double";
-    QTest::newRow("nodelimit_1")            << "nodelimit"            << 1 << "Termination" << "Termination options" << "double";
-    QTest::newRow("solutionlimit_1")        << "solutionlimit"        << 1 << "Termination" << "Termination options" << "integer";
-    QTest::newRow("timelimit_1")            << "timelimit"            << 1 << "Termination" << "Termination options" << "double";
+    QTest::newRow("bariterlimit_1")         << "bariterlimit"         << 1 << "Termination" << "integer";
+    QTest::newRow("cutoff_1")               << "cutoff"               << 1 << "Termination" << "double";
+    QTest::newRow("iterationlimit_1")       << "iterationlimit"       << 1 << "Termination" << "double";
+    QTest::newRow("nodelimit_1")            << "nodelimit"            << 1 << "Termination" << "double";
+    QTest::newRow("solutionlimit_1")        << "solutionlimit"        << 1 << "Termination" << "integer";
+    QTest::newRow("timelimit_1")            << "timelimit"            << 1 << "Termination" << "double";
 
-    QTest::newRow("barconvtol_2")      << "barconvtol"      << 2 << "Tolerances" << "Tolerance options"  << "double";
-    QTest::newRow("feasibilitytol_2")  << "feasibilitytol"  << 2 << "Tolerances" << "Tolerance options"  << "double";
-    QTest::newRow("intfeastol_2")      << "intfeastol"      << 2 << "Tolerances" << "Tolerance options"  << "double";
-    QTest::newRow("markowitztol_2")    << "markowitztol"    << 2 << "Tolerances" << "Tolerance options"  << "double";
-    QTest::newRow("optimalitytol_2")   << "optimalitytol"   << 2 << "Tolerances" << "Tolerance options"  << "double";
-    QTest::newRow("psdtol_2")          << "psdtol"          << 2 << "Tolerances" << "Tolerance options"  << "double";
+    QTest::newRow("barconvtol_2")      << "barconvtol"      << 2 << "Tolerances" << "double";
+    QTest::newRow("feasibilitytol_2")  << "feasibilitytol"  << 2 << "Tolerances" << "double";
+    QTest::newRow("intfeastol_2")      << "intfeastol"      << 2 << "Tolerances" << "double";
+    QTest::newRow("markowitztol_2")    << "markowitztol"    << 2 << "Tolerances" << "double";
+    QTest::newRow("optimalitytol_2")   << "optimalitytol"   << 2 << "Tolerances" << "double";
+    QTest::newRow("psdtol_2")          << "psdtol"          << 2 << "Tolerances" << "double";
 
-    QTest::newRow("normadjust_3")      << "normadjust"        << 3 << "Simplex" << "Simplex options"  << "integer";
-    QTest::newRow("objscale_3")        << "objscale"          << 3 << "Simplex" << "Simplex options"  << "double";
-    QTest::newRow("perturbvalue_3")    << "perturbvalue"      << 3 << "Simplex" << "Simplex options"  << "double";
-    QTest::newRow("quad_3")            << "quad"              << 3 << "Simplex" << "Simplex options"  << "integer";
-    QTest::newRow("scaleflag_3")       << "scaleflag"         << 3 << "Simplex" << "Simplex options"  << "integer";
+    QTest::newRow("normadjust_3")      << "normadjust"        << 3 << "Simplex" << "integer";
+    QTest::newRow("objscale_3")        << "objscale"          << 3 << "Simplex" << "double";
+    QTest::newRow("perturbvalue_3")    << "perturbvalue"      << 3 << "Simplex" << "double";
+    QTest::newRow("quad_3")            << "quad"              << 3 << "Simplex" << "integer";
+    QTest::newRow("scaleflag_3")       << "scaleflag"         << 3 << "Simplex" << "integer";
 
-    QTest::newRow("barcorrectors_4")   << "barcorrectors"     << 4 << "Barrier" << "Barrier options"  << "integer";
-    QTest::newRow("crossover_4")       << "crossover"         << 4 << "Barrier" << "Barrier options"  << "integer";
-    QTest::newRow("qcpdual_4")         << "qcpdual"           << 4 << "Barrier" << "Barrier options"  << "boolean";
-
-    QTest::newRow("bestbdstop_5")      << "bestbdstop"        << 5 << "MIPoptions" << "MIP options"  << "double";
-    QTest::newRow("cliquecuts_5")      << "cliquecuts"        << 5 << "MIPoptions" << "MIP options"  << "enumint";
-    QTest::newRow("degenmoves_5")      << "degenmoves"        << 5 << "MIPoptions" << "MIP options"  << "integer";
-    QTest::newRow("flowpathcuts_5")    << "flowpathcuts"      << 5 << "MIPoptions" << "MIP options"  << "enumint";
-    QTest::newRow("gomorypasses_5")    << "gomorypasses"      << 5 << "MIPoptions" << "MIP options"  << "integer";
-    QTest::newRow("heuristics_5")      << "heuristics"        << 5 << "MIPoptions" << "MIP options"  << "double";
-    QTest::newRow("infproofcuts_5")    << "infproofcuts"      << 5 << "MIPoptions" << "MIP options"  << "integer";
-    QTest::newRow("lazyconstraints_5") << "lazyconstraints"   << 5 << "MIPoptions" << "MIP options"  << "boolean";
-    QTest::newRow("modkcuts_5")        << "modkcuts"          << 5 << "MIPoptions" << "MIP options"  << "integer";
-    QTest::newRow("nodemethod_5")      << "nodemethod"        << 5 << "MIPoptions" << "MIP options"  << "enumint";
-    QTest::newRow("pumppasses_5")      << "pumppasses"        << 5 << "MIPoptions" << "MIP options"  << "integer";
-    QTest::newRow("rins_5")            << "rins"              << 5 << "MIPoptions" << "MIP options"  << "integer";
-    QTest::newRow("symmetry_5")        << "symmetry"          << 5 << "MIPoptions" << "MIP options"  << "enumint";
-    QTest::newRow("varbranch_5")       << "varbranch"         << 5 << "MIPoptions" << "MIP options"  << "enumint";
-    QTest::newRow("zerohalfcuts_5")    << "zerohalfcuts"      << 5 << "MIPoptions" << "MIP options"  << "enumint";
-
-    QTest::newRow("aggfill_6")         << "aggfill"           << 6 << "Other" << "Other options"  << "integer";
-    QTest::newRow("computeserver_6")   << "computeserver"     << 6 << "Other" << "Other options"  << "string";
-    QTest::newRow("displayinterval_6") << "displayinterval"   << 6 << "Other" << "Other options"  << "integer";
-    QTest::newRow("feasopt_6")         << "feasopt"           << 6 << "Other" << "Other options"  << "boolean";
-    QTest::newRow("icpool_6")          << "icpool"            << 6 << "Other" << "Other options"  << "string";
-    QTest::newRow("kappa_6")           << "kappa"             << 6 << "Other" << "Other options"  << "boolean";
-    QTest::newRow("multobj_6")         << "multobj"           << 6 << "Other" << "Other options"  << "boolean";
-    QTest::newRow("objnreltol_6")      << "objnreltol"        << 6 << "Other" << "Other options"  << "strlist";
-    QTest::newRow("precrush_6")        << "precrush"          << 6 << "Other" << "Other options"  << "integer";
-    QTest::newRow("readparams_6")      << "readparams"        << 6 << "Other" << "Other options"  << "string";
-    QTest::newRow("tunetrials_6")      << "tunetrials"        << 6 << "Other" << "Other options"  << "integer";
-    QTest::newRow("usebasis_6")        << "usebasis"          << 6 << "Other" << "Other options"  << "enumint";
-    QTest::newRow("varhint_6")         << "varhint"           << 6 << "Other" << "Other options"  << "boolean";
-    QTest::newRow("writeparams_6")     << "writeparams"       << 6 << "Other" << "Other options"  << "string";
+    QTest::newRow("barcorrectors_4")   << "barcorrectors"     << 4 << "Barrier" << "integer";
+    QTest::newRow("crossover_4")       << "crossover"         << 4 << "Barrier" << "integer";
+    QTest::newRow("qcpdual_4")         << "qcpdual"           << 4 << "Barrier" << "boolean";
 }
 
 void TestGUROBIOption::testOptionGroup()
 {// TODO avoid test issues with new GAMS versions
-    /*QFETCH(QString, optionName);
+    QFETCH(QString, optionName);
     QFETCH(int, groupNumber);
     QFETCH(QString, optionGroupName);
-    QFETCH(QString, optionGroupDescription);
     QFETCH(QString, optionType);
 
     QCOMPARE( optionTokenizer->getOption()->getGroupNumber(optionName), groupNumber );
     QCOMPARE( optionTokenizer->getOption()->getGroupName(optionName), optionGroupName );
-    QCOMPARE( optionTokenizer->getOption()->getGroupDescription(optionName), optionGroupDescription );
-    QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );*/
+    QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
 }
 
 void TestGUROBIOption::testReadOptionFile_data()
@@ -516,7 +462,6 @@ void TestGUROBIOption::testWriteOptionFile_data()
     // given
     QList<SolverOptionItem *> items;
     items.append(new SolverOptionItem(-1, "cliquecuts", "1", "", false));
-    items.append(new SolverOptionItem(-1, "computeserver", "https://server1/ https://server2/", "", false));
     items.append(new SolverOptionItem(-1, "intfeastol", "1e-3", "", false));
     items.append(new SolverOptionItem(-1, "* -x-x-x--------------------", "", "", true));
     items.append(new SolverOptionItem(-1, "method", "3", "", false));
@@ -552,20 +497,19 @@ void TestGUROBIOption::testWriteOptionFile_data()
     QTest::addColumn<QString>("line");
 
     QTest::newRow("line0") << optionItems.at(0) <<  "cliquecuts=1";
-    QTest::newRow("line1") << optionItems.at(1) << "computeserver=\"https://server1/ https://server2/\"";
-    QTest::newRow("line2") << optionItems.at(2) << "intfeastol=1e-3";
-    QTest::newRow("line3") << optionItems.at(3) <<  "* -x-x-x--------------------";
-    QTest::newRow("line4") << optionItems.at(4) << "method=3";
-    QTest::newRow("line5") << optionItems.at(5) << "perturbvalue=0.0012345";
+    QTest::newRow("line2") << optionItems.at(1) << "intfeastol=1e-3";
+    QTest::newRow("line3") << optionItems.at(2) <<  "* -x-x-x--------------------";
+    QTest::newRow("line4") << optionItems.at(3) << "method=3";
+    QTest::newRow("line5") << optionItems.at(4) << "perturbvalue=0.0012345";
 
 }
 
 void TestGUROBIOption::testWriteOptionFile()
 {// TODO avoid test issues with new GAMS versions
-    /*QFETCH(QString, optionString);
+    QFETCH(QString, optionString);
     QFETCH(QString, line);
 
-    QCOMPARE( optionString, line );*/
+    QCOMPARE( optionString, line );
 }
 
 void TestGUROBIOption::testEOLChars()
