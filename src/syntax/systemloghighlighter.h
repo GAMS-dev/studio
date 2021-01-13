@@ -20,7 +20,7 @@
 
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
-#include "scheme.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -62,7 +62,7 @@ public:
     LinkHighlightingRule()
     {
         mPattern = QRegularExpression("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+");
-        mFormat.setForeground(Scheme::color(Scheme::Normal_Blue));
+        mFormat.setForeground(Theme::color(Theme::Normal_Blue));
         mFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
         mFormat.setAnchor(true);
     }
@@ -75,7 +75,7 @@ public:
     ErrorHighlightingRule()
     {
         mPattern = QRegularExpression(HighlightingData::ErrorKeyword + timestampRegex);
-        mFormat.setForeground(Scheme::color(Scheme::Normal_Red));
+        mFormat.setForeground(Theme::color(Theme::Normal_Red));
         mFormat.setFontWeight(QFont::Bold);
     }
 };
@@ -87,7 +87,7 @@ public:
     InfoHighlightingRule()
     {
         mPattern = QRegularExpression(HighlightingData::InfoKeyword + timestampRegex);
-        mFormat.setForeground(Scheme::color(Scheme::Normal_Green));
+        mFormat.setForeground(Theme::color(Theme::Normal_Green));
         mFormat.setFontWeight(QFont::Bold);
     }
 };

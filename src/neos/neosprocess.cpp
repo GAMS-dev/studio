@@ -170,10 +170,15 @@ void NeosProcess::parseUnzipStdOut(const QByteArray &data)
         QByteArray preText = "--- " + data.left(data.indexOf(":")+1).trimmed() + " .";
         QByteArray fName = data.trimmed();
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
-        QByteArray folder = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last().toUtf8();
+        QByteArray folder = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        emit newStdChannelData(preText + folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
-        if (data.endsWith("\n")) emit newStdChannelData("\n");
+        if (fName.endsWith("lxi")) {
+            emit newStdChannelData("--- skipping: ."+ folder + fName);
+            if (data.endsWith("\n")) emit newStdChannelData("\n");
+         } else {
+            emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
+            if (data.endsWith("\n")) emit newStdChannelData("\n");
+        }
     } else
         emit newStdChannelData(data);
 }
@@ -276,7 +281,7 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
         credentials = QString("\nJob %1 dispatched\npassword: %2").arg(jobNumber).arg(jobPassword);
     }
     QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]%4\n");
-    QString name = mOutPath.split(QDir::separator(),QString::SkipEmptyParts).last();
+    QString name = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last();
     emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath+"/solve.lst")
                            .arg(credentials).toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
@@ -444,7 +449,8 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
         else iLT = 0;
         ++iCount;
         if (iRP == remotePath.size()) {
-            res.append(mOutPath+QDir::separator());
+            res.append(mOutPath.toUtf8());
+            res.append(QDir::separator().toLatin1());
             iRP = 0;
             iLT = 0;
             iCount = 0;

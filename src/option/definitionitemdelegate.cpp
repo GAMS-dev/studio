@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "definitionitemdelegate.h"
-#include "scheme.h"
+#include "theme.h"
 
 #include <QPainter>
 #include <QStylePainter>
@@ -45,13 +45,13 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
     QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt, widget);
     if (opt.checkState == Qt::Checked)  {
-        painter->fillRect(checkRect, Scheme::color(Scheme::Normal_Green, Scheme::StudioScope));
+        painter->fillRect(checkRect, Theme::color(Theme::Normal_Green));
     } else  {
         QPainterPath path;
         path.addRect(checkRect);
         QPen pen;
         painter->setPen(pen);
-        painter->fillPath(path, QBrush(index.data(Qt::BackgroundColorRole).value<QColor>(), Qt::SolidPattern));
+        painter->fillPath(path, QBrush(index.data(Qt::BackgroundRole).value<QColor>(), Qt::SolidPattern));
     }
 
     int level = 0;
@@ -59,7 +59,7 @@ void DefinitionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 
     if (index.column()==0 && level > 0) {
         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt);
-        painter->fillRect(textRect, index.data(Qt::BackgroundColorRole).value<QColor>());
+        painter->fillRect(textRect, index.data(Qt::BackgroundRole).value<QColor>());
 
         auto view = qobject_cast<const QTreeView*>(opt.widget);
         int indent = level * (view ? view->indentation() : 10);

@@ -11,7 +11,9 @@ def isDebugBuildAllowed() {
            env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/
 }
 
-def QT_FOR_WINDOWS = "C:\\Qt\\5.12.9\\msvc2017_64\\bin"
+def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
+
+def GAMS_FOR_WINDOWS = "C:\\GAMS\\34"
 
 pipeline {
     agent none
@@ -27,7 +29,8 @@ pipeline {
                 stage ('windowsX64') {
                     agent { label 'windowsX64' }
                     environment {
-                        PATH="${QT_FOR_WINDOWS};${PATH}"
+                        GAMS_CORE_PATH="${GAMS_FOR_WINDOWS}"
+                        PATH="${QT_FOR_WINDOWS};${GAMS_FOR_WINDOWS};${PATH}"
                     }
                     when {
                         expression { return isDebugBuildAllowed() }
@@ -37,8 +40,8 @@ pipeline {
                         checkout scm
                         bat '''
                             @echo off
-                            echo Setting up environment for VS2017 usage...
-                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build"
+                            echo Setting up environment for VS2019 usage...
+                            cd "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build"
                             call vcvars64.bat
                             cd %WORKSPACE%
                             qmake gams-studio.pro "CONFIG+=debug QMAKE_CXXFLAGS_DEBUG += /MP"
@@ -64,7 +67,7 @@ pipeline {
 
                             copy CHANGELOG "src\\bin\\resources\\Changelog"
                             copy "C:\\Program Files (x86)\\Microsoft SDKs\\Windows Kits\\10\\ExtensionSDKs\\Microsoft.UniversalCRT.Debug\\10.0.18362.0\\Redist\\Debug\\x64\\*" "src\\bin"
-                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Redist\\MSVC\\14.16.27012\\debug_nonredist\\x64\\Microsoft.VC141.DebugCRT\\*" "src\\bin"
+                            copy "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Redist\\MSVC\\14.24.28127\\debug_nonredist\\x64\\Microsoft.VC142.DebugCRT\\*" "src\\bin"
                         '''
                         fileOperations([folderCreateOperation('tmp/studio'), folderCopyOperation(destinationFolderPath: 'tmp/studio', sourceFolderPath: 'src/bin')])
                     }

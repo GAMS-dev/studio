@@ -21,6 +21,7 @@
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "commonpaths.h"
+#include "mirocommon.h"
 
 #include <QDir>
 
@@ -49,8 +50,11 @@ void MiroProcess::execute()
 
 QStringList MiroProcess::defaultParameters() const
 {
-    return { QString("IDCGenerateJSON=%1/%2_io.json").arg(confFolder()).arg(modelName().toLower()),
-             QString("IDCGenerateGDX=%1/default.gdx").arg(dataFolder()) };
+    return { QString("IDCGenerateJSON=%1/%2_io.json")
+                .arg(MiroCommon::confDirectory(modelName()))
+                .arg(modelName().toLower()),
+             QString("IDCGenerateGDX=%1/default.gdx")
+                .arg(MiroCommon::dataDirectory(modelName())) };
 }
 
 QProcessEnvironment MiroProcess::miroProcessEnvironment()
@@ -84,13 +88,13 @@ QProcessEnvironment MiroProcess::miroProcessEnvironment()
 
 void MiroProcess::setupMiroEnvironment()
 {
-    QDir confDir(workingDirectory()+"/"+confFolder());
+    QDir confDir(workingDirectory() + "/" + MiroCommon::confDirectory(modelName()));
     if (!confDir.exists() && !confDir.mkpath(confDir.path())) {
         SysLogLocator::systemLog()->append(QString("Could not create the configuration folder: %1")
                                            .arg(confDir.path()), LogMsgType::Error);
     }
 
-    QDir dataDir(workingDirectory()+"/"+dataFolder());
+    QDir dataDir(workingDirectory() + "/" + MiroCommon::dataDirectory(modelName()));
     if (!dataDir.exists() && !dataDir.mkpath(dataDir.path())) {
         SysLogLocator::systemLog()->append(QString("Could not create the data folder: %1")
                                            .arg(dataDir.path()), LogMsgType::Error);

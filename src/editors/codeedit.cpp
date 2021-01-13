@@ -27,7 +27,7 @@
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
-#include "scheme.h"
+#include "theme.h"
 #include "editorhelper.h"
 #include "viewhelper.h"
 #include "search/searchlocator.h"
@@ -193,7 +193,7 @@ void CodeEdit::convertToLower()
 
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toLower()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();
@@ -210,7 +210,7 @@ void CodeEdit::convertToUpper()
     if (isReadOnly()) return;
     if (mBlockEdit) {
         QStringList lowerLines = mBlockEdit->blockText().toUpper()
-                                 .split("\n", QString::SplitBehavior::SkipEmptyParts);
+                                 .split("\n", Qt::SkipEmptyParts);
         mBlockEdit->replaceBlockText(lowerLines);
     } else {
         QTextCursor cursor = textCursor();
@@ -978,7 +978,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
 void CodeEdit::wheelEvent(QWheelEvent *e) {
     if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->delta();
+        const int delta = e->angleDelta().y();
         if (delta < 0) {
             int pix = fontInfo().pixelSize();
             zoomOut();
@@ -1026,18 +1026,18 @@ void CodeEdit::paintEvent(QPaintEvent* e)
 
                     // draw the additional line for folded blocks
                     QRect foldRect(0, bottom-1, int(r.left()+r.height()), 1);
-                    painter.fillRect(foldRect, toColor(Scheme::Edit_foldLineBg));
+                    painter.fillRect(foldRect, toColor(Theme::Edit_foldLineBg));
 
                     // draw folding block
                     qreal rad = r.height() / 3;
-                    painter.setPen(toColor(Scheme::Edit_foldLineBg));
-                    painter.setBrush(toColor(Scheme::Edit_foldLineBg));
+                    painter.setPen(toColor(Theme::Edit_foldLineBg));
+                    painter.setBrush(toColor(Theme::Edit_foldLineBg));
                     painter.drawRoundedRect(r, rad, rad);
                     QFont f = painter.font();
                     f.setBold(true);
                     painter.setFont(f);
                     r.setHeight(r.height()-1);
-                    painter.setPen(toColor(Scheme::Edit_foldLineFg));
+                    painter.setPen(toColor(Theme::Edit_foldLineFg));
                     painter.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, text);
                 }
             }
@@ -1545,9 +1545,9 @@ void CodeEdit::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
 int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol) const
 {
     int res = -1;
-    static QString parentheses("{[(/EMTCPIOF}])\\emtcpiof");
+    static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
     static QVector<QString> closingSymbols {
-        "}", "]", ")", "/", "embeddedCode", "embeddedCode", "text", "echo", "put", "externalInput", "externalOutput", "endIf"
+        "}", "]", ")", "/", "embeddedCode", "embeddedCode", "text", "echo", "put", "externalInput", "externalOutput", "endIf", "fold"
     };
     static int pSplit = parentheses.length()/2;
     QTextBlock block = document()->findBlockByNumber(line);
@@ -1586,7 +1586,7 @@ void CodeEdit::jumpTo(int line, int column)
 
 PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
-    static QString parentheses("{[(/EMTCPIOF}])\\emtcpiof");
+    static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
     static int pSplit = parentheses.length()/2;
     static int pAll = parentheses.indexOf("/");
     QTextBlock block = cursor.block();
@@ -1781,7 +1781,7 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
                 selection.cursor = textCursor();
                 selection.cursor.setPosition(block.position()+match.capturedStart(2));
                 selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
-                selection.format.setBackground(toColor(Scheme::Edit_currentWordBg));
+                selection.format.setBackground(toColor(Theme::Edit_currentWordBg));
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
             }
@@ -1799,12 +1799,12 @@ bool CodeEdit::extraSelMatchParentheses(QList<QTextEdit::ExtraSelection> &select
     if (mParenthesesMatch.isNull()) return false;
 
     if (mParenthesesMatch.pos == mParenthesesMatch.match) mParenthesesMatch.valid = false;
-    QColor fgColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidFg)
-                                             : toColor(Scheme::Edit_parenthesesInvalidFg);
-    QColor bgColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidBg)
-                                             : toColor(Scheme::Edit_parenthesesInvalidBg);
-    QColor bgBlinkColor = mParenthesesMatch.valid ? toColor(Scheme::Edit_parenthesesValidBgBlink)
-                                                  : toColor(Scheme::Edit_parenthesesInvalidBgBlink);
+    QColor fgColor = mParenthesesMatch.valid ? toColor(Theme::Edit_parenthesesValidFg)
+                                             : toColor(Theme::Edit_parenthesesInvalidFg);
+    QColor bgColor = mParenthesesMatch.valid ? toColor(Theme::Edit_parenthesesValidBg)
+                                             : toColor(Theme::Edit_parenthesesInvalidBg);
+    QColor bgBlinkColor = mParenthesesMatch.valid ? toColor(Theme::Edit_parenthesesValidBgBlink)
+                                                  : toColor(Theme::Edit_parenthesesInvalidBgBlink);
     QTextEdit::ExtraSelection selection;
     selection.cursor = textCursor();
     selection.cursor.setPosition(mParenthesesMatch.pos);
@@ -1845,7 +1845,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
             selection.cursor = tc;
             selection.format.setForeground(Qt::white);
-            selection.format.setBackground(toColor(Scheme::Edit_matchesBg));
+            selection.format.setBackground(toColor(Theme::Edit_matchesBg));
             selections << selection;
         }
 
@@ -1867,8 +1867,8 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     cur.setPosition(cur.position() + file.length(), QTextCursor::KeepAnchor);
     selection.cursor = cur;
     selection.format.setAnchorHref('"'+file+'"');
-    selection.format.setForeground(Scheme::color(Scheme::Syntax_directiveBody));
-    selection.format.setUnderlineColor(Scheme::color(Scheme::Syntax_directiveBody));
+    selection.format.setForeground(Theme::color(Theme::Syntax_directiveBody));
+    selection.format.setUnderlineColor(Theme::color(Theme::Syntax_directiveBody));
     selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     selections << selection;
 }
@@ -1947,7 +1947,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
     if (markFrom > markTo) qSwap(markFrom, markTo);
 
     QRect paintRect(event->rect());
-    painter.fillRect(paintRect, toColor(Scheme::Edit_linenrAreaBg));
+    painter.fillRect(paintRect, toColor(Theme::Edit_linenrAreaBg));
     int widthForNr = mLineNumberArea->width() - (showFolding() ? iconSize() : 0);
 
     QRect markRect(paintRect.left(), top, paintRect.width(), static_cast<int>(fRect.height())+1);
@@ -1959,7 +1959,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
             if (mark) {
                 markRect.moveTop(top);
                 markRect.setHeight(bottom-top);
-                painter.fillRect(markRect, toColor(Scheme::Edit_linenrAreaMarkBg));
+                painter.fillRect(markRect, toColor(Theme::Edit_linenrAreaMarkBg));
             }
 
             if(showLineNr()) {
@@ -1967,8 +1967,8 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 QFont f = font();
                 f.setBold(mark);
                 painter.setFont(f);
-                painter.setPen(mark ? toColor(Scheme::Edit_linenrAreaMarkFg)
-                                    : toColor(Scheme::Edit_linenrAreaFg));
+                painter.setPen(mark ? toColor(Theme::Edit_linenrAreaMarkFg)
+                                    : toColor(Theme::Edit_linenrAreaFg));
                 painter.drawText(0, top, widthForNr, fontMetrics().height(), Qt::AlignRight, number);
             }
 
@@ -1983,18 +1983,18 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                     foldRect.moveTop(top);
                     foldRect.setHeight(bottom-top);
                     if (mFoldMark.valid) {
-                        painter.fillRect(foldRect, toColor(Scheme::Edit_linenrAreaFoldBg));
+                        painter.fillRect(foldRect, toColor(Theme::Edit_linenrAreaFoldBg));
                     } else {
-                        painter.fillRect(foldRect, toColor(Scheme::Edit_parenthesesInvalidBg));
+                        painter.fillRect(foldRect, toColor(Theme::Edit_parenthesesInvalidBg));
                     }
                 }
                 if (foldRes % 3 > 0) {
                     int iTop = top + (4+fontMetrics().height()-iconSize())/2;
-                    QIcon icon = Scheme::icon(foldRes % 3 == 2 ? ":/solid/triangle-right" : ":/solid/triangle-down", true);
+                    QIcon icon = Theme::icon(foldRes % 3 == 2 ? ":/solid/triangle-right" : ":/solid/triangle-down", true);
                     painter.drawPixmap(widthForNr+1, iTop, icon.pixmap(iconSize()-2,iconSize()-2));
                     if (foldRes % 3 == 2) {
                         QRect foldRect(0, bottom-1, width(), 1);
-                        painter.fillRect(foldRect, toColor(Scheme::Edit_foldLineBg));
+                        painter.fillRect(foldRect, toColor(Theme::Edit_foldLineBg));
                     }
                 }
           }

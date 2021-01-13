@@ -26,7 +26,7 @@
 #include "optiontokenizer.h"
 #include "gclgms.h"
 #include "option.h"
-#include "scheme.h"
+#include "theme.h"
 #include "commonpaths.h"
 #include "editors/defaultsystemlogger.h"
 #include "editors/sysloglocator.h"
@@ -77,16 +77,16 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
 
     // option Format
     mInvalidKeyFormat.setFontItalic(true);
-    mInvalidKeyFormat.setForeground(Scheme::color(Scheme::Normal_Red));
+    mInvalidKeyFormat.setForeground(Theme::color(Theme::Normal_Red));
 
     mInvalidValueFormat.setFontItalic(true);
-    mInvalidValueFormat.setForeground(Scheme::color(Scheme::Normal_Red));
+    mInvalidValueFormat.setForeground(Theme::color(Theme::Normal_Red));
 
     mMissingValueFormat.setFontItalic(true);
-    mMissingValueFormat.setForeground(Scheme::color(Scheme::Active_Gray));
+    mMissingValueFormat.setForeground(Theme::color(Theme::Active_Gray));
 
     mDuplicateOptionFormat.setFontItalic(true);
-    mDuplicateOptionFormat.setForeground(Scheme::color(Scheme::Normal_Yellow));
+    mDuplicateOptionFormat.setForeground(Theme::color(Theme::Normal_Yellow));
 
     mDeprecateOptionFormat.setFontItalic(true);
     mDeprecateOptionFormat.setBackground(Qt::lightGray);
@@ -146,6 +146,8 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
     }
 
     QList<int> idList;
+    QMultiMap<int, int> idPositionMap;
+    int position = 0;
     for (OptionItem& item : commandLineList) {
         QString key = item.key;
         if (mOption->isASynonym(item.key))
@@ -153,14 +155,15 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
         if (mOption->isValid(key) || mOption->isASynonym(key))
             item.optionId = mOption->getOptionDefinition(key).number;
         idList << item.optionId;
+        idPositionMap.insert(item.optionId, position++);
     }
-
     for(OptionItem& item : commandLineList) {
         QString key = (mOption->isASynonym(item.key) ? mOption->getNameFromSynonym(item.key) : item.key);
         if (mOption->getOptionType(key) == optTypeImmediate)
             item.recurrent = false;
         else
            item.recurrent = (item.optionId != -1 && idList.count(item.optionId) > 1);
+        item.recurrentIndices = idPositionMap.values(item.optionId);
     }
 
     return commandLineList;
@@ -702,11 +705,15 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                      QString iv = QString::number(ivalue);
                      value = getValueFromStr(text, itype, ioptsubtype, n, iv);
                      if (value.simplified().isEmpty() && iopttype == optTypeBoolean) {
-                         iv = (ivalue == 0) ? "no" : "yes";
-                         value = getValueFromStr(text, itype, ioptsubtype, n, iv);
-                         if (value.simplified().isEmpty()) {
-                             iv = (ivalue == 0) ? "false" : "true";
-                             value = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                         if (ioptsubtype == optsubNoValue)  {
+                             value = "";
+                         } else {
+                            iv = (ivalue == 0) ? "no" : "yes";
+                            value = getValueFromStr(text, itype, ioptsubtype, n, iv);
+                            if (value.simplified().isEmpty()) {
+                                iv = (ivalue == 0) ? "false" : "true";
+                                value = getValueFromStr(str, itype, ioptsubtype, n, iv);
+                            }
                          }
                      }
                      valueRead = true;
@@ -718,8 +725,12 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                      break;
                 }
                 case optDataString: {  // 3
-                     QString sv = QString(svalue);
-                     value = getValueFromStr(text, itype, ioptsubtype, n, sv);
+                     if (ioptsubtype == optsubNoValue)  {
+                         value = "";
+                     } else {
+                         QString sv = QString(svalue);
+                         value = getValueFromStr(text, itype, ioptsubtype, n, sv);
+                     }
                      valueRead = true;
                      break;
                 }
@@ -747,8 +758,13 @@ bool OptionTokenizer::getOptionItemFromStr(SolverOptionItem *item, bool firstTim
                     item->key = key;
                     item->value = value;
                     item->text = (errorType != OptionErrorType::No_Error && commentCharIndex >= 0) ? text.mid(commentCharIndex+1).simplified() :  eolComment;
-                    item->error = ( errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option)
-                                   ? errorType : OptionErrorType::Value_Out_Of_Range;
+                    if (errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option) {
+                        item->error = errorType;
+                    } else if (errorType == OptionErrorType::UserDefined_Error && ioptsubtype == optsubNoValue) {
+                            item->error = OptionErrorType::Incorrect_Value_Type;
+                    } else {
+                        item->error = OptionErrorType::Value_Out_Of_Range;
+                    }
                     item->disabled = false;
 
                     mOption->setModified(QString::fromLatin1(name), true);
@@ -1030,10 +1046,13 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
                    item->value = definedValue;
                    item->text = eolComment;
                    item->error = errorType;
-                   if (errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option)
+                   if (errorType == OptionErrorType::No_Error || errorType == OptionErrorType::Deprecated_Option) {
                        item->error = errorType;
-                   else
+                   } else if (errorType == OptionErrorType::UserDefined_Error && ioptsubtype == optsubNoValue) {
+                           item->error = OptionErrorType::Incorrect_Value_Type;
+                   } else {
                        item->error = OptionErrorType::Value_Out_Of_Range;
+                   }
 
                    mOption->setModified(QString::fromLatin1(name), true);
                }
@@ -1084,10 +1103,10 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
         }
         if (key.isEmpty()) {
             if (line.contains(mOption->getDefaultSeparator())) {
-                QVector<QStringRef> sref = line.splitRef(mOption->getDefaultSeparator(), QString::SkipEmptyParts);
+                QVector<QStringRef> sref = line.splitRef(mOption->getDefaultSeparator(), Qt::SkipEmptyParts);
                 key = sref.first().toString();
             } else if (line.contains(" ")) {
-                QVector<QStringRef> sref = line.splitRef(" ", QString::SkipEmptyParts);
+                QVector<QStringRef> sref = line.splitRef(" ", Qt::SkipEmptyParts);
                 key = sref.first().toString();
             } else  {
                 return hintKey;
@@ -1108,7 +1127,7 @@ QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QStrin
 
     for(QChar ch : mOption->getEOLChars()) {
         if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
-            value = value.split(getEOLCommentChar(), QString::SkipEmptyParts).at(0).simplified();
+            value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
             break;
         }
     }
@@ -1145,7 +1164,7 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
 
     for(QChar ch : mOption->getEOLChars()) {
         if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
-            value = value.split(getEOLCommentChar(), QString::SkipEmptyParts).at(0).simplified();
+            value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
             break;
         }
     }
@@ -1274,7 +1293,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
     out.setCodec( codec );
 
     for(SolverOptionItem* item: items) {
-            out << formatOption( item ) << endl;
+            out << formatOption( item ) << Qt::endl;
             switch (item->error) {
             case OptionErrorType::Invalid_Key:
                 logger()->append( QString("Unknown option '%1'").arg(item->key),

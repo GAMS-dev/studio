@@ -21,7 +21,7 @@
 #include <QApplication>
 #include <QPalette>
 #include "optiondefinitionmodel.h"
-#include "scheme.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -118,25 +118,29 @@ QVariant OptionDefinitionModel::data(const QModelIndex& index, int role) const
         }
         return QVariant();
     }
-    case Qt::TextColorRole: {
+    case Qt::ForegroundRole: {
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem &&  item->modified())
-            return  QVariant::fromValue(Scheme::color(Scheme::Normal_Green, Scheme::StudioScope));
+            return  QVariant::fromValue(Theme::color(Theme::Normal_Green));
         else
             return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
     }
-    case Qt::BackgroundColorRole: {
+    case Qt::BackgroundRole: {
         OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
         OptionDefinitionItem *parentItem = item->parentItem();
         if (parentItem == rootItem) {
             if (index.row() % 2 == 0)
                return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
             else
-                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Background));
+                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
         } else {
             return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         }
+    }
+    case Qt::ToolTipRole: {
+        OptionDefinitionItem* item = static_cast<OptionDefinitionItem*>(index.internalPointer());
+        return item->data(index.column());
     }
     default:
          break;

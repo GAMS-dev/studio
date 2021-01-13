@@ -129,11 +129,8 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::addColumn<bool>("hidden");
 
     QTest::newRow("ALPHAECP") << "ALPHAECP"  << "optalphaecp.def"  << false;
-    QTest::newRow("AMPL")     << "AMPL"      << "optampl.def"      << false;
     QTest::newRow("ANTIGONE") << "ANTIGONE"  << "optantigone.def"  << false;
     QTest::newRow("BARON")    << "BARON"     << "optbaron.def"     << false;
-    QTest::newRow("BDMLP")    << "BDMLP"     << "optbdmlp.def"     << false;
-    QTest::newRow("BENCH")    << "BENCH"     << "optbench.def"     << false;
     QTest::newRow("BONMIN")   << "BONMIN"    << "optbonmin.def"    << false;
     QTest::newRow("BONMINH")  << "BONMINH"   << "optbonmin.def"    << false;
     QTest::newRow("CBC")      << "CBC"       << "optcbc.def"       << false;
@@ -146,14 +143,8 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
 
     QTest::newRow("CONOPT")   << "CONOPT"    << "optconopt.def"    << false;
     QTest::newRow("CONOPT4")  << "CONOPT4"   << "optconopt4.def"   << false;
-
     QTest::newRow("CONOPTD")  << "CONOPTD"   << "optconopt.def"    << true;
 
-    QTest::newRow("CONVERT")  << "CONVERT"   << "optconvert.def"   << false;
-
-    QTest::newRow("CONVERTD") << "CONVERTD"  << "optconvert.def"   << true;
-
-    QTest::newRow("COUENNE")  << "COUENNE"   << ""                 << false;
     QTest::newRow("CPLEX")    << "CPLEX"     << "optcplex.def"     << false;
     QTest::newRow("cPleX")    << "cPleX"     << "optcplex.def"     << false;
 
@@ -182,11 +173,9 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
 
     QTest::newRow("LINDO")   << "LINDO"     << "optlindo.def"     << false;
     QTest::newRow("LINDOGLOBAL")   << "LINDOGLOBAL"   << "optlindoglobal.def"   << false;
-    QTest::newRow("LINGO")         << "LINGO"         << "optlingo.def"         << false;
     QTest::newRow("LOCALSOLVER")   << "LOCALSOLVER"   << "optlocalsolver.def"   << false;
     QTest::newRow("LOCALSOLVER70") << "LOCALSOLVER70" << "optlocalsolver.def"   << true;
     QTest::newRow("LOGMIP")        << "LOGMIP"        << "optjams.def"          << false;
-    QTest::newRow("LS")            << "LS"            << "optls.def"            << false;
     QTest::newRow("MILES")         << "MILES"         << "optmiles.def"         << false;
 
     QTest::newRow("MILESE")        << "MILESE"        << "optmiles.def"         << true;
@@ -197,7 +186,6 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("MINOS55")      << "MINOS55"        << "optminos.def"         << true;
 
     QTest::newRow("MOSEK")        << "MOSEK"          << "optmosek.def"         << false;
-    QTest::newRow("MPECDUMP")     << "MPECDUMP"       << "optmpecdump.def"      << false;
     QTest::newRow("MPSGE")        << "MPSGE"          << "optmpsge.def"         << false;
     QTest::newRow("MSNLP")        << "MSNLP"          << "optmsnlp.def"         << false;
     QTest::newRow("NLPEC")        << "NLPEC"          << "optnlpec.def"         << false;
@@ -215,7 +203,6 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("PATHC")        << "PATHC"          << "optpath.def"          << true;
 
     QTest::newRow("PATHNLP")      << "PATHNLP"        << "optpathnlp.def"       << false;
-    QTest::newRow("PYOMO")        << "PYOMO"          << "optpyomo.def"         << false;
 
     QTest::newRow("QUADMINOS")    << "QUADMINOS"      << "optminos.def"         << true;
     QTest::newRow("quadminos")    << "quadminos"      << "optminos.def"         << true;

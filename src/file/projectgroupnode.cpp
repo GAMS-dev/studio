@@ -52,7 +52,7 @@ ProjectGroupNode::~ProjectGroupNode()
 
 QIcon ProjectGroupNode::icon()
 {
-    return Scheme::icon(":/img/folder-open", true);
+    return Theme::icon(":/img/folder-open", true);
 }
 
 int ProjectGroupNode::childCount() const
@@ -305,6 +305,8 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
 
         } else {
             QString fName = parts.first().toString();
+            if (fName.startsWith("\"") && fName.endsWith("\""))
+                fName = fName.mid(1, fName.length()-2);
             QStringList locations;
             if (iCode == 2) { // INC
                 locations << location();
@@ -313,7 +315,7 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
                 if (inDir.isNull()) emit getParameterValue("IDir", inDir);
                 if (!inDir.isNull()) {
                     // check if there are joined paths
-                    locations << QDir::fromNativeSeparators(inDir).split(QDir::listSeparator(), QString::SkipEmptyParts);
+                    locations << QDir::fromNativeSeparators(inDir).split(QDir::listSeparator(), Qt::SkipEmptyParts);
                 } else {
                     emit getParameterValue("InputDir*", inDir);
                     if (inDir.isNull()) emit getParameterValue("IDir*", inDir);
@@ -588,48 +590,50 @@ QStringList ProjectRunGroupNode::getRunParametersHistory() const
 /// \param itemList list of options given by studio and user
 /// \return QStringList all arguments
 ///
-QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList)
+QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt)
 {
     // set studio default parameters
-    QMap<QString, QString> defaultGamsArgs;
-    defaultGamsArgs.insert("lo", "3");
-    defaultGamsArgs.insert("ide", "1");
-    defaultGamsArgs.insert("er", "99");
-    defaultGamsArgs.insert("errmsg", "1");
-    defaultGamsArgs.insert("pagesize", "0");
-    defaultGamsArgs.insert("LstTitleLeftAligned", "1");
+    QMultiMap<int, QString> gamsArguments;
     QStringList defaultArgumentList;
-    defaultArgumentList << "lo" << "ide" << "er" << "errmsg" << "pagesize" << "LstTitleLeftAligned";
+    QStringList defaultArgumentValueList;
+    QList<int> defaultArgumentIdList = QList<int>();
+    defaultArgumentList      << "logoption" << "ide" << "errorlog" << "errmsg" << "pagesize" << "lstTitleleftaligned" ;
+    defaultArgumentValueList << "3"         << "1"   << "99"       << "1"      << "0"        << "1"                   ;
+    int position = 0;
+    for (QString arg : defaultArgumentList) {
+        defaultArgumentIdList << opt->getOrdinalNumber(arg);
+        gamsArguments.insert(opt->getOrdinalNumber(arg), defaultArgumentValueList.at(position++));
+    }
+
     for(QString param: defaultParameters) {
-        QStringList list = param.split("=", QString::SkipEmptyParts);
+        QStringList list = param.split("=", Qt::SkipEmptyParts);
         if (list.count() != 2)
             continue;
-        defaultGamsArgs.insert( list[0], list[1] );
         defaultArgumentList << list[0];
+        defaultArgumentValueList << list[1];
+        defaultArgumentIdList << opt->getOrdinalNumber(list[0]);
     }
-    QMap<QString, QString> gamsArgs(defaultGamsArgs);
-
 
     // find directory changes first
     QString path = "";
     QString cdir = "";
     QString wdir = "";
     QString filestem = "";
+    QStringList argumentList;
+    QStringList argumentValueList;
+    QList<int> argumentIdList = QList<int>();
     for (option::OptionItem item : itemList) {
-        if (QString::compare(item.key, "curdir", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "cdir", Qt::CaseInsensitive) == 0) {
+        argumentList      << item.key;
+        argumentIdList    << item.optionId;
+        argumentValueList << item.value;
+        gamsArguments.insert(item.optionId, item.value);
+        if (item.optionId == opt->getOrdinalNumber("curdir")) {
             cdir = item.value;
-            gamsArgs[item.key] = item.value;
-        }
-
-        if (QString::compare(item.key, "workdir", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "wdir", Qt::CaseInsensitive) == 0) {
+        } else if (item.optionId == opt->getOrdinalNumber("workdir")) {
             wdir = item.value;
-            gamsArgs[item.key] = item.value;
-        }
-
-        if (QString::compare(item.key, "filestem", Qt::CaseInsensitive) == 0)
+        } else if (item.optionId == opt->getOrdinalNumber("filestem")) {
             filestem = item.value;
+        }
     }
 
     if (!cdir.isEmpty()) path = cdir;
@@ -656,13 +660,6 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     bool defaultOverride = false;
     // iterate options
     for (option::OptionItem item : itemList) {
-
-        // keep unmodified value as option for output
-        if (item.recurrent)
-             gamsArgs.insert(item.key, item.value);
-        else
-            gamsArgs.insertMulti(item.key, item.value);
-
         // convert to native seperator
         QString value = item.value;
         value = value.replace('\\', '/');
@@ -673,19 +670,17 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
         if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
 
         // set parameters
-        if (QString::compare(item.key, "o", Qt::CaseInsensitive) == 0
-                || QString::compare(item.key, "output", Qt::CaseInsensitive) == 0) {
+        if (item.optionId == opt->getOrdinalNumber("output")) {
             mParameterHash.remove("lst"); // remove default
-
             if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
                         || QString::compare(value, "/dev/null", Qt::CaseInsensitive) == 0))
             setParameter("lst", cleanPath(path, value));
 
-        } else if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0) {
+        } else if (item.optionId == opt->getOrdinalNumber("GDX")) {
             if (value == "default") value = "\"" + filestem + ".gdx\"";
             setParameter("gdx", cleanPath(path, value));
 
-        } else if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0) {
+        } else if (item.optionId == opt->getOrdinalNumber("Reference")) {
             if (value == "default") value = "\"" + filestem + ".ref\"";
             setParameter("ref", cleanPath(path, value));
 
@@ -694,7 +689,7 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
             setLogLocation(cleanPath(path, value));
         }
 
-        if (defaultGamsArgs.contains(item.key))
+        if (item.optionId != -1 && defaultArgumentIdList.contains(item.optionId))
             defaultOverride = true;
     }
 
@@ -706,22 +701,28 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
     // prepare gams command
     QStringList output { CommonPaths::nativePathForProcess(gmsLocation) };
     // normalize gams parameter format
-    for(QString arg : defaultArgumentList) {
-        output.append( arg + "=" + defaultGamsArgs[arg] );
+    position = 0;
+    for(int id : defaultArgumentIdList) {
+        if (defaultArgumentIdList.contains(id))
+            output.append( QString("%1=%2").arg(defaultArgumentList.at(position)).arg( defaultArgumentValueList.at(position)) );
+        else
+            output.append( QString("%1=%2").arg(defaultArgumentList.at(position)).arg( gamsArguments.value(id)) );
+        position++;
     }
-    QStringList recurrentArgumentList(defaultArgumentList);
-    for (option::OptionItem item : itemList) {
+    position = 0;
+    for(option::OptionItem item : itemList) {
         if (item.recurrent) {
-            if (recurrentArgumentList.contains(item.key))
-                output.append( item.key + "=" + gamsArgs[item.key] );
-            else
-                recurrentArgumentList << item.key;
+            if (item.recurrentIndices.first() == position)
+                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
         } else {
-            output.append( item.key + "=" + item.value );
-            recurrentArgumentList << item.key;
+            if (item.optionId == -1) { // double-dashed option or unknown option
+                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( item.value ) );
+            } else {
+                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
+            }
         }
+        position++;
     }
-
     return output;
 }
 

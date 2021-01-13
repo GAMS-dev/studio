@@ -350,7 +350,7 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
         }
     }
     if (event->type() == QEvent::Wheel) {
-        int delta = static_cast<QWheelEvent*>(event)->delta();
+        int delta = static_cast<QWheelEvent*>(event)->angleDelta().y();
         mMapper->moveVisibleTopLine(delta / -40);
         if (verticalScrollBar()->maximum()) {
             verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));

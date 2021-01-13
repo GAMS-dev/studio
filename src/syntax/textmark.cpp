@@ -22,7 +22,7 @@
 #include "file.h"
 #include "logger.h"
 #include "exception.h"
-#include "scheme.h"
+#include "theme.h"
 #include "settings.h"
 
 namespace gams {
@@ -107,13 +107,13 @@ QColor TextMark::color() const
 {
     if (mReference) {
         if (mReference->type() == TextMark::error)
-            return toColor(Scheme::Mark_errorFg);
+            return toColor(Theme::Mark_errorFg);
         if (mReference->fileKind() == FileKind::Lst)
-            return toColor(Scheme::Mark_listingFg);
+            return toColor(Theme::Mark_listingFg);
     } else {
-        return toColor(Scheme::Mark_errorFg);
+        return toColor(Theme::Mark_errorFg);
     }
-    return toColor(Scheme::Mark_fileFg);
+    return toColor(Theme::Mark_fileFg);
 }
 
 FileKind TextMark::fileKind()
@@ -130,12 +130,12 @@ QIcon TextMark::icon()
 {
     switch (mType) {
     case error:
-        return Scheme::icon(":/img/exclam-circle-r", Scheme::EditorScope);
+        return Theme::icon(":/img/exclam-circle-r");
     case link:
-        return mReference ? Scheme::icon(":/img/err-ref", Scheme::EditorScope)
-                          : Scheme::icon(":/img/err-ref-missing", Scheme::EditorScope);
+        return mReference ? Theme::icon(":/img/err-ref")
+                          : Theme::icon(":/img/err-ref-missing");
     case bookmark: {
-        QIcon ico = Scheme::icon(":/img/bookmark", Scheme::EditorScope);
+        QIcon ico = Theme::icon(":/img/bookmark");
         return ico;
     }
     default:

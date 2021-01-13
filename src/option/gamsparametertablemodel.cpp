@@ -22,7 +22,7 @@
 #include <QApplication>
 
 #include "option.h"
-#include "scheme.h"
+#include "theme.h"
 #include "gamsparametertablemodel.h"
 
 namespace gams {
@@ -64,19 +64,19 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
             if (mOptionItem.at(index).recurrent)
-               return QVariant::fromValue(Scheme::icon(":/img/square-red-yellow"));
+               return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
             else
-               return QVariant::fromValue(Scheme::icon(":/img/square-red"));
+               return QVariant::fromValue(Theme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
                   if (mOptionItem.at(index).recurrent)
-                     return QVariant::fromValue(Scheme::icon(":/img/square-gray-yellow"));
+                     return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
                   else
-                     return QVariant::fromValue(Scheme::icon(":/img/square-gray"));
+                     return QVariant::fromValue(Theme::icon(":/img/square-gray"));
         } else {
             if (mOptionItem.at(index).recurrent)
-                return QVariant::fromValue(Scheme::icon(":/img/square-green-yellow"));
+                return QVariant::fromValue(Theme::icon(":/img/square-green-yellow"));
             else
-                return QVariant::fromValue(Scheme::icon(":/img/square-green"));
+                return QVariant::fromValue(Theme::icon(":/img/square-green"));
         }
     case Qt::ToolTipRole:
         QString tooltipText = "";
@@ -185,7 +185,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
         }
         return tooltipText;
     }
-    case Qt::TextColorRole: {
+    case Qt::ForegroundRole: {
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
 
@@ -194,7 +194,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
 
         if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
-                return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                  return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
@@ -203,7 +203,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
                 if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
                 }  else if (mOptionItem.at(row).value.simplified().isEmpty()) {
-                        return QVariant::fromValue(Scheme::color(Scheme::Active_Gray));
+                        return QVariant::fromValue(Theme::color(Theme::Active_Gray));
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
@@ -212,7 +212,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
                       case OptionErrorType::Missing_Value:
                       case OptionErrorType::Incorrect_Value_Type:
                       case OptionErrorType::Value_Out_Of_Range:
-                            return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                            return QVariant::fromValue(Theme::color(Theme::Normal_Red));
                       case OptionErrorType::No_Error:
                             return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                       default:
@@ -221,7 +221,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             }
         } else { // invalid option
             if (col == GamsParameterTableModel::COLUMN_OPTION_KEY)
-               return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+               return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }

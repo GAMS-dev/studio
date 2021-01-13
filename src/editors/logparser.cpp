@@ -107,7 +107,7 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
 {
     mbState.marks = MarkData();
     hasError = false;
-    if (!line.endsWith(']') || line.length() < 5) return line;
+    if (!line.endsWith(']') || line.length() < 5 || line.startsWith('[')) return line;
 
     mbState.errData.errNr = 0;
     QString result;
@@ -139,8 +139,6 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
             result = capture(line, posA, posB, -posB, '[').toString();
             ++posB;
             int end = posB+1;
-            end = line.indexOf('"', end);
-            end = line.indexOf('"', end);
             end = line.indexOf(']', end);
             mbState.errData.errNr = (ok ? errNr : 0);
             mbState.marks.setErrMark(line.mid(posB, end-posB), mbState.errData.errNr);
@@ -175,13 +173,8 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
 
                 // FIL + REF
             } else if (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:") {
-                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
-                ++posB;
+                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
                 mbState.marks.setMark(line.mid(start, posB-start));
-
-                bool fileExists = false;
-                emit hasFile(fName, fileExists);
-                capture(line, posA, posB, 1, ']');
                 ++posB;
 
                 // TIT

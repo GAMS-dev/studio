@@ -219,8 +219,6 @@ SOURCES += \
     reference/symbolreferenceitem.cpp \
     reference/symbolreferencewidget.cpp \
     reference/symboltablemodel.cpp \
-    scheme.cpp \
-    schemewidget.cpp \
     search/result.cpp \
     search/resultsview.cpp \
     search/search.cpp \
@@ -249,6 +247,8 @@ SOURCES += \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
     tabdialog.cpp \
+    theme.cpp \
+    themewidget.cpp \
     viewhelper.cpp \
     welcomepage.cpp \
     wplabel.cpp
@@ -403,8 +403,6 @@ HEADERS += \
     reference/symbolreferenceitem.h \
     reference/symbolreferencewidget.h \
     reference/symboltablemodel.h \
-    scheme.h \
-    schemewidget.h \
     search/result.h \
     search/resultsview.h \
     search/search.h \
@@ -435,6 +433,8 @@ HEADERS += \
     syntax/textmark.h \
     syntax/textmarkrepo.h \
     tabdialog.h \
+    theme.h \
+    themewidget.h \
     version.h \
     viewhelper.h \
     welcomepage.h \
@@ -462,13 +462,13 @@ FORMS += \
     option/solveroptionwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
-    schemewidget.ui \
     search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
     support/gamslicensingdialog.ui \
     support/updatedialog.ui \
     tabdialog.ui \
+    themewidget.ui \
     welcomepage.ui
 
 RESOURCES += \

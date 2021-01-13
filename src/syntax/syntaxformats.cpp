@@ -33,7 +33,7 @@ QString syntaxKindName(SyntaxKind kind)
     return QVariant::fromValue(kind).toString();
 }
 
-void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
+void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
 {
     mColorSlot = slot;
     charFormat().setProperty(QTextFormat::UserProperty, intSyntaxType());
@@ -41,8 +41,8 @@ void SyntaxAbstract::assignColorSlot(Scheme::ColorSlot slot)
         charFormat().setForeground(toColor(slot));
     else
         charFormat().setForeground(Qt::black);
-    charFormat().setFontWeight(Scheme::hasFlag(slot, Scheme::fBold) ? QFont::Bold : QFont::Normal);
-    charFormat().setFontItalic(Scheme::hasFlag(slot, Scheme::fItalic));
+    charFormat().setFontWeight(Theme::hasFlag(slot, Theme::fBold) ? QFont::Bold : QFont::Normal);
+    charFormat().setFontItalic(Theme::hasFlag(slot, Theme::fItalic));
 }
 
 SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
@@ -54,7 +54,7 @@ SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 QTextCharFormat SyntaxAbstract::charFormatError()
 {
     QTextCharFormat errorFormat;
-    errorFormat.setUnderlineColor(Scheme::color(Scheme::Normal_Red));
+    errorFormat.setUnderlineColor(Theme::color(Theme::Normal_Red));
     errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     return errorFormat;
 }
@@ -181,7 +181,9 @@ SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKin
     mFlavors.insert(QString("ifThenI").toLower(), 11);
     mFlavors.insert(QString("ifThenE").toLower(), 11);
     mFlavors.insert(QString("endIf").toLower(), 12);
-    mFlavors.insert(QString("include").toLower(), 13);
+    mFlavors.insert(QString("onFold").toLower(), 13);
+    mFlavors.insert(QString("offFold").toLower(), 14);
+    mFlavors.insert(QString("include").toLower(), 15);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);

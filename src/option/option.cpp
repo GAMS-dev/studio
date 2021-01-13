@@ -247,7 +247,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
 
 QString Option::getNameFromSynonym(const QString &synonym) const
 {
-    return mSynonymMap[synonym.toUpper()];
+    return mSynonymMap.value(synonym.toUpper());
 }
 
 optOptionType Option::getOptionType(const QString &optionName) const
@@ -489,12 +489,12 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
 
     if (!optReadDefinition(mOPTHandle, QDir(systemPath).filePath(optionFileName).toLatin1())) {
 
-         QMap<QString, QString> synonym;
+         QMultiMap<QString, QString> synonym;
          char name[GMS_SSSIZE];
          char syn[GMS_SSSIZE];
          for (int i = 1; i <= optSynonymCount(mOPTHandle); ++i) {
              optGetSynonym(mOPTHandle, i, syn, name);
-             synonym.insertMulti(QString::fromLatin1(name), QString::fromLatin1(syn));
+             synonym.insert(QString::fromLatin1(name), QString::fromLatin1(syn));
              if (optIsDeprecated(mOPTHandle, syn))
                 mDeprecatedSynonym << QString::fromLatin1(syn).toUpper();
          }
@@ -560,7 +560,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
                  while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
                        if (!isDeprecated(it.value()))
                           synonymList << it.value();
-                       mSynonymMap.insertMulti(it.value().toUpper(), it.key());
+                       mSynonymMap.insert(it.value().toUpper(), it.key());
                        ++it;
                  }
 

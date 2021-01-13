@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "envvartablemodel.h"
-#include "scheme.h"
+#include "theme.h"
 
 #include <QApplication>
 
@@ -52,11 +52,11 @@ QVariant EnvVarTableModel::headerData(int index, Qt::Orientation orientation, in
             return mCheckState[index];
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            return QVariant::fromValue(Scheme::icon(":/img/square-red"));
+            return QVariant::fromValue(Theme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-                  return QVariant::fromValue(Scheme::icon(":/img/square-gray"));
+                  return QVariant::fromValue(Theme::icon(":/img/square-gray"));
         } else {
-                return QVariant::fromValue(Scheme::icon(":/img/square-green"));
+                return QVariant::fromValue(Theme::icon(":/img/square-green"));
         }
     case Qt::ToolTipRole:
         QString tooltipText = "";
@@ -139,7 +139,7 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
         }
         return tooltipText;
     }
-    case Qt::TextColorRole: {
+    case Qt::ForegroundRole: {
          return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
      }
     default:

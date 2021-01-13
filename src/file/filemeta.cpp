@@ -347,16 +347,16 @@ void FileMeta::initEditorColors()
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(w))
             ed = lxi->textView()->edit();
         if (!ed) continue;
-        if (Scheme::color(Scheme::Edit_text) == Qt::transparent &&
-                Scheme::color(Scheme::Edit_background) == Qt::transparent) {
+        if (Theme::color(Theme::Edit_text) == Qt::transparent &&
+                Theme::color(Theme::Edit_background) == Qt::transparent) {
             ed->setAutoFillBackground(false);
             ed->setPalette(QPalette());
-        } else if (ed->palette().windowText().color() != Scheme::color(Scheme::Edit_text) ||
-                ed->palette().window().color() != Scheme::color(Scheme::Edit_background)) {
+        } else if (ed->palette().windowText().color() != Theme::color(Theme::Edit_text) ||
+                ed->palette().window().color() != Theme::color(Theme::Edit_background)) {
             ed->setAutoFillBackground(true);
             QPalette pal = ed->palette();
-            pal.setColor(QPalette::Text, Scheme::color(Scheme::Edit_text));
-            pal.setColor(QPalette::Base, Scheme::color(Scheme::Edit_background));
+            pal.setColor(QPalette::Text, Theme::color(Theme::Edit_text));
+            pal.setColor(QPalette::Base, Theme::color(Theme::Edit_background));
             ed->setPalette(pal);
         }
     }
@@ -373,7 +373,7 @@ void FileMeta::updateEditorColors()
     }
 }
 
-void FileMeta::invalidateScheme()
+void FileMeta::invalidateTheme()
 {
     updateEditorColors();
     updateSyntaxColors();
@@ -601,8 +601,8 @@ void FileMeta::save(const QString &newLocation)
     if (location.isEmpty() || location.startsWith('['))
         EXCEPT() << "Can't save file '" << location << "'";
 
+    mFileRepo->unwatch(this);
     if (document()) {
-        mActivelySaved = true;
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
             EXCEPT() << "Can't save " << location;
         QTextStream out(&file);
@@ -612,17 +612,14 @@ void FileMeta::save(const QString &newLocation)
         file.close();
 
     } else if (kind() == FileKind::Opt) {
-        mActivelySaved = true;
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
 
     } else if (kind() == FileKind::Guc) {
-        mActivelySaved = true;
         option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor( mEditors.first() );
         if (gucEditor) gucEditor->saveConfigFile(location);
 
     } else { // no document, e.g. lst
-        mActivelySaved = true;
         QFile old(mLocation);
         if (file.exists()) QFile::remove(file.fileName());
 
@@ -675,9 +672,12 @@ FileMeta::FileDifferences FileMeta::compare(QString fileName)
     return res;
 }
 
-void FileMeta::refreshMetaData()
+bool FileMeta::refreshMetaData()
 {
-    mData = Data(location(), mData.type);
+    Data data(location(), mData.type);
+    bool res = (mData.compare(data) == FdEqual);
+    mData = data;
+    return res;
 }
 
 void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int length)

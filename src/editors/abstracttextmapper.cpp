@@ -551,7 +551,7 @@ QString AbstractTextMapper::selectedText() const
         }
         QByteArray raw;
         raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
-        all.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
+        all.append(mCodec ? mCodec->toUnicode(raw).toUtf8() : raw);
         if (chunk->nr == chunkCount()-1) break;
 
         chunk = getChunk(chunk->nr + 1);

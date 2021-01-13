@@ -211,7 +211,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
             this, [this](){ miroDeploy(false, miro::MiroDeployMode::None); });
-    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::testDeploy,
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::deploy,
             this, &MainWindow::miroDeploy);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::newAssemblyFileData,
             this, &MainWindow::writeNewAssemblyFileData);
@@ -246,11 +246,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setPalette(pal);
 
     mNavigationHistory->startRecord();
-    QPushButton *tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->mainTabs);
+    QPushButton *tabMenu = new QPushButton(Theme::icon(":/%1/menu"), "", ui->mainTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showMainTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->mainTabs->setCornerWidget(tabMenu);
-    tabMenu = new QPushButton(Scheme::icon(":/%1/menu"), "", ui->logTabs);
+    tabMenu = new QPushButton(Theme::icon(":/%1/menu"), "", ui->logTabs);
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
@@ -270,8 +270,8 @@ MainWindow::MainWindow(QWidget *parent)
     // this needs to be re-called for studio startup, as the call when loading settings is too early
     ViewHelper::setAppearance();
 #endif
-    connect(Scheme::instance(), &Scheme::changed, this, &MainWindow::invalidateScheme);
-    invalidateScheme();
+    connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
+    invalidateTheme();
     initGamsStandardPaths();
     updateRunState();
 
@@ -341,46 +341,46 @@ void MainWindow::initEnvironment()
 
 void MainWindow::initIcons()
 {
-    setWindowIcon(Scheme::icon(":/img/gams-w"));
-    ui->actionCompile->setIcon(Scheme::icon(":/%1/code"));
-    ui->actionCompile_with_GDX_Creation->setIcon(Scheme::icon(":/%1/code-gdx"));
-    ui->actionCopy->setIcon(Scheme::icon(":/%1/copy"));
-    ui->actionCut->setIcon(Scheme::icon(":/%1/cut"));
-    ui->actionClose->setIcon(Scheme::icon(":/%1/remove"));
-    ui->actionExit_Application->setIcon(Scheme::icon(":/%1/door-open"));
-    ui->actionGAMS_Library->setIcon(Scheme::icon(":/%1/books"));
-    ui->actionGDX_Diff->setIcon(Scheme::icon(":/%1/gdxdiff"));
-    ui->actionHelp_View->setIcon(Scheme::icon(":/%1/question"));
-    ui->actionInterrupt->setIcon(Scheme::icon(":/%1/stop"));
-    ui->actionNew->setIcon(Scheme::icon(":/%1/file"));
-    ui->actionNextBookmark->setIcon(Scheme::icon(":/%1/forward"));
-    ui->actionOpen->setIcon(Scheme::icon(":/%1/folder-open-bw"));
-    ui->actionPaste->setIcon(Scheme::icon(":/%1/paste"));
-    ui->actionPreviousBookmark->setIcon(Scheme::icon(":/%1/backward"));
-    ui->actionProcess_Log->setIcon(Scheme::icon(":/%1/output"));
-    ui->actionProject_View->setIcon(Scheme::icon(":/%1/project"));
-    ui->actionRedo->setIcon(Scheme::icon(":/%1/redo"));
-    ui->actionReset_Zoom->setIcon(Scheme::icon(":/%1/search-off"));
-    ui->actionRun->setIcon(Scheme::icon(":/%1/play"));
-    ui->actionRun_with_GDX_Creation->setIcon(Scheme::icon(":/%1/run-gdx"));
-    ui->actionRunNeos->setIcon(Scheme::icon(":/img/neos", false, ":/img/neos-g"));
-    ui->actionRunEngine->setIcon(Scheme::icon(":/img/engine", false, ":/img/engine-g"));
-    ui->actionSave->setIcon(Scheme::icon(":/%1/save"));
-    ui->actionSearch->setIcon(Scheme::icon(":/%1/search"));
-    ui->actionSettings->setIcon(Scheme::icon(":/%1/cog"));
-    ui->actionStop->setIcon(Scheme::icon(":/%1/kill"));
-    ui->actionTerminal->setIcon(Scheme::icon(":/%1/terminal"));
-    ui->actionToggleBookmark->setIcon(Scheme::icon(":/%1/bookmark"));
-    ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show"));
-    ui->actionUndo->setIcon(Scheme::icon(":/%1/undo"));
-    ui->actionUpdate->setIcon(Scheme::icon(":/%1/update"));
-    ui->actionZoom_In->setIcon(Scheme::icon(":/%1/search-plus"));
-    ui->actionZoom_Out->setIcon(Scheme::icon(":/%1/search-minus"));
-    ui->actionShowToolbar->setIcon(Scheme::icon(":/%1/hammer"));
-    ui->actionHelp->setIcon(Scheme::icon(":/%1/book"));
-    ui->actionChangelog->setIcon(Scheme::icon(":/%1/new"));
-    ui->actionGoForward->setIcon(Scheme::icon(":/%1/forward"));
-    ui->actionGoBack->setIcon(Scheme::icon(":/%1/backward"));
+    setWindowIcon(Theme::icon(":/img/gams-w"));
+    ui->actionCompile->setIcon(Theme::icon(":/%1/code"));
+    ui->actionCompile_with_GDX_Creation->setIcon(Theme::icon(":/%1/code-gdx"));
+    ui->actionCopy->setIcon(Theme::icon(":/%1/copy"));
+    ui->actionCut->setIcon(Theme::icon(":/%1/cut"));
+    ui->actionClose->setIcon(Theme::icon(":/%1/remove"));
+    ui->actionExit_Application->setIcon(Theme::icon(":/%1/door-open"));
+    ui->actionGAMS_Library->setIcon(Theme::icon(":/%1/books"));
+    ui->actionGDX_Diff->setIcon(Theme::icon(":/%1/gdxdiff"));
+    ui->actionHelp_View->setIcon(Theme::icon(":/%1/question"));
+    ui->actionInterrupt->setIcon(Theme::icon(":/%1/stop"));
+    ui->actionNew->setIcon(Theme::icon(":/%1/file"));
+    ui->actionNextBookmark->setIcon(Theme::icon(":/%1/forward"));
+    ui->actionOpen->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->actionPaste->setIcon(Theme::icon(":/%1/paste"));
+    ui->actionPreviousBookmark->setIcon(Theme::icon(":/%1/backward"));
+    ui->actionProcess_Log->setIcon(Theme::icon(":/%1/output"));
+    ui->actionProject_View->setIcon(Theme::icon(":/%1/project"));
+    ui->actionRedo->setIcon(Theme::icon(":/%1/redo"));
+    ui->actionReset_Zoom->setIcon(Theme::icon(":/%1/search-off"));
+    ui->actionRun->setIcon(Theme::icon(":/%1/play"));
+    ui->actionRun_with_GDX_Creation->setIcon(Theme::icon(":/%1/run-gdx"));
+    ui->actionRunNeos->setIcon(Theme::icon(":/img/neos", false, ":/img/neos-g"));
+    ui->actionRunEngine->setIcon(Theme::icon(":/img/engine", false, ":/img/engine-g"));
+    ui->actionSave->setIcon(Theme::icon(":/%1/save"));
+    ui->actionSearch->setIcon(Theme::icon(":/%1/search"));
+    ui->actionSettings->setIcon(Theme::icon(":/%1/cog"));
+    ui->actionStop->setIcon(Theme::icon(":/%1/kill"));
+    ui->actionTerminal->setIcon(Theme::icon(":/%1/terminal"));
+    ui->actionToggleBookmark->setIcon(Theme::icon(":/%1/bookmark"));
+    ui->actionToggle_Extended_Parameter_Editor->setIcon(Theme::icon(":/%1/show"));
+    ui->actionUndo->setIcon(Theme::icon(":/%1/undo"));
+    ui->actionUpdate->setIcon(Theme::icon(":/%1/update"));
+    ui->actionZoom_In->setIcon(Theme::icon(":/%1/search-plus"));
+    ui->actionZoom_Out->setIcon(Theme::icon(":/%1/search-minus"));
+    ui->actionShowToolbar->setIcon(Theme::icon(":/%1/hammer"));
+    ui->actionHelp->setIcon(Theme::icon(":/%1/book"));
+    ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
+    ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
+    ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
 }
 
 void MainWindow::initToolBar()
@@ -450,8 +450,7 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
 #ifdef __APPLE__
         // reload theme when switching OS theme
-        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Scheme::StudioScope);
-        Scheme::instance()->setActiveScheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0, Scheme::EditorScope);
+        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
 #endif
     }
     return QMainWindow::event(event);
@@ -1603,12 +1602,11 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
     if (file->kind() == FileKind::Gdx) {
         QFile f(file->location());
         if (!f.exists()) return FileProcessKind::fileLocked;
-        bool resized = file->compare().testFlag(FileMeta::FdSize);
-        file->refreshMetaData();
+        bool changed = file->refreshMetaData();
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
-                int gdxErr = gv->reload(file->codec(), resized);
+                int gdxErr = gv->reload(file->codec(), changed);
                 if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : FileProcessKind::ignore);
             }
         }
@@ -1975,7 +1973,7 @@ void MainWindow::on_actionAbout_Studio_triggered()
     about.setTextFormat(Qt::RichText);
     about.setText(support::GamsLicensingDialog::header());
     about.setInformativeText(support::GamsLicensingDialog::aboutStudio());
-    about.setIconPixmap(Scheme::icon(":/img/gams-w24").pixmap(QSize(64, 64)));
+    about.setIconPixmap(Theme::icon(":/img/gams-w24").pixmap(QSize(64, 64)));
     about.addButton(QMessageBox::Ok);
     about.exec();
 }
@@ -2313,6 +2311,8 @@ void MainWindow::updateAndSaveSettings()
 
     historyChanged();
 
+    settings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
+
     // at last, save the settings
     settings->save();
 }
@@ -2355,6 +2355,8 @@ void MainWindow::restoreFromSettings()
     double hZoom = settings->toDouble(skHelpZoomFactor);
     helpWidget()->setZoomFactor(hZoom > 0.0 ? hZoom : 1.0);
 #endif
+
+    Theme::instance()->readUserThemes(settings->toList(SettingsKey::skUserThemes));
 
 }
 
@@ -2479,6 +2481,7 @@ void MainWindow::on_actionDeploy_triggered()
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setAssemblyFileName(assemblyFile);
     mMiroDeployDialog->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    mMiroDeployDialog->setModelName(mRecent.group()->toRunGroup()->mainModelName());
     mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
 }
@@ -2492,7 +2495,7 @@ void MainWindow::writeNewAssemblyFileData()
                                            LogMsgType::Error);
     else {
         mMiroDeployDialog->setAssemblyFileName(mMiroDeployDialog->assemblyFileName());
-        addToGroup(mRecent.group(), mMiroDeployDialog->assemblyFileName());
+        mProjectRepo.findOrCreateFileNode(mMiroDeployDialog->assemblyFileName(), mRecent.group());
     }
 }
 
@@ -2878,18 +2881,23 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;
-    for (ProjectFileNode *node: runGroup->listFiles(true)) {
-        if (node->file()->isOpen() && !modifiedFiles.contains(node->file()) && node->file()->isModified())
-            modifiedFiles << node->file();
+    if (settings->toBool(skAutosaveOnRun)) {
+        modifiedFiles = mFileMetaRepo.modifiedFiles();
+    } else {
+        for (ProjectFileNode *node: runGroup->listFiles(true)) {
+            if (node->file()->isOpen() && !modifiedFiles.contains(node->file()) && node->file()->isModified())
+                modifiedFiles << node->file();
+        }
     }
+
     bool doSave = !modifiedFiles.isEmpty();
     if (doSave && !settings->toBool(skAutosaveOnRun)) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         if (modifiedFiles.size() > 1)
-            msgBox.setText(QDir::toNativeSeparators(modifiedFiles.first()->location())+" has been modified.");
+            msgBox.setText(modifiedFiles.first()->location()+" and "+QString::number(modifiedFiles.size()-1)+" other files have been modified.");
         else
-            msgBox.setText(QString::number(modifiedFiles.size())+" files have been modified.");
+            msgBox.setText(QDir::toNativeSeparators(modifiedFiles.first()->location())+" has been modified.");
         msgBox.setInformativeText("Do you want to save your changes before running?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
         QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
@@ -2980,8 +2988,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     if (process)
         runGroup->setProcess(std::move(process));
     AbstractProcess* groupProc = runGroup->process();
-    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList));
-
+    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, mGamsParameterEditor->getOptionTokenizer()->getOption()) );
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
 
@@ -3358,10 +3365,10 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
     SysLogLocator::systemLog()->append(text + " " + call, LogMsgType::Info);
 }
 
-void MainWindow::invalidateScheme()
+void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
-        fm->invalidateScheme();
+        fm->invalidateTheme();
 
     repaint();
 }
@@ -3693,6 +3700,7 @@ void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog sd(this);
     sd.setMiroSettingsEnabled(!mMiroRunning);
+    connect(&sd, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
     connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
     connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
     sd.exec();
@@ -4259,10 +4267,10 @@ void MainWindow::setExtendedEditorVisibility(bool visible)
 void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
 {
     if (checked) {
-        ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/hide"));
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(Theme::icon(":/%1/hide"));
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     } else {
-        ui->actionToggle_Extended_Parameter_Editor->setIcon(Scheme::icon(":/%1/show") );
+        ui->actionToggle_Extended_Parameter_Editor->setIcon(Theme::icon(":/%1/show") );
         ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
     }
 
@@ -4505,11 +4513,10 @@ void MainWindow::openGdxDiffFile()
     }
     if (FileMeta* fMeta = mFileMetaRepo.fileMeta(diffFile)) {
         if (fMeta->isOpen()) {
-            bool resized = fMeta->compare().testFlag(FileMeta::FdSize);
-            fMeta->refreshMetaData();
+            bool changed = fMeta->refreshMetaData();
             if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().first())) {
                 gdx->setHasChanged(true);
-                gdx->reload(fMeta->codec(), resized);
+                gdx->reload(fMeta->codec(), changed);
             }
         }
     }
@@ -4674,8 +4681,8 @@ void MainWindow::checkGamsLicense()
         } else {
             appendSystemLogError(errorText);
         }
-    }  catch (Exception e) {
-        appendSystemLogError(e.what());
+    }  catch (Exception *e) {
+        appendSystemLogError(e->what());
     }
 }
 

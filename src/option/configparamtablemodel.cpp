@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "configparamtablemodel.h"
-#include "scheme.h"
+#include "theme.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -60,19 +60,19 @@ QVariant ConfigParamTableModel::headerData(int index, Qt::Orientation orientatio
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
             if (mOptionItem.at(index)->recurrent)
-               return QVariant::fromValue(Scheme::icon(":/img/square-red-yellow"));
+               return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
             else
-               return QVariant::fromValue(Scheme::icon(":/img/square-red"));
+               return QVariant::fromValue(Theme::icon(":/img/square-red"));
         } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
                   if (mOptionItem.at(index)->recurrent)
-                     return QVariant::fromValue(Scheme::icon(":/img/square-gray-yellow"));
+                     return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
                   else
-                     return QVariant::fromValue(Scheme::icon(":/img/square-gray"));
+                     return QVariant::fromValue(Theme::icon(":/img/square-gray"));
         } else {
             if (mOptionItem.at(index)->recurrent)
-                return QVariant::fromValue(Scheme::icon(":/img/square-green-yellow"));
+                return QVariant::fromValue(Theme::icon(":/img/square-green-yellow"));
             else
-                return QVariant::fromValue(Scheme::icon(":/img/square-green"));
+                return QVariant::fromValue(Theme::icon(":/img/square-green"));
         }
     case Qt::ToolTipRole:
         QString tooltipText = "";
@@ -194,7 +194,7 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
         }
         return tooltipText;
     }
-    case Qt::TextColorRole: {
+    case Qt::ForegroundRole: {
 //        if (Qt::CheckState(headerData(index.row(), Qt::Vertical, Qt::CheckStateRole).toBool()))
 //            return QVariant::fromValue(QColor(Qt::gray));
 
@@ -207,47 +207,47 @@ QVariant ConfigParamTableModel::data(const QModelIndex &index, int role) const
             else if (mOption->isConformantVersion(mOptionItem[index.row()]->minVersion))
                      return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             else
-                 return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
         } else if (index.column()==COLUMN_MAX_VERSION) {
             if (mOptionItem[index.row()]->maxVersion.isEmpty())
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             else if (mOption->isConformantVersion(mOptionItem[index.row()]->maxVersion))
                     return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
             else
-                return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                return QVariant::fromValue(Theme::color(Theme::Normal_Red));
         }
         if (mOption->isDoubleDashedOption(mOptionItem.at(row)->key)) { // double dashed parameter
             if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row)->key)) )
-                return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                  return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
         if (mOption->isValid(mOptionItem.at(row)->key) || mOption->isASynonym(mOptionItem.at(row)->key)) { // valid option
             if (col==COLUMN_PARAM_KEY) { // key
                 if (mOption->isDeprecated(mOptionItem.at(row)->key)) { // deprecated option
-                    return QVariant::fromValue(QColor(Scheme::Disable_Gray));
+                    return QVariant::fromValue(QColor(Theme::Disable_Gray));
                 } else {
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
             } else if (col==COLUMN_PARAM_VALUE) { // value
                   switch (mOption->getValueErrorType(mOptionItem.at(row)->key, mOptionItem.at(row)->value)) {
                       case OptionErrorType::Incorrect_Value_Type:
-                            return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                            return QVariant::fromValue(Theme::color(Theme::Normal_Red));
                       case OptionErrorType::Value_Out_Of_Range:
-                            return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                            return QVariant::fromValue(Theme::color(Theme::Normal_Red));
                       case OptionErrorType::No_Error:
                             return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                       default:
                            return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                   }
             } else if (col==COLUMN_MIN_VERSION && mOption->isConformantVersion(mOptionItem.at(row)->minVersion)) {
-                      return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                      return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             } else if (col==COLUMN_MAX_VERSION && mOption->isConformantVersion(mOptionItem.at(row)->maxVersion)) {
-                       return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+                       return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             }
         } else { // invalid option
             if (col ==COLUMN_PARAM_KEY)
-               return QVariant::fromValue(Scheme::color(Scheme::Normal_Red));
+               return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         }
