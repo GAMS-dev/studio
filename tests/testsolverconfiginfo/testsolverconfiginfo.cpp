@@ -131,8 +131,6 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("ALPHAECP") << "ALPHAECP"  << "optalphaecp.def"  << false;
     QTest::newRow("ANTIGONE") << "ANTIGONE"  << "optantigone.def"  << false;
     QTest::newRow("BARON")    << "BARON"     << "optbaron.def"     << false;
-    QTest::newRow("BDMLP")    << "BDMLP"     << "optbdmlp.def"     << false;
-    QTest::newRow("BENCH")    << "BENCH"     << "optbench.def"     << false;
     QTest::newRow("BONMIN")   << "BONMIN"    << "optbonmin.def"    << false;
     QTest::newRow("BONMINH")  << "BONMINH"   << "optbonmin.def"    << false;
     QTest::newRow("CBC")      << "CBC"       << "optcbc.def"       << false;
@@ -145,14 +143,8 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
 
     QTest::newRow("CONOPT")   << "CONOPT"    << "optconopt.def"    << false;
     QTest::newRow("CONOPT4")  << "CONOPT4"   << "optconopt4.def"   << false;
-
     QTest::newRow("CONOPTD")  << "CONOPTD"   << "optconopt.def"    << true;
 
-    QTest::newRow("CONVERT")  << "CONVERT"   << "optconvert.def"   << false;
-
-    QTest::newRow("CONVERTD") << "CONVERTD"  << "optconvert.def"   << true;
-
-    QTest::newRow("COUENNE")  << "COUENNE"   << ""                 << false;
     QTest::newRow("CPLEX")    << "CPLEX"     << "optcplex.def"     << false;
     QTest::newRow("cPleX")    << "cPleX"     << "optcplex.def"     << false;
 
@@ -184,7 +176,6 @@ void TestSolverConfigInfo::testSolverOptDefFilename_data()
     QTest::newRow("LOCALSOLVER")   << "LOCALSOLVER"   << "optlocalsolver.def"   << false;
     QTest::newRow("LOCALSOLVER70") << "LOCALSOLVER70" << "optlocalsolver.def"   << true;
     QTest::newRow("LOGMIP")        << "LOGMIP"        << "optjams.def"          << false;
-    QTest::newRow("LS")            << "LS"            << "optls.def"            << false;
     QTest::newRow("MILES")         << "MILES"         << "optmiles.def"         << false;
 
     QTest::newRow("MILESE")        << "MILESE"        << "optmiles.def"         << true;

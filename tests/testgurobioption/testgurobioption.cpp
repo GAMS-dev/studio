@@ -299,32 +299,31 @@ void TestGUROBIOption::testOptionGroup_data()
     QTest::addColumn<QString>("optionName");
     QTest::addColumn<int>("groupNumber");
     QTest::addColumn<QString>("optionGroupName");
-    QTest::addColumn<QString>("optionGroupDescription");
     QTest::addColumn<QString>("optionType");
 
-    QTest::newRow("bariterlimit_1")         << "bariterlimit"         << 1 << "Termination" << "Termination options" << "integer";
-    QTest::newRow("cutoff_1")               << "cutoff"               << 1 << "Termination" << "Termination options" << "double";
-    QTest::newRow("iterationlimit_1")       << "iterationlimit"       << 1 << "Termination" << "Termination options" << "double";
-    QTest::newRow("nodelimit_1")            << "nodelimit"            << 1 << "Termination" << "Termination options" << "double";
-    QTest::newRow("solutionlimit_1")        << "solutionlimit"        << 1 << "Termination" << "Termination options" << "integer";
-    QTest::newRow("timelimit_1")            << "timelimit"            << 1 << "Termination" << "Termination options" << "double";
+    QTest::newRow("bariterlimit_1")         << "bariterlimit"         << 1 << "Termination" << "integer";
+    QTest::newRow("cutoff_1")               << "cutoff"               << 1 << "Termination" << "double";
+    QTest::newRow("iterationlimit_1")       << "iterationlimit"       << 1 << "Termination" << "double";
+    QTest::newRow("nodelimit_1")            << "nodelimit"            << 1 << "Termination" << "double";
+    QTest::newRow("solutionlimit_1")        << "solutionlimit"        << 1 << "Termination" << "integer";
+    QTest::newRow("timelimit_1")            << "timelimit"            << 1 << "Termination" << "double";
 
-    QTest::newRow("barconvtol_2")      << "barconvtol"      << 2 << "Tolerances" << "Tolerances options"  << "double";
-    QTest::newRow("feasibilitytol_2")  << "feasibilitytol"  << 2 << "Tolerances" << "Tolerances options"  << "double";
-    QTest::newRow("intfeastol_2")      << "intfeastol"      << 2 << "Tolerances" << "Tolerances options"  << "double";
-    QTest::newRow("markowitztol_2")    << "markowitztol"    << 2 << "Tolerances" << "Tolerances options"  << "double";
-    QTest::newRow("optimalitytol_2")   << "optimalitytol"   << 2 << "Tolerances" << "Tolerances options"  << "double";
-    QTest::newRow("psdtol_2")          << "psdtol"          << 2 << "Tolerances" << "Tolerances options"  << "double";
+    QTest::newRow("barconvtol_2")      << "barconvtol"      << 2 << "Tolerances" << "double";
+    QTest::newRow("feasibilitytol_2")  << "feasibilitytol"  << 2 << "Tolerances" << "double";
+    QTest::newRow("intfeastol_2")      << "intfeastol"      << 2 << "Tolerances" << "double";
+    QTest::newRow("markowitztol_2")    << "markowitztol"    << 2 << "Tolerances" << "double";
+    QTest::newRow("optimalitytol_2")   << "optimalitytol"   << 2 << "Tolerances" << "double";
+    QTest::newRow("psdtol_2")          << "psdtol"          << 2 << "Tolerances" << "double";
 
-    QTest::newRow("normadjust_3")      << "normadjust"        << 3 << "Simplex" << "Simplex options"  << "integer";
-    QTest::newRow("objscale_3")        << "objscale"          << 3 << "Simplex" << "Simplex options"  << "double";
-    QTest::newRow("perturbvalue_3")    << "perturbvalue"      << 3 << "Simplex" << "Simplex options"  << "double";
-    QTest::newRow("quad_3")            << "quad"              << 3 << "Simplex" << "Simplex options"  << "integer";
-    QTest::newRow("scaleflag_3")       << "scaleflag"         << 3 << "Simplex" << "Simplex options"  << "integer";
+    QTest::newRow("normadjust_3")      << "normadjust"        << 3 << "Simplex" << "integer";
+    QTest::newRow("objscale_3")        << "objscale"          << 3 << "Simplex" << "double";
+    QTest::newRow("perturbvalue_3")    << "perturbvalue"      << 3 << "Simplex" << "double";
+    QTest::newRow("quad_3")            << "quad"              << 3 << "Simplex" << "integer";
+    QTest::newRow("scaleflag_3")       << "scaleflag"         << 3 << "Simplex" << "integer";
 
-    QTest::newRow("barcorrectors_4")   << "barcorrectors"     << 4 << "Barrier" << "Barrier options"  << "integer";
-    QTest::newRow("crossover_4")       << "crossover"         << 4 << "Barrier" << "Barrier options"  << "integer";
-    QTest::newRow("qcpdual_4")         << "qcpdual"           << 4 << "Barrier" << "Barrier options"  << "boolean";
+    QTest::newRow("barcorrectors_4")   << "barcorrectors"     << 4 << "Barrier" << "integer";
+    QTest::newRow("crossover_4")       << "crossover"         << 4 << "Barrier" << "integer";
+    QTest::newRow("qcpdual_4")         << "qcpdual"           << 4 << "Barrier" << "boolean";
 }
 
 void TestGUROBIOption::testOptionGroup()
@@ -332,12 +331,10 @@ void TestGUROBIOption::testOptionGroup()
     QFETCH(QString, optionName);
     QFETCH(int, groupNumber);
     QFETCH(QString, optionGroupName);
-    QFETCH(QString, optionGroupDescription);
     QFETCH(QString, optionType);
 
     QCOMPARE( optionTokenizer->getOption()->getGroupNumber(optionName), groupNumber );
     QCOMPARE( optionTokenizer->getOption()->getGroupName(optionName), optionGroupName );
-    QCOMPARE( optionTokenizer->getOption()->getGroupDescription(optionName), optionGroupDescription );
     QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
 }
 
