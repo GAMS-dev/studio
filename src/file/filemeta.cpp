@@ -370,6 +370,8 @@ void FileMeta::updateEditorColors()
             ce->updateExtraSelections();
         if (CodeEdit *ce = ViewHelper::toCodeEdit(w))
             ce->lineNumberArea()->repaint();
+        if (TextView *tv = ViewHelper::toTextView(w))
+            tv->updateTheme();
     }
 }
 
