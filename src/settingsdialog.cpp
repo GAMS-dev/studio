@@ -592,6 +592,7 @@ void SettingsDialog::on_btImportTheme_clicked()
 {
     QFileDialog *fd = new QFileDialog(this, "Import theme(s)", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
     fd->setAcceptMode(QFileDialog::AcceptOpen);
+    fd->setFileMode(QFileDialog::ExistingFiles);
     connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
         if (res && !fd->selectedFiles().isEmpty()) {
             int shift = mFixedThemeCount-2;
