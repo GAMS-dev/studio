@@ -4,6 +4,10 @@ Version 1.5.2 *
 - the color dialog now supports editor colors to be modified
 - syntax highlighting of table statements now detects row headers 
 
+Version 1.5.1
+==================
+- fixed incorrectly parsed value of double-dashed command line parameters
+
 Version 1.5.0
 ==================
 - Studio now uses Qt 5.15 (LTS) on all platforms
