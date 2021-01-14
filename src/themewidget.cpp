@@ -103,9 +103,6 @@ void ThemeWidget::setFormatVisible(bool visible)
 
 bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::Close && watched == mColorDialog) {
-        mColorDialog->deleteLater();
-    }
     if (event->type() == QEvent::MouseButtonRelease) {
         if (watched == ui->colorFG) showColorSelector(ui->colorFG);
         else if (watched == ui->colorBG1) showColorSelector(ui->colorBG1);
@@ -121,11 +118,14 @@ void ThemeWidget::showColorSelector(QFrame *frame)
         mColorDialog = new QColorDialog(this);
         mColorDialog->setParent(this);
         mColorDialog->setModal(true);
-        mColorDialog->installEventFilter(this);
     }
     mSelectedFrame = frame;
     mColorDialog->setCurrentColor(frame->palette().window().color());
     connect(mColorDialog, &QColorDialog::colorSelected, this, &ThemeWidget::colorChanged);
+    connect(mColorDialog, &QColorDialog::finished, this, [this](){
+        mColorDialog->deleteLater();
+        mColorDialog = nullptr;
+    });
     mColorDialog->open();
 }
 
