@@ -296,6 +296,7 @@ void MainWindow::watchProjectTree()
 
 MainWindow::~MainWindow()
 {
+    if (mSettingsDialog) mSettingsDialog->deleteLater();
     killTimer(mTimerID);
     delete mWp;
     delete ui;
@@ -3698,16 +3699,21 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
 
 void MainWindow::on_actionSettings_triggered()
 {
-    SettingsDialog sd(this);
-    sd.setMiroSettingsEnabled(!mMiroRunning);
-    connect(&sd, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
-    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
-    connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
-    sd.exec();
-    sd.disconnect();
-    updateAndSaveSettings();
-    if (sd.miroSettingsEnabled())
-        updateMiroEnabled();
+    if (!mSettingsDialog) {
+        mSettingsDialog = new SettingsDialog(this);
+        mSettingsDialog->setModal(true);
+        connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
+        connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
+        connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
+        connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
+            updateAndSaveSettings();
+            if (mSettingsDialog->miroSettingsEnabled())
+                updateMiroEnabled();
+        });
+    }
+    mSettingsDialog->setMiroSettingsEnabled(!mMiroRunning);
+    mSettingsDialog->open();
+
 }
 
 void MainWindow::on_actionSearch_triggered()
