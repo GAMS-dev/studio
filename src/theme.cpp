@@ -515,7 +515,7 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
         QString name = tSource.value("name").toString();
         int base = tSource.value("base").toInt();
 
-        // clone first theme as base
+        // clone base theme to apply the changes
         int newInd = copyTheme(base, name);
         ColorTheme currentTheme = mColorThemes.at(newInd);
 
@@ -532,6 +532,33 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
         }
         mColorThemes.replace(newInd, currentTheme);
     }
+}
+
+int Theme::readUserTheme(const QVariantMap &tSource)
+{
+    if (tSource.isEmpty() || !tSource.contains("name") || !tSource.contains("theme")) return -1;
+    QString name = tSource.value("name").toString();
+    bool ok;
+    int base = tSource.value("base").toInt(&ok);
+    if (!ok) base = 0;
+
+    // clone base theme to apply the changes
+    int newInd = copyTheme(base, name);
+    ColorTheme currentTheme = mColorThemes.at(newInd);
+
+    QVariantMap sourceData = tSource.value("theme").toMap();
+    for (auto it = sourceData.constBegin() ; it != sourceData.constEnd() ; ++it) {
+        ColorSlot cSlot = slot(it.key());
+        if (cSlot == invalid) continue;
+        QStringList dat = it.value().toString().split(',');
+        if (!dat.size()) continue;
+        bool ok = true;
+        int iFlag = dat.size() < 2 ? 0 : dat.at(1).toInt(&ok);
+        Color color = Color(QColor(dat.at(0)), FontFlag(iFlag));
+        currentTheme.insert(cSlot, color);
+    }
+    mColorThemes.replace(newInd, currentTheme);
+    return newInd;
 }
 
 QVariantMap Theme::writeCurrentTheme()

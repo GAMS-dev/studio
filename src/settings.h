@@ -187,7 +187,7 @@ public:
     void exportSettings(const QString &path);
 
     void exportTheme(const QVariant &vTheme, QString fileName);
-    void importTheme(const QString &path);
+    QVariantMap importTheme(const QString &filepath);
 
     void updateSettingsFiles();
 

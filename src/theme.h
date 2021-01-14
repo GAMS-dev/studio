@@ -109,6 +109,7 @@ public:
     QVariantList writeUserThemes() const;
     QVariantMap writeCurrentTheme();
     void readUserThemes(const QVariantList &sourceThemes);
+    int readUserTheme(const QVariantMap &tSource);
 
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);

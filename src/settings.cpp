@@ -757,6 +757,24 @@ void Settings::loadThemes()
     setList(skUserThemes, themes);
 }
 
+QVariantMap Settings::importTheme(const QString &filepath)
+{
+    QSettings themeSettings(filepath, QSettings::defaultFormat());
+    QString name = themeSettings.value("name").toString();
+    bool ok;
+    int base = themeSettings.value("base").toInt(&ok);
+    if (!ok) base = 0;
+    QVariantMap data = themeSettings.value("theme").toMap();
+    if (data.isEmpty()) return QVariantMap();
+
+    QVariantMap theme;
+    theme.insert("name", name);
+    theme.insert("base", base);
+    theme.insert("theme", data);
+    return theme;
+}
+
+
 int Settings::usableVersion(ScopePair scopes)
 {
     int res = version(scopes.versionized);
@@ -892,16 +910,6 @@ void Settings::exportSettings(const QString &path)
     if (!originFile.copy(path)) {
         SysLogLocator::systemLog()->append("Error exporting settings to " + path, LogMsgType::Error);
     }
-}
-
-void Settings::importTheme(const QString &path)
-{
-    if (!mSettings.value(scTheme)) return;
-    QFile backupFile(path);
-    QFile syntaxFile(mSettings.value(scTheme)->fileName());
-    syntaxFile.remove(); // remove old file
-    backupFile.copy(syntaxFile.fileName()); // import new file
-    reload();
 }
 
 QString Settings::themeFileName(QString baseName)

@@ -590,12 +590,25 @@ void SettingsDialog::on_btRemoveTheme_clicked()
 
 void SettingsDialog::on_btImportTheme_clicked()
 {
-//    QFileDialog *fd = new QFileDialog(this, "Import theme", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
-//    fd->setAcceptMode(QFileDialog::AcceptOpen);
-//    fd->installEventFilter(this);
-//    connect(fd, &QFileDialog::accepted, [this, fd](){
-
-//    });
+    QFileDialog *fd = new QFileDialog(this, "Import theme(s)", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
+    fd->setAcceptMode(QFileDialog::AcceptOpen);
+    connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
+        if (res && !fd->selectedFiles().isEmpty()) {
+            int shift = mFixedThemeCount-2;
+            int index = ui->cbThemes->currentIndex() - shift;
+            for (const QString &fName : fd->selectedFiles()) {
+                index = Theme::instance()->readUserTheme(Settings::settings()->importTheme(fName));
+                if (index < 0) {
+                    // error
+                } else {
+                    ui->cbThemes->insertItem(index + shift, Theme::instance()->themes().at(index));
+                }
+            }
+            ui->cbThemes->setCurrentIndex(index + shift);
+        }
+        fd->deleteLater();
+    });
+    fd->open();
 }
 
 void SettingsDialog::on_btExportTheme_clicked()
@@ -603,7 +616,7 @@ void SettingsDialog::on_btExportTheme_clicked()
     QFileDialog *fd = new QFileDialog(this, "Export theme", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
     fd->selectFile(Settings::themeFileName(Theme::instance()->activeThemeName()));
     fd->setAcceptMode(QFileDialog::AcceptSave);
-    connect(fd, &QFileDialog::finished, [/*this,*/ fd](int res) {
+    connect(fd, &QFileDialog::finished, [fd](int res) {
         if (res && !fd->selectedFiles().isEmpty()) {
             Settings::settings()->exportTheme(Theme::instance()->writeCurrentTheme(), fd->selectedFiles().at(0));
         }
