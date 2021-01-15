@@ -253,4 +253,6 @@ const QString GamsOptDefFile = "optgams.def";
 } // namespace studio
 } // namespace gams
 
+Q_DECLARE_METATYPE(gams::studio::option::OptionItem)
+
 #endif // OPTION_H
