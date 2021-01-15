@@ -1,3 +1,8 @@
+Version 1.5.2  *
+==================
+- appearance of the settings dialog changed to to follow the macOS platform rules
+- the settings dialog remembers the selected tab during the current session
+
 Version 1.5.1
 ==================
 - fixed incorrectly parsed value of double-dashed command line parameters
