@@ -340,17 +340,25 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
         if (event->type() == QEvent::FocusOut) {
             rename = true;
         }
+
         if (rename) {
             QString name = ui->cbThemes->currentText();
             name = Theme::instance()->renameActiveTheme(name);
-            ui->cbThemes->setEditable(false);
-            ui->cbThemes->removeEventFilter(this);
+            bool conflict = name != ui->cbThemes->currentText();
             int i = ui->cbThemes->currentIndex();
             ui->cbThemes->removeItem(i);
             i = Theme::instance()->themes().indexOf(name);
             int shift = mFixedThemeCount-2;
             ui->cbThemes->insertItem(i+shift, name);
             ui->cbThemes->setCurrentIndex(i+shift);
+            if (conflict) {
+                ui->cbThemes->setFocus();
+                ui->label_currentTheme->setStyleSheet("color:red;");
+            } else {
+                ui->label_currentTheme->setStyleSheet(QString());
+                ui->cbThemes->setEditable(false);
+                ui->cbThemes->removeEventFilter(this);
+            }
             return true;
         }
     }

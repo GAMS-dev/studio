@@ -129,7 +129,7 @@ private:
     void initSlotTexts();
     QHash<QString, QStringList> iconCodes() const;
     QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
-    QString findUniqueName(const QString &name);
+    QString findUniqueName(const QString &name, const QString &ignore = QString());
 
 private:
     static Theme *mInstance;

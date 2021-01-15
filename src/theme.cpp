@@ -220,9 +220,10 @@ int Theme::setActiveTheme(int theme)
 
 QString Theme::renameActiveTheme(const QString &name)
 {
-    if (mTheme < 2) return mThemeNames.at(mTheme);
-    if (name.compare(mThemeNames.at(mTheme)) == 0) return name;
-    QString uniqueName = findUniqueName(name);
+    QString currentName = mThemeNames.at(mTheme);
+    if (mTheme < 2) return currentName;
+    if (name.compare(currentName) == 0) return name;
+    QString uniqueName = findUniqueName(name, currentName);
     mThemeNames.replace(mTheme, uniqueName);
     if (mTheme < mThemeNames.count()-1) {
         mThemeNames.move(mTheme, mThemeNames.count()-1);
@@ -361,7 +362,7 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode)
     return data;
 }
 
-QString Theme::findUniqueName(const QString &name)
+QString Theme::findUniqueName(const QString &name, const QString &ignore)
 {
     if (!mThemeNames.contains(name)) return name;
     QString uniqueName = name;
@@ -370,8 +371,8 @@ QString Theme::findUniqueName(const QString &name)
     while (!base.isEmpty() && base.at(base.length()-1).isDigit())
         base = base.left(base.length()-1);
     if (base.isEmpty()) base = name;
-    if (base.length() != name.length()) nr = name.right(name.length()-base.length()).toInt();
-    while (mThemeNames.contains(uniqueName))
+    if (base.length() != name.length()) nr = name.rightRef(name.length()-base.length()).toInt();
+    while (mThemeNames.contains(uniqueName) && uniqueName != ignore)
         uniqueName = base + QString::number(++nr);
     return uniqueName;
 }
@@ -422,7 +423,6 @@ int Theme::removeTheme(int index)
 {
     if (index < 2 || index >= mThemeNames.count()) return mTheme;
     if (index <= mTheme) --mTheme;
-    QString name = mThemeNames.at(index);
     mColorThemes.removeAt(index);
     mThemeNames.removeAt(index);
     mThemeBases.removeAt(index);
