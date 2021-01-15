@@ -150,10 +150,16 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
     int position = 0;
     for (OptionItem& item : commandLineList) {
         QString key = item.key;
-        if (mOption->isASynonym(item.key))
-           key = mOption->getNameFromSynonym(item.key);
-        if (mOption->isValid(key) || mOption->isASynonym(key))
-            item.optionId = mOption->getOptionDefinition(key).number;
+        if (item.key.startsWith("--")) {
+            item.optionId = -1;
+        } else {
+            if (item.key.startsWith("-") || item.key.startsWith("/"))
+                key = item.key.mid(1);
+            if (mOption->isASynonym(item.key))
+               key = mOption->getNameFromSynonym(item.key);
+            if (mOption->isValid(key) || mOption->isASynonym(key))
+                item.optionId = mOption->getOptionDefinition(key).number;
+        }
         idList << item.optionId;
         idPositionMap.insert(item.optionId, position++);
     }
@@ -1337,20 +1343,23 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
    for(OptionItem& item : items) {
        idList << item.optionId;
        item.error = OptionErrorType::No_Error;
+       QString key = item.key;
        if (mOption->isDoubleDashedOption(item.key)) { // double dashed parameter
            if ( mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(item.key)) )
                item.error = OptionErrorType::No_Error;
            else
               item.error = OptionErrorType::Invalid_Key;
            continue;
+       } else if (item.key.startsWith("-") || item.key.startsWith("/")) {
+                  key = item.key.mid(1);
        }
-       if (mOption->isValid(item.key) || mOption->isASynonym(item.key)) { // valid option
-           if (mOption->isDeprecated(item.key)) { // deprecated option
+       if (mOption->isValid(key) || mOption->isASynonym(key)) { // valid option
+           if (mOption->isDeprecated(key)) { // deprecated option
                item.error = OptionErrorType::Deprecated_Option;
            } else { // valid and not deprected Option
-               item.error = mOption->getValueErrorType(item.key, item.value);
+               item.error = mOption->getValueErrorType(key, item.value);
            }
-           mOption->setModified(item.key, true);
+           mOption->setModified(key, true);
        } else { // invalid option
            item.error = OptionErrorType::Invalid_Key;
        }
