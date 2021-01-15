@@ -1,5 +1,7 @@
-Version 1.5.2 *
+Version 1.5.2  *
 ==================
+- appearance of the settings dialog changed to to follow the macOS platform rules
+- the settings dialog remembers the selected tab during the current session
 - improved syntax color assignment and naming
 - the color dialog now supports editor colors to be modified
 - themes now can be imported and exported
