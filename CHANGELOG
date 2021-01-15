@@ -6,7 +6,7 @@ Version 1.5.2  *
 
 Version 1.5.1
 ==================
-- fixed incorrectly parsed value of double-dashed command line parameters
+- fixed incorrectly parsed value of dashed, slash, and double-dashed command line parameters
 
 Version 1.5.0
 ==================
