@@ -155,8 +155,8 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
         } else {
             if (item.key.startsWith("-") || item.key.startsWith("/"))
                 key = item.key.mid(1);
-            if (mOption->isASynonym(item.key))
-               key = mOption->getNameFromSynonym(item.key);
+            if (mOption->isASynonym(key))
+               key = mOption->getNameFromSynonym(key);
             if (mOption->isValid(key) || mOption->isASynonym(key))
                 item.optionId = mOption->getOptionDefinition(key).number;
         }
