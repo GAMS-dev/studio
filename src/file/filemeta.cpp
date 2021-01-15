@@ -346,6 +346,8 @@ void FileMeta::initEditorColors()
         AbstractEdit *ed = ViewHelper::toAbstractEdit(w);
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(w))
             ed = lxi->textView()->edit();
+        if (TextView *tv = ViewHelper::toTextView(w))
+            ed = tv->edit();
         if (!ed) continue;
         if (Theme::color(Theme::Edit_text) == Qt::transparent &&
                 Theme::color(Theme::Edit_background) == Qt::transparent) {
