@@ -343,6 +343,10 @@ void FileMeta::updateSyntaxColors()
 void FileMeta::initEditorColors()
 {
     for (QWidget *w: mEditors) {
+        if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
+            rv->updateStyle();
+            continue;
+        }
         AbstractEdit *ed = ViewHelper::toAbstractEdit(w);
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(w))
             ed = lxi->textView()->edit();

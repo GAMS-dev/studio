@@ -39,11 +39,10 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     QWidget(parent),
     ui(new Ui::ReferenceViewer),
     mCodec(codec),
-    mReference(new Reference(referenceFile, codec)),
-    mRefTabStyle(new ReferenceTabStyle(QApplication::style()->objectName()))
+    mReference(new Reference(referenceFile, codec))
 {
     ui->setupUi(this);
-    ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
+    updateStyle();
 
     bool problemLoaded = (mReference->state() == Reference::UnsuccessfullyLoaded);
     if (problemLoaded) {
@@ -103,6 +102,12 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
 ReferenceViewer::~ReferenceViewer()
 {
     delete ui;
+}
+
+void ReferenceViewer::updateStyle()
+{
+    mRefTabStyle.reset(new ReferenceTabStyle(QApplication::style()->objectName()));
+    ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
 }
 
 void ReferenceViewer::selectSearchField() const
