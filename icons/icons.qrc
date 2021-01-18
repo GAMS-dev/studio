@@ -103,5 +103,8 @@
         <file alias="update">solid/update.svg</file>
         <file alias="user">solid/user.svg</file>
         <file alias="gdxdiff">solid/gdxdiff.svg</file>
+        <file alias="sort">solid/sort.svg</file>
+        <file alias="sort-asc">solid/sort-up.svg</file>
+        <file alias="sort-desc">solid/sort-down.svg</file>
     </qresource>
 </RCC>
