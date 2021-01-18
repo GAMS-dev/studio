@@ -19,6 +19,7 @@
  */
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
+#include "sortedfileheaderview.h"
 
 #include "logger.h"
 
@@ -40,9 +41,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
 
     ui->symbolView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->symbolView->setSelectionMode(QAbstractItemView::SingleSelection);
-    if (mType != SymbolDataType::SymbolType::FileUsed)
-        ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
-    ui->symbolView->setSortingEnabled(true);
+
     ui->symbolView->setAlternatingRowColors(true);
     ui->symbolView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -51,6 +50,15 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->horizontalHeader()->setSectionResizeMode( mSymbolTableModel->getLastSectionIndex(), QHeaderView::Stretch );
     ui->symbolView->verticalHeader()->setMinimumSectionSize(1);
     ui->symbolView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->symbolView->horizontalHeader()-> setContextMenuPolicy(Qt::CustomContextMenu);
+
+    if (mType != SymbolDataType::SymbolType::FileUsed) {
+        ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
+        ui->symbolView->setSortingEnabled(true);
+    }
+    else {
+        ui->symbolView->setHorizontalHeader( new SortedFileHeaderView(Qt::Horizontal, ui->symbolView) );
+    }
 
     QAction* resizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { resizeColumnToContents(); }, QKeySequence("Ctrl+R"));
     resizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
