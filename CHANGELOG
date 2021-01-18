@@ -2,6 +2,7 @@ Version 1.5.2  *
 ==================
 - appearance of the settings dialog changed to to follow the macOS platform rules
 - the settings dialog remembers the selected tab during the current session
+- added eMail for NEOS submission initialized from NEOS_EMAIL in gamsconfig.yaml or environment
 
 Version 1.5.1
 ==================
