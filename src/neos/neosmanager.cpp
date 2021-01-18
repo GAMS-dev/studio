@@ -7,13 +7,14 @@ namespace gams {
 namespace studio {
 namespace neos {
 
-QString rawJob =
+QString NeosManager::mRawJob =
 R"s1(
 <document>
-<category>lp</category>
-<solver>BDMLP</solver>
-<priority>%3</priority>
+<category>milp</category>
+<solver>Cbc</solver>
 <inputType>GAMS</inputType>
+<email>%5</email>
+<priority>%3</priority>
 <model><![CDATA[]]></model>
 <options><![CDATA[]]></options>
 <parameters><![CDATA[%2]]></parameters>
@@ -65,7 +66,7 @@ void NeosManager::version()
     emit submitCall("version");
 }
 
-void NeosManager::submitJob(QString fileName, QString params, bool prioShort, bool wantGdx)
+void NeosManager::submitJob(QString fileName, QString eMail, QString params, bool prioShort, bool wantGdx)
 {
     QFile f(fileName);
     if (!f.exists() || !f.open(QFile::ReadOnly)) return;
@@ -74,7 +75,7 @@ void NeosManager::submitJob(QString fileName, QString params, bool prioShort, bo
     mLogOffset = 0;
     QString sData = data.toBase64();
     QString prio = (prioShort?"short":"long");
-    QString jobData = rawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"");
+    QString jobData = mRawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"").arg(eMail);
     emit submitCall("submitJob", QVariantList() << jobData);
 }
 

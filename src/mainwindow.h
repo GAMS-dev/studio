@@ -416,6 +416,7 @@ private:
     bool enabledPrintAction();
     void checkGamsLicense();
     void goToLine(int result);
+    QString readGucValue(QString key);
 
 private:
     Ui::MainWindow *ui;
@@ -465,6 +466,7 @@ private:
     bool mMaximizedBeforeFullScreen;
     bool mIgnoreSslErrors = false;
     bool mNeosNoDialog = false;
+    QString mNeosMail;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

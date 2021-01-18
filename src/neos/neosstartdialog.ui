@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>325</height>
+    <height>374</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,6 +48,44 @@
       <property name="bottomMargin">
        <number>0</number>
       </property>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="laEmail">
+           <property name="text">
+            <string>eMail</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="edEmail"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="laEmailHint">
+        <property name="text">
+         <string>Hint: The eMail is initialized from NEOS_EMAIL in the GAMS config or an environment variable.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QCheckBox" name="cbForceGdx">
         <property name="text">

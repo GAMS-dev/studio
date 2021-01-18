@@ -63,6 +63,7 @@
 #include "fileeventhandler.h"
 #include "engine/enginestartdialog.h"
 #include "neos/neosstartdialog.h"
+#include "option/gamsuserconfig.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -3101,11 +3102,39 @@ void MainWindow::on_actionRunEngine_triggered()
     showEngineStartDialog();
 }
 
+QString MainWindow::readGucValue(QString key)
+{
+    QString res;
+    const QStringList paths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
+    for (int i = paths.size() ; i > 0 ; --i) {
+        const QString &path = paths.at(i-1);
+        option::GamsUserConfig *guc = new option::GamsUserConfig(path+"/gamsconfig.yaml");
+        if (guc && guc->isAvailable()) {
+            const QList<option::EnvVarConfigItem *> vars = guc->readEnvironmentVariables();
+            for (option::EnvVarConfigItem *var : vars) {
+                if (var->key == key) {
+                    res = var->value;
+                    break;
+                }
+            }
+        }
+        delete guc;
+        if (!res.isEmpty()) break;
+    }
+    return res;
+}
+
 void MainWindow::showNeosStartDialog()
 {
-    neos::NeosStartDialog *dialog = new neos::NeosStartDialog(this);
     neos::NeosProcess *neosPtr = createNeosProcess();
     if (!neosPtr) return;
+    if (mNeosMail.isEmpty())
+        mNeosMail = readGucValue("NEOS_EMAIL");
+    if (mNeosMail.isEmpty()) {
+        auto env = QProcessEnvironment::systemEnvironment();
+        mNeosMail = env.value("NEOS_EMAIL");
+    }
+    neos::NeosStartDialog *dialog = new neos::NeosStartDialog(mNeosMail, this);
     dialog->setProcess(neosPtr);
     connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);

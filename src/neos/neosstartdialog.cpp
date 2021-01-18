@@ -8,7 +8,7 @@ namespace gams {
 namespace studio {
 namespace neos {
 
-NeosStartDialog::NeosStartDialog(QWidget *parent) :
+NeosStartDialog::NeosStartDialog(QString eMail, QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::NeosStartDialog)
 {
@@ -33,6 +33,15 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     ui->cbHideTerms->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm));
     if (Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
             && Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)) ui->widTerms->setVisible(false);
+    if (!eMail.isEmpty()) {
+        ui->laEmailHint->setVisible(false);
+        ui->edEmail->setText(eMail);
+    }
+    connect(ui->edEmail, &QLineEdit::textEdited, this, [this]() {
+        updateValues();
+        updateCanStart();
+    });
+
     resize(width(), height() - ui->widTerms->height());
     updateCanStart();
 }
@@ -67,6 +76,7 @@ void NeosStartDialog::updateValues()
     if (mProc) {
         mProc->setForceGdx(ui->cbForceGdx->isChecked());
         mProc->setPriority(ui->rbShort->isChecked() ? Priority::prioShort : Priority::prioLong);
+        mProc->setMail(ui->edEmail->text().trimmed());
     }
 }
 
@@ -83,7 +93,7 @@ void NeosStartDialog::showEvent(QShowEvent *event)
 
 void NeosStartDialog::updateCanStart()
 {
-    bool enabled = ui->cbTerms->isChecked();
+    bool enabled = ui->cbTerms->isChecked() && !ui->edEmail->text().isEmpty();
     ui->bAlways->setEnabled(enabled && ui->cbHideTerms->isChecked());
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
