@@ -140,6 +140,12 @@ void SettingsDialog::loadSettings()
 
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
+    while (ui->cbThemes->count() > mFixedThemeCount)
+        ui->cbThemes->removeItem(ui->cbThemes->count()-1);
+    QStringList themes = Theme::instance()->themes();
+    for (int i = 2; i < Theme::instance()->themeCount(); ++i) {
+        ui->cbThemes->addItem(themes.at(i));
+    }
     ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
 
