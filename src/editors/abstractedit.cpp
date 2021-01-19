@@ -433,8 +433,8 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
     if (e->modifiers().testFlag(Qt::ShiftModifier)) return;
-    bool offClickRegion = !clickPos().isNull() && (clickPos() - e->pos()).manhattanLength() > 4;
-    bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
+    bool validClick = !clickPos().isNull() && (clickPos() - e->pos()).manhattanLength() < 5;
+    bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && validClick;
     setClickPos(QPoint());
     if (validLink) jumpToCurrentLink(e->pos());
 }
