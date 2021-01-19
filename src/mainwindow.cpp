@@ -3139,6 +3139,9 @@ void MainWindow::showNeosStartDialog()
     connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, this, &MainWindow::prepareNeosProcess);
+    connect(dialog, &neos::NeosStartDialog::eMailChanged, this, [this](const QString &eMail) {
+        mNeosMail = eMail;
+    });
     connect(dialog, &neos::NeosStartDialog::noDialogFlagChanged, this, [this](bool noDialog) {
         mNeosNoDialog = noDialog;
     });

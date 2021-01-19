@@ -30,6 +30,7 @@ public:
     void setPriority(Priority prio) { mPrio = prio; }
     void setForceGdx(bool forceGdx);
     void setMail(QString eMail) { mMail = eMail; }
+    QString mail() { return mMail; }
 
     void execute() override;
     void interrupt() override;

@@ -79,7 +79,7 @@
       <item>
        <widget class="QLabel" name="laEmailHint">
         <property name="text">
-         <string>Hint: The eMail is initialized from NEOS_EMAIL in the GAMS config or an environment variable.</string>
+         <string>Hint: The email is initialized from NEOS_EMAIL in the GAMS config or an environment variable.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

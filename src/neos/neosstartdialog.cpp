@@ -40,6 +40,7 @@ NeosStartDialog::NeosStartDialog(QString eMail, QWidget *parent) :
     connect(ui->edEmail, &QLineEdit::textEdited, this, [this]() {
         updateValues();
         updateCanStart();
+        emit eMailChanged(ui->edEmail->text());
     });
 
     resize(width(), height() - ui->widTerms->height());

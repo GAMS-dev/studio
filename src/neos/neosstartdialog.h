@@ -28,6 +28,7 @@ public:
 
 signals:
     void noDialogFlagChanged(bool noDialog);
+    void eMailChanged(const QString &eMail);
 
 private slots:
     void buttonClicked(QAbstractButton *button);
