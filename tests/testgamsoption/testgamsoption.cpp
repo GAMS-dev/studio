@@ -30,7 +30,8 @@ void TestGamsOption::initTestCase()
     const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     CommonPaths::setSystemDir(expected.toLatin1());
     // when
-    gamsOption = new Option(CommonPaths::systemDir(), "optgams.def");
+    optionTokenizer = new OptionTokenizer(QString("optgams.def"));
+    gamsOption = optionTokenizer->getOption();
     if  ( !gamsOption->available() ) {
        QFAIL("expected successful read of optgams.def, but failed");
     }
@@ -623,10 +624,96 @@ void TestGamsOption::testInvalidOption()
     QCOMPARE( gamsOption->isASynonym(optionName), synonymValid);
 }
 
+void TestGamsOption::testTokenize_data()
+{
+    QTest::addColumn<QString>("commandLineParameter");
+    QTest::addColumn<int>("numberOfParameters");
+    QTest::addColumn<QList<OptionItem>>("items");
+    QTest::addColumn<QList<bool>>("recurrent");
+
+    QTest::newRow("invalid"  )      << "abc=1" << 1
+                                    << QList<OptionItem>{ OptionItem(-1, "abc", "1") }
+                                    << QList<bool> { false };
+    QTest::newRow("synonym_1"  )    << "a=c" << 1
+                                    << QList<OptionItem>{ OptionItem(28, "a", "c") }
+                                    << QList<bool> { false };
+    QTest::newRow("synonym_2"  )    << "a=c action=ce" << 2
+                                    << QList<OptionItem>{ OptionItem(28, "a", "c"), OptionItem(28, "action", "ce") }
+                                    << QList<bool> { true, true };
+    QTest::newRow("synonym_3"  )    << "-a=c action=ce" << 2
+                                    << QList<OptionItem>{ OptionItem(28, "-a", "c"), OptionItem(28, "action", "ce") }
+                                    << QList<bool> { true, true };
+    QTest::newRow("combined_1")     << "action=c gdx abc"        << 2
+                                    << QList<OptionItem>{ OptionItem(28, "action", "c"), OptionItem(154, "gdx", "abc") }
+                                    << QList<bool> { false, false };
+    QTest::newRow("combined_2")     << "-reslim 1 reslim 100"        << 2
+                                    << QList<OptionItem>{ OptionItem(157, "-reslim", "1"), OptionItem(157, "reslim", "100") }
+                                    << QList<bool> { true, true };
+    QTest::newRow("combined_3")     << "action=ce -reslim 1 reslim 100"  << 3
+                                    << QList<OptionItem>{ OptionItem(28, "action", "ce"), OptionItem(157, "-reslim", "1"), OptionItem(157, "reslim", "100") }
+                                    << QList<bool> { false, true, true };
+    QTest::newRow("combined_4")     << "gdx=abc gdx=default reslim 100"  << 3
+                                    << QList<OptionItem>{  OptionItem(154, "gdx", "abc"),  OptionItem(154, "gdx", "default"), OptionItem(157, "reslim", "100") }
+                                    << QList<bool> { true, true, false };
+    QTest::newRow("combined_5")     << "gdx=abc gdx default reslim=100 XX 0.1"  << 4
+                                    << QList<OptionItem>{  OptionItem(154, "gdx", "abc"),  OptionItem(154, "gdx", "default"), OptionItem(157, "reslim", "100"), OptionItem(-1, "XX", "0.1") }
+                                    << QList<bool> { true, true, false, false };
+    QTest::newRow("dash_1")         << "-action=c"               << 1
+                                    << QList<OptionItem>{ OptionItem(28, "-action", "c") }
+                                    << QList<bool> { false };
+    QTest::newRow("dash_2")         << "-a=ce"                   << 1
+                                    << QList<OptionItem>{ OptionItem(28, "-a", "ce") }
+                                    << QList<bool> { false };
+    QTest::newRow("slash_1")        << "/action=ce"              << 1
+                                    << QList<OptionItem>{ OptionItem(28, "/action", "ce") }
+                                    << QList<bool> { false };
+    QTest::newRow("slash_2")        << "/a gt"                   << 1
+                                    << QList<OptionItem>{ OptionItem(28, "/a", "gt") }
+                                    << QList<bool> { false };
+    QTest::newRow("dash_slash_1")   << "-action=c /action=ce"    << 2
+                                    << QList<OptionItem>{ OptionItem(28, "-action", "c"), OptionItem(28, "/action", "ce") }
+                                    << QList<bool> { true, true };
+    QTest::newRow("dash_slash_2")   << "-action=c /action=ce action=gt"   << 3
+                                    << QList<OptionItem>{ OptionItem(28, "-action", "c"), OptionItem(28, "/action", "ce"), OptionItem(28, "action", "gt") }
+                                    << QList<bool> { true, true, true };
+    QTest::newRow("dash_slash_3")   << "-action=c /action=ce -reslim 1000"   << 3
+                                    << QList<OptionItem>{ OptionItem(28, "-action", "c"), OptionItem(28, "/action", "ce"), OptionItem(157, "-reslim", "1000") }
+                                    << QList<bool> { true, true, false };
+    QTest::newRow("doubledash_1")   << "--A 1 --B 2"             << 2
+                                    << QList<OptionItem>{ OptionItem(-1, "--A", "1"), OptionItem(-1, "--B", "2") }
+                                    << QList<bool> { false, false };
+    QTest::newRow("doubledash_2")   << "action=ce --A 1 --B 2"   << 3
+                                    << QList<OptionItem>{ OptionItem(28, "action", "ce"), OptionItem(-1, "--A", "1"), OptionItem(-1, "--B", "2") }
+                                    << QList<bool> { false, false, false };
+    QTest::newRow("doubledash_3")   << "action=ce --A 1 A c"   << 3
+                                    << QList<OptionItem>{ OptionItem(28, "action", "ce"), OptionItem(-1, "--A", "1"), OptionItem(28, "A", "c"), }
+                                    << QList<bool> { true, false, true };
+    QTest::newRow("doubledash_4")   << "action=ce --A 1 -A c"   << 3
+                                    << QList<OptionItem>{ OptionItem(28, "action", "ce"), OptionItem(-1, "--A", "1"), OptionItem(28, "-A", "c"), }
+                                    << QList<bool> { true, false, true };
+}
+
+void TestGamsOption::testTokenize()
+{
+    QFETCH(QString, commandLineParameter);
+    QFETCH(int, numberOfParameters);
+    QFETCH(QList<OptionItem>, items);
+    QFETCH(QList<bool>, recurrent);
+
+    QList<OptionItem> optionItems = optionTokenizer->tokenize(commandLineParameter);
+    QCOMPARE(optionItems.size(), numberOfParameters);
+    for(int i=0; i<optionItems.size(); i++) {
+        QCOMPARE( optionItems.at(i).key, items.at(i).key );
+        QCOMPARE( optionItems.at(i).value, items.at(i).value );
+        QCOMPARE( optionItems.at(i).optionId, items.at(i).optionId );
+        QCOMPARE( optionItems.at(i).recurrent, recurrent.at(i) );
+    }
+}
+
 void TestGamsOption::cleanupTestCase()
 {
-    if (gamsOption)
-       delete gamsOption;
+    if (optionTokenizer)
+       delete optionTokenizer;
 }
 
 QTEST_MAIN(TestGamsOption)
