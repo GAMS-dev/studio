@@ -4,6 +4,7 @@ Version 1.5.2  *
 - the settings dialog remembers the selected tab during the current session
 - showing list of files in Referefence File Viewer by the order that has been used
 - fixed incorrectly parsed value of dashed, slash, and double-dashed command line parameters
+- suppress jump to reference on end of selecting text by mouse
 
 Version 1.5.1
 ==================
