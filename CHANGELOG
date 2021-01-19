@@ -3,6 +3,7 @@ Version 1.5.2  *
 - appearance of the settings dialog changed to to follow the macOS platform rules
 - the settings dialog remembers the selected tab during the current session
 - showing list of files in Referefence File Viewer by the order that has been used
+- fixed incorrectly parsed value of dashed, slash, and double-dashed command line parameters
 
 Version 1.5.1
 ==================
