@@ -297,6 +297,9 @@ void SettingsDialog::themeModified()
 {
     setModified();
     emit themeChanged();
+    for (ThemeWidget *wid : mColorWidgets) {
+        wid->refresh();
+    }
 }
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()

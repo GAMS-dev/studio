@@ -12,6 +12,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(false);
 }
 
@@ -20,6 +21,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExam
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(iconExample);
 //    ui->textFrame->setVisible(!iconExample);
     ui->textFrame->setVisible(false);
@@ -43,6 +45,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, QWidg
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
@@ -57,6 +60,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(false);
     ui->textFrame->setVisible(false);
 
@@ -71,6 +75,18 @@ ThemeWidget::~ThemeWidget()
 {
     if (mIconEng) mIconEng->unbind();
     delete ui;
+}
+
+void ThemeWidget::baseInit()
+{
+    QList<QFrame*> frames;
+    frames << ui->colorFG << ui->colorBG1 << ui->colorBG2;
+    for (QFrame *frame : qAsConst(frames)) {
+        QPalette pal = frame->parentWidget()->palette();
+        QColor c = pal.color(QPalette::Button);
+        c = (c.black() < 128) ? c.darker(105) : c.lighter(115);
+        frame->setStyleSheet(":disabled{background:"+c.name()+";color:"+c.name()+";}");
+    }
 }
 
 void ThemeWidget::initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slot, QFrame *frame)
@@ -153,6 +169,7 @@ void ThemeWidget::fontFlagsChanged()
 
 void ThemeWidget::refresh()
 {
+    baseInit();
     if (mSlotFg) {
         setColor(ui->colorFG, toColor(mSlotFg), 1);
         if (Theme::hasFontProps(mSlotFg)) {
@@ -200,8 +217,10 @@ void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
             ui->iconEx->setIcon(ui->iconEx->icon());
         } else {
             QString sheet;
-            if (mSlotFg != Theme::invalid) sheet = "color:" + toColor(mSlotFg).name()+";";
-            if (mSlotBg != Theme::invalid) sheet += "background:" + toColor(mSlotBg).name()+";";
+            sheet = "color:" + (mSlotFg != Theme::invalid ? toColor(mSlotFg).name()
+                                                          : toColor(Theme::Edit_text).name()) + ";";
+            sheet += "background:" + (mSlotBg != Theme::invalid ? toColor(mSlotBg).name()
+                                                                : toColor(Theme::Edit_background).name()) + ";";
             ui->name->setStyleSheet(sheet);
         }
     }

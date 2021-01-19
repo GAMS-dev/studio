@@ -51,6 +51,7 @@ private:
     QFrame *mSelectedFrame;
     bool mReadonly = false;
 
+    void baseInit();
     void initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slotVal, QFrame *frame);
     void setColor(QFrame *frame, const QColor &color, int examplePart = 0);
 };
