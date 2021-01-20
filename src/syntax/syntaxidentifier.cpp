@@ -409,9 +409,10 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
         // find split point between row-header and value
         int split = flavor;
         if (line.length() >= flavor)
-            while (start < line.length() && !isWhitechar(line, split)) --split;
+            while (split >= 0 && !isWhitechar(line, split)) --split;
         else
             split = line.length();
+        if (split <= 0) return SyntaxBlock(this);
         if (kind() == SyntaxKind::IdentifierTableAssignmentRowHead) {
             return SyntaxBlock(this, flavor, index, split, SyntaxShift::shift);
         } else {
@@ -419,8 +420,6 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
             index = split;
         }
     }
-
-
 
     int end = line.indexOf(';', index);
     if (end < 0)
