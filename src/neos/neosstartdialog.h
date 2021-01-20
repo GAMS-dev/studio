@@ -39,6 +39,9 @@ protected:
     void showEvent(QShowEvent *event) override;
 
 private:
+    QString validateEmail(const QString &eMail);
+
+private:
     Ui::NeosStartDialog *ui;
     NeosProcess *mProc = nullptr;
     bool mFirstShow = true;

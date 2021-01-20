@@ -34,7 +34,6 @@ NeosStartDialog::NeosStartDialog(QString eMail, QWidget *parent) :
     if (Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
             && Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)) ui->widTerms->setVisible(false);
     if (!eMail.isEmpty()) {
-        ui->laEmailHint->setVisible(false);
         ui->edEmail->setText(eMail);
     }
     connect(ui->edEmail, &QLineEdit::textEdited, this, [this]() {
@@ -42,7 +41,6 @@ NeosStartDialog::NeosStartDialog(QString eMail, QWidget *parent) :
         updateCanStart();
         emit eMailChanged(ui->edEmail->text());
     });
-
     resize(width(), height() - ui->widTerms->height());
     updateCanStart();
 }
@@ -92,9 +90,27 @@ void NeosStartDialog::showEvent(QShowEvent *event)
     mFirstShow = false;
 }
 
+QString NeosStartDialog::validateEmail(const QString &eMail)
+{
+    QString s = eMail.trimmed();
+    if (s.isEmpty()) return "The email is initialized from NEOS_EMAIL in the GAMS config or an environment variable.";
+    if (s.indexOf(' ') > 0) return "Invalid email, no space alowed";
+    if (s.indexOf('\t') > 0) return "Invalid email, no tab-character alowed";
+    int i = s.indexOf('@');
+    if (i < 1) return "Invalid email, missing '@'";
+    i = s.indexOf('.', i+2);
+    if (i < 0) return "Invalid email, missing '.' after the '@'";
+    if (i == s.length()-1) return "Invalid email, missing domain after the '.'";
+    return QString();
+}
+
 void NeosStartDialog::updateCanStart()
 {
-    bool enabled = ui->cbTerms->isChecked() && !ui->edEmail->text().isEmpty();
+    QString message = validateEmail(ui->edEmail->text().trimmed());
+    if (message != ui->laEmailHint->text()) {
+        ui->laEmailHint->setText(message);
+    }
+    bool enabled = ui->cbTerms->isChecked() && message.isEmpty();
     ui->bAlways->setEnabled(enabled && ui->cbHideTerms->isChecked());
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
