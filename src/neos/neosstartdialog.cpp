@@ -94,13 +94,14 @@ QString NeosStartDialog::validateEmail(const QString &eMail)
 {
     QString s = eMail.trimmed();
     if (s.isEmpty()) return "The email is initialized from NEOS_EMAIL in the GAMS config or an environment variable.";
-    if (s.indexOf(' ') > 0) return "Invalid email, no space alowed";
-    if (s.indexOf('\t') > 0) return "Invalid email, no tab-character alowed";
+    QString invalidText("Invalid email.");
+    if (s.indexOf(' ') > 0) return invalidText;
+    if (s.indexOf('\t') > 0) return invalidText;
     int i = s.indexOf('@');
-    if (i < 1) return "Invalid email, missing '@'";
+    if (i < 1) return invalidText;
     i = s.indexOf('.', i+2);
-    if (i < 0) return "Invalid email, missing '.' after the '@'";
-    if (i == s.length()-1) return "Invalid email, missing domain after the '.'";
+    if (i < 0) return invalidText;
+    if (i == s.length()-1) return invalidText;
     return QString();
 }
 
