@@ -508,16 +508,16 @@ void SettingsDialog::initColorPage()
     slot2 = {
         {Theme::Edit_text,                  Theme::Edit_background,             Theme::invalid},
         {Theme::invalid,                    Theme::Edit_currentLineBg,          Theme::invalid},
-        {Theme::invalid,                    Theme::Edit_errorBg,                Theme::invalid},
         {Theme::invalid,                    Theme::Edit_currentWordBg,          Theme::invalid},
+        {Theme::invalid,                    Theme::Edit_errorBg,                Theme::invalid},
         {Theme::invalid,                    Theme::Edit_matchesBg,              Theme::invalid},
         {Theme::Edit_parenthesesValidFg,    Theme::Edit_parenthesesValidBg,     Theme::Edit_parenthesesValidBgBlink},
         {Theme::Edit_parenthesesInvalidFg,  Theme::Edit_parenthesesInvalidBg,   Theme::Edit_parenthesesInvalidBgBlink},
 
-        {Theme::Edit_foldLineFg,            Theme::Edit_foldLineBg,             Theme::invalid},
         {Theme::Edit_linenrAreaFg,          Theme::Edit_linenrAreaBg,           Theme::invalid},
         {Theme::Edit_linenrAreaMarkFg,      Theme::Edit_linenrAreaMarkBg,       Theme::invalid},
         {Theme::invalid,                    Theme::Edit_linenrAreaFoldBg,       Theme::invalid},
+        {Theme::Edit_foldLineFg,            Theme::Edit_foldLineBg,             Theme::invalid},
         {Theme::Mark_errorFg,               Theme::invalid,                     Theme::invalid},
         {Theme::Mark_listingFg,             Theme::invalid,                     Theme::invalid},
         {Theme::Mark_fileFg,                Theme::invalid,                     Theme::invalid},

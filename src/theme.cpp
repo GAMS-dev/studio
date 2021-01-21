@@ -38,21 +38,21 @@ Theme *Theme::instance()
 void Theme::initSlotTexts()
 {
     mSlotText.clear();
-    mSlotText.insert(Edit_text,                 "Editor base");
+    mSlotText.insert(Edit_text,                 "Text");
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
-    mSlotText.insert(Edit_matchesBg,            "Matches");
-    mSlotText.insert(Edit_foldLineBg,           "Fold line");
+    mSlotText.insert(Edit_matchesBg,            "Search result");
+    mSlotText.insert(Edit_foldLineBg,           "Fold lines marker");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
-    mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
-    mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
-    mSlotText.insert(Edit_foldLineFg,           "Folded line marker");
+    mSlotText.insert(Edit_linenrAreaFg,         "Line number");
+    mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line number");
+    mSlotText.insert(Edit_foldLineFg,           "Folded lines marker");
     mSlotText.insert(Edit_linenrAreaFoldBg,     "Fold marker");
-    mSlotText.insert(Mark_errorFg,              "Error mark");
-    mSlotText.insert(Mark_listingFg,            "Listing mark");
-    mSlotText.insert(Mark_fileFg,               "File mark");
+    mSlotText.insert(Mark_errorFg,              "Error marker");
+    mSlotText.insert(Mark_listingFg,            "Listing marker");
+    mSlotText.insert(Mark_fileFg,               "File marker");
 
     mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
