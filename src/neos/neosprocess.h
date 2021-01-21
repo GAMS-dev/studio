@@ -29,6 +29,8 @@ public:
     ~NeosProcess() override;
     void setPriority(Priority prio) { mPrio = prio; }
     void setForceGdx(bool forceGdx);
+    void setMail(QString eMail) { mMail = eMail; }
+    QString mail() { return mMail; }
 
     void execute() override;
     void interrupt() override;
@@ -77,6 +79,7 @@ private:
     NeosManager *mManager;
     bool mForceGdx = false;
     bool mHasGdx = false;
+    QString mMail;
     QString mOutPath;
     QString mJobNumber;
     QString mJobPassword;

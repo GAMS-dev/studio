@@ -8,7 +8,7 @@ namespace gams {
 namespace studio {
 namespace neos {
 
-NeosStartDialog::NeosStartDialog(QWidget *parent) :
+NeosStartDialog::NeosStartDialog(QString eMail, QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::NeosStartDialog)
 {
@@ -33,6 +33,14 @@ NeosStartDialog::NeosStartDialog(QWidget *parent) :
     ui->cbHideTerms->setChecked(Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm));
     if (Settings::settings()->toBool(SettingsKey::skNeosAutoConfirm)
             && Settings::settings()->toBool(SettingsKey::skNeosAcceptTerms)) ui->widTerms->setVisible(false);
+    if (!eMail.isEmpty()) {
+        ui->edEmail->setText(eMail);
+    }
+    connect(ui->edEmail, &QLineEdit::textEdited, this, [this]() {
+        updateValues();
+        updateCanStart();
+        emit eMailChanged(ui->edEmail->text());
+    });
     resize(width(), height() - ui->widTerms->height());
     updateCanStart();
 }
@@ -67,6 +75,7 @@ void NeosStartDialog::updateValues()
     if (mProc) {
         mProc->setForceGdx(ui->cbForceGdx->isChecked());
         mProc->setPriority(ui->rbShort->isChecked() ? Priority::prioShort : Priority::prioLong);
+        mProc->setMail(ui->edEmail->text().trimmed());
     }
 }
 
@@ -81,9 +90,28 @@ void NeosStartDialog::showEvent(QShowEvent *event)
     mFirstShow = false;
 }
 
+QString NeosStartDialog::validateEmail(const QString &eMail)
+{
+    QString s = eMail.trimmed();
+    if (s.isEmpty()) return "The email is initialized from NEOS_EMAIL in the GAMS config or an environment variable.";
+    QString invalidText("Invalid email.");
+    if (s.indexOf(' ') > 0) return invalidText;
+    if (s.indexOf('\t') > 0) return invalidText;
+    int i = s.indexOf('@');
+    if (i < 1) return invalidText;
+    i = s.indexOf('.', i+2);
+    if (i < 0) return invalidText;
+    if (i == s.length()-1) return invalidText;
+    return QString();
+}
+
 void NeosStartDialog::updateCanStart()
 {
-    bool enabled = ui->cbTerms->isChecked();
+    QString message = validateEmail(ui->edEmail->text().trimmed());
+    if (message != ui->laEmailHint->text()) {
+        ui->laEmailHint->setText(message);
+    }
+    bool enabled = ui->cbTerms->isChecked() && message.isEmpty();
     ui->bAlways->setEnabled(enabled && ui->cbHideTerms->isChecked());
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
