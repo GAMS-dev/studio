@@ -44,8 +44,9 @@ class ReferenceViewer : public QWidget
 
 public:
     explicit ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent = nullptr);
-    ~ReferenceViewer();
+    ~ReferenceViewer() override;
     void selectSearchField() const;
+    void updateStyle();
 
 signals:
     void jumpTo(ReferenceItem item);

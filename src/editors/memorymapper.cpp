@@ -25,7 +25,7 @@
 namespace gams {
 namespace studio {
 
-enum BaseFormat {old, debug, error, lstLink, fileLink};
+enum BaseFormat {old, debug, error, lstLink, fileLink, baseFormatCount};
 static int CErrorBound = 50;        // The count of errors created at the beginning and the end (each the count)
 static int CDirectErrors = 3;       // The count of errors created immediately
 static int CParseLinesMax = 23;     // The maximum count of gathered lines befor updating the display
@@ -44,34 +44,27 @@ MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
     mPending = PendingNothing;
     mMarksHead.reserve(CErrorBound);
     mMarksTail.resize(CErrorBound);
-    // old
-    QTextCharFormat fmt;
-    fmt.setForeground(QColor(125,125,125));
-    mBaseFormat << fmt;
-    // debug
-    fmt = QTextCharFormat();
-    fmt.setForeground(QColor(120,150,100));
-    mBaseFormat << fmt;
-    // error
-    fmt = QTextCharFormat();
-    fmt.setAnchor(true);
-    fmt.setForeground(Theme::color(Theme::Normal_Red));
-    fmt.setUnderlineColor(Theme::color(Theme::Normal_Red));
-    fmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-    mBaseFormat << fmt;
-    // lstLink
-    fmt = QTextCharFormat();
-    fmt.setForeground(Theme::color(Theme::Normal_Blue));
-    fmt.setUnderlineColor(Theme::color(Theme::Normal_Blue));
-    fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-    mBaseFormat << fmt;
-    // fileLink
-    fmt = QTextCharFormat();
-    fmt.setForeground(Theme::color(Theme::Normal_Green));
-    fmt.setUnderlineColor(Theme::color(Theme::Normal_Green));
-    fmt.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-    mBaseFormat << fmt;
+    updateTheme();
     addChunk(true);
+}
+
+void MemoryMapper::updateTheme()
+{
+    while (mBaseFormat.size() < baseFormatCount) {
+        mBaseFormat << QTextCharFormat();
+    }
+    mBaseFormat[old].setForeground(QColor(125,125,125));
+    mBaseFormat[debug].setForeground(QColor(120,150,100));
+    mBaseFormat[error].setAnchor(true);
+    mBaseFormat[error].setForeground(Theme::color(Theme::Mark_errorFg));
+    mBaseFormat[error].setUnderlineColor(Theme::color(Theme::Mark_errorFg));
+    mBaseFormat[error].setUnderlineStyle(QTextCharFormat::WaveUnderline);
+    mBaseFormat[lstLink].setForeground(Theme::color(Theme::Mark_listingFg));
+    mBaseFormat[lstLink].setUnderlineColor(Theme::color(Theme::Mark_listingFg));
+    mBaseFormat[lstLink].setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    mBaseFormat[fileLink].setForeground(Theme::color(Theme::Mark_fileFg));
+    mBaseFormat[fileLink].setUnderlineColor(Theme::color(Theme::Mark_fileFg));
+    mBaseFormat[fileLink].setUnderlineStyle(QTextCharFormat::SingleUnderline);
 }
 
 MemoryMapper::~MemoryMapper()

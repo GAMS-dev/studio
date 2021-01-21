@@ -60,7 +60,7 @@ public:
         Syntax_undefined,
         Syntax_neutral,
         Syntax_directive,
-        Syntax_assign,
+        Syntax_formula,
         Syntax_directiveBody,
         Syntax_comment,
         Syntax_title,
@@ -68,7 +68,6 @@ public:
         Syntax_declaration,
         Syntax_identifier,
         Syntax_description,
-        Syntax_identifierAssign,
         Syntax_assignLabel,
         Syntax_assignValue,
         Syntax_tableHeader,
@@ -90,7 +89,7 @@ private:
     };
 
 public:
-    ~Theme();
+    ~Theme() override;
     static Theme *instance();
     void initDefault();
     int themeCount() { return mThemeNames.size(); }
@@ -108,7 +107,9 @@ public:
     int removeTheme(int index);
 
     QVariantList writeUserThemes() const;
+    QVariantMap writeCurrentTheme();
     void readUserThemes(const QVariantList &sourceThemes);
+    int readUserTheme(const QVariantMap &tSource);
 
     static QString name(ColorSlot slot);
     static QString text(ColorSlot slot);
@@ -128,7 +129,7 @@ private:
     void initSlotTexts();
     QHash<QString, QStringList> iconCodes() const;
     QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
-    QString findUniqueName(const QString &name);
+    QString findUniqueName(const QString &name, const QString &ignore = QString());
 
 private:
     static Theme *mInstance;

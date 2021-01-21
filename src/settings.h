@@ -155,6 +155,7 @@ public:
     static int version(Scope scope);
     static void useRelocatedPathForTests();
     static QList<SettingsKey> viewKeys();
+    static QString themeFileName(QString baseName);
 
     void loadFile(Scope scopeFilter);
     void save();
@@ -185,8 +186,8 @@ public:
     void importSettings(const QString &path);
     void exportSettings(const QString &path);
 
-    void importTheme(const QString &path);
-    void exportTheme(const QString &path);
+    void exportTheme(const QVariant &vTheme, QString fileName);
+    QVariantMap importTheme(const QString &filepath);
 
     void updateSettingsFiles();
 

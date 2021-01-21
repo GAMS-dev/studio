@@ -31,7 +31,7 @@ SyntaxIdentifier::SyntaxIdentifier() : SyntaxAbstract(SyntaxKind::Identifier)
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
               << SyntaxKind::IdentifierDim << SyntaxKind::IdentifierAssignment
-              << SyntaxKind::IdentifierTableAssignmentHead << SyntaxKind::CommaIdent;
+              << SyntaxKind::IdentifierTableAssignmentColHead << SyntaxKind::CommaIdent;
 
     mEmptyLineKinds << mSubKinds
                     << SyntaxKind::Identifier
@@ -114,7 +114,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd() : SyntaxAbstract(SyntaxKind::Id
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::CommaIdent << SyntaxKind::Semicolon
-              << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierTableAssignmentHead;
+              << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierTableAssignmentColHead;
     mEmptyLineKinds << mSubKinds
                     << SyntaxKind::Identifier
                     << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
@@ -151,7 +151,7 @@ SyntaxIdentDescript::SyntaxIdentDescript() : SyntaxAbstract(SyntaxKind::Identifi
     mEmptyLineKinds = mSubKinds;
     mEmptyLineKinds << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
                      << SyntaxKind::Declaration << SyntaxKind::IdentifierAssignment
-                     << SyntaxKind::IdentifierTableAssignmentHead << SyntaxKind::Identifier;
+                     << SyntaxKind::IdentifierTableAssignmentColHead << SyntaxKind::Identifier;
     mSubKinds << SyntaxKind::CommaIdent << SyntaxKind::Semicolon << SyntaxKind::IdentifierAssignment;
 }
 
@@ -357,10 +357,18 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     switch (kind) {
-    case SyntaxKind::IdentifierTableAssignmentHead:
-        mSubKinds << SyntaxKind::IdentifierTableAssignmentRow;
+    case SyntaxKind::IdentifierTableAssignmentColHead:
+        mSubKinds << SyntaxKind::IdentifierTableAssignmentRowHead;
+        break;
+    case SyntaxKind::IdentifierTableAssignmentRowHead:
+        mSubKinds << SyntaxKind::IdentifierTableAssignmentColHead
+                  << SyntaxKind::IdentifierTableAssignmentRowHead
+                  << SyntaxKind::IdentifierTableAssignmentRow;
         break;
     case SyntaxKind::IdentifierTableAssignmentRow:
+        mSubKinds << SyntaxKind::IdentifierTableAssignmentColHead
+                  << SyntaxKind::IdentifierTableAssignmentRowHead
+                  << SyntaxKind::IdentifierTableAssignmentRow;
         break;
     default:
         Q_ASSERT_X(false, "SyntaxTableAssign", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
@@ -369,17 +377,50 @@ SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
 
 SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
-    if (!(flavor & flavorTable)) return SyntaxBlock(this);
-    if (index > 0) return SyntaxBlock(this);
+    bool inTable = entryKind == SyntaxKind::IdentifierTableAssignmentColHead
+            || entryKind == SyntaxKind::IdentifierTableAssignmentRowHead
+            || entryKind == SyntaxKind::IdentifierTableAssignmentRow;
+    if (!inTable && !(flavor & flavorTable)) return SyntaxBlock(this);
+    if (index > 0 && kind() != SyntaxKind::IdentifierTableAssignmentRow) return SyntaxBlock(this);
 
-    if (kind() == SyntaxKind::IdentifierTableAssignmentHead
-            && entryKind == SyntaxKind::IdentifierTableAssignmentRow) {
-        int start = index;
-        while (isWhitechar(line, start))
-            ++start;
-        if (start >= line.length() || line.at(start) != '+')
-            return SyntaxBlock(this);
+    int start = index;
+    if (kind() == SyntaxKind::IdentifierTableAssignmentColHead) {
+        flavor = 0;
+        if (inTable) {
+            // validate this is a continued table using '+' and find start of first column
+            int plusCount = 0;
+            while (start < line.length() && (isWhitechar(line, start) || line.at(start) == '+')) {
+                if (line.at(start) == '\t') flavor = ((flavor/8) +1) *8;
+                else ++flavor;
+                if (line.at(start) == '+') ++plusCount;
+                ++start;
+            }
+            if (start >= line.length() || plusCount != 1)
+                return SyntaxBlock(this);
+        } else {
+            // find start of first column
+            while (start < line.length() && isWhitechar(line, start)) {
+                if (line.at(start) == '\t') flavor = ((flavor/8) +1) *8;
+                else ++flavor;
+                ++start;
+            }
+        }
+    } else {
+        // find split point between row-header and value
+        int split = flavor;
+        if (line.length() >= flavor)
+            while (split >= 0 && !isWhitechar(line, split)) --split;
+        else
+            split = line.length();
+        if (split <= 0) return SyntaxBlock(this);
+        if (kind() == SyntaxKind::IdentifierTableAssignmentRowHead) {
+            return SyntaxBlock(this, flavor, index, split, SyntaxShift::shift);
+        } else {
+            if (index < split) return SyntaxBlock(this);
+            index = split;
+        }
     }
+
     int end = line.indexOf(';', index);
     if (end < 0)
         return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
@@ -389,10 +430,13 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     Q_UNUSED(hasContent)
-    int end = line.indexOf(';', index);
-    if (end < 0)
-        return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
-    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
+    int end = index;
+    while (isWhitechar(line, end)) ++end;
+    return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
+
+//    int end = line.indexOf(';', index);
+//    if (end < 0)
+//    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 
 } // namespace syntax

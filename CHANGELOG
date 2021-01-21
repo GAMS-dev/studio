@@ -6,6 +6,10 @@ Version 1.5.2  *
 - fixed incorrectly parsed value of dashed, slash, and double-dashed command line parameters
 - added email for NEOS submission initialized from environment variable NEOS_EMAIL which can also be set permanently in gamsconfig.yaml
 - suppress jump to reference on end of selecting text by mouse
+- improved syntax color assignment and naming
+- the color dialog now supports editor colors to be modified
+- themes now can be imported and exported
+- syntax highlighting of table statements now detects row headers 
 
 Version 1.5.1
 ==================

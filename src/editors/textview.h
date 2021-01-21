@@ -89,6 +89,7 @@ signals:
 
 public slots:
     void updateExtraSelections();
+    void updateTheme();
     void updateView();
 
 private slots:
