@@ -2631,6 +2631,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
         on_actionClose_All_triggered();
         closeHelpView();
         mTextMarkRepo.clear();
+        delete mSettingsDialog;
+        mSettingsDialog = nullptr;
     } else {
         event->setAccepted(false);
     }
