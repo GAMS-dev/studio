@@ -38,7 +38,7 @@ Theme *Theme::instance()
 void Theme::initSlotTexts()
 {
     mSlotText.clear();
-    mSlotText.insert(Edit_text,                 "Text");
+    mSlotText.insert(Edit_text,                 "Default Text");
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
