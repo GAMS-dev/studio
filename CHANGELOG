@@ -4,6 +4,8 @@ Version 1.5.2  *
 - the settings dialog remembers the selected tab during the current session
 - showing list of files in Referefence File Viewer by the order that has been used
 - fixed incorrectly parsed value of dashed, slash, and double-dashed command line parameters
+- added email for NEOS submission initialized from environment variable NEOS_EMAIL which can also be set permanently in gamsconfig.yaml
+- suppress jump to reference on end of selecting text by mouse
 - improved syntax color assignment and naming
 - the color dialog now supports editor colors to be modified
 - themes now can be imported and exported
