@@ -32,6 +32,7 @@ enum struct Hotkey {
     // when key-setup can be persisted ensure the assignments won't change any more
 
     NewLine = 1,
+    Print = 2,
     Cut = 10,
     Copy = 11,
     Paste = 12,

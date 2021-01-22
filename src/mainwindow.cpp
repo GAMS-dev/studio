@@ -19,8 +19,6 @@
  */
 #include <QtConcurrent>
 #include <QtWidgets>
-#include <QPrintDialog>
-#include <QPrinter>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -64,6 +62,7 @@
 #include "engine/enginestartdialog.h"
 #include "neos/neosstartdialog.h"
 #include "option/gamsuserconfig.h"
+#include "keys.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -90,6 +89,8 @@ MainWindow::MainWindow(QWidget *parent)
     Settings *settings = Settings::settings();
     initEnvironment();
 
+    mPrintDialog = new QPrintDialog(&mPrinter, this);
+
     ui->setupUi(this);
 
     // Timers
@@ -105,6 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
+
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
@@ -304,6 +306,7 @@ MainWindow::~MainWindow()
     delete mNavigationHistory;
     delete mResultsView;
     delete mSearchDialog;
+    delete mPrintDialog;
     FileType::clear();
 }
 
@@ -2640,6 +2643,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* e)
 {
+    if (e == Hotkey::Print)
+        on_actionPrint_triggered();
+
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0))
         updateFixedFonts(Settings::settings()->toString(skEdFontFamily),
                          Settings::settings()->toInt(skEdFontSize));
@@ -4669,30 +4675,36 @@ void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
     }
 }
 
-void MainWindow::on_actionPrint_triggered()
+void MainWindow::printDocument()
 {
-    QPrinter printer;
-    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
-    if (!fm || !focusWidget()) return;
     if (focusWidget() == mRecent.editor()) {
         auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
         if (!abstractEdit) return;
-        QPrintDialog dialog(&printer, this);
-        if (dialog.exec() == QDialog::Rejected) return;
-        abstractEdit->print(&printer);
+        abstractEdit->print(&mPrinter);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (!lxiViewer) return;
-        QPrintDialog dialog(&printer, this);
-        if (dialog.exec() == QDialog::Rejected) return;
-        lxiViewer->print(&printer);
+        lxiViewer->print(&mPrinter);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::txtRo) {
         auto* textViewer = ViewHelper::toTextView(mainTabs()->currentWidget());
         if (!textViewer) return;
-        QPrintDialog dialog(&printer, this);
-        if (dialog.exec() == QDialog::Rejected) return;
-        textViewer->print(&printer);
+        textViewer->print(&mPrinter);
     }
+}
+
+
+void MainWindow::on_actionPrint_triggered()
+{
+    if (!enabledPrintAction()) return;
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget()) return;
+#ifdef __APPLE__
+    int ret = mPrintDialog->exec();
+    if (ret == QDialog::Accepted)
+        printDocument();
+#else
+    mPrintDialog->open(this, SLOT(printDocument()));
+#endif
 }
 
 bool MainWindow::enabledPrintAction()
