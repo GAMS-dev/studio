@@ -343,9 +343,15 @@ void FileMeta::updateSyntaxColors()
 void FileMeta::initEditorColors()
 {
     for (QWidget *w: mEditors) {
+        if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
+            rv->updateStyle();
+            continue;
+        }
         AbstractEdit *ed = ViewHelper::toAbstractEdit(w);
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(w))
             ed = lxi->textView()->edit();
+        if (TextView *tv = ViewHelper::toTextView(w))
+            ed = tv->edit();
         if (!ed) continue;
         if (Theme::color(Theme::Edit_text) == Qt::transparent &&
                 Theme::color(Theme::Edit_background) == Qt::transparent) {
@@ -370,6 +376,8 @@ void FileMeta::updateEditorColors()
             ce->updateExtraSelections();
         if (CodeEdit *ce = ViewHelper::toCodeEdit(w))
             ce->lineNumberArea()->repaint();
+        if (TextView *tv = ViewHelper::toTextView(w))
+            tv->updateTheme();
     }
 }
 

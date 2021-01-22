@@ -704,6 +704,18 @@ void Settings::saveThemes()
     }
 }
 
+void Settings::exportTheme(const QVariant &vTheme, QString fileName)
+{
+    QVariantMap theme = vTheme.toMap();
+    QString name = theme.value("name").toString();
+//    QString fName = path + '/' + CThemePrefix + name.toLower();
+    QSettings themeSettings(fileName, QSettings::defaultFormat());
+    themeSettings.setValue("name", name);
+    themeSettings.setValue("base", theme.value("base"));
+    themeSettings.setValue("theme", theme.value("theme"));
+    themeSettings.sync();
+}
+
 void Settings::loadThemes()
 {
     QVariantList themes;
@@ -744,6 +756,24 @@ void Settings::loadThemes()
     }
     setList(skUserThemes, themes);
 }
+
+QVariantMap Settings::importTheme(const QString &filepath)
+{
+    QSettings themeSettings(filepath, QSettings::defaultFormat());
+    QString name = themeSettings.value("name").toString();
+    bool ok;
+    int base = themeSettings.value("base").toInt(&ok);
+    if (!ok) base = 0;
+    QVariantMap data = themeSettings.value("theme").toMap();
+    if (data.isEmpty()) return QVariantMap();
+
+    QVariantMap theme;
+    theme.insert("name", name);
+    theme.insert("base", base);
+    theme.insert("theme", data);
+    return theme;
+}
+
 
 int Settings::usableVersion(ScopePair scopes)
 {
@@ -882,25 +912,9 @@ void Settings::exportSettings(const QString &path)
     }
 }
 
-void Settings::importTheme(const QString &path)
+QString Settings::themeFileName(QString baseName)
 {
-    if (!mSettings.value(scTheme)) return;
-    QFile backupFile(path);
-    QFile syntaxFile(mSettings.value(scTheme)->fileName());
-    syntaxFile.remove(); // remove old file
-    backupFile.copy(syntaxFile.fileName()); // import new file
-    reload();
-}
-
-void Settings::exportTheme(const QString &path)
-{
-    if (!mSettings.value(scTheme)) return;
-    QFile originFile(mSettings.value(scTheme)->fileName());
-    if (QFile::exists(path))
-        QFile::remove(path);
-    if (!originFile.copy(path)) {
-        SysLogLocator::systemLog()->append("Error exporting syntax theme to " + path, LogMsgType::Error);
-    }
+    return CThemePrefix+baseName.toLower()+".json";
 }
 
 }

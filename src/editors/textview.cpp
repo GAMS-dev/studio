@@ -687,6 +687,13 @@ void TextView::updateExtraSelections()
     mEdit->updateExtraSelections();
 }
 
+void TextView::updateTheme()
+{
+    if (mMapper->kind() != AbstractTextMapper::memoryMapper) return;
+    static_cast<MemoryMapper*>(mMapper)->updateTheme();
+    topLineMoved();
+}
+
 void TextView::marksChanged(const QSet<int> dirtyLines)
 {
     mEdit->marksChanged(dirtyLines);

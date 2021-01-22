@@ -100,6 +100,10 @@ void Keys::reset()
     *seq << QKeySequence("Ctrl+Z");
     setHotkey(Hotkey::Undo, seq);
 
+    seq = new KeySeqList("Print","print current document");
+    *seq << QKeySequence("Ctrl+P");
+    setHotkey(Hotkey::Print, seq);
+
     seq = new KeySeqList("Redo","redo last modification");
     *seq << QKeySequence("Shift+Ctrl+Z");
     setHotkey(Hotkey::Redo, seq);

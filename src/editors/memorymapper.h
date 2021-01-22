@@ -113,6 +113,7 @@ public:
     int lineCount() const override;
     int knownLineNrs() const override;
     QString findClosestLst(const int &localLine);
+    void updateTheme();
     void dump();
 
 signals:

@@ -12,6 +12,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(false);
 }
 
@@ -20,6 +21,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExam
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(iconExample);
 //    ui->textFrame->setVisible(!iconExample);
     ui->textFrame->setVisible(false);
@@ -31,7 +33,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExam
         ui->iconEx->setIcon(QIcon(mIconEng));
     }
 
-    ui->name->setText(Theme::instance()->text(slotFg) + ' ');
+    ui->name->setText(' ' + Theme::instance()->text(slotFg) + ' ');
     setFormatVisible(Theme::hasFontProps(slotFg));
     initSlot(mSlotFg, slotFg, ui->colorFG);
     ui->colorBG1->hide();
@@ -43,10 +45,11 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, QWidg
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
-    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
+    ui->name->setText(' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     ui->colorBG2->hide();
@@ -57,10 +60,12 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
     ui(new Ui::ThemeWidget)
 {
     ui->setupUi(this);
+    baseInit();
     ui->iconEx->setVisible(false);
+    ui->textFrame->setVisible(false);
 
     setFormatVisible(Theme::hasFontProps(slotFg));
-    ui->name->setText(Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
+    ui->name->setText(' ' + Theme::instance()->text(slotFg ? slotFg : slotBg) + ' ');
     initSlot(mSlotFg, slotFg, ui->colorFG);
     initSlot(mSlotBg, slotBg, ui->colorBG1);
     initSlot(mSlotBg2, slotBg2, ui->colorBG2);
@@ -72,9 +77,16 @@ ThemeWidget::~ThemeWidget()
     delete ui;
 }
 
-void ThemeWidget::setCarrierDialog(QWidget *carrierDialog)
+void ThemeWidget::baseInit()
 {
-    mCarrier = carrierDialog;
+    QList<QFrame*> frames;
+    frames << ui->colorFG << ui->colorBG1 << ui->colorBG2;
+    for (QFrame *frame : qAsConst(frames)) {
+        QPalette pal = frame->parentWidget()->palette();
+        QColor c = pal.color(QPalette::Button);
+        c = (c.black() < 128) ? c.darker(105) : c.lighter(115);
+        frame->setStyleSheet(":disabled{background:"+c.name()+";color:"+c.name()+";}");
+    }
 }
 
 void ThemeWidget::initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slot, QFrame *frame)
@@ -107,9 +119,6 @@ void ThemeWidget::setFormatVisible(bool visible)
 
 bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::Close && watched == mColorDialog) {
-        mColorDialog->deleteLater();
-    }
     if (event->type() == QEvent::MouseButtonRelease) {
         if (watched == ui->colorFG) showColorSelector(ui->colorFG);
         else if (watched == ui->colorBG1) showColorSelector(ui->colorBG1);
@@ -122,15 +131,18 @@ void ThemeWidget::showColorSelector(QFrame *frame)
 {
     if (mReadonly) return;
     if (!mColorDialog) {
-        mColorDialog = new QColorDialog(mCarrier);
-        mColorDialog->setParent(mCarrier);
+        mColorDialog = new QColorDialog(this);
+        mColorDialog->setParent(this);
         mColorDialog->setModal(true);
-        mColorDialog->installEventFilter(this);
     }
     mSelectedFrame = frame;
     mColorDialog->setCurrentColor(frame->palette().window().color());
     connect(mColorDialog, &QColorDialog::colorSelected, this, &ThemeWidget::colorChanged);
-    mColorDialog->show();
+    connect(mColorDialog, &QColorDialog::finished, this, [this](){
+        mColorDialog->deleteLater();
+        mColorDialog = nullptr;
+    });
+    mColorDialog->open();
 }
 
 void ThemeWidget::colorChanged(const QColor &color)
@@ -157,6 +169,7 @@ void ThemeWidget::fontFlagsChanged()
 
 void ThemeWidget::refresh()
 {
+    baseInit();
     if (mSlotFg) {
         setColor(ui->colorFG, toColor(mSlotFg), 1);
         if (Theme::hasFontProps(mSlotFg)) {
@@ -167,10 +180,11 @@ void ThemeWidget::refresh()
             font.setItalic(Theme::hasFlag(mSlotFg, Theme::fItalic));
             ui->name->setFont(font);
         }
+        if (!ui->iconEx->isVisible()) {
+        }
     }
     if (mSlotBg) setColor(ui->colorBG1, toColor(mSlotBg), 2);
     if (mSlotBg2) setColor(ui->colorBG2, toColor(mSlotBg2));
-
 }
 
 void ThemeWidget::setAlignment(Qt::Alignment align)
@@ -200,12 +214,15 @@ void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
     frame->setStyleSheet("background:"+color.name()+";");
     if (examplePart) {
         if (ui->iconEx->isVisible()) {
-            // TODO(JM) colorize Icon
             ui->iconEx->setIcon(ui->iconEx->icon());
         } else {
-            ui->name->setStyleSheet((examplePart == 1 ? "color:" : "background") +color.name()+";");
+            QString sheet;
+            sheet = "color:" + (mSlotFg != Theme::invalid ? toColor(mSlotFg).name()
+                                                          : toColor(Theme::Edit_text).name()) + ";";
+            sheet += "background:" + (mSlotBg != Theme::invalid ? toColor(mSlotBg).name()
+                                                                : toColor(Theme::Edit_background).name()) + ";";
+            ui->name->setStyleSheet(sheet);
         }
-
     }
 }
 

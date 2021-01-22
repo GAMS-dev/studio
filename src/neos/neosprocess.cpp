@@ -142,7 +142,7 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        mManager->submitJob(g00, params.join(" "), mPrio==prioShort, mHasGdx);
+        mManager->submitJob(g00, mMail, params.join(" "), mPrio==prioShort, mHasGdx);
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
     }
@@ -274,6 +274,12 @@ void NeosProcess::reVersion(const QString &value)
 
 void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 {
+    if (!jobNumber) {
+        DEB() << "NEOS: " << jobPassword;
+        emit newStdChannelData("NEOS: " + jobPassword.toUtf8());
+        terminate();
+        return;
+    }
     DEB() << "SUBMITED: " << jobNumber << " - pw: " << jobPassword;
 
     QString credentials;

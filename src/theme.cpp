@@ -38,33 +38,37 @@ Theme *Theme::instance()
 void Theme::initSlotTexts()
 {
     mSlotText.clear();
+    mSlotText.insert(Edit_text,                 "Default Text");
     mSlotText.insert(Edit_currentLineBg,        "Current line");
     mSlotText.insert(Edit_errorBg,              "Error");
     mSlotText.insert(Edit_currentWordBg,        "Current word");
-    mSlotText.insert(Edit_matchesBg,            "Matches");
-    mSlotText.insert(Edit_foldLineBg,           "Fold line");
+    mSlotText.insert(Edit_matchesBg,            "Search result");
+    mSlotText.insert(Edit_foldLineBg,           "Fold lines marker");
     mSlotText.insert(Edit_parenthesesValidFg,   "Matching parentheses");
     mSlotText.insert(Edit_parenthesesInvalidFg, "Invalid parentheses");
-    mSlotText.insert(Edit_linenrAreaFg,         "Line numbers");
-    mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line numbers");
-    mSlotText.insert(Edit_foldLineFg,           "Folded line marker");
+    mSlotText.insert(Edit_linenrAreaFg,         "Line number");
+    mSlotText.insert(Edit_linenrAreaMarkFg,     "Current line number");
+    mSlotText.insert(Edit_foldLineFg,           "Folded lines marker");
+    mSlotText.insert(Edit_linenrAreaFoldBg,     "Fold marker");
+    mSlotText.insert(Mark_errorFg,              "Error marker");
+    mSlotText.insert(Mark_listingFg,            "Listing marker");
+    mSlotText.insert(Mark_fileFg,               "File marker");
 
     mSlotText.insert(Icon_Gray,                 "Icon pen");
     mSlotText.insert(Icon_Back,                 "Icon brush");
     mSlotText.insert(Icon_Paper,                "Icon paper");
 
-    mSlotText.insert(Syntax_assign,             "Assignment");
+    mSlotText.insert(Syntax_formula,            "Formula");
     mSlotText.insert(Syntax_comment,            "Comment");
-    mSlotText.insert(Syntax_directive,          "Dollar-Control");
-    mSlotText.insert(Syntax_directiveBody,      "Dollar-Control body");
+    mSlotText.insert(Syntax_directive,          "Dollar Control Option");
+    mSlotText.insert(Syntax_directiveBody,      "Dollar Control Argument");
     mSlotText.insert(Syntax_title,              "Title");
     mSlotText.insert(Syntax_keyword,            "Keyword");
     mSlotText.insert(Syntax_declaration,        "Declaration Keyword");
     mSlotText.insert(Syntax_identifier,         "Identifier");
-    mSlotText.insert(Syntax_description,        "Explanatory Text");
-    mSlotText.insert(Syntax_identifierAssign,   "Identifier Declaration");
+    mSlotText.insert(Syntax_description,        "Symbol Text");
     mSlotText.insert(Syntax_assignLabel,        "Element");
-    mSlotText.insert(Syntax_assignValue,        "Declaration Value");
+    mSlotText.insert(Syntax_assignValue,        "Element Text/Value");
     mSlotText.insert(Syntax_tableHeader,        "Table header");
     mSlotText.insert(Syntax_embedded,           "Embedded code");
 }
@@ -127,7 +131,7 @@ void Theme::initDefault()
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorThemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
-    mColorThemes[sNr].insert(Syntax_assign,                  Color());
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(Qt::black));
     mColorThemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
     mColorThemes[sNr].insert(Syntax_comment,                 Color(QColor(120, 120, 120), fItalic)); //QColor(150, 120, 65)
     mColorThemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBold));
@@ -135,7 +139,6 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_declaration,             Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorThemes[sNr].insert(Syntax_identifier,              Color(QColor(Qt::black)));
     mColorThemes[sNr].insert(Syntax_description,             Color(QColor(Qt::darkBlue).lighter(170)));
-    mColorThemes[sNr].insert(Syntax_identifierAssign,        Color(QColor(Qt::darkGreen).darker(140)));
     mColorThemes[sNr].insert(Syntax_assignLabel,             Color(QColor(Qt::darkGreen).darker(110)));
     mColorThemes[sNr].insert(Syntax_assignValue,             Color(QColor(0, 80, 120)));
     mColorThemes[sNr].insert(Syntax_tableHeader,             Color(QColor(Qt::darkGreen).darker(140), fBold));
@@ -172,27 +175,26 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).darker(170));
     mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(60,90,50));
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).darker(115));
-    mColorThemes[sNr].insert(Syntax_title,             Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_directive,         QColor(200,60,90));
-    mColorThemes[sNr].insert(Syntax_keyword,           Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_declaration,       Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_description,       Color(dark_unobstrusive));
-    mColorThemes[sNr].insert(Syntax_comment,           Color(dark_unobstrusive, fItalic));
-    mColorThemes[sNr].insert(Syntax_identifier,        Color(dark_id));
-    mColorThemes[sNr].insert(Syntax_assign,            Color(dark_id));
-    mColorThemes[sNr].insert(Syntax_identifierAssign,  Color(dark_assignment));
-    mColorThemes[sNr].insert(Syntax_assignLabel,       Color(dark_assignment));
-    mColorThemes[sNr].insert(Syntax_tableHeader,       Color(dark_assignment, fBold));
-    mColorThemes[sNr].insert(Syntax_assignValue,       Color(dark_assignment.lighter()));
-    mColorThemes[sNr].insert(Syntax_directiveBody,     Color(dark_highlight, fItalic));
+    mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_directive,               QColor(200,60,90));
+    mColorThemes[sNr].insert(Syntax_keyword,                 Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
+    mColorThemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
+    mColorThemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
+    mColorThemes[sNr].insert(Syntax_identifier,              Color(dark_id));
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_id));
+    mColorThemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
+    mColorThemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
+    mColorThemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
+    mColorThemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
 
-    mColorThemes[sNr].insert(Icon_Gray,                QColor(65,55,50));
-    mColorThemes[sNr].insert(Icon_Back,                QColor(220,220,220));
-    mColorThemes[sNr].insert(Active_Back,              QColor(Qt::white));
-    mColorThemes[sNr].insert(Disable_Back,             QColor(96,99,96));
-    mColorThemes[sNr].insert(Normal_Red,               QColor(187,34,51));
-    mColorThemes[sNr].insert(Normal_Green,             QColor(102,170,102));
-    mColorThemes[sNr].insert(Normal_Blue,              QColor(68,153,238));
+    mColorThemes[sNr].insert(Icon_Gray,                      QColor(65,55,50));
+    mColorThemes[sNr].insert(Icon_Back,                      QColor(220,220,220));
+    mColorThemes[sNr].insert(Active_Back,                    QColor(Qt::white));
+    mColorThemes[sNr].insert(Disable_Back,                   QColor(96,99,96));
+    mColorThemes[sNr].insert(Normal_Red,                     QColor(187,34,51));
+    mColorThemes[sNr].insert(Normal_Green,                   QColor(102,170,102));
+    mColorThemes[sNr].insert(Normal_Blue,                    QColor(68,153,238));
 
     invalidate();
 }
@@ -218,9 +220,10 @@ int Theme::setActiveTheme(int theme)
 
 QString Theme::renameActiveTheme(const QString &name)
 {
-    if (mTheme < 2) return mThemeNames.at(mTheme);
-    if (name.compare(mThemeNames.at(mTheme)) == 0) return name;
-    QString uniqueName = findUniqueName(name);
+    QString currentName = mThemeNames.at(mTheme);
+    if (mTheme < 2) return currentName;
+    if (name.compare(currentName) == 0) return name;
+    QString uniqueName = findUniqueName(name, currentName);
     mThemeNames.replace(mTheme, uniqueName);
     if (mTheme < mThemeNames.count()-1) {
         mThemeNames.move(mTheme, mThemeNames.count()-1);
@@ -359,7 +362,7 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode)
     return data;
 }
 
-QString Theme::findUniqueName(const QString &name)
+QString Theme::findUniqueName(const QString &name, const QString &ignore)
 {
     if (!mThemeNames.contains(name)) return name;
     QString uniqueName = name;
@@ -368,8 +371,8 @@ QString Theme::findUniqueName(const QString &name)
     while (!base.isEmpty() && base.at(base.length()-1).isDigit())
         base = base.left(base.length()-1);
     if (base.isEmpty()) base = name;
-    if (base.length() != name.length()) nr = name.right(name.length()-base.length()).toInt();
-    while (mThemeNames.contains(uniqueName))
+    if (base.length() != name.length()) nr = name.rightRef(name.length()-base.length()).toInt();
+    while (mThemeNames.contains(uniqueName) && uniqueName != ignore)
         uniqueName = base + QString::number(++nr);
     return uniqueName;
 }
@@ -420,7 +423,6 @@ int Theme::removeTheme(int index)
 {
     if (index < 2 || index >= mThemeNames.count()) return mTheme;
     if (index <= mTheme) --mTheme;
-    QString name = mThemeNames.at(index);
     mColorThemes.removeAt(index);
     mThemeNames.removeAt(index);
     mThemeBases.removeAt(index);
@@ -513,7 +515,7 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
         QString name = tSource.value("name").toString();
         int base = tSource.value("base").toInt();
 
-        // clone first theme as base
+        // clone base theme to apply the changes
         int newInd = copyTheme(base, name);
         ColorTheme currentTheme = mColorThemes.at(newInd);
 
@@ -530,6 +532,47 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
         }
         mColorThemes.replace(newInd, currentTheme);
     }
+}
+
+int Theme::readUserTheme(const QVariantMap &tSource)
+{
+    if (tSource.isEmpty() || !tSource.contains("name") || !tSource.contains("theme")) return -1;
+    QString name = tSource.value("name").toString();
+    bool ok;
+    int base = tSource.value("base").toInt(&ok);
+    if (!ok) base = 0;
+
+    // clone base theme to apply the changes
+    int newInd = copyTheme(base, name);
+    ColorTheme currentTheme = mColorThemes.at(newInd);
+
+    QVariantMap sourceData = tSource.value("theme").toMap();
+    for (auto it = sourceData.constBegin() ; it != sourceData.constEnd() ; ++it) {
+        ColorSlot cSlot = slot(it.key());
+        if (cSlot == invalid) continue;
+        QStringList dat = it.value().toString().split(',');
+        if (!dat.size()) continue;
+        bool ok = true;
+        int iFlag = dat.size() < 2 ? 0 : dat.at(1).toInt(&ok);
+        Color color = Color(QColor(dat.at(0)), FontFlag(iFlag));
+        currentTheme.insert(cSlot, color);
+    }
+    mColorThemes.replace(newInd, currentTheme);
+    return newInd;
+}
+
+QVariantMap Theme::writeCurrentTheme()
+{
+    QVariantMap resData;
+    const QHash<ColorSlot, Color> &theme = mColorThemes.at(mTheme);
+    for (ColorSlot key = invalid; key < ColorSlotCount; key = static_cast<ColorSlot>(key+1)) {
+        resData.insert(name(key), theme.value(key).color.name() + "," + QString::number(theme.value(key).fontFlag));
+    }
+    QVariantMap resTheme;
+    resTheme.insert("name", mThemeNames.at(mTheme));
+    resTheme.insert("base", mThemeBases.at(mTheme));
+    resTheme.insert("theme", resData);
+    return resTheme;
 }
 
 } // namespace studio

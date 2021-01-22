@@ -34,7 +34,7 @@ public:
 
     void ping();
     void version();
-    void submitJob(QString fileName, QString params = QString(), bool prioShort = true, bool wantGdx = true);
+    void submitJob(QString fileName, QString eMail, QString params = QString(), bool prioShort = true, bool wantGdx = true);
     void watchJob(int jobNumber, QString password);
     void getJobStatus();
     void getCompletionCode();
@@ -65,6 +65,7 @@ private slots:
     void received(QString name, QVariant data);
     void debugReceived(QString name, QVariant data);
 private:
+    static QString mRawJob;
     HttpManager mHttp;
     QHash<QString, NeosCall> neosCalls;
     int mJobNumber = 0;

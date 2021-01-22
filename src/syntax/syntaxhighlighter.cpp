@@ -53,7 +53,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxCall(), Theme::Syntax_directive);
 
     SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
-    initKind(syntaxFormula);
+    initKind(syntaxFormula, Theme::Syntax_formula);
     syntaxDirective->addSubBody(syntaxFormula);
     SyntaxFormula * syntaxSolveBody = new SyntaxFormula(SyntaxKind::SolveBody);
     initKind(syntaxSolveBody);
@@ -65,7 +65,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(syntaxExecuteBody);
     syntaxDirective->addSubBody(syntaxExecuteBody);
 
-    initKind(new SyntaxAssign(), Theme::Syntax_assign);
+    initKind(new SyntaxAssign(), Theme::Syntax_formula);
     initKind(new SyntaxString(), Theme::Syntax_neutral);
     initKind(new SyntaxCommentLine(), Theme::Syntax_comment);
     initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock), Theme::Syntax_comment);
@@ -95,12 +95,13 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxIdentifierDim(), Theme::Syntax_identifier);
     initKind(new SyntaxIdentifierDimEnd(), Theme::Syntax_identifier);
     initKind(new SyntaxIdentDescript(), Theme::Syntax_description);
-    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), Theme::Syntax_identifierAssign);
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), Theme::Syntax_assignLabel);
     initKind(new AssignmentLabel(), Theme::Syntax_assignLabel);
     initKind(new AssignmentValue(), Theme::Syntax_assignValue);
-    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), Theme::Syntax_identifierAssign);
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), Theme::Syntax_assignLabel);
 
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentHead), Theme::Syntax_tableHeader);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentColHead), Theme::Syntax_tableHeader);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRowHead), Theme::Syntax_tableHeader);
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), Theme::Syntax_assignValue);
 }
 

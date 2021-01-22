@@ -63,6 +63,7 @@ private slots:
     void themeModified();
     void setModified();
     void appearanceIndexChanged(int index);
+    void editorBaseColorChanged();
 
     void on_btn_openUserLibLocation_clicked();
     void on_btn_browse_clicked();
@@ -73,9 +74,11 @@ private slots:
     void on_sb_nrLogBackups_valueChanged(int value);
     void on_miroBrowseButton_clicked();
     void on_btn_resetHistory_clicked();
-    void on_btRename_clicked();
-    void on_btCopy_clicked();
-    void on_btRemove_clicked();
+    void on_btRenameTheme_clicked();
+    void on_btCopyTheme_clicked();
+    void on_btRemoveTheme_clicked();
+    void on_btImportTheme_clicked();
+    void on_btExportTheme_clicked();
 
 private:
     Ui::SettingsDialog *ui;

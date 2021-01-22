@@ -39,6 +39,6 @@ SUBDIRS +=                              \
            testmiro                     \
            testoptionapi                \
            testsettings                 \
-           testservicelocators          \
-           testsolverconfiginfo
+           testservicelocators
+#           testsolverconfiginfo
 #           testfilemapper               \

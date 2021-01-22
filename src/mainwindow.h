@@ -22,6 +22,9 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QPrinter>
+#include <QPrintDialog>
+
 
 #include "editors/codeedit.h"
 #include "file.h"
@@ -52,6 +55,7 @@ namespace gams {
 namespace studio {
 
 class GoToDialog;
+class SettingsDialog;
 class AbstractProcess;
 class FileEventHandler;
 class GamsProcess;
@@ -93,7 +97,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
     void setInitialFiles(QStringList files);
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew = false);
@@ -178,7 +182,7 @@ public slots:
     void parameterRunChanged();
     void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
-    bool eventFilter(QObject*sender, QEvent* event);
+    bool eventFilter(QObject*sender, QEvent* event) override;
     void closeGroup(ProjectGroupNode* group);
     void closeFileEditors(const FileId fileId);
 
@@ -209,6 +213,7 @@ private slots:
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void newProcessCall(const QString &text, const QString &call);
+    void printDocument();
 
     // View
     void invalidateTheme();
@@ -241,6 +246,7 @@ private slots:
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
     void on_actionExit_Application_triggered();
+    void on_actionPrint_triggered();
     // Edit
 
     // GAMS
@@ -342,7 +348,7 @@ private slots:
     void on_actionChangelog_triggered();
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
-    void on_actionPrint_triggered();
+
     void on_actionRunNeos_triggered();
     void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
@@ -358,17 +364,17 @@ private slots:
     void sslUserDecision(QAbstractButton *button);
 
 protected:
-    void closeEvent(QCloseEvent *event);
-    void keyPressEvent(QKeyEvent *e);
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dropEvent(QDropEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void customEvent(QEvent *event);
-    void timerEvent(QTimerEvent *event);
-    bool event(QEvent *event);
-    void moveEvent(QMoveEvent *event);
-    void resizeEvent(QResizeEvent *event);
+    void closeEvent(QCloseEvent *event) override;
+    void keyPressEvent(QKeyEvent *e) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void customEvent(QEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
+    bool event(QEvent *event) override;
+    void moveEvent(QMoveEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();
@@ -415,6 +421,8 @@ private:
     bool enabledPrintAction();
     void checkGamsLicense();
     void goToLine(int result);
+    QString readGucValue(QString key);
+
 
 private:
     Ui::MainWindow *ui;
@@ -424,6 +432,7 @@ private:
     TextMarkRepo mTextMarkRepo;
     QStringList mInitialFiles;
     NavigationHistory* mNavigationHistory;
+    SettingsDialog *mSettingsDialog = nullptr;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
@@ -436,6 +445,8 @@ private:
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
     QTimer mWinStateTimer;
+    QPrinter mPrinter;
+    QPrintDialog *mPrintDialog;
 
     GamsLibProcess *mLibProcess = nullptr;
     process::GamsInstProcess *mInstProcess = nullptr;
@@ -463,6 +474,7 @@ private:
     bool mMaximizedBeforeFullScreen;
     bool mIgnoreSslErrors = false;
     bool mNeosNoDialog = false;
+    QString mNeosMail;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

@@ -30,9 +30,18 @@ namespace reference {
 class SymbolTableModel : public QAbstractTableModel
 {
     Q_OBJECT
+    Q_ENUMS(FileUsedSortOrder)
 
 public:
+    enum FileUsedSortOrder
+    {
+        AscendingOrder = 0,
+        DescendingOrder = 1,
+        OriginalOrder = 2
+    };
+
     explicit SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent = nullptr);
+
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -59,6 +68,9 @@ public:
 
 signals:
     void symbolSelectionToBeUpdated();
+
+public slots:
+    void sortFileUsed(FileUsedSortOrder order =  FileUsedSortOrder::OriginalOrder);
 
 private:
     enum SortType {
@@ -107,5 +119,7 @@ private:
 } // namespace reference
 } // namespace studio
 } // namespace gams
+
+Q_DECLARE_METATYPE(gams::studio::reference::SymbolTableModel::FileUsedSortOrder);
 
 #endif // SYMBOLTABLEMODEL_H

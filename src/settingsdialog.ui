@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>563</width>
+    <width>577</width>
     <height>491</height>
    </rect>
   </property>
@@ -296,28 +296,6 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QCheckBox" name="cb_linewrap_editor">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Enable line wrapping in editor</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
           <item row="7" column="0">
            <widget class="QCheckBox" name="cb_showlinenr">
             <property name="enabled">
@@ -405,6 +383,22 @@
             </property>
             <property name="value">
              <number>12</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QCheckBox" name="cb_linewrap_editor">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Enable line wrapping in editor</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -510,7 +504,7 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QWidget" name="widget_2" native="true">
-         <layout class="QHBoxLayout" name="horizontalLayout">
+         <layout class="QGridLayout" name="gridLayout_11">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -523,14 +517,17 @@
           <property name="bottomMargin">
            <number>0</number>
           </property>
-          <item>
-           <widget class="QLabel" name="label_currenttheme">
+          <property name="spacing">
+           <number>4</number>
+          </property>
+          <item row="0" column="4">
+           <widget class="QPushButton" name="btRemoveTheme">
             <property name="text">
-             <string>Theme</string>
+             <string>Remove</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="0" column="1">
            <widget class="QComboBox" name="cbThemes">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -540,24 +537,38 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="btRename">
-            <property name="text">
-             <string>Rename</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btCopy">
+          <item row="0" column="3">
+           <widget class="QPushButton" name="btCopyTheme">
             <property name="text">
              <string>Copy</string>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="btRemove">
+          <item row="0" column="2">
+           <widget class="QPushButton" name="btRenameTheme">
             <property name="text">
-             <string>Remove</string>
+             <string>Rename</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_currentTheme">
+            <property name="text">
+             <string>Theme</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QPushButton" name="btImportTheme">
+            <property name="text">
+             <string>Import</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QPushButton" name="btExportTheme">
+            <property name="text">
+             <string>Export</string>
             </property>
            </widget>
           </item>
@@ -577,7 +588,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>521</width>
+            <width>535</width>
             <height>321</height>
            </rect>
           </property>
@@ -585,6 +596,9 @@
            <string>Syntax colors</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayoutSc">
+           <property name="spacing">
+            <number>4</number>
+           </property>
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -599,6 +613,12 @@
            </property>
            <item>
             <widget class="QWidget" name="syntaxColors" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>20</height>
+              </size>
+             </property>
              <layout class="QGridLayout" name="gridLayout_15">
               <property name="leftMargin">
                <number>0</number>
@@ -615,6 +635,13 @@
               <property name="spacing">
                <number>4</number>
               </property>
+              <item row="0" column="0">
+               <widget class="Line" name="syntaxColorLine">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -663,16 +690,6 @@
               <property name="spacing">
                <number>4</number>
               </property>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_5">
-                <property name="text">
-                 <string>Coming soon...</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
              </layout>
             </widget>
            </item>

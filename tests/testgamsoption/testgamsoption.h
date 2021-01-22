@@ -23,6 +23,7 @@
 #include <QtTest/QTest>
 
 #include "option/option.h"
+#include "option/optiontokenizer.h"
 
 using namespace gams::studio::option;
 
@@ -72,10 +73,14 @@ private slots:
     void testInvalidOption_data();
     void testInvalidOption();
 
+    void testTokenize_data();
+    void testTokenize();
+
     void cleanupTestCase();
 
 private:
     Option* gamsOption;
+    OptionTokenizer *optionTokenizer;
 };
 
 #endif // TESTGAMSOPTION_H
