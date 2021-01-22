@@ -215,6 +215,7 @@ SOURCES += \
     reference/referencetabstyle.cpp \
     reference/referencetreemodel.cpp \
     reference/referenceviewer.cpp \
+    reference/sortedfileheaderview.cpp \
     reference/symboldatatype.cpp \
     reference/symbolreferenceitem.cpp \
     reference/symbolreferencewidget.cpp \
@@ -399,6 +400,7 @@ HEADERS += \
     reference/referencetabstyle.h \
     reference/referencetreemodel.h \
     reference/referenceviewer.h \
+    reference/sortedfileheaderview.h \
     reference/symboldatatype.h \
     reference/symbolreferenceitem.h \
     reference/symbolreferencewidget.h \

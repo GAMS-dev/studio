@@ -22,12 +22,13 @@ class NeosStartDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit NeosStartDialog(QWidget *parent = nullptr);
-    ~NeosStartDialog();
+    explicit NeosStartDialog(QString eMail, QWidget *parent = nullptr);
+    ~NeosStartDialog() override;
     void setProcess(neos::NeosProcess *proc);
 
 signals:
     void noDialogFlagChanged(bool noDialog);
+    void eMailChanged(const QString &eMail);
 
 private slots:
     void buttonClicked(QAbstractButton *button);
@@ -35,7 +36,10 @@ private slots:
     void updateValues();
 
 protected:
-    void showEvent(QShowEvent *event);
+    void showEvent(QShowEvent *event) override;
+
+private:
+    QString validateEmail(const QString &eMail);
 
 private:
     Ui::NeosStartDialog *ui;

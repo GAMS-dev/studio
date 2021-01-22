@@ -19,8 +19,6 @@
  */
 #include <QtConcurrent>
 #include <QtWidgets>
-#include <QPrintDialog>
-#include <QPrinter>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -63,6 +61,8 @@
 #include "fileeventhandler.h"
 #include "engine/enginestartdialog.h"
 #include "neos/neosstartdialog.h"
+#include "option/gamsuserconfig.h"
+#include "keys.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -89,6 +89,8 @@ MainWindow::MainWindow(QWidget *parent)
     Settings *settings = Settings::settings();
     initEnvironment();
 
+    mPrintDialog = new QPrintDialog(&mPrinter, this);
+
     ui->setupUi(this);
 
     // Timers
@@ -104,6 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
+
 #ifdef __APPLE__
     ui->actionNextTab->setShortcut(QKeySequence("Ctrl+}"));
     ui->actionPreviousTab->setShortcut(QKeySequence("Ctrl+{"));
@@ -296,12 +299,14 @@ void MainWindow::watchProjectTree()
 
 MainWindow::~MainWindow()
 {
+    if (mSettingsDialog) mSettingsDialog->deleteLater();
     killTimer(mTimerID);
     delete mWp;
     delete ui;
     delete mNavigationHistory;
     delete mResultsView;
     delete mSearchDialog;
+    delete mPrintDialog;
     FileType::clear();
 }
 
@@ -2629,6 +2634,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
         on_actionClose_All_triggered();
         closeHelpView();
         mTextMarkRepo.clear();
+        delete mSettingsDialog;
+        mSettingsDialog = nullptr;
     } else {
         event->setAccepted(false);
     }
@@ -2636,6 +2643,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* e)
 {
+    if (e == Hotkey::Print)
+        on_actionPrint_triggered();
+
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0))
         updateFixedFonts(Settings::settings()->toString(skEdFontFamily),
                          Settings::settings()->toInt(skEdFontSize));
@@ -3100,15 +3110,46 @@ void MainWindow::on_actionRunEngine_triggered()
     showEngineStartDialog();
 }
 
+QString MainWindow::readGucValue(QString key)
+{
+    QString res;
+    const QStringList paths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
+    for (int i = paths.size() ; i > 0 ; --i) {
+        const QString &path = paths.at(i-1);
+        option::GamsUserConfig *guc = new option::GamsUserConfig(path+"/gamsconfig.yaml");
+        if (guc && guc->isAvailable()) {
+            const QList<option::EnvVarConfigItem *> vars = guc->readEnvironmentVariables();
+            for (option::EnvVarConfigItem *var : vars) {
+                if (var->key == key) {
+                    res = var->value;
+                    break;
+                }
+            }
+        }
+        delete guc;
+        if (!res.isEmpty()) break;
+    }
+    return res;
+}
+
 void MainWindow::showNeosStartDialog()
 {
-    neos::NeosStartDialog *dialog = new neos::NeosStartDialog(this);
     neos::NeosProcess *neosPtr = createNeosProcess();
     if (!neosPtr) return;
+    if (mNeosMail.isEmpty())
+        mNeosMail = readGucValue("NEOS_EMAIL");
+    if (mNeosMail.isEmpty()) {
+        auto env = QProcessEnvironment::systemEnvironment();
+        mNeosMail = env.value("NEOS_EMAIL");
+    }
+    neos::NeosStartDialog *dialog = new neos::NeosStartDialog(mNeosMail, this);
     dialog->setProcess(neosPtr);
     connect(dialog, &neos::NeosStartDialog::rejected, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, dialog, &neos::NeosStartDialog::deleteLater);
     connect(dialog, &neos::NeosStartDialog::accepted, this, &MainWindow::prepareNeosProcess);
+    connect(dialog, &neos::NeosStartDialog::eMailChanged, this, [this](const QString &eMail) {
+        mNeosMail = eMail;
+    });
     connect(dialog, &neos::NeosStartDialog::noDialogFlagChanged, this, [this](bool noDialog) {
         mNeosNoDialog = noDialog;
     });
@@ -3698,16 +3739,21 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
 
 void MainWindow::on_actionSettings_triggered()
 {
-    SettingsDialog sd(this);
-    sd.setMiroSettingsEnabled(!mMiroRunning);
-    connect(&sd, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
-    connect(&sd, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
-    connect(&sd, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
-    sd.exec();
-    sd.disconnect();
-    updateAndSaveSettings();
-    if (sd.miroSettingsEnabled())
-        updateMiroEnabled();
+    if (!mSettingsDialog) {
+        mSettingsDialog = new SettingsDialog(this);
+        mSettingsDialog->setModal(true);
+        connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
+        connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
+        connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
+        connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
+            updateAndSaveSettings();
+            if (mSettingsDialog->miroSettingsEnabled())
+                updateMiroEnabled();
+        });
+    }
+    mSettingsDialog->setMiroSettingsEnabled(!mMiroRunning);
+    mSettingsDialog->open();
+
 }
 
 void MainWindow::on_actionSearch_triggered()
@@ -4629,30 +4675,36 @@ void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
     }
 }
 
-void MainWindow::on_actionPrint_triggered()
+void MainWindow::printDocument()
 {
-    QPrinter printer;
-    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
-    if (!fm || !focusWidget()) return;
     if (focusWidget() == mRecent.editor()) {
         auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
         if (!abstractEdit) return;
-        QPrintDialog dialog(&printer, this);
-        if (dialog.exec() == QDialog::Rejected) return;
-        abstractEdit->print(&printer);
+        abstractEdit->print(&mPrinter);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (!lxiViewer) return;
-        QPrintDialog dialog(&printer, this);
-        if (dialog.exec() == QDialog::Rejected) return;
-        lxiViewer->print(&printer);
+        lxiViewer->print(&mPrinter);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::txtRo) {
         auto* textViewer = ViewHelper::toTextView(mainTabs()->currentWidget());
         if (!textViewer) return;
-        QPrintDialog dialog(&printer, this);
-        if (dialog.exec() == QDialog::Rejected) return;
-        textViewer->print(&printer);
+        textViewer->print(&mPrinter);
     }
+}
+
+
+void MainWindow::on_actionPrint_triggered()
+{
+    if (!enabledPrintAction()) return;
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+    if (!fm || !focusWidget()) return;
+#ifdef __APPLE__
+    int ret = mPrintDialog->exec();
+    if (ret == QDialog::Accepted)
+        printDocument();
+#else
+    mPrintDialog->open(this, SLOT(printDocument()));
+#endif
 }
 
 bool MainWindow::enabledPrintAction()

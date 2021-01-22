@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT += core testlib gui widgets svg
+QT += core testlib gui widgets svg printsupport
 
 CONFIG += c++14
 CONFIG -= app_bundle

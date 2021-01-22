@@ -516,7 +516,6 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             }
         }
     }
-
     AbstractEdit::keyPressEvent(e);
 }
 

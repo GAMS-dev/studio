@@ -296,7 +296,8 @@ void SymbolTableModel::resetModel()
     if (rowCount() > 0) {
         removeRows(0, rowCount(), QModelIndex());
     }
-    sort(mCurrentSortedColumn, mCurrentAscendingSort);
+    if (mType != SymbolDataType::FileUsed)
+       sort(mCurrentSortedColumn, mCurrentAscendingSort);
     endResetModel();
 }
 
@@ -395,6 +396,29 @@ int SymbolTableModel::getLastSectionIndex()
         return 5;
     }
     return 0;
+}
+
+void SymbolTableModel::sortFileUsed(FileUsedSortOrder order)
+{
+    if (mType != SymbolDataType::FileUsed)
+        return;
+
+    QList<QPair<int, QString>> idxList;
+    QStringList fileUsed = mReference->getFileUsed();
+    for(int rec=0; rec<fileUsed.size(); rec++) {
+        idxList.append(QPair<int, QString>(rec, mReference->getFileUsed().at(rec)) );
+    }
+
+    if (order == FileUsedSortOrder::AscendingOrder)
+       std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return (QString::localeAwareCompare(a.second, b.second) < 0); });
+    else if (order == FileUsedSortOrder::DescendingOrder)
+             std::stable_sort(idxList.begin(), idxList.end(), [](QPair<int, QString> a, QPair<int, QString> b) { return (QString::localeAwareCompare(a.second, b.second) > 0); });
+
+    for(int rec=0; rec< mReference->getFileUsed().size(); rec++) {
+        mSortIdxMap[static_cast<size_t>(rec)] = static_cast<size_t>(idxList.at(rec).first);
+    }
+    filterRows();
+    layoutChanged();
 }
 
 SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const

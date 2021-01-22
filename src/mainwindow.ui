@@ -798,6 +798,9 @@
    <property name="shortcut">
     <string>Ctrl+P</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WindowShortcut</enum>
+   </property>
   </action>
   <action name="actionSettings">
    <property name="icon">

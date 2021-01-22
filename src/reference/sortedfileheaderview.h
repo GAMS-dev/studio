@@ -17,56 +17,49 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef SORTEDFILEHEADERVIEW_H
+#define SORTEDFILEHEADERVIEW_H
 
-#ifndef REFERENCEVIEWER_H
-#define REFERENCEVIEWER_H
+#include <QHeaderView>
 
-#include <QWidget>
-#include <QList>
-#include <QMap>
-#include <QTabWidget>
-#include "common.h"
-#include "reference.h"
-
-namespace Ui {
-class ReferenceViewer;
-}
+#include "symboltablemodel.h"
 
 namespace gams {
 namespace studio {
 namespace reference {
 
-class Reference;
-class ReferenceTabStyle;
-class ReferenceViewer : public QWidget
+class SortedFileHeaderView : public QHeaderView
 {
     Q_OBJECT
 
 public:
-    explicit ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent = nullptr);
-    ~ReferenceViewer() override;
-    void selectSearchField() const;
-    void updateStyle();
+    SortedFileHeaderView(Qt::Orientation orientation, QWidget* parent = nullptr);
+    ~SortedFileHeaderView() override;
 
-signals:
-    void jumpTo(ReferenceItem item);
-
-public slots:
-    void on_referenceFileChanged(QTextCodec* codec);
-    void on_tabBarClicked(int index);
-    void updateView(bool status);
+protected:
+    bool event(QEvent *event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
 
 private:
-    Ui::ReferenceViewer *ui;
+    bool isCoordinate(QPoint p);
+    void onSortFileUsed(QAction *action);
 
-    QTextCodec *mCodec;
+private:
+    const double ICON_SCALE_FACTOR = 0.7;
+    const double ICON_MARGIN_FACTOR = 0.3;
 
-    QScopedPointer<Reference> mReference;
-    QScopedPointer<ReferenceTabStyle> mRefTabStyle;
+    mutable int mIconWidth;
+    mutable int mIconX;
+    mutable int mIconY;
+    mutable int mLogicalIndex;
+
+    QMenu* mHeaderContextMenu;
+    SymbolTableModel::FileUsedSortOrder  mCurrentSortOrder = SymbolTableModel::FileUsedSortOrder::OriginalOrder;
 };
 
-} // namespace reference
+} // namepsage reference
 } // namespace studio
 } // namespace gams
 
-#endif // REFERENCEVIEWER_H
+#endif // SORTEDFILEHEADERVIEW_H

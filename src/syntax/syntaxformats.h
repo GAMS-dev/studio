@@ -69,7 +69,8 @@ enum class SyntaxKind {
     AssignmentValue,
     IdentifierAssignmentEnd,        // after assignment to keep declaration-level
 
-    IdentifierTableAssignmentHead,
+    IdentifierTableAssignmentColHead,
+    IdentifierTableAssignmentRowHead,
     IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
 
     Embedded,

@@ -192,15 +192,18 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
         if (mOptionItem[index.row()].recurrent && index.column()==COLUMN_OPTION_KEY)
             return QVariant::fromValue(QColor(Qt::darkYellow));
 
-        if (mOption->isDoubleDashedOption(mOptionItem.at(row).key)) { // double dashed parameter
-            if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(mOptionItem.at(row).key)) )
+        QString key = mOptionItem.at(row).key;
+        if (mOption->isDoubleDashedOption(key)) { // double dashed parameter
+            if (!mOption->isDoubleDashedOptionNameValid( mOption->getOptionKey(key)) )
                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                  return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+        } else if (key.startsWith("-") || key.startsWith("/")) {
+                  key = mOptionItem.at(row).key.mid(1);
         }
-        if (mOption->isValid(mOptionItem.at(row).key) || mOption->isASynonym(mOptionItem.at(row).key)) { // valid option
+        if (mOption->isValid(key) || mOption->isASynonym(key)) { // valid option
             if (col==GamsParameterTableModel::COLUMN_OPTION_KEY) { // key
-                if (mOption->isDeprecated(mOptionItem.at(row).key)) { // deprecated option
+                if (mOption->isDeprecated(key)) { // deprecated option
                     return QVariant::fromValue(QColor(Qt::gray));
                 }  else if (mOptionItem.at(row).value.simplified().isEmpty()) {
                         return QVariant::fromValue(Theme::color(Theme::Active_Gray));
@@ -208,7 +211,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
                     return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
                 }
             } else { // value
-                  switch (mOption->getValueErrorType(mOptionItem.at(row).key, mOptionItem.at(row).value)) {
+                  switch (mOption->getValueErrorType(key, mOptionItem.at(row).value)) {
                       case OptionErrorType::Missing_Value:
                       case OptionErrorType::Incorrect_Value_Type:
                       case OptionErrorType::Value_Out_Of_Range:
