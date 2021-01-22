@@ -22,6 +22,9 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QPrinter>
+#include <QPrintDialog>
+
 
 #include "editors/codeedit.h"
 #include "file.h"
@@ -210,6 +213,7 @@ private slots:
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void newProcessCall(const QString &text, const QString &call);
+    void printDocument();
 
     // View
     void invalidateTheme();
@@ -242,6 +246,7 @@ private slots:
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
     void on_actionExit_Application_triggered();
+    void on_actionPrint_triggered();
     // Edit
 
     // GAMS
@@ -343,7 +348,7 @@ private slots:
     void on_actionChangelog_triggered();
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
-    void on_actionPrint_triggered();
+
     void on_actionRunNeos_triggered();
     void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
@@ -418,6 +423,7 @@ private:
     void goToLine(int result);
     QString readGucValue(QString key);
 
+
 private:
     Ui::MainWindow *ui;
     GoToDialog *mGotoDialog;
@@ -439,6 +445,8 @@ private:
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
     QTimer mWinStateTimer;
+    QPrinter mPrinter;
+    QPrintDialog *mPrintDialog;
 
     GamsLibProcess *mLibProcess = nullptr;
     process::GamsInstProcess *mInstProcess = nullptr;

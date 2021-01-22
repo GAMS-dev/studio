@@ -10,6 +10,8 @@ Version 1.5.2  *
 - the color dialog now supports editor colors to be modified
 - themes now can be imported and exported
 - syntax highlighting of table statements now detects row headers 
+- fixed print dialog shortcut not working after Studio launch
+- use open() for print dialog on Windows and Linux
 
 Version 1.5.1
 ==================
