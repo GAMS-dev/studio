@@ -1,17 +1,18 @@
-Version 1.5.2  *
+Version 1.5.2
 ==================
-- appearance of the settings dialog changed to to follow the macOS platform rules
-- the settings dialog remembers the selected tab during the current session
-- showing list of files in Referefence File Viewer by the order that has been used
-- fixed incorrectly parsed value of dashed, slash, and double-dashed command line parameters
-- added email for NEOS submission initialized from environment variable NEOS_EMAIL which can also be set permanently in gamsconfig.yaml
-- suppress jump to reference on end of selecting text by mouse
-- improved syntax color assignment and naming
-- the color dialog now supports editor colors to be modified
-- themes now can be imported and exported
-- syntax highlighting of table statements now detects row headers 
+- added saving of selected tab in Settings dialog for the current session
+- added email field for NEOS submissions in NEOS dialog
+    - can also be initialized from environment variable NEOS_EMAIL
+    - or set permanently in gamsconfig.yaml
+- adjusted list of files in Referefence File Viewer to be sorted by order in which they have been used in
+- fixed incorrectly parsed values of dashed, slash, and double-dashed command line parameters
+- fixed unwanted jump to files when selecting text that contains a file link
+- adjusted appearance of Settings dialog to follow macOS platform rules
+- added import and export for Studio color themes
+- added ability to edit Editor colors in Color dialog
+- improved naming and sorting of attributes in Color dialog
+- fixed syntax highlighting of table statements not detecting row headers
 - fixed print dialog shortcut not working after Studio launch
-- use open() for print dialog on Windows and Linux
 
 Version 1.5.1
 ==================
