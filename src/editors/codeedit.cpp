@@ -1709,9 +1709,10 @@ void CodeEdit::recalcExtraSelections()
         int wordDelay = 10;
         if (mSettings->toBool(skEdWordUnderCursor)) wordDelay = 500;
         mWordDelay.start(wordDelay);
+    } else {
+        extraSelBlockEdit(selections);
+        setExtraSelections(selections);
     }
-    extraSelBlockEdit(selections);
-    setExtraSelections(selections);
 }
 
 void CodeEdit::updateExtraSelections()
