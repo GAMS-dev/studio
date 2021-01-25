@@ -1719,6 +1719,7 @@ void CodeEdit::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
     extraSelCurrentLine(selections);
+    extraSelMarks(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
         QRegularExpression regexp = search::SearchLocator::search()->regex();
@@ -1748,7 +1749,6 @@ void CodeEdit::updateExtraSelections()
     }
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
-    extraSelMarks(selections);
     extraSelIncludeLink(selections);
     setExtraSelections(selections);
 }
