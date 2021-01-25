@@ -957,11 +957,6 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 {
     NavigationHistoryLocator::navigationHistory()->stopRecord();
 
-    bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0
-            || (type() != CodeEditor && type() != LstView);
-    QPoint pos = e->buttons()==Qt::NoButton ? e->pos() : QPoint();
-    updateToolTip(pos, direct);
-    updateLinkAppearance(e->pos(), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
@@ -969,6 +964,11 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     } else {
         AbstractEdit::mouseMoveEvent(e);
     }
+    bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0
+            || (type() != CodeEditor && type() != LstView);
+    QPoint pos = e->buttons()==Qt::NoButton ? e->pos() : QPoint();
+    updateToolTip(pos, direct);
+    updateLinkAppearance(e->pos(), e->modifiers() & Qt::ControlModifier);
     lineNumberArea()->setCursor(viewport()->cursor().shape());
 
     NavigationHistoryLocator::navigationHistory()->startRecord();
