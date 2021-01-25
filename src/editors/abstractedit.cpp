@@ -276,14 +276,14 @@ void AbstractEdit::jumpToCurrentLink(const QPoint &mousePos)
     }
 }
 
-QPoint AbstractEdit::clickPos() const
+QPoint AbstractEdit::linkClickPos() const
 {
     return mClickPos;
 }
 
-void AbstractEdit::setClickPos(const QPoint &clickPos)
+void AbstractEdit::setLinkClickPos(const QPoint &linkClickPos)
 {
-    mClickPos = clickPos;
+    mClickPos = linkClickPos;
 }
 
 QTextCursor AbstractEdit::cursorForPositionCut(const QPoint &pos) const
@@ -392,7 +392,9 @@ void AbstractEdit::mousePressEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mousePressEvent(e);
     if (!marksAtMouse().isEmpty()) {
-        setClickPos(e->pos());
+        setLinkClickPos(e->pos());
+    } else if (checkLinks(e->pos(), e->modifiers() & Qt::ControlModifier)) {
+        setLinkClickPos(e->pos());
     } else if (e->button() == Qt::RightButton) {
         QTextCursor currentTC = textCursor();
         QTextCursor mouseTC = cursorForPosition(e->pos());
@@ -412,7 +414,7 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
     QTextCursor cur = cursorForPositionCut(mousePos);
     if (cur.isNull()) return res;
     QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cur.blockNumber()));
-    for (TextMark* mark: marks) {
+    for (TextMark* mark: qAsConst(marks)) {
         if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
             res << mark;
     }
@@ -422,7 +424,7 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseMoveEvent(e);
-    bool offClickRegion = !clickPos().isNull() && (clickPos() - e->pos()).manhattanLength() > 4;
+    bool offClickRegion = !linkClickPos().isNull() && (linkClickPos() - e->pos()).manhattanLength() > 4;
     bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && !offClickRegion;
 
     updateToolTip(e->pos());
@@ -433,9 +435,9 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
 {
     QPlainTextEdit::mouseReleaseEvent(e);
     if (e->modifiers().testFlag(Qt::ShiftModifier)) return;
-    bool validClick = !clickPos().isNull() && (clickPos() - e->pos()).manhattanLength() < 5;
+    bool validClick = !linkClickPos().isNull() && (linkClickPos() - e->pos()).manhattanLength() < 5;
     bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && validClick;
-    setClickPos(QPoint());
+    setLinkClickPos(QPoint());
     if (validLink) jumpToCurrentLink(e->pos());
 }
 

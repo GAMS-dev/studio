@@ -59,7 +59,7 @@ void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)
             shape = Qt::PointingHandCursor;
         }
     }
-    bool valid = (event->buttons() == Qt::NoButton || (!clickPos().isNull() && ((clickPos() - event->pos()).manhattanLength() <= 4)));
+    bool valid = (event->buttons() == Qt::NoButton || (!linkClickPos().isNull() && ((linkClickPos() - event->pos()).manhattanLength() <= 4)));
     if (shape == Qt::IBeamCursor && valid && selectEntry(event->pos(), true)) {
         shape = Qt::ArrowCursor;
     }
@@ -84,12 +84,12 @@ void SystemLogEdit::mousePressEvent(QMouseEvent *event)
     }
 
     AbstractEdit::mousePressEvent(event);
-    setClickPos(event->pos());
+    setLinkClickPos(event->pos());
 }
 
 void SystemLogEdit::mouseReleaseEvent(QMouseEvent *event)
 {
-    bool doSelect = !clickPos().isNull() && (clickPos() - event->pos()).manhattanLength() <= 4;
+    bool doSelect = !linkClickPos().isNull() && (linkClickPos() - event->pos()).manhattanLength() <= 4;
     AbstractEdit::mouseReleaseEvent(event);
     if (event->modifiers().testFlag(Qt::ShiftModifier)) return;
     if (doSelect) {

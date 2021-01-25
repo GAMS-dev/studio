@@ -792,7 +792,6 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
     TextLinkType linkType = linkNone;
     if (!showFolding() || mousePos.x() >= 0 || mousePos.x() < -iconSize())
         linkType = AbstractEdit::checkLinks(mousePos, greedy, fName);
-    mIncludeLinkLine = -1;
     if (greedy && linkType == linkNone) {
         QTextCursor cur = cursorForPositionCut(mousePos);
         if (cur.isNull()) return linkType;
@@ -801,7 +800,6 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
         int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
         if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
-            mIncludeLinkLine = cur.blockNumber();
             QString fileName = resolveHRef(command+" "+file);
             linkType = fileName.isEmpty() ? linkMiss : linkDirect;
             if (fName) *fName = fileName;
@@ -916,6 +914,7 @@ int CodeEdit::textCursorColumn(QPoint mousePos)
 
 void CodeEdit::mousePressEvent(QMouseEvent* e)
 {
+    bool done = false;
     mSmartType = false; // exit on mouse navigation
     setContextMenuPolicy(Qt::DefaultContextMenu);
     if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
@@ -935,23 +934,22 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
             emit cursorPositionChanged();
         }
-    } else {
-        if (mBlockEdit) {
-            if (e->modifiers() || e->buttons() != Qt::RightButton) {
+        done = true;
+    } else if (mBlockEdit) {
+        if (e->modifiers() || e->buttons() != Qt::RightButton) {
+            endBlockEdit(false);
+        } else if (e->button() == Qt::RightButton) {
+            QTextCursor mouseTC = cursorForPosition(e->pos());
+            if (mouseTC.blockNumber() < qMin(mBlockEdit->startLine(), mBlockEdit->currentLine())
+                    || mouseTC.blockNumber() > qMax(mBlockEdit->startLine(), mBlockEdit->currentLine())) {
                 endBlockEdit(false);
-                AbstractEdit::mousePressEvent(e);
-            } else if (e->button() == Qt::RightButton) {
-                QTextCursor mouseTC = cursorForPosition(e->pos());
-                if (mouseTC.blockNumber() < qMin(mBlockEdit->startLine(), mBlockEdit->currentLine())
-                        || mouseTC.blockNumber() > qMax(mBlockEdit->startLine(), mBlockEdit->currentLine())) {
-                    endBlockEdit(false);
-                    setTextCursor(mouseTC);
-                }
-            } else {
-                AbstractEdit::mousePressEvent(e);
+                setTextCursor(mouseTC);
             }
-        } else
-            AbstractEdit::mousePressEvent(e);
+            done = true;
+        }
+    }
+    if (!done) {
+        AbstractEdit::mousePressEvent(e);
     }
 }
 
@@ -961,7 +959,8 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
     bool direct = e->modifiers() & Qt::ControlModifier || e->pos().x() < 0
             || (type() != CodeEditor && type() != LstView);
-    updateToolTip(e->pos(), direct);
+    QPoint pos = e->buttons()==Qt::NoButton ? e->pos() : QPoint();
+    updateToolTip(pos, direct);
     updateLinkAppearance(e->pos(), e->modifiers() & Qt::ControlModifier);
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
@@ -1133,7 +1132,9 @@ void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
         else
             mIncludeLinkLine = -1;
     } else mIncludeLinkLine = -1;
-    if (old != mIncludeLinkLine || mLinkActive != active) recalcExtraSelections();
+    if (old != mIncludeLinkLine || mLinkActive != active) {
+        updateExtraSelections();
+    }
     mLinkActive = active;
     lineNumberArea()->setCursor(viewport()->cursor().shape());
 }
