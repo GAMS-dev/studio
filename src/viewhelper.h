@@ -122,7 +122,8 @@ public:
     }
 
     inline static QStringList dialogFileFilterUserCreated() {
-        return QStringList("GAMS source (*.gms)")
+        return QStringList("GAMS source (*.gms *.inc)")
+                << "GAMS Include files (*.inc)"
                << "Option files (*.opt *.op* *.o*)"
                << "Gams Configuration file (*.yaml)"
                << "Text files (*.txt)"
@@ -130,8 +131,9 @@ public:
     }
 
     inline static QStringList dialogFileFilterAll() {
-        return QStringList("GAMS Source (*.gms)")
-               << "All GAMS Files (*.gms *.gdx *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
+        return QStringList("GAMS source (*.gms *.inc)")
+               << "All GAMS files (*.gms *.gdx *.inc *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
+               << "GAMS Include files (*.inc)"
                << "Option files (*.opt *.op* *.o*)"
                << "Gams Configuration file (*.yaml)"
                << "GAMS Data eXchange (*.gdx)"

@@ -1,3 +1,7 @@
+Version 1.5.3 *
+==================
+- added *.inc as common suffix for GAMS files
+
 Version 1.5.2
 ==================
 - added saving of selected tab in Settings dialog for the current session
