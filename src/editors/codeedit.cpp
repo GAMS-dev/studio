@@ -391,7 +391,6 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
     if (!isReadOnly()) {
         if (e->key() == Hotkey::JumpToContext) {
-//            updateMarksAtMouse(textCursor());
             jumpToCurrentLink(cursorRect().topLeft());
             e->accept();
             return;
@@ -828,17 +827,15 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
         }
     }
     if (linkType == linkDirect) {
-        if (mIncludeLinkLine >= 0) {
-            QTextCursor cur = cursorForPosition(mousePos);
-            int fileStart;
-            QString command;
-            QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-            if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
-                mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
-                cur.clearSelection();
-                setTextCursor(cur);
-                emit jumpToHRef(command+" "+file);
-            }
+        QTextCursor cur = cursorForPosition(mousePos);
+        int fileStart;
+        QString command;
+        QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
+        if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
+            mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
+            cur.clearSelection();
+            setTextCursor(cur);
+            emit jumpToHRef(command+" "+file);
         }
     }
 }
