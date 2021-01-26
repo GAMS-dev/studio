@@ -304,7 +304,6 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
 
 TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *fName)
 {
-    Q_UNUSED(greedy)
     TextLinkType res = linkNone;
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cur = cursorForPositionCut(mousePos);
