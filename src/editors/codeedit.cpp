@@ -316,11 +316,7 @@ void CodeEdit::resizeEvent(QResizeEvent *e)
 
 void CodeEdit::keyPressEvent(QKeyEvent* e)
 {
-    if (e->key() == Qt::Key_Control) {
-        QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
-        QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
-        emit mouseMoveEvent(&me);
-    }
+    int topBlock = firstVisibleBlock().blockNumber();
     if (!mBlockEdit && mAllowBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
@@ -386,6 +382,11 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
     if (e->isAccepted()) {
         setTextCursor(cur);
+        if (e->key() == Qt::Key_Control || topBlock != firstVisibleBlock().blockNumber()) {
+            QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
+            QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
+            emit mouseMoveEvent(&me);
+        }
         return;
     }
 
@@ -516,6 +517,11 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         }
     }
     AbstractEdit::keyPressEvent(e);
+    if (e->key() == Qt::Key_Control || topBlock != firstVisibleBlock().blockNumber()) {
+        QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
+        QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
+        emit mouseMoveEvent(&me);
+    }
 }
 
 bool CodeEdit::allowClosing(int chIndex)
@@ -831,7 +837,8 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
         int fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-        if (!file.isEmpty() && cur.positionInBlock() >= fileStart) {
+        int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
+        if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
             mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
             cur.clearSelection();
             setTextCursor(cur);
@@ -1124,7 +1131,8 @@ void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
         QString command;
         int fileStart;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-        if (!file.isEmpty() && cur.positionInBlock() >= fileStart)
+        int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
+        if (!file.isEmpty() && cur.positionInBlock() == boundPos)
             mIncludeLinkLine = cur.blockNumber();
         else
             mIncludeLinkLine = -1;

@@ -2,6 +2,8 @@ Version 1.5.3 *
 ==================
 - fixed tooltip appears during selection
 - fixed underscore not updated on mouse move at include file
+- raised presence of markers for current word and parentheses match
+- avoid flickering of error markers
 
 Version 1.5.2
 ==================
