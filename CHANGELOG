@@ -1,6 +1,7 @@
-Version 1.5.3 *
+Version 1.6.0 *
 ==================
-- added *.inc as common suffix for GAMS files
+- added *.inc as common extension for GAMS files
+- added user defined extensions for GAMS files
 
 Version 1.5.2
 ==================
