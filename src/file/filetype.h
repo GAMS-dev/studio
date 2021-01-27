@@ -48,7 +48,9 @@ public:
     static void clear();
     static FileType& from(QString suffix);
     static FileType& from(FileKind kind);
-
+    static void setUserGamsTypes(QString suffixList);
+    static void setUserGamsTypes(QStringList suffix);
+    static QStringList userGamsTypes();
 
 private:
     FileType(FileKind kind, QStringList suffix, QString description, bool autoReload);
@@ -60,6 +62,8 @@ private:
 
     static QList<FileType*> mFileTypes;
     static FileType* mNone;
+    static int mGmsFixedTypes;
+    static QStringList mUserGamsTypes;
 };
 
 } // namespace studio

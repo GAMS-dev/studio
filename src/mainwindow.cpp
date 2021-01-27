@@ -2347,6 +2347,8 @@ void MainWindow::restoreFromSettings()
     setHelpViewVisibility(settings->toBool(skViewHelp));
     setEncodingMIBs(settings->toString(skEncodingMib));
 
+    FileType::setUserGamsTypes(Settings::settings()->toString(skUserFileTypes));
+
     // help
 #ifdef QWEBENGINE
     QVariantList joHelp = settings->toList(skHelpBookmarks);
@@ -3747,6 +3749,7 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
+            FileType::setUserGamsTypes(Settings::settings()->toString(skUserFileTypes));
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });

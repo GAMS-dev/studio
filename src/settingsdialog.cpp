@@ -91,6 +91,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->edUserGamsTypes, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -151,6 +152,7 @@ void SettingsDialog::loadSettings()
 
     // misc page
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
+    ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -232,6 +234,7 @@ void SettingsDialog::saveSettings()
 
     // misc page
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
+    mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
 
     // solver option editor
     mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());

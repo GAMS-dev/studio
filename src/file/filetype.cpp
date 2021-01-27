@@ -42,11 +42,16 @@ QList<FileType*> FileType::mFileTypes {
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
+int FileType::mGmsFixedTypes = 0;
+QStringList FileType::mUserGamsTypes;
 
 FileType::FileType(FileKind kind, QStringList suffix, QString description, bool autoReload)
     : mKind(kind), mSuffix(suffix), mDescription(description)
     , mAutoReload(autoReload)
-{}
+{
+    if (mGmsFixedTypes == 0 && kind == FileKind::Gms) mGmsFixedTypes = mSuffix.length();
+}
+
 FileKind FileType::kind() const
 {
     return mKind;
@@ -94,7 +99,7 @@ QString FileType::defaultSuffix() const
 
 FileType &FileType::from(QString suffix)
 {
-    for (FileType *ft: mFileTypes) {
+    for (FileType *ft: qAsConst(mFileTypes)) {
         if (ft->mSuffix.contains(suffix, Qt::CaseInsensitive))
             return *ft;
     }
@@ -110,11 +115,37 @@ FileType &FileType::from(QString suffix)
 
 FileType& FileType::from(FileKind kind)
 {
-    for (FileType *ft: mFileTypes) {
+    for (FileType *ft: qAsConst(mFileTypes)) {
         if (ft->mKind == kind)
             return *ft;
     }
     return *mNone;
+}
+
+void FileType::setUserGamsTypes(QString suffixList)
+{
+    setUserGamsTypes(suffixList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts));
+}
+
+void FileType::setUserGamsTypes(QStringList suffix)
+{
+    mUserGamsTypes = suffix;
+    QStringList allSuffix;
+    int i = 0;
+    for (i = 0; i < mFileTypes.length(); ++i) {
+        if (mFileTypes.at(i)->mKind == FileKind::Gms) {
+            FileType *ft = mFileTypes.at(i);
+            allSuffix = ft->mSuffix;
+            allSuffix.append(suffix);
+            mFileTypes.replace(i, new FileType(ft->mKind, allSuffix, ft->mDescription, ft->mAutoReload));
+            break;
+        }
+    }
+}
+
+QStringList FileType::userGamsTypes()
+{
+    return mUserGamsTypes;
 }
 
 void FileType::clear()

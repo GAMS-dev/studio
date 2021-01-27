@@ -121,26 +121,38 @@ public:
         return (editorType(w) == EditorType::gucfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
     }
 
-    inline static QStringList dialogFileFilterUserCreated() {
-        return QStringList("GAMS source (*.gms)")
-                << "GAMS Include files (*.inc)"
-               << "Option files (*.opt *.op* *.o*)"
-               << "GAMS Configuration files (*.yaml)"
-               << "Text files (*.txt)"
-               << "All files (*.*)";
+    static QStringList dialogFileFilterUserCreated() {
+        QStringList res("GAMS source (*.gms)");
+        QStringList userTypes = FileType::userGamsTypes();
+        if (!userTypes.isEmpty())
+            res << ("Additional GAMS sources (*." + userTypes.join(" *.") + ")");
+        res << "GAMS Include files (*.inc)"
+        << "Option files (*.opt *.op* *.o*)"
+        << "GAMS Configuration files (*.yaml)"
+        << "Text files (*.txt)"
+        << "All files (*.*)";
+        return res;
     }
 
-    inline static QStringList dialogFileFilterAll() {
-        return QStringList("GAMS source (*.gms)")
-               << "All GAMS files (*.gms *.gdx *.inc *.log *.lst *.opt *.op* *.o *.ref *.dmp)"
-               << "GAMS Include files (*.inc)"
-               << "Option files (*.opt *.op* *.o*)"
-               << "GAMS Configuration files (*.yaml)"
-               << "GAMS Data eXchange (*.gdx)"
-               << "Reference files (*.ref)"
-               << "Text files (*.txt)"
-               << "All files (*.*)";
+    static QStringList dialogFileFilterAll() {
+        QStringList res("GAMS source (*.gms)");
+        QStringList userTypes = FileType::userGamsTypes();
+        QString allGams("All GAMS files (*.gms *.gdx *.inc *.log *.lst *.opt *.op* *.o *.ref *.dmp%1)");
+        if (!userTypes.isEmpty()) {
+            res << allGams.arg(" *." + userTypes.join(" *."));
+            res << ("Additional GAMS sources (*." + userTypes.join(" *.") + ")");
+        } else
+            res << allGams.arg("");
+        res << "GAMS Include files (*.inc)"
+        << "Option files (*.opt *.op* *.o*)"
+        << "GAMS Configuration files (*.yaml)"
+        << "GAMS Data eXchange (*.gdx)"
+        << "Reference files (*.ref)"
+        << "Text files (*.txt)"
+        << "All files (*.*)";
+        return res;
     }
+
     static void setAppearance(int appearance = -1);
     static void changeAppearance(int appearance);
 
