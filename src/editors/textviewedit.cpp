@@ -237,7 +237,7 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
     setCursorWidth(2);
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cursor = cursorForPosition(e->pos());
-        setClickPos(e->pos());
+        setLinkClickPos(e->pos());
         mClickStart = !(e->modifiers() & Qt::ShiftModifier);
         if (!resolveHRef(cursor.charFormat().anchorHref()).isEmpty() && !(e->modifiers() & CAnyModifier)) {
             CodeEdit::mousePressEvent(e);
@@ -265,7 +265,7 @@ void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
             }
         } else {
             mScrollTimer.stop();
-            bool valid = mClickStart && (clickPos() - e->pos()).manhattanLength() < 4;
+            bool valid = mClickStart && (linkClickPos() - e->pos()).manhattanLength() < 4;
             if (valid) return;
             viewport()->setCursor((e->pos().x() < 0) ? Qt::ArrowCursor : Qt::IBeamCursor);
             mClickStart = false;
@@ -304,7 +304,6 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
 
 TextLinkType TextViewEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *fName)
 {
-    Q_UNUSED(greedy)
     TextLinkType res = linkNone;
     if (!marks() || marks()->isEmpty()) {
         QTextCursor cur = cursorForPositionCut(mousePos);

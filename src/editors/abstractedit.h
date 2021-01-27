@@ -114,8 +114,8 @@ protected:
     virtual bool ensureUnfolded(int line);
     virtual TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr);
     virtual void jumpToCurrentLink(const QPoint &mousePos);
-    QPoint clickPos() const;
-    void setClickPos(const QPoint &clickPos);
+    QPoint linkClickPos() const;
+    void setLinkClickPos(const QPoint &linkClickPos);
     QTextCursor cursorForPositionCut(const QPoint &pos) const;
 
 private:
