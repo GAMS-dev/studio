@@ -109,6 +109,8 @@ enum SettingsKey {
     skNeosShortPrio,
     skUserFileTypes,
 
+    skAutoReloadTypes,
+
     // solver option editor settings
     skSoOverrideExisting,
     skSoAddCommentAbove,

@@ -75,6 +75,13 @@ void FileMeta::setLocation(QString location)
             ViewHelper::setLocation(wid, location);
             ViewHelper::setFileId(wid, id());
         }
+        mAutoReload = mData.type->autoReload();
+        if (!mAutoReload) {
+            QStringList autoSuffix = Settings::settings()->toString(skAutoReloadTypes)
+                    .split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
+            QFileInfo fi(mLocation);
+            mAutoReload = autoSuffix.contains(fi.suffix());
+        }
     }
 }
 
@@ -803,7 +810,12 @@ bool FileMeta::isReadOnly() const
 
 bool FileMeta::isAutoReload() const
 {
-    return mData.type->autoReload() || mTempAutoReloadTimer.isActive();
+    return mAutoReload || mTempAutoReloadTimer.isActive();
+}
+
+void FileMeta::setAutoReload()
+{
+    mAutoReload = true;
 }
 
 void FileMeta::resetTempReloadState()
@@ -907,6 +919,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
         connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);
         connect(tView, &TextView::switchLst, runGroup, &ProjectRunGroupNode::switchLst);
+        connect(tView, &TextView::registerGeneratedFile, runGroup, &ProjectRunGroupNode::registerGeneratedFile);
+
         tView->setLogParser(parser);
         res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {

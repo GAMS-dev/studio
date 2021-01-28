@@ -51,6 +51,7 @@ public:
     void unwatch(const FileMeta* fm);
     void unwatch(const QString &filePath);
     bool watch(const FileMeta* fm);
+    void setAutoReload(const QString &location);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -86,6 +87,7 @@ private:
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMeta*> mFiles;
     QHash<QString, FileMeta*> mFileNames;
+    QStringList mAutoReloadLater;
     QFileSystemWatcher mWatcher;
     QStringList mRemoved; // List to be checked once
     QStringList mMissList; // List to be checked periodically

@@ -86,6 +86,7 @@ signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
     void switchLst(const QString &lstName) const;
+    void registerGeneratedFile(const QString &fileName);
 
 public slots:
     void updateExtraSelections();

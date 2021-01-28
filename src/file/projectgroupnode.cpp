@@ -550,6 +550,11 @@ void ProjectRunGroupNode::switchLst(const QString &lstFile)
     }
 }
 
+void ProjectRunGroupNode::registerGeneratedFile(const QString &fileName)
+{
+    fileRepo()->setAutoReload(fileName);
+}
+
 void ProjectRunGroupNode::clearErrorTexts()
 {
     mErrorTexts.clear();

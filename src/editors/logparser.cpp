@@ -186,7 +186,7 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
                 posB++;
             }
         } else {
-            if (posB < line.length()) result += line.right(line.length() - posB);
+            if (posB < line.length()) result += line.rightRef(line.length() - posB);
             break;
         }
     }

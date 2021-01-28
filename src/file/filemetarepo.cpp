@@ -98,6 +98,8 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
         mFiles.remove(fileMeta->id());
         mFileNames.remove(fileMeta->location());
         unwatch(fileMeta);
+        if (fileMeta->isAutoReload())
+            mAutoReloadLater << fileMeta->location();
     }
 }
 
@@ -201,6 +203,15 @@ bool FileMetaRepo::watch(const FileMeta *fileMeta)
     if (!mMissCheckTimer.isActive())
         mMissCheckTimer.start();
     return false;
+}
+
+void FileMetaRepo::setAutoReload(const QString &location)
+{
+    FileMeta * meta = fileMeta(location);
+    if (meta)
+        meta->setAutoReload();
+    else if (!mAutoReloadLater.contains(location))
+        mAutoReloadLater << location;
 }
 
 void FileMetaRepo::setDebugMode(bool debug)
@@ -366,6 +377,10 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
         res = new FileMeta(this, mNextFileId++, location, knownType);
         connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
         addFileMeta(res);
+        if (mAutoReloadLater.contains(location)) {
+            mAutoReloadLater.removeAll(location);
+            res->setAutoReload();
+        }
     }
     return res;
 }
