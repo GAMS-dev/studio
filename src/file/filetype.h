@@ -48,9 +48,9 @@ public:
     static void clear();
     static FileType& from(QString suffix);
     static FileType& from(FileKind kind);
-    static void setUserGamsTypes(QString suffixList);
-    static void setUserGamsTypes(QStringList suffix);
-    static QStringList userGamsTypes();
+    static QStringList validateSuffixList(const QString &commaSeparatedList, QStringList *invalid = nullptr);
+    static void setUserGamsTypes(const QStringList &suffix);
+    static const QStringList userGamsTypes();
 
 private:
     FileType(FileKind kind, QStringList suffix, QString description, bool autoReload);

@@ -238,6 +238,25 @@ void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
     mFileNames.insert(file->location(), file);
 }
 
+void FileMetaRepo::setUserGamsTypes(QStringList suffix)
+{
+    QStringList changed;
+    for (const QString &suf : suffix) {
+        if (!FileType::userGamsTypes().contains(suf)) changed << suf;
+    }
+    for (const QString &suf : FileType::userGamsTypes()) {
+        if (!suffix.contains(suf)) changed << suf;
+    }
+    FileType::setUserGamsTypes(suffix);
+    QHashIterator<FileId, FileMeta*> i(mFiles);
+    while (i.hasNext()) {
+        i.next();
+        QFileInfo fi(i.value()->location());
+        if (changed.contains(fi.suffix()))
+            i.value()->refreshType();
+    }
+}
+
 void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
 {
     if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";

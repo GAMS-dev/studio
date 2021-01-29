@@ -137,6 +137,7 @@ private:
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();
+    void refreshType();
     void updateSyntaxColors();
     void initEditorColors();
     void updateEditorColors();

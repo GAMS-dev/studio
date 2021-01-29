@@ -2347,7 +2347,13 @@ void MainWindow::restoreFromSettings()
     setHelpViewVisibility(settings->toBool(skViewHelp));
     setEncodingMIBs(settings->toString(skEncodingMib));
 
-    FileType::setUserGamsTypes(Settings::settings()->toString(skUserFileTypes));
+    QStringList invalidSuffix;
+    QStringList suffixes = FileType::validateSuffixList(settings->toString(skUserFileTypes), &invalidSuffix);
+    mFileMetaRepo.setUserGamsTypes(suffixes);
+    if (!invalidSuffix.isEmpty()) {
+        appendSystemLogWarning("Invalid user GAMS extensions in settings ignored: " + invalidSuffix.join(","));
+        settings->setString(skUserFileTypes, suffixes.join(","));
+    }
 
     // help
 #ifdef QWEBENGINE
@@ -3749,7 +3755,8 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
-            FileType::setUserGamsTypes(Settings::settings()->toString(skUserFileTypes));
+            QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserFileTypes));
+            mFileMetaRepo.setUserGamsTypes(suffixes);
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });

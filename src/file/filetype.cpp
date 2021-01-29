@@ -122,12 +122,20 @@ FileType& FileType::from(FileKind kind)
     return *mNone;
 }
 
-void FileType::setUserGamsTypes(QString suffixList)
+QStringList FileType::validateSuffixList(const QString &commaSeparatedList, QStringList *invalid)
 {
-    setUserGamsTypes(suffixList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts));
+    const QStringList CInvalidUserTypes {"ref", "gdx", "log", "lst", "lxi", "opt", "yaml", "exe"};
+    QStringList res = commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
+    for (const QString &suf : CInvalidUserTypes) {
+        if (res.contains(suf)) {
+            res.removeAll(suf);
+            if (invalid) *invalid << suf;
+        }
+    }
+    return res;
 }
 
-void FileType::setUserGamsTypes(QStringList suffix)
+void FileType::setUserGamsTypes(const QStringList &suffix)
 {
     mUserGamsTypes = suffix;
     QStringList allSuffix;
@@ -136,6 +144,7 @@ void FileType::setUserGamsTypes(QStringList suffix)
         if (mFileTypes.at(i)->mKind == FileKind::Gms) {
             FileType *ft = mFileTypes.at(i);
             allSuffix = ft->mSuffix;
+            while (allSuffix.length() > mGmsFixedTypes) allSuffix.removeLast();
             allSuffix.append(suffix);
             mFileTypes.replace(i, new FileType(ft->mKind, allSuffix, ft->mDescription, ft->mAutoReload));
             break;
@@ -143,7 +152,7 @@ void FileType::setUserGamsTypes(QStringList suffix)
     }
 }
 
-QStringList FileType::userGamsTypes()
+const QStringList FileType::userGamsTypes()
 {
     return mUserGamsTypes;
 }

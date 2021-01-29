@@ -21,6 +21,7 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QScrollArea>
+#include <QToolTip>
 #include "mainwindow.h"
 #include "theme.h"
 #include "colors/palettemanager.h"
@@ -91,7 +92,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->edUserGamsTypes, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
+    connect(ui->edUserGamsTypes, &QLineEdit::textChanged, this, &SettingsDialog::userTypesModified);
+    connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -308,6 +310,18 @@ void SettingsDialog::themeModified()
     emit themeChanged();
     for (ThemeWidget *wid : mColorWidgets) {
         wid->refresh();
+    }
+}
+
+void SettingsDialog::userTypesModified()
+{
+    QStringList invalidSuffix;
+    QStringList suffixes = FileType::validateSuffixList(ui->edUserGamsTypes->text(), &invalidSuffix);
+    if (invalidSuffix.isEmpty())
+        QToolTip::hideText();
+    else {
+        QString tip = "Invalid user GAMS extensions will be ignored: " + invalidSuffix.join(",");
+        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), tip);
     }
 }
 

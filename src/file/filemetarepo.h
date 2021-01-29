@@ -56,6 +56,7 @@ public:
     bool debugMode() const;
     static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
     void updateRenamed(FileMeta *file, QString oldLocation);
+    void setUserGamsTypes(QStringList suffix);
 
     bool askBigFileEdit() const;
     void setAskBigFileEdit(bool askBigFileEdit);
