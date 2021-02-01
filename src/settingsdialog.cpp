@@ -144,10 +144,15 @@ void SettingsDialog::loadSettings()
         ui->cbThemes->removeItem(ui->cbThemes->count()-1);
     QStringList themes = Theme::instance()->themes();
     for (int i = 2; i < Theme::instance()->themeCount(); ++i) {
-        ui->cbThemes->addItem(themes.at(i));
+        if (ui->cbThemes->count() <= i + mFixedThemeCount - 2)
+            ui->cbThemes->addItem(themes.at(i));
+        else
+            ui->cbThemes->setItemText(i + mFixedThemeCount - 2, themes.at(i));
     }
     ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
+    if (mSettings->toInt(skEdAppearance) >= mFixedThemeCount)
+        emit appearanceIndexChanged(mSettings->toInt(skEdAppearance));
 
     // misc page
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
