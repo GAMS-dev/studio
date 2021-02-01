@@ -4,6 +4,7 @@ Version 1.5.3 *
 - fixed underscore not updated on mouse move at include file
 - raised presence of markers for current word and parentheses match
 - avoid flickering of error markers
+- fixed syntax highlighting for standard eolCom in table definition
 
 Version 1.5.2
 ==================

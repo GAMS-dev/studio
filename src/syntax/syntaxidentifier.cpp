@@ -383,28 +383,29 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
     if (!inTable && !(flavor & flavorTable)) return SyntaxBlock(this);
     if (index > 0 && kind() != SyntaxKind::IdentifierTableAssignmentRow) return SyntaxBlock(this);
 
-    int start = index;
     if (kind() == SyntaxKind::IdentifierTableAssignmentColHead) {
+        int end = index;
         flavor = 0;
         if (inTable) {
             // validate this is a continued table using '+' and find start of first column
             int plusCount = 0;
-            while (start < line.length() && (isWhitechar(line, start) || line.at(start) == '+')) {
-                if (line.at(start) == '\t') flavor = ((flavor/8) +1) *8;
+            while (end < line.length() && (isWhitechar(line, end) || line.at(end) == '+')) {
+                if (line.at(end) == '\t') flavor = ((flavor/8) +1) *8;
                 else ++flavor;
-                if (line.at(start) == '+') ++plusCount;
-                ++start;
+                if (line.at(end) == '+') ++plusCount;
+                ++end;
             }
-            if (start >= line.length() || plusCount != 1)
+            if (end >= line.length() || plusCount != 1)
                 return SyntaxBlock(this);
         } else {
             // find start of first column
-            while (start < line.length() && isWhitechar(line, start)) {
-                if (line.at(start) == '\t') flavor = ((flavor/8) +1) *8;
+            while (end < line.length() && isWhitechar(line, end)) {
+                if (line.at(end) == '\t') flavor = ((flavor/8) +1) *8;
                 else ++flavor;
-                ++start;
+                ++end;
             }
         }
+        return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
     } else {
         // find split point between row-header and value
         int split = flavor;
@@ -413,30 +414,30 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
         else
             split = line.length();
         if (split <= 0) return SyntaxBlock(this);
+        int end = index;
+        while (end < line.length() && line.at(end) != ';' && (line.at(end) != '/' || (end < line.length()-1 && line.at(end+1) != '/'))) {
+            ++end;
+        }
+        if (split > end) split = end;
+
         if (kind() == SyntaxKind::IdentifierTableAssignmentRowHead) {
             return SyntaxBlock(this, flavor, index, split, SyntaxShift::shift);
-        } else {
-            if (index < split) return SyntaxBlock(this);
-            index = split;
         }
+        if (index < split) return SyntaxBlock(this);
+        return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
     }
 
-    int end = line.indexOf(';', index);
-    if (end < 0)
-        return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
-    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     Q_UNUSED(hasContent)
     int end = index;
-    while (isWhitechar(line, end)) ++end;
-    return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
-
-//    int end = line.indexOf(';', index);
-//    if (end < 0)
-//    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
+    while (end < line.length() && line.at(end) != ';' && (line.at(end) != '/' || (end < line.length()-1 && line.at(end+1) != '/'))) {
+        ++end;
+    }
+    if (end < 0) end = line.length();
+    return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
 } // namespace syntax
