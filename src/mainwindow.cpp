@@ -3751,12 +3751,14 @@ void MainWindow::on_actionSettings_triggered()
         mSettingsDialog = new SettingsDialog(this);
         mSettingsDialog->setModal(true);
         connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
+        connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
+            QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserFileTypes));
+            mFileMetaRepo.setUserGamsTypes(suffixes);
+        });
         connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
-            QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserFileTypes));
-            mFileMetaRepo.setUserGamsTypes(suffixes);
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });

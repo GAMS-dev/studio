@@ -268,8 +268,10 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     if (button == ui->buttonBox->button(QDialogButtonBox::Apply)) {
         saveSettings();
+        emit userGamsTypeChanged();
     } else if (button == ui->buttonBox->button(QDialogButtonBox::Ok)) {
         saveSettings();
+        emit userGamsTypeChanged();
     } else { // reject
         loadSettings(); // reset changes (mostly font and -size)
         themeModified();
