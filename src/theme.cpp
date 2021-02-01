@@ -175,6 +175,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).darker(170));
     mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(60,90,50));
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).darker(115));
+
+    mColorThemes[sNr].insert(Mark_errorFg,                   QColor(180,60,60));
+    mColorThemes[sNr].insert(Mark_listingFg,                 QColor(60,90,250));
+    mColorThemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
+
     mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_directive,               QColor(200,60,90));
     mColorThemes[sNr].insert(Syntax_keyword,                 Color(dark_highlight, fBold));
