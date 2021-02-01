@@ -182,7 +182,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
     mColorThemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
     mColorThemes[sNr].insert(Syntax_identifier,              Color(dark_id));
-    mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_id));
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_neutral));
     mColorThemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
     mColorThemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
     mColorThemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
