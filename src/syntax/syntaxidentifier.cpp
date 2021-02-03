@@ -415,7 +415,9 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
             split = line.length();
         if (split <= 0) return SyntaxBlock(this);
         int end = index;
-        while (end < line.length() && line.at(end) != ';' && (line.at(end) != '/' || (end < line.length()-1 && line.at(end+1) != '/'))) {
+        QString eolCom = mSyntaxCommentEndline ? mSyntaxCommentEndline->commentChars() : "\0\0";
+        while (end < line.length() && line.at(end) != ';' &&
+               (line.at(end) != eolCom.at(0) || end > line.length()-eolCom.length() || line.at(end+1) != eolCom.at(1))) {
             ++end;
         }
         if (split > end) split = end;
@@ -433,7 +435,9 @@ SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, int fla
 {
     Q_UNUSED(hasContent)
     int end = index;
-    while (end < line.length() && line.at(end) != ';' && (line.at(end) != '/' || (end < line.length()-1 && line.at(end+1) != '/'))) {
+    QString eolCom = mSyntaxCommentEndline ? mSyntaxCommentEndline->commentChars() : "\0\0";
+    while (end < line.length() && line.at(end) != ';' &&
+           (line.at(end) != eolCom.at(0) || end > line.length()-eolCom.length() || line.at(end+1) != eolCom.at(1))) {
         ++end;
     }
     if (end < 0) end = line.length();

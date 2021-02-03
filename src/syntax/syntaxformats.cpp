@@ -27,6 +27,7 @@ namespace studio {
 namespace syntax {
 
 const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';'};
+SyntaxCommentEndline *SyntaxAbstract::mSyntaxCommentEndline = nullptr;
 
 QString syntaxKindName(SyntaxKind kind)
 {
@@ -233,7 +234,8 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
         return SyntaxBlock(this);
     } else if (mSyntaxCommentEndline) {
         if (match.captured(2).startsWith("oneolcom", Qt::CaseInsensitive)) {
-            mSyntaxCommentEndline->setCommentChars("!!");
+            // This only activates the current eolCom
+//            mSyntaxCommentEndline->setCommentChars("!!");
             for (SyntaxFormula * sf: mSubSyntaxBody) {
                 sf->setSpecialDynamicChars(QVector<QChar>() << '!');
             }
@@ -531,12 +533,13 @@ SyntaxBlock SyntaxAssign::validTail(const QString &line, int index, int flavor, 
 SyntaxCommentEndline::SyntaxCommentEndline(QString commentChars)
     : SyntaxAbstract(SyntaxKind::CommentEndline)
 {
+    mSyntaxCommentEndline = this;
     setCommentChars(commentChars);
 }
 
 void SyntaxCommentEndline::setCommentChars(QString commentChars)
 {
-    if (commentChars.length() == 2)
+    if (commentChars.length() == 1 || commentChars.length() == 2)
         mCommentChars = commentChars;
 }
 
@@ -563,7 +566,7 @@ SyntaxBlock SyntaxCommentEndline::validTail(const QString &line, int index, int 
 SyntaxCall::SyntaxCall(): SyntaxAbstract(SyntaxKind::Call)
 {
     QList<QPair<QString, QString>> list = SyntaxData::execute();
-    for (const QPair<QString,QString> &entry : list) {
+    for (const QPair<QString,QString> &entry : qAsConst(list)) {
         if (entry.first != "sync" && entry.first != "embedded")
             mSubDirective << entry.first;
     }

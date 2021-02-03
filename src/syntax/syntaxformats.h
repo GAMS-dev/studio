@@ -120,6 +120,7 @@ struct SyntaxTransition
 typedef QList<SyntaxKind> SyntaxTransitions;
 
 class SyntaxAbstract;
+class SyntaxCommentEndline;
 
 struct SyntaxBlock
 {
@@ -168,7 +169,9 @@ public:
     int intSyntaxType() { return static_cast<int>(kind()); }
     static int stateToInt(SyntaxKind _state);
     static SyntaxKind intToState(int intState);
+
 protected:
+    static SyntaxCommentEndline *mSyntaxCommentEndline;
     static const QVector<QChar> cSpecialCharacters;  // other breaking kind
 
     inline int charClass(QChar ch, int &prev, QVector<QChar> moreSpecialChars = QVector<QChar>()) {
@@ -221,7 +224,6 @@ public:
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
-class SyntaxCommentEndline;
 class SyntaxFormula;
 class SyntaxDirectiveBody;
 /// \brief Defines the syntax for a directive.
@@ -231,7 +233,7 @@ public:
     SyntaxDirective(QChar directiveChar = '$');
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
-    void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
+//    void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
     void addSubBody(SyntaxFormula *syntax) {mSubSyntaxBody << syntax;}
     void setDirectiveBody(SyntaxDirectiveBody *syntax) {mSubDirectiveBody = syntax;}
 private:
@@ -240,7 +242,7 @@ private:
     QStringList mDescription;
     QMap<QString,int> mFlavors;
     QHash<QString, SyntaxKind> mSpecialKinds;
-    SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
+//    SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
     QVector<SyntaxFormula*> mSubSyntaxBody;
     SyntaxDirectiveBody *mSubDirectiveBody = nullptr;
 
@@ -276,8 +278,10 @@ class SyntaxCommentEndline: public SyntaxAbstract
 public:
     SyntaxCommentEndline(QString commentChars = "!!");
     void setCommentChars(QString commentChars);
+    QString commentChars() const { return mCommentChars; }
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+protected:
 };
 
 /// \brief Defines the syntax for a uniform multi-line block.
