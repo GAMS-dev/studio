@@ -60,7 +60,7 @@ void Search::start()
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
-    for(FileMeta* fm : mFiles) {
+    for(FileMeta* fm : qAsConst(mFiles)) {
         // skip certain file types
         if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
             continue;
@@ -71,7 +71,7 @@ void Search::start()
     }
 
     // non-parallel first
-    for (FileMeta* fm : modified)
+    for (FileMeta* fm : qAsConst(modified))
         findInDoc(fm);
 
     SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults);
@@ -349,7 +349,7 @@ void Search::finished()
 {
     mSearching = false;
 
-    for (Result r : mResults)
+    for (Result r : qAsConst(mResults))
         mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = true;
@@ -399,7 +399,7 @@ void Search::replaceAll(QString replacementText)
     int matchedFiles = 0;
 
     // sort and filter FMs by editability and modification state
-    for (FileMeta* fm : mFiles) {
+    for (FileMeta* fm : qAsConst(mFiles)) {
         if (fm->isReadOnly()) {
             mFiles.removeOne(fm);
             continue;
@@ -435,7 +435,7 @@ void Search::replaceAll(QString replacementText)
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
-        for (FileMeta* fm : mFiles)
+        for (FileMeta* fm : qAsConst(mFiles))
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "
@@ -454,10 +454,10 @@ void Search::replaceAll(QString replacementText)
         mMain->searchDialog()->setSearchStatus(Search::Replacing);
         QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
 
-        for (FileMeta* fm : opened)
+        for (FileMeta* fm : qAsConst(opened))
             hits += replaceOpened(fm, mRegex, replaceTerm, mOptions);
 
-        for (FileMeta* fm : unopened)
+        for (FileMeta* fm : qAsConst(unopened))
             hits += replaceUnopened(fm, mRegex, replaceTerm);
 
         mMain->searchDialog()->setSearchStatus(Search::Clear);
