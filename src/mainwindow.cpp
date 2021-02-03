@@ -2351,7 +2351,6 @@ void MainWindow::restoreFromSettings()
     QStringList suffixes = FileType::validateSuffixList(settings->toString(skUserFileTypes), &invalidSuffix);
     mFileMetaRepo.setUserGamsTypes(suffixes);
     if (!invalidSuffix.isEmpty()) {
-        appendSystemLogWarning("Invalid user GAMS extensions in settings ignored: " + invalidSuffix.join(","));
         settings->setString(skUserFileTypes, suffixes.join(","));
     }
 

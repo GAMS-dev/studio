@@ -837,14 +837,14 @@
           <item row="0" column="0">
            <widget class="QLabel" name="lbl_userGamsTypes">
             <property name="text">
-             <string>GAMS file extensions:</string>
+             <string>GAMS source file extensions:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1" colspan="2">
            <widget class="QLineEdit" name="edUserGamsTypes">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A&amp;nbsp;comma&amp;nbsp;separated&amp;nbsp;list&amp;nbsp;of&amp;nbsp;extensions&lt;br&gt;(e.g. &amp;quot;gms, inc&amp;quot;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string/>
             </property>
            </widget>
           </item>

@@ -92,7 +92,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->edUserGamsTypes, &QLineEdit::textChanged, this, &SettingsDialog::userTypesModified);
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -101,6 +100,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
 
+    ui->edUserGamsTypes->installEventFilter(this);
     setModifiedStatus(false);
 }
 
@@ -315,15 +315,15 @@ void SettingsDialog::themeModified()
     }
 }
 
-void SettingsDialog::userTypesModified()
+void SettingsDialog::updateUserTypeToolTip()
 {
-    QStringList invalidSuffix;
-    QStringList suffixes = FileType::validateSuffixList(ui->edUserGamsTypes->text(), &invalidSuffix);
-    if (invalidSuffix.isEmpty())
+    if (focusWidget() == ui->edUserGamsTypes) {
+        QString tip("<html><p>A&nbsp;comma&nbsp;separated&nbsp;list&nbsp;of&nbsp;extensions&nbsp;(e.g.&quot;gms,inc&quot;)"
+"<br>For&nbsp;these&nbsp;files&nbsp;the&nbsp;syntax&nbsp;will&nbsp;be&nbsp;highlighted<br><br>"
+"<i>The&nbsp;following&nbsp;extensions&nbsp;will&nbsp;be&nbsp;automatically&nbsp;removed:<br>%1</i></p></html>");
+        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), tip.arg(FileType::invalidUserGamsTypes().join(", ")));
+    } else {
         QToolTip::hideText();
-    else {
-        QString tip = "Invalid user GAMS extensions will be ignored: " + invalidSuffix.join(",");
-        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), tip);
     }
 }
 
@@ -390,6 +390,8 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
             return true;
         }
     }
+    if (watched == ui->edUserGamsTypes && (event->type() == QEvent::Enter || event->type() == QEvent::Leave))
+        updateUserTypeToolTip();
 
     return false;
 }
