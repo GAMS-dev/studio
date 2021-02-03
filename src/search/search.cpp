@@ -263,11 +263,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
             if (found) e->setTextCursor(ntc);
 
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-            if (!firstLevel) {
-                if (backwards) t->jumpTo(t->knownLines()-1, 0, 0, true);
-                else t->jumpTo(0,0,0, true);
-            }
-            mSplitSearchContinue = false; // make sure to start a new search
+            mSplitSearchContinue = !firstLevel;
             found = t->findText(mRegex, mOptions, mSplitSearchContinue);
         }
 

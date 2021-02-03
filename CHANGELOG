@@ -5,6 +5,7 @@ Version 1.5.3 *
 - raised presence of markers for current word and parentheses match
 - avoid flickering of error markers
 - fixed wrong color initialization for dark theme
+- fixed unwanted cursor jump when searching lst files without results
 
 Version 1.5.2
 ==================
