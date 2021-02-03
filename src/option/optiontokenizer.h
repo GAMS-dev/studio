@@ -25,6 +25,7 @@
 #include <QTextCodec>
 
 #include "option.h"
+#include "commonpaths.h"
 #include "editors/abstractsystemlogger.h"
 
 namespace gams {
@@ -53,7 +54,7 @@ class OptionTokenizer : public QObject
 
 public:
 
-    OptionTokenizer(const QString &optionDefFileName);
+    OptionTokenizer(const QString &optionDefFileName, const QString &optionDefFilePath=CommonPaths::systemDir());
     ~OptionTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);
