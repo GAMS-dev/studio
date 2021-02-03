@@ -236,6 +236,7 @@ void SettingsDialog::saveSettings()
 
     // misc page
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
+    ui->edUserGamsTypes->setText(FileType::validateSuffixList(ui->edUserGamsTypes->text()).join(","));
     mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
 
     // solver option editor
@@ -317,7 +318,8 @@ void SettingsDialog::themeModified()
 
 void SettingsDialog::updateUserTypeToolTip()
 {
-    if (focusWidget() == ui->edUserGamsTypes) {
+
+    if (!ui->edUserGamsTypes->isModified()) {
         QString tip("<html><p>A&nbsp;comma&nbsp;separated&nbsp;list&nbsp;of&nbsp;extensions&nbsp;(e.g.&quot;gms,inc&quot;)"
 "<br>For&nbsp;these&nbsp;files&nbsp;the&nbsp;syntax&nbsp;will&nbsp;be&nbsp;highlighted<br><br>"
 "<i>The&nbsp;following&nbsp;extensions&nbsp;will&nbsp;be&nbsp;automatically&nbsp;removed:<br>%1</i></p></html>");
