@@ -322,7 +322,7 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
     QTextCursor tc;
     if (fm->editors().size() > 0)
-        tc = ViewHelper::toAbstractEdit(fm->editors().first())->textCursor();
+        tc = ViewHelper::toAbstractEdit(fm->editors().constFirst())->textCursor();
 
     tc.beginEditBlock();
     do {
@@ -349,7 +349,7 @@ void Search::finished()
 {
     mSearching = false;
 
-    for (Result r : qAsConst(mResults))
+    for (const Result &r : qAsConst(mResults))
         mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = true;
